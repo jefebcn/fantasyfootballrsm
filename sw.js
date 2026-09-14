@@ -1,5 +1,5 @@
 /* Service worker — shell in cache, aggiornamento in background. */
-const VERSION = 'fcs-v1.4.0';
+const VERSION = 'fcs-v1.4.1';
 const SHELL = [
   './', './index.html', './manifest.webmanifest', './styles/app.css', './styles/logo.css', './design/tokens/tokens.css',
   './src/app.js', './src/state.js', './src/data.js', './src/engine.js', './src/ui.js', './src/sprite.js', './src/config.js', './src/backend.js', './src/auth-clerk.js',

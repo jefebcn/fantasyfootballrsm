@@ -2,9 +2,14 @@
  * Mock minimale di supabase-js per lo smoke test end-to-end del flusso remoto (senza rete).
  * Emula auth OTP, query builder in memoria, rpc create_league/join_league, realtime no-op.
  */
-const tables = {};
+/* Persistenza: il client vero usa persistSession, quindi senza questo il mock
+   non permette di provare cosa vede l'utente RICARICANDO la pagina. */
+const CHIAVE = 'fcs:mock';
+const salvato = (() => { try { return JSON.parse(localStorage.getItem(CHIAVE) || '{}'); } catch { return {}; } })();
+const tables = salvato.tables || {};
 const T = (n) => (tables[n] ||= []);
-let userId = null; const authListeners = [];
+let userId = salvato.userId || null; const authListeners = [];
+const persisti = () => { try { localStorage.setItem(CHIAVE, JSON.stringify({ tables, userId })); } catch { /* quota */ } };
 const uid = () => 'u' + Math.random().toString(36).slice(2, 10);
 const now = () => new Date().toISOString();
 
@@ -34,6 +39,7 @@ function builder(table) {
         if (op === 'delete') { const del = apply(rows); guardFrozen(table, del); tables[table] = rows.filter((r) => !del.includes(r)); data = del; }
         if (single || maybe) data = data[0] || null;
         if (single && !data) throw new Error('no rows');
+        if (op !== 'select') persisti();
         res({ data, error: null });
       } catch (e) { res({ data: null, error: { message: e.message } }); }
     },
@@ -62,21 +68,21 @@ export function createClient(_url, _key, opts) {
         if (T('profiles').some((x) => x.email === email)) return { data: null, error: { message: 'User already registered' } };
         if (!password || password.length < 6) return { data: null, error: { message: 'Password should be at least 6 characters' } };
         const p = { id: uid(), email, password, display_name: options?.data?.display_name || email.split('@')[0], is_judge: T('profiles').length === 0 };
-        T('profiles').push(p); userId = p.id;
+        T('profiles').push(p); userId = p.id; persisti();
         authListeners.forEach((fn) => fn('SIGNED_IN', { user: { id: userId, email } }));
         return { data: { user: { id: p.id, email }, session: { user: { id: p.id, email } } }, error: null };
       },
       async signInWithPassword({ email, password }) {
         const p = T('profiles').find((x) => x.email === email && x.password === password);
         if (!p) return { data: null, error: { message: 'Invalid login credentials' } };
-        userId = p.id; authListeners.forEach((fn) => fn('SIGNED_IN', { user: { id: userId, email } }));
+        userId = p.id; persisti(); authListeners.forEach((fn) => fn('SIGNED_IN', { user: { id: userId, email } }));
         return { data: { user: { id: p.id, email }, session: {} }, error: null };
       },
       async signInWithOAuth({ provider }) { globalThis.__lastOAuth = provider; return { data: { url: 'about:blank' }, error: null }; },
       async resetPasswordForEmail(email) { globalThis.__lastResetEmail = email; return { data: {}, error: null }; },
-      async updateUser({ password }) { const p = T('profiles').find((x) => x.id === userId); if (p) p.password = password; return { data: { user: { id: userId } }, error: null }; },
-      async verifyOtp({ email, token }) { if (token !== '123456') return { data: null, error: { message: 'Codice errato' } }; let p = T('profiles').find((x) => x.email === email); if (!p) { p = { id: uid(), email, display_name: email.split('@')[0], is_judge: T('profiles').length === 0 }; T('profiles').push(p); } userId = p.id; authListeners.forEach((fn) => fn('SIGNED_IN', { user: { id: userId, email } })); return { data: { user: { id: userId } }, error: null }; },
-      async signOut() { userId = null; authListeners.forEach((fn) => fn('SIGNED_OUT', null)); },
+      async updateUser({ password }) { const p = T('profiles').find((x) => x.id === userId); if (p) p.password = password; persisti(); return { data: { user: { id: userId } }, error: null }; },
+      async verifyOtp({ email, token }) { if (token !== '123456') return { data: null, error: { message: 'Codice errato' } }; let p = T('profiles').find((x) => x.email === email); if (!p) { p = { id: uid(), email, display_name: email.split('@')[0], is_judge: T('profiles').length === 0 }; T('profiles').push(p); } userId = p.id; persisti(); authListeners.forEach((fn) => fn('SIGNED_IN', { user: { id: userId, email } })); return { data: { user: { id: userId } }, error: null }; },
+      async signOut() { userId = null; persisti(); authListeners.forEach((fn) => fn('SIGNED_OUT', null)); },
       onAuthStateChange(fn) { authListeners.push(fn); },
     },
     from: builder,
@@ -84,8 +90,8 @@ export function createClient(_url, _key, opts) {
       try {
         if (!userId) throw new Error('non autenticato');
         const prof = T('profiles').find((p) => p.id === userId);
-        if (name === 'create_league') { const l = { id: uid(), name: args.p_name, short_name: args.p_short, invite_code: Math.random().toString(36).slice(2, 8).toUpperCase(), rules: {}, started: false, created_by: userId, created_at: now() }; T('leagues').push(l); T('league_members').push({ id: uid(), league_id: l.id, user_id: userId, role: 'admin', team_name: args.p_team, owner_name: prof.display_name, color: args.p_color, initials: args.p_initials, credits: 500, created_at: now() }); return { data: l.id, error: null }; }
-        if (name === 'join_league') { const l = T('leagues').find((x) => x.invite_code === args.p_code.toUpperCase()); if (!l) throw new Error('Codice invito non valido'); if (!T('league_members').some((m) => m.league_id === l.id && m.user_id === userId)) T('league_members').push({ id: uid(), league_id: l.id, user_id: userId, role: 'fantallenatore', team_name: args.p_team, owner_name: prof.display_name, color: args.p_color, initials: args.p_initials, credits: 500, created_at: now() }); return { data: l.id, error: null }; }
+        if (name === 'create_league') { const l = { id: uid(), name: args.p_name, short_name: args.p_short, invite_code: Math.random().toString(36).slice(2, 8).toUpperCase(), rules: {}, started: false, created_by: userId, created_at: now() }; T('leagues').push(l); T('league_members').push({ id: uid(), league_id: l.id, user_id: userId, role: 'admin', team_name: args.p_team, owner_name: prof.display_name, color: args.p_color, initials: args.p_initials, credits: 500, created_at: now() }); persisti(); return { data: l.id, error: null }; }
+        if (name === 'join_league') { const l = T('leagues').find((x) => x.invite_code === args.p_code.toUpperCase()); if (!l) throw new Error('Codice invito non valido'); if (!T('league_members').some((m) => m.league_id === l.id && m.user_id === userId)) T('league_members').push({ id: uid(), league_id: l.id, user_id: userId, role: 'fantallenatore', team_name: args.p_team, owner_name: prof.display_name, color: args.p_color, initials: args.p_initials, credits: 500, created_at: now() }); persisti(); return { data: l.id, error: null }; }
         throw new Error('rpc sconosciuta ' + name);
       } catch (e) { return { data: null, error: { message: e.message } }; }
     },

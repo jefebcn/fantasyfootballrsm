@@ -117,6 +117,22 @@ export function buildSeason(seed = 20262027) {
       clubId, role, quotation: QUOT_MIN[role] ?? 5, age: null, isActive: true, daFsgc: true });
   }
 
+  // Omonimi veri: la Folgore ha due Garcia Rufer, Azael e Augusto, che
+  // abbreviati sarebbero entrambi «Rufer A.». Dove il cognome con la sola
+  // iniziale non basta, l'iniziale si allunga finché i due si distinguono.
+  {
+    const perNome = {};
+    for (const p of players) (perNome[`${p.clubId}|${p.name}`] ||= []).push(p);
+    for (const gruppo of Object.values(perNome)) {
+      if (gruppo.length < 2) continue;
+      for (let n = 2; n <= 12; n++) {
+        const prova = gruppo.map((p) => `${p.lastName} ${p.firstName.slice(0, n)}.`);
+        if (new Set(prova).size === gruppo.length) { gruppo.forEach((p, i) => { p.name = prova[i]; }); break; }
+        if (n === 12) gruppo.forEach((p) => { p.name = `${p.lastName} ${p.firstName}`; });
+      }
+    }
+  }
+
   // --- Calendario vero della FSGC -----------------------------------------
   // Il lock resta il sabato della giornata: è la regola della lega (art. 8.3),
   // non dipende dall'orario vero della prima partita.

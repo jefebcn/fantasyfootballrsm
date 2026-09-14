@@ -21,7 +21,7 @@ base.league = NO_LEAGUE; base.managers = []; base.rosters = {};
 let user = null, prof = null, leagues = [];
 let g = emptyGlobal(); let L = emptyLeague();
 let ready = false, connError = null;
-let prefs = load(PREFS_KEY, { theme: 'system', installedDismissed: false, currentLeagueId: null });
+let prefs = load(PREFS_KEY, { theme: 'system', installedDismissed: false, currentLeagueId: null, onboarded: false });
 let onError = (e) => console.error(e);
 export function setErrorHandler(fn) { onError = fn; }
 
@@ -64,6 +64,7 @@ export async function init() {
       remote.onAuth(async (u) => { const was = user?.id; user = u; if (u?.id !== was) { await loadAll(); notify(); } });
     }
     ready = true;
+    if (user && !prefs.onboarded) { prefs.onboarded = true; persistPrefs(); }
     await loadAll();
   } catch (e) { connError = e; onError(e); }
 }
@@ -91,7 +92,7 @@ export async function refresh() { if (!ready) return; try { await loadAll(); } c
 
 // ---------------------------------------------------------------- sessione
 const returnUrl = () => location.origin + location.pathname;
-async function adopt() { user = authKind() === 'clerk' ? clerk.user() : await remote.currentSessionUser(); await loadAll(); notify(); return user; }
+async function adopt() { user = authKind() === 'clerk' ? clerk.user() : await remote.currentSessionUser(); if (user && !prefs.onboarded) { prefs.onboarded = true; persistPrefs(); } await loadAll(); notify(); return user; }
 export const currentUser = () => user;
 export const profileInfo = () => prof;
 export async function signInPassword(email, password) { await remote.signInPassword(email, password); return adopt(); }
@@ -140,7 +141,7 @@ export async function seedSampleData() { await remote.seedDemo(base, user.id); a
 function hashStr(s) { let h = 2166136261; for (const c of String(s)) { h ^= c.charCodeAt(0); h = Math.imul(h, 16777619); } return h >>> 0; }
 
 export const store = {
-  get: () => ({ theme: prefs.theme, installedDismissed: prefs.installedDismissed }),
+  get: () => ({ theme: prefs.theme, installedDismissed: prefs.installedDismissed, onboarded: prefs.onboarded }),
   set: (patch) => { Object.assign(prefs, patch); persistPrefs(); notify(); },
 };
 export function resetAll() { localStorage.removeItem(PREFS_KEY); }

@@ -6,7 +6,10 @@ let pending = null;        // { email, kind: 'confirm' | 'link' }
 let busy = false;
 let notice = null;         // { kind: 'ok' | 'err', text }
 
-export function resetLogin() { tab = 'in'; pending = null; busy = false; notice = null; }
+let pendingTab = null;
+/** Consente a un'altra vista di aprire l'accesso già sulla scheda giusta. */
+export function prepareLogin(t) { pendingTab = t; }
+export function resetLogin() { tab = pendingTab || 'in'; pendingTab = null; pending = null; busy = false; notice = null; }
 const valid = (e) => /.+@.+\..+/.test(e);
 const field = (id, label, attrs = '') => `<label class="lbl" for="${id}">${label}</label><input class="field-input" id="${id}" ${attrs}>`;
 

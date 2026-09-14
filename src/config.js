@@ -16,7 +16,7 @@ export const SUPABASE_TIMEOUT_MS = 8000;
  * come identità esterna. Se è vuota, si usa l'autenticazione di Supabase.
  * La publishable key è pubblica; la secret key non va MAI nel frontend.
  */
-export const CLERK_PUBLISHABLE_KEY = 'pk_test_ZGVjZW50LXJhdmVuLTQzMjcuY2xlcmsuYWNjb3VudHMuZGV2JA';
+export const CLERK_PUBLISHABLE_KEY = ''; // Clerk disattivato: l'accesso passa da Supabase, senza uscire dall'app
 // Vuoto = token di sessione predefinito (integrazione Supabase nativa di Clerk).
 // Valorizzare solo se sul progetto Clerk esiste un JWT template dedicato.
 export const CLERK_JWT_TEMPLATE = '';

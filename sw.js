@@ -1,7 +1,7 @@
 /* Service worker — shell in cache, aggiornamento in background. */
-const VERSION = 'fcs-v0.7.1';
+const VERSION = 'fcs-v0.8.0';
 const SHELL = [
-  './', './index.html', './manifest.webmanifest', './styles/app.css', './design/tokens/tokens.css',
+  './', './index.html', './manifest.webmanifest', './styles/app.css', './styles/logo.css', './design/tokens/tokens.css',
   './src/app.js', './src/state.js', './src/data.js', './src/engine.js', './src/ui.js', './src/sprite.js', './src/config.js', './src/backend.js', './src/auth-clerk.js',
   './src/views/index.js', './src/views/dashboard.js', './src/views/rosa.js', './src/views/formazione.js', './src/views/calendario.js',
   './src/views/classifica.js', './src/views/voti.js', './src/views/live.js', './src/views/listone.js', './src/views/giocatore.js',

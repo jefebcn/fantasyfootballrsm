@@ -1,5 +1,5 @@
 import * as S from '../state.js';
-import { esc, icon, crest } from '../ui.js';
+import { esc, icon, crest, logo } from '../ui.js';
 
 const COLORS = ['#1B84C6', '#2b7a3d', '#8a1d1d', '#5b3fa6', '#c46a00', '#1a1a1a', '#2c7a7b', '#b8321f', '#d4a017', '#0e5e93'];
 let form = 'none'; // 'create' | 'join'
@@ -11,7 +11,7 @@ export const leghe = {
   render() {
     const mine = S.myLeagues(); const cur = S.currentLeagueId();
     return `<main class="a-body">
-      ${mine.length ? '' : `<div class="auth-hero" style="padding-top:20px">${icon('towers', 'ic auth-mark')}<h1 style="font-size:22px">Benvenuto${S.profileInfo()?.display_name ? `, ${esc(S.profileInfo().display_name)}` : ''}</h1><p>Crea la tua lega e invita gli altri con un codice, oppure entra in una lega esistente.</p></div>`}
+      ${mine.length ? '' : `<div class="auth-hero" style="padding-top:20px">${logo('auth-mark')}<h1 style="font-size:22px">Benvenuto${S.profileInfo()?.display_name ? `, ${esc(S.profileInfo().display_name)}` : ''}</h1><p>Crea la tua lega e invita gli altri con un codice, oppure entra in una lega esistente.</p></div>`}
       ${mine.length ? `<div class="vlist"><div class="vhead">Leghe <span>${mine.length}</span></div>${mine.map((l) => `<button class="vr" data-league="${l.id}">${crest({ color: l.id === cur ? 'var(--primary)' : 'var(--c-pietra-400)', initials: (l.short_name || l.name).slice(0, 2).toUpperCase() }, 'sm')}<span class="nm"><b>${esc(l.name)}</b><span>${l.myRole === 'admin' ? 'admin' : 'fantallenatore'} · ${l.started ? 'in corso' : 'in attesa delle rose'} · codice ${esc(l.invite_code)}</span></span><span class="ev"></span><span class="fv" style="font-size:12px">${l.id === cur ? icon('check', 'ic sm') : ''}</span></button>`).join('')}</div>` : ''}
       <div class="row2"><button class="a-btn${form === 'create' ? '' : ' sec'}" data-form="create">Crea una lega</button><button class="a-btn${form === 'join' ? '' : ' sec'}" data-form="join">Entra con codice</button></div>
       ${form === 'create' ? `<div class="a-card" style="display:flex;flex-direction:column;gap:6px"><label class="lbl" for="lname">Nome della lega</label><input class="field-input" id="lname" placeholder="es. I Sudati di RSM" maxlength="40">${teamFields()}<button class="a-btn" id="go-create" style="margin-top:10px">Crea e diventa admin</button></div>` : ''}

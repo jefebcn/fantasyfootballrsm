@@ -3,6 +3,8 @@ export const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&a
 export const fmt = (n, min = 1) => (n == null ? 'S.V.' : Number(n).toLocaleString('it-IT', { minimumFractionDigits: min, maximumFractionDigits: 2 }));
 export const signed = (n) => (n > 0 ? '+' : n < 0 ? '−' : '') + fmt(Math.abs(n));
 export const icon = (name, cls = 'ic') => `<svg class="${cls}"><use href="#i-${name}"/></svg>`;
+/** Il logo originale: una maschera colorata con il colore corrente (styles/logo.css). */
+export const logo = (cls = '') => `<i class="logo ${cls}" role="img" aria-label="Fantacampionato Sammarinese"></i>`;
 export const ROLE_NAME = { P: 'Portieri', D: 'Difensori', C: 'Centrocampisti', A: 'Attaccanti' };
 export const ROLE_ORDER = ['P', 'D', 'C', 'A'];
 const DAYS = ['dom', 'lun', 'mar', 'mer', 'gio', 'ven', 'sab'];
@@ -52,5 +54,5 @@ export function matchCard(r, managers, { link = true } = {}) {
   return `<div class="a-card a-match"><div class="tm">${crest(h)}<b>${esc(h.teamName)}</b><span>${esc(h.owner)}</span></div>${mid}<div class="tm">${crest(a)}<b>${esc(a.teamName)}</b><span>${esc(a.owner)}</span></div>${fp}${btn}</div>`;
 }
 
-export const empty = (text, cta = '') => `<div class="empty">${icon('towers')}<p>${text}</p>${cta}</div>`;
+export const empty = (text, cta = '') => `<div class="empty">${logo()}<p>${text}</p>${cta}</div>`;
 export const sec = (title, right = '') => `<div class="a-sec"><b>${title}</b><span>${right}</span></div>`;

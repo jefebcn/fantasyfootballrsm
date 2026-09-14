@@ -1,8 +1,4 @@
 export const SPRITE = `<svg width="0" height="0" style="position:absolute" aria-hidden="true">
-  <symbol id="i-towers" viewBox="0 0 64 64">
-    <!-- Le tre torri del Titano: Guaita, Cesta, Montale -->
-    <path fill="currentColor" fill-rule="evenodd" d="M12 26h10v31h-10ZM12 22h2.6v4.2h-2.6ZM15.7 22h2.6v4.2h-2.6ZM19.4 22h2.6v4.2h-2.6ZM22.9 25h2.4v4.2h-2.4ZM26 16h12v41h-12ZM26 11.8h2.28v4.4h-2.28ZM29.24 11.8h2.28v4.4h-2.28ZM32.48 11.8h2.28v4.4h-2.28ZM35.72 11.8h2.28v4.4h-2.28ZM38.9 14.8h2.4v4.4h-2.4ZM30.3 2.6h1.5v9.4h-1.5ZM31.8 3.4L38.6 5.9 31.8 8.4ZM42 28h10v29h-10ZM42 24h2.6v4.2h-2.6ZM45.7 24h2.6v4.2h-2.6ZM49.4 24h2.6v4.2h-2.6ZM52.9 27h2.4v4.2h-2.4ZM15.2 39V34.7a1.7 1.7 0 0 1 3.4 0V39ZM28.4 29.9V25.3a1.8 1.8 0 0 1 3.6 0V29.9ZM32.6 40.4V35.8a1.8 1.8 0 0 1 3.6 0V40.4ZM45.2 41V36.7a1.7 1.7 0 0 1 3.4 0V41Z"/>
-  </symbol>
   <symbol id="i-google" viewBox="0 0 48 48">
     <path fill="#4285F4" d="M45.12 24.5c0-1.56-.14-3.06-.4-4.5H24v8.51h11.84c-.51 2.75-2.06 5.08-4.39 6.64v5.52h7.11c4.16-3.83 6.56-9.47 6.56-16.17z"/>
     <path fill="#34A853" d="M24 46c5.94 0 10.92-1.97 14.56-5.33l-7.11-5.52c-1.97 1.32-4.49 2.1-7.45 2.1-5.73 0-10.58-3.87-12.31-9.07H4.34v5.7C7.96 41.07 15.4 46 24 46z"/>

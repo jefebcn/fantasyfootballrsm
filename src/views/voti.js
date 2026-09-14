@@ -1,5 +1,5 @@
 import * as S from '../state.js';
-import { esc, fmt, icon, badge, voteRow, roleChip } from '../ui.js';
+import { esc, fmt, icon, badge, voteRow, roleChip, logo } from '../ui.js';
 
 let filter = { role: null, mine: false };
 export const voti = {
@@ -22,7 +22,7 @@ export const voti = {
     return `<main class="a-body">
       <div class="topbar">${badge(st)}<select id="gsel-v" class="select" aria-label="Giornata">${Array.from({ length: 30 }, (_, i) => `<option value="${i + 1}" ${i + 1 === n ? 'selected' : ''}>Giornata ${i + 1}</option>`).join('')}</select></div>
       <div class="chips sticky"><button class="chip${!filter.role && !filter.mine ? ' on' : ''}" data-f="all">Tutti</button><button class="chip${filter.mine ? ' on' : ''}" data-f="mine">Solo miei</button>${['P', 'D', 'C', 'A'].map((r) => `<button class="chip${filter.role === r ? ' on' : ''}" data-f="${r}">${r}</button>`).join('')}</div>
-      ${blocks || `<div class="empty">${icon('towers')}<p>Nessun voto per la giornata ${n}: ${st === 'open' || st === 'scheduled' ? 'le partite non sono ancora state giocate.' : 'nessun evento inserito.'}</p></div>`}
+      ${blocks || `<div class="empty">${logo()}<p>Nessun voto per la giornata ${n}: ${st === 'open' || st === 'scheduled' ? 'le partite non sono ancora state giocate.' : 'nessun evento inserito.'}</p></div>`}
     </main>`;
   },
   mount(root, ctx) {

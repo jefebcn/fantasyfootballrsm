@@ -27,11 +27,11 @@ ffmpeg -i media/intro.mp4 -vframes 1 -q:v 4 media/intro.jpg
 
 # Logo
 
-Metti il logo originale in **`media/logo.png`** (PNG o JPG, nero su bianco oppure già
-ritagliato con trasparenza), poi:
+Originale in uso: **`media/logo.jfif`** (JPEG 736×736, nero su bianco).
+Dopo averlo sostituito, rigenera gli asset:
 
 ```bash
-python3 scripts/make-logo.py
+python3 scripts/make-logo.py media/logo.jfif
 ```
 
 Lo script ritaglia la sagoma, la centra e genera:
@@ -41,4 +41,8 @@ Lo script ritaglia la sagoma, la centra e genera:
 - `icons/icon-192.png`, `icon-512.png`, `apple-touch-icon.png`, `maskable-512.png` — le
   icone della PWA, logo bianco sul gradiente Azzurro Titano.
 
-Finché `media/logo.png` non c'è, l'app usa il simbolo vettoriale in `src/sprite.js`.
+- `styles/logo.css` — la maschera incorporata come data URI: nessuna richiesta in più,
+  nessun riquadro pieno se l'immagine non arrivasse, e funziona offline.
+
+Lo script accetta sia un originale nero su bianco (soglia automatica, così gli artefatti
+JPEG non lasciano un velo sullo sfondo) sia un PNG già ritagliato con trasparenza.

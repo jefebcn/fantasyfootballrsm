@@ -14,8 +14,15 @@ AZZURRO, NOTTE = (0x1B, 0x84, 0xC6), (0x07, 0x2F, 0x4C)
 SRC = sys.argv[1] if len(sys.argv) > 1 else 'media/logo.png'
 
 
+CHIARO, SCURO = 232, 120   # soglie: sopra è sfondo, sotto è inchiostro pieno
+
+
 def sagoma(path):
-    """Estrae la sagoma: alpha 255 dove c'è inchiostro, 0 dove c'è sfondo."""
+    """Estrae la sagoma: alpha 255 sull'inchiostro, 0 sullo sfondo, sfumato sui bordi.
+
+    La soglia serve perché un JPEG porta artefatti attorno al nero: senza,
+    lo sfondo resterebbe velato invece che trasparente.
+    """
     im = Image.open(path).convert('RGBA')
     px = im.load()
     w, h = im.size
@@ -25,8 +32,14 @@ def sagoma(path):
     for y in range(h):
         for x in range(w):
             r, g, b, a = px[x, y]
-            # con trasparenza vale l'alpha; altrimenti è inchiostro ciò che è scuro
-            mp[x, y] = a if ha_alpha else (255 - (r * 299 + g * 587 + b * 114) // 1000)
+            if ha_alpha:
+                mp[x, y] = a
+                continue
+            lum = (r * 299 + g * 587 + b * 114) // 1000
+            if lum >= CHIARO: v = 0
+            elif lum <= SCURO: v = 255
+            else: v = int((CHIARO - lum) * 255 / (CHIARO - SCURO))
+            mp[x, y] = v
     return m
 
 
@@ -75,6 +88,17 @@ if not os.path.exists(SRC):
 m = ritaglia(sagoma(SRC))
 os.makedirs('icons', exist_ok=True)
 maschera(m).save('media/logo-mask.png')
+
+# La maschera viaggia dentro il CSS come data URI: niente richiesta separata,
+# niente riquadro pieno se l'immagine non arriva, e funziona anche offline.
+import base64
+b64 = base64.b64encode(open('media/logo-mask.png', 'rb').read()).decode()
+open('styles/logo.css', 'w').write(
+    '/* Generato da scripts/make-logo.py — non modificare a mano. */\n'
+    '.logo{display:inline-block;width:24px;height:24px;flex:none;background-color:currentColor;\n'
+    f'  -webkit-mask:url(data:image/png;base64,{b64}) center/contain no-repeat;\n'
+    f'  mask:url(data:image/png;base64,{b64}) center/contain no-repeat}}\n')
+print('styles/logo.css:', round(len(b64) / 1024), 'KB di maschera')
 icona(m, 512).save('icons/icon-512.png')
 icona(m, 192).save('icons/icon-192.png')
 icona(m, 180, tondo=False).save('icons/apple-touch-icon.png')

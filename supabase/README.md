@@ -1,5 +1,15 @@
 # Supabase — account e leghe multiple
 
+## Progetto collegato
+
+`https://nskgzpbcssnpfuxmbepa.supabase.co` — URL e publishable key sono in `src/config.js`
+(valori pubblici: la sicurezza sta nelle policy RLS). Schema applicato; verificato che le
+scritture anonime siano rifiutate (`42501`), che `create_league` richieda l'autenticazione e
+che `matchday_lock_at(3)` restituisca sabato 19/09/2026 15:00 Europe/Rome, allineato a
+`SEASON_START` in `src/data.js`.
+
+## Setup da zero
+
 1. Crea un progetto su [supabase.com](https://supabase.com) (regione EU).
 2. **SQL Editor** → incolla ed esegui `schema.sql`.
 3. **Authentication → Providers → Email**: lascia attivo "Email", abilita *magic link / OTP*
@@ -7,7 +17,8 @@
    *Redirect URLs* (es. `https://fantasyfootballrsm.vercel.app/`).
 4. **Settings → API**: copia *Project URL* e *anon public key* in `src/config.js`
    (oppure inseriscili dall'app in Impostazioni → «Connetti Supabase», salvati solo sul dispositivo).
-5. Nomina il Giudice Dati: nell'SQL Editor
+5. Nomina il Giudice Dati **dopo il primo accesso** di quella persona (il profilo nasce al
+   primo login): nell'SQL Editor
    `update public.profiles set is_judge = true where id = (select id from auth.users where email = '…');`
 6. Nell'app: accedi con l'e-mail → crea la lega → condividi il codice invito → quando i
    partecipanti sono dentro, l'admin genera le rose (draft automatico o inserimento manuale).

@@ -1,5 +1,5 @@
 import * as S from '../state.js';
-import { esc, fmt, icon, logo, badge, matchCard, tile, sec, dateIt, timeIt } from '../ui.js';
+import { esc, fmt, icon, logo, badge, crest, matchCard, tile, sec, dateIt, timeIt } from '../ui.js';
 
 const RULES = [
   ['Art. 7.4', 'Rigore parato', 'Vale +3,0 al portiere e −3,0 al tiratore. Sul palo o fuori: −3,0 al tiratore e nessun bonus al portiere.'],
@@ -44,6 +44,43 @@ function sfida(ph, curR, riposo) {
   const titolo = curR.played ? (ph.status === 'frozen' ? 'Giornata conclusa' : 'Risultati provvisori') : 'La tua sfida';
   const meta = curR.played ? '' : (lock ? `si chiude ${dateIt(lock)} · ${timeIt(lock)}` : '');
   return sec(titolo, `${ph.matchday}ª di lega`) + matchCard(curR, S.managersById, { meta });
+}
+
+/**
+ * Le prossime partite vere del campionato, in una fila che scorre: è il pezzo
+ * di contesto che mancava, e viene dal calendario FSGC, non dalla lega.
+ */
+function prossimePartite(ph) {
+  const cerca = (n) => (n && n <= 30 ? S.matchesOf(n).filter((m) => m.status === 'scheduled') : []);
+  let n = ph.matchday; let ms = cerca(n);
+  if (!ms.length) { n = ph.next; ms = cerca(n); }
+  if (!ms.length) return '';
+  const cl = (id) => S.clubsById.get(id);
+  return sec('Prossime partite', `${n}ª giornata`) + `<div class="upcoming">${ms.slice(0, 6).map((m) => {
+    const h = cl(m.homeClubId), a = cl(m.awayClubId); const k = m.kickoffAt ? new Date(m.kickoffAt) : null;
+    return `<a class="up" href="#/calendario/${n}">
+      <span class="when">${k ? `${dateIt(k)} · ${timeIt(k)}` : `${n}ª giornata`}</span>
+      <span class="teams">
+        <span class="t">${crest({ color: h.color, initials: h.shortName }, 'sm')}<b>${esc(h.name)}</b></span>
+        <em>VS</em>
+        <span class="t">${crest({ color: a.color, initials: a.shortName }, 'sm')}<b>${esc(a.name)}</b></span>
+      </span>
+      <span class="where">${esc(m.venue)}</span></a>`;
+  }).join('')}</div>`;
+}
+
+/** Anteprima della classifica di lega, con la propria riga sempre inclusa. */
+function classificaBreve(me) {
+  const st = S.standings(); if (st.length < 2) return '';
+  const mio = st.findIndex((r) => r.managerId === me.id);
+  const righe = st.slice(0, 5);
+  if (mio >= 5) righe.push(st[mio]);            // se sei fuori dai primi cinque, la tua riga si aggiunge
+  return sec('Classifica', `${st.length} squadre`) + `<a class="a-card lead" href="#/classifica">
+    ${righe.map((r) => { const m = S.managersById.get(r.managerId); const io = r.managerId === me.id;
+      return `<span class="lrow${io ? ' io' : ''}"><i class="pos">${r.position}</i>${crest(m, 'sm')}
+        <span class="nm"><b>${esc(m.teamName)}</b><span>${esc(m.owner)}</span></span>
+        <span class="pt"><b>${r.points}</b><span>punti</span></span></span>`; }).join('')}
+    <span class="lcta">Classifica completa${icon('chev', 'ic sm')}</span></a>`;
 }
 
 export const dashboard = {
@@ -91,6 +128,8 @@ export const dashboard = {
           sub: S.isLeagueAdmin() ? "Generale o inserirle dalla gestione lega" : "Le assegna l'admin della lega dopo l'asta" }) : azione(ph, me)}
       ${nxtR ? sec('Prossima giornata', `${ph.next}ª di lega`) + matchCard(nxtR, S.managersById, { meta: `${dateIt(S.matchday(ph.next).lockAt)} · ${timeIt(S.matchday(ph.next).lockAt)}` }) : ''}
       ${forma}
+      ${prossimePartite(ph)}
+      ${classificaBreve(me)}
       ${sec('Dal regolamento')}
       <div class="rule"><span class="art">${art}</span><p><b>${titolo}.</b> ${testo}</p></div>
     </main>`;

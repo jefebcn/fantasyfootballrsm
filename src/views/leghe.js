@@ -1,5 +1,5 @@
 import * as S from '../state.js';
-import { esc, icon, crest, logo } from '../ui.js';
+import { esc, icon, crest, logo, pic, tile, sec } from '../ui.js';
 
 const COLORS = ['#1B84C6', '#2b7a3d', '#8a1d1d', '#5b3fa6', '#c46a00', '#1a1a1a', '#2c7a7b', '#b8321f', '#d4a017', '#0e5e93'];
 let form = 'none'; // 'create' | 'join'
@@ -11,16 +11,30 @@ const nameField = () => S.nomeDaCompletare()
 const teamFields = () => `${nameField()}<label class="lbl" for="team">Nome della tua squadra</label><input class="field-input" id="team" placeholder="es. Hasta El Chapo FC" maxlength="28">
   <label class="lbl" for="color" style="margin-top:8px">Colore</label><div class="chipgrid" id="colors">${COLORS.map((c, i) => `<button class="chip${i === 0 ? ' on' : ''}" data-color="${c}" style="width:34px;height:34px;padding:0;background:${c};border-color:${c}" aria-label="${c}"></button>`).join('')}</div>`;
 
+/** Tre punti su cosa rende diverso il Voto Titano: la schermata senza lega era vuota. */
+function comeFunziona() {
+  const punti = [
+    ['voti', 'Niente pagelle', 'Il voto nasce dagli eventi del referto FSGC, non dal giudizio di un giornalista.'],
+    ['probabili', 'Una giornata per settimana', 'Si schiera entro il sabato, i voti escono la domenica, il martedì la giornata si chiude.'],
+    ['quotazioni', 'Rosa da 25', 'Listone del campionato sammarinese, 500 crediti all\'asta, mercato libero fra una giornata e l\'altra.'],
+  ];
+  return sec('Come funziona') + `<div class="a-card howto">${punti.map(([ic, t, d]) => `<div class="how"><i>${pic(ic, 'menu')}</i><span><b>${t}</b><span>${d}</span></span></div>`).join('')}</div>`;
+}
+
 export const leghe = {
   title: 'Le mie leghe', appbar: () => (S.hasLeague() ? 'main' : 'none'), sub: () => 'Le mie leghe',
   render() {
     const mine = S.myLeagues(); const cur = S.currentLeagueId();
     return `<main class="a-body">
-      ${mine.length ? '' : `<div class="auth-hero" style="padding-top:20px">${logo('auth-mark')}<h1 style="font-size:22px">Benvenuto${!S.nomeDaCompletare() && S.profileInfo()?.display_name ? `, ${esc(S.profileInfo().display_name)}` : ''}</h1><p>Crea la tua lega e invita gli altri con un codice, oppure entra in una lega esistente.</p></div>`}
+      ${mine.length ? '' : `<div class="auth-hero" style="padding-top:20px">${logo('auth-mark')}<h1 style="font-size:22px">Benvenuto${!S.nomeDaCompletare() && S.profileInfo()?.display_name ? `, ${esc(S.profileInfo().display_name)}` : ''}</h1><p>Per giocare serve una lega: creala tu e invita gli altri con un codice, oppure entra in una che esiste già.</p></div>`}
       ${mine.length ? `<div class="vlist"><div class="vhead">Leghe <span>${mine.length}</span></div>${mine.map((l) => `<button class="vr" data-league="${l.id}">${crest({ color: l.id === cur ? 'var(--primary)' : 'var(--c-pietra-400)', initials: (l.short_name || l.name).slice(0, 2).toUpperCase() }, 'sm')}<span class="nm"><b>${esc(l.name)}</b><span>${l.myRole === 'admin' ? 'admin' : 'fantallenatore'} · ${l.started ? 'in corso' : 'in attesa delle rose'} · codice ${esc(l.invite_code)}</span></span><span class="ev"></span><span class="fv" style="font-size:12px">${l.id === cur ? icon('check', 'ic sm') : ''}</span></button>`).join('')}</div>` : ''}
-      <div class="row2"><button class="a-btn${form === 'create' ? '' : ' sec'}" data-form="create">Crea una lega</button><button class="a-btn${form === 'join' ? '' : ' sec'}" data-form="join">Entra con codice</button></div>
+      <div class="startgrid">
+        <button class="startcard${form === 'create' ? ' on' : ''}" data-form="create">${pic('leghe', 'menu')}<b>Crea una lega</b><span>Ne diventi admin e ricevi il codice da girare agli altri</span></button>
+        <button class="startcard${form === 'join' ? ' on' : ''}" data-form="join">${pic('squadre', 'menu')}<b>Entra con codice</b><span>Ti serve il codice a 6 caratteri dell'organizzatore</span></button>
+      </div>
       ${form === 'create' ? `<div class="a-card" style="display:flex;flex-direction:column;gap:6px"><label class="lbl" for="lname">Nome della lega</label><input class="field-input" id="lname" placeholder="es. I Sudati di RSM" maxlength="40">${teamFields()}<button class="a-btn" id="go-create" style="margin-top:10px">Crea e diventa admin</button></div>` : ''}
       ${form === 'join' ? `<div class="a-card" style="display:flex;flex-direction:column;gap:6px"><label class="lbl" for="code">Codice invito</label><input class="field-input" id="code" placeholder="es. A1B2C3" autocapitalize="characters" maxlength="6">${teamFields()}<button class="a-btn" id="go-join" style="margin-top:10px">Entra nella lega</button></div>` : ''}
+      ${mine.length ? '' : comeFunziona()}
     </main>`;
   },
   mount(root, ctx) {

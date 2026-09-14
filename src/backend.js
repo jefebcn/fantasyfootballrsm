@@ -4,7 +4,7 @@
  */
 import { SUPABASE_URL, SUPABASE_ANON_KEY, SUPABASE_JS, SUPABASE_TIMEOUT_MS } from './config.js';
 
-let sb = null; let cfg = null;
+let sb = null; let cfg = null; let providers = {};
 export function config() {
   if (cfg) return cfg;
   try { const raw = localStorage.getItem('fcs:supabase'); if (raw) { const c = JSON.parse(raw); if (c.url && c.key) return (cfg = c); } } catch { /* ignora */ }
@@ -24,7 +24,22 @@ export async function init() {
   const mod = await withTimeout(import(globalThis.__SUPABASE_JS__ || SUPABASE_JS), SUPABASE_TIMEOUT_MS, 'Libreria Supabase non raggiungibile');
   sb = mod.createClient(c.url, c.key, { auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true } });
   const { data } = await withTimeout(sb.auth.getSession(), SUPABASE_TIMEOUT_MS, 'Supabase non raggiungibile');
+  providers = await loadProviders(c);
   return data.session?.user || null;
+}
+
+/** Quali accessi social sono davvero attivi sul progetto: i pulsanti spenti non si mostrano. */
+async function loadProviders(c) {
+  try {
+    const r = await fetch(`${c.url}/auth/v1/settings`, { headers: { apikey: c.key } });
+    if (!r.ok) return {};
+    const s = await r.json();
+    return s.external || {};
+  } catch { return {}; }
+}
+export const enabledProviders = () => providers;
+export async function signInOAuth(provider, redirectTo) {
+  return authCall(sb.auth.signInWithOAuth({ provider, options: { redirectTo, queryParams: provider === 'google' ? { prompt: 'select_account' } : undefined } }));
 }
 export const client = () => sb;
 export async function currentSessionUser() { const { data } = await sb.auth.getUser(); return data?.user || null; }
@@ -66,7 +81,10 @@ export async function updateProfile(userId, patch) { return must(await sb.from('
 export async function ensureProfile(user) {
   const p = await profile(user.id);
   if (p) return p;
-  const name = user.user_metadata?.display_name || (user.email || '').split('@')[0];
+  const m = user.user_metadata || {};
+  const name = m.display_name || m.full_name || m.name
+    || [m.given_name, m.family_name].filter(Boolean).join(' ')
+    || (user.email || '').split('@')[0];
   return must(await sb.from('profiles').upsert({ id: user.id, display_name: name }).select().single());
 }
 

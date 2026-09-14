@@ -22,7 +22,7 @@ export const login = {
         <button class="${tab === 'in' ? 'on' : ''}" data-tab="in">Accedi</button>
         <button class="${tab === 'up' ? 'on' : ''}" data-tab="up">Crea account</button>
         <button class="${tab === 'link' ? 'on' : ''}" data-tab="link">Link</button></div>`}
-      <div class="a-card auth-card">${pending ? pendingPanel() : tab === 'link' ? linkPanel() : credentialsPanel()}</div>
+      <div class="a-card auth-card">${pending ? pendingPanel() : socialBlock() + (tab === 'link' ? linkPanel() : credentialsPanel())}</div>
     </main>`;
   },
   mount(root, ctx) {
@@ -33,6 +33,8 @@ export const login = {
 
     root.querySelector('main').addEventListener('click', async (e) => {
       const t = e.target.closest('[data-tab]'); if (t) { tab = t.dataset.tab; notice = null; ctx.render(); return; }
+      const sp = e.target.closest('[data-provider]');
+      if (sp) { notice = null; sp.disabled = true; try { await S.signInWithProvider(sp.dataset.provider); } catch (err) { sp.disabled = false; fail(err); } return; }
       if (e.target.closest('#again')) { pending = null; notice = null; ctx.render(); return; }
       if (e.target.closest('#resend')) {
         try { pending.kind === 'confirm' ? await S.resendConfirmation(pending.email) : await S.signInLink(pending.email); notice = { kind: 'ok', text: 'E-mail rimandata.' }; ctx.render(); } catch (err) { fail(err); }
@@ -76,6 +78,13 @@ export const login = {
   },
 };
 
+const PROVIDER = { google: ['google', 'Continua con Google'], apple: ['apple', 'Continua con Apple'] };
+function socialBlock() {
+  const list = S.oauthProviders();
+  if (!list.length) return '';
+  return `<div class="social">${list.map((k) => { const [ic, label] = PROVIDER[k]; return `<button class="social-btn ${k}" data-provider="${k}">${icon(ic, 'ic social-mark')}${label}</button>`; }).join('')}</div>
+    <div class="or"><span>oppure con l'e-mail</span></div>`;
+}
 function credentialsPanel() {
   const up = tab === 'up';
   return `${field('email', 'E-mail', 'type="email" autocomplete="email" inputmode="email" placeholder="nome@esempio.it"')}

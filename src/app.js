@@ -80,7 +80,7 @@ function drawer() {
     ${S.isJudge() ? `<div class="d-sec admin"><span class="chip">Giudice Dati</span></div>
     ${item('#/admin', 'edit', 'Inserisci eventi', `G${ph.matchday}`)}${item('#/admin/contestazioni', 'flag', 'Contestazioni', `${S.contestazioni().filter((c) => c.status === 'open').length} aperte`)}${item('#/admin/congela', 'lock', 'Congela giornata', 'mar 20:00')}${item('#/admin/registro', 'archive', 'Registro modifiche')}` : ''}
     <a class="d-plain" href="#/impostazioni" style="display:block;text-decoration:none;color:inherit">Utente, impostazioni e privacy</a>
-    <div class="d-foot">Versione 0.4<br>Fantacampionato Sammarinese</div>
+    <div class="d-foot">Versione 0.5<br>Fantacampionato Sammarinese</div>
   </div></div>`;
 }
 

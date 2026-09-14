@@ -90,6 +90,8 @@ export async function signInPassword(email, password) { await remote.signInPassw
 export async function signUpPassword(email, password, displayName) { const r = await remote.signUpPassword(email, password, displayName, returnUrl()); if (!r.needsConfirmation) await adopt(); return r; }
 export async function resendConfirmation(email) { await remote.resendConfirmation(email, returnUrl()); }
 export async function signInLink(email) { await remote.signInLink(email, returnUrl()); }
+export const oauthProviders = () => { const p = remote.enabledProviders(); return ['google', 'apple'].filter((k) => p[k]); };
+export async function signInWithProvider(provider) { await remote.signInOAuth(provider, returnUrl()); }
 export async function verifyCode(email, token) { await remote.verifyOtp(email, token); return adopt(); }
 export async function resetPassword(email) { await remote.resetPassword(email, returnUrl()); }
 export async function updatePassword(password) { await remote.updatePassword(password); }

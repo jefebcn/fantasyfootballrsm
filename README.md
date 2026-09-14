@@ -5,7 +5,7 @@ settimanali, scontro diretto — **senza pagelle**. I voti (Voto Titano) sono ca
 eventi oggettivi del referto FSGC.
 
 **App (PWA)** — installabile su iPhone/Android dalla schermata "Aggiungi a Home".
-Richiede un account: accesso con password oppure con link via e-mail, leghe multiple con
+Richiede un account: accesso con Google, Apple, password o link via e-mail, leghe multiple con
 codice invito, ruoli (admin di lega, Giudice Dati), rose, formazioni e contestazioni
 condivise, dato del campionato inserito una volta per tutte le leghe, aggiornamenti in
 tempo reale. Setup in [`supabase/README.md`](supabase/README.md) (schema e policy RLS in

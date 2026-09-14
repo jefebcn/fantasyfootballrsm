@@ -1,6 +1,6 @@
 /** Shell applicativa: router hash, app bar, drawer, bottom nav, toast, sheet. */
 import { SPRITE } from './sprite.js';
-import { esc, icon, badge, crest, logo, pic } from './ui.js';
+import { esc, icon, badge, crest, logo, pic, mask } from './ui.js';
 import * as S from './state.js';
 import * as views from './views/index.js';
 
@@ -50,10 +50,10 @@ export function applyTheme() {
   if (meta) meta.content = document.documentElement.getAttribute('data-theme') === 'dark' ? '#0A3E60' : '#1B84C6';
 }
 
-// Glifi e non icone illustrate: la barra in basso deve dire DOVE SEI, e il
-// colore è l'unico segnale che ha. Un'icona già a colori non può diventare blu
-// quando è attiva. È anche quello che fa l'app di riferimento.
-const NAV = [['', 'home', 'Dashboard'], ['rosa', 'shirt', 'Rosa'], ['calendario', 'cal', 'Calendario'], ['classifica', 'medal', 'Classifica'], ['voti', 'votes', 'Voti']];
+// Sagome da media/icone/nav, colorate dalla CSS: la barra deve dire dove sei,
+// e lo dice col colore. Le icone già a colori non potevano.
+const NAV = [['', 'campo', 'Dashboard'], ['rosa', 'maglia-10', 'Rosa'], ['calendario', 'calendario', 'Calendario'],
+  ['classifica', 'coppa', 'Classifica'], ['voti', 'grafico', 'Voti']];
 
 function appbar(view, ctx) {
   const league = S.base.league;
@@ -64,7 +64,7 @@ function appbar(view, ctx) {
 }
 function nav(path) {
   const active = path.split('/')[0];
-  return `<nav class="a-nav">${NAV.map(([p, ic, l]) => `<a href="#/${p}" class="${active === p ? 'on' : ''}">${icon(ic)}${l}${p === 'voti' && S.matchdayStatus(S.currentMatchday()) === 'provisional' ? '<i class="dot"></i>' : ''}</a>`).join('')}</nav>`;
+  return `<nav class="a-nav">${NAV.map(([p, ic, l]) => `<a href="#/${p}" class="${active === p ? 'on' : ''}">${mask(ic)}${l}${p === 'voti' && S.matchdayStatus(S.currentMatchday()) === 'provisional' ? '<i class="dot"></i>' : ''}</a>`).join('')}</nav>`;
 }
 function drawer() {
   const me = S.me(); const ph = S.weekPhase(); const u = S.currentUser();

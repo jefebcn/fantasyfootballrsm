@@ -88,8 +88,32 @@ malus in `--negative`. Il capitano mostra `×2` sulla riga bonus/malus, non sul 
 (art. 6.2).
 
 ### Card partita fanta
-Due squadre con logo, VS centrale in cerchio, punteggio in display. Sotto la card, il
-punteggio totale con la conversione: `74,5 → 1 gol` (soglia visibile in tooltip).
+Due squadre con logo, VS centrale in cerchio, punteggio in display. Sotto, i fantapunti
+in mono: `75,5 · fantapunti · 70,5`. Se la giornata è in corso o provvisoria, la card
+chiude con il bottone verde **Vai al Live** (unico bottone verde dell'app: è lo stato
+live, non un'azione).
+
+### Pill doppia voto
+`[ 6,5 | 9,5 ]` — cella sinistra **Voto Titano** (base + esito, testo scuro), cella
+destra **fantavoto** (azzurro su azzurro chiaro). Stessa forma della pill
+«voto | fantavoto» di Leghe Fantacalcio, ma la prima cella non è una pagella. Per un
+S.V. la pill mostra `[ S.V. | 5,5 ]` se vale il voto d'ufficio, `[ S.V. | → ]` se è
+scattata la sostituzione automatica.
+
+### Slot giocatore sul campo
+Avatar 40px a **iniziali sul colore della società reale** (niente caricature né foto:
+art. 14.1), chip ruolo in basso a destra, bollino oro `C`/`V` in alto a sinistra,
+**indicatori evento** in alto a destra (tessere 16px: G, As, A, E, RP, ↓ uscito / S.V.,
+↑ entrato dalla panchina). Sotto: pill doppia e cognome.
+
+### Avatar giocatore
+Cerchio con iniziali, sfondo = colore principale della società (16 colori fissi in
+config). Stesso avatar in listone, rosa, campo, panchina e data entry.
+
+### Totale parziali
+Card a raggio grande in fondo al Live: pillola azzurra `Totale parziali`, riga
+`63,5 · Voto Titano · 66,0`, separatore, riga in azzurro `75,5 · con bonus/malus · 70,5`.
+È la stessa struttura di «solo voti / con bonus-malus» dell'app italiana.
 
 ### Card partita reale
 `Tre Fiori — La Fiorita` · `dom 15:00 · Acquaviva` · nessuna icona casa/trasferta.

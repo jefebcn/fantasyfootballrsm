@@ -121,8 +121,8 @@ table.cmp tr:last-child td{border-bottom:0}
 .a-card{background:var(--surface);border-radius:var(--r-md);box-shadow:var(--sh-card);padding:14px 16px}
 .a-card h3{font-size:var(--fs-h3);font-weight:700}
 .a-sec{display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin-top:4px}
-.a-sec b{font-family:var(--font-display);font-weight:700;font-size:15px;display:flex;align-items:center;gap:8px}
-.a-sec span{font-size:12px;color:var(--text-muted)}
+.a-sec b{font-family:var(--font-display);font-weight:700;font-size:15px;display:flex;align-items:center;gap:8px;white-space:nowrap}
+.a-sec span{font-size:12px;color:var(--text-muted);text-align:right}
 
 /* hero */
 .a-league{background:var(--surface);border-radius:12px;padding:12px 16px;font-family:var(--font-display);font-weight:700;font-size:20px;text-transform:uppercase;letter-spacing:.01em;box-shadow:var(--sh-card);display:flex;justify-content:space-between;align-items:center}
@@ -350,6 +350,81 @@ table.cmp tr:last-child td{border-bottom:0}
 .freeze input::placeholder{color:rgba(255,255,255,.55);letter-spacing:0;font-family:var(--font-body);font-weight:400}
 .freeze .a-btn{background:#fff;color:var(--c-cartellino-600);margin-top:auto}
 
+
+/* live: header, campo lungo, pill doppia, panchina, totali */
+.screen.live-on > .a-appbar, .screen.live-on > .a-nav{display:none}
+.l-bar{background:var(--grad-header);color:#fff;padding:44px 12px 0;flex:none}
+.l-bar .row{display:flex;align-items:center;gap:8px}
+.l-bar .ib{width:36px;height:36px;border:0;background:transparent;color:#fff;display:grid;place-items:center;border-radius:50%;cursor:pointer;flex:none}
+.l-bar .lg{flex:1;min-width:0;display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.18);border-radius:999px;padding:5px 12px 5px 5px}
+.l-bar .lg .crest{width:32px;height:32px;font-size:10px;border-width:0;box-shadow:none}
+.l-bar .lg b{display:block;font:700 13px var(--font-display);text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.l-bar .lg span{font-size:10px;letter-spacing:.06em;text-transform:uppercase;opacity:.85;white-space:nowrap}
+.l-head{display:grid;grid-template-columns:1fr auto 1fr;gap:6px;align-items:start;padding:16px 4px 14px;text-align:center}
+.l-head .tm{text-align:left;min-width:0}
+.l-head .tm:last-child{text-align:right}
+.l-head .tm b{display:block;font:600 14px var(--font-body);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.l-head .tm span{font:500 11px var(--font-data);opacity:.8}
+.l-head .sc{font:800 36px var(--font-display);line-height:1;font-variant-numeric:tabular-nums;white-space:nowrap}
+.l-head .sc small{display:block;font:500 12px var(--font-data);opacity:.85;margin-top:4px}
+.l-sub{display:flex;flex-direction:column;align-items:center;gap:10px;padding:0 0 16px}
+.l-sub .a-btn{width:auto;height:40px;padding:0 16px;background:#fff;color:var(--c-titano-600);box-shadow:none;font-size:12px}
+.field{position:relative;background:linear-gradient(180deg,#2f9e5f,#268a51 50%,#2f9e5f);border-radius:12px;padding:12px 8px;color:#fff;display:flex;flex-direction:column;gap:12px;box-shadow:inset 0 0 0 2px rgba(255,255,255,.35)}
+.field .half{position:relative;height:1px;background:rgba(255,255,255,.45);margin:2px 0}
+.field .half::after{content:"";position:absolute;left:50%;top:50%;width:64px;height:64px;border-radius:50%;border:1px solid rgba(255,255,255,.45);transform:translate(-50%,-50%)}
+.field .box{position:absolute;left:50%;transform:translateX(-50%);width:120px;height:34px;border:1px solid rgba(255,255,255,.45)}
+.field .box.top{top:0;border-top:0}.field .box.bot{bottom:0;border-bottom:0}
+.field .line{position:relative;z-index:1}
+.ps{display:flex;flex-direction:column;align-items:center;gap:4px;width:74px;position:relative}
+.ps .av{width:40px;height:40px;border-radius:50%;display:grid;place-items:center;font:800 13px var(--font-display);color:#fff;box-shadow:0 3px 8px rgba(0,0,0,.25);position:relative;background:var(--tc,#555)}
+.ps .av .rl{position:absolute;bottom:-4px;right:-4px;width:18px;height:18px;font-size:9px;border:2px solid #fff}
+.ps .av .cap{position:absolute;top:-6px;left:-6px;width:18px;height:18px;border-radius:50%;background:var(--c-oro-400);color:var(--c-titano-900);font:800 10px var(--font-display);display:grid;place-items:center;border:2px solid #fff}
+.ps .ind{position:absolute;top:-4px;right:2px;display:flex;flex-direction:column;gap:2px;align-items:center}
+.ps .ind i{display:inline-grid;place-items:center;width:16px;height:16px;border-radius:4px;font:700 9px var(--font-body);font-style:normal;box-shadow:0 1px 3px rgba(0,0,0,.3)}
+.ps .ind .dn{background:var(--c-cartellino-500);color:#fff}.ps .ind .up{background:var(--c-alloro-500);color:#fff}
+.pill{display:inline-flex;border-radius:999px;background:#fff;overflow:hidden;font:700 12px var(--font-display);font-variant-numeric:tabular-nums;box-shadow:0 2px 6px rgba(0,0,0,.2)}
+.pill span{padding:3px 8px;min-width:30px;text-align:center}
+.pill span:first-child{color:var(--c-pietra-900)}
+.pill span:last-child{color:var(--c-titano-600);background:var(--c-titano-100)}
+.pill.sv span{color:var(--c-pietra-500)}
+.ps b{font-size:10px;font-weight:600;text-align:center;line-height:1.1;text-shadow:0 1px 2px rgba(0,0,0,.4);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:74px}
+.bench2{display:grid;grid-template-columns:1fr 1fr;gap:0 10px;background:var(--surface);border-radius:var(--r-md);box-shadow:var(--sh-card);padding:4px 10px;position:relative}
+.bench2::before{content:"";position:absolute;left:50%;top:10px;bottom:10px;width:1px;background:var(--border)}
+.b2{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:6px;padding:8px 2px;border-top:1px solid var(--border);font-size:12px;min-width:0}
+.b2:nth-child(-n+2){border-top:0}
+.b2 .nm{min-width:0}
+.b2 .nm b{display:block;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.b2 .nm span{display:block;font-size:10px;color:var(--text-muted)}
+.b2 .vpill{display:flex;flex-direction:column;border-radius:8px;overflow:hidden;font:700 11px var(--font-display);text-align:center;min-width:32px;background:var(--surface-sunk)}
+.b2 .vpill span{padding:2px 5px}
+.b2 .vpill span:last-child{color:var(--primary);background:var(--primary-soft)}
+.b2 .vpill.sv span{color:var(--text-muted)}
+.b2 .no{width:32px;height:32px;border-radius:8px;background:var(--surface-sunk);color:var(--text-muted);display:grid;place-items:center;font-size:14px}
+.b2 .up{color:var(--positive);font-size:11px;font-weight:700}
+.legend{display:flex;align-items:center;gap:10px;background:var(--primary-soft);border-radius:var(--r-md);padding:12px 14px;font-weight:600;font-size:14px;color:var(--text)}
+.legend .ic{color:var(--primary)}
+.legend .chev{margin-left:auto;color:var(--text-muted)}
+.tot{background:var(--surface);border-radius:var(--r-lg);padding:14px 16px;display:flex;flex-direction:column;gap:8px;align-items:center;box-shadow:var(--sh-card)}
+.tot .pillt{background:var(--primary);color:#fff;font:600 13px var(--font-body);padding:6px 16px;border-radius:999px}
+.tot .r{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:12px;width:100%;text-align:center}
+.tot .r b{font:700 30px var(--font-display);font-variant-numeric:tabular-nums;line-height:1}
+.tot .r span{font-size:12px;color:var(--text-muted)}
+.tot .r.fv b{color:var(--primary)}
+.tot hr{width:64px;border:0;border-top:2px solid var(--text);margin:0}
+.l-nav{flex:none;height:64px;background:var(--surface);box-shadow:var(--sh-nav);display:grid;grid-template-columns:1fr 1fr auto 1fr 1fr;align-items:center;padding:8px 12px 12px;gap:4px;position:relative;z-index:3}
+.l-nav button{border:0;background:transparent;color:var(--text-muted);display:grid;place-items:center;height:44px;border-radius:14px;cursor:pointer}
+.l-nav button.on{background:var(--surface-sunk);color:var(--positive)}
+.l-nav .sep{width:1px;height:28px;background:var(--border)}
+.last5{display:flex;gap:10px;justify-content:space-between}
+.last5 div{display:flex;flex-direction:column;align-items:center;gap:6px;font:600 13px var(--font-display);font-variant-numeric:tabular-nums;flex:1}
+.last5 i{width:38px;height:38px;border-radius:50%;background:var(--surface-sunk);display:grid;place-items:center;font-style:normal;font:700 13px var(--font-display);color:#fff}
+.last5 i.p{background:var(--negative)}.last5 i.v{background:var(--positive)}.last5 i.n{background:var(--text-muted)}
+.last5 small{font:500 11px var(--font-body);color:var(--text-muted)}
+.a-btn.live{background:var(--c-alloro-400);color:#fff;box-shadow:none;height:44px;font-size:14px;letter-spacing:.02em;text-transform:none;font-family:var(--font-body);font-weight:700}
+.a-match .full{grid-column:1/-1;margin-top:8px}
+.d-foot{margin-top:auto;padding:8px 16px 18px;border-top:1px solid var(--border);font-size:12px;color:var(--text-muted);text-align:center;line-height:1.6}
+.d-plain{padding:10px 16px;font-size:15px;font-weight:600}
+
 @media (prefers-reduced-motion:reduce){.pulse{animation:none}*{transition:none!important}}
 </style>
 
@@ -530,9 +605,9 @@ Fantavoto            9,5</div>
       <div class="demo" style="padding:0;background:transparent">
         <div class="a-card a-match">
           <div class="tm"><span class="crest" style="background:#1a1a1a">JB</span><b>Joga Benito FC</b><span>Pelli</span></div>
-          <span class="vs score">1 – 0</span>
+          <span class="vs score">2 – 1</span>
           <div class="tm"><span class="crest" style="background:#2b7a3d">HC</span><b>Hasta El Chapo FC</b><span>LILLO</span></div>
-          <div class="fp"><span><b>74,5</b></span><em>fantapunti</em><span><b>68,0</b></span></div>
+          <div class="fp"><span><b>75,5</b></span><em>fantapunti</em><span><b>70,5</b></span></div>
         </div>
       </div>
       <p>Il risultato in gol grande, i fantapunti sotto in mono. Nel dettaglio la soglia è in chiaro: <code style="font-family:var(--font-data);font-size:12px">soglia 69,0 · passo 6,0 · 10 fantallenatori</code>.</p>
@@ -559,7 +634,7 @@ Fantavoto            9,5</div>
 <section class="kit" id="schermate">
   <div class="kit-head">
     <div><span class="eyebrow">05 · Schermate</span><h2>Le nove viste del prodotto</h2></div>
-    <p>Ogni cornice scorre. Dashboard, Rosa, Calendario, Classifica e Voti sono le cinque voci della bottom bar; Drawer, Dettaglio partita e le schermate del Giudice Dati si raggiungono da lì. I nomi delle squadre fanta sono quelli della lega <strong>I Sudati di RSM</strong>; i giocatori sono esempi.</p>
+    <p>Ogni cornice scorre. Dashboard, Rosa, Calendario, Classifica e Voti sono le cinque voci della bottom bar; Drawer, Live e le schermate del Giudice Dati si raggiungono da lì («Vai al Live» nella dashboard del primo telefono). I nomi delle squadre fanta sono quelli della lega <strong>I Sudati di RSM</strong>; i giocatori sono esempi.</p>
   </div>
   <div class="gallery" id="gallery">
     <div class="shot" data-screen="dashboard"><div class="phone"></div><div class="note"><b>S1 · Dashboard</b>Stessa gerarchia dell'app italiana: lega, hero con maglia e tre azioni, barra stat. Sotto, la novità: la <em>card di fase</em> con il badge stato e l'azione del momento. Il banner sponsor diventa la <em>regola del giorno</em>.</div></div>
@@ -568,7 +643,7 @@ Fantavoto            9,5</div>
     <div class="shot" data-screen="voti"><div class="phone"></div><div class="note"><b>S5 · Voti</b>La vista pubblica settimanale. Blocchi per partita reale con il campo neutro, righe voto con eventi compatti, S.V. in coda col motivo. Tocca una riga: il <em>breakdown</em> spiega ogni decimale.</div></div>
     <div class="shot" data-screen="classifica"><div class="phone"></div><div class="note"><b>S4 · Classifica</b>Badge stato in testa, riga evidenziata per la mia squadra, criteri di spareggio <em>sempre visibili</em> a piè di tabella (art. 12.2), non in un tooltip.</div></div>
     <div class="shot" data-screen="calendario"><div class="phone"></div><div class="note"><b>S3 · Calendario</b>Scontri di lega e, sotto, le <em>otto partite reali</em> della giornata con campo e link Titani.TV. Nessuna freccia casa/trasferta: i campi sono neutri.</div></div>
-    <div class="shot" data-screen="partita"><div class="phone"></div><div class="note"><b>S6 · Dettaglio partita fanta</b>Gol grandi, fantapunti sotto. Le <em>sostituzioni automatiche</em> sono righe ambra «S.V. → subentra», il titolare senza sostituto vale 5,5 d'ufficio (art. 8.6). La formula di conversione è in chiaro.</div></div>
+    <div class="shot" data-screen="partita"><div class="phone"></div><div class="note"><b>S6 · Live</b>Come nell'app italiana: testata con moduli e punteggio, campo lungo con le due formazioni <em>una di fronte all'altra</em>, pill doppia <em>Voto Titano | fantavoto</em>, indicatori evento sopra la testa, panchina a due colonne, «Totale parziali» e nav secondaria. In più: la nota delle sostituzioni automatiche e la conversione in gol a un tocco.</div></div>
     <div class="shot" data-screen="admin-lista"><div class="phone"></div><div class="note"><b>Giudice Dati · Giornata</b>La priorità n.1 del README. Otto partite, progresso, stato per riga, play verso il video. «Pubblica punteggi provvisori» si accende solo a 8/8 o con le rinviate marcate.</div></div>
     <div class="shot" data-screen="admin-eventi"><div class="phone"></div><div class="note"><b>Giudice Dati · Eventi</b>Timeline della gara e <em>tastiera eventi</em> fissa: tre tocchi per evento (tasto → minuto → giocatore). «Rigore segnato» non esiste: è un gol (art. 7.4). Gli eventi di livello 2 sono spenti finché la lega non attiva il tagging video.</div></div>
     <div class="shot" data-screen="congela"><div class="phone"></div><div class="note"><b>Giudice Dati · Congela</b>L'unica schermata rossa dell'app. Checklist, testo dell'art. 9.2, conferma digitata. Dopo, il lucchetto compare ovunque e nessuna modifica è più possibile.</div></div>
@@ -594,6 +669,10 @@ Fantavoto            9,5</div>
       <tr><td>Casa / trasferta sulle partite reali</td><td>«Squadra A — Squadra B · campo»</td><td>Campi neutri assegnati dalla federazione</td></tr>
       <tr><td>Banner sponsor</td><td>Regola del giorno</td><td>Lo spazio istruisce sul regolamento: la credibilità del voto è il prodotto</td></tr>
       <tr><td>Voto pagella + fantavoto</td><td>Voto base + esito + eventi = fantavoto, sempre espandibile</td><td>Nessun giudizio soggettivo (Principio fondante); la trasparenza sostituisce la redazione</td></tr>
+      <tr><td>Caricature dei giocatori</td><td>Avatar a iniziali sul colore della società reale</td><td>Atleti dilettanti: nessuna immagine senza accordo FSGC e informativa (art. 14.1)</td></tr>
+      <tr><td>Pill «voto | fantavoto»</td><td>Pill «Voto Titano | fantavoto»</td><td>Stessa forma; la prima cella non è una pagella ma base 6,0 + esito collettivo</td></tr>
+      <tr><td>«Simula risultato»</td><td>«Conversione in gol»</td><td>Non c'è nulla da simulare: la formula dell'art. 11 è deterministica e si mostra</td></tr>
+      <tr><td>Bottom nav Live: campo · lista · video · Serie A</td><td>campo · lista · Titani.TV · campionato</td><td>Stessa struttura a 4, fonti sammarinesi</td></tr>
     </tbody>
   </table></div>
 </section>
@@ -639,6 +718,12 @@ Fantavoto            9,5</div>
       <div class="d-item"><i><svg class="ic"><use href="#i-out"/></svg></i>Fuori dal campionato<small>3</small></div>
       <div class="d-item"><i><svg class="ic"><use href="#i-star"/></svg></i>Fantallenatore dell'anno</div>
       <div class="d-item"><i><svg class="ic"><use href="#i-img"/></svg></i>Scheda condivisibile</div>
+      <div class="d-sec"><span class="chip">Gestione</span></div>
+      <div class="d-item"><i><svg class="ic"><use href="#i-shirt"/></svg></i>Gestione rose</div>
+      <div class="d-item"><i><svg class="ic"><use href="#i-edit"/></svg></i>Gestione formazioni</div>
+      <div class="d-item"><i><svg class="ic"><use href="#i-cup"/></svg></i>Sala trofei</div>
+      <div class="d-item"><i><svg class="ic"><use href="#i-book"/></svg></i>Documenti di lega<small>regolamento · precedenti</small></div>
+      <div class="d-item"><i><svg class="ic"><use href="#i-bell"/></svg></i>Comunicazioni</div>
       <div class="d-sec admin"><span class="chip">Giudice Dati</span></div>
       <div class="d-item"><i><svg class="ic"><use href="#i-edit"/></svg></i>Inserisci eventi<small>5/8</small></div>
       <div class="d-item"><i><svg class="ic"><use href="#i-calc"/></svg></i>Punteggi provvisori</div>
@@ -646,7 +731,9 @@ Fantavoto            9,5</div>
       <div class="d-item"><i><svg class="ic"><use href="#i-lock"/></svg></i>Congela giornata<small>mar 20:00</small></div>
       <div class="d-item"><i><svg class="ic"><use href="#i-archive"/></svg></i>Archivio precedenti</div>
       <div class="d-item"><i><svg class="ic"><use href="#i-list"/></svg></i>Registro modifiche</div>
-      <div style="height:24px"></div>
+      <div class="d-plain">Utente, impostazioni e privacy</div>
+      <div class="d-plain">Supporto</div>
+      <div class="d-foot">Versione 0.1 · pilota<br>Fantacampionato Sammarinese</div>
     </div>
   </div>
 </template>
@@ -680,15 +767,20 @@ Fantavoto            9,5</div>
     <div class="a-sec"><b><i class="pulse"></i>Risultati provvisori</b><span>2ª di Lega · 2ª del Campionato</span></div>
     <div class="a-card a-match">
       <div class="tm"><span class="crest" style="background:#1a1a1a">JB</span><b>Joga Benito FC</b><span>Pelli</span></div>
-      <span class="vs score">1 – 0</span>
+      <span class="vs score">2 – 1</span>
       <div class="tm"><span class="crest" style="background:#2b7a3d">HC</span><b>Hasta El Chapo FC</b><span>LILLO</span></div>
-      <div class="fp"><span><b>74,5</b></span><em>fantapunti</em><span><b>68,0</b></span></div>
+      <div class="fp"><span><b>75,5</b></span><em>fantapunti</em><span><b>70,5</b></span></div>
+      <button class="a-btn live full" data-nav="partita"><i class="pulse" style="background:#fff"></i>Vai al Live</button>
     </div>
-    <div class="a-sec"><b>Prossima giornata</b><span>lock sab 15:00</span></div>
+    <div class="a-sec"><b>Prossima giornata</b><span>3ª di Lega · 3ª del Campionato</span></div>
     <div class="a-card a-match">
       <div class="tm"><span class="crest" style="background:#2b7a3d">HC</span><b>Hasta El Chapo FC</b><span>LILLO</span></div>
       <span class="vs">VS</span>
       <div class="tm"><span class="crest" style="background:#5b3fa6">RG</span><b>Real Guaita</b><span>Marco</span></div>
+    </div>
+    <div class="a-sec"><b>Ultimi 5 incontri</b><span>dal più recente</span></div>
+    <div class="a-card last5">
+      <div><i class="p">2</i>2 – 1<small>70,5</small></div><div><i></i></div><div><i></i></div><div><i></i></div><div><i></i></div>
     </div>
     <div class="a-card a-rule"><span class="art">Art. 7.4</span><p><b>Rigore parato:</b> +3,0 al portiere, −3,0 al tiratore. Sul palo o fuori: −3,0 al tiratore e nessun bonus al portiere.</p></div>
   </div>
@@ -733,10 +825,10 @@ Fantavoto            9,5</div>
       <div class="vhead">Tre Fiori 2 – 1 La Fiorita <span>Acquaviva</span></div>
       <button class="vr" data-toggle><span class="rl rl-p">P</span><span class="nm"><b>Marchetti</b><span>Tre Fiori · 90'</span></span><span class="ev"><i class="ev-k">RP</i></span><span class="fv">8,5</span></button>
       <div class="vb"><div><span>Voto base</span><span>6,0</span></div><div><span>Esito collettivo<em>vittoria · 90'</em></span><span class="pos">+0,5</span></div><div><span>Rigore parato</span><span class="pos">+3,0</span></div><div><span>Gol subito × 1</span><span class="neg">−1,0</span></div><div class="tot"><span>Fantavoto</span><span>8,5</span></div><a href="#" onclick="return false">Segnala un errore</a></div>
-      <button class="vr" data-toggle><span class="rl rl-c">C</span><span class="nm"><b>Gasperoni</b><span>Tre Fiori · 90'</span></span><span class="ev"><i class="ev-g">G</i><i class="ev-y">A</i></span><span class="fv cap">12,5</span></button>
-      <div class="vb on"><div><span>Voto base</span><span>6,0</span></div><div><span>Esito collettivo<em>vittoria · 90'</em></span><span class="pos">+0,5</span></div><div><span>Gol × 1<em>centrocampista · ×2 capitano</em></span><span class="pos">+7,0</span></div><div><span>Ammonizione<em>×2 capitano</em></span><span class="neg">−1,0</span></div><div class="tot"><span>Fantavoto</span><span>12,5</span></div><a href="#" onclick="return false">Segnala un errore</a></div>
-      <button class="vr" data-toggle><span class="rl rl-a">A</span><span class="nm"><b>Righi</b><span>Tre Fiori · 78'</span></span><span class="ev"><i class="ev-g">G</i><i class="ev-a">As</i></span><span class="fv">10,5</span></button>
-      <div class="vb"><div><span>Voto base</span><span>6,0</span></div><div><span>Esito collettivo<em>vittoria · 78'</em></span><span class="pos">+0,5</span></div><div><span>Gol × 1<em>attaccante</em></span><span class="pos">+3,0</span></div><div><span>Assist × 1</span><span class="pos">+1,0</span></div><div class="tot"><span>Fantavoto</span><span>10,5</span></div><a href="#" onclick="return false">Segnala un errore</a></div>
+      <button class="vr" data-toggle><span class="rl rl-c">C</span><span class="nm"><b>Gasperoni</b><span>Tre Fiori · 90'</span></span><span class="ev"><i class="ev-g">G</i><i class="ev-y">A</i></span><span class="fv">9,5</span></button>
+      <div class="vb on"><div><span>Voto base</span><span>6,0</span></div><div><span>Esito collettivo<em>vittoria · 90'</em></span><span class="pos">+0,5</span></div><div><span>Gol × 1<em>centrocampista</em></span><span class="pos">+3,5</span></div><div><span>Ammonizione</span><span class="neg">−0,5</span></div><div class="tot"><span>Fantavoto</span><span>9,5</span></div><a href="#" onclick="return false">Segnala un errore</a></div>
+      <button class="vr" data-toggle><span class="rl rl-a">A</span><span class="nm"><b>Righi</b><span>Tre Fiori · 78'</span></span><span class="ev"><i class="ev-a">As</i></span><span class="fv">7,5</span></button>
+      <div class="vb"><div><span>Voto base</span><span>6,0</span></div><div><span>Esito collettivo<em>vittoria · 78'</em></span><span class="pos">+0,5</span></div><div><span>Assist × 1</span><span class="pos">+1,0</span></div><div class="tot"><span>Fantavoto</span><span>7,5</span></div><a href="#" onclick="return false">Segnala un errore</a></div>
       <button class="vr" data-toggle><span class="rl rl-d">D</span><span class="nm"><b>Benedettini</b><span>Tre Fiori · 61'</span></span><span class="ev"></span><span class="fv">6,5</span></button>
       <div class="vb"><div><span>Voto base</span><span>6,0</span></div><div><span>Esito collettivo<em>vittoria · 61'</em></span><span class="pos">+0,5</span></div><div><span>Porta inviolata<em>no: 1 gol subito</em></span><span>0,0</span></div><div class="tot"><span>Fantavoto</span><span>6,5</span></div><a href="#" onclick="return false">Segnala un errore</a></div>
       <button class="vr" data-toggle><span class="rl rl-a">A</span><span class="nm"><b>Dolcini</b><span>La Fiorita · 90'</span></span><span class="ev"><i class="ev-g">G</i></span><span class="fv">8,5</span></button>
@@ -772,7 +864,7 @@ Fantavoto            9,5</div>
     <table class="tbl">
       <thead><tr><th>#</th><th>Squadra</th><th>Pt</th><th>G</th><th>V</th><th>N</th><th>P</th><th>DR</th><th>FP</th></tr></thead>
       <tbody>
-        <tr><td>1</td><td>Joga Benito FC</td><td class="pt">6</td><td>2</td><td>2</td><td>0</td><td>0</td><td>+3</td><td>151,0</td></tr>
+        <tr><td>1</td><td>Joga Benito FC</td><td class="pt">6</td><td>2</td><td>2</td><td>0</td><td>0</td><td>+3</td><td>152,0</td></tr>
         <tr><td>2</td><td>Real Guaita</td><td class="pt">6</td><td>2</td><td>2</td><td>0</td><td>0</td><td>+2</td><td>148,5</td></tr>
         <tr><td>3</td><td>Titano Legends</td><td class="pt">4</td><td>2</td><td>1</td><td>1</td><td>0</td><td>+1</td><td>146,0</td></tr>
         <tr><td>4</td><td>Cesta United</td><td class="pt">3</td><td>2</td><td>1</td><td>0</td><td>1</td><td>0</td><td>145,5</td></tr>
@@ -823,29 +915,73 @@ Fantavoto            9,5</div>
 </template>
 
 <template id="tpl-partita">
-  <div class="a-body">
-    <div class="mh">
-      <div class="tm"><span class="crest" style="background:#1a1a1a">JB</span><b>Joga Benito FC</b></div>
-      <div class="sc">1 – 0<small>74,5 – 68,0</small></div>
-      <div class="tm"><span class="crest" style="background:#2b7a3d">HC</span><b>Hasta El Chapo FC</b></div>
+  <div class="a-body" style="padding:0;gap:0">
+  <div class="l-bar">
+    <div class="row">
+      <button class="ib" data-nav="dashboard" aria-label="Indietro"><svg class="ic" style="transform:rotate(180deg)"><use href="#i-chev"/></svg></button>
+      <div class="lg"><span class="crest" style="background:var(--c-titano-800)">SR</span><div style="min-width:0"><b>I Sudati di RSM</b><span>Giornata 2</span></div><svg class="ic sm" style="margin-left:auto;transform:rotate(90deg)"><use href="#i-chev"/></svg></div>
+      <button class="ib" aria-label="Vista lista"><svg class="ic"><use href="#i-list"/></svg></button>
+      <button class="ib" aria-label="Scheda"><svg class="ic"><use href="#i-share"/></svg></button>
     </div>
-    <span class="badge badge--prov" style="align-self:flex-start"><svg class="ic"><use href="#i-clock"/></svg>Provvisorio <small>· giornata 2</small></span>
-    <div class="vlist">
-      <div class="vhead">Hasta El Chapo FC · 4-4-2 <span>68,0</span></div>
-      <button class="vr" data-toggle><span class="rl rl-p">P</span><span class="nm"><b>Marchetti</b><span>Tre Fiori · 90'</span></span><span class="ev"><i class="ev-k">RP</i></span><span class="fv">8,5</span></button>
-      <button class="vr" data-toggle><span class="rl rl-d">D</span><span class="nm"><b>Benedettini</b><span>Tre Fiori · 61'</span></span><span class="ev"></span><span class="fv">6,5</span></button>
-      <button class="vr" data-toggle><span class="rl rl-d">D</span><span class="nm"><b>Muccioli</b><span>Virtus · 90'</span></span><span class="ev"></span><span class="fv">7,5</span></button>
-      <div class="sub"><span class="arr">↓ D</span><span><s>Grandoni</s> S.V. 14' → <b>Ceccoli</b> <small style="color:var(--text-muted)">panchina 2</small></span><span class="fv">6,0</span></div>
-      <div class="sub"><span class="arr">↓ D</span><span><s>Valentini</s> S.V. non entrato → <b>nessun sostituto</b></span><span class="fv">5,5</span></div>
-      <button class="vr" data-toggle><span class="rl rl-c">C</span><span class="nm"><b>Gasperoni</b><span>Tre Fiori · 90'</span></span><span class="ev"><i class="ev-g">G</i><i class="ev-y">A</i></span><span class="fv cap">12,5</span></button>
-      <button class="vr" data-toggle><span class="rl rl-c">C</span><span class="nm"><b>Battistini</b><span>Tre Penne · 90'</span></span><span class="ev"></span><span class="fv">6,0</span></button>
-      <button class="vr" data-toggle><span class="rl rl-c">C</span><span class="nm"><b>Tomassini</b><span>La Fiorita · 90'</span></span><span class="ev"><i class="ev-r">E</i></span><span class="fv">4,0</span></button>
-      <button class="vr" data-toggle><span class="rl rl-c">C</span><span class="nm"><b>Casadei</b><span>Murata · 90'</span></span><span class="ev"></span><span class="fv">5,5</span></button>
-      <button class="vr" data-toggle><span class="rl rl-a">A</span><span class="nm"><b>Righi</b><span>Tre Fiori · 78'</span></span><span class="ev"><i class="ev-g">G</i><i class="ev-a">As</i></span><span class="fv">10,5</span></button>
-      <div class="sub"><span class="arr">↓ A</span><span><s>Berardi</s> S.V. gara rinviata → <b>nessun sostituto</b></span><span class="fv">5,5</span></div>
+    <div class="l-head">
+      <div class="tm"><b>Joga Benito FC</b><span>4-3-3</span></div>
+      <div class="sc">2 – 1<small>75,5 – 70,5</small></div>
+      <div class="tm"><b>Hasta El Chapo FC</b><span>4-4-2</span></div>
     </div>
-    <div class="a-card"><p class="formula"><b>Conversione (art. 11)</b> · 10 fantallenatori<br>soglia <b>69,0</b> · passo <b>6,0</b><br>74,5 → ⌊(74,5 − 69,0) / 6⌋ + 1 = <b>1 gol</b><br>68,0 &lt; 69,0 → <b>0 gol</b></p></div>
+    <div class="l-sub">
+      <span class="badge badge--prov" style="background:rgba(255,255,255,.18);color:#fff"><svg class="ic"><use href="#i-clock"/></svg>Parziale <small>· 6/8 partite inserite</small></span>
+      <button class="a-btn" data-formula><svg class="ic sm"><use href="#i-calc"/></svg>Conversione in gol</button>
+    </div>
   </div>
+  <div style="padding:12px 16px 16px;display:flex;flex-direction:column;gap:12px">
+    <div class="a-card" data-formula-card hidden><p class="formula"><b>Art. 11</b> · 10 fantallenatori · soglia <b>69,0</b> · passo <b>6,0</b><br>75,5 → ⌊(75,5 − 69,0) / 6⌋ + 1 = <b>2 gol</b><br>70,5 → ⌊(70,5 − 69,0) / 6⌋ + 1 = <b>1 gol</b><br>Parità di fantapunteggio = pareggio (11.1)</p></div>
+    <div class="field">
+      <span class="box top"></span>
+      <div class="line"><div class="ps" style="--tc:#1d4f8a"><span class="av"><span class="cap">C</span>BO<span class="rl rl-p">P</span></span><span class="ind"><i class="ev-k">RP</i></span><span class="pill"><span>6,0</span><span>10,0</span></span><b>Bonifazi</b></div></div>
+      <div class="line"><div class="ps" style="--tc:#8a1d1d"><span class="av">LZ<span class="rl rl-d">D</span></span><span class="ind"><i class="ev-g">G</i><i class="ev-y">A</i></span><span class="pill"><span>6,0</span><span>9,5</span></span><b>Lazzari</b></div><div class="ps" style="--tc:#222"><span class="av">FB<span class="rl rl-d">D</span></span><span class="pill"><span>5,5</span><span>5,5</span></span><b>Fabbri</b></div><div class="ps" style="--tc:#222"><span class="av">GI<span class="rl rl-d">D</span></span><span class="pill"><span>5,5</span><span>5,5</span></span><b>Giardi</b></div><div class="ps" style="--tc:#6b2d8f"><span class="av">CE<span class="rl rl-d">D</span></span><span class="pill"><span>5,5</span><span>5,5</span></span><b>Cecchetti</b></div></div>
+      <div class="line"><div class="ps" style="--tc:#1d4f8a"><span class="av">BN<span class="rl rl-c">C</span></span><span class="ind"><i class="ev-g">G</i></span><span class="pill"><span>6,0</span><span>9,5</span></span><b>Bonini</b></div><div class="ps" style="--tc:#7a1f3d"><span class="av">SE<span class="rl rl-c">C</span></span><span class="pill"><span>6,0</span><span>6,0</span></span><b>Semprini</b></div><div class="ps" style="--tc:#b03a2e"><span class="av">UG<span class="rl rl-c">C</span></span><span class="ind"><i class="ev-a">As</i></span><span class="pill"><span>5,5</span><span>6,5</span></span><b>Ugolini</b></div></div>
+      <div class="line"><div class="ps" style="--tc:#c0392b"><span class="av">GU<span class="rl rl-a">A</span></span><span class="pill"><span>6,5</span><span>6,5</span></span><b>Guidi</b></div><div class="ps" style="--tc:#222"><span class="av">NA<span class="rl rl-a">A</span></span><span class="pill"><span>5,5</span><span>5,5</span></span><b>Nanni</b></div><div class="ps" style="--tc:#6b2d8f"><span class="av"><span class="cap">V</span>ZO<span class="rl rl-a">A</span></span><span class="pill"><span>5,5</span><span>5,5</span></span><b>Zonzini</b></div></div>
+      <div class="half"></div>
+      <div class="line"><div class="ps" style="--tc:#d4a017"><span class="av">RI<span class="rl rl-a">A</span></span><span class="ind"><i class="ev-a">As</i></span><span class="pill"><span>6,5</span><span>7,5</span></span><b>Righi</b></div><div class="ps" style="--tc:#1d4f8a"><span class="av"><span class="cap">V</span>BE<span class="rl rl-a">A</span></span><span class="ind"><i class="dn">↓</i></span><span class="pill sv"><span>S.V.</span><span>5,5</span></span><b>Berardi</b></div></div>
+      <div class="line"><div class="ps" style="--tc:#d4a017"><span class="av">GA<span class="rl rl-c">C</span></span><span class="ind"><i class="ev-g">G</i><i class="ev-y">A</i></span><span class="pill"><span>6,5</span><span>9,5</span></span><b>Gasperoni</b></div><div class="ps" style="--tc:#3b8ed0"><span class="av">BA<span class="rl rl-c">C</span></span><span class="pill"><span>6,0</span><span>6,0</span></span><b>Battistini</b></div><div class="ps" style="--tc:#1e6fb5"><span class="av">TO<span class="rl rl-c">C</span></span><span class="ind"><i class="ev-r">E</i></span><span class="pill"><span>5,5</span><span>4,0</span></span><b>Tomassini</b></div><div class="ps" style="--tc:#222"><span class="av">CA<span class="rl rl-c">C</span></span><span class="pill"><span>5,5</span><span>5,5</span></span><b>Casadei</b></div></div>
+      <div class="line"><div class="ps" style="--tc:#d4a017"><span class="av">BN<span class="rl rl-d">D</span></span><span class="pill"><span>6,5</span><span>6,5</span></span><b>Benedettini</b></div><div class="ps" style="--tc:#1e6fb5"><span class="av">GR<span class="rl rl-d">D</span></span><span class="ind"><i class="dn">↓</i></span><span class="pill sv"><span>S.V.</span><span>→</span></span><b>Grandoni</b></div><div class="ps" style="--tc:#2e8b57"><span class="av">MU<span class="rl rl-d">D</span></span><span class="pill"><span>6,0</span><span>6,0</span></span><b>Muccioli</b></div><div class="ps" style="--tc:#1d4f8a"><span class="av"><span class="cap">C</span>VA<span class="rl rl-d">D</span></span><span class="ind"><i class="dn">↓</i></span><span class="pill sv"><span>S.V.</span><span>5,5</span></span><b>Valentini</b></div></div>
+      <div class="line"><div class="ps" style="--tc:#d4a017"><span class="av">MA<span class="rl rl-p">P</span></span><span class="ind"><i class="ev-k">RP</i></span><span class="pill"><span>6,5</span><span>8,5</span></span><b>Marchetti</b></div></div>
+      <span class="box bot"></span>
+    </div>
+    <div class="warn info"><svg class="ic sm"><use href="#i-warn"/></svg><span><b>Hasta El Chapo FC:</b> capitano Valentini S.V., vice Berardi S.V. → nessun raddoppio (art. 6.3). Grandoni S.V. → entra Ceccoli (panchina 2). Valentini e Berardi senza sostituto: 5,5 d'ufficio (art. 8.6).</span></div>
+    <div class="a-sec"><b>Panchina</b><span>ordine di ingresso</span></div>
+    <div class="bench2">
+      <div class="b2"><span class="rl rl-p">P</span><span class="nm"><b>Zavoli</b><span>Folgore</span></span><span class="no">⊘</span></div>
+      <div class="b2"><span class="rl rl-p">P</span><span class="nm"><b>Simoncini</b><span>Virtus</span></span><span class="vpill"><span>6,0</span><span>9,0</span></span></div>
+      <div class="b2"><span class="rl rl-d">D</span><span class="nm"><b>Rossi</b><span>Tre Penne</span></span><span class="vpill"><span>6,0</span><span>6,0</span></span></div>
+      <div class="b2"><span class="rl rl-d">D</span><span class="nm"><b>Ceccoli <span class="up">↑</span></b><span>Tre Penne · 58'</span></span><span class="vpill"><span>6,0</span><span>6,0</span></span></div>
+      <div class="b2"><span class="rl rl-d">D</span><span class="nm"><b>Conti</b><span>Cosmos</span></span><span class="vpill sv"><span>S.V.</span><span>rinv.</span></span></div>
+      <div class="b2"><span class="rl rl-d">D</span><span class="nm"><b>Muccioli F.</b><span>Cailungo</span></span><span class="no">⊘</span></div>
+      <div class="b2"><span class="rl rl-c">C</span><span class="nm"><b>Mancini</b><span>Domagnano</span></span><span class="vpill"><span>6,0</span><span>6,0</span></span></div>
+      <div class="b2"><span class="rl rl-c">C</span><span class="nm"><b>Dolcini</b><span>Folgore</span></span><span class="vpill sv"><span>S.V.</span><span>rinv.</span></span></div>
+      <div class="b2"><span class="rl rl-c">C</span><span class="nm"><b>Pini</b><span>SM Academy</span></span><span class="no">⊘</span></div>
+      <div class="b2"><span class="rl rl-c">C</span><span class="nm"><b>Berardi M.</b><span>Cosmos</span></span><span class="vpill sv"><span>S.V.</span><span>rinv.</span></span></div>
+      <div class="b2"><span class="rl rl-a">A</span><span class="nm"><b>Stefanelli</b><span>La Fiorita</span></span><span class="vpill"><span>5,5</span><span>5,5</span></span></div>
+      <div class="b2"><span class="rl rl-a">A</span><span class="nm"><b>Mularoni</b><span>Murata</span></span><span class="no">⊘</span></div>
+      <div class="b2"><span class="rl rl-a">A</span><span class="nm"><b>Ferraro</b><span>Pennarossa</span></span><span class="no">⊘</span></div>
+      <div class="b2"><span class="rl rl-a">A</span><span class="nm"><b>Pasolini</b><span>Libertas</span></span><span class="vpill"><span>6,5</span><span>6,5</span></span></div>
+    </div>
+    <div class="legend"><svg class="ic"><use href="#i-book"/></svg>Legenda Voto Titano<svg class="ic sm chev"><use href="#i-chev"/></svg></div>
+    <div class="tot">
+      <span class="pillt">Totale parziali</span>
+      <div class="r"><b>63,5</b><span>Voto Titano</span><b>66,0</b></div>
+      <hr>
+      <div class="r fv"><b>75,5</b><span>con bonus/malus</span><b>70,5</b></div>
+    </div>
+  </div>
+  </div>
+  <nav class="l-nav">
+    <button class="on" aria-label="Campo"><svg class="ic"><use href="#i-shirt"/></svg></button>
+    <button aria-label="Lista"><svg class="ic"><use href="#i-list"/></svg></button>
+    <span class="sep"></span>
+    <button aria-label="Titani.TV"><svg class="ic"><use href="#i-play"/></svg></button>
+    <button aria-label="Campionato"><svg class="ic"><use href="#i-towers"/></svg></button>
+  </nav>
 </template>
 
 <template id="tpl-admin-lista">
@@ -917,7 +1053,7 @@ Fantavoto            9,5</div>
 <script>
 (function(){
   const $t = id => document.getElementById(id).content.cloneNode(true);
-  const SUB = {dashboard:'Dashboard',formazione:'Rosa · Formazione',calendario:'Calendario',classifica:'Classifica',voti:'Voti · Giornata 2',partita:'Giornata 2 · Dettaglio','admin-lista':'Giudice Dati · G2','admin-eventi':'Giudice Dati · Eventi'};
+  const SUB = {dashboard:'Dashboard',formazione:'Rosa · Formazione',calendario:'Calendario',classifica:'Classifica',voti:'Voti · Giornata 2',partita:'Live · Giornata 2','admin-lista':'Giudice Dati · G2','admin-eventi':'Giudice Dati · Eventi'};
 
   function buildScreen(kind, opts){
     const screen = document.createElement('div'); screen.className='screen';
@@ -929,11 +1065,12 @@ Fantavoto            9,5</div>
     }
     if(kind==='congela'){ screen.appendChild($t('tpl-congela')); return screen; }
     screen.appendChild($t('tpl-appbar'));
-    const views = opts && opts.all ? ['dashboard','formazione','calendario','classifica','voti'] : [kind];
+    const views = opts && opts.all ? ['dashboard','formazione','calendario','classifica','voti','partita'] : [kind];
     views.forEach(k=>{ const v=document.createElement('div'); v.className='view'+(k===kind?' on':''); v.dataset.view=k; v.appendChild($t('tpl-'+k)); screen.appendChild(v); });
     screen.querySelector('[data-sub]').textContent = SUB[kind]||kind;
     if(!/admin/.test(kind)) screen.appendChild($t('tpl-nav'));
     else screen.querySelector('.a-body').style.paddingBottom='16px';
+    if(kind==='partita') screen.classList.add('live-on');
     screen.appendChild($t('tpl-drawer'));
     const nav=screen.querySelector('.a-nav'); if(nav){ nav.querySelectorAll('[data-nav]').forEach(b=>b.classList.toggle('on', b.dataset.nav===kind)); }
     return screen;
@@ -946,7 +1083,8 @@ Fantavoto            9,5</div>
       if(nb){ e.preventDefault(); const k=nb.dataset.nav; const target=screen.querySelector('[data-view="'+k+'"]'); if(!target) return;
         screen.querySelectorAll('.view').forEach(v=>v.classList.toggle('on', v===target));
         screen.querySelectorAll('.a-nav [data-nav]').forEach(b=>b.classList.toggle('on', b.dataset.nav===k));
-        screen.querySelector('[data-sub]').textContent=SUB[k]; target.querySelector('.a-body').scrollTop=0; return; }
+        screen.querySelector('[data-sub]').textContent=SUB[k]; screen.classList.toggle('live-on', k==='partita'); const ab=target.querySelector('.a-body'); if(ab) ab.scrollTop=0; return; }
+      if(e.target.closest('[data-formula]')){ const c=screen.querySelector('[data-formula-card]'); if(c) c.hidden=!c.hidden; return; }
       if(e.target.closest('[data-open-drawer]')){ screen.querySelector('.a-drawer').classList.add('on'); screen.querySelector('.sb').classList.add('dark'); return; }
       if(e.target.closest('[data-close-drawer]')){ screen.querySelector('.a-drawer').classList.remove('on'); screen.querySelector('.sb').classList.remove('dark'); return; }
       const vr=e.target.closest('.vr[data-toggle]'); if(vr){ const vb=vr.nextElementSibling; if(vb&&vb.classList.contains('vb')) vb.classList.toggle('on'); return; }

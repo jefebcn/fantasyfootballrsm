@@ -46,6 +46,13 @@ Gioca
   ├ Fantallenatore dell'anno
   └ Scheda condivisibile     ← immagine PNG della giornata (README §9)
 
+Gestione                     (solo Admin di lega — come in Leghe Fantacalcio)
+  ├ Gestione rose            ← correzioni manuali, rimozioni d'ufficio
+  ├ Gestione formazioni      ← vedi/forza formazioni dei partecipanti
+  ├ Sala trofei
+  ├ Documenti di lega        ← regolamento PDF, archivio precedenti, verbali asta
+  └ Comunicazioni            ← avvisi push/WhatsApp a tutta la lega
+
 Giudice Dati                 (solo ruolo Giudice Dati / Admin)
   ├ Inserisci eventi         ← data entry per partita (05-admin-voto-titano.md)
   ├ Punteggi provvisori      ← ricalcolo, pubblicazione dom 23:59
@@ -53,7 +60,27 @@ Giudice Dati                 (solo ruolo Giudice Dati / Admin)
   ├ Congela giornata         ← azione irreversibile mar 20:00
   ├ Archivio precedenti      ← decisioni art. 9.4
   └ Registro modifiche       ← chi/quando/cosa su ogni evento
+
+Utente, impostazioni e privacy
+Supporto
+Versione · pilota
 ```
+
+## Vista Live (nav secondaria)
+
+Dal bottone **Vai al Live** della dashboard si entra in una vista a schermo pieno con la
+propria app bar (indietro · chip lega con avatar e giornata · lista · condividi) e una
+**bottom bar secondaria a 4 icone**, come in Leghe Fantacalcio:
+
+| Leghe Fantacalcio | Sammarinese | Contenuto |
+|---|---|---|
+| Campo | **Campo** | Le due formazioni una di fronte all'altra sul campo lungo |
+| Lista | **Lista** | Le stesse due formazioni in tabella, con breakdown |
+| Video | **Titani.TV** | Le partite reali della giornata con link al video |
+| Serie A | **Campionato** | Risultati e marcatori delle 8 gare reali |
+
+«Altri incontri» (bottone flottante) apre il selettore delle altre 4 partite fanta della
+giornata.
 
 ## Mappa di navigazione
 

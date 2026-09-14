@@ -18,9 +18,13 @@ Riferimento visivo: `index.html`.
    - Aperta → CTA oro `SCHIERA LA FORMAZIONE` + `lock dom 15:00 · 2g 5h`.
    - Provvisorio → `PROVVISORIO · contestazioni fino a mar 18:00` + link `Vedi i voti`.
    - Congelato → `CONGELATO mar 20:00` + `Giornata 11 archiviata`.
-6. **Live in corso / Prossima giornata**: card partita fanta con loghi e VS, sottotitolo
-   `2ª di Lega · 4ª del Campionato`.
-7. Card regola del momento (sostituisce il banner sponsor): es. `Rigore parato: +3,0 al
+6. **Risultati provvisori / Live in corso**: card partita fanta con loghi, risultato in
+   gol, fantapunti e bottone verde **Vai al Live** (→ S6). Sottotitolo `2ª di Lega ·
+   2ª del Campionato`.
+7. **Prossima giornata**: card VS con le due squadre, sottotitolo con la giornata.
+8. **Ultimi 5 incontri**: cinque cerchi (V verde · N grigio · P rosso) con risultato e
+   fantapunti sotto; i turni futuri sono cerchi vuoti. Identico all'app italiana.
+9. Card regola del momento (sostituisce il banner sponsor): es. `Rigore parato: +3,0 al
    portiere, −3,0 al tiratore`. Ruota tra gli articoli del regolamento.
 
 ---
@@ -95,14 +99,35 @@ Acquaviva` con icona play se `videoUrl`. Stato: `Giocata 2-1` / `Rinviata` / `So
 
 ---
 
-## S6 · Dettaglio partita fanta
+## S6 · Live (dettaglio partita fanta)
 
-1. Testata: due squadre, risultato in gol grande, sotto i fantapunti `74,5 – 68,0`.
-2. Badge stato dato.
-3. Per ogni squadra: modulo, 11 titolari con voto; un titolare sostituito mostra
-   `↓ Rossi S.V. → ↑ Bianchi 6,5 (panchina 2)`; se nessun sostituto `S.V. → 5,5 d'ufficio`.
-4. Capitano con `×2` accanto ai bonus.
-5. Piè: `Soglia 69,0 · passo 6,0 (10 fantallenatori)` con la formula in chiaro.
+Ricalca la schermata Live di Leghe Fantacalcio, elemento per elemento.
+
+1. **App bar Live**: indietro · chip lega (avatar, `I SUDATI DI RSM` / `Giornata 2`, chevron
+   per cambiare lega) · icona lista · icona condividi scheda.
+2. **Testata** su gradiente: nome squadra + modulo a sinistra e a destra; al centro il
+   risultato in gol grande (`2 – 1`) e sotto i fantapunti in mono (`75,5 – 70,5`).
+3. **Badge di stato**: `Parziale · 6/8 partite inserite` mentre il Giudice Dati inserisce;
+   poi `Provvisorio`, poi `Congelato`.
+4. Bottone bianco **Conversione in gol** (al posto di «Simula risultato»): apre la formula
+   dell'art. 11 con i numeri della partita. Non c'è nulla da simulare, si mostra.
+5. **Campo lungo**: la prima squadra dal portiere (in alto) all'attacco; linea di metà campo
+   con cerchio; la seconda squadra **specchiata**, dall'attacco al portiere (in basso).
+   Ogni slot: avatar a iniziali sul colore della società, chip ruolo, bollino `C`/`V`,
+   indicatori evento in alto a destra, **pill doppia** `Voto Titano | fantavoto`, cognome.
+   Chi è S.V. mostra la freccia rossa `↓` e la pill `S.V. | →` (sostituito) o `S.V. | 5,5`
+   (voto d'ufficio).
+6. **Nota sostituzioni**: card informativa azzurra che spiega in una riga cosa ha fatto il
+   motore: `capitano S.V., vice S.V. → nessun raddoppio (6.3) · Grandoni S.V. → entra
+   Ceccoli (panchina 2) · Valentini senza sostituto: 5,5 d'ufficio (8.6)`.
+7. **Panchina** a due colonne (una per squadra), 7 righe: chip ruolo, cognome, società,
+   pill verticale `Voto Titano / fantavoto`; `↑` verde accanto a chi è entrato; `⊘`
+   per «non ha giocato»; `S.V. / rinv.` per gara rinviata.
+8. Card **Legenda Voto Titano** (chevron): apre i valori dell'art. 5.
+9. **Totale parziali**: `63,5 · Voto Titano · 66,0` e sotto, in azzurro, `75,5 · con
+   bonus/malus · 70,5`.
+10. **Bottom bar secondaria a 4**: Campo · Lista · Titani.TV · Campionato. Bottone
+    flottante **Altri incontri** per le altre partite fanta della giornata.
 
 ---
 

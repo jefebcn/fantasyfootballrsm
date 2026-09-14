@@ -12,6 +12,6 @@ export { scheda } from './scheda.js';
 export { impostazioni } from './impostazioni.js';
 export { mercato } from './mercato.js';
 export { adminGiornata, adminPartita, adminContestazioni, adminCongela, adminRegistro } from './admin.js';
-export { login } from './auth.js';
+export { login, resetLogin } from './auth.js';
 export { leghe } from './leghe.js';
 export { lega } from './lega.js';

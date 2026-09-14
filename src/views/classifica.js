@@ -6,7 +6,7 @@ export const classifica = {
   render() {
     const me = S.me(); const n = S.currentMatchday(); const st = S.standings();
     return `<main class="a-body">
-      <div class="a-fase" style="flex-direction:row;justify-content:space-between;align-items:center">${badge(S.matchdayStatus(n), `giornata ${n}`)}<span style="font:700 13px var(--font-display);color:var(--primary)">Campionato</span></div>
+      <div class="topbar">${badge(S.matchdayStatus(n), `giornata ${n}`)}<span style="font:700 13px var(--font-display);color:var(--primary);white-space:nowrap">Campionato</span></div>
       <table class="tbl"><thead><tr><th>#</th><th>Squadra</th><th>Pt</th><th>G</th><th>V</th><th>N</th><th>P</th><th>DR</th><th>FP</th></tr></thead><tbody>
       ${st.map((r) => { const m = S.managersById.get(r.managerId); return `<tr class="${r.managerId === me.id ? 'me' : ''}"><td>${r.position}</td><td>${esc(m.teamName)}</td><td class="pt">${r.points}</td><td>${r.played}</td><td>${r.won}</td><td>${r.drawn}</td><td>${r.lost}</td><td>${r.dr > 0 ? '+' : ''}${r.dr}</td><td>${fmt(r.fantapunti)}</td></tr>`; }).join('')}
       </tbody></table>

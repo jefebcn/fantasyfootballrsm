@@ -16,7 +16,7 @@ const ROUTES = [
   ['regolamento', views.regolamento], ['scheda', views.scheda], ['impostazioni', views.impostazioni],
   ['admin', views.adminGiornata], ['admin/partita/:id', views.adminPartita], ['admin/contestazioni', views.adminContestazioni],
   ['admin/congela', views.adminCongela], ['admin/registro', views.adminRegistro], ['mercato', views.mercato],
-  ['login', views.login], ['leghe', views.leghe], ['lega', views.lega], ['setup', views.setup], ['offline', views.offline],
+  ['login', views.login], ['leghe', views.leghe], ['lega', views.lega], ['setup', views.setup], ['offline', views.offline], ['benvenuto', views.onboarding],
 ];
 
 function resolve(hash) {
@@ -86,11 +86,13 @@ function drawer() {
 
 let scrollMemo = {};
 const STATE_ROUTE = { unconfigured: 'setup', offline: 'offline', anonymous: 'login', 'no-league': 'leghe' };
-const ALLOWED = { 'no-league': ['leghe', 'impostazioni'] };
+const ALLOWED = { 'no-league': ['leghe', 'impostazioni'], anonymous: ['login', 'benvenuto'] };
 function gate(path) {
   const st = S.appState();
-  const target = STATE_ROUTE[st];
-  if (!target) return path === 'setup' || path === 'offline' || path === 'login' ? '' : null;   // pronta
+  let target = STATE_ROUTE[st];
+  // Chi apre l'app per la prima volta vede la presentazione; chi si è già registrato no.
+  if (st === 'anonymous' && !S.store.get().onboarded && path !== 'login') target = 'benvenuto';
+  if (!target) return ['setup', 'offline', 'login', 'benvenuto'].includes(path) ? '' : null;   // pronta
   if (path === target || (ALLOWED[st] || []).includes(path)) return null;
   return target;
 }

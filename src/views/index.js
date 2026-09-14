@@ -13,5 +13,6 @@ export { impostazioni } from './impostazioni.js';
 export { mercato } from './mercato.js';
 export { adminGiornata, adminPartita, adminContestazioni, adminCongela, adminRegistro } from './admin.js';
 export { login, resetLogin } from './auth.js';
+export { setup, offline } from './setup.js';
 export { leghe } from './leghe.js';
 export { lega } from './lega.js';

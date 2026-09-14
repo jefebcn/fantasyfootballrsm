@@ -4,17 +4,15 @@ Fantacalcio sul Campionato Sammarinese di calcio: asta a crediti, rose, formazio
 settimanali, scontro diretto — **senza pagelle**. I voti (Voto Titano) sono calcolati da
 eventi oggettivi del referto FSGC.
 
-**App (PWA)** — installabile su iPhone/Android dalla schermata "Aggiungi a Home", funziona
-offline dopo la prima apertura. Due modalità con la stessa interfaccia:
+**App (PWA)** — installabile su iPhone/Android dalla schermata "Aggiungi a Home".
+Richiede un account: accesso con password oppure con link via e-mail, leghe multiple con
+codice invito, ruoli (admin di lega, Giudice Dati), rose, formazioni e contestazioni
+condivise, dato del campionato inserito una volta per tutte le leghe, aggiornamenti in
+tempo reale. Setup in [`supabase/README.md`](supabase/README.md) (schema e policy RLS in
+[`supabase/schema.sql`](supabase/schema.sql)); chiavi pubbliche in `src/config.js`.
 
-- **Account e leghe multiple (Supabase)** — accesso con password o link via e-mail, leghe con codice
-  invito, ruoli (admin di lega, Giudice Dati), rose, formazioni e contestazioni condivise,
-  dato del campionato inserito una volta per tutte le leghe, aggiornamenti in tempo reale.
-  Setup in [`supabase/README.md`](supabase/README.md) (schema + policy RLS in
-  [`supabase/schema.sql`](supabase/schema.sql)); chiavi in `src/config.js` o da
-  Impostazioni → Connetti Supabase.
-- **Demo locale** — senza configurazione: listone e calendario generati, formazioni ed
-  eventi restano sul dispositivo.
+Anagrafiche e calendario (16 società, ~400 tesserati, 30 giornate) sono generati dal client
+in modo deterministico: sono uguali per tutte le leghe e non serve caricarli.
 
 ## Struttura
 
@@ -22,8 +20,8 @@ offline dopo la prima apertura. Due modalità con la stessa interfaccia:
 |---|---|
 | `index.html` · `manifest.webmanifest` · `sw.js` · `icons/` | Shell PWA, manifest, service worker, icone |
 | `src/engine.js` | **Motore di scoring** puro (artt. 4–8, 10–12): `computeRating`, `computeLineupResult`, `computeStandings`, conversione in gol |
-| `src/data.js` | Generatore della stagione pilota: 16 società, 400 tesserati, 30 giornate, eventi delle giornate giocate |
-| `src/state.js` | Stato applicativo con due backend: `localStorage` (demo) o Supabase (`src/backend.js`); stessa API per le viste |
+| `src/data.js` | Anagrafiche e calendario generati; eventi di esempio per le prime giornate (usati solo dal Giudice Dati per popolare il database) |
+| `src/state.js` | Stato applicativo: anagrafiche generate + dato e leghe da Supabase (`src/backend.js`) |
 | `src/backend.js` · `src/config.js` | Adattatore Supabase (auth OTP, leghe, rose, formazioni, dato globale, realtime) e chiavi pubbliche |
 | `supabase/schema.sql` | Tabelle, funzioni (`create_league`, `join_league`, lock formazioni, congelamento), trigger di log e policy RLS |
 | `src/app.js` · `src/ui.js` · `src/views/` | Router hash, shell (app bar, drawer, bottom bar), componenti e le viste |
@@ -57,8 +55,10 @@ Dashboard · Rosa · Formazione (moduli, capitano/vice, panchina ordinata, lock)
 fantavoto, segnalazione errori) · Live (campo lungo, panchina, totali) · Listone · Giocatore ·
 Mercato libero · Regolamento · Scheda condivisibile · Impostazioni · Accesso · Le mie leghe · Gestione lega.
 
-Se il server o il CDN non rispondono, l'app riparte in modalità demo con un avviso e
-l'azione per riprovare, invece di restare in attesa.
+L'app ha cinque stati d'ingresso, ciascuno con la sua schermata: server non configurato,
+server irraggiungibile (con riprova), non autenticato, nessuna lega, pronta. Non esiste
+una modalità con dati finti: senza dati inseriti le viste lo dicono invece di inventare
+risultati.
 
 Giudice Dati: giornata (8 partite, avanzamento) · inserimento partita in 4 passi (risultato e
 stato, chi ha giocato, eventi con tastiera, anteprima voti) · contestazioni · congelamento con

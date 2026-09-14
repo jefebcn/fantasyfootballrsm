@@ -127,3 +127,11 @@ test('validazione formazione e formazione d\'ufficio 4-4-2 (art. 8.4)', () => {
   assert.equal(d.formation, '4-4-2'); assert.equal(d.starters.length, 11); assert.equal(d.bench.length, 7);
   assert.deepEqual(validateLineup(d, players), []);
 });
+
+test('una giornata senza dati non produce risultati: nessun 5,5 d\'ufficio a tappeto', () => {
+  const ratings = new Map();                    // nessun voto inserito
+  const res = computeLineupResult({ lineup, ratings, players, managerCount: 10 });
+  assert.equal(res.rows.every((r) => r.official), true);
+  assert.equal(res.total, 5.5 * 11);
+  assert.equal(res.goals, 0);                   // 60,5 < soglia 69,0
+});

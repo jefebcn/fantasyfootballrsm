@@ -55,6 +55,7 @@ export async function signUpPassword(email, password, displayName, redirectTo) {
 }
 export async function signInLink(email, redirectTo) { return authCall(sb.auth.signInWithOtp({ email, options: { emailRedirectTo: redirectTo, shouldCreateUser: true } })); }
 export async function verifyOtp(email, token) { return authCall(sb.auth.verifyOtp({ email, token: token.trim(), type: 'email' })); }
+export async function resendConfirmation(email, redirectTo) { return authCall(sb.auth.resend({ type: 'signup', email, options: { emailRedirectTo: redirectTo } })); }
 export async function resetPassword(email, redirectTo) { return authCall(sb.auth.resetPasswordForEmail(email, { redirectTo })); }
 export async function updatePassword(password) { return authCall(sb.auth.updateUser({ password })); }
 export async function signOut() { await sb.auth.signOut(); }

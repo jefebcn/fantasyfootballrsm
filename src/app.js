@@ -16,7 +16,7 @@ const ROUTES = [
   ['regolamento', views.regolamento], ['scheda', views.scheda], ['impostazioni', views.impostazioni],
   ['admin', views.adminGiornata], ['admin/partita/:id', views.adminPartita], ['admin/contestazioni', views.adminContestazioni],
   ['admin/congela', views.adminCongela], ['admin/registro', views.adminRegistro], ['mercato', views.mercato],
-  ['login', views.login], ['leghe', views.leghe], ['lega', views.lega],
+  ['login', views.login], ['leghe', views.leghe], ['lega', views.lega], ['setup', views.setup], ['offline', views.offline],
 ];
 
 function resolve(hash) {
@@ -57,22 +57,18 @@ function appbar(view, ctx) {
   const kind = (typeof view.appbar === 'function' ? view.appbar(ctx) : view.appbar) || 'main';
   if (kind === 'none') return '';
   if (kind === 'back') return `<header class="a-appbar"><button class="ib flip" data-back aria-label="Indietro">${icon('chev')}</button><div class="t"><b>${esc(league.name)}</b><span>${esc(view.sub?.(ctx) || view.title)}</span></div>${view.actions ? view.actions(ctx) : ''}</header>`;
-  return `<header class="a-appbar"><button class="ib" data-open-drawer aria-label="Menu">${icon('menu')}</button><div class="t"><b>${esc(league.name)}</b><span>${esc(view.sub?.(ctx) || view.title)}</span></div>${S.isRemote() ? `<button class="ib" data-refresh aria-label="Aggiorna">${icon('undo')}</button>` : ''}<a class="ib" href="#/regolamento" aria-label="Regolamento">${icon('book')}</a><a class="ib" href="#/admin/contestazioni" aria-label="Contestazioni">${icon('flag')}${S.contestazioni().some((c) => c.status === 'open') ? '<i class="dot"></i>' : ''}</a></header>`;
+  return `<header class="a-appbar"><button class="ib" data-open-drawer aria-label="Menu">${icon('menu')}</button><div class="t"><b>${esc(league.name)}</b><span>${esc(view.sub?.(ctx) || view.title)}</span></div><button class="ib" data-refresh aria-label="Aggiorna">${icon('undo')}</button><a class="ib" href="#/regolamento" aria-label="Regolamento">${icon('book')}</a><a class="ib" href="#/admin/contestazioni" aria-label="Contestazioni">${icon('flag')}${S.contestazioni().some((c) => c.status === 'open') ? '<i class="dot"></i>' : ''}</a></header>`;
 }
 function nav(path) {
   const active = path.split('/')[0];
   return `<nav class="a-nav">${NAV.map(([p, ic, l]) => `<a href="#/${p}" class="${active === p ? 'on' : ''}">${icon(ic)}${l}${p === 'voti' && S.matchdayStatus(S.currentMatchday()) === 'provisional' ? '<i class="dot"></i>' : ''}</a>`).join('')}</nav>`;
 }
 function drawer() {
-  const me = S.me(); const ph = S.weekPhase(); const remote = S.isRemote(); const u = S.currentUser();
+  const me = S.me(); const ph = S.weekPhase(); const u = S.currentUser();
   const item = (href, ic, label, small = '') => `<a class="d-item" href="${href}"><i>${icon(ic)}</i>${label}${small ? `<small>${small}</small>` : ''}</a>`;
   const leagues = S.myLeagues(); const cur = S.currentLeagueId();
-  const head = remote
-    ? `<div class="d-head"><div><b>${esc(me?.owner || S.profileInfo()?.display_name || u?.email || '')}</b><span>${esc(me?.teamName || u?.email || 'nessuna lega')}</span></div><button data-logout>LOGOUT</button></div>`
-    : `<div class="d-head"><div><b>${esc(me?.owner || 'Demo')}</b><span>${esc(me?.teamName || 'modalità locale')}</span></div><a href="#/impostazioni" style="text-decoration:none"><button>PROFILO</button></a></div>`;
-  const leagueRow = remote
-    ? `<a class="d-league" href="#/leghe" style="text-decoration:none">${esc(S.base.league.name)} <i>+</i></a>${leagues.length > 1 ? `<div class="d-sec"><span class="chip">Le mie leghe</span></div>${leagues.filter((l) => l.id !== cur).map((l) => `<button class="d-item" data-switch="${l.id}" style="border:0;background:transparent;width:100%;font:inherit;font-weight:600;cursor:pointer"><i style="background:var(--c-pietra-400)">${icon('cup')}</i>${esc(l.name)}<small>${l.myRole}</small></button>`).join('')}` : ''}`
-    : `<div class="d-league">${esc(S.base.league.name)} <i>+</i></div>`;
+  const head = `<div class="d-head"><div><b>${esc(me?.owner || S.profileInfo()?.display_name || u?.email || '')}</b><span>${esc(me?.teamName || u?.email || 'nessuna lega')}</span></div><button data-logout>LOGOUT</button></div>`;
+  const leagueRow = `<a class="d-league" href="#/leghe" style="text-decoration:none">${esc(S.base.league.name)} <i>+</i></a>${leagues.length > 1 ? `<div class="d-sec"><span class="chip">Le mie leghe</span></div>${leagues.filter((l) => l.id !== cur).map((l) => `<button class="d-item" data-switch="${l.id}" style="border:0;background:transparent;width:100%;font:inherit;font-weight:600;cursor:pointer"><i style="background:var(--c-pietra-400)">${icon('cup')}</i>${esc(l.name)}<small>${l.myRole}</small></button>`).join('')}` : ''}`;
   return `<div class="a-drawer${drawerOpen ? ' on' : ''}"><div class="scrim" data-close-drawer></div><div class="panel">
     ${head}${leagueRow}
     ${S.hasLeague() ? `<div class="d-cta"><a class="a-btn" href="#/rosa/formazione" style="text-decoration:none">${icon('shirt', 'ic sm')}Schiera la formazione</a></div>` : ''}
@@ -84,17 +80,19 @@ function drawer() {
     ${S.isJudge() ? `<div class="d-sec admin"><span class="chip">Giudice Dati</span></div>
     ${item('#/admin', 'edit', 'Inserisci eventi', `G${ph.matchday}`)}${item('#/admin/contestazioni', 'flag', 'Contestazioni', `${S.contestazioni().filter((c) => c.status === 'open').length} aperte`)}${item('#/admin/congela', 'lock', 'Congela giornata', 'mar 20:00')}${item('#/admin/registro', 'archive', 'Registro modifiche')}` : ''}
     <a class="d-plain" href="#/impostazioni" style="display:block;text-decoration:none;color:inherit">Utente, impostazioni e privacy</a>
-    <div class="d-foot">Versione 0.3 · ${remote ? 'account Supabase' : 'demo locale'}<br>Fantacampionato Sammarinese</div>
+    <div class="d-foot">Versione 0.4<br>Fantacampionato Sammarinese</div>
   </div></div>`;
 }
 
 let scrollMemo = {};
+const STATE_ROUTE = { unconfigured: 'setup', offline: 'offline', anonymous: 'login', 'no-league': 'leghe' };
+const ALLOWED = { 'no-league': ['leghe', 'impostazioni'] };
 function gate(path) {
-  if (!S.isRemote()) return null;
-  if (!S.currentUser()) return path === 'login' ? null : 'login';
-  if (path === 'login') return '';
-  if (!S.hasLeague() && !['leghe', 'impostazioni'].includes(path)) return 'leghe';
-  return null;
+  const st = S.appState();
+  const target = STATE_ROUTE[st];
+  if (!target) return path === 'setup' || path === 'offline' || path === 'login' ? '' : null;   // pronta
+  if (path === target || (ALLOWED[st] || []).includes(path)) return null;
+  return target;
 }
 export function render() {
   const g = gate(resolve(location.hash).path); if (g !== null && g !== resolve(location.hash).path) { location.hash = `#/${g}`; return; }
@@ -145,7 +143,7 @@ async function boot() {
   document.body.insertAdjacentHTML('afterbegin', SPRITE);
   applyTheme();
   window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', applyTheme);
-  S.setErrorHandler((e) => { console.error(e); toast(e?.message || 'Errore di rete'); });
+  S.setErrorHandler((e) => { console.error(e); if (S.appState() !== 'offline') toast(e?.message || 'Errore di rete'); });
   const callbackError = authCallbackError();
   root.innerHTML = `<div class="app">${splash()}</div>`;
   await S.init();

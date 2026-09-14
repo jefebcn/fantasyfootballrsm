@@ -1,5 +1,5 @@
 import * as S from '../state.js';
-import { esc, icon, crest, roleChip, ROLE_ORDER, ROLE_NAME } from '../ui.js';
+import { esc, icon, crest, roleChip, sec } from '../ui.js';
 
 export const lega = {
   title: 'Gestione lega', appbar: 'back', sub: () => 'Profilo lega · Partecipanti · Rose',
@@ -10,8 +10,13 @@ export const lega = {
     return `<main class="a-body">
       <div class="a-card" style="display:flex;flex-direction:column;gap:6px"><b style="font:700 18px var(--font-display)">${esc(L.name)}</b><span class="small muted">${ms.length} partecipanti · ${started ? 'rose assegnate' : 'in attesa delle rose'}</span>
         ${L.inviteCode ? `<div style="display:flex;gap:8px;align-items:center;margin-top:6px"><span class="small muted">Codice invito</span><b class="num" style="font-size:20px;letter-spacing:.12em">${esc(L.inviteCode)}</b><button class="chip" id="share-code" style="margin-left:auto">${icon('share', 'ic sm')} Invita</button></div>` : ''}</div>
-      <div class="vlist"><div class="vhead">Partecipanti <span>${ms.length}/12</span></div>${ms.map((m) => `<div class="vr" style="cursor:default">${crest(m, 'sm')}<span class="nm"><b>${esc(m.teamName)}${m.id === me?.id ? ' (tu)' : ''}</b><span>${esc(m.owner)} · ${m.role === 'admin' ? 'admin' : 'fantallenatore'} · rosa ${rosterCount(m)}/25 · crediti ${m.credits}</span></span><span class="ev"></span>${admin && m.id !== me?.id ? `<span style="display:flex;gap:4px"><button class="chip" data-role="${m.id}:${m.role === 'admin' ? 'fantallenatore' : 'admin'}" style="padding:4px 8px">${m.role === 'admin' ? 'Togli admin' : 'Admin'}</button><button class="chip" data-kick="${m.id}" style="padding:4px 8px;color:var(--negative)">✕</button></span>` : '<span></span>'}</div>`).join('')}</div>
-      ${admin ? `<div class="a-card" style="display:flex;flex-direction:column;gap:8px"><b>Rose (art. 2)</b><p class="small muted">Prima stagione: asta in presenza e inserimento dei risultati. Il draft automatico è una scorciatoia: assegna 25 giocatori a testa (3P 8D 8C 6A) per quotazione, entro 500 crediti. Poi puoi correggere ogni rosa a mano.</p><button class="a-btn${started ? ' sec' : ''}" id="draft">${icon('cart', 'ic sm')}${started ? 'Rigenera le rose (sovrascrive)' : 'Genera le rose'}</button></div>
+      ${sec('Partecipanti', `${ms.length}/12`)}
+      <div class="vlist">${ms.map((m) => `<div class="prow">${crest(m, 'sm')}
+        <div class="ptxt"><b>${esc(m.teamName)}${m.id === me?.id ? ' <em>tu</em>' : ''}</b><span>${esc(m.owner)} · ${m.role === 'admin' ? 'admin' : 'fantallenatore'}</span>
+          <span class="pmeta">rosa ${rosterCount(m)}/25 · ${m.credits} crediti</span></div>
+        ${admin && m.id !== me?.id ? `<div class="pact"><button class="chip" data-role="${m.id}:${m.role === 'admin' ? 'fantallenatore' : 'admin'}">${m.role === 'admin' ? 'Togli admin' : 'Fai admin'}</button><button class="chip danger" data-kick="${m.id}" aria-label="Rimuovi">✕</button></div>` : ''}</div>`).join('')}</div>
+      ${admin ? `${sec('Rose', 'art. 2')}
+      <div class="a-card" style="display:flex;flex-direction:column;gap:10px"><p class="small muted">Il draft assegna 25 giocatori a testa (3P 8D 8C 6A) per quotazione, entro 500 crediti. Poi correggi ogni rosa a mano, o inseriscila tutta a mano dopo l'asta.</p><button class="a-btn${started ? ' sec' : ''}" id="draft">${icon('cart', 'ic sm')}${started ? 'Rigenera le rose' : 'Genera le rose'}</button>${started ? '<p class="small muted" style="text-align:center">Rigenerare sostituisce le rose attuali.</p>' : ''}</div>
       ${started ? `<div class="a-sec"><b>Modifica rose</b><span>tocca un giocatore per rimuoverlo</span></div>${ms.map((m) => `<div class="vlist"><div class="vhead">${esc(m.teamName)} <span>${rosterCount(m)}/25 · crediti ${m.credits}</span></div>${(S.base.rosters[m.id] || []).map((r) => { const p = S.playersById.get(r.playerId); return `<button class="vr" data-rm="${m.id}:${r.playerId}">${roleChip(p.role)}<span class="nm"><b>${esc(p.name)}</b><span>${esc(S.clubsById.get(p.clubId).name)} · pagato ${r.pricePaid}</span></span><span class="ev"></span><span class="fv" style="font-size:12px;color:var(--negative)">✕</span></button>`; }).join('')}<button class="vr" data-add="${m.id}" style="color:var(--primary)"><span class="rl" style="background:var(--primary)">+</span><span class="nm"><b>Aggiungi giocatore</b></span><span class="ev"></span><span></span></button></div>`).join('')}` : ''}` : ''}
     </main>`;
   },

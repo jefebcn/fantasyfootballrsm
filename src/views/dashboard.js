@@ -1,65 +1,89 @@
 import * as S from '../state.js';
-import { esc, fmt, icon, badge, crest, matchCard, sec, dateIt, timeIt, logo } from '../ui.js';
+import { esc, fmt, icon, logo, badge, matchCard, tile, sec, dateIt, timeIt } from '../ui.js';
 
 const RULES = [
-  ['Art. 7.4', '<b>Rigore parato:</b> +3,0 al portiere, −3,0 al tiratore. Sul palo o fuori: −3,0 al tiratore e nessun bonus al portiere.'],
-  ['Art. 7.5', '<b>Porta inviolata:</b> spetta solo se la squadra chiude senza subire gol e il giocatore ha disputato almeno 60 minuti.'],
-  ['Art. 6.2', '<b>Capitano:</b> raddoppia bonus e malus, non il voto base. Se è S.V. subentra il vice.'],
-  ['Art. 8.5', '<b>Sostituzioni automatiche:</b> un titolare S.V. è sostituito dal primo panchinaro del suo ruolo con voto. Massimo 3.'],
-  ['Art. 9.2', '<b>Congelamento:</b> martedì alle 20:00 la giornata diventa definitiva, anche se emergono errori.'],
-  ['Art. 11', '<b>Conversione in gol:</b> con 10 fantallenatori il primo gol scatta a 69,0, poi uno ogni 6,0 punti.'],
-  ['Art. 4', '<b>Esito collettivo:</b> vittoria +0,5, sconfitta −0,5 (metà tra 20 e 59 minuti). Senza pagelle serve differenziare.'],
+  ['Art. 7.4', 'Rigore parato', 'Vale +3,0 al portiere e −3,0 al tiratore. Sul palo o fuori: −3,0 al tiratore e nessun bonus al portiere.'],
+  ['Art. 7.5', 'Porta inviolata', 'Spetta solo se la squadra chiude senza subire gol e il giocatore ha disputato almeno 60 minuti.'],
+  ['Art. 6.2', 'Capitano', 'Raddoppia bonus e malus, non il voto base. Se è S.V. subentra il vice.'],
+  ['Art. 8.5', 'Sostituzioni automatiche', 'Un titolare S.V. è sostituito dal primo panchinaro del suo ruolo con voto. Massimo tre.'],
+  ['Art. 9.2', 'Congelamento', 'Martedì alle 20:00 la giornata diventa definitiva, anche se emergono errori.'],
+  ['Art. 11', 'Conversione in gol', 'Con dieci fantallenatori il primo gol scatta a 69,0, poi uno ogni 6,0 punti.'],
+  ['Art. 4', 'Esito collettivo', 'Vittoria +0,5, sconfitta −0,5; metà tra 20 e 59 minuti. Senza pagelle serve differenziare.'],
 ];
 
-function phaseCard(ph) {
-  const n = ph.matchday; const st = ph.status;
-  if (!S.hasData(n)) return `<div class="a-card a-fase"><div class="r"><p><b>Campionato non ancora avviato</b> · nessun dato inserito</p>${S.isJudge() ? '<a class="a-link" href="#/admin">Inserisci ›</a>' : ''}</div><p class="small muted">I voti compaiono quando il Giudice Dati registra gli eventi della giornata.</p></div>`;
-  if (st === 'provisional') return `<div class="a-card a-fase">${badge('provisional')}<div class="r"><p><b>Giornata ${n}</b> · punteggi provvisori pubblicati</p><a class="a-link" href="#/voti/${n}">Vedi i voti ›</a></div></div>`;
-  if (st === 'frozen') return `<div class="a-card a-fase">${badge('frozen')}<div class="r"><p><b>Giornata ${n}</b> · archiviata</p><a class="a-link" href="#/voti/${n}">Vedi i voti ›</a></div></div>`;
-  if (st === 'live') return `<div class="a-card a-fase">${badge('live')}<div class="r"><p><b>Giornata ${n}</b> · eventi in inserimento</p><a class="a-link" href="#/voti/${n}">Parziali ›</a></div></div>`;
-  return '';
-}
-function nextCard(ph, me) {
-  const n = ph.next; const md = S.matchday(n); const lock = md ? new Date(md.lockAt) : null;
-  const left = lock ? Math.max(0, lock - S.now()) : 0; const d = Math.floor(left / 86400000), h = Math.floor((left % 86400000) / 3600000);
+/** L'azione della settimana: una sola, in cima, con il perché accanto. */
+function azione(ph, me) {
+  const n = ph.next; const md = S.matchday(n);
   const saved = S.savedLineup(n, me.id);
-  return `<div class="a-card a-fase">${badge('open', `lock ${dateIt(md.lockAt)} ${timeIt(md.lockAt)} · ${d}g ${h}h`)}<div class="r"><p><b>Giornata ${n}</b> · ${saved ? 'formazione salvata' : 'formazione non ancora salvata'}</p><a class="a-link" href="#/rosa/formazione">${saved ? 'Modifica ›' : 'Schiera ›'}</a></div>${saved ? '' : `<a class="a-btn" href="#/rosa/formazione" style="text-decoration:none">${icon('shirt', 'ic sm')}Schiera la formazione</a>`}</div>`;
+  const st = S.matchdayStatus(n);
+  if (st === 'open' || st === 'scheduled') {
+    const left = Math.max(0, new Date(md.lockAt) - S.now());
+    const g = Math.floor(left / 86400000), h = Math.floor((left % 86400000) / 3600000);
+    return tile({
+      href: '#/rosa/formazione', lead: icon('shirt'), leadKind: saved ? '' : 'gold', cls: saved ? '' : 'cta',
+      title: saved ? `Formazione pronta · giornata ${n}` : `Schiera la formazione`,
+      sub: saved ? `Salvata ${dateIt(saved.submittedAt)} · puoi cambiarla fino al lock` : `Giornata ${n} · si chiude ${dateIt(md.lockAt)} alle ${timeIt(md.lockAt)}${left ? ` · mancano ${g}g ${h}h` : ''}`,
+    });
+  }
+  return tile({ href: `#/voti/${ph.matchday}`, lead: icon('votes'), leadKind: 'warn',
+    title: `Voti della giornata ${ph.matchday}`,
+    sub: st === 'frozen' ? 'Giornata congelata: risultati definitivi' : 'Punteggi provvisori: puoi segnalare un errore fino a martedì',
+    badgeHtml: badge(st, st === 'provisional' ? 'fino a mar 18:00' : '') });
 }
 
 export const dashboard = {
   title: 'Dashboard',
   render() {
-    const me = S.me(); const ph = S.weekPhase(); const st = S.standings(); const row = (me && st.find((r) => r.managerId === me.id)) || { position: '–', points: 0, played: 0, fantapunti: 0 };
+    const me = S.me(); const ph = S.weekPhase();
     if (!me) return `<main class="a-body"><div class="empty">${logo()}<p>Non fai parte di questa lega.</p><a class="a-btn" href="#/leghe" style="text-decoration:none">Le mie leghe</a></div></main>`;
+    const st = S.standings(); const row = st.find((r) => r.managerId === me.id) || { position: '–', points: 0, played: 0, fantapunti: 0 };
     const noRoster = S.rosterIds(me.id).length === 0;
     const cur = S.myFixture(ph.matchday, me.id); const curR = cur ? S.fixtureResult(cur) : null;
-    const nxt = S.myFixture(ph.next, me.id); const nxtR = nxt ? S.fixtureResult(nxt) : null;
+    const nxt = S.myFixture(ph.next, me.id); const nxtR = nxt && ph.next !== ph.matchday ? S.fixtureResult(nxt) : null;
     const last = S.resultsUntil(ph.matchday).filter((r) => r.homeManagerId === me.id || r.awayManagerId === me.id).slice(-5).reverse();
-    const last5 = [...last.map((r) => { const home = r.homeManagerId === me.id; const gf = home ? r.homeGoals : r.awayGoals, gs = home ? r.awayGoals : r.homeGoals; const cls = gf > gs ? 'v' : gf < gs ? 'p' : 'n'; return `<div><i class="${cls}">${r.matchday}</i>${gf} – ${gs}<small>${fmt(home ? r.homeScore : r.awayScore)}</small></div>`; }), ...Array(Math.max(0, 5 - last.length)).fill('<div><i></i></div>')].join('');
-    const rule = RULES[Math.floor(Date.now() / 86400000) % RULES.length];
+    const forma = last.length ? `${sec('Ultimi risultati', last.length < 5 ? `${last.length} giocate` : '')}
+      <div class="a-card form-row">${[...last.map((r) => { const home = r.homeManagerId === me.id;
+        const gf = home ? r.homeGoals : r.awayGoals, gs = home ? r.awayGoals : r.homeGoals;
+        const k = gf > gs ? 'v' : gf < gs ? 'p' : 'n';
+        return `<div><i class="${k}">${k.toUpperCase()}</i><b>${gf}–${gs}</b><small>G${r.matchday}</small></div>`;
+      }), ...Array(Math.max(0, 5 - last.length)).fill('<div><i></i><b>–</b><small>&nbsp;</small></div>')].join('')}</div>` : '';
+    const [art, titolo, testo] = RULES[Math.floor(Date.now() / 86400000) % RULES.length];
+
     return `<main class="a-body">
       <div id="install-slot"></div>
-      <div class="a-herowrap"><a class="a-league" href="#/leghe" style="text-decoration:none;color:inherit">${esc(S.base.league.shortName)} ${icon('chev')}</a>
-        <div class="a-hero">${logo('tw')}<h2>${esc(me.teamName)}</h2>
+      <div class="a-herowrap">
+        <div class="a-hero">${logo('tw')}
+          <a class="hero-league" href="#/leghe">${esc(S.base.league.name)}${icon('chev', 'ic sm')}</a>
           <svg class="jersey" style="--j1:${me.color};--j2:${me.color}"><use href="#i-jersey"/></svg>
-          <div class="acts"><a href="#/scheda" aria-label="Condividi scheda"><button>${icon('share')}</button></a><a href="#/impostazioni" aria-label="Impostazioni"><button>${icon('gear')}</button></a><a href="#/mercato" aria-label="Mercato libero"><button class="gold">${icon('cart')}</button></a></div>
-          <div class="logos">${logo()}<span>Fantacampionato</span><i></i><span>Titani.TV</span></div>
-        </div></div>
-      <div class="a-card a-stats"><div><b>${row.position}<sup>ª</sup></b><span>Posizione</span></div><div><b>${row.points}</b><span>Punti</span></div><div><b>${row.played}</b><span>Partite</span></div><div><b>${fmt(row.fantapunti)}</b><span>Fantapunti</span></div></div>
-      ${noRoster ? `<div class="warn info">${icon('warn', 'ic sm')}<span><b>Rose non ancora assegnate.</b> ${S.isLeagueAdmin() ? '<a href="#/lega">Genera o inserisci le rose</a> dalla gestione lega.' : 'L\'admin della lega le assegna dopo l\'asta.'}</span></div>` : ''}
-      ${phaseCard(ph)}
-      ${nextCard(ph, me)}
-      ${curR ? sec(`${ph.status === 'frozen' ? 'Ultima giornata' : 'Risultati provvisori'}`, `${ph.matchday}ª di Lega · ${ph.matchday}ª del Campionato`) + matchCard(curR, S.managersById) : ''}
-      ${nxtR ? sec('Prossima giornata', `${ph.next}ª di Lega · ${ph.next}ª del Campionato`) + matchCard(nxtR, S.managersById) : ''}
-      ${sec('Ultimi 5 incontri', 'dal più recente')}<div class="a-card last5">${last5}</div>
-      <div class="a-card a-rule"><span class="art">${rule[0]}</span><p>${rule[1]}</p></div>
+          <h2>${esc(me.teamName)}</h2><p class="hero-owner">${esc(me.owner)}</p>
+          <div class="acts">
+            <a href="#/scheda" aria-label="Condividi la scheda"><button>${icon('share')}</button></a>
+            <a href="#/rosa" aria-label="La mia rosa"><button>${icon('shirt')}</button></a>
+            <a href="#/mercato" aria-label="Mercato libero"><button class="gold">${icon('cart')}</button></a>
+          </div>
+        </div>
+      </div>
+      <div class="a-card a-stats">
+        <div><b>${row.position}<sup>ª</sup></b><span>Posizione</span></div>
+        <div><b>${row.points}</b><span>Punti</span></div>
+        <div><b>${row.played}</b><span>Partite</span></div>
+        <div><b>${fmt(row.fantapunti)}</b><span>Fantapunti</span></div>
+      </div>
+      ${noRoster ? tile({ href: S.isLeagueAdmin() ? '#/lega' : '#/leghe', lead: icon('warn'), leadKind: 'warn',
+          title: 'Rose non ancora assegnate',
+          sub: S.isLeagueAdmin() ? "Generale o inserirle dalla gestione lega" : "Le assegna l'admin della lega dopo l'asta" }) : azione(ph, me)}
+      ${curR && curR.played ? sec(ph.status === 'frozen' ? `Giornata ${ph.matchday}` : 'Risultati provvisori', `${ph.matchday}ª di lega`) + matchCard(curR, S.managersById) : ''}
+      ${nxtR ? sec('Prossima giornata', `${ph.next}ª di lega`) + matchCard(nxtR, S.managersById, { meta: `${dateIt(S.matchday(ph.next).lockAt)} · ${timeIt(S.matchday(ph.next).lockAt)}` }) : ''}
+      ${forma}
+      ${sec('Dal regolamento')}
+      <div class="rule"><span class="art">${art}</span><p><b>${titolo}.</b> ${testo}</p></div>
     </main>`;
   },
   mount(root) {
     const slot = root.querySelector('#install-slot');
     const show = () => {
       if (!window.__installPrompt || S.store.get().installedDismissed || !slot) return;
-      slot.innerHTML = `<div class="install">${logo()}<div style="flex:1"><b>Installa l'app</b>Aggiungi alla schermata Home: si apre a tutto schermo, anche offline.</div><button class="ok" id="inst-ok">Installa</button><button class="no" id="inst-no">✕</button></div>`;
+      slot.innerHTML = `<div class="install">${logo()}<div style="flex:1"><b>Installa l'app</b>Sulla schermata Home si apre a tutto schermo.</div><button class="ok" id="inst-ok">Installa</button><button class="no" id="inst-no">✕</button></div>`;
       slot.querySelector('#inst-ok').onclick = async () => { const p = window.__installPrompt; if (!p) return; p.prompt(); await p.userChoice; window.__installPrompt = null; slot.innerHTML = ''; };
       slot.querySelector('#inst-no').onclick = () => { S.store.set({ installedDismissed: true }); slot.innerHTML = ''; };
     };

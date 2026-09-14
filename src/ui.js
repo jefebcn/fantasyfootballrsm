@@ -46,13 +46,27 @@ export function voteRow(player, club, rating, { expanded = false, captain = fals
   <div class="vb${expanded ? ' on' : ''}">${lines}${extra}</div>`;
 }
 
-export function matchCard(r, managers, { link = true } = {}) {
+/** Riquadro azionabile: stessa struttura per ogni banner cliccabile dell'app. */
+export function tile({ href, action, lead, leadKind = '', title, sub = '', badgeHtml = '', cls = '' }) {
+  const inner = `<span class="lead ${leadKind}">${lead}</span><span class="txt">${badgeHtml}<b>${title}</b>${sub ? `<span>${sub}</span>` : ''}</span>${icon('chev', 'ic sm chev')}`;
+  return href ? `<a class="tile ${cls}" href="${href}">${inner}</a>`
+              : `<button class="tile ${cls}" ${action ? `data-act="${action}"` : ''}>${inner}</button>`;
+}
+
+/** Card di uno scontro di lega: tutta la card è il bersaglio del tocco. */
+export function matchCard(r, managers, { meta = '', badgeHtml = '' } = {}) {
   const h = managers.get(r.homeManagerId), a = managers.get(r.awayManagerId);
-  const mid = r.played ? `<span class="vs score">${r.homeGoals} – ${r.awayGoals}</span>` : `<span class="vs">VS</span>`;
-  const fp = r.played ? `<div class="fp"><span><b>${fmt(r.homeScore)}</b></span><em>fantapunti</em><span><b>${fmt(r.awayScore)}</b></span></div>` : '';
-  const btn = r.played && link ? `<a class="a-btn live full" href="#/live/${r.id}" style="text-decoration:none"><i class="pulse" style="background:#fff"></i>${r.status === 'frozen' ? 'Vedi la partita' : 'Vai al Live'}</a>` : '';
-  return `<div class="a-card a-match"><div class="tm">${crest(h)}<b>${esc(h.teamName)}</b><span>${esc(h.owner)}</span></div>${mid}<div class="tm">${crest(a)}<b>${esc(a.teamName)}</b><span>${esc(a.owner)}</span></div>${fp}${btn}</div>`;
+  const side = (m) => `<div class="side">${crest(m)}<b>${esc(m.teamName)}</b><span class="own">${esc(m.owner)}</span></div>`;
+  const head = (badgeHtml || meta) ? `<div class="mhead">${badgeHtml}<span class="when">${esc(meta)}</span></div>` : '';
+  const foot = r.played
+    ? `<div class="mfoot"><span>${fmt(r.homeScore)}</span><em>fantapunti</em><span>${fmt(r.awayScore)}</span></div>
+       <div class="mcta">${r.status === 'frozen' ? 'Vedi la partita' : 'Segui il Live'}${icon('chev', 'ic sm')}</div>`
+    : '';
+  const body = `<div class="mrow">${side(h)}<span class="score${r.played ? '' : ' vs'}">${r.played ? `${r.homeGoals} – ${r.awayGoals}` : 'VS'}</span>${side(a)}</div>`;
+  return r.played
+    ? `<a class="mcard" href="#/live/${r.id}">${head}${body}${foot}</a>`
+    : `<div class="mcard">${head}${body}</div>`;
 }
 
 export const empty = (text, cta = '') => `<div class="empty">${logo()}<p>${text}</p>${cta}</div>`;
-export const sec = (title, right = '') => `<div class="a-sec"><b>${title}</b><span>${right}</span></div>`;
+export const sec = (title, right = '') => `<div class="a-sec"><b>${title}</b>${right ? `<span>${right}</span>` : ''}</div>`;

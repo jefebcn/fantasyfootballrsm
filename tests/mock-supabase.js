@@ -68,7 +68,9 @@ export function createClient(_url, _key, opts) {
         if (T('profiles').some((x) => x.email === email)) return { data: null, error: { message: 'User already registered' } };
         if (!password || password.length < 6) return { data: null, error: { message: 'Password should be at least 6 characters' } };
         const p = { id: uid(), email, password, display_name: options?.data?.display_name || email.split('@')[0], is_judge: T('profiles').length === 0 };
-        T('profiles').push(p); userId = p.id; persisti();
+        T('profiles').push(p); persisti();
+        if (globalThis.__MOCK_CONFIRM__) return { data: { user: { id: p.id, email }, session: null }, error: null };
+        userId = p.id; persisti();
         authListeners.forEach((fn) => fn('SIGNED_IN', { user: { id: userId, email } }));
         return { data: { user: { id: p.id, email }, session: { user: { id: p.id, email } } }, error: null };
       },

@@ -111,12 +111,21 @@ function linkPanel() {
     <p class="auth-hint">Senza password: ricevi un'e-mail, tocchi il link e sei dentro. Se non hai un account, viene creato al primo accesso.</p>`;
 }
 function pendingPanel() {
-  const confirm = pending.kind === 'confirm';
-  return `<b class="auth-sent">${confirm ? 'Conferma la tua e-mail' : 'Controlla la posta'}</b>
-    <p class="auth-hint">Abbiamo scritto a <b>${esc(pending.email)}</b>. ${confirm ? 'Apri il link nell\'e-mail per attivare l\'account, poi torna qui e accedi.' : 'Tocca il link nell\'e-mail: si apre direttamente l\'app.'}</p>
-    <hr class="sep">
-    <p class="auth-hint">Se l'e-mail contiene anche un <b>codice a 6 cifre</b>, inseriscilo qui — serve quando il link si apre in un browser diverso.</p>
-    ${field('otp', 'Codice a 6 cifre', 'inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="123456"')}
-    <button class="a-btn" id="primary">${icon('check', 'ic sm')}Entra con il codice</button>
-    <div class="auth-links"><button id="resend">Rimanda l'e-mail</button><button id="again">Usa un'altra e-mail</button></div>`;
+  const conferma = pending.kind === 'confirm';
+  return `<b class="auth-sent">${conferma ? 'Conferma la tua e-mail' : 'Controlla la posta'}</b>
+    <p class="auth-hint">Abbiamo scritto a <b>${esc(pending.email)}</b>.
+      <b>Apri il link dentro l'e-mail</b>: ${conferma ? "l'account si attiva e rientri da qui." : 'si apre direttamente l\'app.'}</p>
+    <div class="auth-links"><button id="resend">Rimanda l'e-mail</button><button id="again">Usa un'altra e-mail</button></div>
+    <details class="auth-more">
+      <summary>Non è arrivata niente?</summary>
+      <ul class="auth-list">
+        <li>Guarda nello <b>spam</b> e, su Gmail, nella scheda <b>Promozioni</b>.</li>
+        <li>Le e-mail di servizio sono <b>poche all'ora</b>: se hai già premuto «Rimanda» più volte, aspetta un'ora prima di riprovare.</li>
+        <li>Chiedi all'organizzatore della lega di disattivare la conferma via e-mail: si entra subito, senza posta.</li>
+      </ul>
+      <hr class="sep">
+      <p class="auth-hint"><b>Solo se</b> l'e-mail contiene un codice a 6 cifre, scrivilo qui. Molte e-mail contengono solo il link: in quel caso questo campo non serve.</p>
+      ${field('otp', 'Codice a 6 cifre', 'inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="123456"')}
+      <button class="a-btn ghost" id="primary">${icon('check', 'ic sm')}Entra con il codice</button>
+    </details>`;
 }

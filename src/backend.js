@@ -102,10 +102,11 @@ export async function currentSessionUser() { const { data } = await sb.auth.getU
 export function translate(error) {
   const m = (error?.message || String(error || '')).toLowerCase();
   if (m.includes('invalid login credentials')) return 'E-mail o password non corretti.';
-  if (m.includes('email not confirmed')) return 'Devi confermare l\'e-mail: apri il link che ti abbiamo mandato.';
+  if (m.includes('email not confirmed')) return 'Account non ancora attivo: apri il link nell\'e-mail di conferma. Se non l\'hai più, usa «Rimanda l\'e-mail».';
   if (m.includes('user already registered') || m.includes('already been registered')) return 'Esiste già un account con questa e-mail: accedi con la password.';
   if (m.includes('password should be at least')) return 'La password deve avere almeno 6 caratteri.';
   if (m.includes('token has expired') || m.includes('invalid token') || m.includes('otp')) return 'Codice scaduto o non valido: chiedine uno nuovo.';
+  if (m.includes('email rate limit') || m.includes('over_email_send_rate_limit')) return 'Limite di e-mail raggiunto su questo progetto: il servizio incluso ne manda poche all\'ora. Aspetta un\'ora, oppure fai disattivare la conferma via e-mail.';
   if (m.includes('rate limit') || m.includes('too many')) return 'Troppi tentativi: riprova fra qualche minuto.';
   if (m.includes('redirect') || m.includes('not allowed')) return 'Indirizzo di ritorno non autorizzato: va aggiunto ai Redirect URLs su Supabase.';
   if (m.includes('signups not allowed')) return 'Le registrazioni sono chiuse su questo progetto.';

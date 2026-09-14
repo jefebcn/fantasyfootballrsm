@@ -28,6 +28,13 @@ export function badge(status, extra = '') {
 export const roleChip = (role) => `<span class="rl rl-${role.toLowerCase()}">${role}</span>`;
 export const crest = (m, cls = '') => `<span class="crest ${cls}" style="background:${m.color}">${esc(m.initials)}</span>`;
 
+/**
+ * Icona-maschera: la sagoma arriva da un PNG, il colore dalla CSS. Serve dove
+ * l'icona deve cambiare colore — la barra in basso, che colorando la voce
+ * attiva dice dove sei. Un PNG già colorato non potrebbe farlo.
+ */
+export const mask = (name, cls = '') => `<i class="mi ${cls}" style="--m:url(/media/icone/nav/${name}.png)"></i>`;
+
 /** Icone illustrate: media/icone/eventi e media/icone/menu. */
 export const pic = (name, cartella = 'eventi', cls = '') => `<img class="pic ${cls}" src="media/icone/${cartella}/${name}.png" alt="" loading="lazy">`;
 

@@ -1,5 +1,5 @@
 /* Service worker — shell in cache, aggiornamento in background. */
-const VERSION = 'fcs-v1.4.1';
+const VERSION = 'fcs-v1.5.0';
 const SHELL = [
   './', './index.html', './manifest.webmanifest', './styles/app.css', './styles/logo.css', './design/tokens/tokens.css',
   './src/app.js', './src/state.js', './src/data.js', './src/engine.js', './src/ui.js', './src/sprite.js', './src/config.js', './src/backend.js', './src/auth-clerk.js',
@@ -12,6 +12,9 @@ const SHELL = [
   './media/icone/eventi/gol.png', './media/icone/eventi/assist.png', './media/icone/eventi/autogol.png',
   './media/icone/eventi/ammonizione.png', './media/icone/eventi/espulsione.png', './media/icone/eventi/espulsione-x2.png',
   './media/icone/eventi/rigore-sbagliato.png', './media/icone/eventi/rigore-parato.png',
+  // Le sagome della barra in basso stanno su ogni schermata: vanno precaricate.
+  './media/icone/nav/campo.png', './media/icone/nav/maglia-10.png', './media/icone/nav/calendario.png',
+  './media/icone/nav/coppa.png', './media/icone/nav/grafico.png',
 ];
 self.addEventListener('install', (e) => {
   e.waitUntil(caches.open(VERSION).then((c) => c.addAll(SHELL)).then(() => self.skipWaiting()));

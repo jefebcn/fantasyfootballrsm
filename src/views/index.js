@@ -1,0 +1,14 @@
+export { dashboard } from './dashboard.js';
+export { rosa } from './rosa.js';
+export { formazione } from './formazione.js';
+export { calendario } from './calendario.js';
+export { classifica } from './classifica.js';
+export { voti } from './voti.js';
+export { live } from './live.js';
+export { listone } from './listone.js';
+export { giocatore } from './giocatore.js';
+export { regolamento } from './regolamento.js';
+export { scheda } from './scheda.js';
+export { impostazioni } from './impostazioni.js';
+export { mercato } from './mercato.js';
+export { adminGiornata, adminPartita, adminContestazioni, adminCongela, adminRegistro } from './admin.js';

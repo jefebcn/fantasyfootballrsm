@@ -69,6 +69,35 @@ export function roundRobin(ids) {
   return rounds;
 }
 
+/**
+ * Draft a serpentina per quotazione con rumore (placeholder dell'asta, art. 3.1).
+ * Ritorna { managerId: [{ playerId, pricePaid }] } con rose 3P/8D/8C/6A entro il budget.
+ */
+export function draftRosters(managerIds, players, rnd = mulberry32(7)) {
+  const between = (a, b) => a + Math.floor(rnd() * (b - a + 1));
+  const remaining = players.filter((p) => p.isActive).map((p) => ({ p, v: p.quotation * (0.85 + rnd() * 0.3) })).sort((a, b) => b.v - a.v);
+  const rosters = Object.fromEntries(managerIds.map((id) => [id, []]));
+  const need = Object.fromEntries(managerIds.map((id) => [id, { ...DEFAULT_RULES.roster }]));
+  let dir = 1;
+  for (let round = 0; round < 25; round++) {
+    const seq = dir === 1 ? managerIds : [...managerIds].reverse();
+    for (const mid of seq) {
+      const i = remaining.findIndex(({ p }) => need[mid][p.role] > 0);
+      if (i < 0) continue;
+      const { p } = remaining.splice(i, 1)[0];
+      rosters[mid].push({ playerId: p.id, pricePaid: Math.max(1, Math.round(p.quotation * (0.45 + rnd() * 0.6))) });
+      need[mid][p.role]--;
+    }
+    dir *= -1;
+  }
+  for (const mid of managerIds) {
+    const spent = rosters[mid].reduce((s, r) => s + r.pricePaid, 0);
+    const target = DEFAULT_RULES.budget - between(4, 30);
+    if (spent > target) { const k = target / spent; for (const r of rosters[mid]) r.pricePaid = Math.max(1, Math.floor(r.pricePaid * k)); }
+  }
+  return rosters;
+}
+
 export function buildSeason(seed = 20262027) {
   const rnd = mulberry32(seed);
   const pick = (arr) => arr[Math.floor(rnd() * arr.length)];
@@ -114,30 +143,7 @@ export function buildSeason(seed = 20262027) {
 
   // --- Lega fanta --------------------------------------------------------
   const clubOf = Object.fromEntries(CLUBS.map((c) => [c.id, c]));
-  const pool = players.filter((p) => p.isActive).map((p) => ({ p, v: p.quotation * (0.85 + rnd() * 0.3) })).sort((a, b) => b.v - a.v);
-  const rosters = Object.fromEntries(MANAGERS.map((m) => [m.id, []]));
-  const need = Object.fromEntries(MANAGERS.map((m) => [m.id, { ...DEFAULT_RULES.roster }]));
-  const order = MANAGERS.map((m) => m.id);
-  let dir = 1, cursor = 0;
-  const remaining = [...pool];
-  for (let round = 0; round < 25; round++) {
-    const seq = dir === 1 ? order : [...order].reverse();
-    for (const mid of seq) {
-      const i = remaining.findIndex(({ p }) => need[mid][p.role] > 0);
-      if (i < 0) continue;
-      const { p } = remaining.splice(i, 1)[0];
-      const price = Math.max(1, Math.round(p.quotation * (0.45 + rnd() * 0.6)));
-      rosters[mid].push({ playerId: p.id, pricePaid: price });
-      need[mid][p.role]--;
-    }
-    dir *= -1; cursor++;
-  }
-  // normalizza: ogni rosa costa al massimo il budget meno un residuo (art. 2.1)
-  for (const mid of order) {
-    const spent = rosters[mid].reduce((s, r) => s + r.pricePaid, 0);
-    const target = DEFAULT_RULES.budget - between(4, 30);
-    if (spent > target) { const k = target / spent; for (const r of rosters[mid]) r.pricePaid = Math.max(1, Math.floor(r.pricePaid * k)); }
-  }
+  const rosters = draftRosters(MANAGERS.map((m) => m.id), players, rnd);
   const managers = MANAGERS.map((m) => ({ ...m, credits: DEFAULT_RULES.budget - rosters[m.id].reduce((s, r) => s + r.pricePaid, 0) }));
 
   const frr = roundRobin(managers.map((m) => m.id));

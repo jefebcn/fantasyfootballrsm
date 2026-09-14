@@ -28,7 +28,9 @@ function nextCard(ph, me) {
 export const dashboard = {
   title: 'Dashboard',
   render() {
-    const me = S.me(); const ph = S.weekPhase(); const st = S.standings(); const row = st.find((r) => r.managerId === me.id);
+    const me = S.me(); const ph = S.weekPhase(); const st = S.standings(); const row = (me && st.find((r) => r.managerId === me.id)) || { position: '–', points: 0, played: 0, fantapunti: 0 };
+    if (!me) return `<main class="a-body"><div class="empty">${icon('towers')}<p>Non fai parte di questa lega.</p><a class="a-btn" href="#/leghe" style="text-decoration:none">Le mie leghe</a></div></main>`;
+    const noRoster = S.rosterIds(me.id).length === 0;
     const cur = S.myFixture(ph.matchday, me.id); const curR = cur ? S.fixtureResult(cur) : null;
     const nxt = S.myFixture(ph.next, me.id); const nxtR = nxt ? S.fixtureResult(nxt) : null;
     const last = S.resultsUntil(ph.matchday).filter((r) => r.homeManagerId === me.id || r.awayManagerId === me.id).slice(-5).reverse();
@@ -36,12 +38,13 @@ export const dashboard = {
     const rule = RULES[Math.floor(Date.now() / 86400000) % RULES.length];
     return `<main class="a-body">
       <div id="install-slot"></div>
-      <div class="a-herowrap"><div class="a-league">${esc(S.base.league.shortName)} ${icon('chev')}</div>
+      <div class="a-herowrap"><a class="a-league" href="#/leghe" style="text-decoration:none;color:inherit">${esc(S.base.league.shortName)} ${icon('chev')}</a>
         <div class="a-hero">${icon('towers', 'tw')}<h2>${esc(me.teamName)}</h2>
           <svg class="jersey" style="--j1:${me.color};--j2:${me.color}"><use href="#i-jersey"/></svg>
           <div class="acts"><a href="#/scheda" aria-label="Condividi scheda"><button>${icon('share')}</button></a><a href="#/impostazioni" aria-label="Impostazioni"><button>${icon('gear')}</button></a><a href="#/mercato" aria-label="Mercato libero"><button class="gold">${icon('cart')}</button></a></div>
           <div class="logos">${icon('towers', '')}<span>Fantacampionato</span><i></i><span>Titani.TV</span></div>
         </div></div>
+      ${noRoster ? `<div class="warn info">${icon('warn', 'ic sm')}<span><b>Rose non ancora assegnate.</b> ${S.isLeagueAdmin() ? '<a href="#/lega">Genera o inserisci le rose</a> dalla gestione lega.' : 'L\'admin della lega le assegna dopo l\'asta.'}</span></div>` : ''}
       <div class="a-card a-stats"><div><b>${row.position}<sup>ª</sup></b><span>Posizione</span></div><div><b>${row.points}</b><span>Punti</span></div><div><b>${row.played}</b><span>Partite</span></div><div><b>${fmt(row.fantapunti)}</b><span>Fantapunti</span></div></div>
       ${phaseCard(ph)}
       ${nextCard(ph, me)}

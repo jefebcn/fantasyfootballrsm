@@ -16,6 +16,7 @@ const ROUTES = [
   ['regolamento', views.regolamento], ['scheda', views.scheda], ['impostazioni', views.impostazioni],
   ['admin', views.adminGiornata], ['admin/partita/:id', views.adminPartita], ['admin/contestazioni', views.adminContestazioni],
   ['admin/congela', views.adminCongela], ['admin/registro', views.adminRegistro], ['mercato', views.mercato],
+  ['login', views.login], ['leghe', views.leghe], ['lega', views.lega],
 ];
 
 function resolve(hash) {
@@ -51,7 +52,7 @@ const NAV = [['', 'home', 'Dashboard'], ['rosa', 'shirt', 'Rosa'], ['calendario'
 
 function appbar(view, ctx) {
   const league = S.base.league;
-  const kind = view.appbar || 'main';
+  const kind = (typeof view.appbar === 'function' ? view.appbar(ctx) : view.appbar) || 'main';
   if (kind === 'none') return '';
   if (kind === 'back') return `<header class="a-appbar"><button class="ib flip" data-back aria-label="Indietro">${icon('chev')}</button><div class="t"><b>${esc(league.name)}</b><span>${esc(view.sub?.(ctx) || view.title)}</span></div>${view.actions ? view.actions(ctx) : ''}</header>`;
   return `<header class="a-appbar"><button class="ib" data-open-drawer aria-label="Menu">${icon('menu')}</button><div class="t"><b>${esc(league.name)}</b><span>${esc(view.sub?.(ctx) || view.title)}</span></div><a class="ib" href="#/regolamento" aria-label="Regolamento">${icon('book')}</a><a class="ib" href="#/admin/contestazioni" aria-label="Contestazioni">${icon('flag')}${S.contestazioni().some((c) => c.status === 'open') ? '<i class="dot"></i>' : ''}</a></header>`;
@@ -61,26 +62,40 @@ function nav(path) {
   return `<nav class="a-nav">${NAV.map(([p, ic, l]) => `<a href="#/${p}" class="${active === p ? 'on' : ''}">${icon(ic)}${l}${p === 'voti' && S.matchdayStatus(S.currentMatchday()) === 'provisional' ? '<i class="dot"></i>' : ''}</a>`).join('')}</nav>`;
 }
 function drawer() {
-  const me = S.me(); const d = S.store.get(); const ph = S.weekPhase();
+  const me = S.me(); const ph = S.weekPhase(); const remote = S.isRemote(); const u = S.currentUser();
   const item = (href, ic, label, small = '') => `<a class="d-item" href="${href}"><i>${icon(ic)}</i>${label}${small ? `<small>${small}</small>` : ''}</a>`;
-  const admin = d.role !== 'fantallenatore';
+  const leagues = S.myLeagues(); const cur = S.currentLeagueId();
+  const head = remote
+    ? `<div class="d-head"><div><b>${esc(me?.owner || S.profileInfo()?.display_name || u?.email || '')}</b><span>${esc(me?.teamName || u?.email || 'nessuna lega')}</span></div><button data-logout>LOGOUT</button></div>`
+    : `<div class="d-head"><div><b>${esc(me?.owner || 'Demo')}</b><span>${esc(me?.teamName || 'modalità locale')}</span></div><a href="#/impostazioni" style="text-decoration:none"><button>PROFILO</button></a></div>`;
+  const leagueRow = remote
+    ? `<a class="d-league" href="#/leghe" style="text-decoration:none">${esc(S.base.league.name)} <i>+</i></a>${leagues.length > 1 ? `<div class="d-sec"><span class="chip">Le mie leghe</span></div>${leagues.filter((l) => l.id !== cur).map((l) => `<button class="d-item" data-switch="${l.id}" style="border:0;background:transparent;width:100%;font:inherit;font-weight:600;cursor:pointer"><i style="background:var(--c-pietra-400)">${icon('cup')}</i>${esc(l.name)}<small>${l.myRole}</small></button>`).join('')}` : ''}`
+    : `<div class="d-league">${esc(S.base.league.name)} <i>+</i></div>`;
   return `<div class="a-drawer${drawerOpen ? ' on' : ''}"><div class="scrim" data-close-drawer></div><div class="panel">
-    <div class="d-head"><div><b>${esc(me.owner)}</b><span>${esc(me.teamName)}</span></div><a href="#/impostazioni" style="text-decoration:none"><button>PROFILO</button></a></div>
-    <div class="d-league">${esc(S.base.league.name)} <i>+</i></div>
-    <div class="d-cta"><a class="a-btn" href="#/rosa/formazione" style="text-decoration:none">${icon('shirt', 'ic sm')}Schiera la formazione</a></div>
+    ${head}${leagueRow}
+    ${S.hasLeague() ? `<div class="d-cta"><a class="a-btn" href="#/rosa/formazione" style="text-decoration:none">${icon('shirt', 'ic sm')}Schiera la formazione</a></div>` : ''}
     <div class="d-sec"><span class="chip">Setup</span></div>
-    ${item('#/regolamento', 'book', 'Regolamento ed opzioni')}${item('#/classifica', 'cup', 'Competizioni')}${item('#/impostazioni', 'users', 'Partecipanti', String(S.base.managers.length))}
+    ${item('#/lega', 'shield', 'Profilo lega', S.base.league.inviteCode ? `codice ${esc(S.base.league.inviteCode)}` : '')}${item('#/lega', 'users', 'Partecipanti', String(S.base.managers.length))}${item('#/regolamento', 'book', 'Regolamento ed opzioni')}${item('#/classifica', 'cup', 'Competizioni')}
     <div class="d-sec"><span class="chip">Gioca</span></div>
     ${item('#/listone', 'list', 'Listone', String(S.base.players.length))}${item('#/mercato', 'cart', 'Mercato libero', 'rilancio 24h')}${item('#/mercato', 'out', 'Fuori dal campionato', String(S.base.players.filter((p) => !p.isActive).length))}${item('#/scheda', 'img', 'Scheda condivisibile')}
-    ${admin ? `<div class="d-sec admin"><span class="chip">Giudice Dati</span></div>
+    ${S.isLeagueAdmin() ? `<div class="d-sec"><span class="chip">Gestione</span></div>${item('#/lega', 'shirt', 'Gestione rose')}${item('#/lega', 'edit', 'Partecipanti e ruoli')}` : ''}
+    ${S.isJudge() ? `<div class="d-sec admin"><span class="chip">Giudice Dati</span></div>
     ${item('#/admin', 'edit', 'Inserisci eventi', `G${ph.matchday}`)}${item('#/admin/contestazioni', 'flag', 'Contestazioni', `${S.contestazioni().filter((c) => c.status === 'open').length} aperte`)}${item('#/admin/congela', 'lock', 'Congela giornata', 'mar 20:00')}${item('#/admin/registro', 'archive', 'Registro modifiche')}` : ''}
     <a class="d-plain" href="#/impostazioni" style="display:block;text-decoration:none;color:inherit">Utente, impostazioni e privacy</a>
-    <div class="d-foot">Versione 0.1 · pilota<br>Fantacampionato Sammarinese</div>
+    <div class="d-foot">Versione 0.2 · ${remote ? 'account Supabase' : 'demo locale'}<br>Fantacampionato Sammarinese</div>
   </div></div>`;
 }
 
 let scrollMemo = {};
+function gate(path) {
+  if (!S.isRemote()) return null;
+  if (!S.currentUser()) return path === 'login' ? null : 'login';
+  if (path === 'login') return '';
+  if (!S.hasLeague() && !['leghe', 'impostazioni'].includes(path)) return 'leghe';
+  return null;
+}
 export function render() {
+  const g = gate(resolve(location.hash).path); if (g !== null && g !== resolve(location.hash).path) { location.hash = `#/${g}`; return; }
   const { view, params, path } = resolve(location.hash);
   const ctx = { params, path, go, toast, sheet, render };
   const prevPath = current?.path;
@@ -97,6 +112,8 @@ document.addEventListener('click', (e) => {
   if (e.target.closest('[data-open-drawer]')) { drawerOpen = true; root.querySelector('.a-drawer').classList.add('on'); return; }
   if (e.target.closest('[data-close-drawer]')) { drawerOpen = false; root.querySelector('.a-drawer').classList.remove('on'); return; }
   if (e.target.closest('.a-drawer a')) { drawerOpen = false; }
+  if (e.target.closest('[data-logout]')) { S.signOut().then(() => go('login')); return; }
+  const sw = e.target.closest('[data-switch]'); if (sw) { drawerOpen = false; S.switchLeague(sw.dataset.switch).then(() => go('')); return; }
   if (e.target.closest('[data-back]')) { e.preventDefault(); if (history.length > 1) history.back(); else go(''); return; }
   const t = e.target.closest('.vr[data-toggle]'); if (t) { const vb = t.nextElementSibling; if (vb?.classList.contains('vb')) vb.classList.toggle('on'); return; }
   if (e.target.id === 'sheet-scrim') sheet(null);
@@ -104,10 +121,13 @@ document.addEventListener('click', (e) => {
 window.addEventListener('hashchange', () => { drawerOpen = false; sheet(null); render(); });
 S.subscribe(() => render());
 
-function boot() {
+async function boot() {
   document.body.insertAdjacentHTML('afterbegin', SPRITE);
   applyTheme();
   window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', applyTheme);
+  S.setErrorHandler((e) => { console.error(e); toast(e?.message || 'Errore di rete'); });
+  root.innerHTML = '<div class="app"><div class="empty" style="margin:auto">' + icon('towers') + '<p>Caricamento…</p></div></div>';
+  await S.init();
   render();
   if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js').catch(() => {});
   window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); window.__installPrompt = e; document.dispatchEvent(new Event('installable')); });

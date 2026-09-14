@@ -793,3 +793,5 @@ button,a{-webkit-tap-highlight-color:transparent}
 /* Impostazioni: icone illustrate nello stesso riquadro dei glifi. */
 .setting .ico.illus{background:var(--surface-sunk)}
 .setting .ico .pic{width:22px;height:22px}
+
+.mcta .pic.mini{width:17px;height:17px;margin-right:2px}

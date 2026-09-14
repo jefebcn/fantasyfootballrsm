@@ -74,7 +74,7 @@ export function matchCard(r, managers, { meta = '', badgeHtml = '' } = {}) {
   const head = (badgeHtml || meta) ? `<div class="mhead">${badgeHtml}<span class="when">${esc(meta)}</span></div>` : '';
   const foot = r.played
     ? `<div class="mfoot"><span>${fmt(r.homeScore)}</span><em>fantapunti</em><span>${fmt(r.awayScore)}</span></div>
-       <div class="mcta">${r.status === 'frozen' ? 'Vedi la partita' : 'Segui il Live'}${icon('chev', 'ic sm')}</div>`
+       <div class="mcta">${r.status === 'frozen' ? '' : pic('live', 'menu', 'mini')}${r.status === 'frozen' ? 'Vedi la partita' : 'Segui il Live'}${icon('chev', 'ic sm')}</div>`
     : '';
   const body = `<div class="mrow">${side(h)}<span class="score${r.played ? '' : ' vs'}">${r.played ? `${r.homeGoals} – ${r.awayGoals}` : 'VS'}</span>${side(a)}</div>`;
   return r.played

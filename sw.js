@@ -1,11 +1,11 @@
 /* Service worker — shell in cache, aggiornamento in background. */
-const VERSION = 'fcs-v0.1.0';
+const VERSION = 'fcs-v0.2.0';
 const SHELL = [
   './', './index.html', './manifest.webmanifest', './styles/app.css', './design/tokens/tokens.css',
-  './src/app.js', './src/state.js', './src/data.js', './src/engine.js', './src/ui.js', './src/sprite.js',
+  './src/app.js', './src/state.js', './src/data.js', './src/engine.js', './src/ui.js', './src/sprite.js', './src/config.js', './src/backend.js',
   './src/views/index.js', './src/views/dashboard.js', './src/views/rosa.js', './src/views/formazione.js', './src/views/calendario.js',
   './src/views/classifica.js', './src/views/voti.js', './src/views/live.js', './src/views/listone.js', './src/views/giocatore.js',
-  './src/views/regolamento.js', './src/views/scheda.js', './src/views/impostazioni.js', './src/views/mercato.js', './src/views/admin.js',
+  './src/views/regolamento.js', './src/views/scheda.js', './src/views/impostazioni.js', './src/views/mercato.js', './src/views/admin.js', './src/views/auth.js', './src/views/leghe.js', './src/views/lega.js',
   './icons/icon-192.png', './icons/icon-512.png', './icons/maskable-512.png', './icons/apple-touch-icon.png',
 ];
 self.addEventListener('install', (e) => {

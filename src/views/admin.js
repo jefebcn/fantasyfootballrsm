@@ -9,6 +9,7 @@ const guard = (ctx, fn) => { try { fn(); } catch (e) { ctx.toast(e.message); } }
 export const adminGiornata = {
   title: 'Giudice Dati', sub: () => `Giudice Dati · Giornata ${S.currentMatchday()}`,
   render() {
+    if (!S.isJudge()) return `<main class="a-body"><div class="empty">${icon('lock')}<p>Solo il Giudice Dati inserisce gli eventi (art. 9.4). Nella modalità con account il ruolo si assegna dal database.</p></div></main>`;
     const n = S.currentMatchday(); const st = S.matchdayStatus(n); const ms = S.matchesOf(n);
     const done = ms.filter((m) => m.status !== 'scheduled').length; const open = S.contestazioni().filter((c) => c.status === 'open');
     return `<main class="a-body">
@@ -120,9 +121,9 @@ export const adminPartita = {
 export const adminContestazioni = {
   title: 'Contestazioni', appbar: 'back', sub: () => 'Contestazioni · scadenza mar 18:00',
   render() {
-    const list = S.contestazioni(); const admin = S.store.get().role !== 'fantallenatore';
-    const item = (c) => { const p = S.playersById.get(c.playerId); const m = S.match(c.matchId); const by = S.managersById.get(c.by);
-      return `<div class="a-card" style="display:flex;flex-direction:column;gap:6px"><div style="display:flex;justify-content:space-between;gap:8px"><b>${esc(p?.name || '?')}${c.minute != null ? ` · ${c.minute}'` : ''}</b><span class="badge ${c.status === 'open' ? 'badge--prov' : c.status === 'accolta' ? 'badge--live' : 'badge--froz'}" style="padding:2px 8px">${c.status === 'open' ? 'aperta' : c.status}</span></div><span class="small muted">${m ? `${esc(S.clubsById.get(m.homeClubId).name)} — ${esc(S.clubsById.get(m.awayClubId).name)} · ` : ''}${esc(by?.owner || c.by)} · ${dateIt(c.at)} ${timeIt(c.at)}</span><p style="font-size:14px">${esc(c.text)}</p>${c.note ? `<p class="small muted">Giudice: ${esc(c.note)}</p>` : ''}
+    const list = S.contestazioni(); const admin = S.isJudge();
+    const item = (c) => { const p = S.playersById.get(c.playerId); const m = S.match(c.matchId); const by = S.managersById.get(c.by) || (c.byName ? { owner: c.byName } : null);
+      return `<div class="a-card" style="display:flex;flex-direction:column;gap:6px"><div style="display:flex;justify-content:space-between;gap:8px"><b>${esc(p?.name || '?')}${c.minute != null ? ` · ${c.minute}'` : ''}</b><span class="badge ${c.status === 'open' ? 'badge--prov' : c.status === 'accolta' ? 'badge--live' : 'badge--froz'}" style="padding:2px 8px">${c.status === 'open' ? 'aperta' : c.status}</span></div><span class="small muted">${m ? `${esc(S.clubsById.get(m.homeClubId).name)} — ${esc(S.clubsById.get(m.awayClubId).name)} · ` : ''}${esc(by?.owner || '—')}${c.leagueName ? ` · ${esc(c.leagueName)}` : ''} · ${dateIt(c.at)} ${timeIt(c.at)}</span><p style="font-size:14px">${esc(c.text)}</p>${c.note ? `<p class="small muted">Giudice: ${esc(c.note)}</p>` : ''}
         ${c.status === 'open' && admin ? `<div class="row2"><button class="a-btn sec" data-res="${c.id}:accolta" style="height:40px">Accolta → modifica</button><button class="a-btn sec" data-res="${c.id}:respinta" style="height:40px;border-color:var(--negative);color:var(--negative)">Respinta</button></div>` : ''}</div>`; };
     return `<main class="a-body">${list.length ? list.map(item).join('') : `<div class="empty">${icon('flag')}<p>Nessuna contestazione. Dalla vista Voti, in fase provvisoria, ogni riga ha «Segnala un errore» (art. 9.3).</p></div>`}</main>`;
   },
@@ -165,8 +166,8 @@ export const adminRegistro = {
   title: 'Registro modifiche', appbar: 'back', sub: () => 'Registro modifiche · chi, quando, cosa',
   render() {
     const log = S.changeLog();
-    const line = (l) => { const who = S.managersById.get(l.by)?.owner || l.by; const m = l.matchId ? S.match(l.matchId) : null; const where = m ? `${S.clubsById.get(m.homeClubId).shortName}–${S.clubsById.get(m.awayClubId).shortName}` : l.matchday ? `G${l.matchday}` : '';
-      const what = l.what === 'event+' ? `+ ${EV_LABEL[l.ev.type]} ${S.playersById.get(l.ev.playerId)?.lastName} ${l.ev.minute}'` : l.what === 'event-' ? `− ${EV_LABEL[l.ev?.type] || 'evento'} ${S.playersById.get(l.ev?.playerId)?.lastName || ''}` : l.what === 'match' ? `risultato/stato: ${Object.entries(l.patch).map(([k, v]) => `${k}=${v}`).join(' ')}` : l.what === 'appearances' ? `presenze: ${l.count}` : l.what === 'freeze' ? 'congelamento' : l.what === 'reopen' ? 'riapertura' : l.what === 'contestazione' ? `contestazione ${l.status}` : l.what;
+    const line = (l) => { const who = S.managersById.get(l.by)?.owner || (l.by ? 'giudice' : '—'); const m = l.matchId ? S.match(l.matchId) : null; const where = m ? `${S.clubsById.get(m.homeClubId).shortName}–${S.clubsById.get(m.awayClubId).shortName}` : l.matchday ? `G${l.matchday}` : '';
+      const what = /:/.test(l.what) ? `${l.what.replace('match_events', 'evento').replace('match_overrides', 'partita').replace(':insert', ' +').replace(':delete', ' −').replace(':update', ' ~')} ${l.payload?.type ? EV_LABEL[l.payload.type] + ' ' + (S.playersById.get(l.payload.player_id)?.lastName || '') + ' ' + l.payload.minute + "'" : l.payload?.status ? `${l.payload.status} ${l.payload.home_goals ?? ''}-${l.payload.away_goals ?? ''}` : ''}` : l.what === 'event+' ? `+ ${EV_LABEL[l.ev.type]} ${S.playersById.get(l.ev.playerId)?.lastName} ${l.ev.minute}'` : l.what === 'event-' ? `− ${EV_LABEL[l.ev?.type] || 'evento'} ${S.playersById.get(l.ev?.playerId)?.lastName || ''}` : l.what === 'match' ? `risultato/stato: ${Object.entries(l.patch).map(([k, v]) => `${k}=${v}`).join(' ')}` : l.what === 'appearances' ? `presenze: ${l.count}` : l.what === 'freeze' ? 'congelamento' : l.what === 'reopen' ? 'riapertura' : l.what === 'contestazione' ? `contestazione ${l.status}` : l.what;
       return `<div class="te"><span class="min">${dateIt(l.at)}<br>${timeIt(l.at)}</span><span class="small" style="font-weight:600">${esc(who)}</span><div><b>${esc(what)}</b><span>${esc(where)}</span></div><span></span></div>`; };
     return `<main class="a-body">${log.length ? `<div class="tl">${log.map(line).join('')}</div>` : `<div class="empty">${icon('archive')}<p>Nessuna modifica registrata su questo dispositivo.</p></div>`}</main>`;
   },

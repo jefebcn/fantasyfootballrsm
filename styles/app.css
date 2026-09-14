@@ -669,3 +669,17 @@ button,a{-webkit-tap-highlight-color:transparent}
 .b2 .nm b .sub.sm{display:inline-grid;width:14px;height:14px;vertical-align:-2px}
 .sheet-ev{display:flex;align-items:center;gap:8px}
 .kb .k .evi{margin-bottom:2px}
+
+/* Diagnostica accessi: un rigo per controllo, il segno a sinistra dice l'esito. */
+.diag{display:flex;flex-direction:column;gap:2px;margin-top:4px}
+.diag .d-r{display:flex;gap:12px;align-items:flex-start;padding:11px 0;border-top:1px solid var(--border)}
+.diag .d-r:first-child{border-top:0}
+.diag .d-r > i{flex:none;width:22px;height:22px;border-radius:50%;display:grid;place-items:center;font:700 12px var(--font-display);font-style:normal}
+.diag .d-r.ok > i{background:var(--positive-soft);color:var(--positive)}
+.diag .d-r.attenzione > i{background:var(--warning-soft);color:var(--warning)}
+.diag .d-r.errore > i{background:var(--negative-soft);color:var(--negative)}
+.diag .d-r.info > i{background:var(--surface-sunk);color:var(--text-muted)}
+.diag .d-r > span{display:flex;flex-direction:column;gap:2px;min-width:0}
+.diag .d-r b{font:600 14px var(--font-body)}
+.diag .d-r span span{font-size:13px;color:var(--text-muted);overflow-wrap:anywhere}
+.diag .d-r small{font:500 11px var(--font-data);color:var(--text-muted);opacity:.8;overflow-wrap:anywhere}

@@ -32,7 +32,8 @@ export const impostazioni = {
     const data = group('Dati e privacy', `
       ${row('list', 'Da dove vengono i dati', 'Lega, formazioni e voti sul server; listone e calendario generati dall\'app')}
       ${row('shield', 'Atleti e società', 'Nomi e prestazioni useranno dati reali solo previo accordo FSGC (art. 14)')}
-      ${row('gear', 'Server della lega', esc((S.serverHost() || '—')), 'server')}`);
+      ${row('gear', 'Server della lega', esc((S.serverHost() || '—')), 'server')}
+      ${row('shield', 'Diagnostica accessi', 'Controlla sul progetto cosa manca ancora per far entrare la gente', 'diagnostica')}`);
 
     return `<main class="a-body">${account}${league}${judge}${look}${data}
       <p class="auth-foot">Versione 0.5 · motore ${S.rules().engineVersion}</p></main>`;
@@ -53,6 +54,15 @@ export const impostazioni = {
       if (act === 'leghe') { ctx.go('leghe'); return; }
       if (act === 'regolamento') { ctx.go('regolamento'); return; }
       if (act === 'admin') { ctx.go('admin'); return; }
+      if (act === 'diagnostica') {
+        ctx.sheet('<h3>Diagnostica accessi</h3><p class="auth-hint">Lettura in corso dal progetto\u2026</p>');
+        let esiti; try { esiti = await S.checkSetup(); } catch (err) { ctx.sheet(`<h3>Diagnostica accessi</h3><p class="auth-hint">${esc(err?.message || String(err))}</p>`); return; }
+        const segno = { ok: '\u2713', attenzione: '!', errore: '\u2715', info: 'i' };
+        ctx.sheet(`<h3>Diagnostica accessi</h3>
+          <div class="diag">${esiti.map((r) => `<div class="d-r ${r.livello}"><i>${segno[r.livello]}</i><span><b>${esc(r.voce)}</b><span>${esc(r.esito)}</span>${r.dove ? `<small>${esc(r.dove)}</small>` : ''}</span></div>`).join('')}</div>
+          <p class="auth-hint">Gli interruttori stanno nel pannello Supabase: qui si legge soltanto come sono messi adesso.</p>`);
+        return;
+      }
       if (act === 'server') {
         ctx.sheet(`<h3>Server della lega</h3><p class="auth-hint">Valori pubblici del progetto Supabase (Settings → API). Cambiarli scollega questo dispositivo dalla lega attuale.</p>
           <label class="lbl" for="sv-url" style="margin-top:8px">Project URL</label><input class="field-input" id="sv-url" value="${esc(S.serverUrl() || '')}" autocomplete="off">

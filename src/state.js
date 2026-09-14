@@ -110,6 +110,7 @@ export async function updatePassword(password) { await remote.updatePassword(pas
 export async function updateDisplayName(name) { await remote.updateProfile(user.id, { display_name: name }); await refresh(); }
 export async function signOut() { authKind() === 'clerk' ? await clerk.signOut() : await remote.signOut(); user = null; await loadAll(); notify(); }
 export function setSupabaseConfig(url, key) { remote.setConfig(url, key); location.reload(); }
+export const checkSetup = () => remote.checkSetup();
 export const serverUrl = () => remote.config()?.url || '';
 export const serverKey = () => remote.config()?.key || '';
 export const serverHost = () => { try { return new URL(serverUrl()).host; } catch { return ''; } };

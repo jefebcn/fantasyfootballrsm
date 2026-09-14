@@ -739,3 +739,28 @@ button,a{-webkit-tap-highlight-color:transparent}
 .lrow .pt span{font-size:10px;color:var(--text-muted)}
 .lcta{display:flex;align-items:center;justify-content:center;gap:4px;padding:11px 0;border-top:1px solid var(--border);
   font:600 13px var(--font-body);color:var(--primary)}
+
+/* --- Notizie: la prima in grande con la foto, le altre in riga --- */
+.nbig{display:block;background:var(--surface);border-radius:var(--r-md);box-shadow:var(--sh-card);
+  overflow:hidden;text-decoration:none;color:inherit;margin-bottom:10px}
+.nbig:active{background:var(--surface-2)}
+.nbig .ph{display:block;aspect-ratio:16/9;background:var(--surface-sunk)}
+.nbig .ph img{width:100%;height:100%;object-fit:cover;display:block}
+.nbig .tx{display:flex;flex-direction:column;gap:5px;padding:12px 14px 13px}
+.nbig .tx b{font:700 16px var(--font-display);line-height:1.25}
+.nbig .tx > span{font-size:12.5px;color:var(--text-muted);line-height:1.45;
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.nbig .tx em{font:600 11px var(--font-body);font-style:normal;color:var(--primary)}
+
+.news{background:var(--surface);border-radius:var(--r-md);box-shadow:var(--sh-card);padding:2px 14px 0}
+.ni{display:flex;align-items:center;gap:11px;padding:10px 0;border-top:1px solid var(--border);
+  text-decoration:none;color:inherit}
+.ni:first-child{border-top:0}
+.ni:active{background:var(--surface-2)}
+.ni .th{flex:none;width:68px;aspect-ratio:16/11;border-radius:8px;overflow:hidden;background:var(--surface-sunk)}
+.ni .th img{width:100%;height:100%;object-fit:cover;display:block}
+.ni .tx{display:flex;flex-direction:column;gap:3px;min-width:0;flex:1}
+.ni .tx b{font:600 13.5px var(--font-body);line-height:1.3;
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.ni .tx em{font:500 11px var(--font-body);font-style:normal;color:var(--text-muted)}
+.news .lcta{border-top:1px solid var(--border)}

@@ -1,11 +1,13 @@
 /**
- * Anagrafiche e calendario della stagione, generati in modo deterministico:
- * 16 società, ~400 tesserati, 30 giornate. Stesso seed → stessi dati.
- * I giocatori sono inventati finché non c'è l'accordo con la FSGC (art. 14.1).
+ * Anagrafiche e calendario della stagione.
+ * 16 società e 30 giornate generate in modo deterministico: stesso seed → stessi dati.
+ * Il listone è invece quello VERO, importato da Transfermarkt in src/listone-dati.js
+ * (vedi scripts/importa-listone.py).
  * Le giornate 1-2 hanno anche eventi di esempio, usati solo dal Giudice Dati
  * per popolare il database la prima volta.
  */
 import { DEFAULT_RULES } from './engine.js';
+import { LISTONE } from './listone-dati.js';
 
 export function mulberry32(seed) {
   let a = seed >>> 0;
@@ -93,28 +95,15 @@ export function buildSeason(seed = 20262027) {
   const pick = (arr) => arr[Math.floor(rnd() * arr.length)];
   const between = (a, b) => a + Math.floor(rnd() * (b - a + 1));
 
-  // --- Listone -----------------------------------------------------------
-  const players = [];
-  const usedNames = new Set();
-  const roleSlots = [['P', 3], ['D', 8], ['C', 8], ['A', 6]];
-  const quotBase = { P: [6, 22], D: [5, 24], C: [5, 30], A: [6, 40] };
-  for (const club of CLUBS) {
-    let idx = 0;
-    for (const [role, n] of roleSlots) {
-      for (let i = 0; i < n; i++) {
-        let first, last, key;
-        do { first = pick(FIRST); last = pick(LAST); key = first + last; } while (usedNames.has(key));
-        usedNames.add(key);
-        const [lo, hi] = quotBase[role];
-        const strengthBoost = (club.strength - 1) * 0.12;
-        const tier = i === 0 ? 1 : i < 3 ? 0.7 : 0.4;
-        const q = Math.round(lo + (hi - lo) * Math.min(1, tier * (0.7 + strengthBoost) + rnd() * 0.25));
-        players.push({ id: `${club.id}_${++idx}`, firstName: first, lastName: last, name: `${last} ${first[0]}.`, clubId: club.id, role, quotation: q, isActive: true });
-      }
-    }
-  }
-  // tre tesserati usciti dal campionato (art. 3.3)
-  for (const id of ['faetano_20', 'cailungo_12', 'pennarossa_9']) { const p = players.find((x) => x.id === id); if (p) p.isActive = false; }
+  // --- Listone (reale, da src/listone-dati.js) ----------------------------
+  // Omonimi veri esistono (fratelli, cugini): l'id tiene il progressivo per
+  // società, così due "Gasperoni M." restano due tesserati distinti.
+  const perClub = {};
+  const players = LISTONE.map(([clubId, firstName, lastName, role, quotation, age]) => {
+    const idx = (perClub[clubId] = (perClub[clubId] || 0) + 1);
+    return { id: `${clubId}_${idx}`, firstName, lastName, name: `${lastName} ${firstName[0]}.`,
+      clubId, role, quotation, age, isActive: true };
+  });
 
   // --- Calendario reale: 30 giornate ------------------------------------
   const rr = roundRobin(CLUBS.map((c) => c.id));

@@ -185,6 +185,18 @@ def scrivi_modulo(dati):
     f.write_text(testo, encoding='utf-8')
     print(f'scritto {f.relative_to(RADICE)} — {len(tutti)} giocatori')
 
+    # Mappa id Transfermarkt → id nostro, nello stesso ordine con cui data.js
+    # numera i tesserati. Serve a importa-referti.py per agganciare i marcatori
+    # per identificativo e non per nome: gli omonimi qui esistono davvero.
+    per_club = {}
+    mappa = {}
+    for g in sorted(tutti, key=lambda g: (g['clubId'], 'PDCA'.index(g['ruolo']), -g['quotazione'], g['nome'])):
+        per_club[g['clubId']] = per_club.get(g['clubId'], 0) + 1
+        mappa[g['tmId']] = f"{g['clubId']}_{per_club[g['clubId']]}"
+    m = RADICE / 'data' / 'mappa-giocatori.json'
+    m.write_text(json.dumps(mappa, indent=0), encoding='utf-8')
+    print(f'scritto {m.relative_to(RADICE)} — {len(mappa)} corrispondenze')
+
 def main():
     cs = societa()
     print(f'società trovate: {len(cs)}')

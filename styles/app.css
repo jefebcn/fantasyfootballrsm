@@ -13,7 +13,7 @@ a{color:var(--primary)}
 .a-body{padding-bottom:calc(16px + env(safe-area-inset-bottom))}
 .a-body > *{flex:none}
 .a-nav a{text-decoration:none}
-.ib.flip .ic,.flip{transform:rotate(180deg)}
+.ib.flip .ic,.flip:not(.ib){transform:rotate(180deg)}
 .a-appbar a.ib{text-decoration:none}
 .a-hero .acts a{text-decoration:none}
 .a-card.a-fase .a-btn{text-decoration:none}
@@ -81,6 +81,9 @@ label.lbl{display:block;font-size:var(--fs-label);letter-spacing:.08em;text-tran
 .share .foot{display:flex;justify-content:space-between;align-items:center;font:700 11px var(--font-display);letter-spacing:.08em;text-transform:uppercase;opacity:.9}
 .mrow{cursor:pointer}
 .stepper{display:flex;align-items:center;gap:8px}
+.scorerow{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 0;border-top:1px solid var(--border)}
+.scorerow:first-of-type{border-top:0}
+.scorerow > b{font:600 15px var(--font-body);min-width:0;overflow-wrap:anywhere}
 .stepper button{width:40px;height:40px;border-radius:10px;border:1px solid var(--border-strong);background:var(--surface);color:var(--text);font:700 18px var(--font-display);cursor:pointer}
 .stepper b{font:800 28px var(--font-display);min-width:36px;text-align:center;font-variant-numeric:tabular-nums}
 .chipgrid{display:flex;flex-wrap:wrap;gap:6px}
@@ -207,8 +210,8 @@ hr.sep{border:0;border-top:1px solid var(--border);margin:4px 0}
 .d-sec{padding:12px 16px 4px}
 .d-sec .chip{display:inline-block;background:var(--primary-soft);color:var(--primary);font-weight:600;font-size:14px;padding:5px 16px;border-radius:999px}
 .d-sec.admin .chip{background:var(--accent-soft);color:var(--c-oro-600)}
-.d-item{display:flex;align-items:center;gap:14px;padding:11px 16px;font-size:16px;font-weight:600;color:var(--text)}
-.d-item i{width:34px;height:34px;border-radius:8px;background:var(--primary);color:#fff;display:grid;place-items:center;flex:none}
+.d-item{display:flex;align-items:center;gap:14px;padding:11px 16px;font-size:16px;font-weight:600;color:var(--text);text-decoration:none}
+.d-item i{width:34px;height:34px;border-radius:10px;background:var(--surface-sunk);color:var(--primary);display:grid;place-items:center;flex:none}
 .d-item i .ic{width:20px;height:20px}
 .d-item small{margin-left:auto;font-size:11px;color:var(--text-muted);font-weight:500}
 .d-item.lock{color:var(--text-muted)}
@@ -316,7 +319,8 @@ hr.sep{border:0;border-top:1px solid var(--border);margin:4px 0}
 .st-ok{background:var(--positive-soft);color:var(--positive)}.st-ip{background:var(--warning-soft);color:var(--warning)}.st-td{background:var(--surface-sunk);color:var(--text-muted);border:1.5px dashed var(--border-strong)}
 .mrow b{display:block;font-weight:600}
 .mrow span{font-size:11px;color:var(--text-muted)}
-.mrow .sc{font-family:var(--font-display);font-weight:700;font-variant-numeric:tabular-nums}
+.mrow .sc{font-family:var(--font-display);font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap}
+.mrow .sc.stato{font:600 10px var(--font-body);letter-spacing:.06em;color:var(--warning);max-width:84px;text-align:right;white-space:normal;line-height:1.15}
 .tl{display:flex;flex-direction:column;background:var(--surface);border-radius:var(--r-md);box-shadow:var(--sh-card);overflow:hidden}
 .tl .te{display:grid;grid-template-columns:44px auto 1fr auto;align-items:center;gap:10px;padding:9px 14px;border-top:1px solid var(--border);font-size:13px}
 .tl .te:first-child{border-top:0}
@@ -652,3 +656,16 @@ button,a{-webkit-tap-highlight-color:transparent}
 .ptxt .pmeta{font-variant-numeric:tabular-nums}
 .pact{grid-column:2;display:flex;gap:8px;margin-top:9px}
 .pact .chip.danger{color:var(--negative);border-color:var(--border-strong)}
+
+/* icone illustrate */
+.pic{display:block;width:100%;height:100%;object-fit:contain;-webkit-user-drag:none}
+.evi{display:inline-grid;place-items:center;width:20px;height:20px;flex:none}
+.vr .ev .evi{width:21px;height:21px}
+.tl .te .evi,.kb .k .evi{width:24px;height:24px}
+.d-item i .pic,.tile > .lead .pic{width:24px;height:24px}
+.d-item i.illus{background:var(--surface-sunk)}
+.tile > .lead.illus{background:var(--surface-sunk);padding:7px}
+.ps .ind .sub{display:inline-grid;place-items:center;width:18px;height:18px;background:#fff;border-radius:5px;box-shadow:0 1px 3px rgba(0,0,0,.3)}
+.b2 .nm b .sub.sm{display:inline-grid;width:14px;height:14px;vertical-align:-2px}
+.sheet-ev{display:flex;align-items:center;gap:8px}
+.kb .k .evi{margin-bottom:2px}

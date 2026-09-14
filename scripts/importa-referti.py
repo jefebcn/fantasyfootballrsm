@@ -31,7 +31,7 @@ UA = ('Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 '
 BASE = 'https://www.transfermarkt.it'
 CAL = f'{BASE}/campionato-sammarinese/gesamtspielplan/wettbewerb/SMR1/saison_id/2026'
 RADICE = pathlib.Path(__file__).resolve().parent.parent
-PAUSA = 8.0        # Transfermarkt limita duramente: meglio lenti che respinti
+PAUSA = 25.0       # Transfermarkt limita duramente: meglio lenti che respinti
 TENTATIVI = 5
 
 CLUB = {

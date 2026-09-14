@@ -1,0 +1,3716 @@
+{
+ "fonte": "Transfermarkt",
+ "competizione": "Campionato Sammarinese",
+ "societa": [
+  {
+   "id": "10617",
+   "slug": "tre-fiori-fc",
+   "saison": "2026",
+   "nome": "Tre Fiori Fc",
+   "giocatori": [
+    {
+     "tmId": "306609",
+     "nome": "Michele Nardi",
+     "ruolo": "P",
+     "ruoloEsteso": "Portiere",
+     "numero": "17",
+     "eta": 40,
+     "valore": 50000
+    },
+    {
+     "tmId": "939394",
+     "nome": "Alex Castagnoli",
+     "ruolo": "P",
+     "ruoloEsteso": "Portiere",
+     "numero": "25",
+     "eta": 37,
+     "valore": null
+    },
+    {
+     "tmId": "1589434",
+     "nome": "Vittorio Marchini",
+     "ruolo": "P",
+     "ruoloEsteso": "Portiere",
+     "numero": "22",
+     "eta": 19,
+     "valore": null
+    },
+    {
+     "tmId": "1596189",
+     "nome": "Cristian Rocchi",
+     "ruolo": "D",
+     "ruoloEsteso": "Difesa",
+     "numero": "13",
+     "eta": 18,
+     "valore": null
+    },
+    {
+     "tmId": "697863",
+     "nome": "Mattia Sancisi",
+     "ruolo": "D",
+     "ruoloEsteso": "Difensore centrale",
+     "numero": "3",
+     "eta": 23,
+     "valore": 100000
+    },
+    {
+     "tmId": "413275",
+     "nome": "Federico Pesaresi",
+     "ruolo": "D",
+     "ruoloEsteso": "Difensore centrale",
+     "numero": "12",
+     "eta": 30,
+     "valore": 100000
+    },
+    {
+     "tmId": "237848",
+     "nome": "Simone Rea",
+     "ruolo": "D",
+     "ruoloEsteso": "Difensore centrale",
+     "numero": "5",
+     "eta": 33,
+     "valore": 50000
+    },
+    {
+     "tmId": "132688",
+     "nome": "Alex Sirri",
+     "ruolo": "D",
+     "ruoloEsteso": "Difensore centrale",
+     "numero": "23",
+     "eta": 35,
+     "valore": 50000
+    },
+    {
+     "tmId": "863546",
+     "nome": "Pietro Mengucci",
+     "ruolo": "D",
+     "ruoloEsteso": "Terzino sinistro",
+     "numero": "24",
+     "eta": 23,
+     "valore": 50000
+    },
+    {
+     "tmId": "525841",
+     "nome": "Claudio Cuzzilla",
+     "ruolo": "D",
+     "ruoloEsteso": "Terzino sinistro",
+     "numero": "18",
+     "eta": 28,
+     "valore": null
+    },
+    {
+     "tmId": "352625",
+     "nome": "Alessandro D'Addario",
+     "ruolo": "D",
+     "ruoloEsteso": "Terzino destro",
+     "numero": "2",
+     "eta": 29,
+     "valore": 100000
+    },
+    {
+     "tmId": "401399",
+     "nome": "Diego Moretti",
+     "ruolo": "D",
+     "ruoloEsteso": "Terzino destro",
+     "numero": "-",
+     "eta": 26,
+     "valore": 10000
+    },
+    {
+     "tmId": "956269",
+     "nome": "Alberto Guerra",
+     "ruolo": "D",
+     "ruoloEsteso": "Terzino destro",
+     "numero": "26",
+     "eta": 22,
+     "valore": 10000
+    },
+    {
+     "tmId": "245980",
+     "nome": "Luca Censoni",
+     "ruolo": "C",
+     "ruoloEsteso": "Mediano",
+     "numero": "8",
+     "eta": 30,
+     "valore": 50000
+    },
+    {
+     "tmId": "37410",
+     "nome": "Matteo Mandorlini",
+     "ruolo": "C",
+     "ruoloEsteso": "Mediano",
+     "numero": "6",
+     "eta": 37,
+     "valore": 25000
+    },
+    {
+     "tmId": "719700",
+     "nome": "Nicolò Sancisi",
+     "ruolo": "C",
+     "ruoloEsteso": "Mediano",
+     "numero": "18",
+     "eta": 23,
+     "valore": 10000
+    },
+    {
+     "tmId": "497583",
+     "nome": "Brando Sami",
+     "ruolo": "C",
+     "ruoloEsteso": "Centrocampista",
+     "numero": "4",
+     "eta": 25,
+     "valore": 125000
+    },
+    {
+     "tmId": "471684",
+     "nome": "Federico Dolcini",
+     "ruolo": "C",
+     "ruoloEsteso": "Centrocampista",
+     "numero": "16",
+     "eta": 26,
+     "valore": 100000
+    },
+    {
+     "tmId": "1452077",
+     "nome": "Pavel Monceri",
+     "ruolo": "C",
+     "ruoloEsteso": "Centrocampista",
+     "numero": "95",
+     "eta": 20,
+     "valore": 50000
+    },
+    {
+     "tmId": "956272",
+     "nome": "Luca Terenzi",
+     "ruolo": "C",
+     "ruoloEsteso": "Esterno di destra",
+     "numero": "28",
+     "eta": 22,
+     "valore": 10000
+    },
+    {
+     "tmId": "701020",
+     "nome": "Federico Benedettini",
+     "ruolo": "C",
+     "ruoloEsteso": "Trequartista",
+     "numero": "20",
+     "eta": 23,
+     "valore": 200000
+    },
+    {
+     "tmId": "949382",
+     "nome": "Federico Ciccione",
+     "ruolo": "C",
+     "ruoloEsteso": "Ala destra",
+     "numero": "7",
+     "eta": 25,
+     "valore": 10000
+    },
+    {
+     "tmId": "621803",
+     "nome": "Tommaso Bernardi",
+     "ruolo": "A",
+     "ruoloEsteso": "Seconda punta",
+     "numero": "10",
+     "eta": 25,
+     "valore": 150000
+    },
+    {
+     "tmId": "137113",
+     "nome": "Matteo Prandelli",
+     "ruolo": "A",
+     "ruoloEsteso": "Punta centrale",
+     "numero": "9",
+     "eta": 37,
+     "valore": 75000
+    },
+    {
+     "tmId": "928711",
+     "nome": "Mohamed Ben Kacem",
+     "ruolo": "A",
+     "ruoloEsteso": "Punta centrale",
+     "numero": "27",
+     "eta": 32,
+     "valore": 75000
+    },
+    {
+     "tmId": "1108533",
+     "nome": "Joas van Nek",
+     "ruolo": "A",
+     "ruoloEsteso": "Punta centrale",
+     "numero": "11",
+     "eta": 22,
+     "valore": null
+    }
+   ]
+  },
+  {
+   "id": "24349",
+   "slug": "la-fiorita-1967",
+   "saison": "2026",
+   "nome": "La Fiorita 1967",
+   "giocatori": [
+    {
+     "tmId": "245995",
+     "nome": "Matteo Zavoli",
+     "ruolo": "P",
+     "ruoloEsteso": "Portiere",
+     "numero": "1",
+     "eta": 30,
+     "valore": 10000
+    },
+    {
+     "tmId": "160593",
+     "nome": "Gianluca Vivan",
+     "ruolo": "P",
+     "ruoloEsteso": "Portiere",
+     "numero": "27",
+     "eta": 42,
+     "valore": 10000
+    },
+    {
+     "tmId": "1173379",
+     "nome": "Elia Di Giuli",
+     "ruolo": "P",
+     "ruoloEsteso": "Portiere",
+     "numero": "12",
+     "eta": 22,
+     "valore": null
+    },
+    {
+     "tmId": "1456312",
+     "nome": "Nicolò Imola",
+     "ruolo": "D",
+     "ruoloEsteso": "Difesa",
+     "numero": "19",
+     "eta": 19,
+     "valore": null
+    },
+    {
+     "tmId": "412836",
+     "nome": "Marco Mazzotti",
+     "ruolo": "D",
+     "ruoloEsteso": "Difensore centrale",
+     "numero": "5",
+     "eta": 28,
+     "valore": 100000
+    },
+    {
+     "tmId": "333222",
+     "nome": "Antonio Barretta",
+     "ruolo": "D",
+     "ruoloEsteso": "Difensore centrale",
+     "numero": "26",
+     "eta": 30,
+     "valore": 100000
+    },
+    {
+     "tmId": "200195",
+     "nome": "Lorenzo Paramatti",
+     "ruolo": "D",
+     "ruoloEsteso": "Difensore centrale",
+     "numero": "6",
+     "eta": 31,
+     "valore": 25000
+    },
+    {
+     "tmId": "245983",
+     "nome": "Andrea Grandoni",
+     "ruolo": "D",
+     "ruoloEsteso": "Terzino sinistro",
+     "numero": "23",
+     "eta": 29,
+     "valore": 75000
+    },
+    {
+     "tmId": "456941",
+     "nome": "Giacomo Nigretti",
+     "ruolo": "D",
+     "ruoloEsteso": "Terzino destro",
+     "numero": "28",
+     "eta": 27,
+     "valore": 75000
+    },
+    {
+     "tmId": "1179760",
+     "nome": "Daniel Cicarelli",
+     "ruolo": "C",
+     "ruoloEsteso": "Mediano",
+     "numero": "20",
+     "eta": 28,
+     "valore": 125000
+    },
+    {
+     "tmId": "745908",
+     "nome": "Jacopo Semprini",
+     "ruolo": "C",
+     "ruoloEsteso": "Centrocampista",
+     "numero": "11",
+     "eta": 24,
+     "valore": 125000
+    },
+    {
+     "tmId": "342936",
+     "nome": "Marcello Mularoni",
+     "ruolo": "C",
+     "ruoloEsteso": "Centrocampista",
+     "numero": "8",
+     "eta": 28,
+     "valore": 75000
+    },
+    {
+     "tmId": "403043",
+     "nome": "Lorenzo Enchisi",
+     "ruolo": "C",
+     "ruoloEsteso": "Centrocampista",
+     "numero": "24",
+     "eta": 29,
+     "valore": 50000
+    },
+    {
+     "tmId": "398571",
+     "nome": "Simone Errico",
+     "ruolo": "C",
+     "ruoloEsteso": "Centrocampista",
+     "numero": "30",
+     "eta": 34,
+     "valore": 50000
+    },
+    {
+     "tmId": "154174",
+     "nome": "Marco Djuric",
+     "ruolo": "C",
+     "ruoloEsteso": "Centrocampista",
+     "numero": "17",
+     "eta": 33,
+     "valore": 25000
+    },
+    {
+     "tmId": "1564796",
+     "nome": "Thomas Bonifazi",
+     "ruolo": "C",
+     "ruoloEsteso": "Centrocampista",
+     "numero": "-",
+     "eta": 16,
+     "valore": null
+    },
+    {
+     "tmId": "245994",
+     "nome": "Tommaso Zafferani",
+     "ruolo": "C",
+     "ruoloEsteso": "Esterno di destra",
+     "numero": "33",
+     "eta": 30,
+     "valore": 50000
+    },
+    {
+     "tmId": "61362",
+     "nome": "Matteo Vitaioli",
+     "ruolo": "C",
+     "ruoloEsteso": "Trequartista",
+     "numero": "7",
+     "eta": 36,
+     "valore": 25000
+    },
+    {
+     "tmId": "475276",
+     "nome": "Tommaso Guidi",
+     "ruolo": "C",
+     "ruoloEsteso": "Ala sinistra",
+     "numero": "90",
+     "eta": 28,
+     "valore": 75000
+    },
+    {
+     "tmId": "935421",
+     "nome": "Giuseppe Serges",
+     "ruolo": "C",
+     "ruoloEsteso": "Ala sinistra",
+     "numero": "32",
+     "eta": 23,
+     "valore": null
+    },
+    {
+     "tmId": "355611",
+     "nome": "Filippo Berardi",
+     "ruolo": "C",
+     "ruoloEsteso": "Ala destra",
+     "numero": "99",
+     "eta": 29,
+     "valore": 100000
+    },
+    {
+     "tmId": "163177",
+     "nome": "Umberto Nappello",
+     "ruolo": "A",
+     "ruoloEsteso": "Seconda punta",
+     "numero": "10",
+     "eta": 35,
+     "valore": 25000
+    },
+    {
+     "tmId": "1425555",
+     "nome": "Matthias Bonetti",
+     "ruolo": "A",
+     "ruoloEsteso": "Punta centrale",
+     "numero": "9",
+     "eta": 24,
+     "valore": 150000
+    },
+    {
+     "tmId": "1577938",
+     "nome": "Mattia Marcaccini",
+     "ruolo": "A",
+     "ruoloEsteso": "Attacco",
+     "numero": "21",
+     "eta": 19,
+     "valore": null
+    }
+   ]
+  },
+  {
+   "id": "11479",
+   "slug": "ss-folgore-falciano",
+   "saison": "2026",
+   "nome": "Ss Folgore Falciano",
+   "giocatori": [
+    {
+     "tmId": "471469",
+     "nome": "Mirco De Angelis",
+     "ruolo": "P",
+     "ruoloEsteso": "Portiere",
+     "numero": "1",
+     "eta": 26,
+     "valore": 50000
+    },
+    {
+     "tmId": "946886",
+     "nome": "Fabio Borasco",
+     "ruolo": "P",
+     "ruoloEsteso": "Portiere",
+     "numero": "12",
+     "eta": 20,
+     "valore": 10000
+    },
+    {
+     "tmId": "650962",
+     "nome": "Angelo Russo",
+     "ruolo": "P",
+     "ruoloEsteso": "Portiere",
+     "numero": "80",
+     "eta": 38,
+     "valore": null
+    },
+    {
+     "tmId": "689943",
+     "nome": "Yero Touré",
+     "ruolo": "D",
+     "ruoloEsteso": "Difensore centrale",
+     "numero": "26",
+     "eta": 24,
+     "valore": 75000
+    },
+    {
+     "tmId": "136089",
+     "nome": "Cristian Brolli",
+     "ruolo": "D",
+     "ruoloEsteso": "Difensore centrale",
+     "numero": "28",
+     "eta": 34,
+     "valore": 25000
+    },
+    {
+     "tmId": "254691",
+     "nome": "Alex Marini",
+     "ruolo": "D",
+     "ruoloEsteso": "Difensore centrale",
+     "numero": "21",
+     "eta": 43,
+     "valore": null
+    },
+    {
+     "tmId": "1036648",
+     "nome": "Francesco Ramires",
+     "ruolo": "D",
+     "ruoloEsteso": "Terzino sinistro",
+     "numero": "3",
+     "eta": 22,
+     "valore": 50000
+    },
+    {
+     "tmId": "1148224",
+     "nome": "Diego Fabbri",
+     "ruolo": "D",
+     "ruoloEsteso": "Terzino sinistro",
+     "numero": "6",
+     "eta": 22,
+     "valore": 50000
+    },
+    {
+     "tmId": "203598",
+     "nome": "Manuel Battistini",
+     "ruolo": "D",
+     "ruoloEsteso": "Terzino destro",
+     "numero": "25",
+     "eta": 32,
+     "valore": 100000
+    },
+    {
+     "tmId": "163472",
+     "nome": "Francesco Sartori",
+     "ruolo": "D",
+     "ruoloEsteso": "Terzino destro",
+     "numero": "-",
+     "eta": 33,
+     "valore": 50000
+    },
+    {
+     "tmId": "475002",
+     "nome": "Alex Cavalli",
+     "ruolo": "D",
+     "ruoloEsteso": "Terzino destro",
+     "numero": "2",
+     "eta": 34,
+     "valore": 10000
+    },
+    {
+     "tmId": "624959",
+     "nome": "Assane Fall",
+     "ruolo": "C",
+     "ruoloEsteso": "Mediano",
+     "numero": "4",
+     "eta": 32,
+     "valore": 75000
+    },
+    {
+     "tmId": "1268381",
+     "nome": "Giovanni De Nicolò",
+     "ruolo": "C",
+     "ruoloEsteso": "Mediano",
+     "numero": "14",
+     "eta": 22,
+     "valore": 50000
+    },
+    {
+     "tmId": "646458",
+     "nome": "Adam Adami Martins",
+     "ruolo": "C",
+     "ruoloEsteso": "Mediano",
+     "numero": "5",
+     "eta": 34,
+     "valore": 25000
+    },
+    {
+     "tmId": "240310",
+     "nome": "Matteo Gaiani",
+     "ruolo": "C",
+     "ruoloEsteso": "Centrocampista",
+     "numero": "8",
+     "eta": 31,
+     "valore": 50000
+    },
+    {
+     "tmId": "1143143",
+     "nome": "Azael Garcia Rufer",
+     "ruolo": "C",
+     "ruoloEsteso": "Centrocampista",
+     "numero": "23",
+     "eta": 23,
+     "valore": 50000
+    },
+    {
+     "tmId": "1056425",
+     "nome": "Oleg Ankotovych",
+     "ruolo": "C",
+     "ruoloEsteso": "Centrocampista",
+     "numero": "18",
+     "eta": 22,
+     "valore": null
+    },
+    {
+     "tmId": "1452393",
+     "nome": "Federico Malaponti",
+     "ruolo": "C",
+     "ruoloEsteso": "Trequartista",
+     "numero": "22",
+     "eta": 19,
+     "valore": 25000
+    },
+    {
+     "tmId": "342948",
+     "nome": "Jacopo Raschi",
+     "ruolo": "C",
+     "ruoloEsteso": "Ala sinistra",
+     "numero": "17",
+     "eta": 28,
+     "valore": 50000
+    },
+    {
+     "tmId": "1303118",
+     "nome": "Giuseppe Pierri",
+     "ruolo": "C",
+     "ruoloEsteso": "Ala sinistra",
+     "numero": "10",
+     "eta": 26,
+     "valore": null
+    },
+    {
+     "tmId": "353997",
+     "nome": "Matteo Sapucci",
+     "ruolo": "C",
+     "ruoloEsteso": "Ala sinistra",
+     "numero": "30",
+     "eta": 28,
+     "valore": null
+    },
+    {
+     "tmId": "471680",
+     "nome": "Samuel Pancotti",
+     "ruolo": "C",
+     "ruoloEsteso": "Ala destra",
+     "numero": "19",
+     "eta": 25,
+     "valore": 75000
+    },
+    {
+     "tmId": "548412",
+     "nome": "Raul Ura",
+     "ruolo": "A",
+     "ruoloEsteso": "Seconda punta",
+     "numero": "7",
+     "eta": 28,
+     "valore": 50000
+    },
+    {
+     "tmId": "1599420",
+     "nome": "Matias Scutella",
+     "ruolo": "A",
+     "ruoloEsteso": "Seconda punta",
+     "numero": "20",
+     "eta": 20,
+     "valore": null
+    },
+    {
+     "tmId": "1143144",
+     "nome": "Augusto Garcia Rufer",
+     "ruolo": "A",
+     "ruoloEsteso": "Punta centrale",
+     "numero": "11",
+     "eta": 27,
+     "valore": 150000
+    },
+    {
+     "tmId": "488199",
+     "nome": "Eros Tampellini",
+     "ruolo": "A",
+     "ruoloEsteso": "Punta centrale",
+     "numero": "9",
+     "eta": 26,
+     "valore": null
+    }
+   ]
+  },
+  {
+   "id": "10613",
+   "slug": "ac-virtus-acquaviva",
+   "saison": "2026",
+   "nome": "Ac Virtus Acquaviva",
+   "giocatori": [
+    {
+     "tmId": "864465",
+     "nome": "Giacomo Venturini",
+     "ruolo": "P",
+     "ruoloEsteso": "Portiere",
+     "numero": "1",
+     "eta": 22,
+     "valore": 75000
+    },
+    {
+     "tmId": "375299",
+     "nome": "Samuele Guddo",
+     "ruolo": "P",
+     "ruoloEsteso": "Portiere",
+     "numero": "31",
+     "eta": 27,
+     "valore": 50000
+    },
+    {
+     "tmId": "682132",
+     "nome": "Alberto Sebastiani",
+     "ruolo": "P",
+     "ruoloEsteso": "Portiere",
+     "numero": "55",
+     "eta": 41,
+     "valore": null
+    },
+    {
+     "tmId": "341126",
+     "nome": "Umberto De Lucia",
+     "ruolo": "D",
+     "ruoloEsteso": "Difensore centrale",
+     "numero": "34",
+     "eta": 34,
+     "valore": 50000
+    },
+    {
+     "tmId": "713404",
+     "nome": "Daniel Piscaglia",
+     "ruolo": "D",
+     "ruoloEsteso": "Difensore centrale",
+     "numero": "3",
+     "eta": 33,
+     "valore": 25000
+    },
+    {
+     "tmId": "1307851",
+     "nome": "Diego Madonna",
+     "ruolo": "D",
+     "ruoloEsteso": "Difensore centrale",
+     "numero": "6",
+     "eta": 21,
+     "valore": null
+    },
+    {
+     "tmId": "1340663",
+     "nome": "Alex Colombini",
+     "ruolo": "D",
+     "ruoloEsteso": "Difensore centrale",
+     "numero": "22",
+     "eta": 18,
+     "valore": null
+    },
+    {
+     "tmId": "108989",
+     "nome": "Leonardo Nunzella",
+     "ruolo": "D",
+     "ruoloEsteso": "Terzino sinistro",
+     "numero": "23",
+     "eta": 34,
+     "valore": 25000
+    },
+    {
+     "tmId": "611305",
+     "nome": "Nicola Gori",
+     "ruolo": "D",
+     "ruoloEsteso": "Terzino destro",
+     "numero": "15",
+     "eta": 29,
+     "valore": 75000
+    },
+    {
+     "tmId": "1041367",
+     "nome": "Ilyas Lahrach",
+     "ruolo": "D",
+     "ruoloEsteso": "Terzino destro",
+     "numero": "24",
+     "eta": 23,
+     "valore": null
+    },
+    {
+     "tmId": "402355",
+     "nome": "Armando Amati",
+     "ruolo": "C",
+     "ruoloEsteso": "Mediano",
+     "numero": "21",
+     "eta": 31,
+     "valore": 100000
+    },
+    {
+     "tmId": "933056",
+     "nome": "Nicolò Borioni",
+     "ruolo": "C",
+     "ruoloEsteso": "Mediano",
+     "numero": "11",
+     "eta": 24,
+     "valore": null
+    },
+    {
+     "tmId": "658402",
+     "nome": "Elia Ciacci",
+     "ruolo": "C",
+     "ruoloEsteso": "Centrocampista",
+     "numero": "45",
+     "eta": 24,
+     "valore": 100000
+    },
+    {
+     "tmId": "228750",
+     "nome": "Alessandro Golinucci",
+     "ruolo": "C",
+     "ruoloEsteso": "Centrocampista",
+     "numero": "17",
+     "eta": 31,
+     "valore": 75000
+    },
+    {
+     "tmId": "885563",
+     "nome": "Bryan Blanco",
+     "ruolo": "C",
+     "ruoloEsteso": "Centrocampista",
+     "numero": "4",
+     "eta": 21,
+     "valore": null
+    },
+    {
+     "tmId": "563662",
+     "nome": "Jacopo Muggeo",
+     "ruolo": "C",
+     "ruoloEsteso": "Esterno di destra",
+     "numero": "16",
+     "eta": 36,
+     "valore": 10000
+    },
+    {
+     "tmId": "138392",
+     "nome": "Ivan Buonocunto",
+     "ruolo": "C",
+     "ruoloEsteso": "Trequartista",
+     "numero": "10",
+     "eta": 40,
+     "valore": 50000
+    },
+    {
+     "tmId": "949272",
+     "nome": "Arda Kaan Yazici",
+     "ruolo": "C",
+     "ruoloEsteso": "Trequartista",
+     "numero": "-",
+     "eta": 20,
+     "valore": 10000
+    },
+    {
+     "tmId": "165894",
+     "nome": "Giammario Piscitella",
+     "ruolo": "C",
+     "ruoloEsteso": "Ala sinistra",
+     "numero": "93",
+     "eta": 33,
+     "valore": 50000
+    },
+    {
+     "tmId": "1285208",
+     "nome": "Kevin Lisanti",
+     "ruolo": "C",
+     "ruoloEsteso": "Ala destra",
+     "numero": "7",
+     "eta": 21,
+     "valore": null
+    },
+    {
+     "tmId": "486530",
+     "nome": "Imre Badalassi",
+     "ruolo": "A",
+     "ruoloEsteso": "Punta centrale",
+     "numero": "96",
+     "eta": 31,
+     "valore": 125000
+    },
+    {
+     "tmId": "539226",
+     "nome": "Simone Benincasa",
+     "ruolo": "A",
+     "ruoloEsteso": "Punta centrale",
+     "numero": "25",
+     "eta": 25,
+     "valore": 100000
+    },
+    {
+     "tmId": "1344078",
+     "nome": "Andrea Gjoni",
+     "ruolo": "A",
+     "ruoloEsteso": "Punta centrale",
+     "numero": "97",
+     "eta": 20,
+     "valore": 25000
+    },
+    {
+     "tmId": "957368",
+     "nome": "Marco Gasperoni",
+     "ruolo": "A",
+     "ruoloEsteso": "Punta centrale",
+     "numero": "20",
+     "eta": 22,
+     "valore": 10000
+    }
+   ]
+  },
+  {
+   "id": "10746",
+   "slug": "fc-domagnano",
+   "saison": "2026",
+   "nome": "Fc Domagnano",
+   "giocatori": [
+    {
+     "tmId": "1423427",
+     "nome": "Filippo Papi",
+     "ruolo": "P",
+     "ruoloEsteso": "Portiere",
+     "numero": "32",
+     "eta": 23,
+     "valore": 50000
+    },
+    {
+     "tmId": "883850",
+     "nome": "Raffaele Bracconi",
+     "ruolo": "P",
+     "ruoloEsteso": "Portiere",
+     "numero": "54",
+     "eta": 23,
+     "valore": 10000
+    },
+    {
+     "tmId": "1423426",
+     "nome": "Alessandro Maggioli",
+     "ruolo": "P",
+     "ruoloEsteso": "Portiere",
+     "numero": "1",
+     "eta": 33,
+     "valore": null
+    },
+    {
+     "tmId": "547987",
+     "nome": "Andrea Gregori",
+     "ruolo": "P",
+     "ruoloEsteso": "Portiere",
+     "numero": "30",
+     "eta": 38,
+     "valore": null
+    },
+    {
+     "tmId": "1153864",
+     "nome": "Enrico Gozzi",
+     "ruolo": "D",
+     "ruoloEsteso": "Difensore centrale",
+     "numero": "22",
+     "eta": 28,
+     "valore": 75000
+    },
+    {
+     "tmId": "614711",
+     "nome": "Filippo Guglielmi",
+     "ruolo": "D",
+     "ruoloEsteso": "Difensore centrale",
+     "numero": "41",
+     "eta": 25,
+     "valore": 75000
+    },
+    {
+     "tmId": "1425628",
+     "nome": "Samuele Marconi",
+     "ruolo": "D",
+     "ruoloEsteso": "Difensore centrale",
+     "numero": "4",
+     "eta": 22,
+     "valore": 10000
+    },
+    {
+     "tmId": "658817",
+     "nome": "Giacomo Valentini",
+     "ruolo": "D",
+     "ruoloEsteso": "Difensore centrale",
+     "numero": "14",
+     "eta": 25,
+     "valore": null
+    },
+    {
+     "tmId": "1005013",
+     "nome": "Filippo Valentini",
+     "ruolo": "D",
+     "ruoloEsteso": "Difensore centrale",
+     "numero": "6",
+     "eta": 20,
+     "valore": null
+    },
+    {
+     "tmId": "1570552",
+     "nome": "Leone Betti",
+     "ruolo": "D",
+     "ruoloEsteso": "Difensore centrale",
+     "numero": "23",
+     "eta": 18,
+     "valore": null
+    },
+    {
+     "tmId": "439421",
+     "nome": "Giammaria Rigoni",
+     "ruolo": "D",
+     "ruoloEsteso": "Terzino sinistro",
+     "numero": "3",
+     "eta": 27,
+     "valore": 50000
+    },
+    {
+     "tmId": "534767",
+     "nome": "Diego Perazzini",
+     "ruolo": "D",
+     "ruoloEsteso": "Terzino destro",
+     "numero": "27",
+     "eta": 26,
+     "valore": 75000
+    },
+    {
+     "tmId": "471681",
+     "nome": "Simone Nanni",
+     "ruolo": "D",
+     "ruoloEsteso": "Terzino destro",
+     "numero": "31",
+     "eta": 26,
+     "valore": 25000
+    },
+    {
+     "tmId": "1062576",
+     "nome": "Mattia Fusco",
+     "ruolo": "C",
+     "ruoloEsteso": "Mediano",
+     "numero": "21",
+     "eta": 21,
+     "valore": 75000
+    },
+    {
+     "tmId": "1156949",
+     "nome": "Giacomo Buda",
+     "ruolo": "C",
+     "ruoloEsteso": "Mediano",
+     "numero": "8",
+     "eta": 26,
+     "valore": 50000
+    },
+    {
+     "tmId": "934675",
+     "nome": "Lorenzo Contadini",
+     "ruolo": "C",
+     "ruoloEsteso": "Centrocampista",
+     "numero": "19",
+     "eta": 31,
+     "valore": 75000
+    },
+    {
+     "tmId": "818415",
+     "nome": "Samel Gjorretaj",
+     "ruolo": "C",
+     "ruoloEsteso": "Centrocampista",
+     "numero": "5",
+     "eta": 24,
+     "valore": 10000
+    },
+    {
+     "tmId": "627610",
+     "nome": "Alex Toccaceli",
+     "ruolo": "C",
+     "ruoloEsteso": "Centrocampista",
+     "numero": "16",
+     "eta": 24,
+     "valore": 10000
+    },
+    {
+     "tmId": "1570561",
+     "nome": "Nicola Bonetti",
+     "ruolo": "C",
+     "ruoloEsteso": "Centrocampista",
+     "numero": "20",
+     "eta": 18,
+     "valore": null
+    },
+    {
+     "tmId": "1056149",
+     "nome": "Nicolas Ferraro",
+     "ruolo": "C",
+     "ruoloEsteso": "Trequartista",
+     "numero": "17",
+     "eta": 31,
+     "valore": 50000
+    },
+    {
+     "tmId": "1360683",
+     "nome": "Riccardo Michelucci",
+     "ruolo": "C",
+     "ruoloEsteso": "Ala destra",
+     "numero": "18",
+     "eta": 23,
+     "valore": 25000
+    },
+    {
+     "tmId": "507354",
+     "nome": "Scott Arlotti",
+     "ruolo": "A",
+     "ruoloEsteso": "Seconda punta",
+     "numero": "7",
+     "eta": 27,
+     "valore": 25000
+    },
+    {
+     "tmId": "471470",
+     "nome": "Daniele Babboni",
+     "ruolo": "A",
+     "ruoloEsteso": "Punta centrale",
+     "numero": "9",
+     "eta": 26,
+     "valore": 50000
+    },
+    {
+     "tmId": "719698",
+     "nome": "Simone Santi",
+     "ruolo": "A",
+     "ruoloEsteso": "Punta centrale",
+     "numero": "10",
+     "eta": 22,
+     "valore": 50000
+    },
+    {
+     "tmId": "41979",
+     "nome": "Alex Ambrosini",
+     "ruolo": "A",
+     "ruoloEsteso": "Punta centrale",
+     "numero": "11",
+     "eta": 39,
+     "valore": 10000
+    },
+    {
+     "tmId": "625933",
+     "nome": "Lorenzo Fortunato",
+     "ruolo": "A",
+     "ruoloEsteso": "Punta centrale",
+     "numero": "42",
+     "eta": 27,
+     "valore": null
+    },
+    {
+     "tmId": "1465716",
+     "nome": "Simone Menini",
+     "ruolo": "A",
+     "ruoloEsteso": "Attacco",
+     "numero": "77",
+     "eta": 19,
+     "valore": null
+    }
+   ]
+  },
+  {
+   "id": "10747",
+   "slug": "sp-tre-penne",
+   "saison": "2026",
+   "nome": "Sp Tre Penne",
+   "giocatori": [
+    {
+     "tmId": "35803",
+     "nome": "Mattia Migani",
+     "ruolo": "P",
+     "ruoloEsteso": "Portiere",
+     "numero": "26",
+     "eta": 34,
+     "valore": 75000
+    },
+    {
+     "tmId": "848758",
+     "nome": "Federico Andreani",
+     "ruolo": "P",
+     "ruoloEsteso": "Portiere",
+     "numero": "1",
+     "eta": 32,
+     "valore": null
+    },
+    {
+     "tmId": "1599415",
+     "nome": "Devin Benvenuti",
+     "ruolo": "P",
+     "ruoloEsteso": "Portiere",
+     "numero": "-",
+     "eta": 18,
+     "valore": null
+    },
+    {
+     "tmId": "283319",
+     "nome": "Manuel Ferrani",
+     "ruolo": "D",
+     "ruoloEsteso": "Difensore centrale",
+     "numero": "5",
+     "eta": 39,
+     "valore": 50000
+    },
+    {
+     "tmId": "1425505",
+     "nome": "Gino Meriano",
+     "ruolo": "D",
+     "ruoloEsteso": "Difensore centrale",
+     "numero": "6",
+     "eta": 20,
+     "valore": 10000
+    },
+    {
+     "tmId": "1590826",
+     "nome": "Redis Kadiu",
+     "ruolo": "D",
+     "ruoloEsteso": "Difensore centrale",
+     "numero": "4",
+     "eta": 19,
+     "valore": null
+    },
+    {
+     "tmId": "1591859",
+     "nome": "Brian Joel Ruiz",
+     "ruolo": "D",
+     "ruoloEsteso": "Difensore centrale",
+     "numero": "33",
+     "eta": 24,
+     "valore": null
+    },
+    {
+     "tmId": "199077",
+     "nome": "Fabio Sottile",
+     "ruolo": "D",
+     "ruoloEsteso": "Terzino sinistro",
+     "numero": "28",
+     "eta": 33,
+     "valore": null
+    },
+    {
+     "tmId": "1452379",
+     "nome": "Domenico Scarcella",
+     "ruolo": "D",
+     "ruoloEsteso": "Terzino destro",
+     "numero": "19",
+     "eta": 21,
+     "valore": 75000
+    },
+    {
+     "tmId": "55788",
+     "nome": "Simone Loiodice",
+     "ruolo": "C",
+     "ruoloEsteso": "Mediano",
+     "numero": "8",
+     "eta": 37,
+     "valore": 25000
+    },
+    {
+     "tmId": "710382",
+     "nome": "Mario Cordioli",
+     "ruolo": "C",
+     "ruoloEsteso": "Mediano",
+     "numero": "21",
+     "eta": 24,
+     "valore": null
+    },
+    {
+     "tmId": "426173",
+     "nome": "Nicolò Alfano",
+     "ruolo": "C",
+     "ruoloEsteso": "Centrocampo",
+     "numero": "98",
+     "eta": 28,
+     "valore": null
+    },
+    {
+     "tmId": "1369415",
+     "nome": "Valentino Cenni",
+     "ruolo": "C",
+     "ruoloEsteso": "Centrocampo",
+     "numero": "14",
+     "eta": 19,
+     "valore": null
+    },
+    {
+     "tmId": "1590828",
+     "nome": "Mattia Cenni",
+     "ruolo": "C",
+     "ruoloEsteso": "Centrocampo",
+     "numero": "27",
+     "eta": 20,
+     "valore": null
+    },
+    {
+     "tmId": "390119",
+     "nome": "Katriel Islamaj",
+     "ruolo": "C",
+     "ruoloEsteso": "Centrocampista",
+     "numero": "20",
+     "eta": 27,
+     "valore": 100000
+    },
+    {
+     "tmId": "937221",
+     "nome": "Patrick Casadio",
+     "ruolo": "C",
+     "ruoloEsteso": "Centrocampista",
+     "numero": "31",
+     "eta": 23,
+     "valore": 75000
+    },
+    {
+     "tmId": "1420415",
+     "nome": "Tommaso Bartoli",
+     "ruolo": "C",
+     "ruoloEsteso": "Centrocampista",
+     "numero": "77",
+     "eta": 22,
+     "valore": 75000
+    },
+    {
+     "tmId": "443433",
+     "nome": "Giacomo Zafferani",
+     "ruolo": "C",
+     "ruoloEsteso": "Centrocampista",
+     "numero": "57",
+     "eta": 30,
+     "valore": null
+    },
+    {
+     "tmId": "526034",
+     "nome": "Lorenzo Pastorelli",
+     "ruolo": "C",
+     "ruoloEsteso": "Esterno di destra",
+     "numero": "7",
+     "eta": 25,
+     "valore": 75000
+    },
+    {
+     "tmId": "285317",
+     "nome": "Luca Ceccaroli",
+     "ruolo": "C",
+     "ruoloEsteso": "Ala sinistra",
+     "numero": "11",
+     "eta": 31,
+     "valore": 50000
+    },
+    {
+     "tmId": "403048",
+     "nome": "Lucio Peluso",
+     "ruolo": "C",
+     "ruoloEsteso": "Ala sinistra",
+     "numero": "10",
+     "eta": 35,
+     "valore": 25000
+    },
+    {
+     "tmId": "1440514",
+     "nome": "Maurice Kamouni",
+     "ruolo": "C",
+     "ruoloEsteso": "Ala destra",
+     "numero": "18",
+     "eta": 22,
+     "valore": 10000
+    },
+    {
+     "tmId": "1056143",
+     "nome": "Tommaso Bastianelli",
+     "ruolo": "C",
+     "ruoloEsteso": "Ala destra",
+     "numero": "45",
+     "eta": 23,
+     "valore": 10000
+    },
+    {
+     "tmId": "107393",
+     "nome": "Danilo Rinaldi",
+     "ruolo": "A",
+     "ruoloEsteso": "Seconda punta",
+     "numero": "16",
+     "eta": 40,
+     "valore": 10000
+    },
+    {
+     "tmId": "408482",
+     "nome": "Riccardo Pieri",
+     "ruolo": "A",
+     "ruoloEsteso": "Punta centrale",
+     "numero": "9",
+     "eta": 31,
+     "valore": 75000
+    },
+    {
+     "tmId": "670411",
+     "nome": "Alexander Carrer",
+     "ruolo": "A",
+     "ruoloEsteso": "Punta centrale",
+     "numero": "17",
+     "eta": 25,
+     "valore": null
+    },
+    {
+     "tmId": "1578975",
+     "nome": "Abdel Mansour",
+     "ruolo": "A",
+     "ruoloEsteso": "Attacco",
+     "numero": "-",
+     "eta": null,
+     "valore": null
+    }
+   ]
+  },
+  {
+   "id": "10607",
+   "slug": "ac-juvenes-dogana",
+   "saison": "2026",
+   "nome": "Ac Juvenes Dogana",
+   "giocatori": [
+    {
+     "tmId": "401383",
+     "nome": "Davide Colonna",
+     "ruolo": "P",
+     "ruoloEsteso": "Portiere",
+     "numero": "21",
+     "eta": 25,
+     "valore": 50000
+    },
+    {
+     "tmId": "1292920",
+     "nome": "Simone Di Noto",
+     "ruolo": "P",
+     "ruoloEsteso": "Portiere",
+     "numero": "96",
+     "eta": 30,
+     "valore": null
+    },
+    {
+     "tmId": "1562559",
+     "nome": "Rocco Colella",
+     "ruolo": "P",
+     "ruoloEsteso": "Portiere",
+     "numero": "1",
+     "eta": 18,
+     "valore": null
+    },
+    {
+     "tmId": "379820",
+     "nome": "Francesco Mazzavillani",
+     "ruolo": "D",
+     "ruoloEsteso": "Difensore centrale",
+     "numero": "3",
+     "eta": 28,
+     "valore": 50000
+    },
+    {
+     "tmId": "459778",
+     "nome": "Andrea Ghiggini",
+     "ruolo": "D",
+     "ruoloEsteso": "Difensore centrale",
+     "numero": "4",
+     "eta": 26,
+     "valore": 50000
+    },
+    {
+     "tmId": "471675",
+     "nome": "Stefano Sartini",
+     "ruolo": "D",
+     "ruoloEsteso": "Difensore centrale",
+     "numero": "6",
+     "eta": 26,
+     "valore": 50000
+    },
+    {
+     "tmId": "1411298",
+     "nome": "Santiago Tomas Calp",
+     "ruolo": "D",
+     "ruoloEsteso": "Difensore centrale",
+     "numero": "32",
+     "eta": 26,
+     "valore": 25000
+    },
+    {
+     "tmId": "1039347",
+     "nome": "Giacomo Borghini",
+     "ruolo": "D",
+     "ruoloEsteso": "Terzino sinistro",
+     "numero": "27",
+     "eta": 25,
+     "valore": 25000
+    },
+    {
+     "tmId": "1309281",
+     "nome": "Filippo Pedini",
+     "ruolo": "D",
+     "ruoloEsteso": "Terzino destro",
+     "numero": "11",
+     "eta": 22,
+     "valore": 50000
+    },
+    {
+     "tmId": "352618",
+     "nome": "Nicola Della Valle",
+     "ruolo": "D",
+     "ruoloEsteso": "Terzino destro",
+     "numero": "20",
+     "eta": 29,
+     "valore": 25000
+    },
+    {
+     "tmId": "699742",
+     "nome": "Kevin Lisi",
+     "ruolo": "C",
+     "ruoloEsteso": "Centrocampista",
+     "numero": "88",
+     "eta": 24,
+     "valore": 50000
+    },
+    {
+     "tmId": "486543",
+     "nome": "Lorenzo Lunadei",
+     "ruolo": "C",
+     "ruoloEsteso": "Centrocampista",
+     "numero": "7",
+     "eta": 29,
+     "valore": 25000
+    },
+    {
+     "tmId": "140444",
+     "nome": "Andrea Montanari",
+     "ruolo": "C",
+     "ruoloEsteso": "Centrocampista",
+     "numero": "8",
+     "eta": 39,
+     "valore": 10000
+    },
+    {
+     "tmId": "626069",
+     "nome": "Fabio Giovagnoli",
+     "ruolo": "C",
+     "ruoloEsteso": "Centrocampista",
+     "numero": "23",
+     "eta": 34,
+     "valore": 10000
+    },
+    {
+     "tmId": "407666",
+     "nome": "Gianmaria Borghini",
+     "ruolo": "C",
+     "ruoloEsteso": "Esterno di destra",
+     "numero": "45",
+     "eta": 29,
+     "valore": 25000
+    },
+    {
+     "tmId": "902780",
+     "nome": "Federico Di Addario",
+     "ruolo": "C",
+     "ruoloEsteso": "Esterno di sinistra",
+     "numero": "13",
+     "eta": 28,
+     "valore": null
+    },
+    {
+     "tmId": "824737",
+     "nome": "Mattia Aprea",
+     "ruolo": "C",
+     "ruoloEsteso": "Trequartista",
+     "numero": "77",
+     "eta": 22,
+     "valore": 100000
+    },
+    {
+     "tmId": "729475",
+     "nome": "Andrea Comuniello",
+     "ruolo": "C",
+     "ruoloEsteso": "Trequartista",
+     "numero": "24",
+     "eta": 31,
+     "valore": 10000
+    },
+    {
+     "tmId": "703218",
+     "nome": "Luca Cecchetti",
+     "ruolo": "C",
+     "ruoloEsteso": "Trequartista",
+     "numero": "29",
+     "eta": 26,
+     "valore": 10000
+    },
+    {
+     "tmId": "715766",
+     "nome": "Davide Merli",
+     "ruolo": "C",
+     "ruoloEsteso": "Trequartista",
+     "numero": "30",
+     "eta": 26,
+     "valore": 10000
+    },
+    {
+     "tmId": "534770",
+     "nome": "Lorenzo Dormi",
+     "ruolo": "A",
+     "ruoloEsteso": "Seconda punta",
+     "numero": "10",
+     "eta": 31,
+     "valore": 50000
+    },
+    {
+     "tmId": "927267",
+     "nome": "Nicolò Amadori",
+     "ruolo": "A",
+     "ruoloEsteso": "Punta centrale",
+     "numero": "9",
+     "eta": 21,
+     "valore": 25000
+    },
+    {
+     "tmId": "938971",
+     "nome": "Gianluca Benedetti",
+     "ruolo": "A",
+     "ruoloEsteso": "Punta centrale",
+     "numero": "14",
+     "eta": 30,
+     "valore": 10000
+    }
+   ]
+  },
+  {
+   "id": "24350",
+   "slug": "ss-cosmos",
+   "saison": "2026",
+   "nome": "Ss Cosmos",
+   "giocatori": [
+    {
+     "tmId": "415793",
+     "nome": "Alessandro Semprini",
+     "ruolo": "P",
+     "ruoloEsteso": "Portiere",
+     "numero": "27",
+     "eta": 32,
+     "valore": 50000
+    },
+    {
+     "tmId": "1024759",
+     "nome": "Luca Donini",
+     "ruolo": "P",
+     "ruoloEsteso": "Portiere",
+     "numero": "15",
+     "eta": 37,
+     "valore": null
+    },
+    {
+     "tmId": "1572591",
+     "nome": "Teo Romairone",
+     "ruolo": "P",
+     "ruoloEsteso": "Portiere",
+     "numero": "22",
+     "eta": 20,
+     "valore": null
+    },
+    {
+     "tmId": "409338",
+     "nome": "Gabriele Varrella",
+     "ruolo": "D",
+     "ruoloEsteso": "Difensore centrale",
+     "numero": "5",
+     "eta": 31,
+     "valore": 50000
+    },
+    {
+     "tmId": "1144726",
+     "nome": "Gastón Rodrigo Robba",
+     "ruolo": "D",
+     "ruoloEsteso": "Difensore centrale",
+     "numero": "26",
+     "eta": 32,
+     "valore": 25000
+    },
+    {
+     "tmId": "627607",
+     "nome": "Giacomo Matteoni",
+     "ruolo": "D",
+     "ruoloEsteso": "Difensore centrale",
+     "numero": "6",
+     "eta": 24,
+     "valore": null
+    },
+    {
+     "tmId": "44199",
+     "nome": "Mirko Palazzi",
+     "ruolo": "D",
+     "ruoloEsteso": "Terzino sinistro",
+     "numero": "24",
+     "eta": 39,
+     "valore": 10000
+    },
+    {
+     "tmId": "978466",
+     "nome": "Luca Bottoni",
+     "ruolo": "D",
+     "ruoloEsteso": "Terzino destro",
+     "numero": "32",
+     "eta": 30,
+     "valore": 75000
+    },
+    {
+     "tmId": "1309190",
+     "nome": "Francesco Rossi",
+     "ruolo": "D",
+     "ruoloEsteso": "Terzino destro",
+     "numero": "3",
+     "eta": 21,
+     "valore": 50000
+    },
+    {
+     "tmId": "736508",
+     "nome": "Francesco Zaghini",
+     "ruolo": "D",
+     "ruoloEsteso": "Terzino destro",
+     "numero": "23",
+     "eta": 26,
+     "valore": null
+    },
+    {
+     "tmId": "1572688",
+     "nome": "Tommaso Di Rienzo",
+     "ruolo": "C",
+     "ruoloEsteso": "Centrocampo",
+     "numero": "55",
+     "eta": 18,
+     "valore": null
+    },
+    {
+     "tmId": "462289",
+     "nome": "Lorenzo Braschi",
+     "ruolo": "C",
+     "ruoloEsteso": "Centrocampista",
+     "numero": "4",
+     "eta": 32,
+     "valore": 50000
+    },
+    {
+     "tmId": "811864",
+     "nome": "Davide Lisi",
+     "ruolo": "C",
+     "ruoloEsteso": "Centrocampista",
+     "numero": "7",
+     "eta": 25,
+     "valore": 25000
+    },
+    {
+     "tmId": "401386",
+     "nome": "David Tomassini",
+     "ruolo": "C",
+     "ruoloEsteso": "Centrocampista",
+     "numero": "14",
+     "eta": 26,
+     "valore": 10000
+    },
+    {
+     "tmId": "291519",
+     "nome": "Tommaso Domini",
+     "ruolo": "C",
+     "ruoloEsteso": "Centrocampista",
+     "numero": "21",
+     "eta": 37,
+     "valore": 10000
+    },
+    {
+     "tmId": "1574623",
+     "nome": "Luca Grandicelli",
+     "ruolo": "C",
+     "ruoloEsteso": "Centrocampista",
+     "numero": "28",
+     "eta": 28,
+     "valore": null
+    },
+    {
+     "tmId": "719697",
+     "nome": "Nicola D'Addario",
+     "ruolo": "C",
+     "ruoloEsteso": "Esterno di destra",
+     "numero": "2",
+     "eta": 22,
+     "valore": null
+    },
+    {
+     "tmId": "1031317",
+     "nome": "Nicola Sartini",
+     "ruolo": "C",
+     "ruoloEsteso": "Ala sinistra",
+     "numero": "9",
+     "eta": 27,
+     "valore": 75000
+    },
+    {
+     "tmId": "1234827",
+     "nome": "Richard Ulloa",
+     "ruolo": "C",
+     "ruoloEsteso": "Ala sinistra",
+     "numero": "11",
+     "eta": 24,
+     "valore": null
+    },
+    {
+     "tmId": "1571902",
+     "nome": "Vittorio Tonini",
+     "ruolo": "C",
+     "ruoloEsteso": "Ala sinistra",
+     "numero": "8",
+     "eta": 24,
+     "valore": null
+    },
+    {
+     "tmId": "1493497",
+     "nome": "Roberto Guidotti",
+     "ruolo": "A",
+     "ruoloEsteso": "Punta centrale",
+     "numero": "80",
+     "eta": 23,
+     "valore": 50000
+    },
+    {
+     "tmId": "706921",
+     "nome": "Leon Cremonini",
+     "ruolo": "A",
+     "ruoloEsteso": "Punta centrale",
+     "numero": "10",
+     "eta": 23,
+     "valore": null
+    },
+    {
+     "tmId": "1367233",
+     "nome": "Alessandro Rattini",
+     "ruolo": "A",
+     "ruoloEsteso": "Punta centrale",
+     "numero": "99",
+     "eta": 20,
+     "valore": null
+    },
+    {
+     "tmId": "1571901",
+     "nome": "Carlo Scognamiglio",
+     "ruolo": "A",
+     "ruoloEsteso": "Attacco",
+     "numero": "17",
+     "eta": 25,
+     "valore": null
+    }
+   ]
+  },
+  {
+   "id": "24348",
+   "slug": "sp-cailungo",
+   "saison": "2026",
+   "nome": "Sp Cailungo",
+   "giocatori": [
+    {
+     "tmId": "1460022",
+     "nome": "Manuel Tordella",
+     "ruolo": "P",
+     "ruoloEsteso": "Portiere",
+     "numero": "71",
+     "eta": 28,
+     "valore": 25000
+    },
+    {
+     "tmId": "166250",
+     "nome": "Massimo Francioni",
+     "ruolo": "P",
+     "ruoloEsteso": "Portiere",
+     "numero": "18",
+     "eta": 33,
+     "valore": null
+    },
+    {
+     "tmId": "1371169",
+     "nome": "Mirco Bannini",
+     "ruolo": "P",
+     "ruoloEsteso": "Portiere",
+     "numero": "1",
+     "eta": 30,
+     "valore": null
+    },
+    {
+     "tmId": "471676",
+     "nome": "Filippo Santi",
+     "ruolo": "D",
+     "ruoloEsteso": "Difensore centrale",
+     "numero": "5",
+     "eta": 25,
+     "valore": 50000
+    },
+    {
+     "tmId": "1185122",
+     "nome": "Davide Montalti",
+     "ruolo": "D",
+     "ruoloEsteso": "Difensore centrale",
+     "numero": "4",
+     "eta": 22,
+     "valore": 25000
+    },
+    {
+     "tmId": "816256",
+     "nome": "Cristian Grieco",
+     "ruolo": "D",
+     "ruoloEsteso": "Difensore centrale",
+     "numero": "22",
+     "eta": 27,
+     "valore": 25000
+    },
+    {
+     "tmId": "906404",
+     "nome": "Nasr Eddine Ir",
+     "ruolo": "D",
+     "ruoloEsteso": "Difensore centrale",
+     "numero": "3",
+     "eta": 30,
+     "valore": 10000
+    },
+    {
+     "tmId": "475022",
+     "nome": "Manuel Iuzzolino",
+     "ruolo": "D",
+     "ruoloEsteso": "Difensore centrale",
+     "numero": "23",
+     "eta": 36,
+     "valore": 10000
+    },
+    {
+     "tmId": "1452389",
+     "nome": "Federico De Paoli",
+     "ruolo": "D",
+     "ruoloEsteso": "Terzino sinistro",
+     "numero": "2",
+     "eta": 27,
+     "valore": 50000
+    },
+    {
+     "tmId": "1309785",
+     "nome": "Ciro Parisi",
+     "ruolo": "D",
+     "ruoloEsteso": "Terzino sinistro",
+     "numero": "33",
+     "eta": 21,
+     "valore": 25000
+    },
+    {
+     "tmId": "342937",
+     "nome": "Filippo Quaranta",
+     "ruolo": "D",
+     "ruoloEsteso": "Terzino sinistro",
+     "numero": "40",
+     "eta": 28,
+     "valore": 25000
+    },
+    {
+     "tmId": "949262",
+     "nome": "Matteo Valli Casadei",
+     "ruolo": "C",
+     "ruoloEsteso": "Mediano",
+     "numero": "24",
+     "eta": 21,
+     "valore": null
+    },
+    {
+     "tmId": "402638",
+     "nome": "Kevin Zonzini",
+     "ruolo": "C",
+     "ruoloEsteso": "Centrocampista",
+     "numero": "6",
+     "eta": 29,
+     "valore": 50000
+    },
+    {
+     "tmId": "548542",
+     "nome": "Matias Colagiovanni",
+     "ruolo": "C",
+     "ruoloEsteso": "Centrocampista",
+     "numero": "8",
+     "eta": 33,
+     "valore": 25000
+    },
+    {
+     "tmId": "265076",
+     "nome": "Alessandro Conti",
+     "ruolo": "C",
+     "ruoloEsteso": "Centrocampista",
+     "numero": "12",
+     "eta": 28,
+     "valore": 10000
+    },
+    {
+     "tmId": "1315706",
+     "nome": "Francesco Tamburrano",
+     "ruolo": "C",
+     "ruoloEsteso": "Centrocampista",
+     "numero": "25",
+     "eta": 29,
+     "valore": 10000
+    },
+    {
+     "tmId": "646666",
+     "nome": "Armando Senja",
+     "ruolo": "C",
+     "ruoloEsteso": "Centrocampista",
+     "numero": "19",
+     "eta": 29,
+     "valore": null
+    },
+    {
+     "tmId": "1506030",
+     "nome": "Samuel Adu Boateng",
+     "ruolo": "C",
+     "ruoloEsteso": "Trequartista",
+     "numero": "27",
+     "eta": 27,
+     "valore": 10000
+    },
+    {
+     "tmId": "1506031",
+     "nome": "Lorenzo Persichilli",
+     "ruolo": "C",
+     "ruoloEsteso": "Ala sinistra",
+     "numero": "11",
+     "eta": 22,
+     "valore": 25000
+    },
+    {
+     "tmId": "339309",
+     "nome": "Adolfo Hirsch",
+     "ruolo": "C",
+     "ruoloEsteso": "Ala sinistra",
+     "numero": "10",
+     "eta": 40,
+     "valore": 10000
+    },
+    {
+     "tmId": "1052992",
+     "nome": "Matteo Tumidei",
+     "ruolo": "C",
+     "ruoloEsteso": "Ala sinistra",
+     "numero": "45",
+     "eta": 22,
+     "valore": 10000
+    },
+    {
+     "tmId": "1452382",
+     "nome": "Thomas Radici",
+     "ruolo": "C",
+     "ruoloEsteso": "Ala sinistra",
+     "numero": "28",
+     "eta": 24,
+     "valore": null
+    },
+    {
+     "tmId": "1317235",
+     "nome": "Emanuele Costa",
+     "ruolo": "C",
+     "ruoloEsteso": "Ala sinistra",
+     "numero": "70",
+     "eta": 20,
+     "valore": null
+    },
+    {
+     "tmId": "908767",
+     "nome": "Edoardo Bernardi",
+     "ruolo": "C",
+     "ruoloEsteso": "Ala destra",
+     "numero": "7",
+     "eta": 23,
+     "valore": null
+    },
+    {
+     "tmId": "614743",
+     "nome": "Antonio Bua",
+     "ruolo": "A",
+     "ruoloEsteso": "Punta centrale",
+     "numero": "9",
+     "eta": 25,
+     "valore": 75000
+    },
+    {
+     "tmId": "248400",
+     "nome": "Giacomo Cecconi",
+     "ruolo": "A",
+     "ruoloEsteso": "Punta centrale",
+     "numero": "32",
+     "eta": 31,
+     "valore": null
+    },
+    {
+     "tmId": "1572600",
+     "nome": "Lorenzo Benvenuti",
+     "ruolo": "A",
+     "ruoloEsteso": "Attacco",
+     "numero": "20",
+     "eta": 24,
+     "valore": null
+    }
+   ]
+  },
+  {
+   "id": "10612",
+   "slug": "ss-pennarossa",
+   "saison": "2026",
+   "nome": "Ss Pennarossa",
+   "giocatori": [
+    {
+     "tmId": "136117",
+     "nome": "Mattia Manzaroli",
+     "ruolo": "P",
+     "ruoloEsteso": "Portiere",
+     "numero": "91",
+     "eta": 34,
+     "valore": 10000
+    },
+    {
+     "tmId": "1055708",
+     "nome": "Daniele Cagnina",
+     "ruolo": "P",
+     "ruoloEsteso": "Portiere",
+     "numero": "12",
+     "eta": 21,
+     "valore": null
+    },
+    {
+     "tmId": "1592688",
+     "nome": "Simone La Mantia",
+     "ruolo": "P",
+     "ruoloEsteso": "Portiere",
+     "numero": "17",
+     "eta": 47,
+     "valore": null
+    },
+    {
+     "tmId": "1249765",
+     "nome": "Davide Marconi",
+     "ruolo": "D",
+     "ruoloEsteso": "Difesa",
+     "numero": "2",
+     "eta": 21,
+     "valore": null
+    },
+    {
+     "tmId": "1448925",
+     "nome": "Luca Evaristi",
+     "ruolo": "D",
+     "ruoloEsteso": "Difensore centrale",
+     "numero": "6",
+     "eta": 20,
+     "valore": 50000
+    },
+    {
+     "tmId": "949375",
+     "nome": "Federico Ciacci",
+     "ruolo": "D",
+     "ruoloEsteso": "Difensore centrale",
+     "numero": "3",
+     "eta": 21,
+     "valore": 25000
+    },
+    {
+     "tmId": "263281",
+     "nome": "Hervé Diedhiou",
+     "ruolo": "D",
+     "ruoloEsteso": "Difensore centrale",
+     "numero": "56",
+     "eta": 32,
+     "valore": null
+    },
+    {
+     "tmId": "1369223",
+     "nome": "Giuliano Guida",
+     "ruolo": "D",
+     "ruoloEsteso": "Terzino sinistro",
+     "numero": "16",
+     "eta": 20,
+     "valore": null
+    },
+    {
+     "tmId": "885229",
+     "nome": "Federico Arba",
+     "ruolo": "D",
+     "ruoloEsteso": "Terzino destro",
+     "numero": "90",
+     "eta": 21,
+     "valore": 25000
+    },
+    {
+     "tmId": "1593807",
+     "nome": "Mouhcine Abouzine",
+     "ruolo": "D",
+     "ruoloEsteso": "Terzino destro",
+     "numero": "99",
+     "eta": 26,
+     "valore": null
+    },
+    {
+     "tmId": "1574370",
+     "nome": "Gor Chatoyan",
+     "ruolo": "C",
+     "ruoloEsteso": "Centrocampo",
+     "numero": "9",
+     "eta": 20,
+     "valore": null
+    },
+    {
+     "tmId": "1197388",
+     "nome": "Jacopo Zavoli",
+     "ruolo": "C",
+     "ruoloEsteso": "Centrocampo",
+     "numero": "19",
+     "eta": 19,
+     "valore": null
+    },
+    {
+     "tmId": "1574803",
+     "nome": "Luca De Boni",
+     "ruolo": "C",
+     "ruoloEsteso": "Centrocampo",
+     "numero": "23",
+     "eta": 19,
+     "valore": null
+    },
+    {
+     "tmId": "547181",
+     "nome": "Marco Evaristi",
+     "ruolo": "C",
+     "ruoloEsteso": "Centrocampista",
+     "numero": "8",
+     "eta": 26,
+     "valore": 100000
+    },
+    {
+     "tmId": "1416103",
+     "nome": "Alen Gjonaj",
+     "ruolo": "C",
+     "ruoloEsteso": "Centrocampista",
+     "numero": "20",
+     "eta": 22,
+     "valore": 50000
+    },
+    {
+     "tmId": "692317",
+     "nome": "Francesco Angelini",
+     "ruolo": "C",
+     "ruoloEsteso": "Centrocampista",
+     "numero": "4",
+     "eta": 23,
+     "valore": 10000
+    },
+    {
+     "tmId": "1452369",
+     "nome": "Federico Cirillo",
+     "ruolo": "C",
+     "ruoloEsteso": "Centrocampista",
+     "numero": "47",
+     "eta": 21,
+     "valore": 10000
+    },
+    {
+     "tmId": "1307972",
+     "nome": "Mattia Fabbri",
+     "ruolo": "C",
+     "ruoloEsteso": "Esterno di destra",
+     "numero": "11",
+     "eta": 20,
+     "valore": null
+    },
+    {
+     "tmId": "1062739",
+     "nome": "Alessio Boschi",
+     "ruolo": "C",
+     "ruoloEsteso": "Esterno di destra",
+     "numero": "22",
+     "eta": 20,
+     "valore": null
+    },
+    {
+     "tmId": "1368364",
+     "nome": "Eleas Zahir",
+     "ruolo": "C",
+     "ruoloEsteso": "Trequartista",
+     "numero": "10",
+     "eta": 25,
+     "valore": 25000
+    },
+    {
+     "tmId": "729657",
+     "nome": "Sami Abouzziane",
+     "ruolo": "C",
+     "ruoloEsteso": "Ala sinistra",
+     "numero": "7",
+     "eta": 24,
+     "valore": 75000
+    },
+    {
+     "tmId": "1125704",
+     "nome": "Manuel Tredicine",
+     "ruolo": "C",
+     "ruoloEsteso": "Ala sinistra",
+     "numero": "-",
+     "eta": 22,
+     "valore": null
+    },
+    {
+     "tmId": "1309464",
+     "nome": "Soufiane Belward",
+     "ruolo": "C",
+     "ruoloEsteso": "Ala destra",
+     "numero": "80",
+     "eta": 22,
+     "valore": 50000
+    },
+    {
+     "tmId": "679510",
+     "nome": "Marseljan Mema",
+     "ruolo": "A",
+     "ruoloEsteso": "Seconda punta",
+     "numero": "43",
+     "eta": 29,
+     "valore": 25000
+    },
+    {
+     "tmId": "1566010",
+     "nome": "Gianmarco Maltoni",
+     "ruolo": "A",
+     "ruoloEsteso": "Attacco",
+     "numero": "21",
+     "eta": 20,
+     "valore": null
+    },
+    {
+     "tmId": "1570107",
+     "nome": "Armando Calderone",
+     "ruolo": "A",
+     "ruoloEsteso": "Attacco",
+     "numero": "45",
+     "eta": 18,
+     "valore": null
+    }
+   ]
+  },
+  {
+   "id": "24351",
+   "slug": "ss-san-giovanni",
+   "saison": "2026",
+   "nome": "Ss San Giovanni",
+   "giocatori": [
+    {
+     "tmId": "1040072",
+     "nome": "Alessandro Casadei",
+     "ruolo": "P",
+     "ruoloEsteso": "Portiere",
+     "numero": "44",
+     "eta": 21,
+     "valore": 25000
+    },
+    {
+     "tmId": "1160584",
+     "nome": "Matteo Ronci",
+     "ruolo": "P",
+     "ruoloEsteso": "Portiere",
+     "numero": "1",
+     "eta": 22,
+     "valore": null
+    },
+    {
+     "tmId": "1505441",
+     "nome": "Manuel Pizzolante",
+     "ruolo": "P",
+     "ruoloEsteso": "Portiere",
+     "numero": "74",
+     "eta": 19,
+     "valore": null
+    },
+    {
+     "tmId": "1561390",
+     "nome": "Thomas Caverzani",
+     "ruolo": "D",
+     "ruoloEsteso": "Difesa",
+     "numero": "22",
+     "eta": 21,
+     "valore": null
+    },
+    {
+     "tmId": "697864",
+     "nome": "Alessandro Giambalvo",
+     "ruolo": "D",
+     "ruoloEsteso": "Difensore centrale",
+     "numero": "4",
+     "eta": 23,
+     "valore": 25000
+    },
+    {
+     "tmId": "1273537",
+     "nome": "Federico Vandi",
+     "ruolo": "D",
+     "ruoloEsteso": "Difensore centrale",
+     "numero": "6",
+     "eta": 22,
+     "valore": 25000
+    },
+    {
+     "tmId": "1182967",
+     "nome": "Luca Fratticci",
+     "ruolo": "D",
+     "ruoloEsteso": "Difensore centrale",
+     "numero": "2",
+     "eta": 19,
+     "valore": 10000
+    },
+    {
+     "tmId": "1406916",
+     "nome": "Leonardo Fratta",
+     "ruolo": "D",
+     "ruoloEsteso": "Difensore centrale",
+     "numero": "5",
+     "eta": 20,
+     "valore": null
+    },
+    {
+     "tmId": "1559951",
+     "nome": "Simone Osmani",
+     "ruolo": "D",
+     "ruoloEsteso": "Difensore centrale",
+     "numero": "56",
+     "eta": 20,
+     "valore": null
+    },
+    {
+     "tmId": "1565814",
+     "nome": "Andrea Carlos Filippi",
+     "ruolo": "D",
+     "ruoloEsteso": "Terzino sinistro",
+     "numero": "99",
+     "eta": 21,
+     "valore": null
+    },
+    {
+     "tmId": "949396",
+     "nome": "Alex Caddy",
+     "ruolo": "D",
+     "ruoloEsteso": "Terzino destro",
+     "numero": "17",
+     "eta": 21,
+     "valore": null
+    },
+    {
+     "tmId": "1551895",
+     "nome": "Valerii Labudiak",
+     "ruolo": "D",
+     "ruoloEsteso": "Terzino destro",
+     "numero": "19",
+     "eta": 22,
+     "valore": null
+    },
+    {
+     "tmId": "1276882",
+     "nome": "Ilvi Rushani",
+     "ruolo": "C",
+     "ruoloEsteso": "Mediano",
+     "numero": "8",
+     "eta": 21,
+     "valore": null
+    },
+    {
+     "tmId": "1381241",
+     "nome": "Gianluca Bianchi",
+     "ruolo": "C",
+     "ruoloEsteso": "Centrocampista",
+     "numero": "47",
+     "eta": 19,
+     "valore": 25000
+    },
+    {
+     "tmId": "1033783",
+     "nome": "Nicholas Lisi",
+     "ruolo": "C",
+     "ruoloEsteso": "Centrocampista",
+     "numero": "21",
+     "eta": 22,
+     "valore": 10000
+    },
+    {
+     "tmId": "870559",
+     "nome": "Denys Klyvchuk",
+     "ruolo": "C",
+     "ruoloEsteso": "Centrocampista",
+     "numero": "7",
+     "eta": 27,
+     "valore": null
+    },
+    {
+     "tmId": "1113475",
+     "nome": "Nicolò Chiaruzzi",
+     "ruolo": "C",
+     "ruoloEsteso": "Centrocampista",
+     "numero": "14",
+     "eta": 20,
+     "valore": null
+    },
+    {
+     "tmId": "1279327",
+     "nome": "Mattia Amati",
+     "ruolo": "C",
+     "ruoloEsteso": "Esterno di destra",
+     "numero": "20",
+     "eta": 20,
+     "valore": 50000
+    },
+    {
+     "tmId": "870557",
+     "nome": "Emanuele Gregori",
+     "ruolo": "C",
+     "ruoloEsteso": "Trequartista",
+     "numero": "91",
+     "eta": 31,
+     "valore": 50000
+    },
+    {
+     "tmId": "1268380",
+     "nome": "Mattia Zanni",
+     "ruolo": "C",
+     "ruoloEsteso": "Ala sinistra",
+     "numero": "99",
+     "eta": 22,
+     "valore": 75000
+    },
+    {
+     "tmId": "1557790",
+     "nome": "Lorenzo D'Orsi",
+     "ruolo": "C",
+     "ruoloEsteso": "Ala sinistra",
+     "numero": "27",
+     "eta": 22,
+     "valore": null
+    },
+    {
+     "tmId": "463769",
+     "nome": "Eric D'Angeli",
+     "ruolo": "C",
+     "ruoloEsteso": "Ala destra",
+     "numero": "11",
+     "eta": 26,
+     "valore": 75000
+    },
+    {
+     "tmId": "796341",
+     "nome": "Federico Tumidei",
+     "ruolo": "A",
+     "ruoloEsteso": "Seconda punta",
+     "numero": "18",
+     "eta": 24,
+     "valore": 25000
+    },
+    {
+     "tmId": "1556598",
+     "nome": "Marco Spennato",
+     "ruolo": "A",
+     "ruoloEsteso": "Punta centrale",
+     "numero": "9",
+     "eta": 19,
+     "valore": null
+    },
+    {
+     "tmId": "1559783",
+     "nome": "Ryan Scarpellini",
+     "ruolo": "A",
+     "ruoloEsteso": "Attacco",
+     "numero": "23",
+     "eta": 26,
+     "valore": null
+    }
+   ]
+  },
+  {
+   "id": "24344",
+   "slug": "fc-fiorentino",
+   "saison": "2026",
+   "nome": "Fc Fiorentino",
+   "giocatori": [
+    {
+     "tmId": "352610",
+     "nome": "Simone Benedettini",
+     "ruolo": "P",
+     "ruoloEsteso": "Portiere",
+     "numero": "13",
+     "eta": 29,
+     "valore": 50000
+    },
+    {
+     "tmId": "143226",
+     "nome": "Michele Berardi",
+     "ruolo": "P",
+     "ruoloEsteso": "Portiere",
+     "numero": "2",
+     "eta": 34,
+     "valore": null
+    },
+    {
+     "tmId": "1215140",
+     "nome": "Luca Baldon",
+     "ruolo": "D",
+     "ruoloEsteso": "Difesa",
+     "numero": "29",
+     "eta": 21,
+     "valore": null
+    },
+    {
+     "tmId": "1591963",
+     "nome": "Khalifa Ajmi",
+     "ruolo": "D",
+     "ruoloEsteso": "Difesa",
+     "numero": "66",
+     "eta": 22,
+     "valore": null
+    },
+    {
+     "tmId": "1422370",
+     "nome": "Stefano Cucchi",
+     "ruolo": "D",
+     "ruoloEsteso": "Difensore centrale",
+     "numero": "3",
+     "eta": 29,
+     "valore": 75000
+    },
+    {
+     "tmId": "597133",
+     "nome": "Mattia Costantini",
+     "ruolo": "D",
+     "ruoloEsteso": "Difensore centrale",
+     "numero": "23",
+     "eta": 37,
+     "valore": 10000
+    },
+    {
+     "tmId": "714065",
+     "nome": "Alessandro Terenzi",
+     "ruolo": "D",
+     "ruoloEsteso": "Difensore centrale",
+     "numero": "14",
+     "eta": 26,
+     "valore": null
+    },
+    {
+     "tmId": "1185126",
+     "nome": "Filippo Zoffoli",
+     "ruolo": "D",
+     "ruoloEsteso": "Difensore centrale",
+     "numero": "16",
+     "eta": 29,
+     "valore": null
+    },
+    {
+     "tmId": "1578913",
+     "nome": "Cristian Simiri",
+     "ruolo": "D",
+     "ruoloEsteso": "Difensore centrale",
+     "numero": "24",
+     "eta": 20,
+     "valore": null
+    },
+    {
+     "tmId": "1542635",
+     "nome": "Joaquin Del Frari",
+     "ruolo": "D",
+     "ruoloEsteso": "Difensore centrale",
+     "numero": "27",
+     "eta": 25,
+     "valore": null
+    },
+    {
+     "tmId": "1575449",
+     "nome": "Fedi Ajmi",
+     "ruolo": "D",
+     "ruoloEsteso": "Terzino sinistro",
+     "numero": "19",
+     "eta": 20,
+     "valore": null
+    },
+    {
+     "tmId": "702616",
+     "nome": "Andrea Dolcini",
+     "ruolo": "C",
+     "ruoloEsteso": "Mediano",
+     "numero": "17",
+     "eta": 23,
+     "valore": 50000
+    },
+    {
+     "tmId": "474858",
+     "nome": "Alessandro Molinari",
+     "ruolo": "C",
+     "ruoloEsteso": "Mediano",
+     "numero": "8",
+     "eta": 37,
+     "valore": 10000
+    },
+    {
+     "tmId": "1577937",
+     "nome": "Francisco Jesús Ledesma",
+     "ruolo": "C",
+     "ruoloEsteso": "Centrocampo",
+     "numero": "20",
+     "eta": 24,
+     "valore": null
+    },
+    {
+     "tmId": "681283",
+     "nome": "Antonio Azzurro",
+     "ruolo": "C",
+     "ruoloEsteso": "Centrocampista",
+     "numero": "99",
+     "eta": 27,
+     "valore": 50000
+    },
+    {
+     "tmId": "475048",
+     "nome": "Andrea Borgagni",
+     "ruolo": "C",
+     "ruoloEsteso": "Esterno di destra",
+     "numero": "21",
+     "eta": 32,
+     "valore": null
+    },
+    {
+     "tmId": "1572709",
+     "nome": "Matteo Passeggio",
+     "ruolo": "C",
+     "ruoloEsteso": "Esterno di sinistra",
+     "numero": "22",
+     "eta": 28,
+     "valore": null
+    },
+    {
+     "tmId": "995445",
+     "nome": "Francesco Mariano",
+     "ruolo": "C",
+     "ruoloEsteso": "Trequartista",
+     "numero": "33",
+     "eta": 21,
+     "valore": 50000
+    },
+    {
+     "tmId": "1591962",
+     "nome": "Luciano Steger",
+     "ruolo": "C",
+     "ruoloEsteso": "Trequartista",
+     "numero": "77",
+     "eta": 24,
+     "valore": null
+    },
+    {
+     "tmId": "1575447",
+     "nome": "Nour Grissen",
+     "ruolo": "C",
+     "ruoloEsteso": "Ala destra",
+     "numero": "45",
+     "eta": 21,
+     "valore": null
+    },
+    {
+     "tmId": "1227680",
+     "nome": "Mattia Pintore",
+     "ruolo": "A",
+     "ruoloEsteso": "Seconda punta",
+     "numero": "10",
+     "eta": 27,
+     "valore": 75000
+    },
+    {
+     "tmId": "1421868",
+     "nome": "Manuel Pesciarelli",
+     "ruolo": "A",
+     "ruoloEsteso": "Punta centrale",
+     "numero": "7",
+     "eta": 20,
+     "valore": null
+    },
+    {
+     "tmId": "1571111",
+     "nome": "Mario José Vicente",
+     "ruolo": "A",
+     "ruoloEsteso": "Punta centrale",
+     "numero": "9",
+     "eta": 25,
+     "valore": null
+    }
+   ]
+  },
+  {
+   "id": "10616",
+   "slug": "ac-libertas",
+   "saison": "2026",
+   "nome": "Ac Libertas",
+   "giocatori": [
+    {
+     "tmId": "24307",
+     "nome": "Alex Foiera",
+     "ruolo": "P",
+     "ruoloEsteso": "Portiere",
+     "numero": "1",
+     "eta": 41,
+     "valore": null
+    },
+    {
+     "tmId": "928480",
+     "nome": "Moussa Gueye",
+     "ruolo": "P",
+     "ruoloEsteso": "Portiere",
+     "numero": "95",
+     "eta": 30,
+     "valore": null
+    },
+    {
+     "tmId": "268228",
+     "nome": "Angelo Gregorio",
+     "ruolo": "D",
+     "ruoloEsteso": "Difensore centrale",
+     "numero": "6",
+     "eta": 35,
+     "valore": 25000
+    },
+    {
+     "tmId": "471471",
+     "nome": "Alex De Biagi",
+     "ruolo": "D",
+     "ruoloEsteso": "Difensore centrale",
+     "numero": "28",
+     "eta": 26,
+     "valore": 25000
+    },
+    {
+     "tmId": "1509243",
+     "nome": "Kristian Ginobi",
+     "ruolo": "D",
+     "ruoloEsteso": "Difensore centrale",
+     "numero": "27",
+     "eta": 19,
+     "valore": 10000
+    },
+    {
+     "tmId": "536488",
+     "nome": "Andrea Magi",
+     "ruolo": "D",
+     "ruoloEsteso": "Difensore centrale",
+     "numero": "19",
+     "eta": 25,
+     "valore": null
+    },
+    {
+     "tmId": "547989",
+     "nome": "Matteo Lepri",
+     "ruolo": "D",
+     "ruoloEsteso": "Difensore centrale",
+     "numero": "55",
+     "eta": 37,
+     "valore": null
+    },
+    {
+     "tmId": "199080",
+     "nome": "Paolo Vandi",
+     "ruolo": "D",
+     "ruoloEsteso": "Terzino sinistro",
+     "numero": "20",
+     "eta": 31,
+     "valore": 75000
+    },
+    {
+     "tmId": "475166",
+     "nome": "Luca Tomassoni",
+     "ruolo": "D",
+     "ruoloEsteso": "Terzino sinistro",
+     "numero": "21",
+     "eta": 31,
+     "valore": 10000
+    },
+    {
+     "tmId": "627453",
+     "nome": "Manuel De Biagi",
+     "ruolo": "D",
+     "ruoloEsteso": "Terzino destro",
+     "numero": "23",
+     "eta": 24,
+     "valore": 25000
+    },
+    {
+     "tmId": "700255",
+     "nome": "Andrea Cristiani",
+     "ruolo": "D",
+     "ruoloEsteso": "Terzino destro",
+     "numero": "30",
+     "eta": 25,
+     "valore": null
+    },
+    {
+     "tmId": "232055",
+     "nome": "Gian Luca Morelli",
+     "ruolo": "C",
+     "ruoloEsteso": "Mediano",
+     "numero": "5",
+     "eta": 41,
+     "valore": 10000
+    },
+    {
+     "tmId": "409333",
+     "nome": "Nicola Gori",
+     "ruolo": "C",
+     "ruoloEsteso": "Mediano",
+     "numero": "4",
+     "eta": 29,
+     "valore": null
+    },
+    {
+     "tmId": "1153745",
+     "nome": "Manuel Socciarelli",
+     "ruolo": "C",
+     "ruoloEsteso": "Centrocampista",
+     "numero": "22",
+     "eta": 24,
+     "valore": 25000
+    },
+    {
+     "tmId": "645091",
+     "nome": "Moussa Simaha",
+     "ruolo": "C",
+     "ruoloEsteso": "Centrocampista",
+     "numero": "45",
+     "eta": 27,
+     "valore": null
+    },
+    {
+     "tmId": "1568277",
+     "nome": "Luca Guglielmo",
+     "ruolo": "C",
+     "ruoloEsteso": "Centrocampista",
+     "numero": "8",
+     "eta": 18,
+     "valore": null
+    },
+    {
+     "tmId": "245993",
+     "nome": "Fabio Ramon Tomassini",
+     "ruolo": "C",
+     "ruoloEsteso": "Esterno di sinistra",
+     "numero": "10",
+     "eta": 30,
+     "valore": 50000
+    },
+    {
+     "tmId": "614719",
+     "nome": "Nicola Greco",
+     "ruolo": "C",
+     "ruoloEsteso": "Esterno di sinistra",
+     "numero": "34",
+     "eta": 26,
+     "valore": 25000
+    },
+    {
+     "tmId": "114677",
+     "nome": "Daniele Melandri",
+     "ruolo": "A",
+     "ruoloEsteso": "Seconda punta",
+     "numero": "7",
+     "eta": 37,
+     "valore": null
+    },
+    {
+     "tmId": "666750",
+     "nome": "Osagie Osayande",
+     "ruolo": "A",
+     "ruoloEsteso": "Punta centrale",
+     "numero": "69",
+     "eta": 25,
+     "valore": null
+    },
+    {
+     "tmId": "1592655",
+     "nome": "Alessandro Gabellini",
+     "ruolo": "A",
+     "ruoloEsteso": "Attacco",
+     "numero": "87",
+     "eta": 19,
+     "valore": null
+    },
+    {
+     "tmId": "1452056",
+     "nome": "Hamza Hamidou Boureima",
+     "ruolo": "A",
+     "ruoloEsteso": "Punta centrale",
+     "numero": "99",
+     "eta": 22,
+     "valore": null
+    }
+   ]
+  },
+  {
+   "id": "24347",
+   "slug": "sc-faetano",
+   "saison": "2026",
+   "nome": "Sc Faetano",
+   "giocatori": [
+    {
+     "tmId": "407667",
+     "nome": "Simone Venturini",
+     "ruolo": "P",
+     "ruoloEsteso": "Portiere",
+     "numero": "24",
+     "eta": 28,
+     "valore": 25000
+    },
+    {
+     "tmId": "472388",
+     "nome": "Marco Casalboni",
+     "ruolo": "P",
+     "ruoloEsteso": "Portiere",
+     "numero": "-",
+     "eta": 43,
+     "valore": null
+    },
+    {
+     "tmId": "1509240",
+     "nome": "Tommaso Panfili",
+     "ruolo": "P",
+     "ruoloEsteso": "Portiere",
+     "numero": "1",
+     "eta": 19,
+     "valore": null
+    },
+    {
+     "tmId": "1596192",
+     "nome": "Simone Salvi",
+     "ruolo": "D",
+     "ruoloEsteso": "Difesa",
+     "numero": "23",
+     "eta": 19,
+     "valore": null
+    },
+    {
+     "tmId": "1350054",
+     "nome": "Stefano Kokeri",
+     "ruolo": "D",
+     "ruoloEsteso": "Difensore centrale",
+     "numero": "25",
+     "eta": 20,
+     "valore": 50000
+    },
+    {
+     "tmId": "1228117",
+     "nome": "Ernesto Gentile",
+     "ruolo": "D",
+     "ruoloEsteso": "Difensore centrale",
+     "numero": "6",
+     "eta": 27,
+     "valore": null
+    },
+    {
+     "tmId": "1361647",
+     "nome": "Antonio Marchese",
+     "ruolo": "D",
+     "ruoloEsteso": "Difensore centrale",
+     "numero": "3",
+     "eta": 30,
+     "valore": null
+    },
+    {
+     "tmId": "1585521",
+     "nome": "Giovanni Iaccarino",
+     "ruolo": "D",
+     "ruoloEsteso": "Difensore centrale",
+     "numero": "18",
+     "eta": 19,
+     "valore": null
+    },
+    {
+     "tmId": "1459629",
+     "nome": "Samuele Tugliani",
+     "ruolo": "D",
+     "ruoloEsteso": "Terzino sinistro",
+     "numero": "4",
+     "eta": 22,
+     "valore": 50000
+    },
+    {
+     "tmId": "1435781",
+     "nome": "Ciro Di Palma",
+     "ruolo": "D",
+     "ruoloEsteso": "Terzino sinistro",
+     "numero": "22",
+     "eta": 19,
+     "valore": 10000
+    },
+    {
+     "tmId": "949380",
+     "nome": "Simone Riccardi",
+     "ruolo": "D",
+     "ruoloEsteso": "Terzino destro",
+     "numero": "-",
+     "eta": 20,
+     "valore": 25000
+    },
+    {
+     "tmId": "1056557",
+     "nome": "Alessio Bertuccini",
+     "ruolo": "D",
+     "ruoloEsteso": "Terzino destro",
+     "numero": "29",
+     "eta": 21,
+     "valore": 25000
+    },
+    {
+     "tmId": "1435805",
+     "nome": "Cristian Abbadessa",
+     "ruolo": "D",
+     "ruoloEsteso": "Terzino destro",
+     "numero": "21",
+     "eta": 19,
+     "valore": 10000
+    },
+    {
+     "tmId": "1256134",
+     "nome": "Gian Luca Scalcione",
+     "ruolo": "C",
+     "ruoloEsteso": "Mediano",
+     "numero": "11",
+     "eta": 26,
+     "valore": null
+    },
+    {
+     "tmId": "1584763",
+     "nome": "Federico Nicolini",
+     "ruolo": "C",
+     "ruoloEsteso": "Centrocampo",
+     "numero": "17",
+     "eta": null,
+     "valore": null
+    },
+    {
+     "tmId": "1591915",
+     "nome": "Samuele Renzi",
+     "ruolo": "C",
+     "ruoloEsteso": "Centrocampo",
+     "numero": "44",
+     "eta": 19,
+     "valore": null
+    },
+    {
+     "tmId": "1596191",
+     "nome": "Salvatore Cappello",
+     "ruolo": "C",
+     "ruoloEsteso": "Centrocampo",
+     "numero": "72",
+     "eta": 19,
+     "valore": null
+    },
+    {
+     "tmId": "136105",
+     "nome": "Enrico Golinucci",
+     "ruolo": "C",
+     "ruoloEsteso": "Centrocampista",
+     "numero": "8",
+     "eta": 35,
+     "valore": 10000
+    },
+    {
+     "tmId": "697866",
+     "nome": "Alessandro Renzi",
+     "ruolo": "C",
+     "ruoloEsteso": "Centrocampista",
+     "numero": "16",
+     "eta": 23,
+     "valore": 10000
+    },
+    {
+     "tmId": "252723",
+     "nome": "Andrea Ulizio",
+     "ruolo": "C",
+     "ruoloEsteso": "Esterno di sinistra",
+     "numero": "5",
+     "eta": 32,
+     "valore": null
+    },
+    {
+     "tmId": "934101",
+     "nome": "Giuseppe Elia",
+     "ruolo": "C",
+     "ruoloEsteso": "Ala sinistra",
+     "numero": "26",
+     "eta": 21,
+     "valore": 25000
+    },
+    {
+     "tmId": "228111",
+     "nome": "Marco Bernardi",
+     "ruolo": "C",
+     "ruoloEsteso": "Ala sinistra",
+     "numero": "9",
+     "eta": 32,
+     "valore": 10000
+    },
+    {
+     "tmId": "1591474",
+     "nome": "Juan David Rivas",
+     "ruolo": "A",
+     "ruoloEsteso": "Attacco",
+     "numero": "7",
+     "eta": 22,
+     "valore": null
+    },
+    {
+     "tmId": "1196560",
+     "nome": "Diego Michelucci",
+     "ruolo": "A",
+     "ruoloEsteso": "Attacco",
+     "numero": "10",
+     "eta": 21,
+     "valore": null
+    },
+    {
+     "tmId": "1596196",
+     "nome": "Nicolò Mereu",
+     "ruolo": "A",
+     "ruoloEsteso": "Attacco",
+     "numero": "28",
+     "eta": 16,
+     "valore": null
+    }
+   ]
+  },
+  {
+   "id": "77918",
+   "slug": "san-marino-academy",
+   "saison": "2026",
+   "nome": "San Marino Academy",
+   "giocatori": [
+    {
+     "tmId": "702619",
+     "nome": "Pietro Amici",
+     "ruolo": "P",
+     "ruoloEsteso": "Portiere",
+     "numero": "24",
+     "eta": 22,
+     "valore": null
+    },
+    {
+     "tmId": "1340660",
+     "nome": "Alessandro Cenci",
+     "ruolo": "P",
+     "ruoloEsteso": "Portiere",
+     "numero": "1",
+     "eta": 18,
+     "valore": null
+    },
+    {
+     "tmId": "1308403",
+     "nome": "Nicholas Bucci",
+     "ruolo": "P",
+     "ruoloEsteso": "Portiere",
+     "numero": "12",
+     "eta": 16,
+     "valore": null
+    },
+    {
+     "tmId": "1505509",
+     "nome": "Filippo Giulianelli",
+     "ruolo": "P",
+     "ruoloEsteso": "Portiere",
+     "numero": "89",
+     "eta": 18,
+     "valore": null
+    },
+    {
+     "tmId": "1591616",
+     "nome": "Mattia Bullini",
+     "ruolo": "D",
+     "ruoloEsteso": "Difesa",
+     "numero": "3",
+     "eta": 18,
+     "valore": null
+    },
+    {
+     "tmId": "1592040",
+     "nome": "Christian Delvecchio",
+     "ruolo": "D",
+     "ruoloEsteso": "Difesa",
+     "numero": "6",
+     "eta": 18,
+     "valore": null
+    },
+    {
+     "tmId": "1052969",
+     "nome": "Mattia Ciacci",
+     "ruolo": "D",
+     "ruoloEsteso": "Difensore centrale",
+     "numero": "26",
+     "eta": 20,
+     "valore": 50000
+    },
+    {
+     "tmId": "956270",
+     "nome": "Diego Zavoli",
+     "ruolo": "D",
+     "ruoloEsteso": "Difensore centrale",
+     "numero": "5",
+     "eta": 22,
+     "valore": 10000
+    },
+    {
+     "tmId": "1365047",
+     "nome": "Lorenzo Grazioso",
+     "ruolo": "D",
+     "ruoloEsteso": "Terzino sinistro",
+     "numero": "-",
+     "eta": 20,
+     "valore": null
+    },
+    {
+     "tmId": "949416",
+     "nome": "Simone Gasperoni",
+     "ruolo": "D",
+     "ruoloEsteso": "Terzino destro",
+     "numero": "-",
+     "eta": 20,
+     "valore": 25000
+    },
+    {
+     "tmId": "1197383",
+     "nome": "Samuele Forcellini",
+     "ruolo": "D",
+     "ruoloEsteso": "Terzino destro",
+     "numero": "2",
+     "eta": 19,
+     "valore": null
+    },
+    {
+     "tmId": "1592709",
+     "nome": "Nikolai Yordan Mirchev",
+     "ruolo": "D",
+     "ruoloEsteso": "Terzino destro",
+     "numero": "23",
+     "eta": 18,
+     "valore": null
+    },
+    {
+     "tmId": "949271",
+     "nome": "Pietro Renzi",
+     "ruolo": "C",
+     "ruoloEsteso": "Mediano",
+     "numero": "8",
+     "eta": 21,
+     "valore": 50000
+    },
+    {
+     "tmId": "949432",
+     "nome": "Tommy Cervellini",
+     "ruolo": "C",
+     "ruoloEsteso": "Mediano",
+     "numero": "-",
+     "eta": 20,
+     "valore": 25000
+    },
+    {
+     "tmId": "1593275",
+     "nome": "Thomas Grana",
+     "ruolo": "C",
+     "ruoloEsteso": "Centrocampo",
+     "numero": "-",
+     "eta": 17,
+     "valore": null
+    },
+    {
+     "tmId": "1599412",
+     "nome": "Mattia Tamburini",
+     "ruolo": "C",
+     "ruoloEsteso": "Centrocampo",
+     "numero": "-",
+     "eta": 19,
+     "valore": null
+    },
+    {
+     "tmId": "1070927",
+     "nome": "Luca Pasolini",
+     "ruolo": "C",
+     "ruoloEsteso": "Mediano",
+     "numero": "4",
+     "eta": 18,
+     "valore": null
+    },
+    {
+     "tmId": "1593279",
+     "nome": "Denis Giorgetti",
+     "ruolo": "C",
+     "ruoloEsteso": "Centrocampo",
+     "numero": "14",
+     "eta": 18,
+     "valore": null
+    },
+    {
+     "tmId": "949414",
+     "nome": "Giacomo Molinari",
+     "ruolo": "C",
+     "ruoloEsteso": "Centrocampista",
+     "numero": "22",
+     "eta": 21,
+     "valore": 10000
+    },
+    {
+     "tmId": "1197390",
+     "nome": "Lorenzo Canarezza",
+     "ruolo": "C",
+     "ruoloEsteso": "Ala sinistra",
+     "numero": "27",
+     "eta": 18,
+     "valore": 25000
+    },
+    {
+     "tmId": "949397",
+     "nome": "Tommaso Famiglietti",
+     "ruolo": "A",
+     "ruoloEsteso": "Seconda punta",
+     "numero": "7",
+     "eta": 21,
+     "valore": 10000
+    },
+    {
+     "tmId": "1197393",
+     "nome": "Filippo Valentini",
+     "ruolo": "A",
+     "ruoloEsteso": "Seconda punta",
+     "numero": "11",
+     "eta": 19,
+     "valore": 10000
+    },
+    {
+     "tmId": "1594884",
+     "nome": "Tommaso Podeschi",
+     "ruolo": "A",
+     "ruoloEsteso": "Attacco",
+     "numero": "21",
+     "eta": 18,
+     "valore": null
+    }
+   ]
+  },
+  {
+   "id": "10611",
+   "slug": "ss-murata",
+   "saison": "2026",
+   "nome": "Ss Murata",
+   "giocatori": [
+    {
+     "tmId": "691902",
+     "nome": "Alberto Olivieri",
+     "ruolo": "P",
+     "ruoloEsteso": "Portiere",
+     "numero": "99",
+     "eta": 24,
+     "valore": null
+    },
+    {
+     "tmId": "702620",
+     "nome": "Michele Magnani",
+     "ruolo": "P",
+     "ruoloEsteso": "Portiere",
+     "numero": "12",
+     "eta": 23,
+     "valore": null
+    },
+    {
+     "tmId": "1565812",
+     "nome": "Francesco Suzzi",
+     "ruolo": "P",
+     "ruoloEsteso": "Portiere",
+     "numero": "13",
+     "eta": 19,
+     "valore": null
+    },
+    {
+     "tmId": "1562850",
+     "nome": "Luca Martelli",
+     "ruolo": "D",
+     "ruoloEsteso": "Difensore centrale",
+     "numero": "3",
+     "eta": 20,
+     "valore": null
+    },
+    {
+     "tmId": "1332178",
+     "nome": "Manuel Mozzillo",
+     "ruolo": "D",
+     "ruoloEsteso": "Difensore centrale",
+     "numero": "5",
+     "eta": 18,
+     "valore": null
+    },
+    {
+     "tmId": "1477311",
+     "nome": "Leonardo Lombardi",
+     "ruolo": "D",
+     "ruoloEsteso": "Difensore centrale",
+     "numero": "23",
+     "eta": 17,
+     "valore": null
+    },
+    {
+     "tmId": "1578505",
+     "nome": "Alessandro Raimondi",
+     "ruolo": "D",
+     "ruoloEsteso": "Difensore centrale",
+     "numero": "55",
+     "eta": 21,
+     "valore": null
+    },
+    {
+     "tmId": "1562849",
+     "nome": "Omar Kassi",
+     "ruolo": "D",
+     "ruoloEsteso": "Terzino sinistro",
+     "numero": "21",
+     "eta": 18,
+     "valore": null
+    },
+    {
+     "tmId": "1565104",
+     "nome": "Giacomo Ceccaroni",
+     "ruolo": "D",
+     "ruoloEsteso": "Terzino destro",
+     "numero": "27",
+     "eta": 19,
+     "valore": null
+    },
+    {
+     "tmId": "865460",
+     "nome": "Antonio Palumbo",
+     "ruolo": "C",
+     "ruoloEsteso": "Mediano",
+     "numero": "30",
+     "eta": 23,
+     "valore": 25000
+    },
+    {
+     "tmId": "1597436",
+     "nome": "Salvatore Di Mauro",
+     "ruolo": "C",
+     "ruoloEsteso": "Mediano",
+     "numero": "6",
+     "eta": 21,
+     "valore": null
+    },
+    {
+     "tmId": "1565109",
+     "nome": "Cristian Scarcella",
+     "ruolo": "C",
+     "ruoloEsteso": "Mediano",
+     "numero": "8",
+     "eta": 19,
+     "valore": null
+    },
+    {
+     "tmId": "1575569",
+     "nome": "Joshua Frassanito",
+     "ruolo": "C",
+     "ruoloEsteso": "Centrocampo",
+     "numero": "15",
+     "eta": 22,
+     "valore": null
+    },
+    {
+     "tmId": "658405",
+     "nome": "Alberto Baldazzi",
+     "ruolo": "C",
+     "ruoloEsteso": "Centrocampista",
+     "numero": "4",
+     "eta": 24,
+     "valore": 25000
+    },
+    {
+     "tmId": "1453993",
+     "nome": "Ivan Pyantkivskyi",
+     "ruolo": "C",
+     "ruoloEsteso": "Centrocampista",
+     "numero": "19",
+     "eta": 22,
+     "valore": 10000
+    },
+    {
+     "tmId": "702617",
+     "nome": "Filippo Pasolini",
+     "ruolo": "C",
+     "ruoloEsteso": "Centrocampista",
+     "numero": "22",
+     "eta": 23,
+     "valore": 10000
+    },
+    {
+     "tmId": "1321998",
+     "nome": "Giacomo Peri",
+     "ruolo": "C",
+     "ruoloEsteso": "Centrocampista",
+     "numero": "24",
+     "eta": 20,
+     "valore": 10000
+    },
+    {
+     "tmId": "719703",
+     "nome": "Mattia Sarti",
+     "ruolo": "C",
+     "ruoloEsteso": "Centrocampista",
+     "numero": "42",
+     "eta": 23,
+     "valore": 10000
+    },
+    {
+     "tmId": "1106713",
+     "nome": "Vincenzo Ruocco",
+     "ruolo": "C",
+     "ruoloEsteso": "Esterno di sinistra",
+     "numero": "70",
+     "eta": 22,
+     "valore": null
+    },
+    {
+     "tmId": "1292338",
+     "nome": "Gianluca Baldani",
+     "ruolo": "C",
+     "ruoloEsteso": "Trequartista",
+     "numero": "7",
+     "eta": 20,
+     "valore": null
+    },
+    {
+     "tmId": "1567040",
+     "nome": "Luca Hassler",
+     "ruolo": "C",
+     "ruoloEsteso": "Ala sinistra",
+     "numero": "10",
+     "eta": 20,
+     "valore": null
+    },
+    {
+     "tmId": "1565107",
+     "nome": "Alessandro Sacchini",
+     "ruolo": "C",
+     "ruoloEsteso": "Ala destra",
+     "numero": "77",
+     "eta": 22,
+     "valore": null
+    },
+    {
+     "tmId": "199082",
+     "nome": "Alessandro Brisigotti",
+     "ruolo": "A",
+     "ruoloEsteso": "Punta centrale",
+     "numero": "11",
+     "eta": 32,
+     "valore": 25000
+    },
+    {
+     "tmId": "1172175",
+     "nome": "Filippo Capriotti",
+     "ruolo": "A",
+     "ruoloEsteso": "Punta centrale",
+     "numero": "9",
+     "eta": 33,
+     "valore": null
+    },
+    {
+     "tmId": "1575570",
+     "nome": "Vito Capodiferro",
+     "ruolo": "A",
+     "ruoloEsteso": "Attacco",
+     "numero": "17",
+     "eta": 20,
+     "valore": null
+    },
+    {
+     "tmId": "1340668",
+     "nome": "Alessandro Baldazzi",
+     "ruolo": "A",
+     "ruoloEsteso": "Punta centrale",
+     "numero": "20",
+     "eta": 18,
+     "valore": null
+    }
+   ]
+  }
+ ]
+}

@@ -107,6 +107,19 @@ export async function signInWithProvider(provider) { await remote.signInOAuth(pr
 export async function verifyCode(email, token) { await remote.verifyOtp(email, token); return adopt(); }
 export async function resetPassword(email) { await remote.resetPassword(email, returnUrl()); }
 export async function updatePassword(password) { await remote.updatePassword(password); }
+/**
+ * Il nome è stato ricavato dall'indirizzo invece che dichiarato?
+ * Succede con Apple: chi sceglie «Nascondi la mia e-mail» arriva con un
+ * indirizzo tipo pq7jh9h827@privaterelay.appleid.com, e il nome passa solo
+ * alla primissima autorizzazione. Senza chiederlo, in lega comparirebbe la
+ * sigla dell'indirizzo.
+ */
+export function nomeDaCompletare() {
+  const n = profileInfo()?.display_name || ''; const mail = currentUser()?.email || '';
+  if (!n) return true;
+  const locale = mail.split('@')[0];
+  return !!locale && n === locale;
+}
 export async function updateDisplayName(name) { await remote.updateProfile(user.id, { display_name: name }); await refresh(); }
 export async function signOut() { authKind() === 'clerk' ? await clerk.signOut() : await remote.signOut(); user = null; await loadAll(); notify(); }
 export function setSupabaseConfig(url, key) { remote.setConfig(url, key); location.reload(); }

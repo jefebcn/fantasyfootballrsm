@@ -50,6 +50,9 @@ export function applyTheme() {
   if (meta) meta.content = document.documentElement.getAttribute('data-theme') === 'dark' ? '#0A3E60' : '#1B84C6';
 }
 
+// Glifi e non icone illustrate: la barra in basso deve dire DOVE SEI, e il
+// colore è l'unico segnale che ha. Un'icona già a colori non può diventare blu
+// quando è attiva. È anche quello che fa l'app di riferimento.
 const NAV = [['', 'home', 'Dashboard'], ['rosa', 'shirt', 'Rosa'], ['calendario', 'cal', 'Calendario'], ['classifica', 'medal', 'Classifica'], ['voti', 'votes', 'Voti']];
 
 function appbar(view, ctx) {

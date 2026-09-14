@@ -1,5 +1,5 @@
 /* Service worker — shell in cache, aggiornamento in background. */
-const VERSION = 'fcs-v0.7.0';
+const VERSION = 'fcs-v0.7.1';
 const SHELL = [
   './', './index.html', './manifest.webmanifest', './styles/app.css', './design/tokens/tokens.css',
   './src/app.js', './src/state.js', './src/data.js', './src/engine.js', './src/ui.js', './src/sprite.js', './src/config.js', './src/backend.js', './src/auth-clerk.js',
@@ -17,15 +17,18 @@ self.addEventListener('activate', (e) => {
 self.addEventListener('fetch', (e) => {
   const url = new URL(e.request.url);
   if (e.request.method !== 'GET') return;
+  // Media: Safari li chiede a pezzi (Range) e la Cache API rifiuta le risposte 206.
+  // Passano direttamente alla rete, senza cache.
+  if (e.request.headers.has('range') || /\.(mp4|webm|mov|m4v)$/i.test(url.pathname)) return;
   // font e risorse esterne: rete, con fallback cache
   if (url.origin !== location.origin) {
-    e.respondWith(caches.open(VERSION + '-ext').then(async (c) => { try { const r = await fetch(e.request); if (r.ok) c.put(e.request, r.clone()); return r; } catch { return (await c.match(e.request)) || Response.error(); } }));
+    e.respondWith(caches.open(VERSION + '-ext').then(async (c) => { try { const r = await fetch(e.request); if (r.status === 200) c.put(e.request, r.clone()); return r; } catch { return (await c.match(e.request)) || Response.error(); } }));
     return;
   }
   // shell: stale-while-revalidate
   e.respondWith(caches.open(VERSION).then(async (c) => {
     const cached = await c.match(e.request, { ignoreSearch: true });
-    const net = fetch(e.request).then((r) => { if (r.ok) c.put(e.request, r.clone()); return r; }).catch(() => null);
+    const net = fetch(e.request).then((r) => { if (r.status === 200) c.put(e.request, r.clone()); return r; }).catch(() => null);
     return cached || (await net) || (e.request.mode === 'navigate' ? c.match('./index.html') : Response.error());
   }));
 });

@@ -34,7 +34,7 @@ export const onboarding = {
     return `<main class="intro">
       <div class="intro-bg">
         <canvas id="intro-fx"></canvas>
-        <video id="intro-video" playsinline muted loop preload="auto" poster="media/intro.jpg">
+        <video id="intro-video" playsinline autoplay muted loop preload="auto" disablepictureinpicture>
           <source src="media/intro.webm" type="video/webm"><source src="media/intro.mp4" type="video/mp4">
         </video>
         <span class="intro-veil"></span>
@@ -63,7 +63,10 @@ export const onboarding = {
     const main = root.querySelector('.intro');
     const video = root.querySelector('#intro-video');
     // Il video compare solo se c'è davvero: altrimenti resta lo sfondo animato.
-    video.addEventListener('canplay', () => { video.classList.add('on'); video.play().catch(() => {}); }, { once: true });
+    // Compare solo quando c'è un fotogramma pronto: se il formato non è supportato
+    // (o il file manca) resta lo sfondo animato, senza schermate nere.
+    const show = () => { video.classList.add('on'); video.play().catch(() => {}); };
+    if (video.readyState >= 2) show(); else video.addEventListener('loadeddata', show, { once: true });
     video.addEventListener('error', () => video.remove(), { once: true });
     fx(root.querySelector('#intro-fx'));
 

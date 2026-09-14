@@ -1,5 +1,5 @@
 /* Service worker — shell in cache, aggiornamento in background. */
-const VERSION = 'fcs-v1.1.0';
+const VERSION = 'fcs-v1.2.0';
 const SHELL = [
   './', './index.html', './manifest.webmanifest', './styles/app.css', './styles/logo.css', './design/tokens/tokens.css',
   './src/app.js', './src/state.js', './src/data.js', './src/engine.js', './src/ui.js', './src/sprite.js', './src/config.js', './src/backend.js', './src/auth-clerk.js',
@@ -17,7 +17,7 @@ self.addEventListener('install', (e) => {
   e.waitUntil(caches.open(VERSION).then((c) => c.addAll(SHELL)).then(() => self.skipWaiting()));
 });
 self.addEventListener('activate', (e) => {
-  e.waitUntil(caches.keys().then((keys) => Promise.all(keys.filter((k) => k !== VERSION).map((k) => caches.delete(k)))).then(() => self.clients.claim()));
+  e.waitUntil(caches.keys().then((keys) => Promise.all(keys.filter((k) => k !== VERSION && k !== VERSION + '-ext' && k !== VERSION + '-api').map((k) => caches.delete(k)))).then(() => self.clients.claim()));
 });
 self.addEventListener('fetch', (e) => {
   const url = new URL(e.request.url);
@@ -25,6 +25,15 @@ self.addEventListener('fetch', (e) => {
   // Media: Safari li chiede a pezzi (Range) e la Cache API rifiuta le risposte 206.
   // Passano direttamente alla rete, senza cache.
   if (e.request.headers.has('range') || /\.(mp4|webm|mov|m4v)$/i.test(url.pathname)) return;
+  // Le notizie sono dati freschi, non guscio: prima la rete, e se manca si usa
+  // l'ultima copia. Senza questo, stale-while-revalidate servirebbe notizie vecchie.
+  if (url.origin === location.origin && url.pathname.startsWith('/api/')) {
+    e.respondWith(caches.open(VERSION + '-api').then(async (c) => {
+      try { const r = await fetch(e.request); if (r.status === 200) c.put(e.request, r.clone()); return r; }
+      catch { return (await c.match(e.request)) || new Response('{"notizie":[]}', { headers: { 'content-type': 'application/json' } }); }
+    }));
+    return;
+  }
   // font e risorse esterne: rete, con fallback cache
   if (url.origin !== location.origin) {
     e.respondWith(caches.open(VERSION + '-ext').then(async (c) => { try { const r = await fetch(e.request); if (r.status === 200) c.put(e.request, r.clone()); return r; } catch { return (await c.match(e.request)) || Response.error(); } }));

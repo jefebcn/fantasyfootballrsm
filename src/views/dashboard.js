@@ -1,4 +1,5 @@
 import * as S from '../state.js';
+import * as N from '../notizie.js';
 import { esc, fmt, icon, logo, badge, crest, matchCard, tile, sec, dateIt, timeIt } from '../ui.js';
 
 const RULES = [
@@ -83,6 +84,29 @@ function classificaBreve(me) {
     <span class="lcta">Classifica completa${icon('chev', 'ic sm')}</span></a>`;
 }
 
+/** Notizie vere del campionato: la prima in grande, le altre in riga. */
+function notizie() {
+  const list = N.disponibili(); if (!list.length) return '';
+  const quando = (iso) => {
+    if (!iso) return '';
+    const d = new Date(iso); const ore = (Date.now() - d) / 3600000;
+    if (ore < 1) return 'poco fa';
+    if (ore < 24) return `${Math.round(ore)} h fa`;
+    if (ore < 48) return 'ieri';
+    return dateIt(d);
+  };
+  const meta = (n) => `${esc(quando(n.data))}${n.data ? ' · ' : ''}${esc(N.fonte())}`;
+  const [prima, ...altre] = list.slice(0, 5);
+  const grande = `<a class="nbig" href="${esc(prima.link)}" target="_blank" rel="noopener noreferrer">
+    ${prima.foto ? `<span class="ph"><img src="${esc(prima.foto)}" alt="" decoding="async"></span>` : ''}
+    <span class="tx"><b>${esc(prima.titolo)}</b>${prima.sommario ? `<span>${esc(prima.sommario)}</span>` : ''}<em>${meta(prima)}</em></span></a>`;
+  const righe = altre.map((n) => `<a class="ni" href="${esc(n.link)}" target="_blank" rel="noopener noreferrer">
+    ${n.fotoMini || n.foto ? `<span class="th"><img src="${esc(n.fotoMini || n.foto)}" alt="" loading="lazy" decoding="async"></span>` : ''}
+    <span class="tx"><b>${esc(n.titolo)}</b><em>${meta(n)}</em></span></a>`).join('');
+  return sec('Notizie', esc(N.fonte())) + grande + `<div class="news">${righe}
+    <a class="lcta" href="https://www.sanmarinortv.sm/sport/calcio-sammarinese-c15" target="_blank" rel="noopener noreferrer">Tutte le notizie su ${esc(N.fonte())}${icon('out', 'ic sm')}</a></div>`;
+}
+
 export const dashboard = {
   title: 'Dashboard',
   render() {
@@ -129,12 +153,13 @@ export const dashboard = {
       ${nxtR ? sec('Prossima giornata', `${ph.next}ª di lega`) + matchCard(nxtR, S.managersById, { meta: `${dateIt(S.matchday(ph.next).lockAt)} · ${timeIt(S.matchday(ph.next).lockAt)}` }) : ''}
       ${forma}
       ${prossimePartite(ph)}
+      ${notizie()}
       ${classificaBreve(me)}
       ${sec('Dal regolamento')}
       <div class="rule"><span class="art">${art}</span><p><b>${titolo}.</b> ${testo}</p></div>
     </main>`;
   },
-  mount(root) {
+  mount(root, ctx) {
     const slot = root.querySelector('#install-slot');
     const show = () => {
       if (!window.__installPrompt || S.store.get().installedDismissed || !slot) return;
@@ -143,5 +168,12 @@ export const dashboard = {
       slot.querySelector('#inst-no').onclick = () => { S.store.set({ installedDismissed: true }); slot.innerHTML = ''; };
     };
     show(); document.addEventListener('installable', show, { once: true });
+    N.carica(() => ctx.render());
+    // 'error' non risale: si ascolta in cattura. Una foto che non carica sparisce
+    // insieme al suo riquadro, invece di lasciare l'icona di immagine rotta.
+    root.addEventListener('error', (e) => {
+      const img = e.target; if (img?.tagName !== 'IMG') return;
+      const box = img.closest('.ph, .th'); if (box) box.remove();
+    }, true);
   },
 };

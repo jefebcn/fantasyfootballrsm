@@ -66,7 +66,7 @@ function prossimePartite(ph) {
         <em>VS</em>
         <span class="t">${crest({ color: a.color, initials: a.shortName }, 'sm')}<b>${esc(a.name)}</b></span>
       </span>
-      <span class="where">${esc(m.venue)}</span></a>`;
+      ${m.venue ? `<span class="where">${esc(m.venue)}</span>` : ''}</a>`;
   }).join('')}</div>`;
 }
 

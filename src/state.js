@@ -164,9 +164,8 @@ export const now = () => new Date();
 
 // ---------------------------------------------------------------- giornate
 export function matchday(n) { return base.matchdays.find((m) => m.number === n); }
-const blank = { status: 'scheduled', homeGoals: null, awayGoals: null, videoUrl: null };
-export function matchesOf(n) { return base.matches.filter((m) => m.matchday === n).map((m) => ({ ...m, ...blank, ...(g.matchOverrides[m.id] || {}) })); }
-export function match(id) { const m = base.matches.find((x) => x.id === id); return m ? { ...m, ...blank, ...(g.matchOverrides[id] || {}) } : null; }
+export function matchesOf(n) { return base.matches.filter((m) => m.matchday === n).map((m) => ({ ...m, ...(g.matchOverrides[m.id] || {}) })); }
+export function match(id) { const m = base.matches.find((x) => x.id === id); return m ? { ...m, ...(g.matchOverrides[id] || {}) } : null; }
 export function eventsOf(matchId) { return g.matchEvents[matchId] || []; }
 export function appearancesOf(matchId) { return g.appearanceOverrides[matchId] || []; }
 
@@ -179,7 +178,8 @@ export function currentMatchday() {
     return Math.max(1, n);
   });
 }
-export const hasData = (n) => !!g.matchdayStatus[n] || matchesOf(n).some((m) => m.status !== 'scheduled');
+export const hasData = (n) => !!g.matchdayStatus[n]
+  || matchesOf(n).some((m) => g.matchOverrides[m.id] || (g.matchEvents[m.id] || []).length);
 export function nextMatchday() { const cur = currentMatchday(); return Math.min(30, hasData(cur) ? cur + 1 : cur); }
 /** 'frozen' | 'provisional' | 'live' | 'open' | 'scheduled' */
 export function matchdayStatus(n) {

@@ -1,13 +1,15 @@
 /**
  * Anagrafiche e calendario della stagione.
- * 16 società e 30 giornate generate in modo deterministico: stesso seed → stessi dati.
- * Il listone è invece quello VERO, importato da Transfermarkt in src/listone-dati.js
- * (vedi scripts/importa-listone.py).
+ * Listone e calendario sono VERI, importati da Transfermarkt
+ * (src/listone-dati.js e src/calendario-dati.js, vedi scripts/importa-*.py).
+ * Del calendario sono reali le giornate già pubblicate; le altre completano
+ * il girone, perché la stagione non è ancora uscita per intero.
  * Le giornate 1-2 hanno anche eventi di esempio, usati solo dal Giudice Dati
  * per popolare il database la prima volta.
  */
 import { DEFAULT_RULES } from './engine.js';
 import { LISTONE } from './listone-dati.js';
+import { CALENDARIO, GIORNATE_REALI } from './calendario-dati.js';
 
 export function mulberry32(seed) {
   let a = seed >>> 0;
@@ -105,18 +107,25 @@ export function buildSeason(seed = 20262027) {
       clubId, role, quotation, age, isActive: true };
   });
 
-  // --- Calendario reale: 30 giornate ------------------------------------
-  const rr = roundRobin(CLUBS.map((c) => c.id));
+  // --- Calendario: 30 giornate, le prime GIORNATE_REALI sono vere ---------
+  // Il lock resta il sabato della giornata: è la regola della lega (art. 8.3),
+  // non dipende dall'orario vero della prima partita.
   const matchdays = []; const matches = [];
+  const perGiornata = {};
+  for (const riga of CALENDARIO) (perGiornata[riga[0]] ||= []).push(riga);
   for (let n = 1; n <= 30; n++) {
-    const round = rr[(n - 1) % 15].map(([a, b]) => (n > 15 ? [b, a] : [a, b]));
-    const sat = new Date(SEASON_START.getTime() + (n - 1) * 7 * 86400000);
-    const md = { id: `md${n}`, number: n, lockAt: sat.toISOString(), saturday: sat.toISOString() };
+    const righe = perGiornata[n] || [];
+    const primo = righe.length ? new Date(Math.min(...righe.map((r) => +new Date(r[3])))) : new Date(SEASON_START.getTime() + (n - 1) * 7 * 86400000);
+    const sat = new Date(primo); sat.setHours(15, 0, 0, 0);
+    const md = { id: `md${n}`, number: n, lockAt: sat.toISOString(), saturday: sat.toISOString(), reale: n <= GIORNATE_REALI };
     matchdays.push(md);
-    round.forEach(([home, away], i) => {
-      const day = i < 4 ? 0 : 1; const hour = i % 2 === 0 ? 15 : 17.5;
-      const kick = new Date(sat.getTime() + day * 86400000 + (hour - 15) * 3600000);
-      matches.push({ id: `${md.id}_m${i + 1}`, matchdayId: md.id, matchday: n, homeClubId: home, awayClubId: away, kickoffAt: kick.toISOString(), venue: VENUES[(n + i) % VENUES.length], status: 'scheduled', homeGoals: null, awayGoals: null, videoUrl: null });
+    righe.forEach(([, home, away, iso, venue, gc, go], i) => {
+      matches.push({ id: `${md.id}_m${i + 1}`, matchdayId: md.id, matchday: n, homeClubId: home, awayClubId: away,
+        kickoffAt: iso, venue, videoUrl: null,
+        // Risultato vero del campionato: è un fatto, indipendente dal nostro database.
+        // Il Giudice Dati può comunque sovrascriverlo (match_overrides).
+        realStatus: gc === null ? 'scheduled' : 'played', realHomeGoals: gc, realAwayGoals: go,
+        status: gc === null ? 'scheduled' : 'played', homeGoals: gc, awayGoals: go });
     });
   }
 
@@ -124,13 +133,13 @@ export function buildSeason(seed = 20262027) {
   const clubOf = Object.fromEntries(CLUBS.map((c) => [c.id, c]));
 
   // --- Eventi delle giornate giocate ------------------------------------
+  // Presenze e marcatori plausibili per le partite DAVVERO giocate, col
+  // punteggio vero: servono al Giudice Dati per popolare il database la prima
+  // volta. Chi ha segnato davvero lo sa solo il referto FSGC, quindi i nomi
+  // qui dentro restano un'ipotesi — il risultato finale però è quello vero.
   const appearances = []; const events = [];
-  const playedMatchdays = 2;
   const clubPlayers = (cid) => players.filter((p) => p.clubId === cid && p.isActive);
-  for (const m of matches.filter((x) => x.matchday <= playedMatchdays)) {
-    if (m.id === 'md2_m5') { m.status = 'postponed'; continue; } // Folgore–Cosmos rinviata
-    m.status = 'played';
-    m.videoUrl = `https://titani.tv/${m.id}`;
+  for (const m of matches.filter((x) => x.realStatus === 'played')) {
     const sides = [[m.homeClubId, 'home'], [m.awayClubId, 'away']];
     const onPitch = {}; const goalsFor = { home: 0, away: 0 };
     for (const [cid, side] of sides) {
@@ -152,7 +161,6 @@ export function buildSeason(seed = 20262027) {
       appearances.push(...app.values());
     }
     const strength = (cid) => clubOf[cid].strength;
-    const xg = { home: 0.45 + strength(m.homeClubId) * 0.24, away: 0.45 + strength(m.awayClubId) * 0.24 };
     const atMinute = (side, minute) => [...onPitch[side].values()].filter((a) => minute >= a.enteredAt && minute <= a.enteredAt + a.minutesPlayed);
     const weightedPick = (list) => {
       const w = { A: 5, C: 3, D: 1.2, P: 0.1 };
@@ -164,9 +172,8 @@ export function buildSeason(seed = 20262027) {
     for (const side of ['home', 'away']) {
       const cid = side === 'home' ? m.homeClubId : m.awayClubId;
       const opp = side === 'home' ? 'away' : 'home';
-      // gol: poisson approssimata
-      let g = 0; let L = Math.exp(-xg[side]), k = 0, p = 1;
-      do { k++; p *= rnd(); } while (p > L); g = Math.min(k - 1, 5);
+      // quanti gol: quelli veri della partita, non una stima
+      const g = (side === 'home' ? m.realHomeGoals : m.realAwayGoals) ?? 0;
       for (let i = 0; i < g; i++) {
         const minute = between(3, 90);
         const list = atMinute(side, minute);
@@ -209,9 +216,8 @@ export function buildSeason(seed = 20262027) {
         }
       }
     }
-    m.homeGoals = goalsFor.home; m.awayGoals = goalsFor.away;
   }
   events.sort((a, b) => a.minute - b.minute);
 
-  return { season: { id: 's2026', name: '2026/27', sampleMatchdays: playedMatchdays }, clubs: CLUBS, players, matchdays, matches, appearances, events };
+  return { season: { id: 's2026', name: '2026/27', sampleMatchdays: GIORNATE_REALI }, clubs: CLUBS, players, matchdays, matches, appearances, events };
 }

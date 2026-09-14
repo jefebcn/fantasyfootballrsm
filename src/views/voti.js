@@ -17,7 +17,7 @@ export const voti = {
       const svNote = m.status !== 'played' ? `<div class="vb on"><div><span>${{ postponed: 'Gara rinviata · recupero entro mar 18:00', suspended_before_45: 'Sospesa prima del 45\': eventi annullati', suspended_after_45: 'Sospesa dopo il 45\': eventi validi, niente esito', awarded: 'A tavolino: S.V. per tutti' }[m.status] || m.status}<em>art. 10</em></span><span>S.V.</span></div></div>` : '';
       if (!rows.length && !svNote) return '';
       const title = m.status === 'played' ? `${esc(h.name)} ${m.homeGoals} – ${m.awayGoals} ${esc(a.name)}` : `${esc(h.name)} — ${esc(a.name)}`;
-      return `<div class="vlist"><div class="vhead">${title} <span>${esc(m.venue)}</span></div>${svNote}${rows.map(({ ap, p, r }) => voteRow(p, S.clubsById.get(p.clubId), r ? { ...r, events: evs[p.id] || [] } : null, { minutes: ap.minutesPlayed, extra: st === 'provisional' ? `<a href="#" data-contest="${p.id}" data-match="${m.id}">Segnala un errore</a>` : '' })).join('')}</div>`;
+      return `<div class="vlist"><div class="vhead">${title} <span>${m.venue ? esc(m.venue) : ''}</span></div>${svNote}${rows.map(({ ap, p, r }) => voteRow(p, S.clubsById.get(p.clubId), r ? { ...r, events: evs[p.id] || [] } : null, { minutes: ap.minutesPlayed, extra: st === 'provisional' ? `<a href="#" data-contest="${p.id}" data-match="${m.id}">Segnala un errore</a>` : '' })).join('')}</div>`;
     }).join('');
     return `<main class="a-body">
       <div class="topbar">${badge(st, st === 'provisional' ? 'fino a mar 18:00' : '')}<select id="gsel-v" class="select" aria-label="Giornata">${Array.from({ length: 30 }, (_, i) => `<option value="${i + 1}" ${i + 1 === n ? 'selected' : ''}>Giornata ${i + 1}</option>`).join('')}</select></div>

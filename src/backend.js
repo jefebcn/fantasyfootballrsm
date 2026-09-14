@@ -229,7 +229,13 @@ export async function seedDemo(base, userId) {
   for (let i = 0; i < apps.length; i += 200) must(await sb.from('match_appearances').upsert(apps.slice(i, i + 200)));
   const evs = base.events.map((e) => ({ match_id: e.matchId, player_id: e.playerId, club_id: e.clubId, minute: e.minute, type: e.type, created_by: userId }));
   for (let i = 0; i < evs.length; i += 200) must(await sb.from('match_events').insert(evs.slice(i, i + 200)));
-  await setMatchdayStatus(1, 'frozen', userId);
+  // Si congelano solo le giornate concluse per intero: se una partita non è
+  // ancora stata giocata la giornata resta aperta, come vuole l'art. 9.2.
+  const perGiornata = {};
+  for (const m of base.matches) (perGiornata[m.matchday] ||= []).push(m);
+  for (const [n, ms] of Object.entries(perGiornata)) {
+    if (ms.every((m) => m.realStatus === 'played')) await setMatchdayStatus(+n, 'frozen', userId);
+  }
 }
 
 // ---------------------------------------------------------------- realtime

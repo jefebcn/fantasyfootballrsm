@@ -20,7 +20,7 @@ export const voti = {
       return `<div class="vlist"><div class="vhead">${title} <span>${esc(m.venue)}</span></div>${svNote}${rows.map(({ ap, p, r }) => voteRow(p, S.clubsById.get(p.clubId), r ? { ...r, events: evs[p.id] || [] } : null, { minutes: ap.minutesPlayed, extra: st === 'provisional' ? `<a href="#" data-contest="${p.id}" data-match="${m.id}">Segnala un errore</a>` : '' })).join('')}</div>`;
     }).join('');
     return `<main class="a-body">
-      <div class="topbar">${badge(st)}<select id="gsel-v" class="select" aria-label="Giornata">${Array.from({ length: 30 }, (_, i) => `<option value="${i + 1}" ${i + 1 === n ? 'selected' : ''}>Giornata ${i + 1}</option>`).join('')}</select></div>
+      <div class="topbar">${badge(st, st === 'provisional' ? 'fino a mar 18:00' : '')}<select id="gsel-v" class="select" aria-label="Giornata">${Array.from({ length: 30 }, (_, i) => `<option value="${i + 1}" ${i + 1 === n ? 'selected' : ''}>Giornata ${i + 1}</option>`).join('')}</select></div>
       <div class="chips sticky"><button class="chip${!filter.role && !filter.mine ? ' on' : ''}" data-f="all">Tutti</button><button class="chip${filter.mine ? ' on' : ''}" data-f="mine">Solo miei</button>${['P', 'D', 'C', 'A'].map((r) => `<button class="chip${filter.role === r ? ' on' : ''}" data-f="${r}">${r}</button>`).join('')}</div>
       ${blocks || `<div class="empty">${logo()}<p>Nessun voto per la giornata ${n}: ${st === 'open' || st === 'scheduled' ? 'le partite non sono ancora state giocate.' : 'nessun evento inserito.'}</p></div>`}
     </main>`;

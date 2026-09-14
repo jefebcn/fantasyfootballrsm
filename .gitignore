@@ -2,4 +2,4 @@ __pycache__/
 *.pyc
 
 # archivio di lavoro dell'importatore referti: si rigenera, non si versiona a metà
-data/referti.json
+data/tabellini.json

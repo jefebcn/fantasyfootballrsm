@@ -25,7 +25,7 @@ export const impostazioni = {
 
     const judge = p?.is_judge ? group('Giudice Dati', `
       ${row('edit', 'Inserisci eventi', `Giornata ${S.currentMatchday()}`, 'admin')}
-      ${row('archive', 'Carica le giornate giocate', 'Risultati veri del campionato e marcatori ipotizzati, da correggere partita per partita', 'seed')}`) : '';
+      ${row('archive', 'Carica le giornate giocate', 'Formazioni, marcatori, assist e cartellini veri dai tabellini FSGC', 'seed')}`) : '';
 
     const look = group('Aspetto', `<div class="a-card"><label class="lbl">Tema</label><div class="seg">${[['system', 'Sistema'], ['light', 'Chiaro'], ['dark', 'Scuro']].map(([k, l]) => `<button class="${d.theme === k ? 'on' : ''}" data-theme="${k}">${l}</button>`).join('')}</div></div>`);
 
@@ -75,7 +75,7 @@ export const impostazioni = {
         };
         return;
       }
-      if (act === 'seed') { if (!confirm('Caricare nel database i risultati veri delle giornate già giocate, con marcatori ipotizzati? I nomi dei marcatori vanno poi corretti dal Giudice Dati.')) return; try { await S.seedSampleData(); ctx.toast('Giornate giocate caricate'); } catch (err) { ctx.toast(err.message); } return; }
+      if (act === 'seed') { if (!confirm('Caricare nel database le giornate già giocate, con formazioni ed eventi veri presi dai tabellini della FSGC?')) return; try { await S.seedSampleData(); ctx.toast('Giornate giocate caricate'); } catch (err) { ctx.toast(err.message); } return; }
       if (act === 'password') { prompt2('Cambia password', 'Nuova password', 'type="password" autocomplete="new-password" placeholder="almeno 6 caratteri"', async (v) => { if (v.length < 6) { ctx.toast('Almeno 6 caratteri'); return; } try { await S.updatePassword(v); ctx.sheet(null); ctx.toast('Password aggiornata'); } catch (err) { ctx.toast(err.message); } }); return; }
       if (act === 'name') { prompt2('Cambia nome', 'Come ti chiami', `maxlength="24" value="${esc(S.profileInfo()?.display_name || '')}"`, async (v) => { if (!v) { ctx.toast('Scrivi un nome'); return; } try { await S.updateDisplayName(v); ctx.sheet(null); ctx.toast('Nome aggiornato'); } catch (err) { ctx.toast(err.message); } }); }
     });

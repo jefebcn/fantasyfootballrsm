@@ -1,15 +1,17 @@
 /**
  * Anagrafiche e calendario della stagione.
- * Listone e calendario sono VERI, importati da Transfermarkt
- * (src/listone-dati.js e src/calendario-dati.js, vedi scripts/importa-*.py).
- * Del calendario sono reali le giornate già pubblicate; le altre completano
- * il girone, perché la stagione non è ancora uscita per intero.
+ * Tutto reale: il listone da Transfermarkt (src/listone-dati.js), integrato
+ * con chi gioca ma lì non compare (src/listone-extra.js); calendario, stadi,
+ * risultati, formazioni ed eventi dalla FSGC (src/calendario-dati.js e
+ * src/eventi-dati.js). Vedi scripts/importa-fsgc.py.
  * Le giornate 1-2 hanno anche eventi di esempio, usati solo dal Giudice Dati
  * per popolare il database la prima volta.
  */
 import { DEFAULT_RULES } from './engine.js';
 import { LISTONE } from './listone-dati.js';
-import { CALENDARIO, GIORNATE_REALI } from './calendario-dati.js';
+import { CALENDARIO, GIORNATE } from './calendario-dati.js';
+import { LISTONE_EXTRA } from './listone-extra.js';
+import { REFERTI } from './eventi-dati.js';
 
 export function mulberry32(seed) {
   let a = seed >>> 0;
@@ -106,18 +108,26 @@ export function buildSeason(seed = 20262027) {
     return { id: `${clubId}_${idx}`, firstName, lastName, name: `${lastName} ${firstName[0]}.`,
       clubId, role, quotation, age, isActive: true };
   });
+  // Chi gioca davvero ma su Transfermarkt non c'è: quotazione minima di ruolo,
+  // non avendo un valore di mercato su cui basarla.
+  const QUOT_MIN = { P: 6, D: 5, C: 5, A: 6 };
+  for (const [clubId, firstName, lastName, role] of LISTONE_EXTRA) {
+    const idx = (perClub[clubId] = (perClub[clubId] || 0) + 1);
+    players.push({ id: `${clubId}_${idx}`, firstName, lastName, name: `${lastName} ${firstName[0]}.`,
+      clubId, role, quotation: QUOT_MIN[role] ?? 5, age: null, isActive: true, daFsgc: true });
+  }
 
-  // --- Calendario: 30 giornate, le prime GIORNATE_REALI sono vere ---------
+  // --- Calendario vero della FSGC -----------------------------------------
   // Il lock resta il sabato della giornata: è la regola della lega (art. 8.3),
   // non dipende dall'orario vero della prima partita.
   const matchdays = []; const matches = [];
   const perGiornata = {};
   for (const riga of CALENDARIO) (perGiornata[riga[0]] ||= []).push(riga);
-  for (let n = 1; n <= 30; n++) {
+  for (let n = 1; n <= GIORNATE; n++) {
     const righe = perGiornata[n] || [];
     const primo = righe.length ? new Date(Math.min(...righe.map((r) => +new Date(r[3])))) : new Date(SEASON_START.getTime() + (n - 1) * 7 * 86400000);
     const sat = new Date(primo); sat.setHours(15, 0, 0, 0);
-    const md = { id: `md${n}`, number: n, lockAt: sat.toISOString(), saturday: sat.toISOString(), reale: n <= GIORNATE_REALI };
+    const md = { id: `md${n}`, number: n, lockAt: sat.toISOString(), saturday: sat.toISOString() };
     matchdays.push(md);
     righe.forEach(([, home, away, iso, venue, gc, go], i) => {
       matches.push({ id: `${md.id}_m${i + 1}`, matchdayId: md.id, matchday: n, homeClubId: home, awayClubId: away,
@@ -133,91 +143,44 @@ export function buildSeason(seed = 20262027) {
   const clubOf = Object.fromEntries(CLUBS.map((c) => [c.id, c]));
 
   // --- Eventi delle giornate giocate ------------------------------------
-  // Presenze e marcatori plausibili per le partite DAVVERO giocate, col
-  // punteggio vero: servono al Giudice Dati per popolare il database la prima
-  // volta. Chi ha segnato davvero lo sa solo il referto FSGC, quindi i nomi
-  // qui dentro restano un'ipotesi — il risultato finale però è quello vero.
+  // Presenze ed eventi VERI, dai referti (src/eventi-dati.js): marcatori,
+  // assist, cartellini, sostituzioni e undici iniziali. Le partite senza
+  // referto restano da giocare.
   const appearances = []; const events = [];
-  const clubPlayers = (cid) => players.filter((p) => p.clubId === cid && p.isActive);
-  for (const m of matches.filter((x) => x.realStatus === 'played')) {
-    const sides = [[m.homeClubId, 'home'], [m.awayClubId, 'away']];
-    const onPitch = {}; const goalsFor = { home: 0, away: 0 };
-    for (const [cid, side] of sides) {
-      const list = clubPlayers(cid);
-      const byRole = (r) => list.filter((p) => p.role === r).sort((a, b) => b.quotation - a.quotation + (rnd() - 0.5) * 6);
-      const starters = [...byRole('P').slice(0, 1), ...byRole('D').slice(0, 4), ...byRole('C').slice(0, 4), ...byRole('A').slice(0, 2)];
-      const benchPool = list.filter((p) => !starters.includes(p) && p.role !== 'P');
-      const app = new Map(starters.map((p) => [p.id, { matchId: m.id, playerId: p.id, clubId: cid, started: true, minutesPlayed: 90, enteredAt: 0 }]));
-      const nSubs = between(2, 3);
-      for (let s = 0; s < nSubs && benchPool.length; s++) {
-        const out = pick(starters.filter((p) => p.role !== 'P' && app.get(p.id).minutesPlayed === 90));
-        if (!out) break;
-        const inn = benchPool.splice(Math.floor(rnd() * benchPool.length), 1)[0];
-        const minute = between(55, 84);
-        app.get(out.id).minutesPlayed = minute;
-        app.set(inn.id, { matchId: m.id, playerId: inn.id, clubId: cid, started: false, minutesPlayed: 90 - minute, enteredAt: minute });
-      }
-      onPitch[side] = app;
-      appearances.push(...app.values());
+  const refPerPartita = new Map(REFERTI.map((r) => [`${r.g}:${r.casa}:${r.ospite}`, r]));
+  let idEvento = 0;
+  for (const m of matches) {
+    const r = refPerPartita.get(`${m.matchday}:${m.homeClubId}:${m.awayClubId}`);
+    if (!r) continue;
+    if (r.campo) m.venue = r.campo;
+    m.referee = r.arbitro || null;
+
+    // Chi è uscito, e quando: serve sia per i minuti dei titolari sia per
+    // capire da quando è in campo chi è entrato.
+    const uscitoAl = new Map(); const entratoAl = new Map();
+    for (const [dentro, fuori, min] of r.cambi) {
+      const q = Math.min(90, Math.max(1, min));
+      uscitoAl.set(fuori, q); entratoAl.set(dentro, q);
     }
-    const strength = (cid) => clubOf[cid].strength;
-    const atMinute = (side, minute) => [...onPitch[side].values()].filter((a) => minute >= a.enteredAt && minute <= a.enteredAt + a.minutesPlayed);
-    const weightedPick = (list) => {
-      const w = { A: 5, C: 3, D: 1.2, P: 0.1 };
-      const tot = list.reduce((s, a) => s + w[players.find((p) => p.id === a.playerId).role], 0);
-      let r = rnd() * tot;
-      for (const a of list) { r -= w[players.find((p) => p.id === a.playerId).role]; if (r <= 0) return a; }
-      return list[list.length - 1];
-    };
-    for (const side of ['home', 'away']) {
-      const cid = side === 'home' ? m.homeClubId : m.awayClubId;
-      const opp = side === 'home' ? 'away' : 'home';
-      // quanti gol: quelli veri della partita, non una stima
-      const g = (side === 'home' ? m.realHomeGoals : m.realAwayGoals) ?? 0;
-      for (let i = 0; i < g; i++) {
-        const minute = between(3, 90);
-        const list = atMinute(side, minute);
-        if (rnd() < 0.05) { // autogol avversario
-          const og = pick(atMinute(opp, minute).filter((a) => players.find((p) => p.id === a.playerId).role !== 'P'));
-          if (og) { events.push({ id: `e${events.length + 1}`, matchId: m.id, playerId: og.playerId, clubId: opp === 'home' ? m.homeClubId : m.awayClubId, minute, type: 'own_goal' }); goalsFor[side]++; continue; }
-        }
-        const scorer = weightedPick(list);
-        events.push({ id: `e${events.length + 1}`, matchId: m.id, playerId: scorer.playerId, clubId: cid, minute, type: 'goal' });
-        goalsFor[side]++;
-        if (rnd() < 0.7) {
-          const ass = pick(list.filter((a) => a.playerId !== scorer.playerId));
-          if (ass) events.push({ id: `e${events.length + 1}`, matchId: m.id, playerId: ass.playerId, clubId: cid, minute, type: 'assist' });
-        }
-      }
-      // cartellini
-      for (const a of onPitch[side].values()) {
-        if (rnd() < 0.09) {
-          const minute = between(a.enteredAt + 1, a.enteredAt + a.minutesPlayed);
-          events.push({ id: `e${events.length + 1}`, matchId: m.id, playerId: a.playerId, clubId: cid, minute, type: 'yellow' });
-          if (rnd() < 0.08 && a.minutesPlayed === 90) {
-            const m2 = between(minute + 1, 90);
-            events.push({ id: `e${events.length + 1}`, matchId: m.id, playerId: a.playerId, clubId: cid, minute: m2, type: 'second_yellow' });
-            a.minutesPlayed = m2;
-          }
-        } else if (rnd() < 0.012 && a.minutesPlayed === 90) {
-          const minute = between(20, 88);
-          events.push({ id: `e${events.length + 1}`, matchId: m.id, playerId: a.playerId, clubId: cid, minute, type: 'red_direct' });
-          a.minutesPlayed = minute;
-        }
-      }
-      // rigore fallito
-      if (rnd() < 0.12) {
-        const minute = between(10, 88);
-        const taker = weightedPick(atMinute(side, minute));
-        events.push({ id: `e${events.length + 1}`, matchId: m.id, playerId: taker.playerId, clubId: cid, minute, type: 'pen_missed' });
-        if (rnd() < 0.5) {
-          const gk = atMinute(opp, minute).find((a) => players.find((p) => p.id === a.playerId).role === 'P');
-          if (gk) events.push({ id: `e${events.length + 1}`, matchId: m.id, playerId: gk.playerId, clubId: opp === 'home' ? m.homeClubId : m.awayClubId, minute, type: 'pen_saved' });
-        }
-      }
+    const squadraDi = (pid) => (pid.startsWith(`${m.homeClubId}_`) ? m.homeClubId : m.awayClubId);
+    const visti = new Set();
+    (r.titolari || []).flat().forEach((pid) => {
+      if (visti.has(pid)) return; visti.add(pid);
+      appearances.push({ matchId: m.id, playerId: pid, clubId: squadraDi(pid), started: true,
+        minutesPlayed: uscitoAl.get(pid) ?? 90, enteredAt: 0 });
+    });
+    for (const [dentro] of r.cambi.map((c) => [c[0]])) {
+      if (visti.has(dentro)) continue; visti.add(dentro);
+      const da = entratoAl.get(dentro) ?? 90;
+      appearances.push({ matchId: m.id, playerId: dentro, clubId: squadraDi(dentro), started: false,
+        minutesPlayed: Math.max(0, 90 - da), enteredAt: da });
+    }
+    for (const [pid, min, tipo] of r.eventi) {
+      events.push({ id: `e${++idEvento}`, matchId: m.id, playerId: pid, clubId: squadraDi(pid),
+        minute: min, type: tipo });
     }
   }
   events.sort((a, b) => a.minute - b.minute);
 
-  return { season: { id: 's2026', name: '2026/27', sampleMatchdays: GIORNATE_REALI }, clubs: CLUBS, players, matchdays, matches, appearances, events };
+  return { season: { id: 's2026', name: '2026/27', sampleMatchdays: 0 }, clubs: CLUBS, players, matchdays, matches, appearances, events };
 }

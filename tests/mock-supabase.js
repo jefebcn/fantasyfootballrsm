@@ -51,7 +51,8 @@ function expand(r) {
   if ('member_id' in r) out.member = T('league_members').find((m) => m.id === r.member_id) || null;
   return out;
 }
-export function createClient() {
+export function createClient(_url, _key, opts) {
+  if (opts && opts.accessToken) { Promise.resolve(opts.accessToken()).then((t) => { globalThis.__lastAccessToken = t; }); }
   return {
     auth: {
       async getSession() { return { data: { session: userId ? { user: { id: userId, email: T('profiles').find((p) => p.id === userId)?.email } } : null } }; },

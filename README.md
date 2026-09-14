@@ -5,7 +5,7 @@ settimanali, scontro diretto — **senza pagelle**. I voti (Voto Titano) sono ca
 eventi oggettivi del referto FSGC.
 
 **App (PWA)** — installabile su iPhone/Android dalla schermata "Aggiungi a Home".
-Richiede un account: accesso con Google, Apple, password o link via e-mail, leghe multiple con
+Richiede un account (**Clerk**: Google, Apple, password o link via e-mail), leghe multiple con
 codice invito, ruoli (admin di lega, Giudice Dati), rose, formazioni e contestazioni
 condivise, dato del campionato inserito una volta per tutte le leghe, aggiornamenti in
 tempo reale. Setup in [`supabase/README.md`](supabase/README.md) (schema e policy RLS in
@@ -22,7 +22,9 @@ in modo deterministico: sono uguali per tutte le leghe e non serve caricarli.
 | `src/engine.js` | **Motore di scoring** puro (artt. 4–8, 10–12): `computeRating`, `computeLineupResult`, `computeStandings`, conversione in gol |
 | `src/data.js` | Anagrafiche e calendario generati; eventi di esempio per le prime giornate (usati solo dal Giudice Dati per popolare il database) |
 | `src/state.js` | Stato applicativo: anagrafiche generate + dato e leghe da Supabase (`src/backend.js`) |
-| `src/backend.js` · `src/config.js` | Adattatore Supabase (auth OTP, leghe, rose, formazioni, dato globale, realtime) e chiavi pubbliche |
+| `src/backend.js` · `src/config.js` | Adattatore Supabase (leghe, rose, formazioni, dato globale, realtime) e chiavi pubbliche |
+| `src/auth-clerk.js` | Identità via Clerk: carica clerk-js, fornisce il token di sessione a Supabase, monta i componenti d'accesso |
+| `supabase/migrations/` | Migrazioni SQL; la 001 rende l'identità indipendente dal fornitore (Clerk o Supabase Auth) |
 | `supabase/schema.sql` | Tabelle, funzioni (`create_league`, `join_league`, lock formazioni, congelamento), trigger di log e policy RLS |
 | `src/app.js` · `src/ui.js` · `src/views/` | Router hash, shell (app bar, drawer, bottom bar), componenti e le viste |
 | `styles/app.css` | CSS dell'app, derivato dal design kit; i token vivono in `design/tokens/tokens.css` |

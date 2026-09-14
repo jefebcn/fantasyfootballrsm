@@ -12,8 +12,9 @@ export const impostazioni = {
 
     const account = group('Account', `
       <div class="setting" style="cursor:default">${crest({ color: me?.color || 'var(--primary)', initials: me?.initials || (p?.display_name || 'AA').slice(0, 2).toUpperCase() }, 'sm')}<span class="txt"><b>${esc(p?.display_name || '')}</b><span>${esc(u?.email || '')}${p?.is_judge ? ' · Giudice Dati' : ''}</span></span></div>
-      ${row('edit', 'Cambia nome', 'Come ti vedono gli altri nella lega', 'name')}
-      ${row('shield', 'Cambia password', 'Imposta una nuova password per questo account', 'password')}
+      ${S.authKind() === 'clerk'
+        ? row('gear', 'Gestisci account', 'Nome, e-mail, password e accessi collegati', 'clerk-profile')
+        : row('edit', 'Cambia nome', 'Come ti vedono gli altri nella lega', 'name') + row('shield', 'Cambia password', 'Imposta una nuova password per questo account', 'password')}
       ${row('out', 'Esci', 'Torni alla schermata di accesso', 'logout', 'danger')}`);
 
     const league = S.hasLeague() ? group('Lega', `
@@ -47,6 +48,7 @@ export const impostazioni = {
       const a = e.target.closest('[data-act]'); if (!a) return;
       const act = a.dataset.act;
       if (act === 'logout') { await S.signOut(); ctx.go('login'); return; }
+      if (act === 'clerk-profile') { S.clerkProfile(); return; }
       if (act === 'lega') { ctx.go('lega'); return; }
       if (act === 'leghe') { ctx.go('leghe'); return; }
       if (act === 'regolamento') { ctx.go('regolamento'); return; }

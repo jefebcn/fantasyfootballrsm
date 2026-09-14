@@ -13,6 +13,12 @@ const field = (id, label, attrs = '') => `<label class="lbl" for="${id}">${label
 export const login = {
   title: 'Accedi', appbar: 'none', nav: false,
   render() {
+    if (S.authKind() === 'clerk') return `<main class="a-body auth">
+      <div class="auth-hero">${icon('towers', 'ic auth-mark')}
+        <h1>Fantacampionato<br><em>Sammarinese</em></h1>
+        <p>Voto Titano — il fantacalcio del Titano, senza pagelle.</p></div>
+      <div class="a-card auth-card clerk-card"><div id="clerk-slot"><div class="skel" style="height:280px"></div></div></div>
+    </main>`;
     return `<main class="a-body auth">
       <div class="auth-hero">${icon('towers', 'ic auth-mark')}
         <h1>Fantacampionato<br><em>Sammarinese</em></h1>
@@ -27,6 +33,8 @@ export const login = {
   },
   mount(root, ctx) {
     busy = false;
+    const slot = root.querySelector('#clerk-slot');
+    if (slot) { slot.innerHTML = ''; S.clerkMount(slot, 'sign-in'); return; }
     const val = (s) => root.querySelector(s)?.value.trim() || '';
     const setBusy = (on, label) => { busy = on; const b = root.querySelector('#primary'); if (b) { b.disabled = on; b.dataset.label ||= b.textContent; b.textContent = on ? label : b.dataset.label; } };
     const fail = (e) => { notice = { kind: 'err', text: e.message || String(e) }; ctx.render(); };

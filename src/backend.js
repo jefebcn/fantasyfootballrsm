@@ -4,7 +4,7 @@
  */
 import { SUPABASE_URL, SUPABASE_ANON_KEY, SUPABASE_JS, SUPABASE_TIMEOUT_MS } from './config.js';
 
-let sb = null; let cfg = null; let providers = {};
+let sb = null; let cfg = null; let providers = {}; let external = false;
 export function config() {
   if (cfg) return cfg;
   try { const raw = localStorage.getItem('fcs:supabase'); if (raw) { const c = JSON.parse(raw); if (c.url && c.key) return (cfg = c); } } catch { /* ignora */ }
@@ -19,10 +19,18 @@ const withTimeout = (promise, ms, what) => Promise.race([
   new Promise((_, rej) => setTimeout(() => rej(new Error(`${what}: nessuna risposta entro ${Math.round(ms / 1000)}s`)), ms)),
 ]);
 
-export async function init() {
+/**
+ * accessToken: se presente, l'identità arriva da un fornitore esterno (Clerk) e
+ * l'autenticazione di Supabase non viene usata. Altrimenti si usa Supabase Auth.
+ */
+export async function init({ accessToken } = {}) {
   const c = config(); if (!c) return null;
   const mod = await withTimeout(import(globalThis.__SUPABASE_JS__ || SUPABASE_JS), SUPABASE_TIMEOUT_MS, 'Libreria Supabase non raggiungibile');
-  sb = mod.createClient(c.url, c.key, { auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true } });
+  external = !!accessToken;
+  sb = external
+    ? mod.createClient(c.url, c.key, { accessToken })
+    : mod.createClient(c.url, c.key, { auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true } });
+  if (external) { providers = {}; return null; }
   const { data } = await withTimeout(sb.auth.getSession(), SUPABASE_TIMEOUT_MS, 'Supabase non raggiungibile');
   providers = await loadProviders(c);
   return data.session?.user || null;
@@ -38,14 +46,12 @@ async function loadProviders(c) {
   } catch { return {}; }
 }
 export const enabledProviders = () => providers;
+export const usesExternalIdentity = () => external;
 export async function signInOAuth(provider, redirectTo) {
   return authCall(sb.auth.signInWithOAuth({ provider, options: { redirectTo, queryParams: provider === 'google' ? { prompt: 'select_account' } : undefined } }));
 }
 export const client = () => sb;
 export async function currentSessionUser() { const { data } = await sb.auth.getUser(); return data?.user || null; }
-const must = ({ data, error }) => { if (error) throw new Error(error.message); return data; };
-
-// ---------------------------------------------------------------- auth
 /** Traduce gli errori di Supabase in messaggi che dicono cosa fare. */
 export function translate(error) {
   const m = (error?.message || String(error || '')).toLowerCase();
@@ -58,8 +64,13 @@ export function translate(error) {
   if (m.includes('redirect') || m.includes('not allowed')) return 'Indirizzo di ritorno non autorizzato: va aggiunto ai Redirect URLs su Supabase.';
   if (m.includes('signups not allowed')) return 'Le registrazioni sono chiuse su questo progetto.';
   if (m.includes('failed to fetch') || m.includes('networkerror')) return 'Nessuna connessione al server.';
+  if (m.includes('invalid input syntax for type uuid')) return 'Il database non è pronto per Clerk: esegui la migrazione 001-identita-esterna.sql nell\'SQL Editor.';
+  if (m.includes('jwt') || m.includes('jwks') || m.includes('invalid claim')) return 'Token non accettato da Supabase: controlla l\'integrazione Clerk in Authentication → Third-Party Auth e che il claim "role" valga "authenticated".';
   return error?.message || 'Errore imprevisto.';
 }
+const must = ({ data, error }) => { if (error) throw new Error(translate(error)); return data; };
+
+// ---------------------------------------------------------------- auth
 const authCall = async (promise) => { const { data, error } = await promise; if (error) throw new Error(translate(error)); return data; };
 
 export async function signInPassword(email, password) { return authCall(sb.auth.signInWithPassword({ email, password })); }

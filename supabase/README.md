@@ -20,7 +20,7 @@ Letto da `/auth/v1/settings` e dalle API REST del progetto:
 | Nuove registrazioni | aperte | niente |
 | **Conferma e-mail** | **accesa** (`mailer_autoconfirm: false`) | spegnerla, vedi §1 |
 | **Google** | **spento** | configurarlo, vedi §3 |
-| **Apple** | **spento** | configurarlo, vedi §3 (serve l'abbonamento a 99 $/anno) |
+| **Apple** | **spento** | configurarlo, vedi §3 — voluto, serve l'Apple Developer Program (99 $/anno) |
 | Indirizzi di ritorno | non leggibili via API | verificarli a mano, vedi §2 |
 | Giudice Dati | nessuno nominato | [`nomina-giudice.sql`](nomina-giudice.sql) dopo la registrazione |
 
@@ -111,10 +111,36 @@ Senza iscrizione a pagamento non è possibile: è una condizione di Apple, non d
 6. Supabase → *Authentication → Sign In / Providers → Apple*: inserisci Services ID, Team ID,
    Key ID e il contenuto del file .p8. Supabase genera da sé il segreto e lo rinnova.
 
-Due cose da sapere su Apple: chi entra può **nascondere l'e-mail** (riceverai un indirizzo
-`@privaterelay.appleid.com`, che funziona lo stesso), e il **nome viene passato solo alla
-primissima autorizzazione** — se manca, l'app usa la parte iniziale dell'e-mail e il nome si
-cambia da *Impostazioni → Cambia nome*.
+##### Le tre cose che fanno perdere tempo
+
+**Il client ID è il Services ID, non l'App ID.** Sono due oggetti diversi nella stessa
+schermata *Identifiers* e si somigliano. In Supabase va il **Services ID**.
+
+**Il file .p8 si scarica una volta sola.** Se lo perdi non si recupera: si revoca la chiave
+e se ne crea un'altra. Mettilo al sicuro subito, e **non** in questo repository.
+
+**Il dominio da registrare è quello di Supabase, non quello dell'app.** Il ritorno passa da
+`nskgzpbcssnpfuxmbepa.supabase.co`, quindi è quello che Apple deve conoscere — anche se agli
+utenti l'app si presenta su `fantasyfootballrsm.vercel.app`.
+Se Apple chiede di **verificare il dominio** offrendoti un file
+`apple-developer-domain-association.txt`: quel file andrebbe servito da
+`nskgzpbcssnpfuxmbepa.supabase.co/.well-known/`, che oggi risponde 404 e non è nostro da
+riempire. Nel flusso OAuth con redirect (quello che usiamo) la verifica normalmente non viene
+imposta: è richiesta per *Sign in with Apple JS* e per l'inoltro delle e-mail. Se ti si
+presenta lo sbarramento, dimmelo: il file lo si pubblica sul dominio dell'app in due minuti,
+oppure si passa da un dominio personalizzato su Supabase.
+
+##### Nome ed e-mail nascosti — già gestiti dall'app
+
+Chi entra con Apple può **nascondere l'e-mail**: arriva un indirizzo
+`@privaterelay.appleid.com`, che funziona normalmente (Apple inoltra).
+
+Il **nome però Apple lo passa solo alla primissima autorizzazione**, e chi nasconde l'e-mail
+spesso non lo passa affatto. Prima, in quel caso, l'app ripiegava sulla parte iniziale
+dell'indirizzo: in classifica sarebbe comparso `pq7jh9h827`. Ora `nomeDaCompletare()`
+riconosce un nome ricavato dall'indirizzo e la schermata della lega — passaggio obbligato per
+chiunque — chiede «Come ti chiami» prima di far creare o entrare in una lega. Chi arriva con
+un nome vero non vede quel campo.
 
 ## Modello
 

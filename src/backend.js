@@ -2,7 +2,7 @@
  * Adattatore Supabase. Caricato solo se configurato: la modalità locale non tocca la rete.
  * Ogni funzione ritorna dati già nel formato usato da state.js.
  */
-import { SUPABASE_URL, SUPABASE_ANON_KEY, SUPABASE_JS } from './config.js';
+import { SUPABASE_URL, SUPABASE_ANON_KEY, SUPABASE_JS, SUPABASE_TIMEOUT_MS } from './config.js';
 
 let sb = null; let cfg = null;
 export function config() {
@@ -14,11 +14,16 @@ export function config() {
 export function setConfig(url, key) { if (!url || !key) localStorage.removeItem('fcs:supabase'); else localStorage.setItem('fcs:supabase', JSON.stringify({ url, key })); cfg = null; }
 export const isConfigured = () => !!config();
 
+const withTimeout = (promise, ms, what) => Promise.race([
+  promise,
+  new Promise((_, rej) => setTimeout(() => rej(new Error(`${what}: nessuna risposta entro ${Math.round(ms / 1000)}s`)), ms)),
+]);
+
 export async function init() {
   const c = config(); if (!c) return null;
-  const { createClient } = await import(globalThis.__SUPABASE_JS__ || SUPABASE_JS);
-  sb = createClient(c.url, c.key, { auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true } });
-  const { data } = await sb.auth.getSession();
+  const mod = await withTimeout(import(globalThis.__SUPABASE_JS__ || SUPABASE_JS), SUPABASE_TIMEOUT_MS, 'Libreria Supabase non raggiungibile');
+  sb = mod.createClient(c.url, c.key, { auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true } });
+  const { data } = await withTimeout(sb.auth.getSession(), SUPABASE_TIMEOUT_MS, 'Supabase non raggiungibile');
   return data.session?.user || null;
 }
 export const client = () => sb;

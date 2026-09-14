@@ -1,15 +1,7 @@
 export const SPRITE = `<svg width="0" height="0" style="position:absolute" aria-hidden="true">
-  <symbol id="i-towers" viewBox="0 0 64 56">
-    <!-- Guaita, Cesta, Montale: tre torri merlate sulla rocca del Titano -->
-    <path d="M1 55 L9 47 L22 43 L33 42 L45 44 L56 47 L63 55 Z" fill="currentColor" opacity=".25"/>
-    <rect x="32.2" y="3" width="1.6" height="12" fill="currentColor"/>
-    <path d="M33.8 4 L41 6.6 L33.8 9.2 Z" fill="currentColor"/>
-    <rect x="9" y="30" width="11" height="20" fill="currentColor"/>
-    <rect x="9" y="26" width="2.8" height="5" fill="currentColor"/><rect x="13.1" y="26" width="2.8" height="5" fill="currentColor"/><rect x="17.2" y="26" width="2.8" height="5" fill="currentColor"/>
-    <rect x="26" y="18" width="14" height="32" fill="currentColor"/>
-    <rect x="26" y="13" width="2.9" height="6" fill="currentColor"/><rect x="29.7" y="13" width="2.9" height="6" fill="currentColor"/><rect x="33.4" y="13" width="2.9" height="6" fill="currentColor"/><rect x="37.1" y="13" width="2.9" height="6" fill="currentColor"/>
-    <rect x="45" y="33" width="9" height="17" fill="currentColor"/>
-    <rect x="45" y="29" width="2.3" height="5" fill="currentColor"/><rect x="48.35" y="29" width="2.3" height="5" fill="currentColor"/><rect x="51.7" y="29" width="2.3" height="5" fill="currentColor"/>
+  <symbol id="i-towers" viewBox="0 0 64 64">
+    <!-- Le tre torri del Titano: Guaita, Cesta, Montale -->
+    <path fill="currentColor" fill-rule="evenodd" d="M12 26h10v31h-10ZM12 22h2.6v4.2h-2.6ZM15.7 22h2.6v4.2h-2.6ZM19.4 22h2.6v4.2h-2.6ZM22.9 25h2.4v4.2h-2.4ZM26 16h12v41h-12ZM26 11.8h2.28v4.4h-2.28ZM29.24 11.8h2.28v4.4h-2.28ZM32.48 11.8h2.28v4.4h-2.28ZM35.72 11.8h2.28v4.4h-2.28ZM38.9 14.8h2.4v4.4h-2.4ZM30.3 2.6h1.5v9.4h-1.5ZM31.8 3.4L38.6 5.9 31.8 8.4ZM42 28h10v29h-10ZM42 24h2.6v4.2h-2.6ZM45.7 24h2.6v4.2h-2.6ZM49.4 24h2.6v4.2h-2.6ZM52.9 27h2.4v4.2h-2.4ZM15.2 39V34.7a1.7 1.7 0 0 1 3.4 0V39ZM28.4 29.9V25.3a1.8 1.8 0 0 1 3.6 0V29.9ZM32.6 40.4V35.8a1.8 1.8 0 0 1 3.6 0V40.4ZM45.2 41V36.7a1.7 1.7 0 0 1 3.4 0V41Z"/>
   </symbol>
   <symbol id="i-google" viewBox="0 0 48 48">
     <path fill="#4285F4" d="M45.12 24.5c0-1.56-.14-3.06-.4-4.5H24v8.51h11.84c-.51 2.75-2.06 5.08-4.39 6.64v5.52h7.11c4.16-3.83 6.56-9.47 6.56-16.17z"/>

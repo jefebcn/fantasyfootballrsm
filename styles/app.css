@@ -71,7 +71,7 @@ label.lbl{display:block;font-size:var(--fs-label);letter-spacing:.08em;text-tran
 .rules td,.rules th{padding:6px 8px;border-bottom:1px solid var(--border);text-align:left}
 .rules th{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--text-muted)}
 .share{background:var(--grad-hero);color:#fff;border-radius:20px;padding:22px 18px;position:relative;overflow:hidden;aspect-ratio:4/5;display:flex;flex-direction:column;justify-content:space-between}
-.share .tw{position:absolute;right:-30px;bottom:-16px;width:240px;height:210px;opacity:.08}
+.share .tw{position:absolute;right:-24px;bottom:-20px;width:230px;height:230px;opacity:.09}
 .share h2{font-size:24px;font-weight:800}
 .share .sc{font:800 56px var(--font-display);line-height:1;font-variant-numeric:tabular-nums}
 .share .sc small{display:block;font:500 14px var(--font-data);opacity:.85;margin-top:4px}
@@ -116,14 +116,14 @@ hr.sep{border:0;border-top:1px solid var(--border);margin:4px 0}
 .a-league .ic{color:var(--text-muted)}
 .a-herowrap{margin:-12px -16px 0;background:var(--grad-header);padding:12px 16px 0}
 .a-hero{position:relative;margin:12px -16px 0;background:var(--grad-hero);color:#fff;padding:14px 16px 46px;overflow:hidden;min-height:300px}
-.a-hero .tw{position:absolute;right:-30px;bottom:-16px;width:260px;height:230px;opacity:.07;color:#fff}
+.a-hero .tw{position:absolute;right:-26px;bottom:-24px;width:250px;height:250px;opacity:.08;color:#fff}
 .a-hero h2{font-size:26px;font-weight:800;text-align:center;text-shadow:0 2px 12px rgba(0,0,0,.25);position:relative}
 .a-hero .jersey{width:190px;height:190px;margin:10px auto 0;display:block;position:relative;filter:drop-shadow(0 14px 22px rgba(0,0,0,.35))}
 .a-hero .acts{position:absolute;right:14px;top:60px;display:flex;flex-direction:column;gap:12px}
 .a-hero .acts button{width:44px;height:44px;border-radius:50%;border:0;background:#fff;color:var(--c-titano-600);display:grid;place-items:center;box-shadow:0 4px 12px rgba(0,0,0,.25);cursor:pointer}
 .a-hero .acts button.gold{background:var(--c-oro-400);color:var(--c-titano-900)}
 .a-hero .logos{display:flex;justify-content:center;align-items:center;gap:14px;margin-top:14px;font-family:var(--font-display);font-weight:700;letter-spacing:.08em;font-size:12px;text-transform:uppercase;opacity:.95;position:relative}
-.a-hero .logos svg{width:30px;height:26px}
+.a-hero .logos svg{width:28px;height:28px}
 .a-hero .logos i{width:1px;height:18px;background:rgba(255,255,255,.4)}
 .a-hero .conf{position:absolute;inset:0;pointer-events:none}
 .a-herowrap + .a-card.a-stats{margin-top:-32px}
@@ -421,7 +421,7 @@ hr.sep{border:0;border-top:1px solid var(--border);margin:4px 0}
 
 /* --- splash: la prima cosa che si vede, con il marchio, non una scritta --- */
 .splash{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;background:var(--grad-hero);color:#fff;text-align:center}
-.splash-mark{width:64px;height:56px;opacity:.95}
+.splash-mark{width:60px;height:60px;opacity:.95}
 .splash b{font:800 22px var(--font-display);text-transform:uppercase;letter-spacing:.02em;margin-top:10px}
 .splash span{font:600 13px var(--font-body);letter-spacing:.18em;text-transform:uppercase;opacity:.8}
 .splash-bar{display:block;width:120px;height:3px;border-radius:2px;background:rgba(255,255,255,.25);margin-top:20px;overflow:hidden}
@@ -431,7 +431,7 @@ hr.sep{border:0;border-top:1px solid var(--border);margin:4px 0}
 /* --- accesso --- */
 .auth{justify-content:center;gap:14px}
 .auth-hero{text-align:center;padding:8px 0 2px;color:var(--text)}
-.auth-mark{width:62px;height:54px;color:var(--primary)}
+.auth-mark{width:58px;height:58px;color:var(--primary)}
 .auth-hero h1{font:800 27px var(--font-display);text-transform:uppercase;letter-spacing:-.015em;line-height:1.05;margin-top:10px}
 .auth-hero h1 em{font-style:normal;color:var(--primary)}
 .auth-hero p{font-size:13px;color:var(--text-muted);margin-top:8px;max-width:34ch;margin-inline:auto}
@@ -466,7 +466,7 @@ button,a{-webkit-tap-highlight-color:transparent}
 
 /* --- stato vuoto: illustrazione, non icona minuscola --- */
 .empty{gap:14px;padding:40px 20px}
-.empty svg{width:72px;height:62px;color:var(--border-strong);opacity:.9}
+.empty svg{width:64px;height:64px;color:var(--border-strong);opacity:.9}
 .empty p{max-width:34ch;font-size:14px}
 .empty .a-btn{max-width:280px}
 
@@ -525,7 +525,7 @@ button,a{-webkit-tap-highlight-color:transparent}
 
 .intro-top,.intro-body,.intro-foot{position:relative;z-index:1}
 .intro-top{display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:40px}
-.intro-mark{width:34px;height:30px;color:#fff;opacity:.95}
+.intro-mark{width:30px;height:30px;color:#fff;opacity:.95}
 .intro-back,.intro-skip{border:0;background:transparent;color:#fff;cursor:pointer;padding:8px;min-width:60px}
 .intro-back{display:grid;place-items:center;text-align:left}
 .intro-skip{font:600 13px var(--font-body);opacity:.75;text-align:right}

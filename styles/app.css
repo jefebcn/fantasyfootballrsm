@@ -683,3 +683,13 @@ button,a{-webkit-tap-highlight-color:transparent}
 .diag .d-r b{font:600 14px var(--font-body)}
 .diag .d-r span span{font-size:13px;color:var(--text-muted);overflow-wrap:anywhere}
 .diag .d-r small{font:500 11px var(--font-data);color:var(--text-muted);opacity:.8;overflow-wrap:anywhere}
+
+/* Blocco "Non è arrivata niente?": il rimedio sta sotto, non davanti. */
+.auth-more{margin-top:14px;border-top:1px solid var(--border);padding-top:10px}
+.auth-more > summary{cursor:pointer;list-style:none;font:600 13px var(--font-body);color:var(--primary);padding:6px 0;text-align:center}
+.auth-more > summary::-webkit-details-marker{display:none}
+.auth-more > summary::after{content:' ▾'}
+.auth-more[open] > summary::after{content:' ▴'}
+.auth-list{margin:6px 0 12px;padding-left:18px;display:flex;flex-direction:column;gap:7px;
+  font-size:12.5px;color:var(--text-muted);line-height:1.5}
+.auth-list b{color:var(--text);font-weight:600}

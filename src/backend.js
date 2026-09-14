@@ -110,6 +110,7 @@ export function translate(error) {
   if (m.includes('rate limit') || m.includes('too many')) return 'Troppi tentativi: riprova fra qualche minuto.';
   if (m.includes('redirect') || m.includes('not allowed')) return 'Indirizzo di ritorno non autorizzato: va aggiunto ai Redirect URLs su Supabase.';
   if (m.includes('signups not allowed')) return 'Le registrazioni sono chiuse su questo progetto.';
+  if (m.includes('more than one relationship') || m.includes('pgrst201')) return 'Il database ha più di un collegamento fra queste tabelle e la richiesta è ambigua: va indicata la chiave da usare.';
   if (m.includes('failed to fetch') || m.includes('networkerror')) return 'Nessuna connessione al server.';
   if (m.includes('invalid input syntax for type uuid')) return 'Il database non è pronto per Clerk: esegui la migrazione 001-identita-esterna.sql nell\'SQL Editor.';
   if (m.includes('jwt') || m.includes('jwks') || m.includes('invalid claim')) return 'Token non accettato da Supabase: controlla l\'integrazione Clerk in Authentication → Third-Party Auth e che il claim "role" valga "authenticated".';
@@ -148,7 +149,7 @@ export async function ensureProfile(user) {
 
 // ---------------------------------------------------------------- leghe
 export async function myLeagues(userId) {
-  const rows = must(await sb.from('league_members').select('role, league:leagues(id, name, short_name, invite_code, started, rules, created_at)').eq('user_id', userId));
+  const rows = must(await sb.from('league_members').select('role, league:leagues!league_members_league_id_fkey(id, name, short_name, invite_code, started, rules, created_at)').eq('user_id', userId));
   return rows.filter((r) => r.league).map((r) => ({ ...r.league, myRole: r.role }));
 }
 export async function createLeague(name, shortName, teamName, color, initials) { return must(await sb.rpc('create_league', { p_name: name, p_short: shortName, p_team: teamName, p_color: color, p_initials: initials })); }

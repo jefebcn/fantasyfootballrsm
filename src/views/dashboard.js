@@ -31,6 +31,21 @@ function azione(ph, me) {
     badgeHtml: badge(st, st === 'provisional' ? 'fino a mar 18:00' : '') });
 }
 
+/**
+ * Lo scontro della giornata in corso, sempre presente: è la prima cosa che si
+ * cerca riaprendo l'app. Prima compariva solo a giornata giocata, quindi tra il
+ * lunedì e il sabato la dashboard non diceva più contro chi si gioca.
+ */
+function sfida(ph, curR, riposo) {
+  if (riposo) return sec('Giornata in corso', `${ph.matchday}ª di lega`)
+    + tile({ href: '#/calendario', lead: icon('cal'), title: 'Turno di riposo', sub: `In questa giornata non hai avversarie` });
+  if (!curR) return '';
+  const lock = S.matchday(ph.matchday)?.lockAt;
+  const titolo = curR.played ? (ph.status === 'frozen' ? 'Giornata conclusa' : 'Risultati provvisori') : 'La tua sfida';
+  const meta = curR.played ? '' : (lock ? `si chiude ${dateIt(lock)} · ${timeIt(lock)}` : '');
+  return sec(titolo, `${ph.matchday}ª di lega`) + matchCard(curR, S.managersById, { meta });
+}
+
 export const dashboard = {
   title: 'Dashboard',
   render() {
@@ -39,6 +54,7 @@ export const dashboard = {
     const st = S.standings(); const row = st.find((r) => r.managerId === me.id) || { position: '–', points: 0, played: 0, fantapunti: 0 };
     const noRoster = S.rosterIds(me.id).length === 0;
     const cur = S.myFixture(ph.matchday, me.id); const curR = cur ? S.fixtureResult(cur) : null;
+    const riposo = !cur && S.base.managers.length > 1;
     const nxt = S.myFixture(ph.next, me.id); const nxtR = nxt && ph.next !== ph.matchday ? S.fixtureResult(nxt) : null;
     const last = S.resultsUntil(ph.matchday).filter((r) => r.homeManagerId === me.id || r.awayManagerId === me.id).slice(-5).reverse();
     const forma = last.length ? `${sec('Ultimi risultati', last.length < 5 ? `${last.length} giocate` : '')}
@@ -69,10 +85,10 @@ export const dashboard = {
         <div><b>${row.played}</b><span>Partite</span></div>
         <div><b>${fmt(row.fantapunti)}</b><span>Fantapunti</span></div>
       </div>
+      ${sfida(ph, curR, riposo)}
       ${noRoster ? tile({ href: S.isLeagueAdmin() ? '#/lega' : '#/leghe', lead: icon('warn'), leadKind: 'warn',
           title: 'Rose non ancora assegnate',
           sub: S.isLeagueAdmin() ? "Generale o inserirle dalla gestione lega" : "Le assegna l'admin della lega dopo l'asta" }) : azione(ph, me)}
-      ${curR && curR.played ? sec(ph.status === 'frozen' ? `Giornata ${ph.matchday}` : 'Risultati provvisori', `${ph.matchday}ª di lega`) + matchCard(curR, S.managersById) : ''}
       ${nxtR ? sec('Prossima giornata', `${ph.next}ª di lega`) + matchCard(nxtR, S.managersById, { meta: `${dateIt(S.matchday(ph.next).lockAt)} · ${timeIt(S.matchday(ph.next).lockAt)}` }) : ''}
       ${forma}
       ${sec('Dal regolamento')}

@@ -7,16 +7,17 @@
 
 :root {
   /* --- Brand ------------------------------------------------------------ */
-  /* Azzurro della bandiera sammarinese, saturato per reggere il testo bianco */
-  --c-titano-100: #E4F1FA;
-  --c-titano-200: #BFE0F4;
-  --c-titano-300: #7CC2E8;
-  --c-titano-400: #3AA6E0;
-  --c-titano-500: #1B84C6;   /* primario */
-  --c-titano-600: #0E5E93;
-  --c-titano-700: #0A4570;
-  --c-titano-800: #072F4C;   /* blu notte, fondo hero */
-  --c-titano-900: #041F33;
+  /* Rampa campionata dall'app di riferimento: parte dall'azzurro sammarinese in
+     cima e scende sul blu royal, fino al navy del fondo hero. */
+  --c-titano-100: #E8EEFC;
+  --c-titano-200: #C7D6F6;
+  --c-titano-300: #8FB6E8;
+  --c-titano-400: #4FA5DE;   /* cielo, cima del gradiente */
+  --c-titano-500: #3F6ADD;   /* primario, royal */
+  --c-titano-600: #3457B8;
+  --c-titano-700: #21397F;
+  --c-titano-800: #162657;   /* navy, fondo hero */
+  --c-titano-900: #0D1733;
 
   /* Oro della corona dello stemma: CTA, capitano, premium */
   --c-oro-300: #FFD87A;
@@ -41,13 +42,13 @@
   /* Neutri con bias azzurro: mai grigio puro */
   --c-pietra-0:  #FFFFFF;
   --c-pietra-50: #F7FAFD;
-  --c-pietra-100:#EEF2F7;
+  --c-pietra-100:#ECEFF6;
   --c-pietra-200:#DCE5EF;
   --c-pietra-300:#C3D2E1;
   --c-pietra-400:#93A9BF;
-  --c-pietra-500:#5A7591;
+  --c-pietra-500:#5E6C87;
   --c-pietra-700:#22455F;
-  --c-pietra-900:#0C2C45;
+  --c-pietra-900:#16233F;
 
   /* --- Ruoli semantici -------------------------------------------------- */
   --bg:            var(--c-pietra-100);
@@ -87,13 +88,13 @@
   --stato-congelato:   var(--c-titano-600);
 
   /* --- Gradienti -------------------------------------------------------- */
-  --grad-header: linear-gradient(180deg, #2E9FD8 0%, #1173B0 100%);
-  --grad-hero:   linear-gradient(180deg, #1173B0 0%, #072F4C 100%);
+  --grad-header: linear-gradient(180deg, #4FA5DE 0%, #3F6ADD 100%);
+  --grad-hero:   linear-gradient(180deg, #3F6ADD 0%, #355AB2 58%, #162657 100%);
   --grad-oro:    linear-gradient(180deg, var(--c-oro-400) 0%, var(--c-oro-500) 100%);
 
   /* --- Tipografia ------------------------------------------------------- */
-  --font-display: 'Archivo', 'Helvetica Neue', Arial, sans-serif;
-  --font-body:    'Asap', 'Segoe UI', system-ui, sans-serif;
+  --font-display: 'Lato', 'Helvetica Neue', Arial, sans-serif;
+  --font-body:    'Lato', 'Segoe UI', system-ui, sans-serif;
   --font-data:    'IBM Plex Mono', ui-monospace, 'SF Mono', monospace;
 
   --fs-display:  clamp(2rem, 1.4rem + 2.6vw, 3.25rem);
@@ -167,8 +168,8 @@
     --stato-congelato: var(--c-titano-300);
     --stato-provvisorio: var(--c-ambra-400);
 
-    --grad-header: linear-gradient(180deg, #12628F 0%, #0A3E60 100%);
-    --grad-hero:   linear-gradient(180deg, #0A3E60 0%, #041F33 100%);
+    --grad-header: linear-gradient(180deg, #2F4FA8 0%, #21397F 100%);
+    --grad-hero:   linear-gradient(180deg, #21397F 0%, #162657 58%, #0D1733 100%);
 
     --sh-card:  0 1px 2px rgba(0,0,0,.4), 0 4px 14px rgba(0,0,0,.35);
     --sh-raise: 0 6px 22px rgba(0,0,0,.5);
@@ -202,8 +203,8 @@
   --ruolo-c: var(--c-titano-300);
   --stato-congelato: var(--c-titano-300);
   --stato-provvisorio: var(--c-ambra-400);
-  --grad-header: linear-gradient(180deg, #12628F 0%, #0A3E60 100%);
-  --grad-hero:   linear-gradient(180deg, #0A3E60 0%, #041F33 100%);
+  --grad-header: linear-gradient(180deg, #2F4FA8 0%, #21397F 100%);
+  --grad-hero:   linear-gradient(180deg, #21397F 0%, #162657 58%, #0D1733 100%);
   --sh-card:  0 1px 2px rgba(0,0,0,.4), 0 4px 14px rgba(0,0,0,.35);
   --sh-raise: 0 6px 22px rgba(0,0,0,.5);
   --sh-nav:   0 -2px 16px rgba(0,0,0,.45);

@@ -9,49 +9,33 @@ che `matchday_lock_at(3)` restituisca sabato 19/09/2026 15:00 Europe/Rome, allin
 `SEASON_START` in `src/data.js`.
 
 
-## Clerk come fornitore d'identità (configurazione attuale)
+## Stato attuale (misurato il 14/09/2026)
 
-L'app usa **Clerk** per l'accesso (password, Google, Apple, link o codice via e-mail) e
-Supabase solo per i dati. Il token di sessione Clerk viaggia come identità esterna: le
-policy RLS leggono l'utente dal claim `sub`, quindi lo schema e le regole restano quelli.
+Letto da `/auth/v1/settings` e dalle API REST del progetto:
 
-Per tornare a Supabase Auth basta svuotare `CLERK_PUBLISHABLE_KEY` in `src/config.js`:
-entrambi i percorsi restano nel codice.
+| Voce | Stato | Serve fare |
+|---|---|---|
+| Tabelle dello schema | 11 su 11 presenti | niente |
+| Accesso con e-mail | attivo | niente |
+| Nuove registrazioni | aperte | niente |
+| **Conferma e-mail** | **accesa** (`mailer_autoconfirm: false`) | spegnerla, vedi §1 |
+| **Google** | **spento** | configurarlo, vedi §3 |
+| **Apple** | **spento** | configurarlo, vedi §3 (serve l'abbonamento a 99 $/anno) |
+| Indirizzi di ritorno | non leggibili via API | verificarli a mano, vedi §2 |
+| Giudice Dati | nessuno nominato | [`nomina-giudice.sql`](nomina-giudice.sql) dopo la registrazione |
 
-### Cosa serve, in ordine
+App in produzione: <https://fantasyfootballrsm.vercel.app>
 
-1. **Migrazione obbligatoria.** Nell'SQL Editor esegui
-   [`migrations/001-identita-esterna.sql`](migrations/001-identita-esterna.sql): converte gli
-   identificativi utente da `uuid` a `text` (gli id Clerk sono `user_2abc…`) e riscrive
-   funzioni e policy su `current_user_id()`. Conserva i dati esistenti.
-   Senza questo passo il primo accesso fallisce con «Il database non è pronto per Clerk».
-2. **Supabase → Authentication → Third-Party Auth → Add provider → Clerk**: inserisci il
-   dominio dell'istanza, `decent-raven-4327.clerk.accounts.dev`. Supabase verificherà le
-   firme tramite le sue chiavi pubbliche (`/.well-known/jwks.json`).
-3. **Clerk → Configure → Integrations → Supabase**: attiva l'integrazione. Aggiunge al token
-   di sessione il claim `role: "authenticated"`, che è ciò che le policy `to authenticated`
-   richiedono. Senza, ogni lettura torna vuota e ogni scrittura viene rifiutata.
-4. **Clerk → Domains**: aggiungi l'indirizzo dell'app (`fantasyfootballrsm.vercel.app`).
+Questi interruttori stanno nel pannello Supabase e **non si cambiano dal codice**: la
+publishable key serve solo a leggere e scrivere i dati entro le policy RLS, non a
+riconfigurare il progetto. Per cambiarli servono il pannello oppure un token della
+Management API.
 
-### Istanza di sviluppo e istanza di produzione
+Dentro l'app, **Impostazioni → Diagnostica accessi** rilegge questa stessa tabella dal
+progetto vero e dice cosa manca ancora: dopo ogni modifica nel pannello, è lì che si
+controlla se ha preso.
 
-La chiave in uso è una `pk_test_`, cioè un'**istanza di sviluppo**: Google e Apple funzionano
-subito perché Clerk presta le proprie credenziali OAuth, e per provare va benissimo.
-
-Quando la lega parte davvero serve un'**istanza di produzione**, e lì Clerk chiede le *tue*
-credenziali Google (progetto su Google Cloud) e la *tua* configurazione Apple (Services ID,
-chiave .p8, Apple Developer Program a 99 $/anno). È lo stesso lavoro che servirebbe con
-Supabase Auth: cambia il momento in cui lo fai, non se lo fai.
-
-### La chiave segreta
-
-`CLERK_SECRET_KEY` non compare da nessuna parte in questo repository e non deve comparirci:
-è la chiave delle API backend di Clerk e chi la possiede può creare o cancellare utenti.
-L'app è interamente frontend e non ne ha bisogno.
-
-## Autenticazione di Supabase (percorso alternativo)
-
-Valgono se `CLERK_PUBLISHABLE_KEY` è vuota.
+## Autenticazione — configurazione in uso
 
 L'app offre quattro strade: **Google**, **Apple**, **password** e **link via e-mail**.
 I pulsanti social compaiono solo se il provider è attivo sul progetto.
@@ -132,7 +116,6 @@ Due cose da sapere su Apple: chi entra può **nascondere l'e-mail** (riceverai u
 primissima autorizzazione** — se manca, l'app usa la parte iniziale dell'e-mail e il nome si
 cambia da *Impostazioni → Cambia nome*.
 
-## Setup da zero
 ## Modello
 
 - **Generato dal client** (`src/data.js`): società, listone, calendario. Stabili per stagione.
@@ -142,4 +125,49 @@ cambia da *Impostazioni → Cambia nome*.
   `lineups` (scrivibili solo dal proprietario e solo prima del lock, art. 8.3), `contestazioni`.
 - **Congelamento** (art. 9.2): un trigger rifiuta qualunque scrittura sul dato di una giornata
   con `matchday_status = 'frozen'`, anche per il Giudice Dati.
-- Senza configurazione l'app resta in **modalità locale** (demo con dati generati).
+- Senza un progetto collegato l'app non entra: non esiste più nessuna modalità demo.
+
+
+## Appendice — Clerk come fornitore d'identità (SPENTO)
+
+> Questa sezione vale **solo** se si riaccende Clerk valorizzando `CLERK_PUBLISHABLE_KEY`
+> in `src/config.js`. Oggi quella costante è vuota e l'accesso passa da Supabase Auth,
+> descritto qui sopra. Il codice per entrambe le strade resta nel repository.
+
+Con Clerk acceso, l'app userebbe **Clerk** per l'accesso (password, Google, Apple, link o codice via e-mail) e
+Supabase solo per i dati. Il token di sessione Clerk viaggia come identità esterna: le
+policy RLS leggono l'utente dal claim `sub`, quindi lo schema e le regole restano quelli.
+
+Fu scartato perché l'accesso apriva una finestra separata invece di restare dentro l'app.
+
+### Cosa servirebbe, in ordine
+
+1. **Migrazione obbligatoria.** Nell'SQL Editor esegui
+   [`migrations/001-identita-esterna.sql`](migrations/001-identita-esterna.sql): converte gli
+   identificativi utente da `uuid` a `text` (gli id Clerk sono `user_2abc…`) e riscrive
+   funzioni e policy su `current_user_id()`. Conserva i dati esistenti.
+   Senza questo passo il primo accesso fallisce con «Il database non è pronto per Clerk».
+2. **Supabase → Authentication → Third-Party Auth → Add provider → Clerk**: inserisci il
+   dominio dell'istanza, `decent-raven-4327.clerk.accounts.dev`. Supabase verificherà le
+   firme tramite le sue chiavi pubbliche (`/.well-known/jwks.json`).
+3. **Clerk → Configure → Integrations → Supabase**: attiva l'integrazione. Aggiunge al token
+   di sessione il claim `role: "authenticated"`, che è ciò che le policy `to authenticated`
+   richiedono. Senza, ogni lettura torna vuota e ogni scrittura viene rifiutata.
+4. **Clerk → Domains**: aggiungi l'indirizzo dell'app (`fantasyfootballrsm.vercel.app`).
+
+### Istanza di sviluppo e istanza di produzione
+
+La chiave in uso è una `pk_test_`, cioè un'**istanza di sviluppo**: Google e Apple funzionano
+subito perché Clerk presta le proprie credenziali OAuth, e per provare va benissimo.
+
+Quando la lega parte davvero serve un'**istanza di produzione**, e lì Clerk chiede le *tue*
+credenziali Google (progetto su Google Cloud) e la *tua* configurazione Apple (Services ID,
+chiave .p8, Apple Developer Program a 99 $/anno). È lo stesso lavoro che servirebbe con
+Supabase Auth: cambia il momento in cui lo fai, non se lo fai.
+
+### La chiave segreta
+
+`CLERK_SECRET_KEY` non compare da nessuna parte in questo repository e non deve comparirci:
+è la chiave delle API backend di Clerk e chi la possiede può creare o cancellare utenti.
+L'app è interamente frontend e non ne ha bisogno.
+

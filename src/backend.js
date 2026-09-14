@@ -4,7 +4,7 @@
  */
 import { SUPABASE_URL, SUPABASE_ANON_KEY, SUPABASE_JS, SUPABASE_TIMEOUT_MS } from './config.js';
 
-let sb = null; let cfg = null; let providers = {}; let external = false;
+let sb = null; let cfg = null; let providers = {}; let external = false; let settings = null;
 export function config() {
   if (cfg) return cfg;
   try { const raw = localStorage.getItem('fcs:supabase'); if (raw) { const c = JSON.parse(raw); if (c.url && c.key) return (cfg = c); } } catch { /* ignora */ }
@@ -41,9 +41,55 @@ async function loadProviders(c) {
   try {
     const r = await fetch(`${c.url}/auth/v1/settings`, { headers: { apikey: c.key } });
     if (!r.ok) return {};
-    const s = await r.json();
-    return s.external || {};
+    settings = await r.json();
+    return settings.external || {};
   } catch { return {}; }
+}
+export const authSettings = () => settings;
+
+/**
+ * Legge la configurazione vera del progetto e dice cosa manca ancora.
+ * Serve perché gli interruttori stanno nel pannello Supabase, non nel codice:
+ * senza questo l'unico modo di sapere come sono messi è provare a registrarsi.
+ */
+export async function checkSetup() {
+  const c = config(); if (!c) return [{ id: 'server', livello: 'errore', voce: 'Server', esito: 'Nessun progetto collegato.' }];
+  const out = [];
+  let s = settings;
+  try {
+    const r = await withTimeout(fetch(`${c.url}/auth/v1/settings`, { headers: { apikey: c.key } }), SUPABASE_TIMEOUT_MS, 'timeout');
+    if (r.ok) { s = await r.json(); settings = s; }
+  } catch { /* sotto lo segnaliamo come irraggiungibile */ }
+  if (!s) return [{ id: 'raggiungibile', livello: 'errore', voce: 'Raggiungibilità', esito: 'Il progetto non risponde.' }];
+
+  out.push({ id: 'email', livello: s.external?.email ? 'ok' : 'errore', voce: 'Accesso con e-mail',
+    esito: s.external?.email ? 'Attivo.' : 'Spento: nessuno può registrarsi.',
+    dove: 'Authentication → Sign In / Providers → Email' });
+  out.push({ id: 'signup', livello: s.disable_signup ? 'errore' : 'ok', voce: 'Nuove registrazioni',
+    esito: s.disable_signup ? 'Bloccate: nessun account nuovo.' : 'Aperte.',
+    dove: 'Authentication → Sign In / Providers → Allow new users to sign up' });
+  out.push({ id: 'conferma', livello: s.mailer_autoconfirm ? 'ok' : 'attenzione', voce: 'Conferma e-mail',
+    esito: s.mailer_autoconfirm
+      ? 'Spenta: chi si registra entra subito.'
+      : 'Accesa: dopo la registrazione bisogna aprire il link ricevuto per e-mail.',
+    dove: 'Authentication → Sign In / Providers → Email → Confirm email' });
+  for (const [k, nome] of [['google', 'Google'], ['apple', 'Apple']]) {
+    out.push({ id: k, livello: s.external?.[k] ? 'ok' : 'attenzione', voce: `Accesso con ${nome}`,
+      esito: s.external?.[k] ? 'Attivo: il pulsante compare da solo.' : 'Non configurato: il pulsante resta nascosto.',
+      dove: `Authentication → Sign In / Providers → ${nome}` });
+  }
+  // Il ritorno dal link e dagli accessi social passa da qui: se l'indirizzo non è in elenco,
+  // l'e-mail riporta alla home di Supabase invece che dentro l'app, senza nessun errore visibile.
+  out.push({ id: 'redirect', livello: 'info', voce: 'Indirizzi di ritorno',
+    esito: `Da avere in elenco: ${location.origin}/**`,
+    dove: 'Authentication → URL Configuration → Redirect URLs' });
+
+  try {
+    const { error } = await sb.from('leagues').select('id').limit(1);
+    out.push({ id: 'db', livello: error ? 'errore' : 'ok', voce: 'Database',
+      esito: error ? `Non raggiungibile: ${error.message}` : 'Schema applicato e leggibile.' });
+  } catch (e) { out.push({ id: 'db', livello: 'errore', voce: 'Database', esito: String(e?.message || e) }); }
+  return out;
 }
 export const enabledProviders = () => providers;
 export const usesExternalIdentity = () => external;

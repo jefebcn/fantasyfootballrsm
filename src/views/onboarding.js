@@ -35,7 +35,7 @@ export const onboarding = {
       <div class="intro-bg">
         <canvas id="intro-fx"></canvas>
         <video id="intro-video" playsinline autoplay muted loop preload="auto" disablepictureinpicture>
-          <source src="media/intro.webm" type="video/webm"><source src="media/intro.mp4" type="video/mp4">
+          <source src="media/intro.mp4" type="video/mp4">
         </video>
         <span class="intro-veil"></span>
       </div>

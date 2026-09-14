@@ -802,3 +802,70 @@ button,a{-webkit-tap-highlight-color:transparent}
   -webkit-mask-size:contain;mask-size:contain;
   -webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;
   -webkit-mask-position:center;mask-position:center}
+
+/* ==========================================================================
+   Schermata d'accesso: video a tutto campo, campi smerigliati, azione in oro.
+   Il video è lo stesso dell'onboarding; se non parte resta il gradiente sotto.
+   ========================================================================== */
+.auth2{position:relative;padding:0;display:flex;flex-direction:column;justify-content:flex-end;overflow:hidden}
+.auth2 .sfondo{position:absolute;inset:0;background:var(--grad-hero);z-index:0}
+.auth2 .sfondo video{width:100%;height:100%;object-fit:cover;filter:blur(2px) saturate(.9);opacity:.55}
+.auth2 .sfondo .velo{position:absolute;inset:0;
+  background:linear-gradient(180deg, rgba(13,23,51,.55) 0%, rgba(13,23,51,.72) 45%, rgba(13,23,51,.94) 100%)}
+.auth2 .contenuto{position:relative;z-index:1;width:100%;flex:1;min-height:0;
+  padding:0 22px calc(28px + env(safe-area-inset-bottom));display:flex;flex-direction:column;gap:12px}
+
+.auth2 .marchio{display:flex;align-items:center;gap:9px;margin-bottom:auto;padding-top:calc(26px + env(safe-area-inset-top));
+  font:500 13px var(--font-body);color:rgba(255,255,255,.72);letter-spacing:.02em}
+.auth2 .marchio b{font-weight:800;color:#fff}
+.auth2 .marchio .auth-mark{width:26px;height:26px;background:#fff}
+.auth2 .tit{font:900 40px/1.05 var(--font-display);color:#fff;margin:0 0 6px;letter-spacing:-.01em}
+
+.auth2 .campo{position:relative}
+.auth2 .campo input{width:100%;height:54px;border-radius:14px;border:1px solid rgba(255,255,255,.22);
+  background:rgba(255,255,255,.12);color:#fff;font:500 15px var(--font-body);padding:0 16px;
+  -webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
+.auth2 .campo input::placeholder{color:rgba(255,255,255,.62)}
+.auth2 .campo input:focus{outline:none;border-color:rgba(255,255,255,.55);background:rgba(255,255,255,.18)}
+.auth2 .campo .occhio{position:absolute;right:6px;top:50%;transform:translateY(-50%);width:42px;height:42px;z-index:2;
+  border:0;background:transparent;color:rgba(255,255,255,.7);display:grid;place-items:center;cursor:pointer}
+.auth2 .campo:has(.occhio) input{padding-right:52px}
+
+.auth2 .riga{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:2px 0 4px}
+.auth2 .ricorda{display:flex;align-items:center;gap:7px;font:500 12.5px var(--font-body);color:rgba(255,255,255,.8);cursor:pointer}
+.auth2 .ricorda input{width:16px;height:16px;accent-color:var(--accent)}
+.auth2 .sottile{border:0;background:transparent;color:rgba(255,255,255,.8);font:600 12.5px var(--font-body);
+  cursor:pointer;padding:6px 0;text-decoration:underline;text-underline-offset:3px}
+.auth2 .sottile.centro{align-self:center;color:rgba(255,255,255,.66)}
+
+.auth2 .a-btn.oro{height:54px;border-radius:14px;background:var(--c-oro-400);color:#1A1302;
+  font:800 15px var(--font-display);letter-spacing:.02em;box-shadow:0 8px 22px rgba(0,0,0,.28);text-transform:none}
+.auth2 .a-btn.oro:active{background:var(--c-oro-500)}
+
+.auth2 .oppure{display:flex;align-items:center;gap:12px;margin:10px 0 2px;color:rgba(255,255,255,.6);font-size:12.5px}
+.auth2 .oppure::before,.auth2 .oppure::after{content:'';flex:1;height:1px;background:rgba(255,255,255,.22)}
+.auth2 .tondi{display:flex;justify-content:center;gap:16px}
+.auth2 .tondo{width:56px;height:56px;border-radius:50%;border:0;background:#fff;display:grid;place-items:center;
+  cursor:pointer;box-shadow:0 6px 18px rgba(0,0,0,.25)}
+.auth2 .tondo:active{transform:scale(.96)}
+.auth2 .tondo .ic{width:26px;height:26px;color:#111}
+.auth2 .tondo[data-provider="apple"] .ic{color:#000}
+
+.auth2 .passa{text-align:center;font:500 13px var(--font-body);color:rgba(255,255,255,.75);margin:6px 0 0}
+.auth2 .passa button{border:0;background:transparent;color:var(--c-oro-400);font:800 13px var(--font-body);cursor:pointer;padding:0 2px}
+.auth2 .nota{font-size:12.5px;color:rgba(255,255,255,.7);line-height:1.5;margin:2px 0}
+.auth2 .avviso{display:flex;gap:9px;align-items:flex-start;padding:11px 13px;border-radius:12px;font-size:13px;
+  background:rgba(255,255,255,.14);color:#fff;-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
+.auth2 .avviso.err{background:rgba(206,59,59,.35)}
+.auth2 .avviso .ic{flex:none;margin-top:1px}
+
+/* Il pannello «controlla la posta» eredita il fondo scuro. */
+.auth2 .auth-sent{display:block;font:800 17px var(--font-display);color:#fff;margin-bottom:4px}
+.auth2 .auth-hint,.auth2 .auth-list{color:rgba(255,255,255,.78)}
+.auth2 .auth-hint b,.auth2 .auth-list b{color:#fff}
+.auth2 .auth-links button,.auth2 .auth-more>summary{color:var(--c-oro-400)}
+.auth2 .auth-more{border-top-color:rgba(255,255,255,.2)}
+.auth2 hr.sep{border-top-color:rgba(255,255,255,.2)}
+.auth2 .lbl{color:rgba(255,255,255,.75)}
+.auth2 .field-input{background:rgba(255,255,255,.12);border-color:rgba(255,255,255,.22);color:#fff}
+@media (min-width:520px){ .auth2 .contenuto{max-width:460px;margin:0 auto} }

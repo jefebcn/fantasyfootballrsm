@@ -1,0 +1,210 @@
+/* ==========================================================================
+   Fantacampionato Sammarinese — Design Tokens
+   Fonte di verità per colori, tipografia, spaziatura, elevazioni.
+   Ogni token è definito in :root (tema chiaro). I blocchi scuri
+   ridefiniscono SOLO i valori, mai i componenti.
+   ========================================================================== */
+
+:root {
+  /* --- Brand ------------------------------------------------------------ */
+  /* Azzurro della bandiera sammarinese, saturato per reggere il testo bianco */
+  --c-titano-100: #E4F1FA;
+  --c-titano-200: #BFE0F4;
+  --c-titano-300: #7CC2E8;
+  --c-titano-400: #3AA6E0;
+  --c-titano-500: #1B84C6;   /* primario */
+  --c-titano-600: #0E5E93;
+  --c-titano-700: #0A4570;
+  --c-titano-800: #072F4C;   /* blu notte, fondo hero */
+  --c-titano-900: #041F33;
+
+  /* Oro della corona dello stemma: CTA, capitano, premium */
+  --c-oro-300: #FFD87A;
+  --c-oro-400: #FFC94D;
+  --c-oro-500: #E5A11B;
+  --c-oro-600: #B87C0C;
+
+  /* Verde dell'alloro: stati "live", bonus */
+  --c-alloro-400: #35B37E;
+  --c-alloro-500: #1E9E6A;
+  --c-alloro-600: #157A51;
+
+  /* Rosso cartellino: malus, espulsioni, errori */
+  --c-cartellino-400: #E35B5B;
+  --c-cartellino-500: #CE3B3B;
+  --c-cartellino-600: #A32B2B;
+
+  /* Ambra: dato provvisorio, finestre aperte, avvisi */
+  --c-ambra-400: #F0B347;
+  --c-ambra-500: #D98A15;
+
+  /* Neutri con bias azzurro: mai grigio puro */
+  --c-pietra-0:  #FFFFFF;
+  --c-pietra-50: #F7FAFD;
+  --c-pietra-100:#EEF2F7;
+  --c-pietra-200:#DCE5EF;
+  --c-pietra-300:#C3D2E1;
+  --c-pietra-400:#93A9BF;
+  --c-pietra-500:#5A7591;
+  --c-pietra-700:#22455F;
+  --c-pietra-900:#0C2C45;
+
+  /* --- Ruoli semantici -------------------------------------------------- */
+  --bg:            var(--c-pietra-100);
+  --surface:       var(--c-pietra-0);
+  --surface-2:     var(--c-pietra-50);
+  --surface-sunk:  var(--c-pietra-100);
+  --border:        var(--c-pietra-200);
+  --border-strong: var(--c-pietra-300);
+  --text:          var(--c-pietra-900);
+  --text-muted:    var(--c-pietra-500);
+  --text-invert:   #FFFFFF;
+
+  --primary:       var(--c-titano-500);
+  --primary-hover: var(--c-titano-600);
+  --primary-soft:  var(--c-titano-100);
+  --on-primary:    #FFFFFF;
+
+  --accent:        var(--c-oro-500);
+  --accent-soft:   #FDF1D8;
+  --on-accent:     var(--c-titano-900);
+
+  --positive:      var(--c-alloro-500);
+  --positive-soft: #E1F5EC;
+  --negative:      var(--c-cartellino-500);
+  --negative-soft: #FCE9E9;
+  --warning:       var(--c-ambra-500);
+  --warning-soft:  #FDF0DA;
+
+  /* Ruoli di listone: P / D / C / A */
+  --ruolo-p: #E5A11B;
+  --ruolo-d: #1E9E6A;
+  --ruolo-c: #1B84C6;
+  --ruolo-a: #CE3B3B;
+
+  /* Stato del dato: il segnale identitario del prodotto */
+  --stato-provvisorio: var(--c-ambra-500);
+  --stato-congelato:   var(--c-titano-600);
+
+  /* --- Gradienti -------------------------------------------------------- */
+  --grad-header: linear-gradient(180deg, #2E9FD8 0%, #1173B0 100%);
+  --grad-hero:   linear-gradient(180deg, #1173B0 0%, #072F4C 100%);
+  --grad-oro:    linear-gradient(180deg, var(--c-oro-400) 0%, var(--c-oro-500) 100%);
+
+  /* --- Tipografia ------------------------------------------------------- */
+  --font-display: 'Archivo', 'Helvetica Neue', Arial, sans-serif;
+  --font-body:    'Asap', 'Segoe UI', system-ui, sans-serif;
+  --font-data:    'IBM Plex Mono', ui-monospace, 'SF Mono', monospace;
+
+  --fs-display:  clamp(2rem, 1.4rem + 2.6vw, 3.25rem);
+  --fs-h1:       1.625rem;   /* 26 */
+  --fs-h2:       1.25rem;    /* 20 */
+  --fs-h3:       1.0625rem;  /* 17 */
+  --fs-body:     0.9375rem;  /* 15 */
+  --fs-small:    0.8125rem;  /* 13 */
+  --fs-label:    0.6875rem;  /* 11 — uppercase, letter-spacing .08em */
+  --fs-stat:     1.5rem;     /* 24 — numeri barra statistiche */
+
+  --lh-tight: 1.15;
+  --lh-snug:  1.35;
+  --lh-body:  1.55;
+
+  /* --- Spaziatura (scala 4) --------------------------------------------- */
+  --sp-1: 4px;  --sp-2: 8px;  --sp-3: 12px; --sp-4: 16px;
+  --sp-5: 20px; --sp-6: 24px; --sp-8: 32px; --sp-10: 40px; --sp-12: 48px;
+
+  /* --- Raggi ed elevazioni ---------------------------------------------- */
+  --r-chip: 999px;
+  --r-sm: 8px;
+  --r-md: 14px;   /* card standard */
+  --r-lg: 20px;   /* card hero, bottom sheet */
+
+  --sh-card:  0 1px 2px rgba(7, 47, 76, .06), 0 4px 14px rgba(7, 47, 76, .07);
+  --sh-raise: 0 6px 22px rgba(7, 47, 76, .16);
+  --sh-nav:   0 -2px 16px rgba(7, 47, 76, .10);
+
+  /* --- Motion ----------------------------------------------------------- */
+  --mo-fast: 120ms cubic-bezier(.2,.8,.3,1);
+  --mo-base: 220ms cubic-bezier(.2,.8,.3,1);
+  --mo-sheet: 320ms cubic-bezier(.16,1,.3,1);
+
+  /* --- Misure app ------------------------------------------------------- */
+  --h-appbar: 56px;
+  --h-bottomnav: 60px;
+  --w-drawer: 84vw;
+  --touch-min: 44px;
+}
+
+/* Tema scuro di sistema (nessuno stamp sul root) */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg:            #071A29;
+    --surface:       #0D2537;
+    --surface-2:     #12314A;
+    --surface-sunk:  #061624;
+    --border:        #1C4463;
+    --border-strong: #2A5B80;
+    --text:          #E8F1F8;
+    --text-muted:    #90AEC6;
+
+    --primary:       var(--c-titano-400);
+    --primary-hover: var(--c-titano-300);
+    --primary-soft:  #0F3A57;
+    --on-primary:    #04202F;
+
+    --accent:        var(--c-oro-400);
+    --accent-soft:   #3A2C08;
+    --on-accent:     #1A1302;
+
+    --positive:      var(--c-alloro-400);
+    --positive-soft: #0B3627;
+    --negative:      var(--c-cartellino-400);
+    --negative-soft: #3A1515;
+    --warning:       var(--c-ambra-400);
+    --warning-soft:  #38260A;
+
+    --ruolo-c: var(--c-titano-300);
+    --stato-congelato: var(--c-titano-300);
+    --stato-provvisorio: var(--c-ambra-400);
+
+    --grad-header: linear-gradient(180deg, #12628F 0%, #0A3E60 100%);
+    --grad-hero:   linear-gradient(180deg, #0A3E60 0%, #041F33 100%);
+
+    --sh-card:  0 1px 2px rgba(0,0,0,.4), 0 4px 14px rgba(0,0,0,.35);
+    --sh-raise: 0 6px 22px rgba(0,0,0,.5);
+    --sh-nav:   0 -2px 16px rgba(0,0,0,.45);
+  }
+}
+
+/* Scelta esplicita: scuro */
+:root[data-theme="dark"] {
+  --bg:            #071A29;
+  --surface:       #0D2537;
+  --surface-2:     #12314A;
+  --surface-sunk:  #061624;
+  --border:        #1C4463;
+  --border-strong: #2A5B80;
+  --text:          #E8F1F8;
+  --text-muted:    #90AEC6;
+  --primary:       var(--c-titano-400);
+  --primary-hover: var(--c-titano-300);
+  --primary-soft:  #0F3A57;
+  --on-primary:    #04202F;
+  --accent:        var(--c-oro-400);
+  --accent-soft:   #3A2C08;
+  --on-accent:     #1A1302;
+  --positive:      var(--c-alloro-400);
+  --positive-soft: #0B3627;
+  --negative:      var(--c-cartellino-400);
+  --negative-soft: #3A1515;
+  --warning:       var(--c-ambra-400);
+  --warning-soft:  #38260A;
+  --ruolo-c: var(--c-titano-300);
+  --stato-congelato: var(--c-titano-300);
+  --stato-provvisorio: var(--c-ambra-400);
+  --grad-header: linear-gradient(180deg, #12628F 0%, #0A3E60 100%);
+  --grad-hero:   linear-gradient(180deg, #0A3E60 0%, #041F33 100%);
+  --sh-card:  0 1px 2px rgba(0,0,0,.4), 0 4px 14px rgba(0,0,0,.35);
+  --sh-raise: 0 6px 22px rgba(0,0,0,.5);
+  --sh-nav:   0 -2px 16px rgba(0,0,0,.45);
+}

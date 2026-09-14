@@ -1,0 +1,978 @@
+<title>Fantacampionato Sammarinese</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;700;800&family=Asap:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap">
+<link rel="stylesheet" href="tokens/tokens.css">
+<style>
+/* ============ PAGINA (design kit) ============ */
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font-family:var(--font-body);font-size:var(--fs-body);line-height:var(--lh-body);padding-inline:16px;padding-block:0 72px;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1180px;margin:0 auto}
+h1,h2,h3,h4{font-family:var(--font-display);line-height:var(--lh-tight);text-wrap:balance;margin:0;letter-spacing:-.01em}
+p{margin:0}
+a{color:var(--primary)}
+.eyebrow{font-size:var(--fs-label);letter-spacing:.08em;text-transform:uppercase;color:var(--text-muted);font-weight:600;font-family:var(--font-body)}
+.kit{padding-block:56px;border-top:1px solid var(--border)}
+.kit-head{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.6fr);gap:24px 48px;margin-bottom:32px}
+.kit-head h2{font-size:var(--fs-h1);margin-top:6px}
+.kit-head p{max-width:62ch;color:var(--text-muted)}
+.kit-head p strong{color:var(--text);font-weight:600}
+@media (max-width:820px){.kit-head{grid-template-columns:1fr}}
+
+/* intro */
+.intro{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:40px;align-items:center;padding-block:48px 56px}
+.intro h1{font-size:var(--fs-display);font-weight:800;text-transform:uppercase;letter-spacing:-.02em;line-height:1}
+.intro h1 span{color:var(--primary)}
+.intro .lede{font-size:1.0625rem;max-width:56ch;margin-top:16px;color:var(--text-muted)}
+.intro .lede strong{color:var(--text);font-weight:600}
+.facts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-top:28px}
+.fact{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-md);padding:12px 14px}
+.fact b{font-family:var(--font-display);font-size:1.5rem;font-weight:800;display:block;font-variant-numeric:tabular-nums;color:var(--primary)}
+.fact span{font-size:var(--fs-small);color:var(--text-muted)}
+.brandmark{display:inline-flex;align-items:center;gap:10px;color:var(--primary);font-family:var(--font-display);font-weight:700;letter-spacing:.06em;text-transform:uppercase;font-size:13px}
+.brandmark svg{width:32px;height:28px}
+.hint{font-size:var(--fs-small);color:var(--text-muted);display:flex;gap:8px;align-items:center;margin-top:10px;justify-content:center}
+@media (max-width:900px){.intro{grid-template-columns:1fr}.intro>div:last-child{justify-self:center}}
+@media (max-width:520px){.facts{grid-template-columns:1fr 1fr}}
+
+/* swatches */
+.swatches{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}
+.sw{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-md);overflow:hidden}
+.sw i{display:block;height:74px;background:var(--sw)}
+.sw div{padding:10px 12px}
+.sw b{display:block;font-weight:600;font-size:var(--fs-small)}
+.sw code{font-family:var(--font-data);font-size:12px;color:var(--text-muted)}
+.sw small{display:block;font-size:12px;color:var(--text-muted);margin-top:4px;line-height:1.35}
+.sw-group{margin-bottom:28px}
+.sw-group h3{font-size:var(--fs-h3);margin-bottom:12px}
+
+/* type specimen */
+.type{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px}
+.type>div{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-md);padding:20px}
+.type .eyebrow{margin-bottom:12px;display:block}
+.spec-display{font-family:var(--font-display);font-weight:800;font-size:2rem;text-transform:uppercase;letter-spacing:-.02em;line-height:1}
+.spec-display small{display:block;font-size:1.25rem;font-weight:700;color:var(--primary);margin-top:6px;letter-spacing:0}
+.spec-stat{display:flex;gap:24px;margin-top:16px;font-family:var(--font-display);font-variant-numeric:tabular-nums}
+.spec-stat b{font-size:1.5rem;font-weight:700;display:block}
+.spec-stat span{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--text-muted);font-family:var(--font-body)}
+.spec-body{max-width:48ch}
+.spec-body h4{font-family:var(--font-body);font-weight:600;font-size:1.0625rem;margin-bottom:6px}
+.spec-mono{font-family:var(--font-data);font-size:13px;line-height:1.7;white-space:pre;overflow-x:auto}
+.pos{color:var(--positive)}.neg{color:var(--negative)}
+
+/* component gallery */
+.comps{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px}
+.comp{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-md);padding:16px;display:flex;flex-direction:column;gap:12px}
+.comp .eyebrow{display:block}
+.comp p{font-size:var(--fs-small);color:var(--text-muted)}
+.comp .demo{display:flex;flex-direction:column;gap:10px;padding:14px;background:var(--surface-sunk);border-radius:var(--r-sm)}
+.comp .demo.row{flex-direction:row;flex-wrap:wrap;align-items:center}
+
+/* timeline settimana */
+.week{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:0;position:relative;counter-reset:none}
+.week::before{content:"";position:absolute;left:8%;right:8%;top:14px;height:2px;background:var(--border-strong)}
+.wk{position:relative;padding:34px 10px 0;text-align:center}
+.wk::before{content:"";position:absolute;top:8px;left:50%;transform:translateX(-50%);width:14px;height:14px;border-radius:50%;background:var(--bg);border:3px solid var(--primary)}
+.wk.amber::before{border-color:var(--warning)}
+.wk.froz::before{background:var(--stato-congelato);border-color:var(--stato-congelato)}
+.wk.live::before{border-color:var(--positive);background:var(--positive)}
+.wk b{display:block;font-family:var(--font-display);font-weight:700;font-size:var(--fs-small)}
+.wk span{display:block;font-size:12px;color:var(--text-muted);line-height:1.35;margin-top:4px}
+@media (max-width:700px){.week{grid-template-columns:1fr;gap:12px}.week::before{left:15px;right:auto;top:8px;bottom:8px;width:2px;height:auto}.wk{padding:0 0 0 40px;text-align:left}.wk::before{left:8px;top:4px;transform:none}}
+
+/* confronto */
+.table-wrap{overflow-x:auto;border:1px solid var(--border);border-radius:var(--r-md);background:var(--surface)}
+table.cmp{border-collapse:collapse;width:100%;min-width:640px;font-size:var(--fs-small)}
+table.cmp th,table.cmp td{text-align:left;padding:10px 14px;border-bottom:1px solid var(--border);vertical-align:top}
+table.cmp th{font-size:var(--fs-label);letter-spacing:.08em;text-transform:uppercase;color:var(--text-muted);background:var(--surface-2)}
+table.cmp td:nth-child(2){font-weight:600}
+table.cmp tr:last-child td{border-bottom:0}
+
+/* gallery telefoni */
+.gallery{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:28px 24px;justify-items:center}
+.shot{display:flex;flex-direction:column;gap:12px;width:100%;max-width:360px}
+.shot .note{font-size:var(--fs-small);color:var(--text-muted)}
+.shot .note b{display:block;color:var(--text);font-family:var(--font-display);font-weight:700;font-size:var(--fs-h3);margin-bottom:4px}
+.shot .note em{font-style:normal;color:var(--text);font-weight:600}
+
+/* ============ TELEFONO ============ */
+.phone{width:360px;max-width:100%;height:760px;border-radius:44px;background:#0b1118;padding:10px;box-shadow:0 20px 50px rgba(4,31,51,.28),inset 0 0 0 1px #2a3946;flex:none;position:relative}
+.screen{width:100%;height:100%;border-radius:36px;overflow:hidden;background:var(--bg);position:relative;display:flex;flex-direction:column;color:var(--text)}
+.notch{position:absolute;top:10px;left:50%;transform:translateX(-50%);width:110px;height:28px;border-radius:0 0 18px 18px;background:#0b1118;z-index:5}
+.sb{position:absolute;top:0;left:0;right:0;height:38px;display:flex;justify-content:space-between;align-items:center;padding:0 26px;font-family:var(--font-display);font-weight:700;font-size:13px;color:#fff;z-index:4;pointer-events:none}
+.sb.dark{color:var(--text)}
+.view{display:none;flex:1;min-height:0;flex-direction:column}
+.view.on{display:flex}
+
+/* icone */
+.ic{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex:none}
+.ic.sm{width:18px;height:18px}
+.ic.f{fill:currentColor;stroke:none}
+
+/* app bar */
+.a-appbar{background:var(--grad-header);color:#fff;padding:44px 16px 12px;display:flex;align-items:center;gap:12px;flex:none}
+.a-appbar .t{flex:1;min-width:0}
+.a-appbar .t b{display:block;font-family:var(--font-display);font-weight:700;font-size:16px;text-transform:uppercase;letter-spacing:.02em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.a-appbar .t span{display:block;font-size:11px;letter-spacing:.08em;text-transform:uppercase;opacity:.82;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.a-appbar .ib{position:relative;width:36px;height:36px;display:grid;place-items:center;border-radius:50%;background:transparent;border:0;color:#fff;cursor:pointer}
+.a-appbar .ib .dot{position:absolute;top:6px;right:6px;width:8px;height:8px;border-radius:50%;background:var(--c-cartellino-500);border:2px solid #fff}
+
+.a-body{flex:1;min-height:0;overflow:auto;padding:12px 16px 16px;display:flex;flex-direction:column;gap:12px;overscroll-behavior:contain}
+.a-body.tight{padding-top:0}
+.a-card{background:var(--surface);border-radius:var(--r-md);box-shadow:var(--sh-card);padding:14px 16px}
+.a-card h3{font-size:var(--fs-h3);font-weight:700}
+.a-sec{display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin-top:4px}
+.a-sec b{font-family:var(--font-display);font-weight:700;font-size:15px;display:flex;align-items:center;gap:8px}
+.a-sec span{font-size:12px;color:var(--text-muted)}
+
+/* hero */
+.a-league{background:var(--surface);border-radius:12px;padding:12px 16px;font-family:var(--font-display);font-weight:700;font-size:20px;text-transform:uppercase;letter-spacing:.01em;box-shadow:var(--sh-card);display:flex;justify-content:space-between;align-items:center}
+.a-league .ic{color:var(--text-muted)}
+.a-herowrap{margin:-12px -16px 0;background:var(--grad-header);padding:12px 16px 0}
+.a-hero{position:relative;margin:12px -16px 0;background:var(--grad-hero);color:#fff;padding:14px 16px 46px;overflow:hidden;min-height:300px}
+.a-hero .tw{position:absolute;right:-30px;bottom:-16px;width:260px;height:230px;opacity:.07;color:#fff}
+.a-hero h2{font-size:26px;font-weight:800;text-align:center;text-shadow:0 2px 12px rgba(0,0,0,.25);position:relative}
+.a-hero .jersey{width:190px;height:190px;margin:10px auto 0;display:block;position:relative;filter:drop-shadow(0 14px 22px rgba(0,0,0,.35))}
+.a-hero .acts{position:absolute;right:14px;top:60px;display:flex;flex-direction:column;gap:12px}
+.a-hero .acts button{width:44px;height:44px;border-radius:50%;border:0;background:#fff;color:var(--c-titano-600);display:grid;place-items:center;box-shadow:0 4px 12px rgba(0,0,0,.25);cursor:pointer}
+.a-hero .acts button.gold{background:var(--c-oro-400);color:var(--c-titano-900)}
+.a-hero .logos{display:flex;justify-content:center;align-items:center;gap:14px;margin-top:14px;font-family:var(--font-display);font-weight:700;letter-spacing:.08em;font-size:12px;text-transform:uppercase;opacity:.95;position:relative}
+.a-hero .logos svg{width:30px;height:26px}
+.a-hero .logos i{width:1px;height:18px;background:rgba(255,255,255,.4)}
+.a-hero .conf{position:absolute;inset:0;pointer-events:none}
+.a-stats{margin-top:-32px;position:relative;display:grid;grid-template-columns:repeat(4,1fr);text-align:center;padding:12px 4px}
+.a-stats div+div{border-left:1px solid var(--border)}
+.a-stats b{display:block;font-family:var(--font-display);font-weight:700;font-size:24px;font-variant-numeric:tabular-nums;line-height:1.1}
+.a-stats b sup{font-size:12px;vertical-align:top;margin-left:1px}
+.a-stats span{font-size:11px;color:var(--text-muted);letter-spacing:.02em}
+
+/* badge stato dato */
+.badge{display:inline-flex;align-items:center;gap:6px;padding:4px 10px 4px 8px;border-radius:var(--r-chip);font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;white-space:nowrap;max-width:100%}
+.badge .ic{width:14px;height:14px;stroke-width:2.2}
+.badge--prov{background:var(--warning-soft);color:var(--warning)}
+.badge--froz{background:var(--primary-soft);color:var(--stato-congelato)}
+.badge--live{background:var(--positive-soft);color:var(--positive)}
+.badge--open{background:var(--accent-soft);color:var(--c-oro-600)}
+:root[data-theme="dark"] .badge--open{color:var(--accent)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .badge--open{color:var(--accent)}}
+.badge small{font-weight:500;letter-spacing:0;text-transform:none;opacity:.9}
+.pulse{width:8px;height:8px;border-radius:50%;background:var(--positive);animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(30,158,106,.5)}50%{box-shadow:0 0 0 6px rgba(30,158,106,0)}}
+
+/* fase card */
+.a-fase{display:flex;flex-direction:column;gap:10px}
+.a-fase .r{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.a-fase .r p{font-size:13px;color:var(--text-muted)}
+.a-fase .r p b{color:var(--text);font-weight:600}
+.a-link{color:var(--primary);font-weight:600;font-size:13px;text-decoration:none;white-space:nowrap}
+
+/* bottone */
+.a-btn{display:flex;align-items:center;justify-content:center;gap:8px;height:48px;border-radius:12px;border:0;background:var(--grad-oro);color:var(--on-accent);font-family:var(--font-display);font-weight:700;font-size:14px;letter-spacing:.06em;text-transform:uppercase;width:100%;cursor:pointer;box-shadow:0 4px 12px rgba(229,161,27,.35)}
+.a-btn.sec{background:transparent;color:var(--primary);border:1.5px solid var(--primary);box-shadow:none}
+.a-btn.danger{background:var(--negative);color:#fff;box-shadow:none}
+.a-btn[disabled]{opacity:.45;cursor:not-allowed;box-shadow:none}
+
+/* match card */
+.a-match{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:8px;padding:14px 12px 10px}
+.a-match .tm{display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center;min-width:0}
+.a-match .tm b{font-size:13px;font-weight:600;line-height:1.2}
+.a-match .tm span{font-size:11px;color:var(--text-muted)}
+.crest{width:56px;height:56px;border-radius:50%;display:grid;place-items:center;font-family:var(--font-display);font-weight:800;font-size:16px;color:#fff;border:3px solid var(--surface);box-shadow:0 0 0 2px var(--border)}
+.crest.sm{width:34px;height:34px;font-size:11px;border-width:2px}
+.a-match .vs{width:40px;height:40px;border-radius:50%;background:var(--surface-sunk);display:grid;place-items:center;font-size:11px;font-weight:700;color:var(--text-muted);letter-spacing:.06em}
+.a-match .vs.score{font-family:var(--font-display);font-size:18px;color:var(--text);width:auto;padding:0 12px;border-radius:12px;font-variant-numeric:tabular-nums;letter-spacing:0}
+.a-match .fp{grid-column:1/-1;display:grid;grid-template-columns:1fr auto 1fr;font-family:var(--font-data);font-size:12px;color:var(--text-muted);text-align:center;border-top:1px solid var(--border);padding-top:8px;margin-top:4px}
+.a-match .fp b{color:var(--text);font-weight:500}
+.a-match .fp em{font-style:normal;font-size:10px;letter-spacing:.06em;text-transform:uppercase}
+
+/* regola */
+.a-rule{display:flex;gap:12px;align-items:flex-start;border-left:3px solid var(--accent)}
+.a-rule .art{font-family:var(--font-data);font-size:11px;color:var(--text-muted);white-space:nowrap;padding-top:2px}
+.a-rule p{font-size:13px}
+.a-rule p b{font-weight:600}
+
+/* bottom nav */
+.a-nav{flex:none;height:64px;background:var(--surface);box-shadow:var(--sh-nav);display:grid;grid-template-columns:repeat(5,1fr);padding:6px 4px 10px;position:relative;z-index:3}
+.a-nav button{border:0;background:transparent;color:var(--text-muted);display:flex;flex-direction:column;align-items:center;gap:3px;font-family:var(--font-body);font-size:11px;font-weight:500;cursor:pointer;position:relative;padding:0;border-radius:8px}
+.a-nav button.on{color:var(--primary);font-weight:600}
+.a-nav button .dot{position:absolute;top:0;right:calc(50% - 16px);width:8px;height:8px;border-radius:50%;background:var(--c-cartellino-500);border:2px solid var(--surface)}
+.a-nav button:focus-visible,.a-appbar .ib:focus-visible,.a-btn:focus-visible,.chip:focus-visible,.vr:focus-visible{outline:2px solid var(--primary);outline-offset:2px}
+
+/* drawer */
+.a-drawer{position:absolute;inset:0;z-index:10;display:none}
+.a-drawer.on{display:block}
+.a-drawer .scrim{position:absolute;inset:0;background:rgba(4,31,51,.45)}
+.a-drawer .panel{position:absolute;top:0;bottom:0;left:0;width:84%;background:var(--surface);border-radius:36px 0 0 36px;overflow:auto;display:flex;flex-direction:column;box-shadow:var(--sh-raise)}
+.d-head{background:var(--grad-header);color:#fff;padding:52px 18px 18px;border-radius:0 0 18px 18px;display:flex;justify-content:space-between;align-items:flex-end;gap:10px}
+.d-head b{display:block;font-family:var(--font-display);font-weight:700;font-size:20px;color:var(--c-oro-400)}
+.d-head span{font-size:13px;opacity:.9}
+.d-head button{border:0;background:var(--c-titano-700);color:#fff;font-family:var(--font-display);font-weight:700;font-size:12px;letter-spacing:.08em;padding:9px 14px;border-radius:999px;cursor:pointer}
+.d-league{display:flex;justify-content:space-between;align-items:center;padding:16px 18px;background:var(--surface-sunk);font-family:var(--font-display);font-weight:700;font-size:18px;text-transform:uppercase;color:var(--primary)}
+.d-league i{width:34px;height:34px;border-radius:50%;background:var(--primary);color:#fff;display:grid;place-items:center;font-style:normal;font-size:22px;line-height:1}
+.d-cta{margin:14px 16px 6px}
+.d-sec{padding:12px 16px 4px}
+.d-sec .chip{display:inline-block;background:var(--primary-soft);color:var(--primary);font-weight:600;font-size:14px;padding:5px 16px;border-radius:999px}
+.d-sec.admin .chip{background:var(--accent-soft);color:var(--c-oro-600)}
+.d-item{display:flex;align-items:center;gap:14px;padding:11px 16px;font-size:16px;font-weight:600;color:var(--text)}
+.d-item i{width:34px;height:34px;border-radius:8px;background:var(--primary);color:#fff;display:grid;place-items:center;flex:none}
+.d-item i .ic{width:20px;height:20px}
+.d-item small{margin-left:auto;font-size:11px;color:var(--text-muted);font-weight:500}
+.d-item.lock{color:var(--text-muted)}
+.d-item.lock i{background:var(--surface-sunk);color:var(--text-muted)}
+
+/* chip ruolo */
+.rl{width:22px;height:22px;border-radius:50%;display:inline-grid;place-items:center;color:#fff;font-family:var(--font-display);font-weight:700;font-size:11px;flex:none}
+.rl-p{background:var(--ruolo-p)}.rl-d{background:var(--ruolo-d)}.rl-c{background:var(--ruolo-c)}.rl-a{background:var(--ruolo-a)}
+
+/* riga voto */
+.vlist{display:flex;flex-direction:column;background:var(--surface);border-radius:var(--r-md);box-shadow:var(--sh-card);overflow:hidden}
+.vhead{padding:10px 14px;background:var(--surface-2);display:flex;justify-content:space-between;align-items:center;font-family:var(--font-display);font-weight:700;font-size:12px;letter-spacing:.06em;text-transform:uppercase}
+.vhead span{font-family:var(--font-body);font-weight:500;letter-spacing:0;text-transform:none;color:var(--text-muted);font-size:11px}
+.vr{display:grid;grid-template-columns:auto 1fr auto auto;align-items:center;gap:10px;padding:10px 14px;border-top:1px solid var(--border);background:transparent;border-left:0;border-right:0;border-bottom:0;width:100%;text-align:left;font-family:inherit;color:inherit;cursor:pointer}
+.vr .nm{min-width:0}
+.vr .nm b{display:block;font-weight:600;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.vr .nm span{font-size:11px;color:var(--text-muted)}
+.vr .ev{display:flex;gap:4px;align-items:center;font-size:11px;font-family:var(--font-data);color:var(--text-muted)}
+.vr .ev i{display:inline-grid;place-items:center;width:18px;height:18px;border-radius:4px;font-style:normal;font-size:10px;font-weight:700}
+.ev-g{background:var(--positive-soft);color:var(--positive)}.ev-a{background:var(--primary-soft);color:var(--primary)}.ev-y{background:var(--warning-soft);color:var(--warning)}.ev-r{background:var(--negative-soft);color:var(--negative)}.ev-k{background:var(--accent-soft);color:var(--c-oro-600)}
+.vr .fv{font-family:var(--font-display);font-weight:700;font-size:18px;font-variant-numeric:tabular-nums;min-width:40px;text-align:right}
+.vr .fv.sv{color:var(--text-muted);font-size:13px;font-weight:600}
+.vr .fv.cap::after{content:"C";display:inline-grid;place-items:center;width:14px;height:14px;border-radius:50%;background:var(--accent);color:var(--on-accent);font-size:9px;margin-left:4px;vertical-align:middle}
+.vb{display:none;padding:4px 14px 12px 46px;font-family:var(--font-data);font-size:12px;border-top:1px dashed var(--border);background:var(--surface-2)}
+.vb.on{display:block}
+.vb div{display:grid;grid-template-columns:1fr auto;gap:12px;padding:3px 0}
+.vb div em{display:block;font-style:normal;color:var(--text-muted);font-size:11px}
+.vb div.tot{border-top:1px solid var(--border-strong);margin-top:4px;padding-top:6px;font-weight:500;color:var(--text)}
+.vb a{display:inline-block;margin-top:8px;font-family:var(--font-body);font-size:12px;font-weight:600}
+
+/* filtri chip */
+.chips{display:flex;gap:8px;overflow-x:auto;padding-bottom:2px;scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.chip{flex:none;border:1px solid var(--border-strong);background:var(--surface);color:var(--text);font:600 12px var(--font-body);padding:7px 12px;border-radius:999px;cursor:pointer}
+.chip.on{background:var(--primary);color:var(--on-primary);border-color:var(--primary)}
+.chip.mod{font-family:var(--font-display);font-weight:700;font-size:13px;letter-spacing:.02em}
+
+/* formazione */
+.pitch{position:relative;background:linear-gradient(180deg,#2f9e5f,#268a51);border-radius:12px;padding:12px 10px;color:#fff;display:flex;flex-direction:column;gap:10px;box-shadow:inset 0 0 0 2px rgba(255,255,255,.35)}
+.pitch::before{content:"";position:absolute;left:10px;right:10px;top:50%;height:1px;background:rgba(255,255,255,.4)}
+.pitch::after{content:"";position:absolute;left:50%;top:50%;width:70px;height:70px;border-radius:50%;border:1px solid rgba(255,255,255,.4);transform:translate(-50%,-50%)}
+.line{display:flex;justify-content:space-evenly;position:relative;z-index:1}
+.slot{display:flex;flex-direction:column;align-items:center;gap:3px;width:68px;position:relative}
+.slot .av{width:40px;height:40px;border-radius:50%;background:#fff;color:var(--c-titano-800);display:grid;place-items:center;font-family:var(--font-display);font-weight:800;font-size:13px;box-shadow:0 3px 8px rgba(0,0,0,.25);position:relative}
+.slot .av .rl{position:absolute;bottom:-4px;right:-4px;width:18px;height:18px;font-size:9px;border:2px solid #fff}
+.slot .av .cap{position:absolute;top:-6px;left:-6px;width:18px;height:18px;border-radius:50%;background:var(--c-oro-400);color:var(--c-titano-900);font:800 10px var(--font-display);display:grid;place-items:center;border:2px solid #fff}
+.slot b{font-size:10px;font-weight:600;text-align:center;line-height:1.1;text-shadow:0 1px 2px rgba(0,0,0,.4);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:68px}
+.slot.empty .av{background:rgba(255,255,255,.18);border:1.5px dashed rgba(255,255,255,.7);color:#fff;box-shadow:none}
+.bench{display:flex;flex-direction:column;background:var(--surface);border-radius:var(--r-md);box-shadow:var(--sh-card);overflow:hidden}
+.bench .br{display:grid;grid-template-columns:auto auto 1fr auto;align-items:center;gap:10px;padding:9px 14px;border-top:1px solid var(--border);font-size:13px}
+.bench .br:first-of-type{border-top:0}
+.bench .br .n{font-family:var(--font-data);font-size:11px;color:var(--text-muted);width:14px}
+.bench .br b{font-weight:600}
+.bench .br .h{color:var(--border-strong)}
+.bench .br small{color:var(--text-muted);font-size:11px;margin-left:6px}
+
+/* classifica */
+.tbl{width:100%;border-collapse:collapse;font-size:12px;background:var(--surface);border-radius:var(--r-md);box-shadow:var(--sh-card);overflow:hidden}
+.tbl th{font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:var(--text-muted);font-weight:600;padding:8px 6px;text-align:center;background:var(--surface-2)}
+.tbl th:nth-child(2){text-align:left}
+.tbl td{padding:8px 6px;text-align:center;border-top:1px solid var(--border);font-variant-numeric:tabular-nums;font-family:var(--font-display);font-weight:500}
+.tbl td:nth-child(2){text-align:left;font-family:var(--font-body);font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:120px}
+.tbl td.pt{font-weight:800;font-size:14px}
+.tbl tr.me td{background:var(--primary-soft)}
+.tbl tr.me td:first-child{box-shadow:inset 3px 0 0 var(--primary)}
+.tbl td .pos{font-size:10px}
+.tie{font-size:11px;color:var(--text-muted);padding:0 4px;line-height:1.5}
+.tie b{font-weight:600;color:var(--text)}
+
+/* calendario */
+.gsel{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;margin:0 -16px;padding:0 16px}
+.gsel::-webkit-scrollbar{display:none}
+.gsel button{flex:none;border:0;background:transparent;font:700 13px var(--font-display);color:var(--text-muted);padding:8px 10px;border-radius:8px;position:relative;cursor:pointer}
+.gsel button.on{color:var(--primary)}
+.gsel button.on::after{content:"";position:absolute;left:50%;bottom:2px;width:6px;height:6px;border-radius:50%;background:var(--primary);transform:translateX(-50%)}
+.real{display:flex;flex-direction:column;background:var(--surface);border-radius:var(--r-md);box-shadow:var(--sh-card);overflow:hidden}
+.real .rr{display:grid;grid-template-columns:1fr auto auto;align-items:center;gap:10px;padding:10px 14px;border-top:1px solid var(--border)}
+.real .rr:first-child{border-top:0}
+.real .rr b{display:block;font-weight:600;font-size:13px}
+.real .rr span{font-size:11px;color:var(--text-muted)}
+.real .rr .sc{font-family:var(--font-display);font-weight:700;font-size:14px;font-variant-numeric:tabular-nums}
+.real .rr .sc.st{font-family:var(--font-body);font-size:10px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--warning)}
+.real .rr .play{color:var(--primary)}
+
+/* dettaglio partita */
+.mh{background:var(--grad-hero);color:#fff;margin:-12px -16px 0;padding:16px 16px 18px;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:8px;text-align:center}
+.mh .tm b{display:block;font-size:13px;font-weight:600;margin-top:6px}
+.mh .tm .crest{margin:0 auto}
+.mh .sc{font-family:var(--font-display);font-weight:800;font-size:40px;line-height:1;font-variant-numeric:tabular-nums}
+.mh .sc small{display:block;font-family:var(--font-data);font-size:12px;font-weight:500;opacity:.85;margin-top:4px}
+.sub{display:grid;grid-template-columns:auto 1fr auto;gap:8px;align-items:center;padding:8px 14px;border-top:1px solid var(--border);font-size:12px;line-height:1.3;background:var(--warning-soft)}
+.sub .arr{font-family:var(--font-data);font-size:11px;color:var(--warning);font-weight:500}
+.sub s{color:var(--text-muted)}
+.sub b{font-weight:600}
+.sub .fv{font-family:var(--font-display);font-weight:700;font-size:16px;line-height:1;align-self:center}
+.formula{font-family:var(--font-data);font-size:11px;color:var(--text-muted);line-height:1.6}
+.formula b{color:var(--text);font-weight:500}
+
+/* admin */
+.prog{height:8px;background:var(--surface-sunk);border-radius:999px;overflow:hidden}
+.prog i{display:block;height:100%;width:62.5%;background:var(--primary);border-radius:999px}
+.mrow{display:grid;grid-template-columns:auto 1fr auto auto;align-items:center;gap:10px;padding:11px 14px;border-top:1px solid var(--border);font-size:13px}
+.mrow:first-child{border-top:0}
+.mrow .st{width:22px;height:22px;border-radius:50%;display:grid;place-items:center;font:700 11px var(--font-display)}
+.st-ok{background:var(--positive-soft);color:var(--positive)}.st-ip{background:var(--warning-soft);color:var(--warning)}.st-td{background:var(--surface-sunk);color:var(--text-muted);border:1.5px dashed var(--border-strong)}
+.mrow b{display:block;font-weight:600}
+.mrow span{font-size:11px;color:var(--text-muted)}
+.mrow .sc{font-family:var(--font-display);font-weight:700;font-variant-numeric:tabular-nums}
+.tl{display:flex;flex-direction:column;background:var(--surface);border-radius:var(--r-md);box-shadow:var(--sh-card);overflow:hidden}
+.tl .te{display:grid;grid-template-columns:44px auto 1fr auto;align-items:center;gap:10px;padding:9px 14px;border-top:1px solid var(--border);font-size:13px}
+.tl .te:first-child{border-top:0}
+.tl .te .min{font-family:var(--font-data);font-size:12px;color:var(--text-muted)}
+.tl .te b{font-weight:600}
+.tl .te span{font-size:11px;color:var(--text-muted);display:block}
+.tl .te .undo{color:var(--text-muted)}
+.kb{background:var(--surface);border-radius:20px 20px 0 0;margin:auto -16px -16px;padding:12px 16px 18px;box-shadow:var(--sh-nav);display:grid;grid-template-columns:repeat(4,1fr);gap:8px;flex:none}
+.kb .k{border:0;border-radius:10px;padding:10px 4px;display:flex;flex-direction:column;align-items:center;gap:4px;font:600 11px var(--font-body);cursor:pointer;background:var(--surface-sunk);color:var(--text)}
+.kb .k i{font-style:normal;font-family:var(--font-display);font-weight:800;font-size:16px;line-height:1}
+.kb .k.g{background:var(--positive-soft);color:var(--positive)}.kb .k.r{background:var(--negative-soft);color:var(--negative)}.kb .k.y{background:var(--warning-soft);color:var(--warning)}.kb .k.k2{opacity:.45}
+.kb .handle{grid-column:1/-1;width:36px;height:4px;border-radius:2px;background:var(--border-strong);margin:0 auto 2px}
+.warn{display:flex;gap:10px;align-items:flex-start;border-radius:10px;padding:10px 12px;font-size:12px}
+.warn.block{background:var(--negative-soft);color:var(--negative)}
+.warn.info{background:var(--primary-soft);color:var(--primary)}
+.warn b{font-weight:700}
+
+/* congela */
+.freeze{background:var(--c-cartellino-600);color:#fff;flex:1;display:flex;flex-direction:column;padding:56px 20px 24px;gap:14px;overflow:auto}
+.freeze h2{font-size:28px;font-weight:800;text-transform:uppercase;letter-spacing:-.01em}
+.freeze .chk{display:flex;flex-direction:column;gap:8px;background:rgba(0,0,0,.18);border-radius:12px;padding:12px 14px;font-size:13px}
+.freeze .chk div{display:flex;gap:10px;align-items:center}
+.freeze .chk .ic{width:18px;height:18px;stroke-width:2.4;color:#9BF0C4}
+.freeze .art{font-size:12px;opacity:.9;line-height:1.5;border-left:2px solid rgba(255,255,255,.5);padding-left:10px}
+.freeze input{width:100%;height:48px;border-radius:12px;border:2px solid rgba(255,255,255,.5);background:rgba(0,0,0,.2);color:#fff;font:600 16px var(--font-data);padding:0 14px;letter-spacing:.1em}
+.freeze input::placeholder{color:rgba(255,255,255,.55);letter-spacing:0;font-family:var(--font-body);font-weight:400}
+.freeze .a-btn{background:#fff;color:var(--c-cartellino-600);margin-top:auto}
+
+@media (prefers-reduced-motion:reduce){.pulse{animation:none}*{transition:none!important}}
+</style>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-towers" viewBox="0 0 64 56">
+    <!-- Guaita, Cesta, Montale: tre torri merlate su tre cime -->
+    <path d="M2 54 L14 30 L26 54 Z M22 54 L36 22 L50 54 Z M42 54 L54 34 L62 54 Z" fill="currentColor" opacity=".35"/>
+    <path d="M9 36h10v-8h-2v3h-2v-3h-2v3h-2v-3h-2zM30 22h12V12h-2v3h-2v-3h-2v3h-2v-3h-2zM50 34h9v-7h-2v2h-1.5v-2h-2v2H52v-2h-2z" fill="currentColor"/>
+    <path d="M36 12V4l5 2-5 2" fill="currentColor"/>
+    <rect x="9" y="36" width="10" height="18" fill="currentColor"/><rect x="30" y="22" width="12" height="32" fill="currentColor"/><rect x="50" y="34" width="9" height="20" fill="currentColor"/>
+  </symbol>
+  <symbol id="i-menu" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></symbol>
+  <symbol id="i-bell" viewBox="0 0 24 24"><path d="M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15zM10 20a2 2 0 0 0 4 0"/></symbol>
+  <symbol id="i-chat" viewBox="0 0 24 24"><path d="M4 5h16v11H9l-5 4z"/></symbol>
+  <symbol id="i-home" viewBox="0 0 24 24"><path d="M3 11l9-7 9 7v9h-6v-6H9v6H3z"/></symbol>
+  <symbol id="i-shirt" viewBox="0 0 24 24"><path d="M8 3l4 2 4-2 5 4-3 3-1-1v12H7V9L6 10 3 7z"/></symbol>
+  <symbol id="i-cal" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></symbol>
+  <symbol id="i-medal" viewBox="0 0 24 24"><circle cx="12" cy="15" r="5"/><path d="M8 3l3 7M16 3l-3 7M8 3h8"/></symbol>
+  <symbol id="i-votes" viewBox="0 0 24 24"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 8h6M9 12h6M9 16h3"/></symbol>
+  <symbol id="i-share" viewBox="0 0 24 24"><path d="M12 3v12M8 7l4-4 4 4M5 13v6h14v-6"/></symbol>
+  <symbol id="i-gear" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M5.6 18.4l2.1-2.1M16.3 7.7l2.1-2.1"/></symbol>
+  <symbol id="i-cart" viewBox="0 0 24 24"><path d="M3 4h3l2 11h10l2-7H7"/><circle cx="9" cy="19" r="1.5"/><circle cx="17" cy="19" r="1.5"/></symbol>
+  <symbol id="i-lock" viewBox="0 0 24 24"><rect x="5" y="10" width="14" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></symbol>
+  <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M12 8v4l3 2"/></symbol>
+  <symbol id="i-play" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M10 9l5 3-5 3z"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="M5 12l5 5 9-10"/></symbol>
+  <symbol id="i-chev" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></symbol>
+  <symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 3l7 3v6c0 4-3 7-7 9-4-2-7-5-7-9V6z"/></symbol>
+  <symbol id="i-users" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3"/><path d="M3 19a6 6 0 0 1 12 0M16 5a3 3 0 0 1 0 6M21 19a6 6 0 0 0-5-6"/></symbol>
+  <symbol id="i-book" viewBox="0 0 24 24"><path d="M5 4h6a3 3 0 0 1 3 3v13a2 2 0 0 0-2-2H5zM19 4h-6a2 2 0 0 0-2 2v14a2 2 0 0 1 2-2h6z"/></symbol>
+  <symbol id="i-cup" viewBox="0 0 24 24"><path d="M7 4h10v5a5 5 0 0 1-10 0zM17 6h3v2a3 3 0 0 1-3 3M7 6H4v2a3 3 0 0 0 3 3M12 14v4M8 20h8"/></symbol>
+  <symbol id="i-list" viewBox="0 0 24 24"><path d="M8 7h12M8 12h12M8 17h12M4 7h.01M4 12h.01M4 17h.01"/></symbol>
+  <symbol id="i-out" viewBox="0 0 24 24"><path d="M14 4h6v6M20 4l-8 8M12 4H5v15h15v-7"/></symbol>
+  <symbol id="i-star" viewBox="0 0 24 24"><path d="M12 3l2.8 5.7 6.2.9-4.5 4.4 1 6.2L12 17.3 6.5 20.2l1-6.2L3 9.6l6.2-.9z"/></symbol>
+  <symbol id="i-img" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 16l5-5 4 4 3-3 6 6"/><circle cx="16" cy="9" r="1.5"/></symbol>
+  <symbol id="i-edit" viewBox="0 0 24 24"><path d="M4 20h4l11-11-4-4L4 16zM13 7l4 4"/></symbol>
+  <symbol id="i-calc" viewBox="0 0 24 24"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M8 7h8M8 12h2M12 12h2M16 12h.01M8 16h2M12 16h2M16 16h.01"/></symbol>
+  <symbol id="i-flag" viewBox="0 0 24 24"><path d="M5 21V4h11l-2 4 2 4H5"/></symbol>
+  <symbol id="i-archive" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="5"/><path d="M5 9v11h14V9M10 13h4"/></symbol>
+  <symbol id="i-undo" viewBox="0 0 24 24"><path d="M9 14L4 9l5-5M4 9h10a6 6 0 0 1 0 12h-3"/></symbol>
+  <symbol id="i-warn" viewBox="0 0 24 24"><path d="M12 3l10 18H2zM12 10v5M12 18h.01"/></symbol>
+  <symbol id="i-jersey" viewBox="0 0 120 120">
+    <path d="M40 10l20 8 20-8 28 16-12 18-8-4v70H32V40l-8 4L12 26z" fill="var(--j1,#1B84C6)"/>
+    <path d="M32 40v70h56V40l8 4 12-18-6-3.5L90 40l-8-4v60H38V36l-8 4L18 22.5 12 26l12 18z" fill="var(--j2,#0E5E93)" opacity=".55"/>
+    <path d="M40 10l20 8 20-8-3 6-17 8-17-8z" fill="#fff" opacity=".9"/>
+    <path d="M44 62h32M44 72h32" stroke="#fff" stroke-width="3" stroke-linecap="round" opacity=".85"/>
+    <circle cx="48" cy="46" r="4" fill="var(--c-oro-400)"/>
+  </symbol>
+</svg>
+
+<div class="wrap">
+
+<!-- ============================ INTRO ============================ -->
+<header class="intro">
+  <div>
+    <span class="brandmark"><svg><use href="#i-towers"/></svg> Design kit · v0.1 · Voto Titano</span>
+    <h1 style="margin-top:14px">Fantacampionato<br><span>Sammarinese</span></h1>
+    <p class="lede">La grammatica di interfaccia di <strong>Leghe Fantacalcio</strong> — drawer a sezioni, hero con la maglia, barra statistiche, bottom bar a cinque voci — riscritta sull'<strong>Azzurro Titano</strong> e sull'<strong>Oro Corona</strong> di San Marino, e sul fantacalcio senza pagelle: ogni voto nasce da eventi oggettivi, ogni giornata è prima <strong>provvisoria</strong> e poi <strong>congelata</strong>.</p>
+    <div class="facts">
+      <div class="fact"><b>16</b><span>società reali, campi neutri, nessun casa/trasferta</span></div>
+      <div class="fact"><b>30</b><span>giornate, una a settimana, lock alla prima gara</span></div>
+      <div class="fact"><b>&lt; 10′</b><span>di data entry a partita: l'admin è la prima schermata</span></div>
+    </div>
+  </div>
+  <div>
+    <div class="phone" id="hero-phone"></div>
+    <p class="hint"><svg class="ic sm"><use href="#i-chev"/></svg> Prototipo navigabile: bottom bar, hamburger, righe voto, moduli</p>
+  </div>
+</header>
+
+<!-- ============================ COLORI ============================ -->
+<section class="kit" id="colori">
+  <div class="kit-head">
+    <div><span class="eyebrow">01 · Colori</span><h2>Bandiera e stemma, non Serie A</h2></div>
+    <p>L'azzurro della bandiera sammarinese, saturato di un passo per reggere il testo bianco, sostituisce il blu royal di Leghe Fantacalcio. L'oro della corona prende il posto del giallo Premium e diventa il colore dell'<strong>azione settimanale</strong>: schierare la formazione. I neutri sono pietra del Titano con bias azzurro, mai grigio puro. <strong>Ambra</strong> e <strong>azzurro con lucchetto</strong> sono riservati allo stato del dato.</p>
+  </div>
+  <div class="sw-group"><h3>Brand</h3>
+    <div class="swatches">
+      <div class="sw" style="--sw:#1B84C6"><i></i><div><b>Azzurro Titano</b><code>#1B84C6</code><small>Primario · app bar, nav attiva, link</small></div></div>
+      <div class="sw" style="--sw:#0E5E93"><i></i><div><b>Titano 600</b><code>#0E5E93</code><small>Hover, badge Congelato, testo su chiaro</small></div></div>
+      <div class="sw" style="--sw:#072F4C"><i></i><div><b>Blu Notte</b><code>#072F4C</code><small>Fondo hero, scheda condivisibile</small></div></div>
+      <div class="sw" style="--sw:#E5A11B"><i></i><div><b>Oro Corona</b><code>#E5A11B</code><small>CTA primaria, capitano, medaglie</small></div></div>
+      <div class="sw" style="--sw:#FFC94D"><i></i><div><b>Oro 400</b><code>#FFC94D</code><small>Username nel drawer, accento su scuro</small></div></div>
+      <div class="sw" style="--sw:#EEF2F7"><i></i><div><b>Pietra 100</b><code>#EEF2F7</code><small>Fondo pagina · tema chiaro</small></div></div>
+      <div class="sw" style="--sw:#5A7591"><i></i><div><b>Pietra 500</b><code>#5A7591</code><small>Testo secondario, label</small></div></div>
+      <div class="sw" style="--sw:#0C2C45"><i></i><div><b>Pietra 900</b><code>#0C2C45</code><small>Testo principale</small></div></div>
+    </div>
+  </div>
+  <div class="sw-group"><h3>Stato e semantica</h3>
+    <div class="swatches">
+      <div class="sw" style="--sw:#D98A15"><i></i><div><b>Ambra · Provvisorio</b><code>#D98A15</code><small>Dato non ancora congelato, contestazioni aperte</small></div></div>
+      <div class="sw" style="--sw:#0E5E93"><i></i><div><b>Congelato</b><code>#0E5E93</code><small>Giornata immutabile (art. 9.2), sempre con lucchetto</small></div></div>
+      <div class="sw" style="--sw:#1E9E6A"><i></i><div><b>Verde Alloro</b><code>#1E9E6A</code><small>Live, bonus, porta inviolata · mai sui bottoni</small></div></div>
+      <div class="sw" style="--sw:#CE3B3B"><i></i><div><b>Rosso Cartellino</b><code>#CE3B3B</code><small>Malus, espulsioni, azione irreversibile</small></div></div>
+    </div>
+  </div>
+  <div class="sw-group"><h3>Ruoli di listone — stesso colore in tutta l'app</h3>
+    <div class="swatches">
+      <div class="sw" style="--sw:#E5A11B"><i></i><div><b>P · Portiere</b><code>#E5A11B</code><small>Gol +6,0 · porta inviolata +3,0</small></div></div>
+      <div class="sw" style="--sw:#1E9E6A"><i></i><div><b>D · Difensore</b><code>#1E9E6A</code><small>Gol +4,0 · porta inviolata +1,5</small></div></div>
+      <div class="sw" style="--sw:#1B84C6"><i></i><div><b>C · Centrocampista</b><code>#1B84C6</code><small>Gol +3,5</small></div></div>
+      <div class="sw" style="--sw:#CE3B3B"><i></i><div><b>A · Attaccante</b><code>#CE3B3B</code><small>Gol +3,0</small></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ TIPOGRAFIA ============================ -->
+<section class="kit" id="tipografia">
+  <div class="kit-head">
+    <div><span class="eyebrow">02 · Tipografia</span><h2>Tre voci, tre ruoli</h2></div>
+    <p>Leghe Fantacalcio usa un'unica grottesca arrotondata. Qui i ruoli si separano: <strong>Archivo</strong> per titoli e numeri (condensata, sportiva, cifre tabulari), <strong>Asap</strong> per il corpo e i controlli, <strong>IBM Plex Mono</strong> dove il numero deve allinearsi al centesimo: minuti, codici evento, breakdown del voto. Decimali con la virgola, sempre.</p>
+  </div>
+  <div class="type">
+    <div><span class="eyebrow">Archivo · display e numeri</span>
+      <div class="spec-display">Hasta El Chapo FC<small>I Sudati di RSM</small></div>
+      <div class="spec-stat"><div><b>8ª</b><span>Posizione</span></div><div><b>0</b><span>Punti</span></div><div><b>1</b><span>Partite</span></div><div><b>70,5</b><span>Fantapunti</span></div></div>
+    </div>
+    <div><span class="eyebrow">Asap · corpo e interfaccia</span>
+      <div class="spec-body"><h4>Formazione non consegnata</h4><p>Il lock è scattato sabato alle 15:00. Vale l'ultima formazione valida, quella della giornata 2. Alla prima giornata si applica il 4-4-2 con i giocatori di quotazione più alta per ruolo.</p></div>
+    </div>
+    <div><span class="eyebrow">IBM Plex Mono · dato tecnico</span>
+<div class="spec-mono">Voto base            6,0
+Esito collettivo    <span class="pos">+0,5</span>   vittoria · 90'
+Gol × 1             <span class="pos">+3,5</span>   centrocampista
+Ammonizione         <span class="neg">−0,5</span>
+──────────────────────────
+Fantavoto            9,5</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ COMPONENTI ============================ -->
+<section class="kit" id="componenti">
+  <div class="kit-head">
+    <div><span class="eyebrow">03 · Componenti</span><h2>Ciò che l'app italiana non ha</h2></div>
+    <p>Card, app bar e bottom bar sono ereditate. Questi quattro componenti nascono dal regolamento e compaiono ovunque con la stessa forma: il <strong>badge di stato del dato</strong>, la <strong>riga voto</strong> che si apre nel breakdown, il <strong>chip ruolo</strong> e la <strong>card partita</strong> con la conversione in gol.</p>
+  </div>
+  <div class="comps">
+    <div class="comp"><span class="eyebrow">Badge stato dato</span>
+      <div class="demo">
+        <span class="badge badge--open"><svg class="ic"><use href="#i-clock"/></svg>Aperta <small>· lock sab 15:00</small></span>
+        <span class="badge badge--live"><i class="pulse"></i>Live in corso</span>
+        <span class="badge badge--prov"><svg class="ic"><use href="#i-clock"/></svg>Provvisorio <small>· contestazioni fino a mar 18:00</small></span>
+        <span class="badge badge--froz"><svg class="ic"><use href="#i-lock"/></svg>Congelato <small>· mar 20:00</small></span>
+      </div>
+      <p>In testa a Voti, Classifica, Dettaglio partita e Dashboard. Mai sotto la piega: l'utente deve sempre sapere quale dei due dati sta guardando (README §8).</p>
+    </div>
+    <div class="comp"><span class="eyebrow">Riga voto + breakdown</span>
+      <div class="demo" style="padding:0;background:transparent">
+        <div class="vlist">
+          <button class="vr" data-toggle>
+            <span class="rl rl-c">C</span>
+            <span class="nm"><b>M. Gasperoni</b><span>Tre Fiori · 90'</span></span>
+            <span class="ev"><i class="ev-g">G</i><i class="ev-y">A</i></span>
+            <span class="fv cap">9,5</span>
+          </button>
+          <div class="vb on">
+            <div><span>Voto base</span><span>6,0</span></div>
+            <div><span>Esito collettivo<em>vittoria · 90'</em></span><span class="pos">+0,5</span></div>
+            <div><span>Gol × 1<em>centrocampista · ×2 capitano</em></span><span class="pos">+7,0</span></div>
+            <div><span>Ammonizione<em>×2 capitano</em></span><span class="neg">−1,0</span></div>
+            <div class="tot"><span>Fantavoto</span><span>12,5</span></div>
+            <a href="#" onclick="return false">Segnala un errore</a>
+          </div>
+        </div>
+      </div>
+      <p>Il fantavoto non è mai un numero nudo. Il capitano raddoppia bonus e malus, non il voto base (art. 6.2): il ×2 sta sulle righe evento.</p>
+    </div>
+    <div class="comp"><span class="eyebrow">Chip ruolo · eventi</span>
+      <div class="demo row">
+        <span class="rl rl-p">P</span><span class="rl rl-d">D</span><span class="rl rl-c">C</span><span class="rl rl-a">A</span>
+        <span style="width:1px;height:22px;background:var(--border-strong)"></span>
+        <span class="ev" style="display:flex;gap:4px"><i class="ev-g" style="display:inline-grid;place-items:center;width:18px;height:18px;border-radius:4px;font-style:normal;font-size:10px;font-weight:700">G</i><i class="ev-a" style="display:inline-grid;place-items:center;width:18px;height:18px;border-radius:4px;font-style:normal;font-size:10px;font-weight:700">As</i><i class="ev-y" style="display:inline-grid;place-items:center;width:18px;height:18px;border-radius:4px;font-style:normal;font-size:10px;font-weight:700">A</i><i class="ev-r" style="display:inline-grid;place-items:center;width:18px;height:18px;border-radius:4px;font-style:normal;font-size:10px;font-weight:700">E</i><i class="ev-k" style="display:inline-grid;place-items:center;width:18px;height:18px;border-radius:4px;font-style:normal;font-size:10px;font-weight:700">RP</i></span>
+      </div>
+      <p>Il chip ruolo ha 22px ovunque: listone, rosa, campo, data entry. Gli eventi sono tessere da 18px: G gol, As assist, A ammonizione, E espulsione, RP rigore parato. Colore + lettera, mai solo colore.</p>
+    </div>
+    <div class="comp"><span class="eyebrow">Card partita fanta</span>
+      <div class="demo" style="padding:0;background:transparent">
+        <div class="a-card a-match">
+          <div class="tm"><span class="crest" style="background:#1a1a1a">JB</span><b>Joga Benito FC</b><span>Pelli</span></div>
+          <span class="vs score">1 – 0</span>
+          <div class="tm"><span class="crest" style="background:#2b7a3d">HC</span><b>Hasta El Chapo FC</b><span>LILLO</span></div>
+          <div class="fp"><span><b>74,5</b></span><em>fantapunti</em><span><b>68,0</b></span></div>
+        </div>
+      </div>
+      <p>Il risultato in gol grande, i fantapunti sotto in mono. Nel dettaglio la soglia è in chiaro: <code style="font-family:var(--font-data);font-size:12px">soglia 69,0 · passo 6,0 · 10 fantallenatori</code>.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ SETTIMANA ============================ -->
+<section class="kit" id="settimana">
+  <div class="kit-head">
+    <div><span class="eyebrow">04 · Ciclo settimanale</span><h2>Cinque fasi che governano tutto</h2></div>
+    <p>La fase in corso decide la CTA della dashboard, il badge, cosa può toccare il fantallenatore e cosa può toccare il Giudice Dati. Non è un processo interno: è lo <strong>stato globale dell'interfaccia</strong> (artt. 8.3, 9.1–9.3).</p>
+  </div>
+  <div class="week">
+    <div class="wk"><b>Aperta</b><span>da mar 20:00 al lock<br>CTA oro «Schiera la formazione» + countdown</span></div>
+    <div class="wk live"><b>Live</b><span>lock alla prima gara<br>formazioni in sola lettura, eventi in inserimento</span></div>
+    <div class="wk amber"><b>Provvisorio</b><span>dom 23:59 → mar 18:00<br>badge ambra, «Segnala un errore» attivo</span></div>
+    <div class="wk amber"><b>In chiusura</b><span>mar 18:00 → 20:00<br>coda contestazioni in sola lettura</span></div>
+    <div class="wk froz"><b>Congelato</b><span>mar 20:00<br>lucchetto ovunque, nessuna rettifica (art. 9.2)</span></div>
+  </div>
+</section>
+
+<!-- ============================ SCHERMATE ============================ -->
+<section class="kit" id="schermate">
+  <div class="kit-head">
+    <div><span class="eyebrow">05 · Schermate</span><h2>Le nove viste del prodotto</h2></div>
+    <p>Ogni cornice scorre. Dashboard, Rosa, Calendario, Classifica e Voti sono le cinque voci della bottom bar; Drawer, Dettaglio partita e le schermate del Giudice Dati si raggiungono da lì. I nomi delle squadre fanta sono quelli della lega <strong>I Sudati di RSM</strong>; i giocatori sono esempi.</p>
+  </div>
+  <div class="gallery" id="gallery">
+    <div class="shot" data-screen="dashboard"><div class="phone"></div><div class="note"><b>S1 · Dashboard</b>Stessa gerarchia dell'app italiana: lega, hero con maglia e tre azioni, barra stat. Sotto, la novità: la <em>card di fase</em> con il badge stato e l'azione del momento. Il banner sponsor diventa la <em>regola del giorno</em>.</div></div>
+    <div class="shot" data-screen="drawer"><div class="phone"></div><div class="note"><b>Drawer</b>Header gradiente, username oro, lega corrente col <em>+</em>. La CTA gialla «Passa a Premium» diventa «Schiera la formazione». La sezione «Gestione» diventa <em>Giudice Dati</em>, visibile solo a chi ha il ruolo.</div></div>
+    <div class="shot" data-screen="formazione"><div class="phone"></div><div class="note"><b>S2 · Formazione</b>Moduli ammessi come chip (art. 8.2), campo con 11 slot, capitano e vice come bollini oro, panchina <em>ordinata</em> a 7 con maniglie: l'ordine decide chi entra (art. 8.5).</div></div>
+    <div class="shot" data-screen="voti"><div class="phone"></div><div class="note"><b>S5 · Voti</b>La vista pubblica settimanale. Blocchi per partita reale con il campo neutro, righe voto con eventi compatti, S.V. in coda col motivo. Tocca una riga: il <em>breakdown</em> spiega ogni decimale.</div></div>
+    <div class="shot" data-screen="classifica"><div class="phone"></div><div class="note"><b>S4 · Classifica</b>Badge stato in testa, riga evidenziata per la mia squadra, criteri di spareggio <em>sempre visibili</em> a piè di tabella (art. 12.2), non in un tooltip.</div></div>
+    <div class="shot" data-screen="calendario"><div class="phone"></div><div class="note"><b>S3 · Calendario</b>Scontri di lega e, sotto, le <em>otto partite reali</em> della giornata con campo e link Titani.TV. Nessuna freccia casa/trasferta: i campi sono neutri.</div></div>
+    <div class="shot" data-screen="partita"><div class="phone"></div><div class="note"><b>S6 · Dettaglio partita fanta</b>Gol grandi, fantapunti sotto. Le <em>sostituzioni automatiche</em> sono righe ambra «S.V. → subentra», il titolare senza sostituto vale 5,5 d'ufficio (art. 8.6). La formula di conversione è in chiaro.</div></div>
+    <div class="shot" data-screen="admin-lista"><div class="phone"></div><div class="note"><b>Giudice Dati · Giornata</b>La priorità n.1 del README. Otto partite, progresso, stato per riga, play verso il video. «Pubblica punteggi provvisori» si accende solo a 8/8 o con le rinviate marcate.</div></div>
+    <div class="shot" data-screen="admin-eventi"><div class="phone"></div><div class="note"><b>Giudice Dati · Eventi</b>Timeline della gara e <em>tastiera eventi</em> fissa: tre tocchi per evento (tasto → minuto → giocatore). «Rigore segnato» non esiste: è un gol (art. 7.4). Gli eventi di livello 2 sono spenti finché la lega non attiva il tagging video.</div></div>
+    <div class="shot" data-screen="congela"><div class="phone"></div><div class="note"><b>Giudice Dati · Congela</b>L'unica schermata rossa dell'app. Checklist, testo dell'art. 9.2, conferma digitata. Dopo, il lucchetto compare ovunque e nessuna modifica è più possibile.</div></div>
+  </div>
+</section>
+
+<!-- ============================ CONFRONTO ============================ -->
+<section class="kit" id="confronto">
+  <div class="kit-head">
+    <div><span class="eyebrow">06 · Da Leghe Fantacalcio</span><h2>Cosa si tiene, cosa cambia, perché</h2></div>
+    <p>Il riferimento va onorato, non copiato. Ogni scostamento nasce da una riga del regolamento o del README di prodotto.</p>
+  </div>
+  <div class="table-wrap"><table class="cmp">
+    <thead><tr><th>Leghe Fantacalcio</th><th>Fantacampionato Sammarinese</th><th>Perché</th></tr></thead>
+    <tbody>
+      <tr><td>Header blu royal, giallo Premium</td><td>Azzurro Titano, Oro Corona</td><td>Identità della bandiera e dello stemma, non della Serie A</td></tr>
+      <tr><td>CTA «Passa a Premium»</td><td>CTA «Schiera la formazione» + lock</td><td>Nessun premium al primo anno; lo slot serve all'azione settimanale</td></tr>
+      <tr><td>Loghi Fantacalcio + Serie A sotto la maglia</td><td>Tre torri + Titani.TV</td><td>Fonte video ufficiale; loghi terzi solo previa autorizzazione (art. 14.2)</td></tr>
+      <tr><td>Pt. Totali</td><td>Fantapunti</td><td>Termine del regolamento, primo criterio di spareggio dopo i punti (art. 12.2)</td></tr>
+      <tr><td>Bottom bar: … · Video</td><td>Bottom bar: … · Voti</td><td>La vista pubblica settimanale è la priorità 3 del README; il video è un link per partita</td></tr>
+      <tr><td>Sezione «Gestione» › Calcolo giornata</td><td>Sezione «Giudice Dati» › Inserisci eventi · Punteggi provvisori · Contestazioni · Congela</td><td>Il ciclo settimanale (art. 9) in azioni distinte, con permessi distinti</td></tr>
+      <tr><td>Infermeria</td><td>Fuori dal campionato</td><td>Gli infortuni non sono un dato disponibile; chi lascia il campionato sì (art. 3.3)</td></tr>
+      <tr><td>Casa / trasferta sulle partite reali</td><td>«Squadra A — Squadra B · campo»</td><td>Campi neutri assegnati dalla federazione</td></tr>
+      <tr><td>Banner sponsor</td><td>Regola del giorno</td><td>Lo spazio istruisce sul regolamento: la credibilità del voto è il prodotto</td></tr>
+      <tr><td>Voto pagella + fantavoto</td><td>Voto base + esito + eventi = fantavoto, sempre espandibile</td><td>Nessun giudizio soggettivo (Principio fondante); la trasparenza sostituisce la redazione</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+</div>
+
+<!-- ============================ TEMPLATE SCHERMATE ============================ -->
+<template id="tpl-appbar">
+  <div class="a-appbar">
+    <button class="ib" data-open-drawer aria-label="Menu"><svg class="ic"><use href="#i-menu"/></svg></button>
+    <div class="t"><b>I Sudati di RSM</b><span data-sub>Dashboard</span></div>
+    <button class="ib" aria-label="Notifiche"><svg class="ic"><use href="#i-bell"/></svg></button>
+    <button class="ib" aria-label="Chat"><svg class="ic"><use href="#i-chat"/></svg><i class="dot"></i></button>
+  </div>
+</template>
+
+<template id="tpl-nav">
+  <nav class="a-nav">
+    <button data-nav="dashboard" class="on"><svg class="ic"><use href="#i-home"/></svg>Dashboard</button>
+    <button data-nav="formazione"><svg class="ic"><use href="#i-shirt"/></svg>Rosa</button>
+    <button data-nav="calendario"><svg class="ic"><use href="#i-cal"/></svg>Calendario</button>
+    <button data-nav="classifica"><svg class="ic"><use href="#i-medal"/></svg>Classifica</button>
+    <button data-nav="voti"><svg class="ic"><use href="#i-votes"/></svg>Voti<i class="dot"></i></button>
+  </nav>
+</template>
+
+<template id="tpl-drawer">
+  <div class="a-drawer">
+    <div class="scrim" data-close-drawer></div>
+    <div class="panel">
+      <div class="d-head"><div><b>lilbarman01</b><span>conti9708@gmail.com</span></div><button>LOGOUT</button></div>
+      <div class="d-league">I Sudati di RSM <i>+</i></div>
+      <div class="d-cta"><button class="a-btn"><svg class="ic sm"><use href="#i-shirt"/></svg>Schiera la formazione</button></div>
+      <div class="d-sec"><span class="chip">Setup</span></div>
+      <div class="d-item"><i><svg class="ic"><use href="#i-shield"/></svg></i>Profilo lega</div>
+      <div class="d-item"><i><svg class="ic"><use href="#i-users"/></svg></i>Partecipanti<small>10</small></div>
+      <div class="d-item"><i><svg class="ic"><use href="#i-book"/></svg></i>Regolamento ed opzioni</div>
+      <div class="d-item"><i><svg class="ic"><use href="#i-cup"/></svg></i>Competizioni</div>
+      <div class="d-item"><i><svg class="ic"><use href="#i-cart"/></svg></i>Asta<small>chiusa</small></div>
+      <div class="d-sec"><span class="chip">Gioca</span></div>
+      <div class="d-item"><i><svg class="ic"><use href="#i-list"/></svg></i>Listone<small>402</small></div>
+      <div class="d-item"><i><svg class="ic"><use href="#i-cart"/></svg></i>Mercato libero<small>rilancio 24h</small></div>
+      <div class="d-item"><i><svg class="ic"><use href="#i-out"/></svg></i>Fuori dal campionato<small>3</small></div>
+      <div class="d-item"><i><svg class="ic"><use href="#i-star"/></svg></i>Fantallenatore dell'anno</div>
+      <div class="d-item"><i><svg class="ic"><use href="#i-img"/></svg></i>Scheda condivisibile</div>
+      <div class="d-sec admin"><span class="chip">Giudice Dati</span></div>
+      <div class="d-item"><i><svg class="ic"><use href="#i-edit"/></svg></i>Inserisci eventi<small>5/8</small></div>
+      <div class="d-item"><i><svg class="ic"><use href="#i-calc"/></svg></i>Punteggi provvisori</div>
+      <div class="d-item"><i><svg class="ic"><use href="#i-flag"/></svg></i>Contestazioni<small>2 aperte</small></div>
+      <div class="d-item"><i><svg class="ic"><use href="#i-lock"/></svg></i>Congela giornata<small>mar 20:00</small></div>
+      <div class="d-item"><i><svg class="ic"><use href="#i-archive"/></svg></i>Archivio precedenti</div>
+      <div class="d-item"><i><svg class="ic"><use href="#i-list"/></svg></i>Registro modifiche</div>
+      <div style="height:24px"></div>
+    </div>
+  </div>
+</template>
+
+<template id="tpl-dashboard">
+  <div class="a-body">
+    <div class="a-herowrap">
+      <div class="a-league">Sudati RSM <svg class="ic"><use href="#i-chev"/></svg></div>
+      <div class="a-hero">
+        <svg class="tw"><use href="#i-towers"/></svg>
+        <h2>Hasta El Chapo FC</h2>
+        <svg class="jersey" style="--j1:#2b7a3d;--j2:#0f4a22"><use href="#i-jersey"/></svg>
+        <div class="acts">
+          <button aria-label="Condividi scheda"><svg class="ic"><use href="#i-share"/></svg></button>
+          <button aria-label="Impostazioni"><svg class="ic"><use href="#i-gear"/></svg></button>
+          <button class="gold" aria-label="Mercato libero"><svg class="ic"><use href="#i-cart"/></svg></button>
+        </div>
+        <div class="logos"><svg><use href="#i-towers"/></svg><span>Fantacampionato</span><i></i><span>Titani.TV</span></div>
+      </div>
+    </div>
+    <div class="a-card a-stats">
+      <div><b>8<sup>ª</sup></b><span>Posizione</span></div>
+      <div><b>0</b><span>Punti</span></div>
+      <div><b>1</b><span>Partite</span></div>
+      <div><b>70,5</b><span>Fantapunti</span></div>
+    </div>
+    <div class="a-card a-fase">
+      <span class="badge badge--prov"><svg class="ic"><use href="#i-clock"/></svg>Provvisorio <small>· contestazioni fino a mar 18:00</small></span>
+      <div class="r"><p><b>Giornata 2</b> · punteggi pubblicati dom 23:41</p><a class="a-link" href="#" data-nav="voti">Vedi i voti ›</a></div>
+    </div>
+    <div class="a-sec"><b><i class="pulse"></i>Risultati provvisori</b><span>2ª di Lega · 2ª del Campionato</span></div>
+    <div class="a-card a-match">
+      <div class="tm"><span class="crest" style="background:#1a1a1a">JB</span><b>Joga Benito FC</b><span>Pelli</span></div>
+      <span class="vs score">1 – 0</span>
+      <div class="tm"><span class="crest" style="background:#2b7a3d">HC</span><b>Hasta El Chapo FC</b><span>LILLO</span></div>
+      <div class="fp"><span><b>74,5</b></span><em>fantapunti</em><span><b>68,0</b></span></div>
+    </div>
+    <div class="a-sec"><b>Prossima giornata</b><span>lock sab 15:00</span></div>
+    <div class="a-card a-match">
+      <div class="tm"><span class="crest" style="background:#2b7a3d">HC</span><b>Hasta El Chapo FC</b><span>LILLO</span></div>
+      <span class="vs">VS</span>
+      <div class="tm"><span class="crest" style="background:#5b3fa6">RG</span><b>Real Guaita</b><span>Marco</span></div>
+    </div>
+    <div class="a-card a-rule"><span class="art">Art. 7.4</span><p><b>Rigore parato:</b> +3,0 al portiere, −3,0 al tiratore. Sul palo o fuori: −3,0 al tiratore e nessun bonus al portiere.</p></div>
+  </div>
+</template>
+
+<template id="tpl-formazione">
+  <div class="a-body">
+    <div class="chips" style="margin-top:-2px"><button class="chip">Rosa 25</button><button class="chip on">Formazione</button></div>
+    <div class="a-card a-fase">
+      <span class="badge badge--open"><svg class="ic"><use href="#i-clock"/></svg>Aperta <small>· lock sab 15:00 · 2g 5h</small></span>
+      <div class="r"><p><b>Giornata 3</b> · Hasta El Chapo FC – Real Guaita</p><span style="font-size:12px;color:var(--text-muted)">crediti <b style="color:var(--text)">14</b></span></div>
+    </div>
+    <div class="chips" data-modules><button class="chip mod">3-4-3</button><button class="chip mod">3-5-2</button><button class="chip mod">4-3-3</button><button class="chip mod on">4-4-2</button><button class="chip mod">4-5-1</button><button class="chip mod">5-3-2</button><button class="chip mod">5-4-1</button></div>
+    <div class="pitch" data-pitch>
+      <div class="line"><div class="slot"><span class="av">MR<span class="rl rl-p">P</span></span><b>Marchetti</b></div></div>
+      <div class="line" data-line="d"><div class="slot"><span class="av">BN<span class="rl rl-d">D</span></span><b>Benedettini</b></div><div class="slot"><span class="av">ZF<span class="rl rl-d">D</span></span><b>Zafferani</b></div><div class="slot"><span class="av">GR<span class="rl rl-d">D</span></span><b>Grandoni</b></div><div class="slot"><span class="av">VL<span class="rl rl-d">D</span></span><b>Valentini</b></div></div>
+      <div class="line" data-line="c"><div class="slot"><span class="av"><span class="cap">C</span>GS<span class="rl rl-c">C</span></span><b>Gasperoni</b></div><div class="slot"><span class="av">BT<span class="rl rl-c">C</span></span><b>Battistini</b></div><div class="slot"><span class="av">TM<span class="rl rl-c">C</span></span><b>Tomassini</b></div><div class="slot"><span class="av">CS<span class="rl rl-c">C</span></span><b>Casadei</b></div></div>
+      <div class="line" data-line="a"><div class="slot"><span class="av"><span class="cap">V</span>RG<span class="rl rl-a">A</span></span><b>Righi</b></div><div class="slot empty"><span class="av">+</span><b>Attaccante</b></div></div>
+    </div>
+    <div class="a-sec"><b>Panchina</b><span>l'ordine conta: entra il primo del ruolo con voto</span></div>
+    <div class="bench">
+      <div class="br"><span class="n">1</span><span class="rl rl-p">P</span><b>Simoncini<small>La Fiorita</small></b><svg class="ic sm h"><use href="#i-menu"/></svg></div>
+      <div class="br"><span class="n">2</span><span class="rl rl-d">D</span><b>Ceccoli<small>Tre Penne</small></b><svg class="ic sm h"><use href="#i-menu"/></svg></div>
+      <div class="br"><span class="n">3</span><span class="rl rl-d">D</span><b>Muccioli<small>Virtus</small></b><svg class="ic sm h"><use href="#i-menu"/></svg></div>
+      <div class="br"><span class="n">4</span><span class="rl rl-c">C</span><b>Dolcini<small>Folgore</small></b><svg class="ic sm h"><use href="#i-menu"/></svg></div>
+      <div class="br"><span class="n">5</span><span class="rl rl-c">C</span><b>Berardi<small>Cosmos</small></b><svg class="ic sm h"><use href="#i-menu"/></svg></div>
+      <div class="br"><span class="n">6</span><span class="rl rl-a">A</span><b>Mularoni<small>Murata</small></b><svg class="ic sm h"><use href="#i-menu"/></svg></div>
+      <div class="br"><span class="n">7</span><span class="rl rl-a">A</span><b>Pasolini<small>Libertas</small></b><svg class="ic sm h"><use href="#i-menu"/></svg></div>
+    </div>
+    <button class="a-btn" disabled><svg class="ic sm"><use href="#i-check"/></svg>Conferma formazione · 10/11</button>
+  </div>
+</template>
+
+<template id="tpl-voti">
+  <div class="a-body">
+    <div class="a-fase" style="display:flex;flex-direction:row;justify-content:space-between;align-items:center;gap:8px">
+      <span class="badge badge--prov"><svg class="ic"><use href="#i-clock"/></svg>Provvisorio <small>· mar 18:00</small></span>
+      <span style="font:700 13px var(--font-display);color:var(--primary);white-space:nowrap">Giornata 2 ▾</span>
+    </div>
+    <div class="chips"><button class="chip on">Tutti</button><button class="chip">Solo miei</button><button class="chip">P</button><button class="chip">D</button><button class="chip">C</button><button class="chip">A</button><button class="chip">Società ▾</button></div>
+    <div class="vlist">
+      <div class="vhead">Tre Fiori 2 – 1 La Fiorita <span>Acquaviva</span></div>
+      <button class="vr" data-toggle><span class="rl rl-p">P</span><span class="nm"><b>Marchetti</b><span>Tre Fiori · 90'</span></span><span class="ev"><i class="ev-k">RP</i></span><span class="fv">8,5</span></button>
+      <div class="vb"><div><span>Voto base</span><span>6,0</span></div><div><span>Esito collettivo<em>vittoria · 90'</em></span><span class="pos">+0,5</span></div><div><span>Rigore parato</span><span class="pos">+3,0</span></div><div><span>Gol subito × 1</span><span class="neg">−1,0</span></div><div class="tot"><span>Fantavoto</span><span>8,5</span></div><a href="#" onclick="return false">Segnala un errore</a></div>
+      <button class="vr" data-toggle><span class="rl rl-c">C</span><span class="nm"><b>Gasperoni</b><span>Tre Fiori · 90'</span></span><span class="ev"><i class="ev-g">G</i><i class="ev-y">A</i></span><span class="fv cap">12,5</span></button>
+      <div class="vb on"><div><span>Voto base</span><span>6,0</span></div><div><span>Esito collettivo<em>vittoria · 90'</em></span><span class="pos">+0,5</span></div><div><span>Gol × 1<em>centrocampista · ×2 capitano</em></span><span class="pos">+7,0</span></div><div><span>Ammonizione<em>×2 capitano</em></span><span class="neg">−1,0</span></div><div class="tot"><span>Fantavoto</span><span>12,5</span></div><a href="#" onclick="return false">Segnala un errore</a></div>
+      <button class="vr" data-toggle><span class="rl rl-a">A</span><span class="nm"><b>Righi</b><span>Tre Fiori · 78'</span></span><span class="ev"><i class="ev-g">G</i><i class="ev-a">As</i></span><span class="fv">10,5</span></button>
+      <div class="vb"><div><span>Voto base</span><span>6,0</span></div><div><span>Esito collettivo<em>vittoria · 78'</em></span><span class="pos">+0,5</span></div><div><span>Gol × 1<em>attaccante</em></span><span class="pos">+3,0</span></div><div><span>Assist × 1</span><span class="pos">+1,0</span></div><div class="tot"><span>Fantavoto</span><span>10,5</span></div><a href="#" onclick="return false">Segnala un errore</a></div>
+      <button class="vr" data-toggle><span class="rl rl-d">D</span><span class="nm"><b>Benedettini</b><span>Tre Fiori · 61'</span></span><span class="ev"></span><span class="fv">6,5</span></button>
+      <div class="vb"><div><span>Voto base</span><span>6,0</span></div><div><span>Esito collettivo<em>vittoria · 61'</em></span><span class="pos">+0,5</span></div><div><span>Porta inviolata<em>no: 1 gol subito</em></span><span>0,0</span></div><div class="tot"><span>Fantavoto</span><span>6,5</span></div><a href="#" onclick="return false">Segnala un errore</a></div>
+      <button class="vr" data-toggle><span class="rl rl-a">A</span><span class="nm"><b>Dolcini</b><span>La Fiorita · 90'</span></span><span class="ev"><i class="ev-g">G</i></span><span class="fv">8,5</span></button>
+      <div class="vb"><div><span>Voto base</span><span>6,0</span></div><div><span>Esito collettivo<em>sconfitta · 90'</em></span><span class="neg">−0,5</span></div><div><span>Gol × 1<em>attaccante</em></span><span class="pos">+3,0</span></div><div class="tot"><span>Fantavoto</span><span>8,5</span></div><a href="#" onclick="return false">Segnala un errore</a></div>
+      <button class="vr" data-toggle><span class="rl rl-c">C</span><span class="nm"><b>Tomassini</b><span>La Fiorita · 90'</span></span><span class="ev"><i class="ev-r">E</i></span><span class="fv">4,0</span></button>
+      <div class="vb"><div><span>Voto base</span><span>6,0</span></div><div><span>Esito collettivo<em>sconfitta · 90'</em></span><span class="neg">−0,5</span></div><div><span>Ammonizione</span><span class="neg">−0,5</span></div><div><span>Espulsione per doppia ammonizione<em>73'</em></span><span class="neg">−1,0</span></div><div class="tot"><span>Fantavoto</span><span>4,0</span></div><a href="#" onclick="return false">Segnala un errore</a></div>
+      <button class="vr" data-toggle><span class="rl rl-d">D</span><span class="nm"><b>Grandoni</b><span>La Fiorita · 14'</span></span><span class="ev"></span><span class="fv sv">S.V.</span></button>
+      <div class="vb"><div><span>Meno di 20' senza eventi<em>art. 4</em></span><span>S.V.</span></div></div>
+    </div>
+    <div class="vlist">
+      <div class="vhead">Virtus 0 – 0 Tre Penne <span>Serravalle</span></div>
+      <button class="vr" data-toggle><span class="rl rl-p">P</span><span class="nm"><b>Simoncini</b><span>Virtus · 90'</span></span><span class="ev"></span><span class="fv">9,0</span></button>
+      <div class="vb"><div><span>Voto base</span><span>6,0</span></div><div><span>Esito collettivo<em>pareggio</em></span><span>0,0</span></div><div><span>Porta inviolata<em>portiere · 90'</em></span><span class="pos">+3,0</span></div><div class="tot"><span>Fantavoto</span><span>9,0</span></div><a href="#" onclick="return false">Segnala un errore</a></div>
+      <button class="vr" data-toggle><span class="rl rl-d">D</span><span class="nm"><b>Muccioli</b><span>Virtus · 90'</span></span><span class="ev"></span><span class="fv">7,5</span></button>
+      <div class="vb"><div><span>Voto base</span><span>6,0</span></div><div><span>Porta inviolata<em>difensore · 90'</em></span><span class="pos">+1,5</span></div><div class="tot"><span>Fantavoto</span><span>7,5</span></div><a href="#" onclick="return false">Segnala un errore</a></div>
+      <button class="vr" data-toggle><span class="rl rl-d">D</span><span class="nm"><b>Ceccoli</b><span>Tre Penne · 58'</span></span><span class="ev"></span><span class="fv">6,0</span></button>
+      <div class="vb"><div><span>Voto base</span><span>6,0</span></div><div><span>Porta inviolata<em>no: uscito al 58', servono 60'</em></span><span>0,0</span></div><div class="tot"><span>Fantavoto</span><span>6,0</span></div><a href="#" onclick="return false">Segnala un errore</a></div>
+    </div>
+    <div class="vlist">
+      <div class="vhead">Folgore — Cosmos <span>rinviata</span></div>
+      <button class="vr" data-toggle><span class="rl rl-c">C</span><span class="nm"><b>Berardi</b><span>Cosmos</span></span><span class="ev"></span><span class="fv sv">S.V.</span></button>
+      <div class="vb"><div><span>Gara rinviata<em>recupero entro mar 18:00 · art. 10.1</em></span><span>S.V.</span></div></div>
+    </div>
+  </div>
+</template>
+
+<template id="tpl-classifica">
+  <div class="a-body">
+    <div class="a-fase" style="display:flex;flex-direction:row;justify-content:space-between;align-items:center;gap:8px">
+      <span class="badge badge--prov"><svg class="ic"><use href="#i-clock"/></svg>Provvisorio <small>· giornata 2</small></span>
+      <span style="font:700 13px var(--font-display);color:var(--primary)">Campionato ▾</span>
+    </div>
+    <table class="tbl">
+      <thead><tr><th>#</th><th>Squadra</th><th>Pt</th><th>G</th><th>V</th><th>N</th><th>P</th><th>DR</th><th>FP</th></tr></thead>
+      <tbody>
+        <tr><td>1</td><td>Joga Benito FC</td><td class="pt">6</td><td>2</td><td>2</td><td>0</td><td>0</td><td>+3</td><td>151,0</td></tr>
+        <tr><td>2</td><td>Real Guaita</td><td class="pt">6</td><td>2</td><td>2</td><td>0</td><td>0</td><td>+2</td><td>148,5</td></tr>
+        <tr><td>3</td><td>Titano Legends</td><td class="pt">4</td><td>2</td><td>1</td><td>1</td><td>0</td><td>+1</td><td>146,0</td></tr>
+        <tr><td>4</td><td>Cesta United</td><td class="pt">3</td><td>2</td><td>1</td><td>0</td><td>1</td><td>0</td><td>145,5</td></tr>
+        <tr><td>5</td><td>Dinamo Borgo</td><td class="pt">3</td><td>2</td><td>1</td><td>0</td><td>1</td><td>0</td><td>142,0</td></tr>
+        <tr><td>6</td><td>Atletico Dogana</td><td class="pt">3</td><td>2</td><td>1</td><td>0</td><td>1</td><td>−1</td><td>141,5</td></tr>
+        <tr><td>7</td><td>Serravalle City</td><td class="pt">1</td><td>2</td><td>0</td><td>1</td><td>1</td><td>−1</td><td>139,0</td></tr>
+        <tr class="me"><td>8</td><td>Hasta El Chapo FC</td><td class="pt">0</td><td>1</td><td>0</td><td>0</td><td>1</td><td>−1</td><td>70,5</td></tr>
+        <tr><td>9</td><td>Montale Boys</td><td class="pt">0</td><td>2</td><td>0</td><td>0</td><td>2</td><td>−2</td><td>136,5</td></tr>
+        <tr><td>10</td><td>Faetano Stars</td><td class="pt">0</td><td>2</td><td>0</td><td>0</td><td>2</td><td>−3</td><td>131,0</td></tr>
+      </tbody>
+    </table>
+    <p class="tie"><b>Spareggi</b> (art. 12.2): punti › fantapunti totali (FP) › differenza reti › scontri diretti. Hasta El Chapo FC ha una gara in meno: turno di riposo alla giornata 1.</p>
+    <div class="a-card a-rule"><span class="art">Art. 11</span><p><b>Conversione in gol:</b> con 10 fantallenatori il primo gol scatta a 69,0 e se ne aggiunge uno ogni 6,0 punti. Parità di fantapunteggio = pareggio.</p></div>
+  </div>
+</template>
+
+<template id="tpl-calendario">
+  <div class="a-body">
+    <div class="gsel"><button>G1</button><button>G2</button><button class="on">G3</button><button>G4</button><button>G5</button><button>G6</button><button>G7</button><button>G8</button><button>G9</button></div>
+    <div class="a-sec"><b>Scontri di lega</b><span class="badge badge--open" style="padding:2px 8px"><svg class="ic"><use href="#i-clock"/></svg>lock sab 15:00</span></div>
+    <div class="a-card a-match" style="padding-bottom:14px">
+      <div class="tm"><span class="crest" style="background:#2b7a3d">HC</span><b>Hasta El Chapo FC</b></div><span class="vs">VS</span><div class="tm"><span class="crest" style="background:#5b3fa6">RG</span><b>Real Guaita</b></div>
+    </div>
+    <div class="a-card a-match" style="padding-bottom:14px">
+      <div class="tm"><span class="crest" style="background:#1a1a1a">JB</span><b>Joga Benito FC</b></div><span class="vs">VS</span><div class="tm"><span class="crest" style="background:#b8321f">TL</span><b>Titano Legends</b></div>
+    </div>
+    <div class="a-card a-match" style="padding-bottom:14px">
+      <div class="tm"><span class="crest" style="background:#0e5e93">CU</span><b>Cesta United</b></div><span class="vs">VS</span><div class="tm"><span class="crest" style="background:#c46a00">DB</span><b>Dinamo Borgo</b></div>
+    </div>
+    <div class="a-sec"><b>Partite del campionato</b><span>3ª giornata · campi neutri</span></div>
+    <div class="real">
+      <div class="rr"><div><b>Tre Fiori — Virtus</b><span>sab 15:00 · Acquaviva</span></div><span class="sc st" style="color:var(--text-muted)">15:00</span><svg class="ic sm play"><use href="#i-play"/></svg></div>
+      <div class="rr"><div><b>La Fiorita — Tre Penne</b><span>sab 15:00 · Serravalle</span></div><span class="sc st" style="color:var(--text-muted)">15:00</span><svg class="ic sm play"><use href="#i-play"/></svg></div>
+      <div class="rr"><div><b>Folgore — Murata</b><span>sab 17:30 · Domagnano</span></div><span class="sc st" style="color:var(--text-muted)">17:30</span><svg class="ic sm play"><use href="#i-play"/></svg></div>
+      <div class="rr"><div><b>Cosmos — Libertas</b><span>sab 17:30 · Montecchio</span></div><span class="sc st" style="color:var(--text-muted)">17:30</span><svg class="ic sm play"><use href="#i-play"/></svg></div>
+      <div class="rr"><div><b>Juvenes/Dogana — Fiorentino</b><span>dom 15:00 · Dogana</span></div><span class="sc st" style="color:var(--text-muted)">15:00</span><svg class="ic sm play"><use href="#i-play"/></svg></div>
+      <div class="rr"><div><b>Faetano — Domagnano</b><span>dom 15:00 · Faetano</span></div><span class="sc st" style="color:var(--text-muted)">15:00</span><svg class="ic sm play"><use href="#i-play"/></svg></div>
+      <div class="rr"><div><b>Pennarossa — Cailungo</b><span>dom 15:00 · Fiorentino</span></div><span class="sc st" style="color:var(--text-muted)">15:00</span><svg class="ic sm play"><use href="#i-play"/></svg></div>
+      <div class="rr"><div><b>San Giovanni — SM Academy U22</b><span>dom 17:30 · Acquaviva</span></div><span class="sc st" style="color:var(--text-muted)">17:30</span><svg class="ic sm play"><use href="#i-play"/></svg></div>
+    </div>
+    <div class="a-sec"><b>Giornata 2</b><span>provvisoria</span></div>
+    <div class="real">
+      <div class="rr"><div><b>Tre Fiori — La Fiorita</b><span>Acquaviva</span></div><span class="sc">2 – 1</span><svg class="ic sm play"><use href="#i-play"/></svg></div>
+      <div class="rr"><div><b>Virtus — Tre Penne</b><span>Serravalle</span></div><span class="sc">0 – 0</span><svg class="ic sm play"><use href="#i-play"/></svg></div>
+      <div class="rr"><div><b>Folgore — Cosmos</b><span>Domagnano</span></div><span class="sc st">Rinviata</span><span></span></div>
+    </div>
+  </div>
+</template>
+
+<template id="tpl-partita">
+  <div class="a-body">
+    <div class="mh">
+      <div class="tm"><span class="crest" style="background:#1a1a1a">JB</span><b>Joga Benito FC</b></div>
+      <div class="sc">1 – 0<small>74,5 – 68,0</small></div>
+      <div class="tm"><span class="crest" style="background:#2b7a3d">HC</span><b>Hasta El Chapo FC</b></div>
+    </div>
+    <span class="badge badge--prov" style="align-self:flex-start"><svg class="ic"><use href="#i-clock"/></svg>Provvisorio <small>· giornata 2</small></span>
+    <div class="vlist">
+      <div class="vhead">Hasta El Chapo FC · 4-4-2 <span>68,0</span></div>
+      <button class="vr" data-toggle><span class="rl rl-p">P</span><span class="nm"><b>Marchetti</b><span>Tre Fiori · 90'</span></span><span class="ev"><i class="ev-k">RP</i></span><span class="fv">8,5</span></button>
+      <button class="vr" data-toggle><span class="rl rl-d">D</span><span class="nm"><b>Benedettini</b><span>Tre Fiori · 61'</span></span><span class="ev"></span><span class="fv">6,5</span></button>
+      <button class="vr" data-toggle><span class="rl rl-d">D</span><span class="nm"><b>Muccioli</b><span>Virtus · 90'</span></span><span class="ev"></span><span class="fv">7,5</span></button>
+      <div class="sub"><span class="arr">↓ D</span><span><s>Grandoni</s> S.V. 14' → <b>Ceccoli</b> <small style="color:var(--text-muted)">panchina 2</small></span><span class="fv">6,0</span></div>
+      <div class="sub"><span class="arr">↓ D</span><span><s>Valentini</s> S.V. non entrato → <b>nessun sostituto</b></span><span class="fv">5,5</span></div>
+      <button class="vr" data-toggle><span class="rl rl-c">C</span><span class="nm"><b>Gasperoni</b><span>Tre Fiori · 90'</span></span><span class="ev"><i class="ev-g">G</i><i class="ev-y">A</i></span><span class="fv cap">12,5</span></button>
+      <button class="vr" data-toggle><span class="rl rl-c">C</span><span class="nm"><b>Battistini</b><span>Tre Penne · 90'</span></span><span class="ev"></span><span class="fv">6,0</span></button>
+      <button class="vr" data-toggle><span class="rl rl-c">C</span><span class="nm"><b>Tomassini</b><span>La Fiorita · 90'</span></span><span class="ev"><i class="ev-r">E</i></span><span class="fv">4,0</span></button>
+      <button class="vr" data-toggle><span class="rl rl-c">C</span><span class="nm"><b>Casadei</b><span>Murata · 90'</span></span><span class="ev"></span><span class="fv">5,5</span></button>
+      <button class="vr" data-toggle><span class="rl rl-a">A</span><span class="nm"><b>Righi</b><span>Tre Fiori · 78'</span></span><span class="ev"><i class="ev-g">G</i><i class="ev-a">As</i></span><span class="fv">10,5</span></button>
+      <div class="sub"><span class="arr">↓ A</span><span><s>Berardi</s> S.V. gara rinviata → <b>nessun sostituto</b></span><span class="fv">5,5</span></div>
+    </div>
+    <div class="a-card"><p class="formula"><b>Conversione (art. 11)</b> · 10 fantallenatori<br>soglia <b>69,0</b> · passo <b>6,0</b><br>74,5 → ⌊(74,5 − 69,0) / 6⌋ + 1 = <b>1 gol</b><br>68,0 &lt; 69,0 → <b>0 gol</b></p></div>
+  </div>
+</template>
+
+<template id="tpl-admin-lista">
+  <div class="a-body">
+    <div class="a-card a-fase">
+      <div class="r"><span class="badge badge--prov"><svg class="ic"><use href="#i-clock"/></svg>Giornata 2 · Provvisorio</span><b style="font:700 14px var(--font-display)">5/8</b></div>
+      <div class="prog"><i></i></div>
+      <p style="font-size:12px;color:var(--text-muted)">Pubblicazione entro dom 23:59 · congelamento mar 20:00</p>
+    </div>
+    <div class="vlist">
+      <div class="mrow"><span class="st st-ok"><svg class="ic sm" style="width:14px;height:14px;stroke-width:2.6"><use href="#i-check"/></svg></span><div><b>Tre Fiori — La Fiorita</b><span>Acquaviva · 9 eventi</span></div><span class="sc">2 – 1</span><svg class="ic sm" style="color:var(--primary)"><use href="#i-play"/></svg></div>
+      <div class="mrow"><span class="st st-ok"><svg class="ic sm" style="width:14px;height:14px;stroke-width:2.6"><use href="#i-check"/></svg></span><div><b>Virtus — Tre Penne</b><span>Serravalle · 3 eventi</span></div><span class="sc">0 – 0</span><svg class="ic sm" style="color:var(--primary)"><use href="#i-play"/></svg></div>
+      <div class="mrow"><span class="st st-ok"><svg class="ic sm" style="width:14px;height:14px;stroke-width:2.6"><use href="#i-check"/></svg></span><div><b>Murata — Libertas</b><span>Montecchio · 6 eventi</span></div><span class="sc">1 – 2</span><svg class="ic sm" style="color:var(--primary)"><use href="#i-play"/></svg></div>
+      <div class="mrow"><span class="st st-ok"><svg class="ic sm" style="width:14px;height:14px;stroke-width:2.6"><use href="#i-check"/></svg></span><div><b>Fiorentino — Faetano</b><span>Fiorentino · 5 eventi</span></div><span class="sc">3 – 0</span><svg class="ic sm" style="color:var(--primary)"><use href="#i-play"/></svg></div>
+      <div class="mrow"><span class="st st-ok"><svg class="ic sm" style="width:14px;height:14px;stroke-width:2.6"><use href="#i-check"/></svg></span><div><b>Folgore — Cosmos</b><span>Domagnano · rinviata</span></div><span class="sc st" style="font:600 10px var(--font-body);letter-spacing:.06em;color:var(--warning)">RINV.</span><span></span></div>
+      <div class="mrow"><span class="st st-ip">●</span><div><b>Juvenes/Dogana — Domagnano</b><span>Dogana · 4 eventi · in inserimento</span></div><span class="sc">1 – 1</span><svg class="ic sm" style="color:var(--primary)"><use href="#i-play"/></svg></div>
+      <div class="mrow"><span class="st st-td"></span><div><b>Pennarossa — San Giovanni</b><span>Faetano · da inserire</span></div><span class="sc" style="color:var(--text-muted)">–</span><svg class="ic sm" style="color:var(--primary)"><use href="#i-play"/></svg></div>
+      <div class="mrow"><span class="st st-td"></span><div><b>Cailungo — SM Academy U22</b><span>Acquaviva · da inserire</span></div><span class="sc" style="color:var(--text-muted)">–</span><svg class="ic sm" style="color:var(--primary)"><use href="#i-play"/></svg></div>
+    </div>
+    <div class="warn info"><svg class="ic sm"><use href="#i-flag"/></svg><span><b>2 contestazioni aperte</b> · Righi 78' assist (Pelli) · Ceccoli minuti (Marco)</span></div>
+    <button class="a-btn" disabled><svg class="ic sm"><use href="#i-calc"/></svg>Pubblica punteggi provvisori</button>
+  </div>
+</template>
+
+<template id="tpl-admin-eventi">
+  <div class="a-body" style="gap:10px">
+    <div class="a-card" style="display:flex;justify-content:space-between;align-items:center;gap:8px">
+      <div><b style="font:700 15px var(--font-display)">Juvenes/Dogana — Domagnano</b><br><span style="font-size:11px;color:var(--text-muted)">Dogana · giocata · <span style="color:var(--warning);font-weight:600">in inserimento</span></span></div>
+      <span style="font:800 24px var(--font-display);font-variant-numeric:tabular-nums">1 – 1</span>
+    </div>
+    <div class="chips"><button class="chip on">1 · Risultato</button><button class="chip on">2 · Chi ha giocato 22</button><button class="chip on">3 · Eventi</button><button class="chip">4 · Anteprima voti</button></div>
+    <div class="tl">
+      <div class="te"><span class="min">12'</span><i class="ev-y" style="display:inline-grid;place-items:center;width:20px;height:20px;border-radius:4px;font-style:normal;font-size:10px;font-weight:700">A</i><div><b>Lazzari</b><span>Domagnano · ammonizione</span></div><span></span></div>
+      <div class="te"><span class="min">34'</span><i class="ev-g" style="display:inline-grid;place-items:center;width:20px;height:20px;border-radius:4px;font-style:normal;font-size:10px;font-weight:700">G</i><div><b>Bonini</b><span>Juvenes/Dogana · gol · assist Ugolini</span></div><span></span></div>
+      <div class="te"><span class="min">58'</span><i class="ev-r" style="display:inline-grid;place-items:center;width:20px;height:20px;border-radius:4px;font-style:normal;font-size:10px;font-weight:700">RS</i><div><b>Moretti</b><span>Domagnano · rigore sbagliato · parato da Bonifazi</span></div><span></span></div>
+      <div class="te"><span class="min">81'</span><i class="ev-g" style="display:inline-grid;place-items:center;width:20px;height:20px;border-radius:4px;font-style:normal;font-size:10px;font-weight:700">G</i><div><b>Lazzari</b><span>Domagnano · gol · nessun assist</span></div><svg class="ic sm undo"><use href="#i-undo"/></svg></div>
+    </div>
+    <div class="warn block"><svg class="ic sm"><use href="#i-warn"/></svg><span><b>Minuti di Moretti: 90'</b> ma è stato espulso? Nessun rosso registrato. Ok se ha finito la gara.</span></div>
+    <div class="kb">
+      <span class="handle"></span>
+      <button class="k g"><i>⚽</i>Gol</button>
+      <button class="k r"><i>AG</i>Autogol</button>
+      <button class="k y"><i>▮</i>Giallo</button>
+      <button class="k r"><i>▮▮</i>2° giallo</button>
+      <button class="k r"><i>▮</i>Rosso</button>
+      <button class="k r"><i>RS</i>Rig. sbagl.</button>
+      <button class="k k2"><i>R+</i>Rig. proc.</button>
+      <button class="k k2"><i>R−</i>Rig. caus.</button>
+    </div>
+  </div>
+</template>
+
+<template id="tpl-congela">
+  <div class="freeze">
+    <span class="eyebrow" style="color:rgba(255,255,255,.75)">Giudice Dati · giornata 2</span>
+    <h2>Congela la giornata</h2>
+    <div class="chk">
+      <div><svg class="ic"><use href="#i-check"/></svg>8/8 partite inserite (1 rinviata, recupero registrato)</div>
+      <div><svg class="ic"><use href="#i-check"/></svg>Punteggi provvisori pubblicati dom 23:41</div>
+      <div><svg class="ic"><use href="#i-check"/></svg>0 contestazioni aperte · 2 accolte, 1 respinta</div>
+      <div><svg class="ic"><use href="#i-check"/></svg>Registro modifiche: 3 rettifiche loggate</div>
+    </div>
+    <p class="art"><b>Art. 9.2</b> — Dopo le 20:00 di martedì la giornata è congelata e non è più rettificabile, nemmeno per errori accertati. L'eventuale errore non genera compensazioni nelle giornate successive.</p>
+    <input id="freeze-confirm" type="text" placeholder="Scrivi CONGELA per confermare" autocomplete="off">
+    <button class="a-btn"><svg class="ic sm"><use href="#i-lock"/></svg>Congela giornata 2</button>
+  </div>
+</template>
+
+<script>
+(function(){
+  const $t = id => document.getElementById(id).content.cloneNode(true);
+  const SUB = {dashboard:'Dashboard',formazione:'Rosa · Formazione',calendario:'Calendario',classifica:'Classifica',voti:'Voti · Giornata 2',partita:'Giornata 2 · Dettaglio','admin-lista':'Giudice Dati · G2','admin-eventi':'Giudice Dati · Eventi'};
+
+  function buildScreen(kind, opts){
+    const screen = document.createElement('div'); screen.className='screen';
+    screen.innerHTML = '<div class="notch"></div><div class="sb"><span>09:04</span><span>▮▮▮ 26</span></div>';
+    if(kind==='drawer'){
+      screen.appendChild($t('tpl-appbar')); const v=document.createElement('div'); v.className='view on'; v.appendChild($t('tpl-dashboard')); screen.appendChild(v); screen.appendChild($t('tpl-nav'));
+      const d=$t('tpl-drawer'); screen.appendChild(d); screen.querySelector('.a-drawer').classList.add('on'); screen.querySelector('.sb').classList.add('dark');
+      return screen;
+    }
+    if(kind==='congela'){ screen.appendChild($t('tpl-congela')); return screen; }
+    screen.appendChild($t('tpl-appbar'));
+    const views = opts && opts.all ? ['dashboard','formazione','calendario','classifica','voti'] : [kind];
+    views.forEach(k=>{ const v=document.createElement('div'); v.className='view'+(k===kind?' on':''); v.dataset.view=k; v.appendChild($t('tpl-'+k)); screen.appendChild(v); });
+    screen.querySelector('[data-sub]').textContent = SUB[kind]||kind;
+    if(!/admin/.test(kind)) screen.appendChild($t('tpl-nav'));
+    else screen.querySelector('.a-body').style.paddingBottom='16px';
+    screen.appendChild($t('tpl-drawer'));
+    const nav=screen.querySelector('.a-nav'); if(nav){ nav.querySelectorAll('[data-nav]').forEach(b=>b.classList.toggle('on', b.dataset.nav===kind)); }
+    return screen;
+  }
+
+  function wire(screen){
+    // bottom nav & links: switch view if present
+    screen.addEventListener('click', e=>{
+      const nb=e.target.closest('[data-nav]');
+      if(nb){ e.preventDefault(); const k=nb.dataset.nav; const target=screen.querySelector('[data-view="'+k+'"]'); if(!target) return;
+        screen.querySelectorAll('.view').forEach(v=>v.classList.toggle('on', v===target));
+        screen.querySelectorAll('.a-nav [data-nav]').forEach(b=>b.classList.toggle('on', b.dataset.nav===k));
+        screen.querySelector('[data-sub]').textContent=SUB[k]; target.querySelector('.a-body').scrollTop=0; return; }
+      if(e.target.closest('[data-open-drawer]')){ screen.querySelector('.a-drawer').classList.add('on'); screen.querySelector('.sb').classList.add('dark'); return; }
+      if(e.target.closest('[data-close-drawer]')){ screen.querySelector('.a-drawer').classList.remove('on'); screen.querySelector('.sb').classList.remove('dark'); return; }
+      const vr=e.target.closest('.vr[data-toggle]'); if(vr){ const vb=vr.nextElementSibling; if(vb&&vb.classList.contains('vb')) vb.classList.toggle('on'); return; }
+      const mod=e.target.closest('[data-modules] .chip'); if(mod){ mod.parentElement.querySelectorAll('.chip').forEach(c=>c.classList.toggle('on',c===mod)); applyModule(screen, mod.textContent.trim()); return; }
+      const chip=e.target.closest('.chips:not([data-modules]) .chip'); if(chip && chip.parentElement.querySelectorAll('.chip').length>2 && !/·/.test(chip.textContent)){ chip.parentElement.querySelectorAll('.chip').forEach(c=>c.classList.toggle('on',c===chip)); }
+      const g=e.target.closest('.gsel button'); if(g){ g.parentElement.querySelectorAll('button').forEach(c=>c.classList.toggle('on',c===g)); }
+    });
+  }
+
+  // rebuild pitch lines for a module, keeping the first N names of each role
+  const POOL={d:['Benedettini','Zafferani','Grandoni','Valentini','Muccioli'],c:['Gasperoni','Battistini','Tomassini','Casadei','Dolcini'],a:['Righi',null,'Mularoni']};
+  function applyModule(screen, mod){
+    const [d,c,a]=mod.split('-').map(Number); const pitch=screen.querySelector('[data-pitch]'); if(!pitch) return;
+    const mk=(role,names,n)=>{ const line=document.createElement('div'); line.className='line'; line.dataset.line=role;
+      for(let i=0;i<n;i++){ const nm=names[i]; const s=document.createElement('div'); s.className='slot'+(nm?'':' empty');
+        const ini=nm?nm.slice(0,2).toUpperCase():'+'; const cap=(role==='c'&&i===0)?'<span class="cap">C</span>':(role==='a'&&i===0?'<span class="cap">V</span>':'');
+        s.innerHTML='<span class="av">'+cap+ini+(nm?'<span class="rl rl-'+role+'">'+role.toUpperCase()+'</span>':'')+'</span><b>'+(nm||{d:'Difensore',c:'Centrocampista',a:'Attaccante'}[role])+'</b>'; line.appendChild(s);} return line; };
+    pitch.querySelectorAll('[data-line]').forEach(l=>l.remove());
+    pitch.appendChild(mk('d',POOL.d,d)); pitch.appendChild(mk('c',POOL.c,c)); pitch.appendChild(mk('a',POOL.a,a));
+  }
+
+  // hero: interactive, all tabs
+  const hero=document.getElementById('hero-phone'); const hs=buildScreen('dashboard',{all:true}); hero.appendChild(hs); wire(hs);
+  // gallery
+  document.querySelectorAll('#gallery .shot').forEach(shot=>{ const s=buildScreen(shot.dataset.screen); shot.querySelector('.phone').appendChild(s); wire(s); });
+  // kit component demo rows
+  document.querySelectorAll('.comp .vr[data-toggle]').forEach(b=>b.addEventListener('click',()=>{ const vb=b.nextElementSibling; if(vb) vb.classList.toggle('on'); }));
+})();
+</script>

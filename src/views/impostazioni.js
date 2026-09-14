@@ -1,8 +1,8 @@
 import * as S from '../state.js';
-import { esc, icon, crest } from '../ui.js';
+import { esc, icon, crest, pic } from '../ui.js';
 import { applyTheme } from '../app.js';
 
-const row = (ic, title, sub, action = '', cls = '') => `<button class="setting ${cls}" ${action ? `data-act="${action}"` : 'disabled style="cursor:default"'}><i class="ico">${icon(ic)}</i><span class="txt"><b>${title}</b>${sub ? `<span>${sub}</span>` : ''}</span>${action ? icon('chev', 'ic sm chev') : ''}</button>`;
+const row = (ic, title, sub, action = '', cls = '') => `<button class="setting ${cls}" ${action ? `data-act="${action}"` : 'disabled style="cursor:default"'}><i class="ico${typeof ic === 'object' ? ' illus' : ''}">${typeof ic === 'object' ? pic(ic.m, 'menu') : icon(ic)}</i><span class="txt"><b>${title}</b>${sub ? `<span>${sub}</span>` : ''}</span>${action ? icon('chev', 'ic sm chev') : ''}</button>`;
 const group = (title, inner) => `<section class="group"><h3>${title}</h3>${inner}</section>`;
 
 export const impostazioni = {
@@ -14,23 +14,23 @@ export const impostazioni = {
       <div class="setting" style="cursor:default">${crest({ color: me?.color || 'var(--primary)', initials: me?.initials || (p?.display_name || 'AA').slice(0, 2).toUpperCase() }, 'sm')}<span class="txt"><b>${esc(p?.display_name || '')}</b><span>${esc(u?.email || '')}${p?.is_judge ? ' · Giudice Dati' : ''}</span></span></div>
       ${S.authKind() === 'clerk'
         ? row('gear', 'Gestisci account', 'Nome, e-mail, password e accessi collegati', 'clerk-profile')
-        : row('edit', 'Cambia nome', 'Come ti vedono gli altri nella lega', 'name') + row('shield', 'Cambia password', 'Imposta una nuova password per questo account', 'password')}
+        : row({ m: 'vice-allenatore' }, 'Cambia nome', 'Come ti vedono gli altri nella lega', 'name') + row('shield', 'Cambia password', 'Imposta una nuova password per questo account', 'password')}
       ${row('out', 'Esci', 'Torni alla schermata di accesso', 'logout', 'danger')}`);
 
     const league = S.hasLeague() ? group('Lega', `
-      ${row('users', esc(S.base.league.name), `${S.base.managers.length} partecipanti${S.base.league.inviteCode ? ` · codice ${esc(S.base.league.inviteCode)}` : ''}`, 'lega')}
-      ${row('cup', 'Cambia o crea lega', `${S.myLeagues().length} ${S.myLeagues().length === 1 ? 'lega' : 'leghe'} · entra con un codice invito`, 'leghe')}
-      ${row('book', 'Regolamento ed opzioni', 'Voto Titano, bonus, soglie di conversione', 'regolamento')}`)
-      : group('Lega', row('cup', 'Entra in una lega', 'Crea la tua oppure usa un codice invito', 'leghe'));
+      ${row({ m: 'squadre' }, esc(S.base.league.name), `${S.base.managers.length} partecipanti${S.base.league.inviteCode ? ` · codice ${esc(S.base.league.inviteCode)}` : ''}`, 'lega')}
+      ${row({ m: 'leghe' }, 'Cambia o crea lega', `${S.myLeagues().length} ${S.myLeagues().length === 1 ? 'lega' : 'leghe'} · entra con un codice invito`, 'leghe')}
+      ${row({ m: 'guide' }, 'Regolamento ed opzioni', 'Voto Titano, bonus, soglie di conversione', 'regolamento')}`)
+      : group('Lega', row({ m: 'leghe' }, 'Entra in una lega', 'Crea la tua oppure usa un codice invito', 'leghe'));
 
     const judge = p?.is_judge ? group('Giudice Dati', `
-      ${row('edit', 'Inserisci eventi', `Giornata ${S.currentMatchday()}`, 'admin')}
-      ${row('archive', 'Carica le giornate giocate', 'Formazioni, marcatori, assist e cartellini veri dai tabellini FSGC', 'seed')}`) : '';
+      ${row({ m: 'voti' }, 'Inserisci eventi', `Giornata ${S.currentMatchday()}`, 'admin')}
+      ${row({ m: 'statistiche' }, 'Carica le giornate giocate', 'Formazioni, marcatori, assist e cartellini veri dai tabellini FSGC', 'seed')}`) : '';
 
     const look = group('Aspetto', `<div class="a-card"><label class="lbl">Tema</label><div class="seg">${[['system', 'Sistema'], ['light', 'Chiaro'], ['dark', 'Scuro']].map(([k, l]) => `<button class="${d.theme === k ? 'on' : ''}" data-theme="${k}">${l}</button>`).join('')}</div></div>`);
 
     const data = group('Dati e privacy', `
-      ${row('list', 'Da dove vengono i dati', 'Lega, formazioni e voti sul server; listone e calendario generati dall\'app')}
+      ${row({ m: 'quotazioni' }, 'Da dove vengono i dati', 'Lega, formazioni e voti sul server; listone e calendario generati dall\'app')}
       ${row('shield', 'Atleti e società', 'Nomi e prestazioni useranno dati reali solo previo accordo FSGC (art. 14)')}
       ${row('gear', 'Server della lega', esc((S.serverHost() || '—')), 'server')}
       ${row('shield', 'Diagnostica accessi', 'Controlla sul progetto cosa manca ancora per far entrare la gente', 'diagnostica')}`);

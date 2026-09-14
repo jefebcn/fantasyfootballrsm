@@ -36,8 +36,10 @@ export const dashboard = {
     const last = S.resultsUntil(ph.matchday).filter((r) => r.homeManagerId === me.id || r.awayManagerId === me.id).slice(-5).reverse();
     const last5 = [...last.map((r) => { const home = r.homeManagerId === me.id; const gf = home ? r.homeGoals : r.awayGoals, gs = home ? r.awayGoals : r.homeGoals; const cls = gf > gs ? 'v' : gf < gs ? 'p' : 'n'; return `<div><i class="${cls}">${r.matchday}</i>${gf} – ${gs}<small>${fmt(home ? r.homeScore : r.awayScore)}</small></div>`; }), ...Array(Math.max(0, 5 - last.length)).fill('<div><i></i></div>')].join('');
     const rule = RULES[Math.floor(Date.now() / 86400000) % RULES.length];
+    const err = S.connectionError();
     return `<main class="a-body">
       <div id="install-slot"></div>
+      ${err ? `<div class="warn block">${icon('warn', 'ic sm')}<span><b>Modalità locale.</b> ${esc(err.message)} — i dati che vedi sono la demo sul dispositivo. <a href="#/impostazioni">Riprova la connessione</a></span></div>` : ''}
       <div class="a-herowrap"><a class="a-league" href="#/leghe" style="text-decoration:none;color:inherit">${esc(S.base.league.shortName)} ${icon('chev')}</a>
         <div class="a-hero">${icon('towers', 'tw')}<h2>${esc(me.teamName)}</h2>
           <svg class="jersey" style="--j1:${me.color};--j2:${me.color}"><use href="#i-jersey"/></svg>

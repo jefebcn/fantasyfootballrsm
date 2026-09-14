@@ -36,7 +36,10 @@ function notify() { cache.clear(); listeners.forEach((fn) => fn()); }
 const memo = (key, fn) => { if (!cache.has(key)) cache.set(key, fn()); return cache.get(key); };
 
 // ---------------------------------------------------------------- avvio
+let remoteError = null;
+export const connectionError = () => remoteError;
 export async function init() {
+  remoteError = null;
   if (remote.isConfigured() && !prefs.localDemo) {
     try {
       user = await remote.init();
@@ -44,10 +47,16 @@ export async function init() {
       remote.onAuth(async (u) => { const was = user?.id; user = u; if (u?.id !== was) { await loadRemote(); notify(); } });
       await loadRemote();
       return;
-    } catch (e) { onError(e); mode = 'local'; }
+    } catch (e) {
+      // Connessione assente, CDN irraggiungibile o schema non ancora applicato:
+      // si continua in locale invece di restare bloccati (README §9, mobile-first).
+      remoteError = e; onError(e); mode = 'local';
+    }
   }
   loadLocal();
 }
+/** Riprova la connessione senza perdere lo stato locale. */
+export async function retryRemote() { prefs.localDemo = false; persistPrefs(); await init(); notify(); return !remoteError; }
 function loadLocal() {
   mode = 'local';
   const d = load(LOCAL_KEY, { ...emptyGlobal(), ...emptyLeague() });

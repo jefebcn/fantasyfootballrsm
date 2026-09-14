@@ -28,10 +28,24 @@ export function badge(status, extra = '') {
 export const roleChip = (role) => `<span class="rl rl-${role.toLowerCase()}">${role}</span>`;
 export const crest = (m, cls = '') => `<span class="crest ${cls}" style="background:${m.color}">${esc(m.initials)}</span>`;
 
-const EV = { goal: ['ev-g', 'G'], assist: ['ev-a', 'As'], yellow: ['ev-y', 'A'], second_yellow: ['ev-r', 'E'], red_direct: ['ev-r', 'E'], own_goal: ['ev-r', 'AG'], pen_missed: ['ev-r', 'RS'], pen_saved: ['ev-k', 'RP'], pen_won: ['ev-k', 'R+'], pen_conceded: ['ev-r', 'R−'] };
+/** Icone illustrate: media/icone/eventi e media/icone/menu. */
+export const pic = (name, cartella = 'eventi', cls = '') => `<img class="pic ${cls}" src="media/icone/${cartella}/${name}.png" alt="" loading="lazy">`;
+
+const EV = {
+  goal: ['gol', 'Gol'], assist: ['assist', 'Assist'], own_goal: ['autogol', 'Autogol'],
+  yellow: ['ammonizione', 'Ammonizione'], second_yellow: ['espulsione-x2', '2ª ammonizione'],
+  red_direct: ['espulsione', 'Rosso diretto'], pen_missed: ['rigore-sbagliato', 'Rigore sbagliato'],
+  pen_saved: ['rigore-parato', 'Rigore parato'],
+};
+const EV_TESTO = { pen_won: ['R+', 'ev-k'], pen_conceded: ['R−', 'ev-r'] };
 export const EV_LABEL = { goal: 'Gol', assist: 'Assist', yellow: 'Ammonizione', second_yellow: '2ª ammonizione', red_direct: 'Rosso diretto', own_goal: 'Autogol', pen_missed: 'Rigore sbagliato', pen_saved: 'Rigore parato', pen_won: 'Rigore procurato', pen_conceded: 'Rigore causato' };
-export const evTile = (type) => { const [c, l] = EV[type] || ['ev-a', '?']; return `<i class="${c}" style="display:inline-grid;place-items:center;width:18px;height:18px;border-radius:4px;font-style:normal;font-size:10px;font-weight:700">${l}</i>`; };
-export function evTiles(events) { return events.filter((e) => EV[e.type]).map((e) => evTile(e.type)).join(''); }
+export function evTile(type) {
+  const e = EV[type];
+  if (e) return `<i class="evi" title="${e[1]}">${pic(e[0])}</i>`;
+  const t = EV_TESTO[type];
+  return t ? `<i class="${t[1]}" style="display:inline-grid;place-items:center;width:20px;height:20px;border-radius:5px;font-style:normal;font-size:10px;font-weight:700">${t[0]}</i>` : '';
+}
+export function evTiles(events) { return events.map((e) => evTile(e.type)).join(''); }
 
 /** Riga voto con breakdown (tap per espandere). */
 export function voteRow(player, club, rating, { expanded = false, captain = false, minutes = null, extra = '' } = {}) {

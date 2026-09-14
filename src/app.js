@@ -1,6 +1,6 @@
 /** Shell applicativa: router hash, app bar, drawer, bottom nav, toast, sheet. */
 import { SPRITE } from './sprite.js';
-import { esc, icon, badge, crest, logo } from './ui.js';
+import { esc, icon, badge, crest, logo, pic } from './ui.js';
 import * as S from './state.js';
 import * as views from './views/index.js';
 
@@ -65,20 +65,24 @@ function nav(path) {
 }
 function drawer() {
   const me = S.me(); const ph = S.weekPhase(); const u = S.currentUser();
-  const item = (href, ic, label, small = '') => `<a class="d-item" href="${href}"><i>${icon(ic)}</i>${label}${small ? `<small>${small}</small>` : ''}</a>`;
+  // icone illustrate dove il soggetto coincide, contorno altrove: stesso riquadro per entrambe
+  const item = (href, ic, label, small = '') => {
+    const illus = typeof ic === 'object';
+    return `<a class="d-item" href="${href}"><i class="${illus ? 'illus' : ''}">${illus ? pic(ic.m, 'menu') : icon(ic)}</i>${label}${small ? `<small>${small}</small>` : ''}</a>`;
+  };
   const leagues = S.myLeagues(); const cur = S.currentLeagueId();
   const head = `<div class="d-head"><div><b>${esc(me?.owner || S.profileInfo()?.display_name || u?.email || '')}</b><span>${esc(me?.teamName || u?.email || 'nessuna lega')}</span></div><button data-logout>LOGOUT</button></div>`;
-  const leagueRow = `<a class="d-league" href="#/leghe" style="text-decoration:none">${esc(S.base.league.name)} <i>+</i></a>${leagues.length > 1 ? `<div class="d-sec"><span class="chip">Le mie leghe</span></div>${leagues.filter((l) => l.id !== cur).map((l) => `<button class="d-item" data-switch="${l.id}" style="border:0;background:transparent;width:100%;font:inherit;font-weight:600;cursor:pointer"><i style="background:var(--c-pietra-400)">${icon('cup')}</i>${esc(l.name)}<small>${l.myRole}</small></button>`).join('')}` : ''}`;
+  const leagueRow = `<a class="d-league" href="#/leghe" style="text-decoration:none">${esc(S.base.league.name)} <i>+</i></a>${leagues.length > 1 ? `<div class="d-sec"><span class="chip">Le mie leghe</span></div>${leagues.filter((l) => l.id !== cur).map((l) => `<button class="d-item" data-switch="${l.id}" style="border:0;background:transparent;width:100%;font:inherit;font-weight:600;cursor:pointer"><i>${icon('cup')}</i>${esc(l.name)}<small>${l.myRole}</small></button>`).join('')}` : ''}`;
   return `<div class="a-drawer${drawerOpen ? ' on' : ''}"><div class="scrim" data-close-drawer></div><div class="panel">
     ${head}${leagueRow}
     ${S.hasLeague() ? `<div class="d-cta"><a class="a-btn" href="#/rosa/formazione" style="text-decoration:none">${icon('shirt', 'ic sm')}Schiera la formazione</a></div>` : ''}
     <div class="d-sec"><span class="chip">Setup</span></div>
-    ${item('#/lega', 'shield', 'Profilo lega', S.base.league.inviteCode ? `codice ${esc(S.base.league.inviteCode)}` : '')}${item('#/lega', 'users', 'Partecipanti', String(S.base.managers.length))}${item('#/regolamento', 'book', 'Regolamento ed opzioni')}${item('#/classifica', 'cup', 'Competizioni')}
+    ${item('#/lega', { m: 'leghe' }, 'Profilo lega', S.base.league.inviteCode ? `codice ${esc(S.base.league.inviteCode)}` : '')}${item('#/lega', { m: 'squadre' }, 'Partecipanti', String(S.base.managers.length))}${item('#/regolamento', { m: 'guide' }, 'Regolamento ed opzioni')}${item('#/classifica', { m: 'statistiche' }, 'Competizioni')}
     <div class="d-sec"><span class="chip">Gioca</span></div>
-    ${item('#/listone', 'list', 'Listone', String(S.base.players.length))}${item('#/mercato', 'cart', 'Mercato libero', 'rilancio 24h')}${item('#/mercato', 'out', 'Fuori dal campionato', String(S.base.players.filter((p) => !p.isActive).length))}${item('#/scheda', 'img', 'Scheda condivisibile')}
-    ${S.isLeagueAdmin() ? `<div class="d-sec"><span class="chip">Gestione</span></div>${item('#/lega', 'shirt', 'Gestione rose')}${item('#/lega', 'edit', 'Partecipanti e ruoli')}` : ''}
+    ${item('#/listone', { m: 'quotazioni' }, 'Listone', String(S.base.players.length))}${item('#/mercato', { m: 'trasferimenti' }, 'Mercato libero', 'rilancio 24h')}${item('#/mercato', 'out', 'Fuori dal campionato', String(S.base.players.filter((p) => !p.isActive).length))}${item('#/scheda', 'img', 'Scheda condivisibile')}
+    ${S.isLeagueAdmin() ? `<div class="d-sec"><span class="chip">Gestione</span></div>${item('#/lega', { m: 'squadre' }, 'Gestione rose')}${item('#/lega', { m: 'vice-allenatore' }, 'Partecipanti e ruoli')}` : ''}
     ${S.isJudge() ? `<div class="d-sec admin"><span class="chip">Giudice Dati</span></div>
-    ${item('#/admin', 'edit', 'Inserisci eventi', `G${ph.matchday}`)}${item('#/admin/contestazioni', 'flag', 'Contestazioni', `${S.contestazioni().filter((c) => c.status === 'open').length} aperte`)}${item('#/admin/congela', 'lock', 'Congela giornata', 'mar 20:00')}${item('#/admin/registro', 'archive', 'Registro modifiche')}` : ''}
+    ${item('#/admin', { m: 'voti' }, 'Inserisci eventi', `G${ph.matchday}`)}${item('#/admin/contestazioni', 'flag', 'Contestazioni', `${S.contestazioni().filter((c) => c.status === 'open').length} aperte`)}${item('#/admin/congela', 'lock', 'Congela giornata', 'mar 20:00')}${item('#/admin/registro', 'archive', 'Registro modifiche')}` : ''}
     <a class="d-plain" href="#/impostazioni" style="display:block;text-decoration:none;color:inherit">Utente, impostazioni e privacy</a>
     <div class="d-foot">Versione 0.5<br>Fantacampionato Sammarinese</div>
   </div></div>`;

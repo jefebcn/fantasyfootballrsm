@@ -1,6 +1,6 @@
 import * as S from '../state.js';
 import { computeRating } from '../engine.js';
-import { esc, fmt, icon, badge, roleChip, initials, evTile, EV_LABEL, voteRow, dateIt, timeIt } from '../ui.js';
+import { esc, fmt, icon, badge, roleChip, initials, evTile, pic, EV_LABEL, voteRow, dateIt, timeIt } from '../ui.js';
 
 const STATUS = [['played', 'Giocata'], ['postponed', 'Rinviata'], ['suspended_before_45', 'Sospesa <45\''], ['suspended_after_45', 'Sospesa >45\''], ['awarded', 'A tavolino']];
 const guard = (ctx, fn) => { try { fn(); } catch (e) { ctx.toast(e.message); } };
@@ -15,8 +15,8 @@ export const adminGiornata = {
     return `<main class="a-body">
       <div class="a-card a-fase"><div class="r">${badge(st, `giornata ${n}`)}<b class="num" style="font-size:14px">${done}/8</b></div><div class="prog"><i style="width:${done / 8 * 100}%"></i></div><p class="small muted">Pubblicazione entro dom 23:59 · congelamento mar 20:00. Ogni modifica è loggata (art. 9.3).</p></div>
       <div class="vlist">${ms.map((m) => { const h = S.clubsById.get(m.homeClubId), a = S.clubsById.get(m.awayClubId); const ev = S.eventsOf(m.id).length; const cls = m.status === 'scheduled' ? 'st-td' : ev || m.status !== 'played' ? 'st-ok' : 'st-ip';
-        const right = m.status === 'played' ? `<span class="sc">${m.homeGoals} – ${m.awayGoals}</span>` : m.status === 'scheduled' ? '<span class="sc muted">–</span>' : `<span class="sc st" style="font:600 10px var(--font-body);letter-spacing:.06em;color:var(--warning)">${STATUS.find((s) => s[0] === m.status)[1].toUpperCase()}</span>`;
-        return `<a class="mrow" href="#/admin/partita/${m.id}" style="text-decoration:none;color:inherit"><span class="st ${cls}">${cls === 'st-ok' ? icon('check', 'ic sm') : cls === 'st-ip' ? '●' : ''}</span><div><b>${esc(h.name)} — ${esc(a.name)}</b><span>${esc(m.venue)} · ${m.status === 'scheduled' ? 'da inserire' : `${ev} eventi`}</span></div>${right}${icon('chev', 'ic sm')}</a>`; }).join('')}</div>
+        const right = m.status === 'played' ? `<span class="sc">${m.homeGoals} – ${m.awayGoals}</span>` : m.status === 'scheduled' ? '<span class="sc muted">–</span>' : `<span class="sc stato">${STATUS.find((s) => s[0] === m.status)[1].toUpperCase()}</span>`;
+        return `<a class="mrow" href="#/admin/partita/${m.id}" style="text-decoration:none;color:inherit"><span class="st ${cls}">${cls === 'st-ok' ? icon('check', 'ic sm') : cls === 'st-ip' ? '●' : ''}</span><div><b>${esc(h.name)} — ${esc(a.name)}</b><span>${esc(m.venue)} · ${m.status === 'scheduled' ? 'da inserire' : `${ev} ${ev === 1 ? 'evento' : 'eventi'}`}</span></div>${right}${icon('chev', 'ic sm')}</a>`; }).join('')}</div>
       ${open.length ? `<a class="warn info" href="#/admin/contestazioni" style="text-decoration:none">${icon('flag', 'ic sm')}<span><b>${open.length} contestazioni aperte</b> · scadenza mar 18:00</span></a>` : ''}
       ${st === 'frozen' ? `<div class="warn info">${icon('lock', 'ic sm')}<span>Giornata ${n} congelata: nessuna modifica possibile (art. 9.2).</span></div>` : `<a class="a-btn" href="#/admin/congela" style="text-decoration:none">${icon('lock', 'ic sm')}Vai al congelamento</a>`}
       <div class="chips" style="justify-content:center"><a class="chip" href="#/admin/registro" style="text-decoration:none">Registro modifiche</a><a class="chip" href="#/voti/${n}" style="text-decoration:none">Vista pubblica</a></div>
@@ -40,9 +40,9 @@ export const adminPartita = {
     const started = (cid) => apps.filter((x) => x.clubId === cid && x.started).length;
     if (m.status === 'played' && (started(m.homeClubId) !== 11 || started(m.awayClubId) !== 11)) warn.push(`Titolari: ${h.name} ${started(m.homeClubId)}/11 · ${a.name} ${started(m.awayClubId)}/11`);
 
-    const steps = `<div class="chips">${[[1, 'Risultato'], [2, `Chi ha giocato ${apps.length}`], [3, `Eventi ${evs.length}`], [4, 'Anteprima voti']].map(([i, l]) => `<button class="chip${step === i ? ' on' : ''}" data-step="${i}">${i} · ${l}</button>`).join('')}</div>`;
+    const steps = `<div class="chips">${[[1, 'Risultato'], [2, `Chi ha giocato · ${apps.length}`], [3, `Eventi · ${evs.length}`], [4, 'Anteprima voti']].map(([i, l]) => `<button class="chip${step === i ? ' on' : ''}" data-step="${i}">${i} · ${l}</button>`).join('')}</div>`;
     let body = '';
-    if (step === 1) body = `<div class="a-card"><label class="lbl">Risultato</label><div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><div class="stepper"><button data-g="home:-1" ${frozen ? 'disabled' : ''}>−</button><b>${m.homeGoals ?? 0}</b><button data-g="home:1" ${frozen ? 'disabled' : ''}>+</button></div><span class="small muted" style="text-align:center;flex:1">${esc(h.name)}<br>—<br>${esc(a.name)}</span><div class="stepper"><button data-g="away:-1" ${frozen ? 'disabled' : ''}>−</button><b>${m.awayGoals ?? 0}</b><button data-g="away:1" ${frozen ? 'disabled' : ''}>+</button></div></div></div>
+    if (step === 1) body = `<div class="a-card"><label class="lbl">Risultato</label>${[[h, 'home', m.homeGoals], [a, 'away', m.awayGoals]].map(([c, k, g]) => `<div class="scorerow"><b>${esc(c.name)}</b><div class="stepper"><button data-g="${k}:-1" ${frozen ? 'disabled' : ''}>−</button><b>${g ?? 0}</b><button data-g="${k}:1" ${frozen ? 'disabled' : ''}>+</button></div></div>`).join('')}</div>
       <div class="a-card"><label class="lbl">Stato gara (art. 10)</label><div class="chipgrid">${STATUS.map(([k, l]) => `<button class="chip${m.status === k ? ' on' : ''}" data-status="${k}" ${frozen ? 'disabled' : ''}>${l}</button>`).join('')}</div><p class="small muted" style="margin-top:8px">Rinviata, sospesa prima del 45' e a tavolino: S.V. per tutti. Sospesa dopo il 45': eventi validi, niente esito né porta inviolata.</p></div>
       <div class="a-card"><label class="lbl">Video Titani.TV</label>${m.videoUrl ? `<a href="${esc(m.videoUrl)}" target="_blank" rel="noopener" class="small">${esc(m.videoUrl)}</a>` : '<span class="small muted">Nessun link</span>'}</div>`;
     else if (step === 2) {
@@ -55,8 +55,10 @@ export const adminPartita = {
         ${warn.map((w) => `<div class="warn block">${icon('warn', 'ic sm')}<span>${esc(w)}</span></div>`).join('')}
         <div class="kb" style="margin:auto -16px 0">
           <span class="handle"></span>
-          <button class="k g" data-ev="goal" ${frozen ? 'disabled' : ''}><i>⚽</i>Gol</button><button class="k r" data-ev="own_goal" ${frozen ? 'disabled' : ''}><i>AG</i>Autogol</button><button class="k y" data-ev="yellow" ${frozen ? 'disabled' : ''}><i>▮</i>Giallo</button><button class="k r" data-ev="second_yellow" ${frozen ? 'disabled' : ''}><i>▮▮</i>2° giallo</button>
-          <button class="k r" data-ev="red_direct" ${frozen ? 'disabled' : ''}><i>▮</i>Rosso</button><button class="k r" data-ev="pen_missed" ${frozen ? 'disabled' : ''}><i>RS</i>Rig. sbagl.</button><button class="k" data-ev="assist" ${frozen ? 'disabled' : ''}><i>As</i>Assist</button>${S.rules().level2Events ? `<button class="k" data-ev="pen_won" ${frozen ? 'disabled' : ''}><i>R+</i>Rig. proc.</button>` : '<button class="k k2" disabled><i>R+</i>Liv. 2 off</button>'}
+          ${[['goal', 'Gol'], ['assist', 'Assist'], ['own_goal', 'Autogol'], ['yellow', 'Giallo'],
+             ['second_yellow', '2° giallo'], ['red_direct', 'Rosso'], ['pen_missed', 'Rig. sbagliato'], ['pen_saved', 'Rig. parato']]
+            .map(([k, l]) => `<button class="k" data-ev="${k}" ${frozen ? 'disabled' : ''}>${evTile(k)}${l}</button>`).join('')}
+          ${S.rules().level2Events ? `<button class="k" data-ev="pen_won" ${frozen ? 'disabled' : ''}><i>R+</i>Rig. procurato</button><button class="k" data-ev="pen_conceded" ${frozen ? 'disabled' : ''}><i>R−</i>Rig. causato</button>` : ''}
         </div>`;
     } else {
       const ratings = S.ratingsOf(m.matchday); const byP = {}; for (const e of evs) (byP[e.playerId] ||= []).push(e);
@@ -93,7 +95,7 @@ export const adminPartita = {
       const ev = e.target.closest('[data-ev]'); if (ev) {
         const type = ev.dataset.ev; const apps = S.appearancesOf(m.id); const last = S.eventsOf(m.id).slice(-1)[0];
         const list = apps.map((x) => P(x.playerId)).filter((p) => type !== 'pen_saved' || p.role === 'P');
-        ctx.sheet(`<h3>${evTile(type)} ${EV_LABEL[type]}</h3><label class="lbl" for="ev-min">Minuto</label><input class="field-input" id="ev-min" type="number" min="0" max="90" value="${last ? Math.min(90, last.minute + 1) : 1}"><input class="field-input" id="ev-q" placeholder="Cerca giocatore" style="margin-top:8px" autocomplete="off">
+        ctx.sheet(`<h3 class="sheet-ev">${evTile(type)} ${EV_LABEL[type]}</h3><label class="lbl" for="ev-min">Minuto</label><input class="field-input" id="ev-min" type="number" min="0" max="90" value="${last ? Math.min(90, last.minute + 1) : 1}"><input class="field-input" id="ev-q" placeholder="Cerca giocatore" style="margin-top:8px" autocomplete="off">
           <div class="plist" id="ev-list">${list.map((p) => `<button data-evp="${p.id}">${roleChip(p.role)}<span><b>${esc(p.name)}</b><span>${esc(S.clubsById.get(p.clubId).name)}</span></span><span></span></button>`).join('')}</div>`);
         const sh = document.getElementById('sheet');
         document.getElementById('ev-q').oninput = (x) => { const q = x.target.value.toLowerCase(); sh.querySelectorAll('[data-evp]').forEach((b) => { b.hidden = !P(b.dataset.evp).name.toLowerCase().includes(q); }); };

@@ -10,7 +10,8 @@ che `matchday_lock_at(3)` restituisca sabato 19/09/2026 15:00 Europe/Rome, allin
 
 ## Impostazioni di autenticazione (le uniche che decidono se il login funziona)
 
-L'app offre due strade. Configurale entrambe: la prima non dipende dall'e-mail.
+L'app offre quattro strade: **Google**, **Apple**, **password** e **link via e-mail**.
+I pulsanti social compaiono solo se il provider è attivo sul progetto.
 
 ### 1. Password — consigliata per il pilota
 **Authentication → Sign In / Providers → Email**
@@ -39,6 +40,54 @@ in **Authentication → Emails → Magic Link** aggiungi una riga con `{{ .Token
 ```
 
 Lo stesso vale per il modello *Confirm signup* se tieni la conferma e-mail accesa.
+
+
+### 3. Google e Apple
+
+I pulsanti compaiono nell'app **solo se il provider è attivo** sul progetto: l'app legge
+`/auth/v1/settings` all'avvio. Attivane uno e il pulsante appare da solo, senza rilasci.
+
+Per entrambi l'indirizzo di ritorno da registrare presso il provider è quello di **Supabase**,
+non quello dell'app:
+
+```
+https://nskgzpbcssnpfuxmbepa.supabase.co/auth/v1/callback
+```
+
+#### Google — gratuito, 10 minuti
+
+1. [Google Cloud Console](https://console.cloud.google.com) → nuovo progetto.
+2. *APIs & Services → OAuth consent screen*: tipo **External**, nome dell'app, e-mail di
+   supporto e dello sviluppatore. Gli ambiti predefiniti (`email`, `profile`, `openid`) bastano.
+   Finché l'app è in *Testing* possono entrare solo gli account elencati come test user:
+   pubblicala (*Publish app*) quando la lega parte.
+3. *Credentials → Create credentials → OAuth client ID → Web application*:
+   - *Authorized JavaScript origins*: `https://fantasyfootballrsm.vercel.app`
+   - *Authorized redirect URIs*: l'indirizzo di callback qui sopra
+4. Copia **Client ID** e **Client secret** in Supabase → *Authentication → Sign In / Providers
+   → Google* → attiva e salva.
+
+#### Apple — richiede l'Apple Developer Program (99 $/anno)
+
+Senza iscrizione a pagamento non è possibile: è una condizione di Apple, non dell'app.
+
+1. [developer.apple.com](https://developer.apple.com/account) → *Certificates, Identifiers & Profiles*.
+2. *Identifiers* → nuovo **App ID** con la capability **Sign In with Apple** attiva.
+3. *Identifiers* → nuovo **Services ID** (es. `com.fantacampionato.web`): è il *client ID*.
+   Attiva *Sign In with Apple* → *Configure*:
+   - *Primary App ID*: quello del punto 2
+   - *Domains and Subdomains*: `nskgzpbcssnpfuxmbepa.supabase.co`
+   - *Return URLs*: l'indirizzo di callback qui sopra
+4. *Keys* → nuova chiave con *Sign In with Apple* → scarica il file **.p8** (si scarica una
+   volta sola) e annota il **Key ID**.
+5. Annota il **Team ID** (in alto a destra nel portale).
+6. Supabase → *Authentication → Sign In / Providers → Apple*: inserisci Services ID, Team ID,
+   Key ID e il contenuto del file .p8. Supabase genera da sé il segreto e lo rinnova.
+
+Due cose da sapere su Apple: chi entra può **nascondere l'e-mail** (riceverai un indirizzo
+`@privaterelay.appleid.com`, che funziona lo stesso), e il **nome viene passato solo alla
+primissima autorizzazione** — se manca, l'app usa la parte iniziale dell'e-mail e il nome si
+cambia da *Impostazioni → Cambia nome*.
 
 ## Setup da zero
 ## Modello

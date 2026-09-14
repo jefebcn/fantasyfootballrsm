@@ -491,3 +491,15 @@ button,a{-webkit-tap-highlight-color:transparent}
 .crest{flex:none}
 .vhead{position:sticky;top:0;z-index:1}
 @media (max-width:360px){.a-stats b{font-size:21px}.a-hero h2{font-size:22px}}
+
+/* --- accesso con Google e Apple --- */
+.social{display:flex;flex-direction:column;gap:8px}
+.social-btn{display:flex;align-items:center;justify-content:center;gap:10px;height:48px;width:100%;border-radius:12px;border:1px solid var(--border-strong);background:var(--surface);color:var(--text);font:600 15px var(--font-body);cursor:pointer}
+.social-btn:active{background:var(--surface-2)}
+.social-btn:disabled{opacity:.6}
+.social-btn.apple{background:#000;color:#fff;border-color:#000}
+:root[data-theme="dark"] .social-btn.apple{background:#fff;color:#000;border-color:#fff}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .social-btn.apple{background:#fff;color:#000;border-color:#fff}}
+.social-mark{width:20px;height:20px;flex:none}
+.or{display:flex;align-items:center;gap:10px;margin:14px 0 4px;color:var(--text-muted);font-size:12px}
+.or::before,.or::after{content:"";flex:1;height:1px;background:var(--border)}

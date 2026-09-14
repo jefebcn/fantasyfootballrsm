@@ -34,7 +34,7 @@ export const impostazioni = {
       ${row('gear', 'Server della lega', esc((S.serverHost() || '—')), 'server')}`);
 
     return `<main class="a-body">${account}${league}${judge}${look}${data}
-      <p class="auth-foot">Versione 0.4 · motore ${S.rules().engineVersion}</p></main>`;
+      <p class="auth-foot">Versione 0.5 · motore ${S.rules().engineVersion}</p></main>`;
   },
 
   mount(root, ctx) {

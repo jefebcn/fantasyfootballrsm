@@ -503,3 +503,8 @@ button,a{-webkit-tap-highlight-color:transparent}
 .social-mark{width:20px;height:20px;flex:none}
 .or{display:flex;align-items:center;gap:10px;margin:14px 0 4px;color:var(--text-muted);font-size:12px}
 .or::before,.or::after{content:"";flex:1;height:1px;background:var(--border)}
+
+/* --- contenitore dei componenti Clerk --- */
+.clerk-card{padding:6px}
+.clerk-card .cl-rootBox,.clerk-card .cl-card{width:100%;box-shadow:none;border:0;background:transparent}
+.clerk-card .cl-footer{background:transparent}

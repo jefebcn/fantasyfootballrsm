@@ -8,6 +8,7 @@
 import { buildSeason, draftRosters as buildDraft, mulberry32 } from './data.js';
 import { computeRating, computeLineupResult, computeStandings, defaultLineup, DEFAULT_RULES } from './engine.js';
 import * as remote from './backend.js';
+import * as clerk from './auth-clerk.js';
 
 const PREFS_KEY = 'fcs:prefs';
 export const base = buildSeason();
@@ -49,13 +50,20 @@ export const connectionError = () => connError;
 export const isReady = () => ready;
 export const supabaseConfigured = () => remote.isConfigured();
 
+export const authKind = () => (clerk.isEnabled() ? 'clerk' : 'supabase');
 export async function init() {
   connError = null; ready = false;
   if (!remote.isConfigured()) return;
   try {
-    user = await remote.init();
+    if (authKind() === 'clerk') {
+      user = await clerk.init();
+      await remote.init({ accessToken: clerk.token });
+      clerk.onChange(async (u) => { const was = user?.id; user = u; if (u?.id !== was) { await loadAll(); notify(); } });
+    } else {
+      user = await remote.init();
+      remote.onAuth(async (u) => { const was = user?.id; user = u; if (u?.id !== was) { await loadAll(); notify(); } });
+    }
     ready = true;
-    remote.onAuth(async (u) => { const was = user?.id; user = u; if (u?.id !== was) { await loadAll(); notify(); } });
     await loadAll();
   } catch (e) { connError = e; onError(e); }
 }
@@ -83,7 +91,7 @@ export async function refresh() { if (!ready) return; try { await loadAll(); } c
 
 // ---------------------------------------------------------------- sessione
 const returnUrl = () => location.origin + location.pathname;
-async function adopt() { user = await remote.currentSessionUser(); await loadAll(); notify(); return user; }
+async function adopt() { user = authKind() === 'clerk' ? clerk.user() : await remote.currentSessionUser(); await loadAll(); notify(); return user; }
 export const currentUser = () => user;
 export const profileInfo = () => prof;
 export async function signInPassword(email, password) { await remote.signInPassword(email, password); return adopt(); }
@@ -91,12 +99,15 @@ export async function signUpPassword(email, password, displayName) { const r = a
 export async function resendConfirmation(email) { await remote.resendConfirmation(email, returnUrl()); }
 export async function signInLink(email) { await remote.signInLink(email, returnUrl()); }
 export const oauthProviders = () => { const p = remote.enabledProviders(); return ['google', 'apple'].filter((k) => p[k]); };
+export const clerkMount = (el, kind) => clerk.mount(el, kind);
+export const clerkUnmount = (el) => clerk.unmount(el);
+export const clerkProfile = () => clerk.openProfile();
 export async function signInWithProvider(provider) { await remote.signInOAuth(provider, returnUrl()); }
 export async function verifyCode(email, token) { await remote.verifyOtp(email, token); return adopt(); }
 export async function resetPassword(email) { await remote.resetPassword(email, returnUrl()); }
 export async function updatePassword(password) { await remote.updatePassword(password); }
 export async function updateDisplayName(name) { await remote.updateProfile(user.id, { display_name: name }); await refresh(); }
-export async function signOut() { await remote.signOut(); user = null; await loadAll(); notify(); }
+export async function signOut() { authKind() === 'clerk' ? await clerk.signOut() : await remote.signOut(); user = null; await loadAll(); notify(); }
 export function setSupabaseConfig(url, key) { remote.setConfig(url, key); location.reload(); }
 export const serverUrl = () => remote.config()?.url || '';
 export const serverKey = () => remote.config()?.key || '';

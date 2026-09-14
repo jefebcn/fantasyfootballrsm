@@ -1,5 +1,5 @@
 import * as S from '../state.js';
-import { icon } from '../ui.js';
+import { icon, logo } from '../ui.js';
 import { prepareLogin } from './auth.js';
 
 /**
@@ -41,7 +41,7 @@ export const onboarding = {
       </div>
       <div class="intro-top">
         ${slide ? `<button class="intro-back" data-prev aria-label="Indietro">${icon('chev', 'ic flip')}</button>` : '<span></span>'}
-        ${icon('towers', 'ic intro-mark')}
+        ${logo('intro-mark')}
         <button class="intro-skip" data-skip>Salta</button>
       </div>
       <div class="intro-body">

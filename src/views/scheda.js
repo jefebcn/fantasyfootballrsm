@@ -1,16 +1,16 @@
 import * as S from '../state.js';
-import { esc, fmt, icon, roleChip } from '../ui.js';
+import { esc, fmt, icon, roleChip, logo } from '../ui.js';
 
 export const scheda = {
   title: 'Scheda', appbar: 'back', sub: () => 'Scheda condivisibile',
   render() {
     const me = S.me(); const n = S.currentMatchday(); const f = S.myFixture(n, me.id); const r = f ? S.fixtureResult(f) : null;
-    if (!r || !r.played) return `<main class="a-body"><div class="empty">${icon('towers')}<p>Nessuna partita giocata da condividere.</p></div></main>`;
+    if (!r || !r.played) return `<main class="a-body"><div class="empty">${logo()}<p>Nessuna partita giocata da condividere.</p></div></main>`;
     const home = r.homeManagerId === me.id; const opp = S.managersById.get(home ? r.awayManagerId : r.homeManagerId);
     const mine = home ? r.home : r.away; const top = [...mine.rows].sort((a, b) => b.fantaVote - a.fantaVote).slice(0, 3);
     const gf = home ? r.homeGoals : r.awayGoals, gs = home ? r.awayGoals : r.homeGoals;
     return `<main class="a-body">
-      <div class="share" id="share-card">${icon('towers', 'tw')}<div><span class="eyebrow" style="color:rgba(255,255,255,.75)">Giornata ${n} · ${esc(S.base.league.name)}</span><h2>${esc(me.teamName)}</h2><span class="small">vs ${esc(opp.teamName)}</span></div>
+      <div class="share" id="share-card">${logo('tw')}<div><span class="eyebrow" style="color:rgba(255,255,255,.75)">Giornata ${n} · ${esc(S.base.league.name)}</span><h2>${esc(me.teamName)}</h2><span class="small">vs ${esc(opp.teamName)}</span></div>
         <div class="sc">${gf} – ${gs}<small>${fmt(home ? r.homeScore : r.awayScore)} – ${fmt(home ? r.awayScore : r.homeScore)} fantapunti</small></div>
         <div class="top3">${top.map((row) => `<div><span>${roleChip(row.role)} ${esc(S.playersById.get(row.playerId).name)}${row.isCaptain ? ' (C)' : ''}</span><b>${fmt(row.fantaVote)}</b></div>`).join('')}</div>
         <div class="foot"><span>${S.matchdayStatus(n) === 'frozen' ? '🔒 Congelato' : '⏱ Provvisorio'}</span><span>Voto Titano</span></div></div>

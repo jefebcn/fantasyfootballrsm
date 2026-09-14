@@ -1,5 +1,5 @@
 import * as S from '../state.js';
-import { esc, icon } from '../ui.js';
+import { esc, icon, logo } from '../ui.js';
 
 let tab = 'in';            // 'in' | 'up' | 'link'
 let pending = null;        // { email, kind: 'confirm' | 'link' }
@@ -17,13 +17,13 @@ export const login = {
   title: 'Accedi', appbar: 'none', nav: false,
   render() {
     if (S.authKind() === 'clerk') return `<main class="a-body auth">
-      <div class="auth-hero">${icon('towers', 'ic auth-mark')}
+      <div class="auth-hero">${logo('auth-mark')}
         <h1>Fantacampionato<br><em>Sammarinese</em></h1>
         <p>Voto Titano — il fantacalcio del Titano, senza pagelle.</p></div>
       <div class="a-card auth-card clerk-card"><div id="clerk-slot"><div class="skel" style="height:280px"></div></div></div>
     </main>`;
     return `<main class="a-body auth">
-      <div class="auth-hero">${icon('towers', 'ic auth-mark')}
+      <div class="auth-hero">${logo('auth-mark')}
         <h1>Fantacampionato<br><em>Sammarinese</em></h1>
         <p>Voto Titano — il fantacalcio del Titano, senza pagelle.</p></div>
       ${notice ? `<div class="warn ${notice.kind === 'ok' ? 'info' : 'block'}">${icon(notice.kind === 'ok' ? 'check' : 'warn', 'ic sm')}<span>${esc(notice.text)}</span></div>` : ''}

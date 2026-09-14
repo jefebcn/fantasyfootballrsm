@@ -1,5 +1,5 @@
 import * as S from '../state.js';
-import { esc, fmt, icon, badge, crest, roleChip, initials, evTiles, voteRow, dateIt, timeIt } from '../ui.js';
+import { esc, fmt, icon, badge, crest, roleChip, initials, evTiles, voteRow, dateIt, timeIt, logo } from '../ui.js';
 
 let tab = 'campo';
 const P = (id) => S.playersById.get(id);
@@ -38,7 +38,7 @@ export const live = {
     const head = `<div class="l-bar"><div class="row"><button class="ib flip" data-back aria-label="Indietro">${icon('chev')}</button><div class="lg">${crest({ color: 'var(--c-titano-800)', initials: 'SR' })}<div style="min-width:0"><b>${esc(S.base.league.name)}</b><span>Giornata ${n}</span></div></div><a class="ib" href="#/calendario/${n}" aria-label="Calendario">${icon('cal')}</a><a class="ib" href="#/scheda" aria-label="Scheda">${icon('share')}</a></div>
       <div class="l-head"><div class="tm"><b>${esc(h.teamName)}</b><span>${played ? r.home.lineup.formation : ''}</span></div><div class="sc">${played ? `${r.homeGoals} – ${r.awayGoals}` : 'VS'}<small>${played ? `${fmt(r.homeScore)} – ${fmt(r.awayScore)}` : dateIt(S.matchday(n).lockAt)}</small></div><div class="tm"><b>${esc(a.teamName)}</b><span>${played ? r.away.lineup.formation : ''}</span></div></div>
       <div class="l-sub"><span class="badge badge--prov" style="background:rgba(255,255,255,.18);color:#fff">${st === 'frozen' ? icon('lock') + 'Congelato' : st === 'live' ? icon('clock') + `Parziale <small>· ${inserted}/8 partite inserite</small>` : icon('clock') + 'Provvisorio'}</span>${played ? `<button class="a-btn" id="formula">${icon('calc', 'ic sm')}Conversione in gol</button>` : ''}</div></div>`;
-    if (!played) return `<main class="a-body" style="padding:0;gap:0">${head}<div style="padding:16px"><div class="empty">${icon('towers')}<p>La giornata ${n} non è ancora stata giocata. Lock ${dateIt(S.matchday(n).lockAt)} ${timeIt(S.matchday(n).lockAt)}.</p></div></div></main>`;
+    if (!played) return `<main class="a-body" style="padding:0;gap:0">${head}<div style="padding:16px"><div class="empty">${logo()}<p>La giornata ${n} non è ancora stata giocata. Lock ${dateIt(S.matchday(n).lockAt)} ${timeIt(S.matchday(n).lockAt)}.</p></div></div></main>`;
     const c = r.home.conversion;
     const formula = `<div class="a-card" id="formula-card" hidden><p class="formula"><b>Art. 11</b> · ${S.base.league.managerCount} fantallenatori · soglia <b>${fmt(c.threshold)}</b> · passo <b>${fmt(c.step)}</b><br>${fmt(r.homeScore)} → <b>${r.homeGoals} gol</b> · ${fmt(r.awayScore)} → <b>${r.awayGoals} gol</b><br>Parità di fantapunteggio = pareggio (11.1)</p></div>`;
     const notes = [r.home, r.away].map((x, i) => { const m = i ? a : h; const parts = [];
@@ -57,7 +57,7 @@ export const live = {
     const others = S.fixturesOf(n).filter((x) => x.id !== f.id);
     return `<main class="a-body" style="padding:0;gap:0">${head}<div style="padding:12px 16px 16px;display:flex;flex-direction:column;gap:12px">${formula}${body}${tot}
       <div class="a-sec"><b>Altri incontri</b><span>giornata ${n}</span></div><div class="real">${others.map((x) => { const rr = S.fixtureResult(x); const hh = S.managersById.get(x.homeManagerId), aa = S.managersById.get(x.awayManagerId); return `<a class="rr" href="#/live/${x.id}" style="text-decoration:none;color:inherit"><div><b>${esc(hh.teamName)} — ${esc(aa.teamName)}</b><span>${rr.played ? `${fmt(rr.homeScore)} – ${fmt(rr.awayScore)}` : ''}</span></div><span class="sc">${rr.played ? `${rr.homeGoals} – ${rr.awayGoals}` : 'VS'}</span>${icon('chev', 'ic sm')}</a>`; }).join('')}</div></div></main>
-      <nav class="l-nav"><button class="${tab === 'campo' ? 'on' : ''}" data-tab="campo" aria-label="Campo">${icon('shirt')}</button><button class="${tab === 'lista' ? 'on' : ''}" data-tab="lista" aria-label="Lista">${icon('list')}</button><span class="sep"></span><a href="#/calendario/${n}" aria-label="Titani.TV" style="display:grid;place-items:center;color:var(--text-muted)">${icon('play')}</a><button class="${tab === 'campionato' ? 'on' : ''}" data-tab="campionato" aria-label="Campionato">${icon('towers')}</button></nav>`;
+      <nav class="l-nav"><button class="${tab === 'campo' ? 'on' : ''}" data-tab="campo" aria-label="Campo">${icon('shirt')}</button><button class="${tab === 'lista' ? 'on' : ''}" data-tab="lista" aria-label="Lista">${icon('list')}</button><span class="sep"></span><a href="#/calendario/${n}" aria-label="Titani.TV" style="display:grid;place-items:center;color:var(--text-muted)">${icon('play')}</a><button class="${tab === 'campionato' ? 'on' : ''}" data-tab="campionato" aria-label="Campionato">${logo()}</button></nav>`;
   },
   mount(root, ctx) {
     root.querySelector('.app').addEventListener('click', (e) => {

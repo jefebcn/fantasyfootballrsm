@@ -1,6 +1,6 @@
 /** Shell applicativa: router hash, app bar, drawer, bottom nav, toast, sheet. */
 import { SPRITE } from './sprite.js';
-import { esc, icon, badge, crest } from './ui.js';
+import { esc, icon, badge, crest, logo } from './ui.js';
 import * as S from './state.js';
 import * as views from './views/index.js';
 
@@ -41,7 +41,7 @@ export function sheet(html) {
   if (!html) { sc.classList.remove('on'); sh.classList.remove('on'); sh.innerHTML = ''; return; }
   sh.innerHTML = `<div class="handle"></div>${html}`; sc.classList.add('on'); sh.classList.add('on');
 }
-const splash = () => `<div class="splash">${icon('towers', 'ic splash-mark')}<b>Fantacampionato</b><span>Sammarinese</span><i class="splash-bar"><i></i></i></div>`;
+const splash = () => `<div class="splash">${logo('splash-mark')}<b>Fantacampionato</b><span>Sammarinese</span><i class="splash-bar"><i></i></i></div>`;
 
 export function applyTheme() {
   const t = S.store.get().theme;

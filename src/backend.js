@@ -27,15 +27,47 @@ export async function init() {
   return data.session?.user || null;
 }
 export const client = () => sb;
+export async function currentSessionUser() { const { data } = await sb.auth.getUser(); return data?.user || null; }
 const must = ({ data, error }) => { if (error) throw new Error(error.message); return data; };
 
 // ---------------------------------------------------------------- auth
-export async function signIn(email, redirectTo) { return must(await sb.auth.signInWithOtp({ email, options: { emailRedirectTo: redirectTo, shouldCreateUser: true } })); }
-export async function verifyOtp(email, token) { return must(await sb.auth.verifyOtp({ email, token, type: 'email' })); }
+/** Traduce gli errori di Supabase in messaggi che dicono cosa fare. */
+export function translate(error) {
+  const m = (error?.message || String(error || '')).toLowerCase();
+  if (m.includes('invalid login credentials')) return 'E-mail o password non corretti.';
+  if (m.includes('email not confirmed')) return 'Devi confermare l\'e-mail: apri il link che ti abbiamo mandato.';
+  if (m.includes('user already registered') || m.includes('already been registered')) return 'Esiste già un account con questa e-mail: accedi con la password.';
+  if (m.includes('password should be at least')) return 'La password deve avere almeno 6 caratteri.';
+  if (m.includes('token has expired') || m.includes('invalid token') || m.includes('otp')) return 'Codice scaduto o non valido: chiedine uno nuovo.';
+  if (m.includes('rate limit') || m.includes('too many')) return 'Troppi tentativi: riprova fra qualche minuto.';
+  if (m.includes('redirect') || m.includes('not allowed')) return 'Indirizzo di ritorno non autorizzato: va aggiunto ai Redirect URLs su Supabase.';
+  if (m.includes('signups not allowed')) return 'Le registrazioni sono chiuse su questo progetto.';
+  if (m.includes('failed to fetch') || m.includes('networkerror')) return 'Nessuna connessione al server.';
+  return error?.message || 'Errore imprevisto.';
+}
+const authCall = async (promise) => { const { data, error } = await promise; if (error) throw new Error(translate(error)); return data; };
+
+export async function signInPassword(email, password) { return authCall(sb.auth.signInWithPassword({ email, password })); }
+export async function signUpPassword(email, password, displayName, redirectTo) {
+  const data = await authCall(sb.auth.signUp({ email, password, options: { data: { display_name: displayName }, emailRedirectTo: redirectTo } }));
+  // Con la conferma e-mail attiva la sessione non c'è: serve aprire il link ricevuto.
+  return { user: data.user, needsConfirmation: !data.session };
+}
+export async function signInLink(email, redirectTo) { return authCall(sb.auth.signInWithOtp({ email, options: { emailRedirectTo: redirectTo, shouldCreateUser: true } })); }
+export async function verifyOtp(email, token) { return authCall(sb.auth.verifyOtp({ email, token: token.trim(), type: 'email' })); }
+export async function resetPassword(email, redirectTo) { return authCall(sb.auth.resetPasswordForEmail(email, { redirectTo })); }
+export async function updatePassword(password) { return authCall(sb.auth.updateUser({ password })); }
 export async function signOut() { await sb.auth.signOut(); }
 export function onAuth(fn) { sb.auth.onAuthStateChange((_e, session) => fn(session?.user || null)); }
 export async function profile(userId) { return must(await sb.from('profiles').select('*').eq('id', userId).maybeSingle()); }
 export async function updateProfile(userId, patch) { return must(await sb.from('profiles').update(patch).eq('id', userId).select().single()); }
+/** Il profilo nasce da un trigger su auth.users: se manca (trigger assente) lo crea il client. */
+export async function ensureProfile(user) {
+  const p = await profile(user.id);
+  if (p) return p;
+  const name = user.user_metadata?.display_name || (user.email || '').split('@')[0];
+  return must(await sb.from('profiles').upsert({ id: user.id, display_name: name }).select().single());
+}
 
 // ---------------------------------------------------------------- leghe
 export async function myLeagues(userId) {

@@ -57,6 +57,22 @@ export function createClient() {
       async getSession() { return { data: { session: userId ? { user: { id: userId, email: T('profiles').find((p) => p.id === userId)?.email } } : null } }; },
       async getUser() { return { data: { user: { id: userId, email: T('profiles').find((p) => p.id === userId)?.email } } }; },
       async signInWithOtp({ email }) { globalThis.__lastOtpEmail = email; return { data: {}, error: null }; },
+      async signUp({ email, password, options }) {
+        if (T('profiles').some((x) => x.email === email)) return { data: null, error: { message: 'User already registered' } };
+        if (!password || password.length < 6) return { data: null, error: { message: 'Password should be at least 6 characters' } };
+        const p = { id: uid(), email, password, display_name: options?.data?.display_name || email.split('@')[0], is_judge: T('profiles').length === 0 };
+        T('profiles').push(p); userId = p.id;
+        authListeners.forEach((fn) => fn('SIGNED_IN', { user: { id: userId, email } }));
+        return { data: { user: { id: p.id, email }, session: { user: { id: p.id, email } } }, error: null };
+      },
+      async signInWithPassword({ email, password }) {
+        const p = T('profiles').find((x) => x.email === email && x.password === password);
+        if (!p) return { data: null, error: { message: 'Invalid login credentials' } };
+        userId = p.id; authListeners.forEach((fn) => fn('SIGNED_IN', { user: { id: userId, email } }));
+        return { data: { user: { id: p.id, email }, session: {} }, error: null };
+      },
+      async resetPasswordForEmail(email) { globalThis.__lastResetEmail = email; return { data: {}, error: null }; },
+      async updateUser({ password }) { const p = T('profiles').find((x) => x.id === userId); if (p) p.password = password; return { data: { user: { id: userId } }, error: null }; },
       async verifyOtp({ email, token }) { if (token !== '123456') return { data: null, error: { message: 'Codice errato' } }; let p = T('profiles').find((x) => x.email === email); if (!p) { p = { id: uid(), email, display_name: email.split('@')[0], is_judge: T('profiles').length === 0 }; T('profiles').push(p); } userId = p.id; authListeners.forEach((fn) => fn('SIGNED_IN', { user: { id: userId, email } })); return { data: { user: { id: userId } }, error: null }; },
       async signOut() { userId = null; authListeners.forEach((fn) => fn('SIGNED_OUT', null)); },
       onAuthStateChange(fn) { authListeners.push(fn); },

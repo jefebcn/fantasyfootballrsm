@@ -67,7 +67,7 @@ function loadLocal() {
 }
 async function loadRemote() {
   if (!user) { prof = null; leagues = []; g = emptyGlobal(); L = emptyLeague(); base.managers = []; base.rosters = {}; base.league = { id: null, name: 'Fantacampionato', shortName: 'Fantacampionato', rules: { ...DEFAULT_RULES }, managerCount: 0 }; refreshManagers(); return; }
-  prof = (await remote.profile(user.id)) || { id: user.id, display_name: user.email, is_judge: false };
+  prof = (await remote.ensureProfile(user)) || { id: user.id, display_name: user.email, is_judge: false };
   leagues = await remote.myLeagues(user.id);
   if (!leagues.some((l) => l.id === prefs.currentLeagueId)) { prefs.currentLeagueId = leagues[0]?.id || null; persistPrefs(); }
   g = await remote.loadGlobal(prof.is_judge);
@@ -95,8 +95,14 @@ export const hasLeague = () => mode === 'local' || !!prefs.currentLeagueId;
 export const isJudge = () => (mode === 'remote' ? !!prof?.is_judge : prefs.role === 'giudice');
 export const isLeagueAdmin = () => (mode === 'remote' ? me()?.role === 'admin' || isJudge() : prefs.role !== 'fantallenatore');
 export const canJudge = () => isJudge();
-export async function signIn(email) { await remote.signIn(email, location.origin + location.pathname); }
-export async function verifyCode(email, token) { await remote.verifyOtp(email, token); user = (await remote.client().auth.getUser()).data.user; await loadRemote(); notify(); }
+const returnUrl = () => location.origin + location.pathname;
+async function adopt() { user = await remote.currentSessionUser(); await loadRemote(); notify(); return user; }
+export async function signInPassword(email, password) { await remote.signInPassword(email, password); return adopt(); }
+export async function signUpPassword(email, password, displayName) { const r = await remote.signUpPassword(email, password, displayName, returnUrl()); if (!r.needsConfirmation) await adopt(); return r; }
+export async function signInLink(email) { await remote.signInLink(email, returnUrl()); }
+export async function verifyCode(email, token) { await remote.verifyOtp(email, token); return adopt(); }
+export async function resetPassword(email) { await remote.resetPassword(email, returnUrl()); }
+export async function updatePassword(password) { await remote.updatePassword(password); }
 export async function signOut() { await remote.signOut(); user = null; await loadRemote(); notify(); }
 export function useLocalDemo() { prefs.localDemo = true; persistPrefs(); loadLocal(); notify(); }
 export function useRemote() { prefs.localDemo = false; persistPrefs(); location.reload(); }

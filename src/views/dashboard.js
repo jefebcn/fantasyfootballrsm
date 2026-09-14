@@ -46,8 +46,8 @@ export const dashboard = {
           <div class="acts"><a href="#/scheda" aria-label="Condividi scheda"><button>${icon('share')}</button></a><a href="#/impostazioni" aria-label="Impostazioni"><button>${icon('gear')}</button></a><a href="#/mercato" aria-label="Mercato libero"><button class="gold">${icon('cart')}</button></a></div>
           <div class="logos">${icon('towers', '')}<span>Fantacampionato</span><i></i><span>Titani.TV</span></div>
         </div></div>
-      ${noRoster ? `<div class="warn info">${icon('warn', 'ic sm')}<span><b>Rose non ancora assegnate.</b> ${S.isLeagueAdmin() ? '<a href="#/lega">Genera o inserisci le rose</a> dalla gestione lega.' : 'L\'admin della lega le assegna dopo l\'asta.'}</span></div>` : ''}
       <div class="a-card a-stats"><div><b>${row.position}<sup>ª</sup></b><span>Posizione</span></div><div><b>${row.points}</b><span>Punti</span></div><div><b>${row.played}</b><span>Partite</span></div><div><b>${fmt(row.fantapunti)}</b><span>Fantapunti</span></div></div>
+      ${noRoster ? `<div class="warn info">${icon('warn', 'ic sm')}<span><b>Rose non ancora assegnate.</b> ${S.isLeagueAdmin() ? '<a href="#/lega">Genera o inserisci le rose</a> dalla gestione lega.' : 'L\'admin della lega le assegna dopo l\'asta.'}</span></div>` : ''}
       ${phaseCard(ph)}
       ${nextCard(ph, me)}
       ${curR ? sec(`${ph.status === 'frozen' ? 'Ultima giornata' : 'Risultati provvisori'}`, `${ph.matchday}ª di Lega · ${ph.matchday}ª del Campionato`) + matchCard(curR, S.managersById) : ''}

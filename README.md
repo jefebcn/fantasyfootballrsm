@@ -7,7 +7,7 @@ eventi oggettivi del referto FSGC.
 **App (PWA)** — installabile su iPhone/Android dalla schermata "Aggiungi a Home", funziona
 offline dopo la prima apertura. Due modalità con la stessa interfaccia:
 
-- **Account e leghe multiple (Supabase)** — accesso con link via e-mail, leghe con codice
+- **Account e leghe multiple (Supabase)** — accesso con password o link via e-mail, leghe con codice
   invito, ruoli (admin di lega, Giudice Dati), rose, formazioni e contestazioni condivise,
   dato del campionato inserito una volta per tutte le leghe, aggiornamenti in tempo reale.
   Setup in [`supabase/README.md`](supabase/README.md) (schema + policy RLS in
@@ -56,6 +56,9 @@ Dashboard · Rosa · Formazione (moduli, capitano/vice, panchina ordinata, lock)
 (scontri di lega + partite reali con campo e Titani.TV) · Classifica · Voti (breakdown di ogni
 fantavoto, segnalazione errori) · Live (campo lungo, panchina, totali) · Listone · Giocatore ·
 Mercato libero · Regolamento · Scheda condivisibile · Impostazioni · Accesso · Le mie leghe · Gestione lega.
+
+Se il server o il CDN non rispondono, l'app riparte in modalità demo con un avviso e
+l'azione per riprovare, invece di restare in attesa.
 
 Giudice Dati: giornata (8 partite, avanzamento) · inserimento partita in 4 passi (risultato e
 stato, chi ha giocato, eventi con tastiera, anteprima voti) · contestazioni · congelamento con

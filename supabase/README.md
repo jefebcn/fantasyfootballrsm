@@ -8,21 +8,39 @@ scritture anonime siano rifiutate (`42501`), che `create_league` richieda l'aute
 che `matchday_lock_at(3)` restituisca sabato 19/09/2026 15:00 Europe/Rome, allineato a
 `SEASON_START` in `src/data.js`.
 
+## Impostazioni di autenticazione (le uniche che decidono se il login funziona)
+
+L'app offre due strade. Configurale entrambe: la prima non dipende dall'e-mail.
+
+### 1. Password — consigliata per il pilota
+**Authentication → Sign In / Providers → Email**
+- *Enable Email provider*: acceso
+- **"Confirm email": SPENTO**
+
+Con la conferma spenta, chi crea l'account entra subito, senza ricevere nessuna e-mail.
+È la strada che evita ogni problema di recapito. Per una lega chiusa va bene: per entrare
+serve comunque il codice invito.
+
+### 2. Link o codice via e-mail
+**Authentication → URL Configuration**
+- *Site URL*: `https://fantasyfootballrsm.vercel.app`
+- *Redirect URLs*: `https://fantasyfootballrsm.vercel.app/**` (e `https://*.vercel.app/**` per le preview)
+
+Senza questo, il link ricevuto via e-mail non riporta dentro l'app.
+
+Il modello di e-mail predefinito contiene **solo il link**, nessun codice. Per avere anche il
+codice a 6 cifre — utile quando l'e-mail si apre in un browser diverso da quello dell'app —
+in **Authentication → Emails → Magic Link** aggiungi una riga con `{{ .Token }}`:
+
+```html
+<h2>Entra nel Fantacampionato</h2>
+<p><a href="{{ .ConfirmationURL }}">Tocca qui per entrare</a></p>
+<p>Oppure inserisci questo codice nell'app: <strong>{{ .Token }}</strong></p>
+```
+
+Lo stesso vale per il modello *Confirm signup* se tieni la conferma e-mail accesa.
+
 ## Setup da zero
-
-1. Crea un progetto su [supabase.com](https://supabase.com) (regione EU).
-2. **SQL Editor** → incolla ed esegui `schema.sql`.
-3. **Authentication → Providers → Email**: lascia attivo "Email", abilita *magic link / OTP*
-   (nessuna password). In **URL Configuration** aggiungi l'URL Vercel dell'app fra i
-   *Redirect URLs* (es. `https://fantasyfootballrsm.vercel.app/`).
-4. **Settings → API**: copia *Project URL* e *anon public key* in `src/config.js`
-   (oppure inseriscili dall'app in Impostazioni → «Connetti Supabase», salvati solo sul dispositivo).
-5. Nomina il Giudice Dati **dopo il primo accesso** di quella persona (il profilo nasce al
-   primo login): nell'SQL Editor
-   `update public.profiles set is_judge = true where id = (select id from auth.users where email = '…');`
-6. Nell'app: accedi con l'e-mail → crea la lega → condividi il codice invito → quando i
-   partecipanti sono dentro, l'admin genera le rose (draft automatico o inserimento manuale).
-
 ## Modello
 
 - **Generato dal client** (`src/data.js`): società, listone, calendario. Stabili per stagione.

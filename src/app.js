@@ -41,6 +41,8 @@ export function sheet(html) {
   if (!html) { sc.classList.remove('on'); sh.classList.remove('on'); sh.innerHTML = ''; return; }
   sh.innerHTML = `<div class="handle"></div>${html}`; sc.classList.add('on'); sh.classList.add('on');
 }
+const splash = () => `<div class="splash">${icon('towers', 'ic splash-mark')}<b>Fantacampionato</b><span>Sammarinese</span><i class="splash-bar"><i></i></i></div>`;
+
 export function applyTheme() {
   const t = S.store.get().theme;
   if (t === 'system') document.documentElement.removeAttribute('data-theme'); else document.documentElement.setAttribute('data-theme', t);
@@ -55,7 +57,7 @@ function appbar(view, ctx) {
   const kind = (typeof view.appbar === 'function' ? view.appbar(ctx) : view.appbar) || 'main';
   if (kind === 'none') return '';
   if (kind === 'back') return `<header class="a-appbar"><button class="ib flip" data-back aria-label="Indietro">${icon('chev')}</button><div class="t"><b>${esc(league.name)}</b><span>${esc(view.sub?.(ctx) || view.title)}</span></div>${view.actions ? view.actions(ctx) : ''}</header>`;
-  return `<header class="a-appbar"><button class="ib" data-open-drawer aria-label="Menu">${icon('menu')}</button><div class="t"><b>${esc(league.name)}</b><span>${esc(view.sub?.(ctx) || view.title)}</span></div><a class="ib" href="#/regolamento" aria-label="Regolamento">${icon('book')}</a><a class="ib" href="#/admin/contestazioni" aria-label="Contestazioni">${icon('flag')}${S.contestazioni().some((c) => c.status === 'open') ? '<i class="dot"></i>' : ''}</a></header>`;
+  return `<header class="a-appbar"><button class="ib" data-open-drawer aria-label="Menu">${icon('menu')}</button><div class="t"><b>${esc(league.name)}</b><span>${esc(view.sub?.(ctx) || view.title)}</span></div>${S.isRemote() ? `<button class="ib" data-refresh aria-label="Aggiorna">${icon('undo')}</button>` : ''}<a class="ib" href="#/regolamento" aria-label="Regolamento">${icon('book')}</a><a class="ib" href="#/admin/contestazioni" aria-label="Contestazioni">${icon('flag')}${S.contestazioni().some((c) => c.status === 'open') ? '<i class="dot"></i>' : ''}</a></header>`;
 }
 function nav(path) {
   const active = path.split('/')[0];
@@ -82,7 +84,7 @@ function drawer() {
     ${S.isJudge() ? `<div class="d-sec admin"><span class="chip">Giudice Dati</span></div>
     ${item('#/admin', 'edit', 'Inserisci eventi', `G${ph.matchday}`)}${item('#/admin/contestazioni', 'flag', 'Contestazioni', `${S.contestazioni().filter((c) => c.status === 'open').length} aperte`)}${item('#/admin/congela', 'lock', 'Congela giornata', 'mar 20:00')}${item('#/admin/registro', 'archive', 'Registro modifiche')}` : ''}
     <a class="d-plain" href="#/impostazioni" style="display:block;text-decoration:none;color:inherit">Utente, impostazioni e privacy</a>
-    <div class="d-foot">Versione 0.2 · ${remote ? 'account Supabase' : 'demo locale'}<br>Fantacampionato Sammarinese</div>
+    <div class="d-foot">Versione 0.3 · ${remote ? 'account Supabase' : 'demo locale'}<br>Fantacampionato Sammarinese</div>
   </div></div>`;
 }
 
@@ -99,6 +101,7 @@ export function render() {
   const { view, params, path } = resolve(location.hash);
   const ctx = { params, path, go, toast, sheet, render };
   const prevPath = current?.path;
+  if (path === 'login' && prevPath !== 'login') views.resetLogin();
   if (prevPath !== undefined) { const m = root.querySelector('.a-body'); if (m) scrollMemo[prevPath] = m.scrollTop; }
   current = { view, params, path };
   document.title = `${view.title} · Fantacampionato Sammarinese`;
@@ -112,6 +115,7 @@ document.addEventListener('click', (e) => {
   if (e.target.closest('[data-open-drawer]')) { drawerOpen = true; root.querySelector('.a-drawer').classList.add('on'); return; }
   if (e.target.closest('[data-close-drawer]')) { drawerOpen = false; root.querySelector('.a-drawer').classList.remove('on'); return; }
   if (e.target.closest('.a-drawer a')) { drawerOpen = false; }
+  if (e.target.closest('[data-refresh]')) { toast('Aggiorno…'); S.refresh(); return; }
   if (e.target.closest('[data-logout]')) { S.signOut().then(() => go('login')); return; }
   const sw = e.target.closest('[data-switch]'); if (sw) { drawerOpen = false; S.switchLeague(sw.dataset.switch).then(() => go('')); return; }
   if (e.target.closest('[data-back]')) { e.preventDefault(); if (history.length > 1) history.back(); else go(''); return; }
@@ -121,14 +125,33 @@ document.addEventListener('click', (e) => {
 window.addEventListener('hashchange', () => { drawerOpen = false; sheet(null); render(); });
 S.subscribe(() => render());
 
+/** Messaggio d'errore restituito da Supabase nel ritorno dal link e-mail. */
+function authCallbackError() {
+  const from = (s) => new URLSearchParams(s.replace(/^[#?]/, ''));
+  for (const p of [from(location.hash), from(location.search)]) {
+    const e = p.get('error_description') || p.get('error');
+    if (e) return decodeURIComponent(e.replace(/\+/g, ' '));
+  }
+  return null;
+}
+/** Il ritorno dal link e-mail porta i token nel frammento: ripulisce l'URL senza toccare il router. */
+function cleanAuthUrl() {
+  const dirtyHash = location.hash && !location.hash.startsWith('#/');
+  const dirtyQuery = /[?&](code|error|error_description)=/.test(location.search);
+  if (dirtyHash || dirtyQuery) history.replaceState(null, '', location.pathname + (dirtyHash ? '' : location.hash));
+}
+
 async function boot() {
   document.body.insertAdjacentHTML('afterbegin', SPRITE);
   applyTheme();
   window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', applyTheme);
   S.setErrorHandler((e) => { console.error(e); toast(e?.message || 'Errore di rete'); });
-  root.innerHTML = '<div class="app"><div class="empty" style="margin:auto">' + icon('towers') + '<p>Caricamento…</p></div></div>';
+  const callbackError = authCallbackError();
+  root.innerHTML = `<div class="app">${splash()}</div>`;
   await S.init();
+  cleanAuthUrl();
   render();
+  if (callbackError) toast(callbackError);
   if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js').catch(() => {});
   window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); window.__installPrompt = e; document.dispatchEvent(new Event('installable')); });
 }

@@ -1,6 +1,9 @@
 /**
- * Generatore deterministico della stagione pilota.
- * Stessi seed → stessi dati. I giocatori sono inventati (art. 14.1).
+ * Anagrafiche e calendario della stagione, generati in modo deterministico:
+ * 16 società, ~400 tesserati, 30 giornate. Stesso seed → stessi dati.
+ * I giocatori sono inventati finché non c'è l'accordo con la FSGC (art. 14.1).
+ * Le giornate 1-2 hanno anche eventi di esempio, usati solo dal Giudice Dati
+ * per popolare il database la prima volta.
  */
 import { DEFAULT_RULES } from './engine.js';
 
@@ -38,19 +41,6 @@ export const VENUES = ['Acquaviva', 'Serravalle', 'Domagnano', 'Montecchio', 'Do
 
 const FIRST = ['Alessandro', 'Marco', 'Luca', 'Matteo', 'Andrea', 'Davide', 'Simone', 'Nicola', 'Filippo', 'Lorenzo', 'Tommaso', 'Giacomo', 'Federico', 'Mattia', 'Michele', 'Riccardo', 'Elia', 'Samuele', 'Enrico', 'Giovanni', 'Fabio', 'Manuel', 'Cristian', 'Alex', 'Nicolò', 'Gabriele', 'Diego', 'Kevin', 'Thomas', 'Pietro'];
 const LAST = ['Gasperoni', 'Benedettini', 'Zafferani', 'Marchetti', 'Battistini', 'Righi', 'Ceccoli', 'Simoncini', 'Grandoni', 'Tomassini', 'Dolcini', 'Muccioli', 'Casadei', 'Berardi', 'Mularoni', 'Pasolini', 'Valentini', 'Bonifazi', 'Lazzari', 'Ugolini', 'Moretti', 'Bonini', 'Fabbri', 'Cecchetti', 'Giardi', 'Semprini', 'Guidi', 'Nanni', 'Zonzini', 'Zavoli', 'Rossi', 'Conti', 'Mancini', 'Pini', 'Stefanelli', 'Ferraro', 'Bollini', 'Toccaceli', 'Vitaioli', 'Palazzi', 'Selva', 'Michelotti', 'Della Valle', 'Giulianelli', 'Bugli', 'Cervellini', 'Belloni', 'Amati', 'Capicchioni', 'Forcellini', 'Francini', 'Gatti', 'Lonfernini', 'Maiani', 'Nicolini', 'Pelliccioni', 'Raschi', 'Renzi', 'Santi', 'Tamagnini', 'Ugolini', 'Venturini', 'Zonzini', 'Ercolani', 'Frisoni', 'Giardi', 'Innocenti', 'Manzaroli', 'Mazza', 'Morri', 'Paolini', 'Podeschi', 'Ricci', 'Sartini', 'Tosi', 'Valli'];
-
-export const MANAGERS = [
-  { id: 'm_lillo', teamName: 'Hasta El Chapo FC', owner: 'LILLO', color: '#2b7a3d', initials: 'HC' },
-  { id: 'm_pelli', teamName: 'Joga Benito FC', owner: 'Pelli', color: '#1a1a1a', initials: 'JB' },
-  { id: 'm_marco', teamName: 'Real Guaita', owner: 'Marco', color: '#5b3fa6', initials: 'RG' },
-  { id: 'm_giulia', teamName: 'Cesta United', owner: 'Giulia', color: '#0e5e93', initials: 'CU' },
-  { id: 'm_dade', teamName: 'Montale Boys', owner: 'Dade', color: '#c46a00', initials: 'MB' },
-  { id: 'm_fede', teamName: 'Dinamo Borgo', owner: 'Fede', color: '#8a1d1d', initials: 'DB' },
-  { id: 'm_ale', teamName: 'Atletico Dogana', owner: 'Ale', color: '#1d4f8a', initials: 'AD' },
-  { id: 'm_sara', teamName: 'Serravalle City', owner: 'Sara', color: '#2c7a7b', initials: 'SC' },
-  { id: 'm_teo', teamName: 'Titano Legends', owner: 'Teo', color: '#b8321f', initials: 'TL' },
-  { id: 'm_gio', teamName: 'Faetano Stars', owner: 'Gio', color: '#d4a017', initials: 'FS' },
-];
 
 export const SEASON_START = new Date('2026-09-05T15:00:00+02:00'); // sabato della 1ª giornata
 
@@ -143,18 +133,6 @@ export function buildSeason(seed = 20262027) {
 
   // --- Lega fanta --------------------------------------------------------
   const clubOf = Object.fromEntries(CLUBS.map((c) => [c.id, c]));
-  const rosters = draftRosters(MANAGERS.map((m) => m.id), players, rnd);
-  const managers = MANAGERS.map((m) => ({ ...m, credits: DEFAULT_RULES.budget - rosters[m.id].reduce((s, r) => s + r.pricePaid, 0) }));
-
-  const frr = roundRobin(managers.map((m) => m.id));
-  const fixtures = [];
-  for (let n = 1; n <= 30; n++) {
-    const cycle = Math.floor((n - 1) / 9);
-    frr[(n - 1) % 9].forEach(([a, b], i) => {
-      const [h, w] = cycle % 2 === 1 ? [b, a] : [a, b];
-      fixtures.push({ id: `f${n}_${i + 1}`, matchday: n, homeManagerId: h, awayManagerId: w });
-    });
-  }
 
   // --- Eventi delle giornate giocate ------------------------------------
   const appearances = []; const events = [];
@@ -246,10 +224,5 @@ export function buildSeason(seed = 20262027) {
   }
   events.sort((a, b) => a.minute - b.minute);
 
-  return {
-    season: { id: 's2026', name: '2026/27', playedMatchdays },
-    clubs: CLUBS, players, matchdays, matches, appearances, events,
-    league: { id: 'lega1', name: 'I Sudati di RSM', shortName: 'Sudati RSM', managerCount: managers.length, rules: { ...DEFAULT_RULES } },
-    managers, rosters, fixtures,
-  };
+  return { season: { id: 's2026', name: '2026/27', sampleMatchdays: playedMatchdays }, clubs: CLUBS, players, matchdays, matches, appearances, events };
 }

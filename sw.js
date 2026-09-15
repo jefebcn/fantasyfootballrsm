@@ -1,5 +1,5 @@
 /* Service worker — shell in cache, aggiornamento in background. */
-const VERSION = 'fcs-v4.2.1';
+const VERSION = 'fcs-v4.2.2';
 const SHELL = [
   './', './index.html', './manifest.webmanifest', './styles/app.css', './styles/logo.css', './styles/font.css', './design/tokens/tokens.css',
   // I caratteri stanno in casa: nella cache ci vanno, se no senza rete si vede
@@ -9,7 +9,7 @@ const SHELL = [
   './src/app.js', './src/state.js', './src/data.js', './src/engine.js', './src/ui.js', './src/ui-esc.js', './src/avatar.js', './src/maglia.js', './src/personaggio.js', './src/sprite.js', './src/config.js', './src/backend.js', './src/auth-clerk.js',
   './src/views/index.js', './src/views/dashboard.js', './src/views/rosa.js', './src/views/formazione.js', './src/views/calendario.js',
   './src/views/classifica.js', './src/views/voti.js', './src/views/live.js', './src/views/listone.js', './src/views/giocatore.js',
-  './src/views/regolamento.js', './src/views/scheda.js', './src/views/impostazioni.js', './src/views/mercato.js', './src/views/admin.js', './src/views/auth.js', './src/views/leghe.js', './src/views/lega.js', './src/views/setup.js', './src/views/onboarding.js', './src/views/gestione.js', './src/views/squadra.js', './src/views/vice.js', './src/views/legali.js', './src/views/video.js', './src/video.js', './src/video-dati.js', './src/views/regole.js',
+  './src/views/regolamento.js', './src/views/scheda.js', './src/views/impostazioni.js', './src/views/mercato.js', './src/views/admin.js', './src/views/auth.js', './src/views/leghe.js', './src/views/lega.js', './src/views/setup.js', './src/views/onboarding.js', './src/views/gestione.js', './src/views/squadra.js', './src/views/vice.js', './src/views/legali.js', './src/notifiche.js', './src/sfondo.js', './src/views/asta.js', './src/views/video.js', './src/video.js', './src/video-dati.js', './src/views/regole.js',
   './icons/icon-192.png', './icons/icon-512.png', './icons/maskable-512.png', './icons/apple-touch-icon.png',
   // icone evento: compaiono su Voti, Live e Giudice Dati, quindi valgono il precache.
   // Le altre (menu, eventi di secondo livello) entrano in cache al primo uso.
@@ -20,9 +20,8 @@ const SHELL = [
   './media/icone/nav/campo.png', './media/icone/nav/maglia-10.png', './media/icone/nav/calendario.png',
   './media/icone/nav/coppa.png', './media/icone/nav/grafico.png',
   // Sfondo della schermata d'accesso: è la prima cosa che si vede.
-  './media/sfondo-accesso.jpg',
   // La maglia sta in copertina: e' la prima immagine della dashboard.
-  './media/maglia-base.webp', './media/sfondo-home.jpg',
+  
 ];
 /**
  * Il guscio si riscarica dalla RETE, non dalla cache del browser.
@@ -40,6 +39,36 @@ self.addEventListener('install', (e) => {
 self.addEventListener('activate', (e) => {
   e.waitUntil(caches.keys().then((keys) => Promise.all(keys.filter((k) => k !== VERSION && k !== VERSION + '-ext' && k !== VERSION + '-api').map((k) => caches.delete(k)))).then(() => self.clients.claim()));
 });
+/* Notifiche push: il service worker e' l'unico che le puo' mostrare, ed e'
+   l'unica parte che gira a telefono chiuso. Chi le spedisce sta in
+   supabase/functions/promemoria. */
+self.addEventListener('push', (e) => {
+  let d = {};
+  try { d = e.data ? e.data.json() : {}; } catch { d = { body: e.data && e.data.text() }; }
+  const titolo = d.titolo || 'Fantacampionato Sammarinese';
+  e.waitUntil(self.registration.showNotification(titolo, {
+    body: d.corpo || '',
+    tag: d.tag || 'fcs',
+    icon: './icons/icon-192.png',
+    badge: './icons/icon-192.png',
+    data: { url: d.url || './#/rosa/formazione' },
+  }));
+});
+
+/* Toccare la notifica porta dove serve, e riusa la finestra se c'e' gia'
+   aperta invece di aprirne un'altra. */
+self.addEventListener('notificationclick', (e) => {
+  e.notification.close();
+  const dove = (e.notification.data && e.notification.data.url) || './#/rosa/formazione';
+  e.waitUntil((async () => {
+    const aperte = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
+    for (const c of aperte) {
+      if (c.url.includes(self.registration.scope)) { await c.focus(); return c.navigate(dove).catch(() => null); }
+    }
+    return self.clients.openWindow(dove);
+  })());
+});
+
 self.addEventListener('fetch', (e) => {
   const url = new URL(e.request.url);
   if (e.request.method !== 'GET') return;

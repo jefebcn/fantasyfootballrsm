@@ -1,0 +1,50 @@
+# Chiama la funzione che spedisce il promemoria della formazione.
+#
+# Gira ogni ora e non a un'ora fissa perche' le giornate del campionato non
+# cadono sempre nello stesso giorno: e' la funzione a decidere se e' il momento,
+# guardando quanto manca al lock. Ventitre' volte su ventiquattro risponde
+# "non e' il momento" e non spedisce niente.
+#
+# Finche' i due secret non sono configurati il lavoro si ferma dicendolo, invece
+# di fallire ogni ora e riempire la casella di posta.
+
+name: Promemoria formazione
+
+on:
+  schedule:
+    - cron: '7 * * * *'        # ogni ora al minuto 7, per non accodarsi al resto
+  workflow_dispatch:
+
+concurrency:
+  group: promemoria
+  cancel-in-progress: false
+
+jobs:
+  avvisa:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Serve la configurazione?
+        id: cfg
+        env:
+          URL: ${{ secrets.SUPABASE_FUNCTIONS_URL }}
+          TOKEN: ${{ secrets.PROMEMORIA_TOKEN }}
+        run: |
+          if [ -z "$URL" ] || [ -z "$TOKEN" ]; then
+            echo "pronta=no" >> "$GITHUB_OUTPUT"
+            echo "SUPABASE_FUNCTIONS_URL o PROMEMORIA_TOKEN non impostati."
+            echo "I passi stanno in supabase/functions/promemoria/README.md."
+          else
+            echo "pronta=si" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Spedisci
+        if: steps.cfg.outputs.pronta == 'si'
+        env:
+          URL: ${{ secrets.SUPABASE_FUNCTIONS_URL }}
+          TOKEN: ${{ secrets.PROMEMORIA_TOKEN }}
+        run: |
+          set -o pipefail
+          risposta=$(curl -sS --fail-with-body --max-time 60 \
+            -H "x-promemoria-token: $TOKEN" \
+            "$URL/promemoria")
+          echo "$risposta"

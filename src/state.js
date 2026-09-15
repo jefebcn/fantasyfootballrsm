@@ -9,6 +9,7 @@ import { buildSeason, draftRosters as buildDraft, mulberry32 } from './data.js';
 import { computeRating, computeLineupResult, computeStandings, defaultLineup, validaAcquisto, offertaMassima, DEFAULT_RULES } from './engine.js';
 import * as remote from './backend.js';
 import * as clerk from './auth-clerk.js';
+import * as AV from './notifiche.js';
 
 const PREFS_KEY = 'fcs:prefs';
 export const base = buildSeason();
@@ -254,7 +255,7 @@ function hashStr(s) { let h = 2166136261; for (const c of String(s)) { h ^= c.ch
 
 export const store = {
   get: () => ({ theme: prefs.theme, installedDismissed: prefs.installedDismissed, onboarded: prefs.onboarded,
-    avvisi: prefs.avvisi, sfondoFoto: prefs.sfondoFoto !== false }),
+    avvisi: prefs.avvisi, sfondoFoto: prefs.sfondoFoto !== false, avvisatoPer: prefs.avvisatoPer || 0 }),
   set: (patch) => { Object.assign(prefs, patch); persistPrefs(); notify(); },
 };
 export function resetAll() { localStorage.removeItem(PREFS_KEY); }
@@ -327,6 +328,40 @@ export async function sincronizzaLock({ forza = false } = {}) {
   lockGiaSincronizzati = true;
   await refresh();
   return n ?? da.length;
+}
+
+/**
+ * C'e' una formazione da consegnare? → { giornata, lockAt, ore } oppure null.
+ *
+ * Il foglio delle notifiche promette da sempre "un avviso quando manca poco al
+ * lock e non hai ancora schierato". Non c'era niente che lo facesse: ne' la
+ * notifica ne' un avviso dentro l'app. Questa e' la parte che risponde alla
+ * domanda, tenuta separata da chi la mostra.
+ */
+/** Iscrive o disiscrive questo dispositivo dalle push. */
+export async function iscriviAvvisi() {
+  const sub = await AV.iscriviPush();
+  if (!sub || !user) return false;
+  await remote.salvaPush(user.id, sub);
+  return true;
+}
+export async function disiscriviAvvisi() {
+  const reg = 'serviceWorker' in navigator ? await navigator.serviceWorker.ready.catch(() => null) : null;
+  const sub = reg && reg.pushManager ? await reg.pushManager.getSubscription() : null;
+  if (sub) { try { await remote.togliPush(sub.endpoint); } catch { /* gia' via */ } }
+  return AV.disiscriviPush();
+}
+
+export function promemoriaFormazione() {
+  const io = me(); if (!io) return null;
+  const n = giornataDaSchierare(); const md = matchday(n); if (!md) return null;
+  const st = matchdayStatus(n);
+  if (st !== 'open' && st !== 'scheduled') return null;   // giornata gia' chiusa
+  if (savedLineup(n, io.id)) return null;                  // consegnata
+  if (!rosterIds(io.id).length) return null;               // rosa non assegnata: non e' colpa sua
+  const ms = new Date(md.lockAt) - now();
+  if (ms <= 0) return null;
+  return { giornata: n, lockAt: md.lockAt, ore: ms / 3600000 };
 }
 
 export function matchdayStatus(n) {

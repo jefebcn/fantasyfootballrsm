@@ -48,14 +48,24 @@ function probabiliCampo(n, h, a) {
   const lh = S.lineupFor(n, h.id), la = S.lineupFor(n, a.id);
   const fonte = (l) => (l.source === 'saved' ? 'formazione salvata'
     : l.source === 'ufficio' ? "undici d'ufficio: nessuna formazione ancora inviata" : `ultima schierata: ${l.source}`);
-  const panca = (l, m) => `<div class="vlist"><div class="vhead">${esc(m.teamName)} · panchina <span>${l.bench.length}</span></div>${
-    l.bench.length ? l.bench.map((id) => `<div class="b2">${roleChip(P(id).role)}<span class="nm"><b>${esc(P(id).lastName)}</b><span>${esc(club(id).name)}</span></span></div>`).join('')
-      : '<p class="small muted" style="padding:10px 14px">Nessun panchinaro.</p>'}</div>`;
+  // Panchine appaiate per posto: il primo panchinaro di un ruolo e' quello che
+  // entra se un titolare di quel ruolo non prende voto (art. 8.2), quindi il
+  // confronto che conta e' posto per posto, non squadra dopo squadra.
+  const panche = () => {
+    const riga = (id, i) => (id
+      ? `<div class="b2 pre"><span class="posto">${i + 1}</span>${roleChip(P(id).role)}<span class="nm"><b>${esc(P(id).lastName)}</b><span>${esc(club(id).name)}</span></span></div>`
+      : `<div class="b2 pre vuota"><span class="posto">${i + 1}</span><span class="rl vuoto">–</span><span class="nm"><b>—</b><span>posto libero</span></span></div>`);
+    const n = Math.max(lh.bench.length, la.bench.length);
+    if (!n) return '<p class="small muted" style="margin:0 2px">Nessuna panchina: non ci sono ancora panchinari da confrontare.</p>';
+    const righe = [];
+    for (let i = 0; i < n; i++) righe.push(riga(lh.bench[i], i), riga(la.bench[i], i));
+    return `<div class="bench2"><div class="b2 testa">${esc(h.teamName)}</div><div class="b2 testa">${esc(a.teamName)}</div>${righe.join('')}</div>`;
+  };
   return `<div class="field"><span class="box top"></span>${campoProbabile(lh, false)}<div class="half"></div>${campoProbabile(la, true)}<span class="box bot"></span></div>
     <div class="cfr"><span><b>${esc(h.teamName)}</b>${esc(lh.formation)}</span><span><b>${esc(a.teamName)}</b>${esc(la.formation)}</span></div>
     ${[[lh, h], [la, a]].map(([l, m]) => `<p class="small muted" style="margin:0 2px"><b>${esc(m.teamName)}:</b> ${esc(fonte(l))}.</p>`).join('')}
-    <div class="a-sec"><b>Panchine</b><span>ordine di ingresso</span></div>
-    ${panca(lh, h)}${panca(la, a)}`;
+    <div class="a-sec"><b>Panchine a confronto</b><span>posto per posto</span></div>
+    ${panche()}`;
 }
 
 /**

@@ -131,9 +131,8 @@ function apriMaglia(ctx) {
     ctx.sheet(`<h3>Maglia</h3>
       <div class="mg-prev" id="mg-prev">${maglia(bozza)}</div>
       <label class="lbl">Colore</label><div class="tinte">${tinte('c1')}</div>
-      <div class="row2" style="margin-top:10px">
-        <div><label class="lbl" for="mg-num">Numero</label><input class="field-input" id="mg-num" type="number" min="0" max="99" value="${esc(bozza.numero ?? '')}"></div>
-        <div><label class="lbl" for="mg-nome">Nome</label><input class="field-input" id="mg-nome" maxlength="12" value="${esc(bozza.nome || '')}" placeholder="sulla maglia"></div>
+      <label class="lbl" for="mg-nome">Nome sulla maglia</label>
+      <input class="field-input" id="mg-nome" maxlength="12" value="${esc(bozza.nome || '')}" placeholder="lascia vuoto per una maglia pulita">
       </div>
       <button class="a-btn" id="mg-ok" style="margin-top:12px">Salva la maglia</button>`);
     const sh = document.getElementById('sheet');
@@ -153,7 +152,6 @@ function apriMaglia(ctx) {
         catch (err) { ctx.toast(err.message); }
       }
     };
-    sh.querySelector('#mg-num').oninput = (e) => { bozza.numero = e.target.value.replace(/\D/g, '').slice(0, 2); aggiorna(); };
     sh.querySelector('#mg-nome').oninput = (e) => { bozza.nome = e.target.value; aggiorna(); };
   };
   disegna();

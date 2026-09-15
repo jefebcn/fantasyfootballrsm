@@ -140,16 +140,25 @@ function classificaBreve(me) {
 }
 
 /** Notizie vere del campionato: la prima in grande, le altre in riga. */
+const quando = (iso) => {
+  if (!iso) return '';
+  const d = new Date(iso); const ore = (Date.now() - d) / 3600000;
+  if (ore < 1) return 'poco fa';
+  if (ore < 24) return `${Math.round(ore)} h fa`;
+  if (ore < 48) return 'ieri';
+  return dateIt(d);
+};
+
+/** L'ultima notizia su una riga sola, appena sotto le statistiche. */
+function notiziaBreve() {
+  const n = N.disponibili()[0]; if (!n) return '';
+  return `<a class="nflash" href="${esc(n.link)}" target="_blank" rel="noopener noreferrer">
+    <span class="tag">${esc(quando(n.data) || N.fonte())}</span><b>${esc(n.titolo)}</b></a>`;
+}
+
+/** Notizie vere del campionato: la prima e' gia' andata nella riga in cima. */
 function notizie() {
-  const list = N.disponibili(); if (!list.length) return '';
-  const quando = (iso) => {
-    if (!iso) return '';
-    const d = new Date(iso); const ore = (Date.now() - d) / 3600000;
-    if (ore < 1) return 'poco fa';
-    if (ore < 24) return `${Math.round(ore)} h fa`;
-    if (ore < 48) return 'ieri';
-    return dateIt(d);
-  };
+  const list = N.disponibili().slice(1); if (!list.length) return '';
   const meta = (n) => `${esc(quando(n.data))}${n.data ? ' · ' : ''}${esc(N.fonte())}`;
   const [prima, ...altre] = list.slice(0, 5);
   const grande = `<a class="nbig" href="${esc(prima.link)}" target="_blank" rel="noopener noreferrer">
@@ -182,15 +191,16 @@ export const dashboard = {
     return `<main class="a-body">
       <div id="install-slot"></div>
       <div class="a-herowrap">
-        <div class="a-hero">${logo('tw')}
-          <a class="hero-league" href="#/leghe">${esc(S.base.league.name)}${icon('chev', 'ic sm')}</a>
-          <a class="jersey" href="#/squadra" aria-label="Modifica la maglia">${maglia(kitOf(me))}</a>
-          <h2>${esc(me.teamName)}</h2><p class="hero-owner">${esc(me.owner)}</p>
+        <div class="a-hero">${logo('tw')}<i class="conf"></i>
+          <a class="hero-league" href="#/leghe">${esc(S.base.league.shortName || S.base.league.name)}${icon('chev', 'ic sm')}</a>
+          <h2>${esc(me.teamName)}</h2>
+          <a class="jersey" href="#/squadra" aria-label="Modifica stemma e maglia">${maglia(kitOf(me))}</a>
           <div class="acts">
             <a href="#/scheda" aria-label="Condividi la scheda"><button>${icon('share')}</button></a>
-            <a href="#/rosa" aria-label="La mia rosa"><button>${icon('shirt')}</button></a>
+            <a href="#/squadra" aria-label="La mia squadra"><button>${icon('gear')}</button></a>
             <a href="#/mercato" aria-label="Mercato libero"><button class="gold">${icon('cart')}</button></a>
           </div>
+          <span class="hero-marchio">${logo()}<span>Campionato Sammarinese</span></span>
         </div>
       </div>
       <div class="a-card a-stats">
@@ -199,6 +209,7 @@ export const dashboard = {
         <div><b>${row.played}</b><span>Partite</span></div>
         <div><b>${fmt(row.fantapunti)}</b><span>Fantapunti</span></div>
       </div>
+      ${notiziaBreve()}
       ${conclusa(ultima)}
       ${corrente(cur, nCur, me, riposo)}
       ${noRoster ? tile({ href: S.isLeagueAdmin() ? '#/lega' : '#/leghe', lead: icon('warn'), leadKind: 'warn',

@@ -142,8 +142,22 @@ export const impostazioni = {
           };
           return;
         }
+        // Il comando bell'e' pronto con l'indirizzo di chi sta guardando: la
+        // riga "si nomina con nomina-giudice.sql" mandava ad aprire un file
+        // nel repo, cercare l'e-mail giusta e sostituirla a mano. Questo e'
+        // l'unico passo dell'installazione che non si puo' fare dall'app,
+        // perche' la policy impedisce di auto-nominarsi — e giustamente.
+        const mia = S.currentUser()?.email || 'la-tua@email';
+        const sql = `update public.profiles set is_judge = true\nwhere id = (select id::text from auth.users where lower(email) = lower('${mia}'));`;
         ctx.sheet(`<h3>Calendario dei lock</h3><p class="auth-hint">${n} giornate sul server hanno una data di chiusura diversa da quella dell'app. Finché è così, le formazioni degli avversari non si vedono quando dovrebbero.</p>
-          <p class="auth-hint">Lo può sistemare solo il <b>Giudice Dati</b>, e gli basta aprire l'app: si allinea da sé. Se in questo progetto non c'è ancora nessun Giudice Dati, si nomina una volta sola con <code>supabase/nomina-giudice.sql</code>.</p>`);
+          <p class="auth-hint">Lo sistema il <b>Giudice Dati</b> semplicemente aprendo l'app: si allinea da sé. In questo progetto non ce n'è ancora nessuno, e nominarsi dall'app non si può — la policy lo vieta apposta, altrimenti chiunque si darebbe i poteri da solo.</p>
+          <p class="auth-hint">Incolla questo nell'<b>SQL Editor</b> di Supabase, una volta sola, poi riapri l'app:</p>
+          <pre class="sql">${esc(sql)}</pre>
+          <button class="a-btn sec" id="sql-copia">Copia il comando</button>`);
+        document.getElementById('sql-copia').onclick = async () => {
+          try { await navigator.clipboard.writeText(sql); ctx.toast('Comando copiato'); }
+          catch { ctx.toast('Copia non permessa: selezionalo a mano'); }
+        };
         return;
       }
       if (act === 'archiviazione') { ctx.go('archiviazione'); return; }

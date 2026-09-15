@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { computeRating, computeLineupResult, computeStandings, toGoals, validateLineup, defaultLineup, DEFAULT_RULES } from '../src/engine.js';
+import { computeRating, computeLineupResult, computeStandings, toGoals, validateLineup, defaultLineup, DEFAULT_RULES, movimenti} from '../src/engine.js';
 
 const P = (id, role, clubId = 'home') => ({ id, role, clubId, quotation: 10 });
 const match = (o = {}) => ({ id: 'm1', homeClubId: 'home', awayClubId: 'away', homeGoals: 1, awayGoals: 0, status: 'played', ...o });
@@ -254,4 +254,38 @@ test('asta: tetto per società quando la lega lo attiva (art. 2.6)', async () =>
   assert.match(validaAcquisto({ rosa: due, crediti: 500, player: G('c', 'A', 'trepenne'), prezzo: 5, rules: R })[0], /il tetto è 2/);
   // spento per difetto: nessun tetto
   assert.deepEqual(validaAcquisto({ rosa: due, crediti: 500, player: G('c', 'A', 'trepenne'), prezzo: 5 }), []);
+});
+
+// ---------------------------------------------------------------- movimenti
+test('movimenti: chi sale, chi scende, chi non si muove', () => {
+  const prima = [
+    { managerId: 'a', position: 1, played: 3 },
+    { managerId: 'b', position: 2, played: 3 },
+    { managerId: 'c', position: 3, played: 3 },
+  ];
+  const dopo = [
+    { managerId: 'c', position: 1, played: 4 },
+    { managerId: 'b', position: 2, played: 4 },
+    { managerId: 'a', position: 3, played: 4 },
+  ];
+  const m = movimenti(prima, dopo);
+  assert.equal(m.get('c'), 2, 'c sale di due');
+  assert.equal(m.get('b'), 0, 'b e\' ferma');
+  assert.equal(m.get('a'), -2, 'a scende di due');
+});
+
+test('movimenti: alla prima giornata non c\'e\' un prima, quindi nessuna freccia', () => {
+  const prima = [{ managerId: 'a', position: 1, played: 0 }, { managerId: 'b', position: 2, played: 0 }];
+  const dopo = [{ managerId: 'b', position: 1, played: 1 }, { managerId: 'a', position: 2, played: 1 }];
+  const m = movimenti(prima, dopo);
+  assert.equal(m.get('a'), null);
+  assert.equal(m.get('b'), null);
+});
+
+test('movimenti: una squadra entrata dopo non ha un confronto', () => {
+  const prima = [{ managerId: 'a', position: 1, played: 2 }];
+  const dopo = [{ managerId: 'a', position: 1, played: 3 }, { managerId: 'nuova', position: 2, played: 1 }];
+  const m = movimenti(prima, dopo);
+  assert.equal(m.get('a'), 0);
+  assert.equal(m.get('nuova'), null);
 });

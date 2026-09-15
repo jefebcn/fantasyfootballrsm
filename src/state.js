@@ -6,7 +6,7 @@
  * Tutto ciò che il motore calcola è derivato e ricalcolabile da zero.
  */
 import { buildSeason, draftRosters as buildDraft, mulberry32 } from './data.js';
-import { computeRating, computeLineupResult, computeStandings, defaultLineup, validaAcquisto, offertaMassima, DEFAULT_RULES } from './engine.js';
+import { computeRating, computeLineupResult, computeStandings, defaultLineup, validaAcquisto, offertaMassima, DEFAULT_RULES , recordLega as computeRecord, testaATesta as computeH2H} from './engine.js';
 import * as remote from './backend.js';
 import * as clerk from './auth-clerk.js';
 import * as AV from './notifiche.js';
@@ -465,6 +465,10 @@ export function avanzamento(n) {
   const fatte = partite.filter((m) => m.status === 'played' || m.status === 'postponed').length;
   return { fatte, totali: partite.length, completa: partite.length > 0 && fatte === partite.length };
 }
+/** I record della lega, su tutto quello che e' stato giocato finora. */
+export function record() { return memo('record', () => computeRecord(resultsUntil(currentMatchday()))); }
+/** Lo storico fra due squadre. */
+export function h2h(a, b) { return memo(`h2h:${a}:${b}`, () => computeH2H(resultsUntil(currentMatchday()), a, b)); }
 export function myFixture(n, managerId) { return fixturesOf(n).find((f) => f.homeManagerId === managerId || f.awayManagerId === managerId) || null; }
 
 /**

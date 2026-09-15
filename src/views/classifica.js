@@ -3,12 +3,70 @@ import { esc, fmt, badge, crest, empty, icon } from '../ui.js';
 import { movimenti } from '../engine.js';
 
 let vista = 'classifica';
+let contro = null;
 
 /** ▲2 / ▼1 / = rispetto a prima della giornata in corso. */
 function freccia(d) {
   if (d === null) return '';
   if (d === 0) return '<i class="mv pari" aria-label="posizione invariata">=</i>';
   return `<i class="mv ${d > 0 ? 'su' : 'giu'}" aria-label="${d > 0 ? `sale di ${d}` : `scende di ${-d}`}">${d > 0 ? '▲' : '▼'}${Math.abs(d)}</i>`;
+}
+
+const nomeSq = (id) => S.managersById.get(id)?.teamName || '—';
+
+/**
+ * I record della lega. In una lega fra amici e' la parte di cui si discute
+ * tutto l'anno — "il mio 82,5 della seconda" vale piu' di mezza classifica —
+ * ed erano tutti dati che c'erano gia' e che nessuno metteva insieme.
+ */
+function record() {
+  const r = S.record();
+  if (r.vuoto) return `<div class="a-card"><p class="small muted">I record compaiono quando c'è almeno una giornata conclusa.</p></div>`;
+  const scheda = (etichetta, chi, valore, sotto) => `<div class="rec">
+    <span class="et">${etichetta}</span><b class="val">${valore}</b>
+    <span class="chi">${esc(nomeSq(chi))}</span><span class="dove">${sotto}</span></div>`;
+  const s5 = (esiti) => esiti.slice(-5).map((e) => `<i class="e ${e.toLowerCase()}">${e}</i>`).join('');
+  const strisce = r.strisce.filter((x) => x.vittorie > 0).slice(0, 3);
+  return `<div class="recs">
+      ${scheda('Miglior punteggio', r.migliore.managerId, fmt(r.migliore.punti), `giornata ${r.migliore.matchday}`)}
+      ${scheda('Peggior punteggio', r.peggiore.managerId, fmt(r.peggiore.punti), `giornata ${r.peggiore.matchday}`)}
+      ${scheda('Più gol in una giornata', r.piuGol.managerId, r.piuGol.gol, `giornata ${r.piuGol.matchday}`)}
+      ${scheda('Vittoria più larga', r.scarto.vincitore, `+${r.scarto.gol}`, `su ${esc(nomeSq(r.scarto.perdente))}, giornata ${r.scarto.matchday}`)}
+    </div>
+    ${strisce.length ? `<div class="a-sec"><b>Strisce</b><span>di fila</span></div>
+      <div class="vlist">${strisce.map((x) => `<div class="vr">${crest(S.managersById.get(x.managerId), 'sm')}
+        <span class="nm"><b>${esc(nomeSq(x.managerId))}</b><span>${x.vittorie} ${x.vittorie === 1 ? 'vittoria' : 'vittorie'} di fila · ${x.imbattuto} senza perdere</span></span>
+        <span class="ultimi">${s5(x.esiti)}</span></div>`).join('')}</div>` : ''}
+    <div class="a-card dett"><div class="dhead"><b>Medie per giornata</b><span>media · massimo · minimo</span></div>
+      ${r.medie.map((m) => `<div class="drow${m.managerId === S.me()?.id ? ' io' : ''}"><span class="nm">${esc(nomeSq(m.managerId))}</span>
+        <span class="v fp">${fmt(m.media)}</span><span class="v">${fmt(m.massimo)}</span><span class="v">${fmt(m.minimo)}</span></div>`).join('')}</div>`;
+}
+
+/** Lo storico contro una squadra: si scelgono dai chip. */
+function scontri(con) {
+  const me = S.me(); if (!me) return '';
+  const altri = S.base.managers.filter((m) => m.id !== me.id);
+  if (!altri.length) return '';
+  const scelto = altri.some((m) => m.id === con) ? con : altri[0].id;
+  const h = S.h2h(me.id, scelto);
+  const chip = `<div class="scelte">${altri.map((m) => `<button class="chip${m.id === scelto ? ' on' : ''}" data-h2h="${m.id}">${esc(m.teamName)}</button>`).join('')}</div>`;
+  if (!h.partite.length) {
+    return `${chip}<div class="a-card"><p class="small muted">Non vi siete ancora incontrati: il calendario vi mette insieme più avanti.</p></div>`;
+  }
+  return `${chip}
+    <div class="a-card h2h"><div class="hbar">
+      <span class="q v"><b>${h.v}</b><span>vinte</span></span>
+      <span class="q n"><b>${h.n}</b><span>pari</span></span>
+      <span class="q p"><b>${h.p}</b><span>perse</span></span></div>
+      <div class="hnum"><span>gol <b>${h.golA}–${h.golB}</b></span><span>fantapunti <b>${fmt(h.puntiA)}–${fmt(h.puntiB)}</b></span></div></div>
+    <div class="vlist"><div class="vhead">Gli incontri <span>${h.partite.length}</span></div>
+      ${h.partite.map((f) => { const casa = f.homeManagerId === me.id;
+    const ga = casa ? f.homeGoals : f.awayGoals, gb = casa ? f.awayGoals : f.homeGoals;
+    const pa = casa ? f.homeScore : f.awayScore, pb = casa ? f.awayScore : f.homeScore;
+    return `<a class="vr" href="#/live/${f.id}" style="text-decoration:none">
+        <span class="rl ${ga > gb ? 'rl-d' : ga < gb ? 'rl-a' : 'rl-c'}">${ga > gb ? 'V' : ga < gb ? 'P' : 'N'}</span>
+        <span class="nm"><b>Giornata ${f.matchday}</b><span>${casa ? 'in casa' : 'fuori'} · ${fmt(pa)} – ${fmt(pb)}</span></span>
+        <span class="fv">${ga}–${gb}</span></a>`; }).join('')}</div>`;
 }
 
 /** Gli incontri della giornata, con il punteggio che c'e' adesso. */
@@ -49,7 +107,19 @@ export const classifica = {
 
     const seg = `<div class="seg seg-cls">
       <button class="${vista === 'classifica' ? 'on' : ''}" data-vista="classifica">Classifica</button>
-      <button class="${vista === 'giornata' ? 'on' : ''}" data-vista="giornata">Giornata ${n}</button></div>`;
+      <button class="${vista === 'giornata' ? 'on' : ''}" data-vista="giornata">Giornata ${n}</button>
+      <button class="${vista === 'record' ? 'on' : ''}" data-vista="record">Record</button></div>`;
+
+    if (vista === 'record') {
+      return `<main class="a-body">
+        <div class="topbar">${badge(stato, `giornata ${n}`)}<span style="font:700 13px var(--font-display);color:var(--primary-ink);white-space:nowrap">Record</span></div>
+        ${seg}
+        <div class="a-sec"><b>Record di lega</b><span>fin qui</span></div>
+        ${record()}
+        <div class="a-sec"><b>Testa a testa</b><span>i tuoi scontri</span></div>
+        ${scontri(contro)}
+      </main>`;
+    }
 
     if (vista === 'giornata') {
       return `<main class="a-body">
@@ -78,6 +148,8 @@ export const classifica = {
   },
   mount(root, ctx) {
     root.querySelector('main').addEventListener('click', (e) => {
+      const h = e.target.closest('[data-h2h]');
+      if (h) { contro = h.dataset.h2h; ctx.render(); return; }
       const b = e.target.closest('[data-vista]'); if (!b) return;
       vista = b.dataset.vista; ctx.render();
     });

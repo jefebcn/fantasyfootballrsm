@@ -6,6 +6,8 @@
  * caricare niente e nessuna maglia di società vera finisce dentro l'app.
  */
 import { esc } from './ui-esc.js';
+export { chiaro } from './colore.js';
+import { chiaro } from './colore.js';
 
 // Le fantasie disegnate sono sparite con la sagoma: il motivo ora è quello
 // della foto, uguale per tutti, e a cambiare è la tinta.
@@ -24,20 +26,6 @@ export const kitOf = (m) => ({ ...KIT_DEFAULT, c1: m?.color || KIT_DEFAULT.c1, .
 export const BASE = 'media/maglia-base.webp';
 const RAPPORTO = '560 / 688';
 
-/** Chiaro o scuro: serve per scegliere l'inchiostro che stacca dal fondo. */
-export function chiaro(hex) {
-  const c = String(hex || '#334').replace('#', '');
-  const v = c.length === 3 ? c.split('').map((x) => x + x).join('') : c;
-  const [r, g, b] = [0, 2, 4].map((i) => parseInt(v.slice(i, i + 2), 16) || 0);
-  return (0.299 * r + 0.587 * g + 0.114 * b) / 255 > 0.62;
-}
-
-/**
- * Numero e nome devono leggersi su qualunque fantasia: su una maglia a righe
- * o a metà campo il fondo cambia a metà della cifra, quindi un colore solo non
- * basta mai. Si scrive con un contorno del colore opposto (paint-order:stroke
- * mette il bordo SOTTO al pieno, se no il tratto mangia la lettera).
- */
 function scritta(testo, x, y, dim, peso, inchiostro, bordo, spazio = '0') {
   return `<text x="${x}" y="${y}" text-anchor="middle" fill="${inchiostro}" stroke="${bordo}"
     stroke-width="${dim / 5.5}" paint-order="stroke" stroke-linejoin="round"

@@ -9,7 +9,7 @@ export const calendario = {
     const fx = S.fixturesOf(n).map((f) => S.fixtureResult(f));
     const real = S.matchesOf(n);
     return `<main class="a-body">
-      <div class="gsel" id="gsel">${Array.from({ length: 30 }, (_, i) => `<a href="#/calendario/${i + 1}" class="${i + 1 === n ? 'on' : ''}" style="text-decoration:none;flex:none;font:700 13px var(--font-display);color:${i + 1 === n ? 'var(--primary)' : 'var(--text-muted)'};padding:8px 10px;position:relative">G${i + 1}${i + 1 === n ? '<i style="position:absolute;left:50%;bottom:2px;width:6px;height:6px;border-radius:50%;background:var(--primary);transform:translateX(-50%)"></i>' : ''}</a>`).join('')}</div>
+      <div class="gsel" id="gsel">${Array.from({ length: 30 }, (_, i) => `<a href="#/calendario/${i + 1}" class="gs${i + 1 === n ? ' on' : ''}">G${i + 1}${i + 1 === n ? '<i></i>' : ''}</a>`).join('')}</div>
       ${sec('Scontri di lega', `${fx.length} ${fx.length === 1 ? 'partita' : 'partite'}`)}
       <div class="statusline">${badge(st, st === 'open' ? `lock ${dateIt(md.lockAt)} ${timeIt(md.lockAt)}` : st === 'scheduled' ? dateIt(md.lockAt) : '')}</div>
       ${fx.length ? fx.map((r) => matchCard(r, S.managersById)).join('') : `<div class="empty">${logo()}<p>Nessuno scontro: servono almeno due squadre nella lega.</p></div>`}

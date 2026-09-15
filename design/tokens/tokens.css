@@ -72,6 +72,11 @@
 
   --positive:      var(--c-alloro-500);
   --positive-soft: #E1F5EC;
+  --on-negative:   #FFFFFF;
+  --negative-ink:  #B02020;   /* rosso da scrivere su fondo chiaro */
+  --positive-ink:  #0F6444;   /* verde da scrivere sopra --positive-soft */
+  --accent-ink:    #96640A;   /* oro da scrivere sopra --accent-soft */
+  --primary-ink:   #3559C4;   /* blu da scrivere sopra --primary-soft */
   --negative:      var(--c-cartellino-500);
   --negative-soft: #FCE9E9;
   --warning:       var(--c-ambra-500);
@@ -80,7 +85,7 @@
   /* Ruoli di listone: P / D / C / A */
   --ruolo-p: #E5A11B;
   --ruolo-d: #1E9E6A;
-  --ruolo-c: #1B84C6;
+  --ruolo-c: #197CBA;   /* un filo piu' scuro dell'originale: col bianco sopra passa 4,5 */
   --ruolo-a: #CE3B3B;
 
   /* Stato del dato: il segnale identitario del prodotto */
@@ -159,6 +164,11 @@
 
     --positive:      var(--c-alloro-400);
     --positive-soft: #0B3627;
+    --on-negative:   #16202E;
+    --negative-ink:  #FF9A9A;
+    --positive-ink:  #6FD6A6;
+    --accent-ink:    #F3C765;
+    --primary-ink:   #8FC9F2;
     --negative:      var(--c-cartellino-400);
     --negative-soft: #3A1515;
     --warning:       var(--c-ambra-400);
@@ -196,6 +206,11 @@
   --on-accent:     #1A1302;
   --positive:      var(--c-alloro-400);
   --positive-soft: #0B3627;
+  --on-negative:   #16202E;
+  --negative-ink:  #FF9A9A;
+  --positive-ink:  #6FD6A6;
+  --accent-ink:  #F3C765;
+  --primary-ink:   #8FC9F2;
   --negative:      var(--c-cartellino-400);
   --negative-soft: #3A1515;
   --warning:       var(--c-ambra-400);

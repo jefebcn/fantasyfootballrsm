@@ -45,6 +45,17 @@ export function sheet(html) {
 }
 const splash = () => `<div class="splash">${logo('splash-mark')}<b>Fantacampionato</b><span>Sammarinese</span><i class="splash-bar"><i></i></i></div>`;
 
+/**
+ * ATTENZIONE a chi cerca il tasto del tema con un selettore.
+ *
+ * Qui data-theme viene scritto sull'<html>, perche' e' l'aggancio che usano i
+ * token CSS (:root[data-theme="dark"]). Di conseguenza
+ * `e.target.closest('[data-theme]')` risale fino alla radice e trova SEMPRE
+ * qualcosa, per qualunque clic nella pagina. Chi deve riconoscere il tasto usi
+ * `button[data-theme]`: e' cosi' che in Impostazioni ogni riga era diventata
+ * morta con il tema su Chiaro o Scuro, e funzionante su "Sistema" — dove
+ * l'attributo non c'e'.
+ */
 export function applyTheme() {
   const t = S.store.get().theme;
   if (t === 'system') document.documentElement.removeAttribute('data-theme'); else document.documentElement.setAttribute('data-theme', t);

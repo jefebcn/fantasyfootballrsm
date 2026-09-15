@@ -41,4 +41,20 @@ union all
 select '005-notifiche-push.sql', 'funzione da_avvisare',
        case when to_regprocedure('public.da_avvisare(integer)') is not null
             then 'fatto' else 'DA FARE' end
+union all
+select '006-scambi.sql', 'tabella trades (scambi fra squadre)',
+       case when to_regclass('public.trades') is not null
+            then 'fatto' else 'DA FARE' end
+union all
+select '006-scambi.sql', 'funzione accetta_scambio',
+       case when to_regprocedure('public.accetta_scambio(uuid)') is not null
+            then 'fatto' else 'DA FARE' end
+union all
+select '007-mercato-svincolati.sql', 'tabella offerte (mercato svincolati)',
+       case when to_regclass('public.offerte') is not null
+            then 'fatto' else 'DA FARE' end
+union all
+select '007-mercato-svincolati.sql', 'funzione risolvi_offerte',
+       case when to_regprocedure('public.risolvi_offerte(uuid)') is not null
+            then 'fatto' else 'DA FARE' end
 order by 1, 2;

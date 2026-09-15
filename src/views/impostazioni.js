@@ -117,7 +117,15 @@ export const impostazioni = {
       document.getElementById('pv-save').onclick = () => onSave(document.getElementById('pv').value.trim());
     };
     root.querySelector('main').addEventListener('click', async (e) => {
-      const t = e.target.closest('[data-theme]'); if (t) { S.store.set({ theme: t.dataset.theme }); applyTheme(); return; }
+      // button[data-theme] e non [data-theme]: applyTheme() scrive data-theme
+      // sull'<html>, quindi closest('[data-theme]') risaliva fino alla radice
+      // e trovava SEMPRE qualcosa. Ogni tocco su una riga delle impostazioni
+      // veniva preso per un cambio di tema e la funzione tornava subito:
+      // con il tema su Chiaro o Scuro NESSUNA riga funzionava piu' — ne'
+      // Privacy, ne' Lingua, ne' il server, ne' il caricamento delle giornate.
+      // Con il tema su "Sistema" l'attributo non c'e' e sembrava tutto a posto,
+      // ed e' per questo che non salta all'occhio.
+      const t = e.target.closest('button[data-theme]'); if (t) { S.store.set({ theme: t.dataset.theme }); applyTheme(); return; }
       const a = e.target.closest('[data-act]'); if (!a) return;
       const act = a.dataset.act;
       if (act === 'logout') { await S.signOut(); ctx.go('login'); return; }

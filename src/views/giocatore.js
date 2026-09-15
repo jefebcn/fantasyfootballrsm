@@ -12,6 +12,7 @@ export const giocatore = {
     return `<main class="a-body">
       <div class="a-card" style="display:flex;gap:14px;align-items:center">${avatarGrande(p, club)}<div style="flex:1"><b style="font:700 18px var(--font-display)">${esc(p.firstName)} ${esc(p.lastName)}</b><br><span class="small muted">${esc(club.name)} · ${roleName(p.role)} · ${p.isActive ? (owner ? `di ${esc(owner.teamName)}` : 'svincolato') : '<b style="color:var(--negative)">fuori dal campionato (art. 3.3)</b>'}</span></div>${roleChip(p.role)}</div>
       <div class="a-card a-stats"><div><b>${p.quotation}</b><span>Quotazione</span></div><div><b>${cnt ? fmt(sum / cnt) : '–'}</b><span>Media FV</span></div><div><b>${cnt}</b><span>Presenze</span></div><div><b>${hist.reduce((s, h) => s + h.evs.filter((e) => e.type === 'goal').length, 0)}</b><span>Gol</span></div></div>
+      <a class="a-btn sec" href="#/confronto/${esc(p.id)}" style="text-decoration:none;justify-content:center">Confronta con un altro ${roleName(p.role).toLowerCase()}</a>
       <div class="vlist"><div class="vhead">Storico giornate</div>${hist.map(({ n, r, m, evs }) => voteRow({ ...p, name: `Giornata ${n}` }, m ? { name: `${S.clubsById.get(m.homeClubId).name} ${m.status === 'played' ? `${m.homeGoals}-${m.awayGoals}` : '—'} ${S.clubsById.get(m.awayClubId).name}` } : null, r ? { ...r, events: evs } : null, { minutes: r?.minutes })).join('') || '<p class="small muted" style="padding:12px">Nessuna giornata giocata.</p>'}</div>
     </main>`;
   },

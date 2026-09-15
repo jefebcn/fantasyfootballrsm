@@ -19,7 +19,12 @@ function builder(table) {
   const b = {
     select() { return b; },   // il finto server torna sempre le righe
     eq(k, v) { filters.push((r) => r[k] === v); return b; },
-    is(k, v) { filters.push((r) => r[k] === v); return b; },
+    // "is null" in SQL prende anche le colonne mai scritte. Qui invece
+    // undefined === null e' falso, quindi .is('released_at', null) scartava
+    // TUTTE le righe delle rose: le prove col browser girano da sempre con le
+    // rose vuote, e nessuna se n'era accorta perche' le schermate si
+    // disegnavano comunque.
+    is(k, v) { filters.push((r) => (v === null ? r[k] === null || r[k] === undefined : r[k] === v)); return b; },
     order(k, o) { orderBy = [k, o?.ascending !== false]; return b; },
     limit(n) { lim = n; return b; },
     single() { single = true; return b; }, maybeSingle() { maybe = true; return b; },

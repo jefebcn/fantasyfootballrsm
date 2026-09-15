@@ -52,7 +52,7 @@ a{color:var(--primary)}
 label.lbl{display:block;font-size:var(--fs-label);letter-spacing:.08em;text-transform:uppercase;color:var(--text-muted);font-weight:600;margin-bottom:4px}
 .row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .seg{display:flex;background:var(--surface-sunk);border-radius:10px;padding:3px}
-.seg button{flex:1;border:0;background:transparent;padding:7px 4px;border-radius:8px;font:600 12px var(--font-body);color:var(--text-muted);cursor:pointer}
+.seg button{flex:1;border:0;background:transparent;min-height:34px;padding:9px 4px;border-radius:8px;font:600 12.5px var(--font-body);color:var(--text-muted);cursor:pointer}
 .seg button.on{background:var(--surface);color:var(--text);box-shadow:var(--sh-card)}
 .slot.sel .av{outline:3px solid var(--c-oro-400)}
 .slot{cursor:pointer;width:64px}
@@ -123,7 +123,7 @@ hr.sep{border:0;border-top:1px solid var(--border);margin:4px 0}
 .a-hero .tw{position:absolute;right:-26px;bottom:-24px;width:250px;height:250px;opacity:.08;color:#fff}
 .a-hero h2{position:relative;font-size:23px;font-weight:800;line-height:1.1;letter-spacing:-.02em;text-align:center;
   margin-top:14px;padding-inline:52px;text-wrap:balance;text-shadow:0 2px 12px rgba(0,0,0,.25)}
-.a-hero .hero-owner{position:relative;text-align:center;font-size:12.5px;opacity:.78;margin-top:5px}
+.a-hero .hero-owner{position:relative;text-align:center;font:500 12.5px var(--font-body);opacity:.8;margin:8px 0 0}
 .a-hero .hero-league{position:relative;align-self:center;display:inline-flex;align-items:center;gap:3px;
   padding:5px 10px 5px 12px;border-radius:999px;background:rgba(255,255,255,.15);color:#fff;text-decoration:none;
   font:600 11px var(--font-body);letter-spacing:.06em;text-transform:uppercase}
@@ -148,7 +148,7 @@ hr.sep{border:0;border-top:1px solid var(--border);margin:4px 0}
 .badge .ic{width:14px;height:14px;stroke-width:2.2}
 .badge--prov{background:var(--warning-soft);color:var(--warning)}
 .badge--froz{background:var(--primary-soft);color:var(--stato-congelato)}
-.badge--live{background:var(--positive-soft);color:var(--positive)}
+.badge--live{background:var(--positive-soft);color:var(--positive-ink)}
 .badge--open{background:var(--accent-soft);color:var(--c-oro-600)}
 :root[data-theme="dark"] .badge--open{color:var(--accent)}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .badge--open{color:var(--accent)}}
@@ -166,7 +166,7 @@ hr.sep{border:0;border-top:1px solid var(--border);margin:4px 0}
 /* bottone */
 .a-btn{display:flex;align-items:center;justify-content:center;gap:8px;height:48px;border-radius:12px;border:0;background:var(--grad-oro);color:var(--on-accent);font-family:var(--font-display);font-weight:700;font-size:14px;letter-spacing:.06em;text-transform:uppercase;width:100%;cursor:pointer;box-shadow:0 4px 12px rgba(229,161,27,.35)}
 .a-btn.sec{background:transparent;color:var(--primary);border:1.5px solid var(--primary);box-shadow:none}
-.a-btn.danger{background:var(--negative);color:#fff;box-shadow:none}
+.a-btn.danger{background:var(--negative);color:var(--on-negative);box-shadow:none}
 .a-btn[disabled]{opacity:.45;cursor:not-allowed;box-shadow:none}
 
 /* match card */
@@ -218,8 +218,15 @@ hr.sep{border:0;border-top:1px solid var(--border);margin:4px 0}
 .d-item.lock i{background:var(--surface-sunk);color:var(--text-muted)}
 
 /* chip ruolo */
+/* L'inchiostro del distintivo di ruolo non puo' essere bianco per tutti:
+   sull'ambra del portiere il bianco sta a 2,2 di contrasto, illeggibile. Ogni
+   ruolo prende quello che regge sul suo fondo (tutti sopra 4,5). */
 .rl{width:22px;height:22px;border-radius:50%;display:inline-grid;place-items:center;color:#fff;font-family:var(--font-display);font-weight:700;font-size:11px;flex:none}
-.rl-p{background:var(--ruolo-p)}.rl-d{background:var(--ruolo-d)}.rl-c{background:var(--ruolo-c)}.rl-a{background:var(--ruolo-a)}
+.rl-p{background:var(--ruolo-p);color:#16202E}
+.rl-d{background:var(--ruolo-d);color:#0C2418}
+.rl-c{background:var(--ruolo-c);color:#fff}
+.rl-a{background:var(--ruolo-a);color:#fff}
+:root[data-theme="dark"] .rl-c,:root:not([data-theme="light"]) .rl-c{color:#16202E}
 
 /* riga voto */
 .vlist{display:flex;flex-direction:column;background:var(--surface);border-radius:var(--r-md);box-shadow:var(--sh-card);overflow:hidden}
@@ -245,7 +252,11 @@ hr.sep{border:0;border-top:1px solid var(--border);margin:4px 0}
 /* filtri chip */
 .chips{display:flex;gap:8px;overflow-x:auto;padding-bottom:2px;scrollbar-width:none}
 .chips::-webkit-scrollbar{display:none}
-.chip{flex:none;border:1px solid var(--border-strong);background:var(--surface);color:var(--text);font:600 12px var(--font-body);padding:7px 12px;border-radius:999px;cursor:pointer}
+/* I bersagli di tocco stavano sui 30px: per un pollice sono pochi, e le
+   pastiglie giornata del calendario erano larghe 37. Minimo 38. */
+.chip{flex:none;display:inline-flex;align-items:center;justify-content:center;min-height:38px;min-width:38px;
+  border:1px solid var(--border-strong);background:var(--surface);color:var(--text);
+  font:600 12.5px var(--font-body);padding:8px 14px;border-radius:999px;cursor:pointer}
 .chip.on{background:var(--primary);color:var(--on-primary);border-color:var(--primary)}
 .chip.mod{font-family:var(--font-display);font-weight:700;font-size:13px;letter-spacing:.02em}
 
@@ -613,10 +624,8 @@ button,a{-webkit-tap-highlight-color:transparent}
 /* riga regola */
 .rule{display:grid;grid-template-columns:auto minmax(0,1fr);gap:12px;align-items:start;padding:14px;
   background:var(--surface);border-radius:var(--r-md);box-shadow:var(--sh-card);border-left:3px solid var(--accent)}
-.rule .art{font:600 10px var(--font-body);letter-spacing:.08em;text-transform:uppercase;color:var(--c-oro-600);
+.rule .art{font:600 10px var(--font-body);letter-spacing:.08em;text-transform:uppercase;color:var(--accent-ink);
   background:var(--accent-soft);border-radius:6px;padding:4px 7px;white-space:nowrap}
-:root[data-theme="dark"] .rule .art{color:var(--accent)}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .rule .art{color:var(--accent)}}
 .rule p{font-size:13.5px;line-height:1.5}
 .rule p b{font-weight:700}
 
@@ -639,11 +648,11 @@ button,a{-webkit-tap-highlight-color:transparent}
 .prow:first-child{border-top:0}
 .ptxt{min-width:0}
 .ptxt b{display:block;font-weight:600;font-size:14.5px}
-.ptxt b em{font-style:normal;font-size:11px;font-weight:600;color:var(--primary);background:var(--primary-soft);border-radius:5px;padding:1px 6px;margin-left:6px;vertical-align:1px}
+.ptxt b em{font-style:normal;font-size:11px;font-weight:600;color:var(--primary-ink);background:var(--primary-soft);border-radius:5px;padding:1px 6px;margin-left:6px;vertical-align:1px}
 .ptxt span{display:block;font-size:12px;color:var(--text-muted);line-height:1.45}
 .ptxt .pmeta{font-variant-numeric:tabular-nums}
 .pact{grid-column:2;display:flex;gap:8px;margin-top:9px}
-.pact .chip.danger{color:var(--negative);border-color:var(--border-strong)}
+.pact .chip.danger{color:var(--negative-ink,var(--negative));border-color:var(--border-strong)}
 
 /* icone illustrate */
 .pic{display:block;width:100%;height:100%;object-fit:contain;-webkit-user-drag:none}
@@ -981,7 +990,6 @@ button,a{-webkit-tap-highlight-color:transparent}
 .tinte .tinta.on{outline:3px solid var(--primary);outline-offset:2px;border-color:var(--surface)}
 .prow .pmg{width:30px;flex:none;display:block}
 .a-card.pericolo{border-left:3px solid var(--negative);display:flex;flex-direction:column;gap:10px}
-.a-btn.danger{background:var(--negative);color:#fff}
 
 /* Profilo: intestazione con i dati dell'account. */
 .pf-testa{display:grid;grid-template-columns:auto 1fr auto;gap:14px;align-items:center;
@@ -1006,8 +1014,10 @@ button,a{-webkit-tap-highlight-color:transparent}
    poi il nome squadra, poi la maglia, e in fondo il marchio del campionato. */
 .a-hero{padding-bottom:16px}
 .a-hero .hero-league{align-self:stretch;justify-content:space-between;background:var(--surface);
-  color:var(--text);padding:14px 16px;border-radius:14px;font:700 17px var(--font-display);
-  letter-spacing:-.01em;text-transform:none;box-shadow:0 6px 16px rgba(0,0,0,.18)}
+  color:var(--text);padding:11px 14px 11px 16px;border-radius:14px;text-transform:none;
+  border-left:5px solid var(--accent);box-shadow:0 6px 16px rgba(0,0,0,.18)}
+.a-hero .hero-league b{display:block;font:700 16px var(--font-display);letter-spacing:-.01em}
+.a-hero .hero-league small{display:block;font:500 11px var(--font-body);color:var(--text-muted);margin-top:1px}
 .a-hero .hero-league .ic{width:18px;height:18px;color:var(--text-muted)}
 .a-hero h2{margin-top:16px;padding-inline:60px;font-size:21px}
 .a-hero .jersey{margin-top:10px}
@@ -1016,20 +1026,31 @@ button,a{-webkit-tap-highlight-color:transparent}
   background-repeat:no-repeat;
   background-image:
     url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16'%3E%3Cpath d='M1 3l12-2-1 9-11 1z' fill='%23fff' opacity='.85'/%3E%3C/svg%3E"),
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16'%3E%3Cpath d='M2 2l12 1-2 9-10-2z' fill='%23F2C43D'/%3E%3C/svg%3E"),
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16'%3E%3Cpath d='M1 4l12-3v9l-12 2z' fill='%2357C98A'/%3E%3C/svg%3E"),
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16'%3E%3Cpath d='M2 1l12 2-1 9-11-1z' fill='%23F2C43D'/%3E%3C/svg%3E"),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16'%3E%3Cpath d='M2 2l12 1-2 9-10-2z' fill='%23E8B53A'/%3E%3C/svg%3E"),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16'%3E%3Cpath d='M1 4l12-3v9l-12 2z' fill='%235BA8DC'/%3E%3C/svg%3E"),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16'%3E%3Cpath d='M2 1l12 2-1 9-11-1z' fill='%23E8B53A'/%3E%3C/svg%3E"),
     url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16'%3E%3Cpath d='M1 2l12-1v9l-12 1z' fill='%23fff' opacity='.7'/%3E%3C/svg%3E"),
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16'%3E%3Cpath d='M2 3l12-2v9l-12 2z' fill='%2357C98A'/%3E%3C/svg%3E");
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16'%3E%3Cpath d='M2 3l12-2v9l-12 2z' fill='%235BA8DC'/%3E%3C/svg%3E");
   background-position:5% 32%, 16% 82%, 27% 6%, 74% 12%, 88% 70%, 95% 38%}
-.a-hero .hero-marchio{position:relative;display:flex;align-items:center;justify-content:center;gap:8px;
-  margin-top:14px;color:#fff}
-.a-hero .hero-marchio .logo{width:30px;height:30px}
-.a-hero .hero-marchio > span{font:700 12px var(--font-display);letter-spacing:.04em;opacity:.9}
+.a-hero .hero-marchio{position:relative;display:inline-flex;align-self:center;align-items:center;justify-content:center;
+  gap:7px;margin-top:12px;padding:5px 14px 5px 8px;border-radius:999px;color:#fff;
+  background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.18)}
+.a-hero .hero-marchio .logo{width:22px;height:22px}
+.a-hero .hero-marchio > span{font:700 11.5px var(--font-display);letter-spacing:.08em;text-transform:uppercase;opacity:.95}
 .a-herowrap + .a-card.a-stats{margin-top:-26px}
 /* L'ultima notizia su una riga, come la striscia del riferimento. */
 .nflash{display:flex;align-items:center;gap:10px;background:var(--surface);border-radius:var(--r-md);
   box-shadow:var(--sh-card);padding:12px 14px;text-decoration:none;color:inherit;min-width:0}
-.nflash .tag{flex:none;background:var(--negative);color:#fff;border-radius:999px;padding:4px 10px;
+.nflash .tag{flex:none;background:var(--negative);color:var(--on-negative);border-radius:999px;padding:4px 10px;
   font:700 11px var(--font-body);white-space:nowrap}
 .nflash b{font:600 13.5px var(--font-body);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+/* Selettore giornata: le pastiglie stavano a 31px di altezza, e con lo stile
+   scritto a mano dentro l'HTML non le prendeva nessuna regola. */
+.gsel .gs{display:inline-grid;place-items:center;flex:none;position:relative;min-width:44px;min-height:40px;
+  padding:8px 10px;text-decoration:none;font:700 13px var(--font-display);color:var(--text-muted)}
+.gsel .gs.on{color:var(--primary-ink)}
+.gsel .gs i{position:absolute;left:50%;bottom:3px;width:6px;height:6px;border-radius:50%;
+  background:var(--primary);transform:translateX(-50%)}
+/* Il "+" per aggiungere un giocatore: il fondo era --primary col bianco sopra,
+   che in tema scuro (azzurro chiaro) stava a 2,7 di contrasto. */
+.rl.rl-piu{background:var(--primary);color:var(--on-primary)}

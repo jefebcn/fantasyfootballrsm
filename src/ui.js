@@ -1,5 +1,6 @@
 /** Componenti UI condivisi: stringhe HTML, nessun framework. */
 import { avatar } from './avatar.js';
+import { tintaLeggibile } from './colore.js';
 export { avatar } from './avatar.js';
 import { esc } from './ui-esc.js';
 export { esc };
@@ -36,9 +37,15 @@ export const faccia = (p, club, cls = '') =>
 /** Avatar grande per la scheda del giocatore, su un tondo col colore del club. */
 export const avatarGrande = (p, club) =>
   `<span class="av-big" style="--c:${club?.color || '#2B4C7E'}">${avatar(p, club)}</span>`;
-export const crest = (m, cls = '') => (m?.crestUrl
-  ? `<span class="crest foto ${cls}" style="background:${m.color}"><img src="${esc(m.crestUrl)}" alt=""></span>`
-  : `<span class="crest ${cls}" style="background:${m.color}">${esc(m.initials)}</span>`);
+/** Le iniziali erano bianche fisse su un colore scelto da chi gioca: su oro o
+ *  su verde medio stavano sotto 3 di contrasto. tintaLeggibile() sceglie
+ *  l'inchiostro e, se serve, sposta il fondo quanto basta per arrivare a 4,5. */
+export const crest = (m, cls = '') => {
+  const { fondo, inchiostro } = tintaLeggibile(m?.color);
+  return m?.crestUrl
+    ? `<span class="crest foto ${cls}" style="background:${fondo}"><img src="${esc(m.crestUrl)}" alt=""></span>`
+    : `<span class="crest ${cls}" style="background:${fondo};color:${inchiostro}">${esc(m.initials)}</span>`;
+};
 
 /**
  * Icona-maschera: la sagoma arriva da un PNG, il colore dalla CSS. Serve dove

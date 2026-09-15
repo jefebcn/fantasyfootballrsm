@@ -192,7 +192,9 @@ export const dashboard = {
       <div id="install-slot"></div>
       <div class="a-herowrap">
         <div class="a-hero">${logo('tw')}<i class="conf"></i>
-          <a class="hero-league" href="#/leghe">${esc(S.base.league.shortName || S.base.league.name)}${icon('chev', 'ic sm')}</a>
+          <a class="hero-league" href="#/leghe">
+            <span><b>${esc(S.base.league.shortName || S.base.league.name)}</b>
+            <small>${S.base.managers.length} squadre · ${ph.matchday}ª giornata</small></span>${icon('chev', 'ic sm')}</a>
           <h2>${esc(me.teamName)}</h2>
           <a class="jersey" href="#/squadra" aria-label="Modifica stemma e maglia">${maglia(kitOf(me))}</a>
           <div class="acts">
@@ -200,7 +202,8 @@ export const dashboard = {
             <a href="#/squadra" aria-label="La mia squadra"><button>${icon('gear')}</button></a>
             <a href="#/mercato" aria-label="Mercato libero"><button class="gold">${icon('cart')}</button></a>
           </div>
-          <span class="hero-marchio">${logo()}<span>Campionato Sammarinese</span></span>
+          <p class="hero-owner">${esc(me.owner)}</p>
+          <span class="hero-marchio">${logo()}<span>Voto Titano</span></span>
         </div>
       </div>
       <div class="a-card a-stats">

@@ -191,7 +191,9 @@ export const dashboard = {
     return `<main class="a-body">
       <div id="install-slot"></div>
       <div class="a-herowrap">
-        <div class="a-hero">${logo('tw')}<i class="conf"></i>
+        <div class="a-hero${S.store.get().sfondoFoto ? ' foto' : ''}">
+          ${S.store.get().sfondoFoto ? '<span class="sfondo"><img src="media/sfondo-home.jpg" alt="" fetchpriority="high"><i></i></span>' : ''}
+          ${logo('tw')}<i class="conf"></i>
           <a class="hero-league" href="#/leghe">
             <span><b>${esc(S.base.league.shortName || S.base.league.name)}</b>
             <small>${S.base.managers.length} squadre · ${ph.matchday}ª giornata</small></span>${icon('chev', 'ic sm')}</a>

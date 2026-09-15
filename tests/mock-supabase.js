@@ -108,6 +108,64 @@ export function createClient(_url, _key, opts) {
           }
           persisti(); return { data: n, error: null };
         }
+        // --- scambi: le stesse regole del server (006-scambi.sql), perche' una
+        // prova che passa su regole piu' larghe di quelle vere non prova niente
+        const mioMembro = (lega) => T('league_members').find((m) => m.league_id === lega && m.user_id === userId);
+        const inRosa = (lega, membro, pid) => T('rosters').some((r) => r.league_id === lega && r.member_id === membro && r.player_id === pid && !r.released_at);
+        const verifica = (lega, da, a, offre, chiede, crediti) => {
+          if (!offre.length && !chiede.length && !crediti) throw new Error('Uno scambio vuoto non si puo proporre');
+          if (offre.length !== chiede.length) throw new Error(`Lo scambio deve muovere lo stesso numero di giocatori per parte: ${offre.length}, contro ${chiede.length}`);
+          if (new Set(offre).size !== offre.length || new Set(chiede).size !== chiede.length) throw new Error('Lo stesso giocatore compare due volte nella proposta');
+          if (offre.some((x) => chiede.includes(x))) throw new Error('Un giocatore non puo stare da entrambe le parti');
+          for (const pid of offre) if (!inRosa(lega, da, pid)) throw new Error(`Il giocatore ${pid} non e (piu) nella tua rosa`);
+          for (const pid of chiede) if (!inRosa(lega, a, pid)) throw new Error(`Il giocatore ${pid} non e (piu) nella rosa dell'altra squadra`);
+          const mDa = T('league_members').find((m) => m.id === da), mA = T('league_members').find((m) => m.id === a);
+          if (mDa.credits - crediti < 0) throw new Error(`Non hai abbastanza crediti: ne hai ${mDa.credits}, ne servono ${crediti}`);
+          if (mA.credits + crediti < 0) throw new Error(`L'altra squadra non ha abbastanza crediti: ne ha ${mA.credits}, ne servono ${-crediti}`);
+        };
+        if (name === 'proponi_scambio') {
+          const lega = args.p_league; const mio = mioMembro(lega);
+          if (!mio) throw new Error('Non fai parte di questa lega');
+          if (mio.id === args.p_a_member) throw new Error('Non puoi scambiare con te stesso');
+          if (!T('league_members').some((m) => m.id === args.p_a_member && m.league_id === lega)) throw new Error('La squadra scelta non e di questa lega');
+          if (T('trades').some((t) => t.league_id === lega && t.stato === 'proposta' && t.da_member === mio.id && t.a_member === args.p_a_member)) {
+            throw new Error('Hai gia una proposta aperta verso questa squadra');
+          }
+          const offre = args.p_offre || [], chiede = args.p_chiede || [], crediti = args.p_crediti || 0;
+          verifica(lega, mio.id, args.p_a_member, offre, chiede, crediti);
+          const t = { id: uid(), league_id: lega, da_member: mio.id, a_member: args.p_a_member, offre, chiede, crediti, stato: 'proposta', nota: args.p_nota || null, creato_at: now() };
+          T('trades').push(t); persisti(); return { data: t.id, error: null };
+        }
+        if (name === 'accetta_scambio' || name === 'rifiuta_scambio' || name === 'annulla_scambio') {
+          const t = T('trades').find((x) => x.id === args.p_id);
+          if (!t) throw new Error('Proposta non trovata');
+          if (t.stato !== 'proposta') throw new Error(`Questa proposta e gia stata ${t.stato}`);
+          const mio = mioMembro(t.league_id);
+          if (name === 'annulla_scambio') {
+            if (!mio || mio.id !== t.da_member) throw new Error('Solo chi ha proposto puo ritirare');
+            t.stato = 'annullata';
+          } else {
+            if (!mio || mio.id !== t.a_member) throw new Error(`Solo la squadra a cui e rivolta puo ${name === 'accetta_scambio' ? 'accettare' : 'rifiutare'}`);
+            if (name === 'rifiuta_scambio') t.stato = 'rifiutata';
+            else {
+              verifica(t.league_id, t.da_member, t.a_member, t.offre, t.chiede, t.crediti);
+              for (const r of T('rosters')) {
+                if (r.league_id !== t.league_id || r.released_at) continue;
+                if (r.member_id === t.da_member && t.offre.includes(r.player_id)) r.member_id = t.a_member;
+                else if (r.member_id === t.a_member && t.chiede.includes(r.player_id)) r.member_id = t.da_member;
+              }
+              const mDa = T('league_members').find((m) => m.id === t.da_member), mA = T('league_members').find((m) => m.id === t.a_member);
+              mDa.credits -= t.crediti; mA.credits += t.crediti;
+              t.stato = 'accettata';
+              const toccati = new Set([...t.offre, ...t.chiede]);
+              for (const altro of T('trades')) {
+                if (altro.id === t.id || altro.stato !== 'proposta' || altro.league_id !== t.league_id) continue;
+                if ([...altro.offre, ...altro.chiede].some((x) => toccati.has(x))) altro.stato = 'annullata';
+              }
+            }
+          }
+          t.deciso_at = now(); t.deciso_da = userId; persisti(); return { data: null, error: null };
+        }
         throw new Error('rpc sconosciuta ' + name);
       } catch (e) { return { data: null, error: { message: e.message } }; }
     },

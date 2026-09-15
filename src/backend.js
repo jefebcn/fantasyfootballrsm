@@ -161,6 +161,21 @@ export async function rigeneraCodiceVice(memberId) { return must(await sb.rpc('r
 export async function entraComeVice(code) { return must(await sb.rpc('entra_come_vice', { p_code: code })); }
 export async function togliVice(memberId) { return must(await sb.rpc('togli_vice', { p_member: memberId })); }
 
+// ---------------------------------------------------------------- scambi
+export async function proponiScambio(leagueId, aMember, offre, chiede, crediti, nota) {
+  return must(await sb.rpc('proponi_scambio', { p_league: leagueId, p_a_member: aMember, p_offre: offre, p_chiede: chiede, p_crediti: crediti, p_nota: nota || null }));
+}
+export async function accettaScambio(id) { return must(await sb.rpc('accetta_scambio', { p_id: id })); }
+export async function rifiutaScambio(id) { return must(await sb.rpc('rifiuta_scambio', { p_id: id })); }
+export async function annullaScambio(id) { return must(await sb.rpc('annulla_scambio', { p_id: id })); }
+export async function loadScambi(leagueId) {
+  const righe = must(await sb.from('trades').select('*').eq('league_id', leagueId).order('creato_at', { ascending: false }));
+  return (righe || []).map((t) => ({
+    id: t.id, da: t.da_member, a: t.a_member, offre: t.offre || [], chiede: t.chiede || [],
+    crediti: t.crediti, stato: t.stato, nota: t.nota, creatoAt: t.creato_at, decisoAt: t.deciso_at,
+  }));
+}
+
 const toManager = (m) => ({ id: m.id, userId: m.user_id, teamName: m.team_name, owner: m.owner_name || m.profile?.display_name || '—', color: m.color, initials: m.initials || m.team_name.slice(0, 2).toUpperCase(), credits: m.credits, role: m.role, crestUrl: m.crest_url || null, kit: m.kit || {}, viceUserId: m.vice_user_id || null, viceCode: m.vice_code || null, viceName: m.vice?.display_name || null });
 
 export async function loadLeague(id) {

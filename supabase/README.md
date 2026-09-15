@@ -1,5 +1,21 @@
 # Supabase — account e leghe multiple
 
+## Migrazione 006 — scambi fra squadre
+
+`migrations/006-scambi.sql` aggiunge la tabella `trades` e quattro funzioni:
+`proponi_scambio`, `accetta_scambio`, `rifiuta_scambio`, `annulla_scambio`.
+
+Uno scambio muove lo stesso numero di giocatori per parte più eventuali
+crediti, e diventa effettivo solo quando l'altra squadra accetta. La
+fattibilità si controlla **due volte**, alla proposta e all'accettazione: fra
+i due momenti può essere passato un altro scambio, e una proposta nata valida
+può non esserlo più. Accettando, le proposte aperte che toccano gli stessi
+giocatori si chiudono da sole.
+
+Nessuna policy di scrittura sulla tabella: si passa solo dalle funzioni, che
+controllano le regole. Finché la migrazione non è applicata l'app se ne
+accorge e nasconde la scheda Scambi, invece di andare in errore.
+
 ## Ordine di installazione (provato per davvero)
 
 Su un progetto nuovo, nell'SQL Editor, in quest'ordine:
@@ -11,6 +27,7 @@ Su un progetto nuovo, nell'SQL Editor, in quest'ordine:
 4. `migrations/003-abbandona-lega.sql`
 5. `migrations/004-lock-dal-calendario.sql`
 6. `migrations/005-notifiche-push.sql`
+7. `migrations/006-scambi.sql`
 
 Le migrazioni dalla 001 in poi si possono rieseguire quante volte si vuole.
 

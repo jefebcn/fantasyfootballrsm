@@ -39,6 +39,20 @@ function lockDaSistemare() {
     sub: `${n} giornate: il server chiude le formazioni in un giorno diverso da quello che vedi qui.` });
 }
 
+/**
+ * Una proposta di scambio che aspetta una risposta non si vede da nessuna
+ * parte finche' non si apre la Rosa: e chi non la apre lascia l'altro ad
+ * aspettare. Qui in home viene a galla da sola, come il lock disallineato.
+ */
+function scambiDaDecidere() {
+  const q = S.scambiDaDecidere(); if (!q.length) return '';
+  const uno = q.length === 1;
+  const chi = S.managersById.get(q[0].da)?.teamName || 'una squadra';
+  return tile({ href: '#/scambi', lead: icon('undo'), leadKind: 'accent',
+    title: uno ? 'Una proposta di scambio' : `${q.length} proposte di scambio`,
+    sub: uno ? `${chi} aspetta la tua risposta.` : 'Aspettano la tua risposta.' });
+}
+
 function daConsegnare() {
   const p = S.promemoriaFormazione(); if (!p) return '';
   const ore = Math.floor(p.ore);
@@ -268,6 +282,7 @@ export const dashboard = {
       ${ultimiCinque(last, me)}
       ${prossimePartite(ph)}
       ${lockDaSistemare()}
+      ${scambiDaDecidere()}
       ${daConsegnare()}
       ${highlights()}
       ${notizie()}

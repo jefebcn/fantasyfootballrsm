@@ -83,4 +83,155 @@ select public.abbandona_lega(:'lega');
 select pg_temp.esige('Bea esce dalla lega',
   (select count(*) from public.league_members where league_id = :'lega') = 1);
 
+-- ---------------------------------------------------------------- scambi
+-- Bea e' uscita dalla lega qui sopra: per gli scambi serve una seconda
+-- squadra, quindi rientra.
+select pg_temp.entra('user_bea');
+select public.join_league((select invite_code from public.leagues where id = :'lega'), 'Borgo FC', '#27ae60', 'BFC');
+
+select id into temporary tmp_alex from public.league_members where league_id = :'lega' and user_id = 'user_alex';
+select id into temporary tmp_bea  from public.league_members where league_id = :'lega' and user_id = 'user_bea';
+select (select id from tmp_alex) as m_alex \gset
+select (select id from tmp_bea)  as m_bea  \gset
+
+delete from public.rosters where league_id = :'lega';
+insert into public.rosters (league_id, member_id, player_id, price_paid) values
+  (:'lega', :'m_alex', 'p1', 40), (:'lega', :'m_alex', 'p2', 25),
+  (:'lega', :'m_bea',  'p3', 30), (:'lega', :'m_bea',  'p4', 15);
+update public.league_members set credits = 60 where id = :'m_alex';
+update public.league_members set credits = 10 where id = :'m_bea';
+
+\echo '--- scambi ---'
+select pg_temp.entra('user_alex');
+
+-- numeri diversi per parte: si rifiuta
+do $$ begin
+  perform public.proponi_scambio((select league_id from public.league_members limit 1), null, '[]'::jsonb, '[]'::jsonb, 0);
+  raise exception 'FALLITA: una proposta vuota e passata';
+exception when others then
+  if sqlerrm like 'FALLITA:%' then raise; end if;
+  raise notice 'ok  una proposta senza squadra viene respinta';
+end $$;
+
+do $$
+declare lega uuid; bea uuid;
+begin
+  select id into lega from public.leagues order by created_at limit 1;
+  select id into bea from public.league_members where league_id = lega and user_id = 'user_bea';
+  begin
+    perform public.proponi_scambio(lega, bea, '["p1","p2"]'::jsonb, '["p3"]'::jsonb, 0);
+    raise exception 'FALLITA: due contro uno e passato';
+  exception when others then
+    if sqlerrm like 'FALLITA:%' then raise; end if;
+    raise notice 'ok  due giocatori contro uno vengono respinti (%)', sqlerrm;
+  end;
+  begin
+    perform public.proponi_scambio(lega, bea, '["p3"]'::jsonb, '["p4"]'::jsonb, 0);
+    raise exception 'FALLITA: ha offerto un giocatore che non e suo';
+  exception when others then
+    if sqlerrm like 'FALLITA:%' then raise; end if;
+    raise notice 'ok  non si offre un giocatore che non e proprio (%)', sqlerrm;
+  end;
+  begin
+    perform public.proponi_scambio(lega, bea, '["p1"]'::jsonb, '["p3"]'::jsonb, 999);
+    raise exception 'FALLITA: ha promesso crediti che non ha';
+  exception when others then
+    if sqlerrm like 'FALLITA:%' then raise; end if;
+    raise notice 'ok  non si promettono crediti che non si hanno (%)', sqlerrm;
+  end;
+end $$;
+
+-- una proposta buona
+select public.proponi_scambio(:'lega', :'m_bea', '["p1"]'::jsonb, '["p3"]'::jsonb, 20, 'ti do p1 piu 20') as scambio \gset
+select pg_temp.esige('la proposta buona passa', :'scambio' is not null);
+
+-- doppia proposta verso la stessa squadra: no
+do $$
+declare lega uuid; bea uuid;
+begin
+  select id into lega from public.leagues order by created_at limit 1;
+  select id into bea from public.league_members where league_id = lega and user_id = 'user_bea';
+  begin
+    perform public.proponi_scambio(lega, bea, '["p2"]'::jsonb, '["p4"]'::jsonb, 0);
+    raise exception 'FALLITA: seconda proposta aperta verso la stessa squadra';
+  exception when others then
+    if sqlerrm like 'FALLITA:%' then raise; end if;
+    raise notice 'ok  una sola proposta aperta per squadra (%)', sqlerrm;
+  end;
+end $$;
+
+-- chi propone non puo accettare da solo
+do $$
+declare s uuid;
+begin
+  select id into s from public.trades where stato = 'proposta' limit 1;
+  begin
+    perform public.accetta_scambio(s);
+    raise exception 'FALLITA: chi propone ha accettato da solo';
+  exception when others then
+    if sqlerrm like 'FALLITA:%' then raise; end if;
+    raise notice 'ok  chi propone non puo accettare da solo (%)', sqlerrm;
+  end;
+end $$;
+
+-- l'altra accetta: rose e crediti si muovono
+select pg_temp.entra('user_bea');
+select public.accetta_scambio(:'scambio');
+select pg_temp.esige('p1 e passato a Bea',
+  (select member_id from public.rosters where league_id = :'lega' and player_id = 'p1') = :'m_bea');
+select pg_temp.esige('p3 e passato ad Alex',
+  (select member_id from public.rosters where league_id = :'lega' and player_id = 'p3') = :'m_alex');
+select pg_temp.esige('p1 ha tenuto il prezzo pagato',
+  (select price_paid from public.rosters where league_id = :'lega' and player_id = 'p1') = 40);
+select pg_temp.esige('Alex ha 20 crediti in meno', (select credits from public.league_members where id = :'m_alex') = 40);
+select pg_temp.esige('Bea ha 20 crediti in piu', (select credits from public.league_members where id = :'m_bea') = 30);
+select pg_temp.esige('lo scambio risulta accettato',
+  (select stato from public.trades where id = :'scambio') = 'accettata');
+
+-- accettarlo due volte: no
+do $$
+declare s uuid;
+begin
+  select id into s from public.trades where stato = 'accettata' limit 1;
+  begin
+    perform public.accetta_scambio(s);
+    raise exception 'FALLITA: accettato due volte';
+  exception when others then
+    if sqlerrm like 'FALLITA:%' then raise; end if;
+    raise notice 'ok  non si accetta due volte (%)', sqlerrm;
+  end;
+end $$;
+
+-- il secondo controllo: una proposta nata valida non lo e piu'
+select pg_temp.entra('user_alex');
+select public.proponi_scambio(:'lega', :'m_bea', '["p3"]'::jsonb, '["p1"]'::jsonb, 0) as rimasta \gset
+-- nel frattempo p3 esce dalla rosa di Alex per un'altra strada
+update public.rosters set released_at = now() where league_id = :'lega' and player_id = 'p3';
+select pg_temp.entra('user_bea');
+do $$
+declare s uuid;
+begin
+  select id into s from public.trades where stato = 'proposta' order by creato_at desc limit 1;
+  begin
+    perform public.accetta_scambio(s);
+    raise exception 'FALLITA: accettata una proposta non piu valida';
+  exception when others then
+    if sqlerrm like 'FALLITA:%' then raise; end if;
+    raise notice 'ok  la fattibilita si ricontrolla all accettazione (%)', sqlerrm;
+  end;
+end $$;
+
+-- rifiutare e ritirare
+select pg_temp.entra('user_bea');
+select public.rifiuta_scambio(:'rimasta');
+select pg_temp.esige('la proposta si puo rifiutare',
+  (select stato from public.trades where id = :'rimasta') = 'rifiutata');
+
+update public.rosters set released_at = null where league_id = :'lega' and player_id = 'p3';
+select pg_temp.entra('user_alex');
+select public.proponi_scambio(:'lega', :'m_bea', '["p3"]'::jsonb, '["p1"]'::jsonb, 0) as terza \gset
+select public.annulla_scambio(:'terza');
+select pg_temp.esige('chi propone puo ritirare',
+  (select stato from public.trades where id = :'terza') = 'annullata');
+
 select 'tutte le prove sulle funzioni sono passate' as esito;

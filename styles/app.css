@@ -23,7 +23,7 @@ a{color:var(--primary)}
 .a-drawer .panel{width:min(84%,360px);border-radius:0 24px 24px 0}
 .d-head{padding-top:calc(24px + env(safe-area-inset-top))}
 .freeze{padding-top:calc(24px + env(safe-area-inset-top))}
-.a-hero .jersey{width:170px;height:170px}
+.a-hero .jersey{width:150px}
 .toast{position:fixed;left:50%;bottom:calc(84px + env(safe-area-inset-bottom));transform:translateX(-50%);background:var(--c-pietra-900);color:#fff;padding:10px 16px;border-radius:999px;font-size:13px;font-weight:600;box-shadow:var(--sh-raise);z-index:50;max-width:calc(100% - 32px);opacity:0;transition:opacity var(--mo-base);pointer-events:none}
 .toast.on{opacity:1}
 .install{display:flex;gap:12px;align-items:center;background:var(--c-titano-800);color:#fff;padding:10px 12px;border-radius:var(--r-md);font-size:13px}
@@ -128,7 +128,7 @@ hr.sep{border:0;border-top:1px solid var(--border);margin:4px 0}
   padding:5px 10px 5px 12px;border-radius:999px;background:rgba(255,255,255,.15);color:#fff;text-decoration:none;
   font:600 11px var(--font-body);letter-spacing:.06em;text-transform:uppercase}
 .a-hero .hero-league .ic{width:14px;height:14px}
-.a-hero .jersey{width:146px;height:146px;margin:6px auto 0;display:block;position:relative;filter:drop-shadow(0 12px 20px rgba(0,0,0,.35))}
+.a-hero .jersey{position:relative;display:block}
 .a-hero .acts{position:absolute;right:14px;top:52px;display:flex;flex-direction:column;gap:10px;z-index:2}
 .a-hero .acts button{width:40px;height:40px;border-radius:50%;border:0;background:#fff;color:var(--c-titano-600);display:grid;place-items:center;box-shadow:0 4px 12px rgba(0,0,0,.25);cursor:pointer}
 .a-hero .acts button.gold{background:var(--c-oro-400);color:var(--c-titano-900)}
@@ -942,9 +942,21 @@ button,a{-webkit-tap-highlight-color:transparent}
 .ps .av.faccia .rl,.slot .av.faccia .rl{bottom:0;right:-4px}
 .ps .av.faccia .cap,.slot .av.faccia .cap{top:-2px;left:-4px}
 
-/* Maglia disegnata (src/maglia.js) e schermata "La mia squadra". */
-.maglia{display:block;width:100%;height:100%}
-.a-hero .jersey{display:block;width:150px;height:174px;margin:2px auto 0;
+/* Maglia: la foto porta forma e luce, la tinta arriva da --c1.
+   Il file e' grigio: `multiply` moltiplica quei grigi per il colore, quindi la
+   tinta scelta e' la parte piu' chiara del tessuto e il motivo resta leggibile
+   su qualunque colore. La sagoma la ritaglia la maschera, che usa lo stesso
+   file: fuori dalla maglia il colore non deve comparire.
+   Il percorso e' assoluto: dentro un url() di un foglio in /styles/ uno
+   relativo cercherebbe /styles/media/. */
+.maglia{position:relative;display:block;width:100%;aspect-ratio:var(--rap,560/688);isolation:isolate}
+.maglia .mg-tinta{position:absolute;inset:0;background:var(--c1);
+  -webkit-mask:url(/media/maglia-base.webp) center/contain no-repeat;
+          mask:url(/media/maglia-base.webp) center/contain no-repeat}
+.maglia .mg-luce{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;
+  mix-blend-mode:multiply;pointer-events:none}
+.maglia .mg-scritte{position:absolute;inset:0;width:100%;height:100%}
+.a-hero .jersey{display:block;width:136px;height:auto;margin:2px auto 6px;
   filter:drop-shadow(0 12px 20px rgba(0,0,0,.35))}
 .crest.foto{overflow:hidden;padding:0}
 .crest.foto img{width:100%;height:100%;object-fit:cover;border-radius:inherit}
@@ -952,8 +964,8 @@ button,a{-webkit-tap-highlight-color:transparent}
 .sm-testa{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:14px 10px}
 .sm-box{position:relative;display:flex;flex-direction:column;align-items:center;gap:8px;min-width:0}
 .sm-et{font:600 10px var(--font-body);letter-spacing:.08em;text-transform:uppercase;color:var(--text-muted)}
-.sm-img{display:grid;place-items:center;width:112px;height:120px}
-.sm-img .maglia{width:104px;height:120px}
+.sm-img{display:grid;place-items:center;width:112px;min-height:120px}
+.sm-img .maglia{width:104px}
 .sm-pen{position:absolute;top:22px;right:4px;width:38px;height:38px;border-radius:50%;border:0;cursor:pointer;
   background:var(--primary);color:var(--on-primary);display:grid;place-items:center;box-shadow:var(--sh-card)}
 .sm-via{border:0;background:transparent;color:var(--negative);font:600 11.5px var(--font-body);cursor:pointer}
@@ -962,12 +974,12 @@ button,a{-webkit-tap-highlight-color:transparent}
 .sm-codice{font:700 18px var(--font-data,monospace);letter-spacing:.16em;background:var(--surface-sunk);
   border-radius:10px;padding:8px 14px;color:var(--text)}
 .mg-prev{display:grid;place-items:center;padding:6px 0 12px}
-.mg-prev .maglia{width:132px;height:152px;filter:drop-shadow(0 8px 14px rgba(0,0,0,.18))}
+.mg-prev .maglia{width:132px;filter:drop-shadow(0 8px 14px rgba(0,0,0,.18))}
 .tinte{display:flex;flex-wrap:wrap;gap:8px;margin:4px 0 12px}
 .tinte .tinta{width:32px;height:32px;border-radius:50%;background:var(--t);cursor:pointer;
   border:2px solid var(--border-strong);padding:0}
 .tinte .tinta.on{outline:3px solid var(--primary);outline-offset:2px;border-color:var(--surface)}
-.prow .pmg{width:30px;height:35px;flex:none;display:block}
+.prow .pmg{width:30px;flex:none;display:block}
 .a-card.pericolo{border-left:3px solid var(--negative);display:flex;flex-direction:column;gap:10px}
 .a-btn.danger{background:var(--negative);color:#fff}
 

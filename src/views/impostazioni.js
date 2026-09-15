@@ -168,7 +168,7 @@ export const avanzate = {
 
     const data = group('Dati', `
       ${row({ m: 'quotazioni' }, 'Da dove vengono i dati', 'Lega, formazioni e voti sul server; listone e calendario generati dall\'app')}
-      ${row('shield', 'Atleti e società', 'Nomi e prestazioni useranno dati reali solo previo accordo FSGC (art. 14)')}
+      ${row('shield', 'Atleti e società', 'Nomi e prestazioni useranno dati reali solo previo accordo con la FSGC')}
       ${row('gear', 'Server della lega', esc(S.serverHost() || '—'), 'server')}
       ${row('shield', 'Diagnostica accessi', 'Controlla sul progetto cosa manca ancora per far entrare la gente', 'diagnostica')}`);
 

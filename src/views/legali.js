@@ -33,7 +33,7 @@ const piede = () => `<p class="small muted" style="text-align:center;margin-top:
   Ultimo aggiornamento: ${esc(dataIt(LEGALI_AGGIORNATE))}.</p>`;
 
 const disclaimer = blocco('Onestà su questa pagina', [
-  'Questo testo descrive come funziona l\'app oggi ed è scritto per farsi capire, non da un legale. Prima di aprire le iscrizioni fuori dal giro di amici va fatto rivedere da chi di dovere, insieme all\'accordo con la FSGC per nomi e prestazioni degli atleti (art. 13 del regolamento).',
+  'Questo testo descrive come funziona l\'app oggi ed è scritto per farsi capire, non da un legale. Prima di aprire le iscrizioni fuori dal giro di amici va fatto rivedere da chi di dovere, insieme all\'accordo con la FSGC per nomi e prestazioni degli atleti.',
 ]);
 
 export const privacy = {

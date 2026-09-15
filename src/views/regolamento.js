@@ -27,8 +27,7 @@ export const regolamento = {
       <h3>Art. 11 — Conversione in gol</h3>
       <table><tr><th>Fantallenatori</th><th>Soglia</th><th>Passo</th></tr>${r.conversion.map((c) => `<tr><td>${c.min}–${c.max}</td><td class="num">${fmt(c.threshold)}</td><td class="num">${fmt(c.step)}</td></tr>`).join('')}</table><p>Parità di fantapunteggio = pareggio.${r.homeBonus ? ` Fattore campo: chi gioca in casa somma <b>+${fmt(r.homeBonus)}</b> al proprio fantapunteggio.` : ' Nessun fattore campo.'}</p>
       <h3>Art. 12 — Classifica</h3><p>3 punti a vittoria, 1 a pareggio. Spareggi: punti › fantapunti stagionali › differenza reti › scontri diretti.</p>
-      <h3>Art. 13 — Integrità</h3><p>I tesserati del Campionato Sammarinese non possono avere in rosa giocatori della propria società e non possono partecipare a leghe con premi in denaro.</p>
-      <h3>Art. 14 — Regole del fantacalcio che qui non si applicano</h3>
+      <h3>Art. 13 — Regole del fantacalcio che qui non si applicano</h3>
       <p><b>Modificatore di difesa.</b> Nel fantacalcio classico si fa la media dei <i>voti</i> di portiere e tre migliori difensori e si trasforma in bonus. Qui non può funzionare: il Voto Titano non è una pagella, il voto base è 6,0 uguale per tutti quelli che giocano almeno 20 minuti, più o meno mezzo punto di esito collettivo identico per tutti i compagni. La media sarebbe la stessa per chiunque schieri una difesa intera e il modificatore darebbe a tutti lo stesso numero. Non è una scelta di gusto: la regola non ha su cosa lavorare.</p>
       <p><b>Quality assist (soft, standard, gold).</b> Distinguere l'assist per quanto era difficile la giocata è un giudizio, e i giudizi qui non entrano (art. 1). Resta la sola distinzione che il referto sa dare da sé: palla inattiva o azione.</p>
       <p><b>Sistema Mantra.</b> Richiede i ruoli dettagliati (Pc, Tc, W, ...) che il listone FSGC non ha.</p>

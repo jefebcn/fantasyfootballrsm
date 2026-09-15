@@ -187,9 +187,9 @@ export const licenze = {
     'Gli highlights sono del canale YouTube della <b>FSGC</b> e restano suoi: l\'app non li copia né li ricarica altrove, si limita a mostrarli da dove stanno e a dire a quale partita appartengono.',
   ])}
       ${blocco('Immagini e personaggi', [
-    'Le immagini dell\'app sono <b>disegnate, non fotografate</b>: i personaggi della copertina, la maglia, gli sfondi, il logo, le icone e il campo di gioco nascono dal codice di questo progetto. Non c\'è nessuna fotografia e nessun personaggio di qualcun altro.',
-    'Fino a settembre 2026 non era così: i personaggi erano ritagli di immagini altrui — calciatori veri e personaggi di cartoni — e gli sfondi due fotografie non realizzate per il progetto. Sono stati sostituiti con disegni prima di pensare ad aprire le iscrizioni.',
+    `<b>Questa è la parte da sistemare prima di aprire al pubblico.</b> Gli avatar selezionabili raffigurano personaggi e persone riconoscibili, e le fotografie di sfondo non sono state realizzate per questo progetto. In una lega privata fra amici è una cosa; pubblicarli a chiunque è un'altra, e vuole materiale originale o con licenza.`,
     'Stemmi e maglie caricati dai partecipanti restano di chi li ha caricati: l\'app li mostra solo agli altri della sua lega.',
+    'Il logo, le icone e il campo di gioco sono disegnati per questo progetto.',
   ])}
       ${piede()}
     </main>`;

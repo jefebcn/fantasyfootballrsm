@@ -105,29 +105,6 @@ export const AVATAR_SPRITE = `<svg width="0" height="0" style="position:absolute
 
 const use = (id, attr = '') => `<use href="#av-${id}"${attr ? ' ' + attr : ''}/>`;
 
-/** Le tavolozze e il numero di varianti, per chi vuole scegliere i tratti
- *  invece di tirarli a sorte (i personaggi della copertina). */
-export const TRATTI = { PELLE, CAPELLI, tagli: CAPIGLIATURE.length, barbe: BARBE.length, bocche: BOCCHE.length, trame: FANTASIE.length };
-
-/**
- * Disegna la figura con i tratti dati. La usano sia avatar() — che i tratti li
- * tira dall'id del giocatore — sia i personaggi della copertina, che invece li
- * scelgono, per essere ben diversi l'uno dall'altro.
- */
-export function figura({ c1, c2, pelle, capelli, taglio = 0, barba = 0, bocca = 0, occhiali = false, fascia = false, trama = 0 }, cls = '', vb = '0 0 60 74') {
-  return `<svg class="av-fig ${cls}" viewBox="${vb}" role="img" aria-hidden="true" focusable="false">`
-    + use('sl', `fill="${c1}"`) + use('nk', `fill="${pelle}"`) + use('to', `fill="${c1}"`)
-    + (trama ? use(`k${trama}`, `fill="${c2}"`) : '') + use('co', `stroke="${c2}"`)
-    + (CAPIGLIATURE[taglio][0] ? use(`hb${taglio}`, `fill="${capelli}"`) : '')
-    + use('hd', `fill="${pelle}"`)
-    + (barba ? use(`br${barba}`, `fill="${capelli}"`) : '')
-    + use('ey') + use(`mo${bocca}`)
-    + (CAPIGLIATURE[taglio][1] ? use(`hf${taglio}`, `fill="${capelli}"`) : '')
-    + (fascia ? use('bd', `fill="${c2 === '#FFFFFF' ? c1 : c2}"`) : '')
-    + (occhiali ? use('gl') : '')
-    + '</svg>';
-}
-
 /**
  * @param {object} p  giocatore ({ id, role })
  * @param {object} club  squadra ({ color }) — la maglia prende il suo colore
@@ -147,5 +124,15 @@ export function avatar(p, club, cls = '') {
   const fascia = !occhiali && dado(h, 7, 9) === 0;
   const trama = Math.min(dado(h, 8, 6), FANTASIE.length - 1);
 
-  return figura({ c1, c2, pelle, capelli: cap, taglio, barba, bocca, occhiali, fascia, trama }, cls);
+  return `<svg class="av-fig ${cls}" viewBox="0 0 60 74" role="img" aria-hidden="true" focusable="false">`
+    + use('sl', `fill="${c1}"`) + use('nk', `fill="${pelle}"`) + use('to', `fill="${c1}"`)
+    + (trama ? use(`k${trama}`, `fill="${c2}"`) : '') + use('co', `stroke="${c2}"`)
+    + (CAPIGLIATURE[taglio][0] ? use(`hb${taglio}`, `fill="${cap}"`) : '')
+    + use('hd', `fill="${pelle}"`)
+    + (barba ? use(`br${barba}`, `fill="${cap}"`) : '')
+    + use('ey') + use(`mo${bocca}`)
+    + (CAPIGLIATURE[taglio][1] ? use(`hf${taglio}`, `fill="${cap}"`) : '')
+    + (fascia ? use('bd', `fill="${c2 === '#FFFFFF' ? c1 : c2}"`) : '')
+    + (occhiali ? use('gl') : '')
+    + '</svg>';
 }

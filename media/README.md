@@ -1,19 +1,29 @@
-# Cosa c'è qui dentro, e cosa non c'è più
+# Video della schermata di benvenuto
 
-Le immagini dell'app sono **disegnate, non fotografate**: personaggi della
-copertina, maglia e sfondi sono SVG generati dal codice
-(`src/personaggio.js`, `src/maglia.js`, `src/sfondo.js`). Restano qui solo i
-caratteri, le icone e il logo.
+Attuale: `intro.mp4` — 7,2 s, 576×1024, 1,47 MB, H.264 con `moov` in testa.
 
-Prima c'erano dieci ritagli di immagini altrui come personaggi (calciatori veri
-e personaggi di cartoni), due fotografie di sfondo e una maglia ricavata dalla
-foto di una maglia vera. Fra amici in una lega privata passava; aprendo le
-iscrizioni a chiunque no. Insieme a loro sono andati via anche
-`scripts/make-avatar.py` e `scripts/make-maglia.py`, che servivano a ritagliarli,
-e 176 KB di JPEG dall'avvio.
+Metti qui il filmato di sfondo della presentazione (`src/views/onboarding.js`).
+Se i file non ci sono, l'app usa uno sfondo animato di riserva: non si rompe nulla.
 
-Il video di benvenuto (`intro.mp4`) è stato rimosso a suo tempo: la sezione che
-lo descriveva è stata rimossa con lui.
+| File | Ruolo |
+|---|---|
+| `intro.mp4` | il video (H.264, richiesto) |
+| `intro.webm` | stessa clip in VP9, facoltativa: pesa meno dove è supportata |
+| `intro.jpg` | primo fotogramma, mostrato mentre il video carica |
+
+Consigli: **verticale 1080×1920**, 6–10 secondi che ripartono senza stacco, **senza audio**
+(l'app lo riproduce comunque muto, ma la traccia è peso inutile), **sotto i 3 MB**. L'app lo sfoca e lo scurisce, quindi non serve che sia nitido: funzionano
+meglio inquadrature larghe e lente — un campo, le torri, la curva — che primi piani.
+
+Esempio di conversione:
+
+```bash
+ffmpeg -i originale.mov -an -t 8 -vf "scale=1080:1920:force_original_aspect_ratio=increase,crop=1080:1920" \
+  -c:v libx264 -crf 30 -preset slow -movflags +faststart media/intro.mp4
+ffmpeg -i media/intro.mp4 -an -c:v libvpx-vp9 -crf 40 -b:v 0 media/intro.webm
+ffmpeg -i media/intro.mp4 -vframes 1 -q:v 4 media/intro.jpg
+```
+
 
 # Logo
 

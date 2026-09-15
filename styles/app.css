@@ -413,11 +413,6 @@ hr.sep{border:0;border-top:1px solid var(--border);margin:4px 0}
 .l-nav button{border:0;background:transparent;color:var(--text-muted);display:grid;place-items:center;height:44px;border-radius:14px;cursor:pointer}
 .l-nav button.on{background:var(--surface-sunk);color:var(--positive)}
 .l-nav .sep{width:1px;height:28px;background:var(--border)}
-.last5{display:flex;gap:10px;justify-content:space-between}
-.last5 div{display:flex;flex-direction:column;align-items:center;gap:6px;font:600 13px var(--font-display);font-variant-numeric:tabular-nums;flex:1}
-.last5 i{width:38px;height:38px;border-radius:50%;background:var(--surface-sunk);display:grid;place-items:center;font-style:normal;font:700 13px var(--font-display);color:#fff}
-.last5 i.p{background:var(--negative)}.last5 i.v{background:var(--positive)}.last5 i.n{background:var(--text-muted)}
-.last5 small{font:500 11px var(--font-body);color:var(--text-muted)}
 .a-btn.live{background:var(--c-alloro-400);color:#fff;box-shadow:none;height:44px;font-size:14px;letter-spacing:.02em;text-transform:none;font-family:var(--font-body);font-weight:700}
 .a-match .full{grid-column:1/-1;margin-top:8px}
 .d-foot{margin-top:auto;padding:8px 16px 18px;border-top:1px solid var(--border);font-size:12px;color:var(--text-muted);text-align:center;line-height:1.6}
@@ -613,14 +608,7 @@ button,a{-webkit-tap-highlight-color:transparent}
 .mcard .mcta{display:flex;align-items:center;justify-content:center;gap:6px;padding:11px;border-top:1px solid var(--border);
   color:var(--primary);font:600 13.5px var(--font-body);background:var(--surface-2)}
 
-/* striscia risultati recenti */
-.form-row{display:flex;gap:8px}
-.form-row div{flex:1;display:flex;flex-direction:column;align-items:center;gap:5px}
-.form-row i{width:34px;height:34px;border-radius:11px;display:grid;place-items:center;font:800 13px var(--font-display);
-  font-style:normal;color:#fff;background:var(--surface-sunk)}
-.form-row i.v{background:var(--positive)}.form-row i.p{background:var(--negative)}.form-row i.n{background:var(--c-pietra-400)}
-.form-row b{font:600 12px var(--font-body);font-variant-numeric:tabular-nums}
-.form-row small{font-size:10.5px;color:var(--text-muted)}
+
 
 /* riga regola */
 .rule{display:grid;grid-template-columns:auto minmax(0,1fr);gap:12px;align-items:start;padding:14px;
@@ -882,3 +870,56 @@ button,a{-webkit-tap-highlight-color:transparent}
 .hub-t small{font-size:10.5px;color:var(--text-muted);line-height:1.1;min-height:11px}
 .hub-t:active{transform:scale(.97)}
 @media (max-width:340px){.hub{grid-template-columns:repeat(2,1fr)}}
+
+/* Dashboard: giornata conclusa, giornata corrente, ultimi cinque incontri. */
+/* In tema scuro --primary e' azzurro e --on-primary quasi nero: i velati non
+   possono essere bianchi fissi, o su chiaro spariscono. Si ricavano dal testo. */
+.mcard.fin{background:var(--primary);color:var(--on-primary);--velo:color-mix(in srgb, var(--on-primary) 70%, transparent);
+  --riga:color-mix(in srgb, var(--on-primary) 20%, transparent)}
+.mcard.fin .side b,.mcard.fin .mfoot span{color:var(--on-primary)}
+.mcard.fin .side .own,.mcard.fin .mfoot em{color:var(--velo)}
+.mcard.fin .mfoot{border-top-color:var(--riga)}
+.mcard.fin .score.pill{background:color-mix(in srgb, var(--on-primary) 14%, transparent);color:var(--on-primary)}
+.mcard .score.pill{border-radius:999px;padding:6px 16px;margin-top:8px;font-size:23px}
+.mcard .score.attesa{font:700 15px var(--font-display);font-variant-numeric:tabular-nums;color:var(--primary);
+  background:var(--primary-soft);border-radius:999px;padding:8px 14px;margin-top:14px;letter-spacing:0}
+.mcard .mnota{margin:0;padding:0 14px;font-size:11.5px;color:var(--text-muted);text-align:center}
+.mcard .mact{padding:12px 14px}
+.mcard .mact .a-btn.big{width:100%;justify-content:center;height:46px;font-size:15px}
+.mcta2{display:grid;grid-template-columns:1fr 1fr;border-top:1px solid var(--riga)}
+.mcta2 > *{display:flex;align-items:center;justify-content:center;gap:6px;padding:13px 6px;border:0;background:transparent;
+  color:var(--on-primary);font:600 12.5px var(--font-body);text-decoration:none;cursor:pointer;white-space:nowrap;min-width:0}
+.mcta2 > * .ic{flex:none}
+.mcta2 > a{border-left:1px solid var(--riga)}
+.mcta2 > *:active{background:var(--riga)}
+.last5{display:block;padding:0}
+.l5{display:grid;grid-template-columns:auto auto 1fr auto auto;align-items:center;gap:10px;padding:11px 14px;
+  border-top:1px solid var(--border);text-decoration:none;color:inherit}
+.l5:first-child{border-top:0}
+.l5:active{background:var(--surface-2)}
+.l5 > i{width:26px;height:26px;border-radius:9px;display:grid;place-items:center;font:800 12px var(--font-display);color:#fff}
+.l5 > i.v{background:var(--positive)}.l5 > i.p{background:var(--negative)}.l5 > i.n{background:var(--c-pietra-400)}
+.l5 .nm{min-width:0}
+.l5 .nm b{display:block;font:600 13.5px var(--font-body);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.l5 .nm > span{font-size:11px;color:var(--text-muted)}
+.l5 .sc{text-align:right;font-variant-numeric:tabular-nums}
+.l5 .sc b{display:block;font:700 15px var(--font-display)}
+.l5 .sc > span{font-size:10.5px;color:var(--text-muted)}
+
+/* Probabili formazioni, prima che la giornata si giochi. */
+.prehead{margin:0;padding:12px 14px 0;font-size:11.5px;color:var(--text-muted);text-align:center}
+.prob{display:grid;grid-template-columns:1fr 1fr;gap:0}
+.prob .pcol{min-width:0;padding:10px 12px}
+.prob .pcol + .pcol{border-left:1px solid var(--border)}
+.ph2{display:flex;align-items:baseline;justify-content:space-between;gap:6px;padding:4px 0 8px}
+.ph2 b{font:600 13px var(--font-body);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ph2 > span{font:700 11px var(--font-display);color:var(--primary);flex:none}
+.ph2.panca{border-top:1px solid var(--border);margin-top:8px;padding-top:8px}
+.ph2.panca b{font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--text-muted)}
+.pr{display:grid;grid-template-columns:auto 1fr;grid-template-areas:"r n" "r c";gap:0 7px;padding:4px 0}
+.pr .rl{grid-area:r;align-self:center}
+.pr b{grid-area:n;font:600 12px var(--font-body);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pr > span:last-child{grid-area:c;font-size:10px;color:var(--text-muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pr .cap{display:inline-grid;place-items:center;width:14px;height:14px;border-radius:50%;background:var(--accent);
+  color:var(--c-titano-900);font:800 9px var(--font-display);vertical-align:middle}
+.fonte{margin:8px 0 0;font-size:10px;color:var(--text-muted);line-height:1.3}

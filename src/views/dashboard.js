@@ -1,6 +1,6 @@
 import * as S from '../state.js';
 import * as N from '../notizie.js';
-import { esc, fmt, icon, logo, badge, crest, matchCard, tile, sec, dateIt, timeIt } from '../ui.js';
+import { esc, fmt, icon, logo, badge, crest, pic, tile, sec, dateIt, timeIt } from '../ui.js';
 
 const RULES = [
   ['Art. 7.4', 'Rigore parato', 'Vale +3,0 al portiere e −3,0 al tiratore. Sul palo o fuori: −3,0 al tiratore e nessun bonus al portiere.'],
@@ -12,39 +12,93 @@ const RULES = [
   ['Art. 4', 'Esito collettivo', 'Vittoria +0,5, sconfitta −0,5; metà tra 20 e 59 minuti. Senza pagelle serve differenziare.'],
 ];
 
-/** L'azione della settimana: una sola, in cima, con il perché accanto. */
-function azione(ph, me) {
-  const n = ph.next; const md = S.matchday(n);
-  const saved = S.savedLineup(n, me.id);
-  const st = S.matchdayStatus(n);
-  if (st === 'open' || st === 'scheduled') {
-    const left = Math.max(0, new Date(md.lockAt) - S.now());
-    const g = Math.floor(left / 86400000), h = Math.floor((left % 86400000) / 3600000);
-    return tile({
-      href: '#/rosa/formazione', lead: icon('shirt'), leadKind: saved ? '' : 'gold', cls: saved ? '' : 'cta',
-      title: saved ? `Formazione pronta · giornata ${n}` : `Schiera la formazione`,
-      sub: saved ? `Salvata ${dateIt(saved.submittedAt)} · puoi cambiarla fino al lock` : `Giornata ${n} · si chiude ${dateIt(md.lockAt)} alle ${timeIt(md.lockAt)}${left ? ` · mancano ${g}g ${h}h` : ''}`,
-    });
-  }
+/**
+ * Il richiamo ai voti, solo mentre sono ancora contestabili: la formazione ha
+ * gia' il suo bottone sulla card della giornata corrente, e i voti definitivi
+ * si aprono dalla card della giornata precedente. Qui resta la sola finestra
+ * in cui c'e' davvero qualcosa da fare.
+ */
+function azione(ph) {
+  const st = S.matchdayStatus(ph.matchday);
+  if (st !== 'live' && st !== 'provisional') return '';
   return tile({ href: `#/voti/${ph.matchday}`, lead: icon('votes'), leadKind: 'warn',
     title: `Voti della giornata ${ph.matchday}`,
-    sub: st === 'frozen' ? 'Giornata congelata: risultati definitivi' : 'Punteggi provvisori: puoi segnalare un errore fino a martedì',
+    sub: st === 'live' ? 'Punteggi in arrivo mano a mano che il Giudice inserisce gli eventi'
+      : 'Punteggi provvisori: puoi segnalare un errore fino a martedì',
     badgeHtml: badge(st, st === 'provisional' ? 'fino a mar 18:00' : '') });
 }
 
+/** Conto alla rovescia compatto: "3g 12h", come sulla pastiglia centrale. */
+function manca(lockAt) {
+  const left = Math.max(0, new Date(lockAt) - S.now());
+  if (!left) return '';
+  const g = Math.floor(left / 86400000), h = Math.floor((left % 86400000) / 3600000);
+  return g ? `${g}g ${h}h` : `${h}h ${Math.floor((left % 3600000) / 60000)}m`;
+}
+
+const lato = (m) => `<div class="side">${crest(m)}<b>${esc(m.teamName)}</b><span class="own">${esc(m.owner)}</span></div>`;
+
 /**
- * Lo scontro della giornata in corso, sempre presente: è la prima cosa che si
- * cerca riaprendo l'app. Prima compariva solo a giornata giocata, quindi tra il
- * lunedì e il sabato la dashboard non diceva più contro chi si gioca.
+ * La giornata appena conclusa. È la prima cosa che si cerca riaprendo l'app,
+ * quindi sta in cima e porta le sue due azioni addosso: condividere il
+ * risultato e aprire voti e pagelle.
  */
-function sfida(ph, curR, riposo) {
-  if (riposo) return sec('Giornata in corso', `${ph.matchday}ª di lega`)
-    + tile({ href: '#/calendario', lead: icon('cal'), title: 'Turno di riposo', sub: `In questa giornata non hai avversarie` });
-  if (!curR) return '';
-  const lock = S.matchday(ph.matchday)?.lockAt;
-  const titolo = curR.played ? (ph.status === 'frozen' ? 'Giornata conclusa' : 'Risultati provvisori') : 'La tua sfida';
-  const meta = curR.played ? '' : (lock ? `si chiude ${dateIt(lock)} · ${timeIt(lock)}` : '');
-  return sec(titolo, `${ph.matchday}ª di lega`) + matchCard(curR, S.managersById, { meta });
+function conclusa(r) {
+  if (!r) return '';
+  const h = S.managersById.get(r.homeManagerId), a = S.managersById.get(r.awayManagerId);
+  return sec('Giornata precedente', `${r.matchday}ª giornata`) + `<div class="mcard fin">
+    <div class="mrow">${lato(h)}<span class="score pill">${r.homeGoals} – ${r.awayGoals}</span>${lato(a)}</div>
+    <div class="mfoot"><span>${fmt(r.homeScore)}</span><em>fantapunti</em><span>${fmt(r.awayScore)}</span></div>
+    <div class="mcta2">
+      <button data-share="${r.id}">${icon('share', 'ic sm')}Condividi</button>
+      <a href="#/live/${r.id}">Voti, pagelle e altro${icon('chev', 'ic sm')}</a>
+    </div></div>`;
+}
+
+/**
+ * La giornata in corso: contro chi si gioca, quanto manca al lock, l'invio
+ * della formazione e la scheda della partita. Prima la sfida compariva solo a
+ * giornata giocata, quindi tra il lunedì e il sabato non si sapeva più con chi.
+ */
+function corrente(f, n, me, riposo) {
+  if (riposo) return sec('Giornata corrente', `${n}ª giornata`)
+    + tile({ href: '#/calendario', lead: icon('cal'), title: 'Turno di riposo', sub: 'In questa giornata non hai avversarie' });
+  if (!f) return '';
+  const h = S.managersById.get(f.homeManagerId), a = S.managersById.get(f.awayManagerId);
+  const md = S.matchday(n); const st = S.matchdayStatus(n);
+  const saved = S.savedLineup(n, me.id);
+  const aperta = st === 'open' || st === 'scheduled';
+  const resta = aperta ? manca(md.lockAt) : '';
+  const centro = resta ? `<span class="score attesa">${resta}</span>` : `<span class="score vs">VS</span>`;
+  const cta = aperta
+    ? `<a class="a-btn big" href="#/rosa/formazione">${saved ? 'Modifica la formazione' : 'Inserisci formazione'}</a>`
+    : `<a class="a-btn big" href="#/voti/${n}">Voti della giornata</a>`;
+  const nota = aperta
+    ? (saved ? `Formazione salvata ${dateIt(saved.submittedAt)} · si chiude ${dateIt(md.lockAt)} alle ${timeIt(md.lockAt)}`
+             : `Si chiude ${dateIt(md.lockAt)} alle ${timeIt(md.lockAt)}`)
+    : '';
+  return sec('Giornata corrente', `${n}ª giornata`) + `<div class="mcard">
+    <div class="mrow">${lato(h)}${centro}${lato(a)}</div>
+    ${nota ? `<p class="mnota">${esc(nota)}</p>` : ''}
+    <div class="mact">${cta}</div>
+    <a class="mcta" href="#/live/${f.id}">${pic('probabili-formazioni', 'lega', 'mini')}Probabili e altro${icon('chev', 'ic sm')}</a>
+  </div>`;
+}
+
+/** Gli ultimi cinque incontri di lega: avversaria, esito e risultato. */
+function ultimiCinque(last, me) {
+  if (!last.length) return '';
+  return sec('Ultimi 5 incontri', last.length < 5 ? `${last.length} giocate` : '') + `<div class="a-card last5">
+    ${last.map((r) => {
+    const home = r.homeManagerId === me.id;
+    const opp = S.managersById.get(home ? r.awayManagerId : r.homeManagerId);
+    const gf = home ? r.homeGoals : r.awayGoals, gs = home ? r.awayGoals : r.homeGoals;
+    const k = gf > gs ? 'v' : gf < gs ? 'p' : 'n';
+    return `<a class="l5" href="#/live/${r.id}"><i class="${k}">${k.toUpperCase()}</i>${crest(opp, 'sm')}
+      <span class="nm"><b>${esc(opp.teamName)}</b><span>${home ? 'in casa' : 'in trasferta'} · giornata ${r.matchday}</span></span>
+      <span class="sc"><b>${gf}–${gs}</b><span>${fmt(home ? r.homeScore : r.awayScore)}–${fmt(home ? r.awayScore : r.homeScore)}</span></span>
+      ${icon('chev', 'ic sm')}</a>`;
+  }).join('')}</div>`;
 }
 
 /**
@@ -114,16 +168,14 @@ export const dashboard = {
     if (!me) return `<main class="a-body"><div class="empty">${logo()}<p>Non fai parte di questa lega.</p><a class="a-btn" href="#/leghe" style="text-decoration:none">Le mie leghe</a></div></main>`;
     const st = S.standings(); const row = st.find((r) => r.managerId === me.id) || { position: '–', points: 0, played: 0, fantapunti: 0 };
     const noRoster = S.rosterIds(me.id).length === 0;
-    const cur = S.myFixture(ph.matchday, me.id); const curR = cur ? S.fixtureResult(cur) : null;
-    const riposo = !cur && S.base.managers.length > 1;
-    const nxt = S.myFixture(ph.next, me.id); const nxtR = nxt && ph.next !== ph.matchday ? S.fixtureResult(nxt) : null;
-    const last = S.resultsUntil(ph.matchday).filter((r) => r.homeManagerId === me.id || r.awayManagerId === me.id).slice(-5).reverse();
-    const forma = last.length ? `${sec('Ultimi risultati', last.length < 5 ? `${last.length} giocate` : '')}
-      <div class="a-card form-row">${[...last.map((r) => { const home = r.homeManagerId === me.id;
-        const gf = home ? r.homeGoals : r.awayGoals, gs = home ? r.awayGoals : r.homeGoals;
-        const k = gf > gs ? 'v' : gf < gs ? 'p' : 'n';
-        return `<div><i class="${k}">${k.toUpperCase()}</i><b>${gf}–${gs}</b><small>G${r.matchday}</small></div>`;
-      }), ...Array(Math.max(0, 5 - last.length)).fill('<div><i></i><b>–</b><small>&nbsp;</small></div>')].join('')}</div>` : '';
+    // Le mie giocate finora: l'ultima e' la "giornata precedente", le cinque in
+    // fondo sono lo storico. La corrente e' quella ancora da giocare.
+    const mie = S.resultsUntil(ph.matchday).filter((r) => r.homeManagerId === me.id || r.awayManagerId === me.id);
+    const last = mie.slice(-5).reverse();
+    const ultima = mie[mie.length - 1] || null;
+    const nCur = ultima && ultima.matchday >= ph.next ? ultima.matchday + 1 : ph.next;
+    const cur = nCur <= 30 ? S.myFixture(nCur, me.id) : null;
+    const riposo = !cur && nCur <= 30 && S.base.managers.length > 1;
     const [art, titolo, testo] = RULES[Math.floor(Date.now() / 86400000) % RULES.length];
 
     return `<main class="a-body">
@@ -146,12 +198,12 @@ export const dashboard = {
         <div><b>${row.played}</b><span>Partite</span></div>
         <div><b>${fmt(row.fantapunti)}</b><span>Fantapunti</span></div>
       </div>
-      ${sfida(ph, curR, riposo)}
+      ${conclusa(ultima)}
+      ${corrente(cur, nCur, me, riposo)}
       ${noRoster ? tile({ href: S.isLeagueAdmin() ? '#/lega' : '#/leghe', lead: icon('warn'), leadKind: 'warn',
           title: 'Rose non ancora assegnate',
-          sub: S.isLeagueAdmin() ? "Generale o inserirle dalla gestione lega" : "Le assegna l'admin della lega dopo l'asta" }) : azione(ph, me)}
-      ${nxtR ? sec('Prossima giornata', `${ph.next}ª di lega`) + matchCard(nxtR, S.managersById, { meta: `${dateIt(S.matchday(ph.next).lockAt)} · ${timeIt(S.matchday(ph.next).lockAt)}` }) : ''}
-      ${forma}
+          sub: S.isLeagueAdmin() ? "Generale o inserirle dalla gestione lega" : "Le assegna l'admin della lega dopo l'asta" }) : azione(ph)}
+      ${ultimiCinque(last, me)}
       ${prossimePartite(ph)}
       ${notizie()}
       ${classificaBreve(me)}
@@ -168,6 +220,18 @@ export const dashboard = {
       slot.querySelector('#inst-no').onclick = () => { S.store.set({ installedDismissed: true }); slot.innerHTML = ''; };
     };
     show(); document.addEventListener('installable', show, { once: true });
+    // "Condividi" sulla giornata conclusa: stesso testo della scheda, ma senza
+    // uscire dalla dashboard.
+    root.querySelector('[data-share]')?.addEventListener('click', async (e) => {
+      const f = S.fixture(e.currentTarget.dataset.share); if (!f) return;
+      const r = S.fixtureResult(f); const me = S.me(); const home = r.homeManagerId === me.id;
+      const opp = S.managersById.get(home ? r.awayManagerId : r.homeManagerId);
+      const text = `${me.teamName} ${home ? r.homeGoals : r.awayGoals}–${home ? r.awayGoals : r.homeGoals} ${opp.teamName}`
+        + ` · giornata ${r.matchday} · ${fmt(home ? r.homeScore : r.awayScore)} fantapunti (Voto Titano)`
+        + ` — ${location.origin}${location.pathname}`;
+      if (navigator.share) { try { await navigator.share({ title: 'Fantacampionato Sammarinese', text }); } catch { /* annullato */ } }
+      else window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank', 'noopener');
+    });
     N.carica(() => ctx.render());
     // 'error' non risale: si ascolta in cattura. Una foto che non carica sparisce
     // insieme al suo riquadro, invece di lasciare l'icona di immagine rotta.

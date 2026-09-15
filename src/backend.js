@@ -190,6 +190,14 @@ export async function replaceRosters(leagueId, rows) {
   await updateLeague(leagueId, { started: true });
 }
 export async function addRosterPlayer(leagueId, memberId, playerId, price) { return must(await sb.from('rosters').insert({ league_id: leagueId, member_id: memberId, player_id: playerId, price_paid: price })); }
+/** Iscrizione push di QUESTO dispositivo. La policy lascia scrivere solo le proprie. */
+export async function salvaPush(userId, sub) {
+  return must(await sb.from('push_subscriptions').upsert({
+    endpoint: sub.endpoint, user_id: userId, p256dh: sub.keys.p256dh, auth: sub.keys.auth, failed_at: null,
+  }, { onConflict: 'endpoint' }));
+}
+export async function togliPush(endpoint) { return must(await sb.from('push_subscriptions').delete().eq('endpoint', endpoint)); }
+
 export async function removeRosterPlayer(leagueId, playerId) { return must(await sb.from('rosters').delete().eq('league_id', leagueId).eq('player_id', playerId)); }
 export async function insertContestazione(leagueId, memberId, c) { return must(await sb.from('contestazioni').insert({ league_id: leagueId, member_id: memberId, match_id: c.matchId, player_id: c.playerId, minute: c.minute, text: c.text }).select().single()); }
 export async function resolveContestazione(id, status, note) { return must(await sb.from('contestazioni').update({ status, note, resolved_at: new Date().toISOString() }).eq('id', id)); }

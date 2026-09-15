@@ -1,5 +1,7 @@
 import * as S from '../state.js';
 import { videoGiornata, giornateConVideo } from '../video.js';
+import * as AV from '../notifiche.js';
+import { sfondoHome } from '../sfondo.js';
 import * as N from '../notizie.js';
 import { esc, fmt, icon, logo, badge, crest, pic, tile, sec, dateIt, timeIt } from '../ui.js';
 import { maglia, kitOf } from '../maglia.js';
@@ -21,6 +23,17 @@ const RULES = [
  * si aprono dalla card della giornata precedente. Qui resta la sola finestra
  * in cui c'e' davvero qualcosa da fare.
  */
+/** L'avviso che il foglio delle notifiche promette da sempre: qui dentro
+ *  l'app, dove si vede anche senza aver dato nessun permesso. */
+function daConsegnare() {
+  const p = S.promemoriaFormazione(); if (!p) return '';
+  const ore = Math.floor(p.ore);
+  const quando = ore >= 24 ? `${Math.floor(ore / 24)}g ${ore % 24}h` : ore >= 1 ? `${ore} ore` : 'meno di un\'ora';
+  return tile({ href: '#/rosa/formazione', lead: icon('clock'), leadKind: 'warn',
+    title: `Giornata ${p.giornata}: manca la formazione`,
+    sub: `Si chiude fra ${quando}. Senza consegna vale l'ultima valida, o il 4-4-2 d'ufficio (art. 8.4).` });
+}
+
 function azione(ph) {
   const st = S.matchdayStatus(ph.matchday);
   if (st !== 'live' && st !== 'provisional') return '';
@@ -209,7 +222,7 @@ export const dashboard = {
       <div id="install-slot"></div>
       <div class="a-herowrap">
         <div class="a-hero${S.store.get().sfondoFoto ? ' foto' : ''}">
-          ${S.store.get().sfondoFoto ? '<span class="sfondo"><img src="media/sfondo-home.jpg" alt="" fetchpriority="high"><i></i></span>' : ''}
+          ${S.store.get().sfondoFoto ? `<span class="sfondo">${sfondoHome()}<i></i></span>` : ''}
           ${logo('tw')}<i class="conf"></i>
           <a class="hero-league" href="#/leghe">
             <span><b>${esc(S.base.league.shortName || S.base.league.name)}</b>
@@ -240,6 +253,7 @@ export const dashboard = {
           sub: S.isLeagueAdmin() ? "Generale o inserirle dalla gestione lega" : "Le assegna l'admin della lega dopo l'asta" }) : azione(ph)}
       ${ultimiCinque(last, me)}
       ${prossimePartite(ph)}
+      ${daConsegnare()}
       ${highlights()}
       ${notizie()}
       ${classificaBreve(me)}
@@ -248,6 +262,16 @@ export const dashboard = {
     </main>`;
   },
   mount(root, ctx) {
+    // La notifica di sistema all'apertura: e' quella che il foglio delle
+    // impostazioni promette da sempre. Una per giornata, e solo se il permesso
+    // c'e' — non lo si chiede qui, si chiede dalle impostazioni.
+    const d = S.store.get();
+    if (d.avvisi !== false) {
+      AV.avvisaFormazione(S.promemoriaFormazione(), {
+        giaAvvisato: d.avvisatoPer,
+        segna: (n) => S.store.set({ avvisatoPer: n }),
+      }).catch(() => { /* notifiche negate o non disponibili: l'avviso in-app resta */ });
+    }
     const slot = root.querySelector('#install-slot');
     const show = () => {
       if (!window.__installPrompt || S.store.get().installedDismissed || !slot) return;

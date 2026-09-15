@@ -2,12 +2,16 @@ import * as S from '../state.js';
 import { esc, icon, crest, pic } from '../ui.js';
 import { applyTheme } from '../app.js';
 import { CONTATTO, LINGUE } from '../config.js';
+import * as AV from '../notifiche.js';
 
 const row = (ic, title, sub, action = '', cls = '') => `<button class="setting ${cls}" ${action ? `data-act="${action}"` : 'disabled style="cursor:default"'}><i class="ico${typeof ic === 'object' ? ' illus' : ''}">${typeof ic === 'object' ? pic(ic.m, 'menu') : icon(ic)}</i><span class="txt"><b>${title}</b>${sub ? `<span>${sub}</span>` : ''}</span>${action ? icon('chev', 'ic sm chev') : ''}</button>`;
 /**
  * Preferenze notifiche. Il permesso lo chiede davvero il browser, e il testo
  * dice fino a dove arrivano: il promemoria scatta all'apertura dell'app, non
- * a telefono chiuso, perché per quello serve un server push che non c'è.
+ * a telefono chiuso: per quello servono le notifiche push, il cui codice ora
+ * c'è tutto (iscrizione, consegna nel service worker, invio in
+ * supabase/functions/promemoria) ma resta spento finché non è configurata la
+ * chiave VAPID. Il foglio dice a che punto siamo invece di promettere.
  */
 function apriAvvisi(ctx) {
   const disegna = () => {
@@ -19,16 +23,37 @@ function apriAvvisi(ctx) {
         <span class="sw${on ? ' on' : ''}"></span></button>
       ${on && perm === 'default' ? `<button class="a-btn" data-avvisi="permesso" style="margin-top:10px">Consenti le notifiche</button>` : ''}
       ${perm === 'denied' ? `<p class="auth-hint">Le notifiche sono bloccate dalle impostazioni del telefono per questo sito: vanno riattivate da lì.</p>` : ''}
-      <p class="auth-hint">L'avviso compare quando apri l'app. Per riceverlo a telefono chiuso serve un server che spedisca le notifiche push, e non è ancora acceso: quando lo sarà, questa preferenza varrà anche per quello.</p>`);
+      ${on && perm === 'granted' ? `<button class="a-btn sec" data-avvisi="prova" style="margin-top:10px">Mandami un avviso di prova</button>` : ''}
+      <p class="auth-hint"><b>Ad app aperta</b> l'avviso arriva${perm === 'granted' ? '' : ' appena dai il permesso'}: si controlla ogni volta che apri la dashboard, e ne arriva uno solo per giornata.</p>
+      <p class="auth-hint"><b>A telefono chiuso</b> ${AV.pushConfigurato()
+    ? 'le notifiche push sono attive: questo dispositivo è iscritto.'
+    : 'servono le notifiche push, e la chiave non è ancora configurata. Il codice c\'è tutto — i passi che restano stanno in <code>supabase/functions/promemoria/README.md</code> — ma finché la chiave manca questa parte è spenta, e preferiamo dirlo che lasciartelo scoprire.'}</p>`);
     const sh = document.getElementById('sheet');
     sh.onclick = async (e) => {
       const b = e.target.closest('[data-avvisi]'); if (!b) return;
       const v = b.dataset.avvisi;
-      if (v === 'permesso') { try { await Notification.requestPermission(); } catch { /* negato */ } disegna(); return; }
-      S.store.set({ avvisi: v === 'on' });
-      if (v === 'on' && typeof Notification !== 'undefined' && Notification.permission === 'default') {
-        try { await Notification.requestPermission(); } catch { /* negato */ }
+      if (v === 'prova') {
+        // Una prova vera, non un finto "ok": se le notifiche non funzionano su
+        // questo telefono e' meglio saperlo adesso che la settimana del lock.
+        const fatta = await AV.avvisaFormazione(
+          { giornata: 0, ore: 24 },
+          { giaAvvisato: null, segna: () => {} },
+        );
+        ctx.toast(fatta ? 'Avviso mandato: guarda le notifiche' : 'Non è stato possibile mostrare la notifica');
+        return;
       }
+      if (v === 'permesso') {
+        const esito = await AV.chiediPermesso();
+        if (esito === 'granted') await S.iscriviAvvisi().catch(() => { /* push non configurate */ });
+        disegna(); return;
+      }
+      S.store.set({ avvisi: v === 'on' });
+      if (v === 'on') {
+        if (AV.permesso() === 'default') {
+          const esito = await AV.chiediPermesso();
+          if (esito === 'granted') await S.iscriviAvvisi().catch(() => {});
+        } else if (AV.permesso() === 'granted') { await S.iscriviAvvisi().catch(() => {}); }
+      } else { await S.disiscriviAvvisi().catch(() => {}); }
       disegna();
     };
   };

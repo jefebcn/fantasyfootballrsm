@@ -1,4 +1,5 @@
 import * as S from '../state.js';
+import { sfondoAccesso } from '../sfondo.js';
 import { esc, icon, logo } from '../ui.js';
 
 let tab = 'in';            // 'in' | 'up' | 'link'
@@ -30,7 +31,7 @@ export const login = {
     const titolo = pending ? 'Controlla la posta' : tab === 'up' ? 'Registrati' : tab === 'link' ? 'Entra col link' : 'Accedi';
     return `<main class="a-body auth2">
       <div class="sfondo">
-        <img src="media/sfondo-accesso.jpg" alt="" fetchpriority="high" decoding="async">
+        ${sfondoAccesso()}
         <i class="velo"></i>
       </div>
       <div class="contenuto">

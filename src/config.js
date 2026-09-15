@@ -44,6 +44,19 @@ export const LEGALI_AGGIORNATE = '2026-09-15';
 /** Eta' minima per iscriversi. */
 export const ETA_MINIMA = 14;
 
+/**
+ * Chiave PUBBLICA VAPID per le notifiche a telefono chiuso. E' pubblica per
+ * costruzione: sta nel frontend come la chiave anon di Supabase.
+ *
+ * La chiave PRIVATA non va MAI qui: sta nei secret di Supabase e la usa solo
+ * la funzione che spedisce. Si generano in coppia — vedi
+ * supabase/functions/promemoria/README.md.
+ *
+ * Finche' resta vuota le push sono spente e l'app lo dice, invece di chiedere
+ * un permesso che non userebbe.
+ */
+export const VAPID_PUBBLICA = '';
+
 /** Lingue dell'interfaccia. Per ora l'app parla solo italiano: quando ne
  *  arriverà un'altra basta aggiungerla qui. */
 export const LINGUE = [['it', 'Italiano']];

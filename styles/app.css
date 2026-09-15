@@ -973,6 +973,7 @@ button,a{-webkit-tap-highlight-color:transparent}
    ========================================================================== */
 .auth2{position:relative;padding:0;display:flex;flex-direction:column;justify-content:flex-end;overflow:hidden}
 .auth2 .sfondo{position:absolute;inset:0;background:var(--grad-hero);z-index:0}
+.auth2 .sfondo .sf,.a-hero.foto .sfondo .sf{width:100%;height:100%;display:block}
 .auth2 .sfondo img{width:100%;height:100%;object-fit:cover;object-position:38% 42%;
   filter:saturate(.85) contrast(1.05)}
 .auth2 .sfondo .velo{position:absolute;inset:0;
@@ -1121,11 +1122,10 @@ button,a{-webkit-tap-highlight-color:transparent}
    Il percorso e' assoluto: dentro un url() di un foglio in /styles/ uno
    relativo cercherebbe /styles/media/. */
 .maglia{position:relative;display:block;width:100%;aspect-ratio:var(--rap,560/688);isolation:isolate}
-.maglia .mg-tinta{position:absolute;inset:0;background:var(--c1);
-  -webkit-mask:url(/media/maglia-base.webp) center/contain no-repeat;
-          mask:url(/media/maglia-base.webp) center/contain no-repeat}
-.maglia .mg-luce{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;
-  mix-blend-mode:multiply;pointer-events:none}
+/* Niente piu' maschera ne' fusione in multiply: la maglia e' un disegno, la
+   tinta e' il fill della sagoma e le ombre sono due gradienti ritagliati su di
+   essa. Si risparmiano un file, una maschera e un mix-blend-mode. */
+.maglia .mg-tela{position:absolute;inset:0;width:100%;height:100%;display:block}
 .maglia .mg-scritte{position:absolute;inset:0;width:100%;height:100%}
 .a-hero .jersey{display:block;width:136px;height:auto;margin:2px auto 6px;
   filter:drop-shadow(0 12px 20px rgba(0,0,0,.35))}
@@ -1244,7 +1244,10 @@ button,a{-webkit-tap-highlight-color:transparent}
 .a-hero.foto .tw{opacity:.07}
 
 /* Personaggi scontornati (src/personaggio.js). */
-.pers{display:block;width:100%;height:100%;object-fit:contain}
+/* I personaggi ora sono SVG disegnati, non ritagli di foto: object-fit non
+   serve piu' (era per gli <img>) e il disegno si scala senza sfocare. */
+.pers{display:block;width:100%;height:100%}
+.pers .av-fig,.a-hero .jersey.pers .pers{filter:drop-shadow(0 6px 14px rgba(0,0,0,.35))}
 .a-hero .jersey.pers{width:184px;height:auto;aspect-ratio:auto;
   filter:drop-shadow(0 14px 22px rgba(0,0,0,.5))}
 .a-hero .jersey.pers .pers{max-height:230px;width:auto;margin:0 auto}
@@ -1253,7 +1256,7 @@ button,a{-webkit-tap-highlight-color:transparent}
 .pcell{position:relative;display:grid;place-items:center;padding:6px 2px;
   border:2px solid transparent;border-radius:12px;background:var(--surface-sunk);cursor:pointer;min-height:64px}
 .pcell.on{border-color:var(--primary);background:var(--primary-soft)}
-.pcell .pers{height:50px;width:auto;object-fit:contain}
+.pcell .pers{height:50px;width:auto}
 .pcell .pno{display:grid;place-items:center;gap:2px;height:50px;color:var(--text-muted)}
 .pcell .pno .ic{width:26px;height:26px}
 .pcell small{font:600 10px var(--font-body);color:var(--text-muted)}

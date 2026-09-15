@@ -124,6 +124,27 @@ export const impostazioni = {
       if (act === 'sfondo') { S.store.set({ sfondoFoto: !S.store.get().sfondoFoto }); ctx.render(); return; }
       if (act === 'privacy') { ctx.go('privacy'); return; }
       if (act === 'termini') { ctx.go('termini'); return; }
+      if (act === 'lock-cal') {
+        // Il calendario dei lock lo scrive solo il Giudice Dati: se manca, un
+        // amministratore di lega puo' accorgersene ma non rimediare, e il
+        // messaggio deve dire a chi tocca invece di lasciarlo indovinare.
+        const n = S.lockDaSistemare();
+        if (!n) { ctx.sheet(`<h3>Calendario dei lock</h3><p class="auth-hint">Tutte le 30 giornate sul server hanno la stessa data di chiusura che usa l'app. È così che deve stare.</p>`); return; }
+        if (S.isJudge()) {
+          ctx.sheet(`<h3>Calendario dei lock</h3><p class="auth-hint">${n} giornate sul server hanno una data di chiusura diversa da quella dell'app. Finché è così, le formazioni degli avversari non si vedono quando dovrebbero.</p>
+            <button class="a-btn" id="allinea" style="margin-top:12px">${icon('check', 'ic sm')}Allinea ora</button>`);
+          document.getElementById('allinea').onclick = async (ev) => {
+            ev.target.disabled = true;
+            try { const q = await S.sincronizzaLock({ forza: true }); ctx.sheet(null); ctx.toast(`Allineate ${q} giornate`); }
+            catch (err) { ctx.toast(err.message || 'Non è stato possibile allineare'); }
+            ctx.render();
+          };
+          return;
+        }
+        ctx.sheet(`<h3>Calendario dei lock</h3><p class="auth-hint">${n} giornate sul server hanno una data di chiusura diversa da quella dell'app. Finché è così, le formazioni degli avversari non si vedono quando dovrebbero.</p>
+          <p class="auth-hint">Lo può sistemare solo il <b>Giudice Dati</b>, e gli basta aprire l'app: si allinea da sé. Se in questo progetto non c'è ancora nessun Giudice Dati, si nomina una volta sola con <code>supabase/nomina-giudice.sql</code>.</p>`);
+        return;
+      }
       if (act === 'archiviazione') { ctx.go('archiviazione'); return; }
       if (act === 'licenze') { ctx.go('licenze'); return; }
       if (act === 'lingua') {
@@ -194,6 +215,10 @@ export const avanzate = {
     const data = group('Dati', `
       ${row({ m: 'quotazioni' }, 'Da dove vengono i dati', 'Lega, formazioni e voti sul server; listone e calendario generati dall\'app')}
       ${row('shield', 'Atleti e società', 'Nomi e prestazioni useranno dati reali solo previo accordo con la FSGC')}
+      ${S.isLeagueAdmin() ? row('clock', 'Calendario dei lock',
+    S.lockDaSistemare() === 0 ? 'Allineato: il server chiude le formazioni quando le chiude l\'app'
+      : `${S.lockDaSistemare()} giornate da allineare — toccami`, 'lock-cal',
+    S.lockDaSistemare() === 0 ? '' : 'danger') : ''}
       ${row('gear', 'Server della lega', esc(S.serverHost() || '—'), 'server')}
       ${row('shield', 'Diagnostica accessi', 'Controlla sul progetto cosa manca ancora per far entrare la gente', 'diagnostica')}`);
 

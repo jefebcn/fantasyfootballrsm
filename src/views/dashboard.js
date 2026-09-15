@@ -1,6 +1,7 @@
 import * as S from '../state.js';
 import * as N from '../notizie.js';
 import { esc, fmt, icon, logo, badge, crest, pic, tile, sec, dateIt, timeIt } from '../ui.js';
+import { maglia, kitOf } from '../maglia.js';
 
 const RULES = [
   ['Art. 7.4', 'Rigore parato', 'Vale +3,0 al portiere e −3,0 al tiratore. Sul palo o fuori: −3,0 al tiratore e nessun bonus al portiere.'],
@@ -183,7 +184,7 @@ export const dashboard = {
       <div class="a-herowrap">
         <div class="a-hero">${logo('tw')}
           <a class="hero-league" href="#/leghe">${esc(S.base.league.name)}${icon('chev', 'ic sm')}</a>
-          <svg class="jersey" style="--j1:${me.color};--j2:${me.color}"><use href="#i-jersey"/></svg>
+          <a class="jersey" href="#/squadra" aria-label="Modifica la maglia">${maglia(kitOf(me))}</a>
           <h2>${esc(me.teamName)}</h2><p class="hero-owner">${esc(me.owner)}</p>
           <div class="acts">
             <a href="#/scheda" aria-label="Condividi la scheda"><button>${icon('share')}</button></a>

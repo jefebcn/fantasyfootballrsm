@@ -155,13 +155,17 @@ export async function myLeagues(userId) {
 export async function createLeague(name, shortName, teamName, color, initials) { return must(await sb.rpc('create_league', { p_name: name, p_short: shortName, p_team: teamName, p_color: color, p_initials: initials })); }
 export async function joinLeague(code, teamName, color, initials) { return must(await sb.rpc('join_league', { p_code: code, p_team: teamName, p_color: color, p_initials: initials })); }
 export async function updateLeague(id, patch) { return must(await sb.from('leagues').update(patch).eq('id', id).select().single()); }
+export async function deleteLeague(id) { return must(await sb.from('leagues').delete().eq('id', id)); }
+export async function rigeneraCodiceVice(memberId) { return must(await sb.rpc('rigenera_codice_vice', { p_member: memberId })); }
+export async function entraComeVice(code) { return must(await sb.rpc('entra_come_vice', { p_code: code })); }
+export async function togliVice(memberId) { return must(await sb.rpc('togli_vice', { p_member: memberId })); }
 
-const toManager = (m) => ({ id: m.id, userId: m.user_id, teamName: m.team_name, owner: m.owner_name || m.profile?.display_name || '—', color: m.color, initials: m.initials || m.team_name.slice(0, 2).toUpperCase(), credits: m.credits, role: m.role });
+const toManager = (m) => ({ id: m.id, userId: m.user_id, teamName: m.team_name, owner: m.owner_name || m.profile?.display_name || '—', color: m.color, initials: m.initials || m.team_name.slice(0, 2).toUpperCase(), credits: m.credits, role: m.role, crestUrl: m.crest_url || null, kit: m.kit || {}, viceUserId: m.vice_user_id || null, viceCode: m.vice_code || null, viceName: m.vice?.display_name || null });
 
 export async function loadLeague(id) {
   const [league, members, rosters, lineups, contest] = await Promise.all([
     must(await sb.from('leagues').select('*').eq('id', id).single()),
-    must(await sb.from('league_members').select('*, profile:profiles(display_name)').eq('league_id', id).order('created_at')),
+    must(await sb.from('league_members').select('*, profile:profiles!league_members_user_id_fkey(display_name), vice:profiles!league_members_vice_user_id_fkey(display_name)').eq('league_id', id).order('created_at')),
     must(await sb.from('rosters').select('member_id, player_id, price_paid').eq('league_id', id).is('released_at', null)),
     must(await sb.from('lineups').select('member_id, matchday, lineup, submitted_at').eq('league_id', id)),
     must(await sb.from('contestazioni').select('*').eq('league_id', id).order('created_at', { ascending: false })),
@@ -171,7 +175,7 @@ export async function loadLeague(id) {
   for (const r of rosters) (rosterMap[r.member_id] ||= []).push({ playerId: r.player_id, pricePaid: r.price_paid });
   const lineupMap = {}; for (const l of lineups) lineupMap[`${l.matchday}:${l.member_id}`] = { ...l.lineup, submittedAt: l.submitted_at };
   const contestazioni = contest.map((c) => ({ id: c.id, at: c.created_at, by: c.member_id, matchId: c.match_id, playerId: c.player_id, minute: c.minute, text: c.text, status: c.status, note: c.note, resolvedAt: c.resolved_at }));
-  return { league: { id: league.id, name: league.name, shortName: league.short_name || league.name, inviteCode: league.invite_code, started: league.started, rulesOverride: league.rules || {} }, managers, rosters: rosterMap, lineups: lineupMap, contestazioni };
+  return { league: { id: league.id, name: league.name, shortName: league.short_name || league.name, inviteCode: league.invite_code, started: league.started, createdBy: league.created_by, createdAt: league.created_at, rulesOverride: league.rules || {} }, managers, rosters: rosterMap, lineups: lineupMap, contestazioni };
 }
 export async function upsertLineup(leagueId, memberId, matchday, lineup) {
   const { submittedAt, source, ...body } = lineup;

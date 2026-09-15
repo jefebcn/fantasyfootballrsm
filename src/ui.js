@@ -24,7 +24,7 @@ export function badge(status, extra = '') {
     live: ['badge--live', null, 'Live in corso', extra],
     open: ['badge--open', 'clock', 'Aperta', extra],
     scheduled: ['badge--open', 'clock', 'In programma', extra],
-    partial: ['badge--prov', 'clock', 'Parziale', extra],
+    partial: ['badge--prov', 'clock', 'Giocata', extra || 'voti non ancora inseriti'],
   };
   const [cls, ic, label, small] = map[status] || map.scheduled;
   return `<span class="badge ${cls}">${ic ? icon(ic) : '<i class="pulse"></i>'}${label}${small ? ` <small>· ${esc(small)}</small>` : ''}</span>`;

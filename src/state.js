@@ -262,7 +262,15 @@ export function giornataDaSchierare() {
 export function matchdayStatus(n) {
   if (g.matchdayStatus[n]) return g.matchdayStatus[n];
   if (hasData(n)) return 'provisional';
-  if (now() >= new Date(matchday(n).lockAt)) return 'live';
+  if (now() >= new Date(matchday(n).lockAt)) {
+    // "Live in corso" solo finche' si gioca davvero. Prima bastava che il lock
+    // fosse passato, quindi la 1a giornata restava "live" per sempre se in lega
+    // non erano ancora stati caricati i voti: sullo schermo una giornata finita
+    // tre settimane prima si annunciava in corso.
+    const reali = matchesOf(n);
+    const inCorso = !reali.length || reali.some((m) => m.status !== 'played');
+    return inCorso ? 'live' : 'partial';
+  }
   return n === nextMatchday() ? 'open' : 'scheduled';
 }
 export function isFrozen(n) { return matchdayStatus(n) === 'frozen'; }

@@ -1,5 +1,5 @@
 import * as S from '../state.js';
-import { esc, fmt, icon, badge, voteRow, roleChip, logo } from '../ui.js';
+import { esc, badge, voteRow, logo } from '../ui.js';
 
 let filter = { role: null, mine: false };
 export const voti = {

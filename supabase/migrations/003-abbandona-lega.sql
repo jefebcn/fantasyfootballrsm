@@ -14,13 +14,13 @@ language plpgsql security definer set search_path = public as $$
 declare mio uuid; altri_admin int;
 begin
   select id into mio from public.league_members
-  where league_id = p_league and user_id = auth.uid();
+  where league_id = p_league and user_id = public.current_user_id();
   if mio is null then raise exception 'Non fai parte di questa lega'; end if;
 
   -- Una lega senza amministratori non la puo' piu' gestire nessuno: l'ultimo
   -- admin deve prima passare il ruolo, oppure eliminare la lega.
   select count(*) into altri_admin from public.league_members
-  where league_id = p_league and role = 'admin' and user_id <> auth.uid();
+  where league_id = p_league and role = 'admin' and user_id <> public.current_user_id();
   if altri_admin = 0
      and exists (select 1 from public.league_members
                  where id = mio and role = 'admin')

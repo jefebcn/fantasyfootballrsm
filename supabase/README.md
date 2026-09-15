@@ -1,5 +1,29 @@
 # Supabase — account e leghe multiple
 
+## Ordine di installazione (provato per davvero)
+
+Su un progetto nuovo, nell'SQL Editor, in quest'ordine:
+
+1. `schema.sql` — una volta sola, è il punto di partenza. Non va rieseguito dopo
+   le migrazioni: definisce le policy su `auth.uid()`, che la 001 sostituisce.
+2. `migrations/001-identita-esterna.sql`
+3. `migrations/002-squadra-e-lega.sql`
+4. `migrations/003-abbandona-lega.sql`
+5. `migrations/004-lock-dal-calendario.sql`
+6. `migrations/005-notifiche-push.sql`
+
+Le migrazioni dalla 001 in poi si possono rieseguire quante volte si vuole.
+
+`./supabase/prove/prova.sh` fa tutto questo su un Postgres vuoto, due volte di
+fila, e poi chiama le funzioni una per una. Prima non passava: la 001 converte
+le colonne dell'identità da `uuid` a `text`, e le migrazioni successive erano
+rimaste a `uuid`. Metà fallivano subito; l'altra metà stava dentro corpi
+`plpgsql`, che Postgres non controlla finché non li esegui, e sarebbe scoppiata
+in faccia al primo che provava a uscire da una lega.
+
+Per sapere cosa c'è già su un progetto, `verifica.sql` lo dice riga per riga.
+
+
 ## Cosa manca a questo progetto? Chiedilo al database
 
 Invece di ricordare quali file sono stati eseguiti, incolla

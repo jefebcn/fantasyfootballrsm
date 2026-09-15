@@ -5,9 +5,13 @@
  */
 export const SUPABASE_URL = 'https://nskgzpbcssnpfuxmbepa.supabase.co';
 export const SUPABASE_ANON_KEY = 'sb_publishable_3ji0uoP5OW9LBzGhQ9QDSg_JoSJigHa';
-// Versione pinnata: un aggiornamento del CDN non deve cambiare il comportamento dell'app.
-export const SUPABASE_JS = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.58.0/+esm';
-// Se il CDN non risponde entro questo tempo, l'app mostra la schermata di errore.
+// La libreria sta dentro l'app (vendor/supabase-js.js, si rigenera con
+// `npm run vendor`). Prima arrivava da jsDelivr: a ogni apertura partiva una
+// richiesta verso un terzo che vedeva l'indirizzo IP di chi apriva — la stessa
+// cosa che avevamo tolto per i caratteri — e senza quella rete l'app non si
+// accendeva proprio.
+export const SUPABASE_JS = '/vendor/supabase-js.js';
+// Se la libreria non si carica entro questo tempo, l'app mostra l'errore.
 export const SUPABASE_TIMEOUT_MS = 8000;
 
 /**

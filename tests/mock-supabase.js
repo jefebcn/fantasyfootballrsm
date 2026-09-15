@@ -14,12 +14,12 @@ const uid = () => 'u' + Math.random().toString(36).slice(2, 10);
 const now = () => new Date().toISOString();
 
 function builder(table) {
-  const filters = []; let op = 'select'; let payload = null; let single = false; let maybe = false; let orderBy = null; let lim = null; let returning = false;
+  const filters = []; let op = 'select'; let payload = null; let single = false; let maybe = false; let orderBy = null; let lim = null; 
   const apply = (rows) => rows.filter((r) => filters.every((f) => f(r)));
   const b = {
-    select() { returning = true; if (op === 'select') return b; return b; },
+    select() { return b; },   // il finto server torna sempre le righe
     eq(k, v) { filters.push((r) => r[k] === v); return b; },
-    is(k, v) { filters.push((r) => r[k] == v); return b; },
+    is(k, v) { filters.push((r) => r[k] === v); return b; },
     order(k, o) { orderBy = [k, o?.ascending !== false]; return b; },
     limit(n) { lim = n; return b; },
     single() { single = true; return b; }, maybeSingle() { maybe = true; return b; },

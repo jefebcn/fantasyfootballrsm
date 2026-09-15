@@ -10,6 +10,18 @@
 -- Eseguire nell'SQL Editor dopo schema.sql.
 -- =====================================================================
 
+-- 0. via le policy che citano le colonne da convertire.
+--    Postgres rifiuta di cambiare il tipo di una colonna nominata da una
+--    policy ("cannot alter type of a column used in a policy definition"):
+--    finché queste tre restavano in piedi, il punto 2 qui sotto si fermava
+--    all'errore e la migrazione non passava su un'installazione nuova.
+--    Sono esattamente le tre che il punto 8 ricrea su current_user_id(), e
+--    l'elenco è scritto a mano di proposito: buttarne giù una qualsiasi con
+--    un ciclo toglierebbe in silenzio regole di sicurezza che nessuno rimette.
+drop policy if exists profiles_update_own on public.profiles;
+drop policy if exists members_update      on public.league_members;
+drop policy if exists members_delete      on public.league_members;
+
 -- 1. via i vincoli verso auth.users e le chiavi esterne che bloccano il cambio tipo
 alter table public.profiles drop constraint if exists profiles_id_fkey;
 alter table public.league_members drop constraint if exists league_members_user_id_fkey;
@@ -18,15 +30,44 @@ alter table public.match_overrides drop constraint if exists match_overrides_upd
 alter table public.match_events drop constraint if exists match_events_created_by_fkey;
 alter table public.matchday_status drop constraint if exists matchday_status_changed_by_fkey;
 alter table public.change_log drop constraint if exists change_log_by_user_fkey;
+-- matchday_locks nasce in schema.sql ma è arrivata dopo che questa migrazione
+-- era già scritta: senza convertirla anche lei, la chiave esterna del punto 3
+-- puntava da un uuid a un text e il database la rifiutava.
+do $$ begin
+  if to_regclass('public.matchday_locks') is not null then
+    alter table public.matchday_locks drop constraint if exists matchday_locks_updated_by_fkey;
+  end if;
+end $$;
 
 -- 2. uuid → text
-alter table public.profiles          alter column id         type text using id::text;
-alter table public.league_members    alter column user_id    type text using user_id::text;
-alter table public.leagues           alter column created_by type text using created_by::text;
-alter table public.match_overrides   alter column updated_by type text using updated_by::text;
-alter table public.match_events      alter column created_by type text using created_by::text;
-alter table public.matchday_status   alter column changed_by type text using changed_by::text;
-alter table public.change_log        alter column by_user    type text using by_user::text;
+--    Ogni conversione è preceduta dal controllo del tipo attuale: rieseguire
+--    questa migrazione su un database già convertito non deve fallire. Senza
+--    il controllo ci riprovava lo stesso e Postgres si impuntava sulle policy
+--    che nel frattempo aveva creato la 002.
+do $$
+declare
+  t text; c record;
+begin
+  for c in
+    select * from (values
+      ('profiles',        'id'),
+      ('league_members',  'user_id'),
+      ('leagues',         'created_by'),
+      ('match_overrides', 'updated_by'),
+      ('match_events',    'created_by'),
+      ('matchday_status', 'changed_by'),
+      ('change_log',      'by_user'),
+      ('matchday_locks',  'updated_by')
+    ) as v(tab, col)
+  loop
+    if to_regclass('public.' || c.tab) is null then continue; end if;
+    select data_type into t from information_schema.columns
+     where table_schema = 'public' and table_name = c.tab and column_name = c.col;
+    if t = 'uuid' then
+      execute format('alter table public.%I alter column %I type text using %I::text', c.tab, c.col, c.col);
+    end if;
+  end loop;
+end $$;
 
 -- 3. chiavi esterne verso profiles (non più verso auth.users)
 alter table public.league_members add constraint league_members_user_id_fkey
@@ -36,6 +77,12 @@ alter table public.match_overrides add constraint match_overrides_updated_by_fke
 alter table public.match_events   add constraint match_events_created_by_fkey    foreign key (created_by) references public.profiles(id);
 alter table public.matchday_status add constraint matchday_status_changed_by_fkey foreign key (changed_by) references public.profiles(id);
 alter table public.change_log     add constraint change_log_by_user_fkey         foreign key (by_user)   references public.profiles(id);
+do $$ begin
+  if to_regclass('public.matchday_locks') is not null then
+    alter table public.matchday_locks add constraint matchday_locks_updated_by_fkey
+      foreign key (updated_by) references public.profiles(id);
+  end if;
+end $$;
 
 -- 4. l'identità corrente, qualunque sia il fornitore
 --    Supabase Auth: "sub" è l'uuid dell'utente. Clerk: "sub" è l'id Clerk.

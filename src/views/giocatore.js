@@ -1,5 +1,5 @@
 import * as S from '../state.js';
-import { esc, fmt, icon, roleChip, voteRow, avatarGrande } from '../ui.js';
+import { esc, fmt, roleChip, voteRow, avatarGrande } from '../ui.js';
 import { roleName } from '../engine.js';
 
 export const giocatore = {

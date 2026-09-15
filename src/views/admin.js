@@ -1,6 +1,6 @@
 import * as S from '../state.js';
-import { computeRating } from '../engine.js';
-import { esc, fmt, icon, badge, roleChip, initials, evTile, pic, EV_LABEL, voteRow, dateIt, timeIt } from '../ui.js';
+import {} from '../engine.js';
+import { esc, icon, badge, roleChip, evTile, EV_LABEL, voteRow, dateIt, timeIt } from '../ui.js';
 
 const STATUS = [['played', 'Giocata'], ['postponed', 'Rinviata'], ['suspended_before_45', 'Sospesa <45\''], ['suspended_after_45', 'Sospesa >45\''], ['awarded', 'A tavolino']];
 const guard = (ctx, fn) => { try { fn(); } catch (e) { ctx.toast(e.message); } };

@@ -179,7 +179,9 @@ export async function loadLeague(id) {
   return { league: { id: league.id, name: league.name, shortName: league.short_name || league.name, inviteCode: league.invite_code, started: league.started, createdBy: league.created_by, createdAt: league.created_at, rulesOverride: league.rules || {} }, managers, rosters: rosterMap, lineups: lineupMap, contestazioni };
 }
 export async function upsertLineup(leagueId, memberId, matchday, lineup) {
-  const { submittedAt, source, ...body } = lineup;
+  // submittedAt e source non vanno nel JSON della formazione: il primo lo
+  // riscrive il server qui sotto, il secondo e' roba del client.
+  const { submittedAt: _sa, source: _src, ...body } = lineup;
   return must(await sb.from('lineups').upsert({ league_id: leagueId, member_id: memberId, matchday, lineup: body, submitted_at: new Date().toISOString() }));
 }
 export async function updateMember(id, patch) { return must(await sb.from('league_members').update(patch).eq('id', id).select().single()); }

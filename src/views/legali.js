@@ -148,6 +148,7 @@ export const archiviazione = {
     'Questa app <b>non usa cookie</b>. Non ce n\'è uno, né di profilazione né di statistica: non c\'è nessun sistema di analisi del traffico e nessuno strumento di terzi che ti segua.',
     'Quello che usa è la memoria locale del browser, e solo per cose tecniche che servono a far funzionare l\'app come l\'hai lasciata. Per questo non compare una finestra a chiederti il consenso: per l\'archiviazione strettamente necessaria non va chiesto, e chiedertelo lo stesso sarebbe solo un fastidio inutile.',
     'Anche i caratteri sono serviti da qui. Prima arrivavano da Google Fonts, il che mandava il tuo indirizzo IP a Google a ogni apertura senza che nessuno l\'avesse chiesto: adesso i file stanno nell\'app.',
+    'Stessa storia per <code>supabase-js</code>, la libreria che parla col server: arrivava da una rete di distribuzione esterna, che a ogni avvio vedeva il tuo indirizzo IP. Adesso sta anche lei dentro l\'app. <b>All\'apertura non parte nessuna richiesta fuori da questo sito</b> tranne quella al nostro server, che serve a farti entrare.',
   ])}
       ${blocco('L\'unica eccezione: i video', [
     'Gli highlights delle partite stanno su YouTube, che è di Google. <b>Finché non tocchi play non parte nessuna richiesta verso di loro:</b> la copertina con squadre e risultato la disegna l\'app con i dati che ha già, non è un\'immagine scaricata da YouTube.',
@@ -179,7 +180,7 @@ export const licenze = {
     'Nomi delle società e degli atleti compaiono a scopo descrittivo, per identificare chi ha giocato cosa. L\'app non è affiliata alla FSGC e non ha con lei alcun accordo: prima di aprire le iscrizioni fuori dal giro di amici va chiesto il permesso per l\'uso dei nomi e delle prestazioni degli atleti.',
   ])}
       ${blocco('Software di terze parti', [
-    ['supabase-js', 'libreria per la banca dati e gli accessi, licenza MIT, caricata da jsDelivr a versione fissa.'],
+    ['supabase-js', 'libreria per la banca dati e gli accessi, licenza MIT. Il file sta nell\'app (<code>vendor/supabase-js.js</code>), a versione fissa: non viene chiesto a nessuna rete esterna.'],
     ['Lato e IBM Plex Mono', 'i caratteri, licenza SIL Open Font License 1.1, che permette di ridistribuirli: infatti i file stanno nell\'app invece di essere chiesti a Google a ogni apertura.'],
     'Il resto dell\'app è scritto senza framework né librerie: niente altro codice di terzi gira su questa pagina.',
   ])}

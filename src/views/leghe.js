@@ -1,5 +1,5 @@
 import * as S from '../state.js';
-import { esc, icon, crest, logo, pic, tile, sec } from '../ui.js';
+import { esc, icon, crest, logo, pic, sec } from '../ui.js';
 
 const COLORS = ['#1B84C6', '#2b7a3d', '#8a1d1d', '#5b3fa6', '#c46a00', '#1a1a1a', '#2c7a7b', '#b8321f', '#d4a017', '#0e5e93'];
 let form = 'none'; // 'create' | 'join'

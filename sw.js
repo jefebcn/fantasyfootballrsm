@@ -1,5 +1,5 @@
 /* Service worker — shell in cache, aggiornamento in background. */
-const VERSION = 'fcs-v4.2.7';
+const VERSION = 'fcs-v4.2.8';
 const SHELL = [
   './', './index.html', './manifest.webmanifest', './styles/app.css', './styles/logo.css', './styles/font.css', './design/tokens/tokens.css',
   // I caratteri stanno in casa: nella cache ci vanno, se no senza rete si vede
@@ -9,7 +9,7 @@ const SHELL = [
   './src/app.js', './src/state.js', './src/data.js', './src/engine.js', './src/ui.js', './src/ui-esc.js', './src/avatar.js', './src/maglia.js', './src/personaggio.js', './src/sprite.js', './src/config.js', './src/backend.js', './src/auth-clerk.js',
   './src/views/index.js', './src/views/dashboard.js', './src/views/rosa.js', './src/views/formazione.js', './src/views/calendario.js',
   './src/views/classifica.js', './src/views/voti.js', './src/views/live.js', './src/views/listone.js', './src/views/giocatore.js',
-  './src/views/regolamento.js', './src/views/scheda.js', './src/views/impostazioni.js', './src/views/mercato.js', './src/views/admin.js', './src/views/auth.js', './src/views/leghe.js', './src/views/lega.js', './src/views/setup.js', './src/views/onboarding.js', './src/views/gestione.js', './src/views/squadra.js', './src/views/vice.js', './src/views/legali.js', './src/notifiche.js', './src/schermo.js', './src/views/asta.js', './src/views/video.js', './src/video.js', './src/video-dati.js', './src/views/regole.js',
+  './src/views/regolamento.js', './src/views/scheda.js', './src/views/impostazioni.js', './src/views/mercato.js', './src/views/admin.js', './src/views/auth.js', './src/views/leghe.js', './src/views/lega.js', './src/views/setup.js', './src/views/onboarding.js', './src/views/gestione.js', './src/views/squadra.js', './src/views/vice.js', './src/views/legali.js', './src/notifiche.js', './src/schermo.js', './vendor/supabase-js.js', './src/views/asta.js', './src/views/video.js', './src/video.js', './src/video-dati.js', './src/views/regole.js',
   './icons/icon-192.png', './icons/icon-512.png', './icons/maskable-512.png', './icons/apple-touch-icon.png',
   // icone evento: compaiono su Voti, Live e Giudice Dati, quindi valgono il precache.
   // Le altre (menu, eventi di secondo livello) entrano in cache al primo uso.

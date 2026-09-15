@@ -1,5 +1,5 @@
 import * as S from '../state.js';
-import { esc, icon, roleChip } from '../ui.js';
+import { esc, roleChip } from '../ui.js';
 
 export const mercato = {
   title: 'Mercato', appbar: 'back', sub: () => 'Mercato libero · rilancio 24h',

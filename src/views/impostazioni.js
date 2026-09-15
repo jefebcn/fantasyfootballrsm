@@ -1,5 +1,5 @@
 import * as S from '../state.js';
-import { esc, icon, crest, pic } from '../ui.js';
+import { esc, icon, pic } from '../ui.js';
 import { applyTheme } from '../app.js';
 import { CONTATTO, LINGUE } from '../config.js';
 import * as AV from '../notifiche.js';

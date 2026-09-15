@@ -1,5 +1,14 @@
 # Supabase — account e leghe multiple
 
+## Migrazione 003 — uscire da una lega
+
+Esegui `migrations/003-abbandona-lega.sql` nell'SQL Editor. Aggiunge la funzione
+`abbandona_lega`: la policy `members_delete` permette solo all'admin di togliere
+GLI ALTRI, quindi chi era entrato con un codice non poteva piu' uscire da solo.
+L'ultimo admin deve prima passare il ruolo, oppure eliminare la lega.
+
+Chi ha creato una lega la elimina dal tasto col cestino in "Le mie leghe".
+
 ## Migrazione 002 — eliminare la lega, stemma, maglia, allenatore in seconda
 
 Dopo `schema.sql` e `migrations/001-identita-esterna.sql`, esegui

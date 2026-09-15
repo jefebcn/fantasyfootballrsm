@@ -36,7 +36,13 @@ const misura = (v, k) => ESA(CANALI(v).map((c) => c * k));
  * Fondo e inchiostro che si leggono di sicuro (AA, 4.5).
  * @returns {{fondo: string, inchiostro: string}}
  */
+/** Solo i colori in esadecimale si possono misurare. */
+const esadecimale = (v) => /^#?([0-9a-f]{3}|[0-9a-f]{6})$/i.test(String(v || '').trim());
+
 export function tintaLeggibile(hex, soglia = 4.5) {
+  // Un colore scritto come var(--qualcosa) lo risolve il browser, non noi: qui
+  // non si puo' misurare, e provandoci usciva nero. Si lascia com'e'.
+  if (!esadecimale(hex)) return { fondo: hex || 'var(--primary)', inchiostro: '#fff' };
   const base = ESA(CANALI(hex));
   const scuroMeglio = contrasto(base, SCURO) >= contrasto(base, CHIARO);
   const inchiostro = scuroMeglio ? SCURO : CHIARO;

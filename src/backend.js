@@ -149,13 +149,14 @@ export async function ensureProfile(user) {
 
 // ---------------------------------------------------------------- leghe
 export async function myLeagues(userId) {
-  const rows = must(await sb.from('league_members').select('role, league:leagues!league_members_league_id_fkey(id, name, short_name, invite_code, started, rules, created_at)').eq('user_id', userId));
+  const rows = must(await sb.from('league_members').select('role, league:leagues!league_members_league_id_fkey(id, name, short_name, invite_code, started, rules, created_at, created_by)').eq('user_id', userId));
   return rows.filter((r) => r.league).map((r) => ({ ...r.league, myRole: r.role }));
 }
 export async function createLeague(name, shortName, teamName, color, initials) { return must(await sb.rpc('create_league', { p_name: name, p_short: shortName, p_team: teamName, p_color: color, p_initials: initials })); }
 export async function joinLeague(code, teamName, color, initials) { return must(await sb.rpc('join_league', { p_code: code, p_team: teamName, p_color: color, p_initials: initials })); }
 export async function updateLeague(id, patch) { return must(await sb.from('leagues').update(patch).eq('id', id).select().single()); }
 export async function deleteLeague(id) { return must(await sb.from('leagues').delete().eq('id', id)); }
+export async function abbandonaLega(id) { return must(await sb.rpc('abbandona_lega', { p_league: id })); }
 export async function rigeneraCodiceVice(memberId) { return must(await sb.rpc('rigenera_codice_vice', { p_member: memberId })); }
 export async function entraComeVice(code) { return must(await sb.rpc('entra_come_vice', { p_code: code })); }
 export async function togliVice(memberId) { return must(await sb.rpc('togli_vice', { p_member: memberId })); }

@@ -159,10 +159,20 @@ const iniziali = (t) => String(t || '').replace(/[^A-Za-zÀ-ÿ0-9 ]/g, '').split
 
 /** Solo chi ha creato la lega può eliminarla (regola sul server, non qui). */
 export const soPossoEliminareLega = () => !!base.league.createdBy && base.league.createdBy === currentUser()?.id;
-export async function deleteLeague() {
-  const id = base.league.id; if (!id) throw new Error('Nessuna lega');
+/** Vale anche per una lega diversa da quella aperta: serve all'elenco. */
+export const laHoCreataIo = (l) => !!l?.created_by && l.created_by === currentUser()?.id;
+
+export async function deleteLeague(id = base.league.id) {
+  if (!id) throw new Error('Nessuna lega');
   await remote.deleteLeague(id);
-  prefs.currentLeagueId = null; persistPrefs(); await loadAll(); notify();
+  if (id === prefs.currentLeagueId) prefs.currentLeagueId = null;
+  persistPrefs(); await loadAll(); notify();
+}
+/** Uscire da una lega altrui: la riga del partecipante se ne va, la lega resta. */
+export async function abbandonaLega(id) {
+  await remote.abbandonaLega(id);
+  if (id === prefs.currentLeagueId) prefs.currentLeagueId = null;
+  persistPrefs(); await loadAll(); notify();
 }
 
 /** Allenatore in seconda: invito con link, ingresso, revoca. */

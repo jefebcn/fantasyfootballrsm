@@ -4,7 +4,7 @@ import { esc, fmt, roleChip, ROLE_NAME, badge, icon, avatar, dateIt, timeIt } fr
 
 let draft = null; let draftFor = null;
 function ensureDraft() {
-  const n = S.nextMatchday(); const me = S.me();
+  const n = S.giornataDaSchierare(); const me = S.me();
   if (!draft || draftFor !== `${n}:${me.id}`) { const l = S.lineupFor(n, me.id); draft = { formation: l.formation, starters: [...l.starters], bench: [...l.bench], captainId: l.captainId, viceCaptainId: l.viceCaptainId }; draftFor = `${n}:${me.id}`; }
   return draft;
 }
@@ -45,7 +45,7 @@ function autofill(d, rosterIds) {
 export const formazione = {
   title: 'Formazione', sub: () => 'Rosa · Formazione',
   render() {
-    const d = ensureDraft(); normalize(d); const me = S.me(); const n = S.nextMatchday(); const md = S.matchday(n); const st = S.matchdayStatus(n);
+    const d = ensureDraft(); normalize(d); const me = S.me(); const n = S.giornataDaSchierare(); const md = S.matchday(n); const st = S.matchdayStatus(n);
     const locked = st !== 'open' && st !== 'scheduled';
     const s = slotsByRole(d); const errors = validateLineup({ ...d, starters: d.starters.filter(Boolean), bench: d.bench.filter(Boolean) }, S.playersById);
     const saved = S.savedLineup(n, me.id);
@@ -71,7 +71,7 @@ export const formazione = {
     </main>`;
   },
   mount(root, ctx) {
-    const d = ensureDraft(); const n = S.nextMatchday(); const me = S.me(); const st = S.matchdayStatus(n);
+    const d = ensureDraft(); const n = S.giornataDaSchierare(); const me = S.me(); const st = S.matchdayStatus(n);
     if (st !== 'open' && st !== 'scheduled') return;
     const rosterIds = S.rosterIds(me.id).filter((id) => P(id).isActive);
     const used = () => new Set([...d.starters, ...d.bench].filter(Boolean));

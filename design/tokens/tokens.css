@@ -24,6 +24,7 @@
   --c-oro-400: #FFC94D;
   --c-oro-500: #E5A11B;
   --c-oro-600: #B87C0C;
+  --c-oro-700: #8F5F08;   /* testo su --accent-soft chiaro: 4.9:1 */
 
   /* Verde dell'alloro: stati "live", bonus */
   --c-alloro-400: #35B37E;
@@ -69,6 +70,7 @@
   --accent:        var(--c-oro-500);
   --accent-soft:   #FDF1D8;
   --on-accent:     var(--c-titano-900);
+  --on-accent-soft: var(--c-oro-700);
 
   --positive:      var(--c-alloro-500);
   --positive-soft: #E1F5EC;
@@ -161,6 +163,7 @@
     --accent:        var(--c-oro-400);
     --accent-soft:   #3A2C08;
     --on-accent:     #1A1302;
+    --on-accent-soft: var(--c-oro-400);
 
     --positive:      var(--c-alloro-400);
     --positive-soft: #0B3627;
@@ -204,6 +207,7 @@
   --accent:        var(--c-oro-400);
   --accent-soft:   #3A2C08;
   --on-accent:     #1A1302;
+  --on-accent-soft: var(--c-oro-400);
   --positive:      var(--c-alloro-400);
   --positive-soft: #0B3627;
   --on-negative:   #16202E;

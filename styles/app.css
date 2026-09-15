@@ -4,7 +4,7 @@
    ========================================================================== */
 *{box-sizing:border-box}
 html{height:100%;-webkit-text-size-adjust:100%}
-body{margin:0;min-height:100%;background:var(--bg);color:var(--text);font-family:var(--font-body);font-size:var(--fs-body);line-height:var(--lh-body);-webkit-font-smoothing:antialiased;overscroll-behavior-y:none}
+body{margin:0;min-height:100%;background:var(--surface);color:var(--text);font-family:var(--font-body);font-size:var(--fs-body);line-height:var(--lh-body);-webkit-font-smoothing:antialiased;overscroll-behavior-y:none}
 button{font-family:inherit}
 a{color:var(--primary-ink)}   /* --primary sta a 4,23 sul fondo pagina: sotto 4,5 */
 /* Gli inset del telefono stanno QUI e poi dentro le shorthand di padding.
@@ -12,7 +12,11 @@ a{color:var(--primary-ink)}   /* --primary sta a 4,23 sul fondo pagina: sotto 4,
    dal "padding:" della regola vera piu' in basso nel foglio: erano inerti tutti
    e sette, e le schermate usavano i valori fissi tirati a occhio. */
 :root{--sa-top:env(safe-area-inset-top,0px);--sa-bottom:env(safe-area-inset-bottom,0px)}
-.app{position:fixed;inset:0;display:flex;flex-direction:column;background:var(--bg);max-width:640px;margin:0 auto;box-shadow:0 0 0 1px var(--border)}
+/* height:100dvh oltre a inset:0: su iPhone il riquadro si fermava 59pt sopra
+   il bordo dello schermo — l'altezza esatta dell'inset in alto — e sotto la
+   barra restava scoperto il fondo pagina. dvh e' l'unita' fatta apposta per
+   il riquadro visibile davvero, tacche comprese. */
+.app{position:fixed;inset:0;height:100dvh;display:flex;flex-direction:column;background:var(--bg);max-width:640px;margin:0 auto;box-shadow:0 0 0 1px var(--border)}
 @media (min-width:641px){body{background:var(--surface-sunk)}}
 .a-body > *{flex:none}
 .senza-nav .a-body{padding-bottom:calc(16px + var(--sa-bottom))}
@@ -144,7 +148,7 @@ hr.sep{border:0;border-top:1px solid var(--border);margin:4px 0}
 /* badge stato dato */
 .badge{display:inline-flex;align-items:center;gap:6px;padding:4px 10px 4px 8px;border-radius:var(--r-chip);font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;white-space:nowrap;max-width:100%}
 .badge .ic{width:14px;height:14px;stroke-width:2.2}
-.badge--prov{background:var(--warning-soft);color:var(--warning)}
+.badge--prov{background:var(--warning-soft);color:var(--on-warning-soft)}
 .badge--froz{background:var(--primary-soft);color:var(--stato-congelato)}
 .badge--live{background:var(--positive-soft);color:var(--positive-ink)}
 .badge--open{background:var(--accent-soft);color:var(--on-accent-soft)}
@@ -577,6 +581,10 @@ button,a{-webkit-tap-highlight-color:transparent}
 
 /* --- stato vuoto: illustrazione, non icona minuscola --- */
 .empty{gap:14px;padding:40px 20px}
+.empty.piccolo{flex-direction:row;text-align:left;gap:12px;padding:14px 16px;
+  background:var(--surface);border-radius:var(--r-md);box-shadow:var(--sh-card)}
+.empty.piccolo .logo{width:30px;height:30px;flex:none}
+.empty.piccolo p{font-size:13px;max-width:none;margin:0}
 .empty .logo{width:64px;height:64px;color:var(--border-strong);opacity:.9}
 .empty p{max-width:34ch;font-size:14px}
 .empty .a-btn{max-width:280px}

@@ -95,6 +95,9 @@ export function createClient(_url, _key, opts) {
         if (name === 'create_league') { const l = { id: uid(), name: args.p_name, short_name: args.p_short, invite_code: Math.random().toString(36).slice(2, 8).toUpperCase(), rules: {}, started: false, created_by: userId, created_at: now() }; T('leagues').push(l); T('league_members').push({ id: uid(), league_id: l.id, user_id: userId, role: 'admin', team_name: args.p_team, owner_name: prof.display_name, color: args.p_color, initials: args.p_initials, credits: 500, created_at: now() }); persisti(); return { data: l.id, error: null }; }
         if (name === 'join_league') { const l = T('leagues').find((x) => x.invite_code === args.p_code.toUpperCase()); if (!l) throw new Error('Codice invito non valido'); if (!T('league_members').some((m) => m.league_id === l.id && m.user_id === userId)) T('league_members').push({ id: uid(), league_id: l.id, user_id: userId, role: 'fantallenatore', team_name: args.p_team, owner_name: prof.display_name, color: args.p_color, initials: args.p_initials, credits: 500, created_at: now() }); persisti(); return { data: l.id, error: null }; }
         if (name === 'sync_matchday_locks') {
+          // Interruttore per provare il caso in cui la sincronizzazione fallisce
+          // e deve essere riprovata al giro dopo. Solo nel mock.
+          if (typeof window !== 'undefined' && window.__rompiSync) throw new Error('rete giu (finto)');
           // Come sul server: solo il Giudice Dati, e riscrive solo cio' che cambia.
           if (!prof?.is_judge) throw new Error('solo il Giudice Dati puo aggiornare il calendario dei lock');
           const t = T('matchday_locks'); let n = 0;

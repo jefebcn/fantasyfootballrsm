@@ -35,11 +35,14 @@ COPERTURA_MIN = 0.12   # sotto, lo sfondo non e' stato riconosciuto
 #   10 — personaggio su un DEGRADE' arancione: un riferimento fisso non lo
 #        segue e resta un alone. Serve il passo piccolo, che insegue la
 #        sfumatura, con una tolleranza larga a fare da guinzaglio.
-#   12 — tuta bianca su grigio chiarissimo: figura e fondo quasi uguali, e con
-#        la tolleranza normale il riempimento entra nel personaggio. Serve
-#        stringere.
+# Quando figura e fondo hanno quasi lo stesso colore serve invece STRINGERE la
+# tolleranza, se no il riempimento entra nel personaggio.
 # (tolleranza, passo) — passo None = si guarda solo il colore di partenza.
-SU_MISURA = {10: (90, 4), 12: (12, None)}
+SU_MISURA = {
+    10: (90, 4),     # personaggio su degrade' arancione: serve inseguire la sfumatura
+    13: (10, None),  # abito nero su fondo quasi nero: stringere, se no sparisce la giacca
+    15: (16, None),  # viola su viola: stessa cosa
+}
 
 
 def maschera_sfondo(arr, tol, passo=None):

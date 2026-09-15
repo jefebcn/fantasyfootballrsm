@@ -1,5 +1,6 @@
 import * as S from '../state.js';
 import { esc, fmt, icon, logo, badge, matchCard, sec, dateIt, timeIt } from '../ui.js';
+import { videoDi } from '../video.js';
 
 const STATUS = { played: null, scheduled: null, postponed: 'Rinviata', suspended_before_45: 'Sospesa <45\'', suspended_after_45: 'Sospesa >45\'', awarded: 'A tavolino' };
 export const calendario = {
@@ -19,7 +20,9 @@ export const calendario = {
           const h = S.clubsById.get(m.homeClubId), a = S.clubsById.get(m.awayClubId); const label = STATUS[m.status];
           const right = m.status === 'played' ? `<span class="sc">${m.homeGoals} – ${m.awayGoals}</span>`
             : label ? `<span class="sc st">${label}</span>` : `<span class="sc time">${timeIt(m.kickoffAt)}</span>`;
-          return `<div class="rr"><div><b>${esc(h.name)} — ${esc(a.name)}</b><span>${m.venue ? esc(m.venue) : ''}</span></div>${right}${m.videoUrl ? `<a href="${m.videoUrl}" target="_blank" rel="noopener" class="play" aria-label="Guarda su Titani.TV">${icon('play', 'ic sm')}</a>` : '<span></span>'}</div>`;
+          return `<div class="rr"><div><b>${esc(h.name)} — ${esc(a.name)}</b><span>${m.venue ? esc(m.venue) : ''}</span></div>${right}${(() => { const yt = videoDi(m); return m.videoUrl
+            ? `<a href="${m.videoUrl}" target="_blank" rel="noopener" class="play" aria-label="Guarda su Titani.TV">${icon('play', 'ic sm')}</a>`
+            : yt ? `<a href="#/video" class="play" aria-label="Guarda gli highlights">${icon('play', 'ic sm')}</a>` : '<span></span>'; })()}</div>`;
         }).join('')}</div>`).join('')}
     </main>`;
   },

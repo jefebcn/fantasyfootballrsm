@@ -292,6 +292,45 @@ hr.sep{border:0;border-top:1px solid var(--border);margin:4px 0}
 .slot.empty .av{background:rgba(255,255,255,.16);border:1.5px dashed rgba(255,255,255,.75);color:#fff;
   border-radius:50%;width:46px;height:46px;font:800 20px var(--font-display);margin-bottom:4px}
 .slot.empty b{background:rgba(9,32,20,.5);font-weight:500}
+/* Video: la copertina e' disegnata in casa, cosi' niente parte verso Google
+   prima che si tocchi play. Al tocco il riquadro diventa l'iframe, che tiene
+   lo stesso 16:9 e non fa saltare la pagina. */
+.vid{background:var(--surface);border-radius:var(--r-md);box-shadow:var(--sh-card);overflow:hidden;margin-bottom:10px}
+/* La copertina non ha bisogno del 16:9, ce l'ha il player: da ferma e' una
+   fascia bassa, cosi' otto partite stanno in una schermata invece che in otto. */
+.vid-cop{position:relative;min-height:96px;display:grid;place-items:center;padding:16px 12px;
+  background:linear-gradient(140deg,var(--c-titano-800),var(--c-titano-600));color:#fff}
+.vid-cop.in{aspect-ratio:16 / 9;min-height:0;padding:0;background:#000}
+.vid-cop iframe{width:100%;height:100%;border:0;display:block}
+.vid-sq{display:flex;align-items:center;gap:10px;padding-right:56px;text-align:center;
+  font-family:var(--font-display);font-size:15px;line-height:1.25;max-width:100%;width:100%}
+.vid-sq b{flex:1;min-width:0}
+.vid-ris{font-family:var(--font-data);font-size:20px;font-weight:700;color:var(--c-oro-400);flex:none}
+.vid-vs{opacity:.6;flex:none}
+.vid-play{position:absolute;top:50%;right:14px;transform:translateY(-50%);width:46px;height:46px;border-radius:50%;border:0;
+  background:var(--c-oro-400);color:var(--c-titano-900);display:grid;place-items:center;cursor:pointer;
+  box-shadow:0 4px 14px rgba(0,0,0,.35)}
+.vid-play .ic{width:24px;height:24px;margin-left:2px}
+.vid-play:active{transform:translateY(-50%) scale(.94)}
+.vid-pie{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:2px 14px 2px;font-size:12px;color:var(--text-muted)}
+/* Il link sta da solo in fondo alla scheda, non in mezzo a una frase: qui
+   l'esenzione di WCAG 2.5.8 non vale e l'area di tocco se la deve fare. */
+.vid-pie a{display:inline-flex;align-items:center;min-height:36px;padding:0 6px;margin-right:-6px;font-weight:600}
+/* Highlights in home: righe compatte, stesso tasto play della schermata Video */
+.vhs{padding:0}
+.vh{display:flex;align-items:center;gap:10px;padding:10px 14px;border-top:1px solid var(--border);
+  text-decoration:none;color:inherit;font-size:13px}
+.vh:first-child{border-top:0}
+.vh:active{background:var(--surface-2)}
+.vh-p{width:32px;height:32px;border-radius:50%;background:var(--c-oro-400);color:var(--c-titano-900);
+  display:grid;place-items:center;flex:none}
+.vh-t{flex:1;min-width:0;display:flex;align-items:baseline;gap:8px}
+.vh-t b{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.vh-t > span{font-family:var(--font-data);font-size:12px;color:var(--text-muted);flex:none}
+.vh.tutti{color:var(--primary-ink);font-weight:600}
+.vh.tutti .ic{color:var(--text-muted)}
+.vid-mini{width:34px;height:34px;border-radius:9px;background:var(--primary-soft);color:var(--primary-ink);
+  display:grid;place-items:center;flex:none}
 .bench{display:flex;flex-direction:column;background:var(--surface);border-radius:var(--r-md);box-shadow:var(--sh-card);overflow:hidden}
 .bench .br{display:grid;grid-template-columns:22px auto minmax(0,1fr) auto auto;align-items:center;gap:10px;
   padding:8px 12px;border-top:1px solid var(--border);font-size:13px;cursor:pointer}

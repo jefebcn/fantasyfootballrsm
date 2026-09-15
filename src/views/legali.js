@@ -61,7 +61,8 @@ export const privacy = {
       ${blocco('Chi lo vede', [
     'Gli altri partecipanti della tua lega vedono nome squadra, nome fantallenatore, stemma, maglia, rosa e formazioni una volta chiuse le giornate. È il gioco.',
     'La tua e-mail non è visibile agli altri partecipanti.',
-    ['Fornitori:', 'Supabase (banca dati e accessi) tratta i dati per conto di chi gestisce l\'app, come responsabile del trattamento, e non li usa per sé. Nessun altro fornitore riceve dati personali.'],
+    ['Fornitori:', 'Supabase (banca dati e accessi) tratta i dati per conto di chi gestisce l\'app, come responsabile del trattamento, e non li usa per sé.'],
+    ['YouTube:', 'gli highlights stanno sul canale della FSGC. Nessuna richiesta parte verso Google finché non tocchi play su un video; da quel momento Google vede il tuo indirizzo IP e cosa stai guardando, secondo le sue regole, non le nostre. Il dettaglio è in <a href="#/archiviazione">Cookie e memoria locale</a>.'],
   ])}
       ${blocco('Dove sta e per quanto', [
     `I dati vivono in un progetto Supabase${S.serverHost() ? ` (${esc(S.serverHost())})` : ''}, su server nell'Unione Europea. Non sono previsti trasferimenti fuori dallo Spazio economico europeo; se un domani servissero, questa pagina lo direbbe prima.`,
@@ -146,10 +147,17 @@ export const archiviazione = {
       ${blocco('Nessun banner, e il motivo', [
     'Questa app <b>non usa cookie</b>. Non ce n\'è uno, né di profilazione né di statistica: non c\'è nessun sistema di analisi del traffico e nessuno strumento di terzi che ti segua.',
     'Quello che usa è la memoria locale del browser, e solo per cose tecniche che servono a far funzionare l\'app come l\'hai lasciata. Per questo non compare una finestra a chiederti il consenso: per l\'archiviazione strettamente necessaria non va chiesto, e chiedertelo lo stesso sarebbe solo un fastidio inutile.',
+    'Anche i caratteri sono serviti da qui. Prima arrivavano da Google Fonts, il che mandava il tuo indirizzo IP a Google a ogni apertura senza che nessuno l\'avesse chiesto: adesso i file stanno nell\'app.',
+  ])}
+      ${blocco('L\'unica eccezione: i video', [
+    'Gli highlights delle partite stanno su YouTube, che è di Google. <b>Finché non tocchi play non parte nessuna richiesta verso di loro:</b> la copertina con squadre e risultato la disegna l\'app con i dati che ha già, non è un\'immagine scaricata da YouTube.',
+    'Quando tocchi play il video viene caricato da <code>youtube-nocookie.com</code>, il dominio che YouTube usa apposta per non installare i suoi cookie pubblicitari. A quel punto Google vede comunque il tuo indirizzo IP e che stai guardando quel video: è inevitabile per far partire un filmato che sta da loro, e succede perché l\'hai chiesto tu toccando play.',
+    'Se preferisci non caricarlo dentro l\'app, ogni video ha un collegamento "Apri su YouTube" che ti porta di là: quello che succede dopo vale fra te e Google, e sono le loro regole.',
   ])}
       ${blocco('Cosa c\'è dentro, voce per voce', chiavi.map(([k, d]) => [`<code>${k}</code>`, d]))}
       ${blocco('Dove non arriva', [
     'Questa roba resta su questo dispositivo, in questo browser. Non parte verso nessun server, né il nostro né altri, e non è leggibile da altri siti.',
+    'Un video avviato può lasciare qualcosa nella memoria del riquadro di YouTube, che è di Google e non nostra: la cancelli svuotando i dati del sito dal browser, come tutto il resto.',
     'Non c\'è nient\'altro: niente sessionStorage, niente banche dati nel browser, nessuna chiave oltre quelle elencate qui sopra.',
   ])}
       ${blocco('Come si cancella', [
@@ -172,7 +180,11 @@ export const licenze = {
   ])}
       ${blocco('Software di terze parti', [
     ['supabase-js', 'libreria per la banca dati e gli accessi, licenza MIT, caricata da jsDelivr a versione fissa.'],
+    ['Lato e IBM Plex Mono', 'i caratteri, licenza SIL Open Font License 1.1, che permette di ridistribuirli: infatti i file stanno nell\'app invece di essere chiesti a Google a ogni apertura.'],
     'Il resto dell\'app è scritto senza framework né librerie: niente altro codice di terzi gira su questa pagina.',
+  ])}
+      ${blocco('I video', [
+    'Gli highlights sono del canale YouTube della <b>FSGC</b> e restano suoi: l\'app non li copia né li ricarica altrove, si limita a mostrarli da dove stanno e a dire a quale partita appartengono.',
   ])}
       ${blocco('Immagini e personaggi', [
     `<b>Questa è la parte da sistemare prima di aprire al pubblico.</b> Gli avatar selezionabili raffigurano personaggi e persone riconoscibili, e le fotografie di sfondo non sono state realizzate per questo progetto. In una lega privata fra amici è una cosa; pubblicarli a chiunque è un'altra, e vuole materiale originale o con licenza.`,

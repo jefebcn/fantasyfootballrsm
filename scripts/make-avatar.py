@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Scontorna i personaggi di media/avatarN.jpg e li salva in media/avatar/N.webp.
+Scontorna i personaggi di media/avatarN.(jpg|png) e li salva in media/avatar/N.webp.
 
 Il numero del file e' l'identita' del personaggio e non cambia mai: quando uno
 viene tolto il suo numero resta vuoto invece di far scalare gli altri, se no
@@ -40,7 +40,11 @@ COPERTURA_MIN = 0.12   # sotto, lo sfondo non e' stato riconosciuto
 # (tolleranza, passo) — passo None = si guarda solo il colore di partenza.
 SU_MISURA = {
     10: (90, 4),     # personaggio su degrade' arancione: serve inseguire la sfumatura
-    17: (60, None),  # rosso acceso fra le gambe: con la tolleranza normale resta li'
+    # 18 e 19 hanno dietro un campo da basket disegnato: cielo, alberi, canestro,
+    # asfalto. Un riferimento fisso si ferma al primo stacco e lascia mezzo campo
+    # attaccato; col passo piccolo il riempimento cammina da una zona all'altra.
+    18: (255, 10),
+    19: (255, 8),
 }
 
 
@@ -128,10 +132,15 @@ def scontorna(percorso, tol=TOLLERANZA, passo=None):
 def main():
     USCITA.mkdir(parents=True, exist_ok=True)
     sospetti = []
-    numeri = sorted(int(f.stem[6:]) for f in (RADICE / 'media').glob('avatar*.jpg'))
+    # I sorgenti arrivano sia in .jpg sia in .png: si cercano tutte e due.
+    sorgenti = {}
+    for f in (RADICE / 'media').glob('avatar*'):
+        if f.suffix.lower() in ('.jpg', '.jpeg', '.png') and f.stem[6:].isdigit():
+            sorgenti[int(f.stem[6:])] = f
+    numeri = sorted(sorgenti)
     print(f'trovati {len(numeri)} sorgenti: {numeri}')
     for n in numeri:
-        src = RADICE / 'media' / f'avatar{n}.jpg'
+        src = sorgenti[n]
         tol, passo = SU_MISURA.get(n, (TOLLERANZA, None))
         ritaglio, quota = scontorna(src, tol, passo)
         if ritaglio is None:

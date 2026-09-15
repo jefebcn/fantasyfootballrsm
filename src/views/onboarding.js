@@ -3,9 +3,12 @@ import { icon, logo } from '../ui.js';
 import { prepareLogin } from './auth.js';
 
 /**
- * Presentazione per chi apre l'app la prima volta. Due schermate su sfondo video
- * sfocato; chi è già registrato su questo dispositivo non la rivede più.
- * Il video va in media/intro.mp4 — se manca, resta lo sfondo animato di riserva.
+ * Presentazione per chi apre l'app la prima volta: due schermate sullo sfondo
+ * animato disegnato qui sotto in fx(), luci lente nei colori del Titano. Chi e'
+ * gia' registrato su questo dispositivo non la rivede piu'.
+ *
+ * C'era un video di sfondo (media/intro.mp4): tolto perche' pesava 1,5 MB, piu'
+ * di tutta l'app messa insieme, per una schermata che si vede una volta sola.
  */
 let slide = 0;
 
@@ -34,9 +37,6 @@ export const onboarding = {
     return `<main class="intro">
       <div class="intro-bg">
         <canvas id="intro-fx"></canvas>
-        <video id="intro-video" playsinline autoplay muted loop preload="auto" disablepictureinpicture>
-          <source src="media/intro.mp4" type="video/mp4">
-        </video>
         <span class="intro-veil"></span>
       </div>
       <div class="intro-top">
@@ -61,13 +61,6 @@ export const onboarding = {
   },
   mount(root, ctx) {
     const main = root.querySelector('.intro');
-    const video = root.querySelector('#intro-video');
-    // Il video compare solo se c'è davvero: altrimenti resta lo sfondo animato.
-    // Compare solo quando c'è un fotogramma pronto: se il formato non è supportato
-    // (o il file manca) resta lo sfondo animato, senza schermate nere.
-    const show = () => { video.classList.add('on'); video.play().catch(() => {}); };
-    if (video.readyState >= 2) show(); else video.addEventListener('loadeddata', show, { once: true });
-    video.addEventListener('error', () => video.remove(), { once: true });
     fx(root.querySelector('#intro-fx'));
 
     const go = (n) => { slide = Math.max(0, Math.min(SLIDES.length - 1, n)); ctx.render(); };

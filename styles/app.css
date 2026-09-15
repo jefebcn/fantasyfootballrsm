@@ -532,9 +532,7 @@ button,a{-webkit-tap-highlight-color:transparent}
 .intro{position:relative;flex:1;display:flex;flex-direction:column;color:#fff;overflow:hidden;
   padding:calc(12px + env(safe-area-inset-top)) 22px calc(20px + env(safe-area-inset-bottom));background:#062033}
 .intro-bg{position:absolute;inset:0;z-index:0;overflow:hidden}
-.intro-bg canvas,.intro-bg video{position:absolute;inset:-8%;width:116%;height:116%;object-fit:cover;display:block}
-.intro-bg video{opacity:0;transition:opacity .6s ease;filter:blur(14px) saturate(1.1) brightness(.62)}
-.intro-bg video.on{opacity:1}
+.intro-bg canvas{position:absolute;inset:-8%;width:116%;height:116%;object-fit:cover;display:block}
 .intro-bg canvas{filter:blur(26px) saturate(1.25)}
 .intro-veil{position:absolute;inset:0;background:
   radial-gradient(120% 70% at 50% 0%, rgba(4,31,51,.25), transparent 60%),
@@ -573,7 +571,7 @@ button,a{-webkit-tap-highlight-color:transparent}
 .intro-cta .ic{width:18px;height:18px}
 .intro-back .ic{width:24px;height:24px}
 .intro-link{border:0;background:transparent;color:#fff;font:600 13px var(--font-body);opacity:.85;cursor:pointer;padding:8px;text-decoration:underline;text-underline-offset:3px}
-@media (prefers-reduced-motion:reduce){.intro-points li{animation:none}.intro-bg video{transition:none}}
+@media (prefers-reduced-motion:reduce){.intro-points li{animation:none}}
 
 
 /* ==========================================================================

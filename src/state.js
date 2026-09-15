@@ -227,6 +227,24 @@ export function currentMatchday() {
 export const hasData = (n) => !!g.matchdayStatus[n]
   || matchesOf(n).some((m) => g.matchOverrides[m.id] || (g.matchEvents[m.id] || []).length);
 export function nextMatchday() { const cur = currentMatchday(); return Math.min(30, hasData(cur) ? cur + 1 : cur); }
+/**
+ * La prima giornata per cui si fa ancora in tempo a consegnare.
+ *
+ * Non basta nextMatchday(): se il Giudice non ha ancora inserito i risultati,
+ * quella resta indietro e il suo lock e' gia' passato — la schermata della
+ * formazione risultava chiusa e i tasti dei moduli erano spenti, senza modo di
+ * prepararsi per la giornata dopo. Qui si va avanti fino a trovarne una che si
+ * chiude nel futuro; se non ce n'e' piu' nessuna (campionato finito) si torna a
+ * quella normale, e la schermata dira' onestamente che e' chiusa.
+ */
+export function giornataDaSchierare() {
+  const n0 = nextMatchday();
+  for (let n = n0; n <= 30; n++) {
+    const md = matchday(n);
+    if (md && now() < new Date(md.lockAt)) return n;
+  }
+  return n0;
+}
 /** 'frozen' | 'provisional' | 'live' | 'open' | 'scheduled' */
 export function matchdayStatus(n) {
   if (g.matchdayStatus[n]) return g.matchdayStatus[n];

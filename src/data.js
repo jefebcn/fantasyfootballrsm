@@ -137,12 +137,25 @@ export function buildSeason(seed = 20262027) {
   // Il lock resta il sabato della giornata: è la regola della lega (art. 8.3),
   // non dipende dall'orario vero della prima partita.
   const matchdays = []; const matches = [];
+  let ultimoNoto = null; let ultimoN = 0;   // ultima giornata con un orario vero
   const perGiornata = {};
   for (const riga of CALENDARIO) (perGiornata[riga[0]] ||= []).push(riga);
   for (let n = 1; n <= GIORNATE; n++) {
     const righe = perGiornata[n] || [];
-    const primo = righe.length ? new Date(Math.min(...righe.map((r) => +new Date(r[3])))) : new Date(SEASON_START.getTime() + (n - 1) * 7 * 86400000);
+    // La FSGC pubblica gli orari solo per le giornate imminenti: 208 partite su
+    // 240 hanno la data a null. Prima si faceva il minimo anche sui nulli, che
+    // vale ZERO, cioe' il 1° gennaio 1970: da li' in poi ogni giornata aveva il
+    // lock nel passato, risultava "in corso" e la formazione restava bloccata
+    // per sempre. Quando gli orari non ci sono si torna al sabato della
+    // settimana, che e' il ritmo del campionato.
+    const orari = righe.map((r) => +new Date(r[3])).filter((t) => Number.isFinite(t) && t > 0);
+    // Dove l'orario manca si prosegue dall'ultima giornata che ce l'aveva, una
+    // settimana per giornata: e' il ritmo del campionato, e resta piu' vicino
+    // al vero che ripartire dall'inizio stagione.
+    const primo = orari.length ? new Date(Math.min(...orari))
+      : new Date((ultimoNoto ?? SEASON_START.getTime()) + (n - ultimoN) * 7 * 86400000);
     const sat = new Date(primo); sat.setHours(15, 0, 0, 0);
+    if (orari.length) { ultimoNoto = +sat; ultimoN = n; }
     const md = { id: `md${n}`, number: n, lockAt: sat.toISOString(), saturday: sat.toISOString() };
     matchdays.push(md);
     righe.forEach(([, home, away, iso, venue, gc, go], i) => {

@@ -1,4 +1,5 @@
 import * as S from '../state.js';
+import { videoGiornata, giornateConVideo } from '../video.js';
 import * as N from '../notizie.js';
 import { esc, fmt, icon, logo, badge, crest, pic, tile, sec, dateIt, timeIt } from '../ui.js';
 import { maglia, kitOf } from '../maglia.js';
@@ -107,6 +108,21 @@ function ultimiCinque(last, me) {
  * Le prossime partite vere del campionato, in una fila che scorre: è il pezzo
  * di contesto che mancava, e viene dal calendario FSGC, non dalla lega.
  */
+/** Gli highlights della giornata piu' recente che ne ha. Copertina disegnata
+ *  in casa: la home non contatta Google per il solo fatto di essere aperta. */
+function highlights() {
+  for (const k of giornateConVideo()) {
+    const l = videoGiornata(S.matchesOf(k));
+    if (!l.length) continue;
+    const riga = ({ m }) => { const h = S.clubsById.get(m.homeClubId), a = S.clubsById.get(m.awayClubId);
+      return `<a class="vh" href="#/video"><span class="vh-p">${icon('play', 'ic sm')}</span>
+        <span class="vh-t"><b>${esc(h.name)} — ${esc(a.name)}</b>${m.status === 'played' ? `<span>${m.homeGoals} – ${m.awayGoals}</span>` : ''}</span></a>`; };
+    return sec('Highlights', `${k}ª giornata`) + `<div class="a-card vhs">${l.slice(0, 4).map(riga).join('')}
+      <a class="vh tutti" href="#/video"><span class="vh-t"><b>Tutti i video${l.length > 4 ? ` (${l.length})` : ''}</b></span>${icon('chev', 'ic sm')}</a></div>`;
+  }
+  return '';
+}
+
 function prossimePartite(ph) {
   const cerca = (n) => (n && n <= 30 ? S.matchesOf(n).filter((m) => m.status === 'scheduled') : []);
   let n = ph.matchday; let ms = cerca(n);
@@ -224,6 +240,7 @@ export const dashboard = {
           sub: S.isLeagueAdmin() ? "Generale o inserirle dalla gestione lega" : "Le assegna l'admin della lega dopo l'asta" }) : azione(ph)}
       ${ultimiCinque(last, me)}
       ${prossimePartite(ph)}
+      ${highlights()}
       ${notizie()}
       ${classificaBreve(me)}
       ${sec('Dal regolamento')}

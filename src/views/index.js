@@ -5,6 +5,7 @@ export { calendario } from './calendario.js';
 export { classifica } from './classifica.js';
 export { voti } from './voti.js';
 export { live } from './live.js';
+export { video } from './video.js';
 export { listone } from './listone.js';
 export { giocatore } from './giocatore.js';
 export { regolamento } from './regolamento.js';

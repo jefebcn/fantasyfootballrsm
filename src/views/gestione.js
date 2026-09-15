@@ -3,7 +3,8 @@ import * as S from '../state.js';
 import { esc, pic } from '../ui.js';
 
 /** [href, icona in media/icone/lega, etichetta] — la nota si aggiunge in render().
- *  Tre riquadri per riga: ogni blocco tiene un numero di voci multiplo di tre. */
+ *  Tre riquadri per riga: i blocchi tendono a un multiplo di tre, ma la griglia
+ *  regge anche un resto (l'ultima riga resta allineata a sinistra). */
 const GIOCA = [
   ['#/squadra', 'la-mia-squadra', 'La mia squadra'],
   ['#/rosa', 'rose', 'La mia rosa'],
@@ -16,6 +17,7 @@ const LEGA = [
   ['#/classifica', 'classifica', 'Classifica'],
   ['#/voti', 'andamento', 'Andamento voti'],
   ['#/lega', 'trofei', 'Partecipanti'],
+  ['#/video', 'live', 'Video e highlights'],
 ];
 const REGOLE = [
   ['#/regolamento', 'premi', 'Regolamento'],

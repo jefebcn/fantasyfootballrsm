@@ -1,5 +1,5 @@
 /* Service worker — shell in cache, aggiornamento in background. */
-const VERSION = 'fcs-v4.2.5';
+const VERSION = 'fcs-v4.2.6';
 const SHELL = [
   './', './index.html', './manifest.webmanifest', './styles/app.css', './styles/logo.css', './styles/font.css', './design/tokens/tokens.css',
   // I caratteri stanno in casa: nella cache ci vanno, se no senza rete si vede
@@ -74,6 +74,13 @@ self.addEventListener('notificationclick', (e) => {
 });
 
 self.addEventListener('fetch', (e) => {
+  // Le estensioni del browser passano di qui con schemi tipo chrome-extension://
+  // che la Cache API rifiuta: senza questa riga ogni loro richiesta finiva in
+  // "Failed to execute 'put' on 'Cache'", quindici volte di fila nella console,
+  // e il rumore copriva gli errori veri. Non sono roba nostra: si lasciano
+  // passare senza toccarle.
+  if (!e.request.url.startsWith('http')) return;
+
   const url = new URL(e.request.url);
   if (e.request.method !== 'GET') return;
   // Media: Safari li chiede a pezzi (Range) e la Cache API rifiuta le risposte 206.
@@ -83,20 +90,20 @@ self.addEventListener('fetch', (e) => {
   // l'ultima copia. Senza questo, stale-while-revalidate servirebbe notizie vecchie.
   if (url.origin === location.origin && url.pathname.startsWith('/api/')) {
     e.respondWith(caches.open(VERSION + '-api').then(async (c) => {
-      try { const r = await fetch(e.request); if (r.status === 200) c.put(e.request, r.clone()); return r; }
+      try { const r = await fetch(e.request); if (r.status === 200) await c.put(e.request, r.clone()).catch(() => null); return r; }
       catch { return (await c.match(e.request)) || new Response('{"notizie":[]}', { headers: { 'content-type': 'application/json' } }); }
     }));
     return;
   }
   // font e risorse esterne: rete, con fallback cache
   if (url.origin !== location.origin) {
-    e.respondWith(caches.open(VERSION + '-ext').then(async (c) => { try { const r = await fetch(e.request); if (r.status === 200) c.put(e.request, r.clone()); return r; } catch { return (await c.match(e.request)) || Response.error(); } }));
+    e.respondWith(caches.open(VERSION + '-ext').then(async (c) => { try { const r = await fetch(e.request); if (r.status === 200) await c.put(e.request, r.clone()).catch(() => null); return r; } catch { return (await c.match(e.request)) || Response.error(); } }));
     return;
   }
   // shell: stale-while-revalidate
   e.respondWith(caches.open(VERSION).then(async (c) => {
     const cached = await c.match(e.request, { ignoreSearch: true });
-    const net = fetch(e.request).then((r) => { if (r.status === 200) c.put(e.request, r.clone()); return r; }).catch(() => null);
+    const net = fetch(e.request).then((r) => { if (r.status === 200) await c.put(e.request, r.clone()).catch(() => null); return r; }).catch(() => null);
     return cached || (await net) || (e.request.mode === 'navigate' ? c.match('./index.html') : Response.error());
   }));
 });

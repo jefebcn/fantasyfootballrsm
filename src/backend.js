@@ -168,6 +168,20 @@ export async function proponiScambio(leagueId, aMember, offre, chiede, crediti, 
 export async function accettaScambio(id) { return must(await sb.rpc('accetta_scambio', { p_id: id })); }
 export async function rifiutaScambio(id) { return must(await sb.rpc('rifiuta_scambio', { p_id: id })); }
 export async function annullaScambio(id) { return must(await sb.rpc('annulla_scambio', { p_id: id })); }
+// ------------------------------------------------------- mercato svincolati
+export async function offri(leagueId, playerId, crediti) {
+  return must(await sb.rpc('offri', { p_league: leagueId, p_player: playerId, p_crediti: crediti }));
+}
+export async function ritiraOfferta(id) { return must(await sb.rpc('ritira_offerta', { p_id: id })); }
+export async function risolviOfferte(leagueId) { return must(await sb.rpc('risolvi_offerte', { p_league: leagueId })); }
+export async function loadOfferte(leagueId) {
+  const righe = must(await sb.from('offerte').select('*').eq('league_id', leagueId).order('creata_at', { ascending: false }));
+  return (righe || []).map((o) => ({
+    id: o.id, member: o.member_id, playerId: o.player_id, crediti: o.crediti,
+    stato: o.stato, creataAt: o.creata_at, scadeAt: o.scade_at, chiusaAt: o.chiusa_at,
+  }));
+}
+
 export async function loadScambi(leagueId) {
   const righe = must(await sb.from('trades').select('*').eq('league_id', leagueId).order('creato_at', { ascending: false }));
   return (righe || []).map((t) => ({

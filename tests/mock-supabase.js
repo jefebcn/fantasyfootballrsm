@@ -171,6 +171,60 @@ export function createClient(_url, _key, opts) {
           }
           t.deciso_at = now(); t.deciso_da = userId; persisti(); return { data: null, error: null };
         }
+        // --- mercato svincolati: stesse regole di 007-mercato-svincolati.sql
+        const svincolato = (lega, pid) => !T('rosters').some((r) => r.league_id === lega && r.player_id === pid && !r.released_at);
+        if (name === 'e_svincolato') return { data: svincolato(args.p_league, args.p_player), error: null };
+        if (name === 'offri') {
+          const lega = args.p_league; const mio = mioMembro(lega);
+          if (!mio) throw new Error('Non fai parte di questa lega');
+          if (args.p_crediti < 1) throw new Error("L'offerta e almeno 1 credito");
+          if (!svincolato(lega, args.p_player)) throw new Error('Questo giocatore e gia in una rosa');
+          const impegni = T('offerte').filter((o) => o.league_id === lega && o.member_id === mio.id && o.stato === 'aperta' && o.player_id !== args.p_player)
+            .reduce((s, o) => s + o.crediti, 0);
+          if (mio.credits < args.p_crediti + impegni) throw new Error(`Non ti bastano i crediti: ne hai ${mio.credits}, contando le offerte gia aperte`);
+          if (T('rosters').filter((r) => r.league_id === lega && r.member_id === mio.id && !r.released_at).length >= 25) throw new Error('La tua rosa e gia di 25 giocatori');
+          const su = T('offerte').filter((o) => o.league_id === lega && o.player_id === args.p_player && o.stato === 'aperta');
+          const migliore = su.length ? Math.max(...su.map((o) => o.crediti)) : null;
+          if (migliore !== null && args.p_crediti <= migliore) throw new Error(`Devi superare l'offerta piu alta, che e di ${migliore} crediti`);
+          for (const o of su) if (o.member_id === mio.id) { o.stato = 'ritirata'; o.chiusa_at = now(); }
+          // la finestra la apre la prima offerta e non si allunga coi rilanci
+          const scade = su.length ? su.map((o) => o.scade_at).sort()[0] : new Date(Date.now() + 24 * 3600e3).toISOString();
+          const o = { id: uid(), league_id: lega, member_id: mio.id, player_id: args.p_player, crediti: args.p_crediti, stato: 'aperta', creata_at: now(), scade_at: scade };
+          T('offerte').push(o); persisti(); return { data: o.id, error: null };
+        }
+        if (name === 'ritira_offerta') {
+          const o = T('offerte').find((x) => x.id === args.p_id);
+          if (!o) throw new Error('Offerta non trovata');
+          if (o.stato !== 'aperta') throw new Error(`Questa offerta e gia ${o.stato}`);
+          const mio = mioMembro(o.league_id);
+          if (!mio || mio.id !== o.member_id) throw new Error('Non e la tua offerta');
+          o.stato = 'ritirata'; o.chiusa_at = now(); persisti(); return { data: null, error: null };
+        }
+        if (name === 'risolvi_offerte') {
+          const lega = args.p_league;
+          if (!mioMembro(lega)) throw new Error('Non fai parte di questa lega');
+          let n = 0;
+          const scadute = [...new Set(T('offerte').filter((o) => o.league_id === lega && o.stato === 'aperta' && new Date(o.scade_at) <= new Date()).map((o) => o.player_id))];
+          for (const pid of scadute) {
+            const chiudi = (stato) => { for (const o of T('offerte')) if (o.league_id === lega && o.player_id === pid && o.stato === 'aperta') { o.stato = stato; o.chiusa_at = now(); } };
+            if (!svincolato(lega, pid)) { chiudi('persa'); continue; }
+            let assegnato = false;
+            for (;;) {
+              const aperte = T('offerte').filter((o) => o.league_id === lega && o.player_id === pid && o.stato === 'aperta')
+                .sort((a, b) => b.crediti - a.crediti || new Date(a.creata_at) - new Date(b.creata_at));
+              if (!aperte.length) break;
+              const v = aperte[0];
+              const m = T('league_members').find((x) => x.id === v.member_id);
+              const rosa = T('rosters').filter((r) => r.league_id === lega && r.member_id === v.member_id && !r.released_at).length;
+              if (m.credits < v.crediti || rosa >= 25) { v.stato = 'persa'; v.chiusa_at = now(); continue; }
+              T('rosters').push({ id: uid(), league_id: lega, member_id: v.member_id, player_id: pid, price_paid: v.crediti, released_at: null });
+              m.credits -= v.crediti; v.stato = 'vinta'; v.chiusa_at = now();
+              chiudi('persa'); assegnato = true; n++; break;
+            }
+            if (!assegnato) chiudi('persa');
+          }
+          persisti(); return { data: n, error: null };
+        }
         throw new Error('rpc sconosciuta ' + name);
       } catch (e) { return { data: null, error: { message: e.message } }; }
     },

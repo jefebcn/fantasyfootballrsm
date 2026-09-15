@@ -977,6 +977,32 @@ button,a{-webkit-tap-highlight-color:transparent}
 .gr .pt i{font-style:normal;color:var(--text-muted);font-weight:600;padding:0 3px}
 .gr .pt small{font:500 11px var(--font-body);color:var(--text-muted);letter-spacing:-.01em}
 
+/* ----------------------------------------------------------------- mercato */
+/* Una finestra aperta su uno svincolato. Il bordo dice a colpo d'occhio se sei
+   avanti o se ti hanno superato, che e' l'unica cosa che si vuole sapere
+   aprendo la pagina. */
+.fin{padding:12px 14px}
+.fin.avanti{box-shadow:var(--sh-card),inset 0 0 0 2px var(--positive)}
+.fin.sotto{box-shadow:var(--sh-card),inset 0 0 0 2px var(--negative)}
+.fin .fhead{display:flex;align-items:center;gap:10px}
+.fin .fhead .nm{flex:1;min-width:0;display:flex;flex-direction:column}
+.fin .fhead .nm b{font:600 14px var(--font-body);overflow-wrap:anywhere}
+.fin .fhead .nm span{font:500 11.5px var(--font-body);color:var(--text-muted);overflow-wrap:anywhere}
+.fin .fmid{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:10px;
+  padding-top:10px;border-top:1px solid var(--border)}
+.fin .alta{display:flex;flex-direction:column;line-height:1.1}
+.fin .alta b{font:800 22px var(--font-display);font-variant-numeric:tabular-nums}
+.fin .alta span{font:500 10.5px var(--font-body);color:var(--text-muted)}
+.fin .chi{font:600 12.5px var(--font-body);flex:1;min-width:0;overflow-wrap:anywhere}
+.fin .quando{display:inline-flex;align-items:center;gap:4px;font:600 11.5px var(--font-body);
+  color:var(--on-warning-soft);background:var(--warning-soft);border-radius:999px;padding:4px 9px;white-space:nowrap}
+.fin .altre{margin:8px 0 0;font:500 11.5px var(--font-body);color:var(--text-muted);overflow-wrap:anywhere}
+.fin .fazioni{display:flex;gap:8px;margin-top:12px}
+.fin .fazioni .a-btn{flex:1;justify-content:center}
+.fin .nota{margin:8px 0 0;font:600 11.5px var(--font-body);color:var(--text-muted)}
+/* Nelle righe dell'elenco il tasto "Offri" non deve stringere il nome. */
+.vr .a-btn.piccolo{flex:none;margin-left:auto}
+
 /* --------------------------------------------------------------- confronto */
 .conf{padding:14px}
 .ctesta{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:start;gap:8px;

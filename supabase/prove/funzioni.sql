@@ -234,4 +234,124 @@ select public.annulla_scambio(:'terza');
 select pg_temp.esige('chi propone puo ritirare',
   (select stato from public.trades where id = :'terza') = 'annullata');
 
+-- ---------------------------------------------------------- mercato svincolati
+\echo '--- mercato svincolati ---'
+delete from public.offerte where league_id = :'lega';
+delete from public.rosters where league_id = :'lega';
+update public.league_members set credits = 100 where id = :'m_alex';
+update public.league_members set credits = 100 where id = :'m_bea';
+
+select pg_temp.entra('user_alex');
+select pg_temp.esige('un giocatore mai preso e svincolato', public.e_svincolato(:'lega', 'libero1'));
+
+-- offerta sotto 1 credito
+do $$
+declare lega uuid;
+begin
+  select id into lega from public.leagues order by created_at limit 1;
+  begin
+    perform public.offri(lega, 'libero1', 0);
+    raise exception 'FALLITA: offerta da zero crediti passata';
+  exception when others then
+    if sqlerrm like 'FALLITA:%' then raise; end if;
+    raise notice 'ok  un''offerta sotto un credito viene respinta (%)', sqlerrm;
+  end;
+end $$;
+
+select public.offri(:'lega', 'libero1', 30) as off1 \gset
+select pg_temp.esige('Alex offre 30', (select crediti from public.offerte where id = :'off1') = 30);
+select pg_temp.esige('la finestra e di 24 ore',
+  (select scade_at - creata_at from public.offerte where id = :'off1') = interval '24 hours');
+
+-- rilancio che non supera
+select pg_temp.entra('user_bea');
+do $$
+declare lega uuid;
+begin
+  select id into lega from public.leagues order by created_at limit 1;
+  begin
+    perform public.offri(lega, 'libero1', 30);
+    raise exception 'FALLITA: rilancio pari accettato';
+  exception when others then
+    if sqlerrm like 'FALLITA:%' then raise; end if;
+    raise notice 'ok  bisogna superare l''offerta piu alta (%)', sqlerrm;
+  end;
+end $$;
+
+select public.offri(:'lega', 'libero1', 40) as off2 \gset
+select pg_temp.esige('Bea rilancia a 40', (select crediti from public.offerte where id = :'off2') = 40);
+select pg_temp.esige('la finestra NON si allunga col rilancio',
+  (select scade_at from public.offerte where id = :'off2') = (select scade_at from public.offerte where id = :'off1'));
+
+-- gli impegni aperti contano
+do $$
+declare lega uuid;
+begin
+  select id into lega from public.leagues order by created_at limit 1;
+  begin
+    perform public.offri(lega, 'libero2', 70);
+    raise exception 'FALLITA: ha promesso piu crediti di quelli che ha';
+  exception when others then
+    if sqlerrm like 'FALLITA:%' then raise; end if;
+    raise notice 'ok  le offerte gia aperte contano sui crediti (%)', sqlerrm;
+  end;
+end $$;
+
+-- il proprio rilancio sostituisce, non si somma
+select public.offri(:'lega', 'libero1', 45) as off3 \gset
+select pg_temp.esige('un solo impegno aperto per persona su un giocatore',
+  (select count(*) from public.offerte where league_id = :'lega' and player_id = 'libero1' and member_id = :'m_bea' and stato = 'aperta') = 1);
+
+-- niente si assegna prima della scadenza
+select pg_temp.esige('prima della scadenza non si assegna niente', public.risolvi_offerte(:'lega') = 0);
+
+-- scadenza raggiunta
+update public.offerte set scade_at = now() - interval '1 minute' where league_id = :'lega';
+select pg_temp.esige('alla scadenza si assegna un giocatore', public.risolvi_offerte(:'lega') = 1);
+select pg_temp.esige('ha vinto l''offerta piu alta (Bea a 45)',
+  (select member_id from public.rosters where league_id = :'lega' and player_id = 'libero1') = :'m_bea');
+select pg_temp.esige('pagato quanto offerto',
+  (select price_paid from public.rosters where league_id = :'lega' and player_id = 'libero1') = 45);
+select pg_temp.esige('i crediti di Bea sono scesi', (select credits from public.league_members where id = :'m_bea') = 55);
+select pg_temp.esige('l''offerta di Alex risulta persa', (select stato from public.offerte where id = :'off1') = 'persa');
+select pg_temp.esige('richiamarla non riassegna niente', public.risolvi_offerte(:'lega') = 0);
+select pg_temp.esige('ora non e piu svincolato', not public.e_svincolato(:'lega', 'libero1'));
+
+-- chi non ha piu i crediti al momento della chiusura non vince
+select pg_temp.entra('user_alex');
+select public.offri(:'lega', 'libero3', 90) as off4 \gset
+update public.league_members set credits = 5 where id = :'m_alex';
+update public.offerte set scade_at = now() - interval '1 minute' where id = :'off4';
+select pg_temp.esige('senza piu i crediti non gli viene assegnato', public.risolvi_offerte(:'lega') = 0);
+select pg_temp.esige('e l''offerta risulta persa', (select stato from public.offerte where id = :'off4') = 'persa');
+select pg_temp.esige('il giocatore resta libero', public.e_svincolato(:'lega', 'libero3'));
+
+-- se nel frattempo lo prende qualcun altro, l'offerta si chiude persa
+update public.league_members set credits = 100 where id = :'m_alex';
+select public.offri(:'lega', 'libero4', 10) as off5 \gset
+insert into public.rosters (league_id, member_id, player_id, price_paid) values (:'lega', :'m_bea', 'libero4', 1);
+update public.offerte set scade_at = now() - interval '1 minute' where id = :'off5';
+select pg_temp.esige('un giocatore preso altrove non si assegna di nuovo', public.risolvi_offerte(:'lega') = 0);
+select pg_temp.esige('e quell''offerta risulta persa', (select stato from public.offerte where id = :'off5') = 'persa');
+
+-- ritirare la propria
+select public.offri(:'lega', 'libero5', 12) as off6 \gset
+select public.ritira_offerta(:'off6');
+select pg_temp.esige('la propria offerta si ritira', (select stato from public.offerte where id = :'off6') = 'ritirata');
+select pg_temp.entra('user_bea');
+select public.offri(:'lega', 'libero6', 12) as off7 \gset
+select pg_temp.entra('user_alex');
+do $$
+declare o uuid;
+begin
+  select id into o from public.offerte where stato = 'aperta' and player_id = 'libero6';
+  begin
+    perform public.ritira_offerta(o);
+    raise exception 'FALLITA: ha ritirato l''offerta di un altro';
+  exception when others then
+    if sqlerrm like 'FALLITA:%' then raise; end if;
+    raise notice 'ok  non si ritira l''offerta di un altro (%)', sqlerrm;
+  end;
+end $$;
+
 select 'tutte le prove sulle funzioni sono passate' as esito;

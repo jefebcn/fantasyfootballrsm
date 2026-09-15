@@ -21,7 +21,7 @@ base.league = NO_LEAGUE; base.managers = []; base.rosters = {};
 let user = null, prof = null, leagues = [];
 let g = emptyGlobal(); let L = emptyLeague();
 let ready = false, connError = null;
-let prefs = load(PREFS_KEY, { theme: 'system', installedDismissed: false, currentLeagueId: null, onboarded: false });
+let prefs = load(PREFS_KEY, { theme: 'system', installedDismissed: false, currentLeagueId: null, onboarded: false, sfondoFoto: true });
 let onError = (e) => console.error(e);
 export function setErrorHandler(fn) { onError = fn; }
 
@@ -190,7 +190,8 @@ export async function seedSampleData() { await remote.seedDemo(base, user.id); a
 function hashStr(s) { let h = 2166136261; for (const c of String(s)) { h ^= c.charCodeAt(0); h = Math.imul(h, 16777619); } return h >>> 0; }
 
 export const store = {
-  get: () => ({ theme: prefs.theme, installedDismissed: prefs.installedDismissed, onboarded: prefs.onboarded }),
+  get: () => ({ theme: prefs.theme, installedDismissed: prefs.installedDismissed, onboarded: prefs.onboarded,
+    avvisi: prefs.avvisi, sfondoFoto: prefs.sfondoFoto !== false }),
   set: (patch) => { Object.assign(prefs, patch); persistPrefs(); notify(); },
 };
 export function resetAll() { localStorage.removeItem(PREFS_KEY); }

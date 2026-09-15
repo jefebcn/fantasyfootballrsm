@@ -94,6 +94,7 @@ export const impostazioni = {
       const act = a.dataset.act;
       if (act === 'logout') { await S.signOut(); ctx.go('login'); return; }
       if (act === 'avanzate') { ctx.go('impostazioni/avanzate'); return; }
+      if (act === 'sfondo') { S.store.set({ sfondoFoto: !S.store.get().sfondoFoto }); ctx.render(); return; }
       if (act === 'privacy') { ctx.go('privacy'); return; }
       if (act === 'termini') { ctx.go('termini'); return; }
       if (act === 'lingua') {
@@ -146,7 +147,10 @@ export const avanzate = {
   render() {
     const d = S.store.get(); const p = S.profileInfo();
 
-    const look = group('Aspetto', `<div class="a-card"><label class="lbl">Tema</label><div class="seg">${[['system', 'Sistema'], ['light', 'Chiaro'], ['dark', 'Scuro']].map(([k, l]) => `<button class="${d.theme === k ? 'on' : ''}" data-theme="${k}">${l}</button>`).join('')}</div></div>`);
+    const look = group('Aspetto', `<div class="a-card"><label class="lbl">Tema</label><div class="seg">${[['system', 'Sistema'], ['light', 'Chiaro'], ['dark', 'Scuro']].map(([k, l]) => `<button class="${d.theme === k ? 'on' : ''}" data-theme="${k}">${l}</button>`).join('')}</div></div>
+      <button class="setting" data-act="sfondo"><i class="ico">${icon('img')}</i>
+        <span class="txt"><b>Foto in copertina</b><span>Lo stadio dietro la maglia, invece della tinta piena</span></span>
+        <span class="sw${d.sfondoFoto ? ' on' : ''}"></span></button>`);
 
     const league = S.hasLeague() ? group('Lega', `
       ${row({ m: 'squadre' }, esc(S.base.league.name), `${S.base.managers.length} partecipanti${S.base.league.inviteCode ? ` · codice ${esc(S.base.league.inviteCode)}` : ''}`, 'lega')}

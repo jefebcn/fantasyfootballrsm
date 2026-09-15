@@ -1054,3 +1054,22 @@ button,a{-webkit-tap-highlight-color:transparent}
 /* Il "+" per aggiungere un giocatore: il fondo era --primary col bianco sopra,
    che in tema scuro (azzurro chiaro) stava a 2,7 di contrasto. */
 .rl.rl-piu{background:var(--primary);color:var(--on-primary)}
+
+/* Copertina con la foto dello stadio sotto.
+   Non basta mettere la foto: sotto ci va un velo, se no il testo bianco
+   finisce sul prato chiaro e il contrasto crolla. Il velo e' scuro in basso
+   proprio dove il prato illumina, e la foto resta leggibile sopra. */
+.a-hero.foto{background:var(--c-titano-900)}
+.a-hero.foto .sfondo{position:absolute;inset:0;z-index:0;overflow:hidden}
+.a-hero.foto .sfondo img{width:100%;height:100%;object-fit:cover;object-position:center 62%}
+.a-hero.foto .sfondo i{position:absolute;inset:0;
+  background:linear-gradient(180deg,
+    rgba(7,22,44,.55) 0%,
+    rgba(7,22,44,.30) 32%,
+    rgba(7,22,44,.55) 70%,
+    rgba(7,22,44,.90) 100%)}
+/* Niente regola generica sui figli: rendendoli tutti "relative" si portavano
+   dentro al flusso anche il filigrana delle torri e i coriandoli, che sono
+   assoluti, e la copertina cresceva di 400px. Lo sfondo sta a z-index 0 e i
+   fratelli posizionati che vengono dopo nel DOM gli passano sopra da soli. */
+.a-hero.foto .tw{opacity:.07}

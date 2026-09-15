@@ -1,5 +1,5 @@
 /* Service worker — shell in cache, aggiornamento in background. */
-const VERSION = 'fcs-v2.6.0';
+const VERSION = 'fcs-v2.7.0';
 const SHELL = [
   './', './index.html', './manifest.webmanifest', './styles/app.css', './styles/logo.css', './design/tokens/tokens.css',
   './src/app.js', './src/state.js', './src/data.js', './src/engine.js', './src/ui.js', './src/ui-esc.js', './src/avatar.js', './src/maglia.js', './src/sprite.js', './src/config.js', './src/backend.js', './src/auth-clerk.js',
@@ -18,7 +18,7 @@ const SHELL = [
   // Sfondo della schermata d'accesso: è la prima cosa che si vede.
   './media/sfondo-accesso.jpg',
   // La maglia sta in copertina: e' la prima immagine della dashboard.
-  './media/maglia-base.webp',
+  './media/maglia-base.webp', './media/sfondo-home.jpg',
 ];
 self.addEventListener('install', (e) => {
   e.waitUntil(caches.open(VERSION).then((c) => c.addAll(SHELL)).then(() => self.skipWaiting()));

@@ -6,7 +6,7 @@
 html{height:100%;-webkit-text-size-adjust:100%}
 body{margin:0;min-height:100%;background:var(--bg);color:var(--text);font-family:var(--font-body);font-size:var(--fs-body);line-height:var(--lh-body);-webkit-font-smoothing:antialiased;overscroll-behavior-y:none}
 button{font-family:inherit}
-a{color:var(--primary)}
+a{color:var(--primary-ink)}   /* --primary sta a 4,23 sul fondo pagina: sotto 4,5 */
 /* Gli inset del telefono stanno QUI e poi dentro le shorthand di padding.
    Scritti come regole a se' (".a-appbar{padding-top:...}") venivano azzerati
    dal "padding:" della regola vera piu' in basso nel foglio: erano inerti tutti
@@ -169,7 +169,7 @@ hr.sep{border:0;border-top:1px solid var(--border);margin:4px 0}
 
 /* bottone */
 .a-btn{display:flex;align-items:center;justify-content:center;gap:8px;height:48px;border-radius:12px;border:0;background:var(--grad-oro);color:var(--on-accent);font-family:var(--font-display);font-weight:700;font-size:14px;letter-spacing:.06em;text-transform:uppercase;width:100%;cursor:pointer;box-shadow:0 4px 12px rgba(229,161,27,.35)}
-.a-btn.sec{background:transparent;color:var(--primary);border:1.5px solid var(--primary);box-shadow:none}
+.a-btn.sec{background:transparent;color:var(--primary-ink);border:1.5px solid var(--primary-ink);box-shadow:none}
 .a-btn.danger{background:var(--negative);color:var(--on-negative);box-shadow:none}
 .a-btn[disabled]{opacity:.45;cursor:not-allowed;box-shadow:none}
 
@@ -386,8 +386,10 @@ hr.sep{border:0;border-top:1px solid var(--border);margin:4px 0}
 .kb .k.g{background:var(--positive-soft);color:var(--positive)}.kb .k.r{background:var(--negative-soft);color:var(--negative)}.kb .k.y{background:var(--warning-soft);color:var(--warning)}.kb .k.k2{opacity:.45}
 .kb .handle{grid-column:1/-1;width:36px;height:4px;border-radius:2px;background:var(--border-strong);margin:0 auto 2px}
 .warn{display:flex;gap:10px;align-items:flex-start;border-radius:10px;padding:10px 12px;font-size:12px}
-.warn.block{background:var(--negative-soft);color:var(--negative)}
-.warn.info{background:var(--primary-soft);color:var(--primary)}
+/* --negative-ink e --primary-ink esistono apposta per scrivere sul fondo
+   tenue: con --negative/--primary il testo stava a 4,17 e 4,23 su 4,5. */
+.warn.block{background:var(--negative-soft);color:var(--negative-ink)}
+.warn.info{background:var(--primary-soft);color:var(--primary-ink)}
 .warn b{font-weight:700}
 
 /* congela */
@@ -521,6 +523,14 @@ button,a{-webkit-tap-highlight-color:transparent}
    ultimi due non si vedevano. In griglia ci stanno su due file. */
 .moduli{display:grid;grid-template-columns:repeat(auto-fit,minmax(78px,1fr));gap:8px}
 .moduli .chip{width:100%;font-family:var(--font-data);font-size:14px;letter-spacing:.02em}
+/* Scelte a parole (opzioni di regolamento): larghezza sul contenuto e testo su
+   una riga. Con la griglia dei moduli "Solo stesso ruolo" andava a capo dentro
+   una pastiglia alta 38px e la seconda riga spariva. */
+.scelte{display:flex;flex-wrap:wrap;gap:8px}
+.scelte .chip{padding:9px 14px;font-size:13px;white-space:nowrap}
+.opz{gap:6px;display:flex;flex-direction:column}
+.opz > b{font-family:var(--font-display);font-size:15px}
+.opz > p{margin:0 0 2px}
 
 /* --- skeleton --- */
 .skel{border-radius:var(--r-md);background:linear-gradient(90deg,var(--surface-2) 25%,var(--surface) 37%,var(--surface-2) 63%);background-size:400% 100%;animation:shimmer 1.4s ease infinite;height:64px}

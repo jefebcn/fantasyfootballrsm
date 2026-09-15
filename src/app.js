@@ -14,7 +14,7 @@ const ROUTES = [
   ['calendario', views.calendario], ['calendario/:n', views.calendario],
   ['classifica', views.classifica], ['voti', views.voti], ['voti/:n', views.voti],
   ['live/:id', views.live], ['listone', views.listone], ['giocatore/:id', views.giocatore],
-  ['regolamento', views.regolamento], ['scheda', views.scheda], ['impostazioni', views.impostazioni], ['impostazioni/avanzate', views.avanzate], ['privacy', views.privacy], ['termini', views.termini],
+  ['regolamento', views.regolamento], ['regole', views.regole], ['scheda', views.scheda], ['impostazioni', views.impostazioni], ['impostazioni/avanzate', views.avanzate], ['privacy', views.privacy], ['termini', views.termini],
   ['admin', views.adminGiornata], ['admin/partita/:id', views.adminPartita], ['admin/contestazioni', views.adminContestazioni],
   ['admin/congela', views.adminCongela], ['admin/registro', views.adminRegistro], ['mercato', views.mercato],
   ['login', views.login], ['leghe', views.leghe], ['lega', views.lega], ['gestione', views.gestione], ['squadra', views.squadra], ['vice/:code', views.vice], ['setup', views.setup], ['offline', views.offline], ['benvenuto', views.onboarding],

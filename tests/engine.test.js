@@ -135,3 +135,60 @@ test('una giornata senza dati non produce risultati: nessun 5,5 d\'ufficio a tap
   assert.equal(res.total, 5.5 * 11);
   assert.equal(res.goals, 0);                   // 60,5 < soglia 69,0
 });
+
+/* ---- regole riprese dal fantacalcio e adattate (artt. 5.3, 5.4, 8.5, 11.3) ---- */
+
+test('assist da fermo vale meno di un assist su azione (art. 5.3)', () => {
+  assert.equal(rate(P('a', 'C'), app(), [ev('a', 'assist')]).bonus, 1);
+  assert.equal(rate(P('a', 'C'), app(), [ev('a', 'assist_set')]).bonus, 0.5);
+  assert.equal(rate(P('a', 'C'), app(), [ev('a', 'assist'), ev('a', 'assist_set')]).bonus, 1.5);
+});
+
+test('gol decisivo: uno solo per partita e solo a chi vince o pareggia (art. 5.4)', () => {
+  const R = { ...DEFAULT_RULES, decisiveGoal: 1 };
+  const dec = (player, events, m) => computeRating({ player, appearance: app(), events, match: m, rules: R });
+  // 2-1: decisivo il gol del sorpasso, non il primo
+  const m21 = match({ homeGoals: 2, awayGoals: 1 });
+  const evs21 = [ev('p1', 'goal', 10), ev('x', 'goal', 20, 'away'), ev('p2', 'goal', 80)];
+  assert.equal(dec(P('p1', 'A'), evs21, m21).bonus, 3);       // solo il gol
+  assert.equal(dec(P('p2', 'A'), evs21, m21).bonus, 4);       // gol + decisivo
+  // 1-1: decisivo il pareggio
+  const m11 = match({ homeGoals: 1, awayGoals: 1 });
+  assert.equal(dec(P('p1', 'A'), [ev('x', 'goal', 20, 'away'), ev('p1', 'goal', 80)], m11).bonus, 4);
+  // sconfitta: nessun decisivo
+  const m12 = match({ homeGoals: 1, awayGoals: 2 });
+  assert.equal(dec(P('p1', 'A'), [ev('p1', 'goal', 10), ev('x', 'goal', 20, 'away'), ev('y', 'goal', 30, 'away')], m12).bonus, 3);
+  // spento per difetto: la regola non cambia i conti di chi non l'ha accesa
+  assert.equal(rate(P('p2', 'A'), app(), evs21, m21).bonus, 3);
+});
+
+test('gol decisivo: un autogol avversario fa punteggio ma non dà il bonus a nessuno', () => {
+  const R = { ...DEFAULT_RULES, decisiveGoal: 1 };
+  const m = match({ homeGoals: 1, awayGoals: 1 });
+  const evs = [ev('x', 'goal', 20, 'away'), ev('y', 'own_goal', 80, 'away')];
+  const r = computeRating({ player: P('p1', 'A'), appearance: app(), events: evs, match: m, rules: R });
+  assert.equal(r.bonus, 0);
+});
+
+test('sostituzioni a modulo libero: entra il primo con voto anche di altro ruolo (art. 8.5)', () => {
+  const ratings = allOk(); ratings.set('c1', SV); ratings.set('bc1', SV); ratings.set('bc2', SV);
+  const stessoRuolo = computeLineupResult({ lineup, ratings, players, managerCount: 10 });
+  assert.equal(stessoRuolo.subsApplied.length, 0);            // nessun centrocampista disponibile
+  const libero = computeLineupResult({ lineup, ratings, players, managerCount: 10, rules: { ...DEFAULT_RULES, subMode: 'free' } });
+  assert.equal(libero.subsApplied.length, 1);
+  assert.notEqual(players.get(libero.subsApplied[0].in).role, 'C');
+  assert.ok(libero.total > stessoRuolo.total);                // 6,5 invece del 5,5 d'ufficio
+});
+
+test('fattore campo: si somma solo a chi gioca in casa (art. 11.3)', () => {
+  const R = { ...DEFAULT_RULES, homeBonus: 2 };
+  const ratings = allOk();
+  const casa = computeLineupResult({ lineup, ratings, players, managerCount: 10, isHome: true, rules: R });
+  const fuori = computeLineupResult({ lineup, ratings, players, managerCount: 10, isHome: false, rules: R });
+  assert.equal(casa.total - fuori.total, 2);
+  assert.equal(casa.sommaRose, fuori.sommaRose);              // le rose valgono uguale
+  assert.equal(casa.homeBonus, 2); assert.equal(fuori.homeBonus, 0);
+  // spento per difetto
+  const senza = computeLineupResult({ lineup, ratings, players, managerCount: 10, isHome: true });
+  assert.equal(senza.total, fuori.total);
+});

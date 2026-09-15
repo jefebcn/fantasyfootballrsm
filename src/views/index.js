@@ -8,6 +8,7 @@ export { live } from './live.js';
 export { listone } from './listone.js';
 export { giocatore } from './giocatore.js';
 export { regolamento } from './regolamento.js';
+export { regole } from './regole.js';
 export { scheda } from './scheda.js';
 export { impostazioni, avanzate } from './impostazioni.js';
 export { privacy, termini } from './legali.js';

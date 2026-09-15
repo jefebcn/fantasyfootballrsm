@@ -63,8 +63,8 @@ const EV = {
   red_direct: ['espulsione', 'Rosso diretto'], pen_missed: ['rigore-sbagliato', 'Rigore sbagliato'],
   pen_saved: ['rigore-parato', 'Rigore parato'],
 };
-const EV_TESTO = { pen_won: ['R+', 'ev-k'], pen_conceded: ['R−', 'ev-r'] };
-export const EV_LABEL = { goal: 'Gol', assist: 'Assist', yellow: 'Ammonizione', second_yellow: '2ª ammonizione', red_direct: 'Rosso diretto', own_goal: 'Autogol', pen_missed: 'Rigore sbagliato', pen_saved: 'Rigore parato', pen_won: 'Rigore procurato', pen_conceded: 'Rigore causato' };
+const EV_TESTO = { pen_won: ['R+', 'ev-k'], pen_conceded: ['R−', 'ev-r'], assist_set: ['A↑', 'ev-a'] };
+export const EV_LABEL = { goal: 'Gol', assist: 'Assist', yellow: 'Ammonizione', second_yellow: '2ª ammonizione', red_direct: 'Rosso diretto', own_goal: 'Autogol', pen_missed: 'Rigore sbagliato', pen_saved: 'Rigore parato', pen_won: 'Rigore procurato', pen_conceded: 'Rigore causato', assist_set: 'Assist da fermo' };
 export function evTile(type) {
   const e = EV[type];
   if (e) return `<i class="evi" title="${e[1]}">${pic(e[0])}</i>`;

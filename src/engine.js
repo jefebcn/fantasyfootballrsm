@@ -15,6 +15,7 @@ export const DEFAULT_RULES = {
   minMinutes: 20,
   goal: { P: 6.0, D: 4.0, C: 3.5, A: 3.0 },
   assist: 1.0,
+  assistSetPiece: 0.5,      // assist da palla inattiva (art. 5.3)
   cleanSheet: { P: 3.0, D: 1.5, C: 0, A: 0 },
   cleanSheetMinutes: 60,
   goalConcededGK: -1.0,
@@ -27,8 +28,11 @@ export const DEFAULT_RULES = {
   level2Events: false,
   penWon: 1.0,
   penConceded: -1.0,
+  decisiveGoal: 0,          // gol che vale il pari o il sorpasso (art. 5.4), 0 = spento
   captainMultiplier: 2,
   maxSubs: 3,
+  subMode: 'role',          // 'role' = solo stesso ruolo · 'free' = qualsiasi ruolo (art. 8.5)
+  homeBonus: 0,             // fattore campo sul fantapunteggio (art. 11.3), 0 = spento
   noSubVote: 5.5,
   conversion: [
     { min: 6, max: 8, threshold: 70.0, step: 6.0 },
@@ -99,6 +103,11 @@ export function computeRating({ player, appearance, events, match, rules = DEFAU
   if (goals) add(`Gol × ${goals}`, rules.goal[role] * goals, roleName(role));
   const assists = count('assist');
   if (assists) add(`Assist × ${assists}`, rules.assist * assists);
+  // Da palla inattiva vale meno: il merito e' minore e il referto lo distingue
+  // senza doverlo giudicare. Il "quality assist" di Fantacalcio (soft/standard/
+  // gold) invece e' un giudizio, e qui i giudizi non entrano (art. 1).
+  const assistsFermo = count('assist_set');
+  if (assistsFermo) add(`Assist da fermo × ${assistsFermo}`, rules.assistSetPiece * assistsFermo, 'palla inattiva');
 
   // porta inviolata: conta il risultato finale (art. 7.5), min 60' (art. 7.6)
   if (!suspendedLate && oppGoals === 0 && minutes >= rules.cleanSheetMinutes && rules.cleanSheet[role]) {
@@ -112,6 +121,11 @@ export function computeRating({ player, appearance, events, match, rules = DEFAU
       ((e.type === 'goal' && e.clubId !== player.clubId) || (e.type === 'own_goal' && e.clubId === player.clubId)) &&
       e.minute >= from && e.minute <= to).length;
     if (conceded) add(`Gol subiti × ${conceded}`, rules.goalConcededGK * conceded);
+  }
+
+  if (rules.decisiveGoal && goals && !suspendedLate) {
+    const dec = golDecisivo(events, player.clubId, oppGoals);
+    if (dec && dec.playerId === player.id) add('Gol decisivo', rules.decisiveGoal, dec.nota);
   }
 
   const y = count('yellow'); if (y) add('Ammonizione', rules.yellow * y);
@@ -129,6 +143,26 @@ export function computeRating({ player, appearance, events, match, rules = DEFAU
     playerId: player.id, matchId: match.id, isSV: false, svReason: null,
     baseVote: base, bonus, fantaVote: r1(base + bonus), breakdown: lines, engineVersion: rules.engineVersion,
   };
+}
+
+/**
+ * Il gol che vale il pari o il sorpasso definitivo (art. 5.4).
+ * Niente giudizio: contati in ordine di minuto i gol della squadra, quello che
+ * porta il conto a pari degli avversari vale il pareggio, quello subito dopo
+ * vale la vittoria. Su 2-1 e' decisivo il secondo gol e uno solo; su 1-1 il
+ * primo; perdendo, nessuno. Gli autogol avversari fanno punteggio ma non danno
+ * il bonus a nessuno: il gol non e' di un nostro giocatore.
+ */
+export function golDecisivo(events, clubId, oppGoals) {
+  const nostri = events
+    .filter((e) => (e.type === 'goal' && e.clubId === clubId) || (e.type === 'own_goal' && e.clubId !== clubId))
+    .sort((a, b) => (a.minute ?? 0) - (b.minute ?? 0));
+  const iPari = oppGoals - 1;      // indice del gol che impatta
+  const iSorpasso = oppGoals;      // indice del gol che porta avanti
+  const scelto = nostri[iSorpasso] ? { e: nostri[iSorpasso], nota: oppGoals === 0 ? 'vantaggio' : 'sorpasso' }
+    : nostri[iPari] ? { e: nostri[iPari], nota: 'pareggio' } : null;
+  if (!scelto || scelto.e.type !== 'goal') return null;
+  return { playerId: scelto.e.playerId, nota: scelto.nota };
 }
 
 function statusReason(s) {
@@ -160,7 +194,7 @@ export function parseModule(mod) {
  * lineup: { formation, starters: [playerId x11], bench: [playerId x7 ordinati], captainId, viceCaptainId }
  * ratings: Map playerId → PlayerRating (o undefined = S.V. non entrato)
  */
-export function computeLineupResult({ lineup, ratings, players, managerCount, rules = DEFAULT_RULES }) {
+export function computeLineupResult({ lineup, ratings, players, managerCount, isHome = false, rules = DEFAULT_RULES }) {
   const get = (id) => ratings.get(id) || { isSV: true, svReason: 'non entrato', baseVote: null, bonus: 0, fantaVote: null, breakdown: [] };
   const roleOf = (id) => players.get(id).role;
   const used = new Set();
@@ -183,7 +217,12 @@ export function computeLineupResult({ lineup, ratings, players, managerCount, ru
     // sostituzione automatica: primo panchinaro dello stesso ruolo con voto
     let sub = null;
     if (subs < rules.maxSubs) {
-      sub = lineup.bench.find((bid) => !used.has(bid) && roleOf(bid) === roleOf(sid) && !get(bid).isSV) || null;
+      const libero = (bid) => !used.has(bid) && !get(bid).isSV;
+      sub = lineup.bench.find((bid) => libero(bid) && roleOf(bid) === roleOf(sid)) || null;
+      // a modulo libero, se nel ruolo non c'e' nessuno entra comunque il primo
+      // panchinaro con voto: il modulo cambia, ma un titolare senza voto non
+      // resta scoperto (art. 8.5, opzione di lega)
+      if (!sub && rules.subMode === 'free') sub = lineup.bench.find(libero) || null;
     }
     if (sub) {
       used.add(sub); subs++;
@@ -194,9 +233,11 @@ export function computeLineupResult({ lineup, ratings, players, managerCount, ru
         baseVote: rules.noSubVote, bonus: 0, fantaVote: rules.noSubVote, isCaptain: false, breakdown: [{ label: 'Voto d\'ufficio (art. 8.6)', value: rules.noSubVote }] });
     }
   }
-  const total = r1(rows.reduce((s, x) => s + x.fantaVote, 0));
+  const somma = r1(rows.reduce((s, x) => s + x.fantaVote, 0));
   const baseTotal = r1(rows.reduce((s, x) => s + x.baseVote, 0));
-  return { total, baseTotal, goals: toGoals(total, managerCount, rules), rows, subsApplied, captainId, captainNote, conversion: conversionParams(managerCount, rules) };
+  const casa = isHome ? rules.homeBonus : 0;
+  const total = r1(somma + casa);
+  return { total, sommaRose: somma, homeBonus: casa, baseTotal, goals: toGoals(total, managerCount, rules), rows, subsApplied, captainId, captainNote, conversion: conversionParams(managerCount, rules) };
 }
 
 function makeRow(id, r, role, isCaptain, rules) {

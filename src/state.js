@@ -157,6 +157,19 @@ export async function updateMyTeam(patch) {
 const iniziali = (t) => String(t || '').replace(/[^A-Za-zÀ-ÿ0-9 ]/g, '').split(/\s+/).filter(Boolean)
   .map((w) => w[0]).join('').slice(0, 3).toUpperCase() || 'FC';
 
+/** Opzioni di regolamento della lega. Si salva solo lo scostamento dal
+ *  regolamento base: cosi' una regola non toccata segue gli aggiornamenti del
+ *  motore invece di restare congelata alla creazione della lega. */
+export async function salvaRegole(patch) {
+  if (!base.league.id) throw new Error('Nessuna lega');
+  const scostamento = { ...(base.league.rulesOverride || {}) };
+  for (const [k, v] of Object.entries(patch)) {
+    if (JSON.stringify(v) === JSON.stringify(DEFAULT_RULES[k])) delete scostamento[k]; else scostamento[k] = v;
+  }
+  await remote.updateLeague(base.league.id, { rules: scostamento });
+  await loadAll(); notify();
+}
+
 /** Solo chi ha creato la lega può eliminarla (regola sul server, non qui). */
 export const soPossoEliminareLega = () => !!base.league.createdBy && base.league.createdBy === currentUser()?.id;
 /** Vale anche per una lega diversa da quella aperta: serve all'elenco. */
@@ -277,7 +290,7 @@ export function saveLineup(n, managerId, lineup) {
   const rec = { ...lineup, submittedAt: now().toISOString() }; L.lineups[`${n}:${managerId}`] = rec; notify();
   return remote.upsertLineup(base.league.id, managerId, n, rec).catch((e) => { onError(e); refresh(); });
 }
-export function lineupResult(n, managerId) { return memo(`lr:${n}:${managerId}`, () => { const lineup = lineupFor(n, managerId); return { lineup, ...computeLineupResult({ lineup, ratings: ratingsOf(n), players: playersById, managerCount: Math.max(6, base.league.managerCount), rules: rules() }) }; }); }
+export function lineupResult(n, managerId, isHome = false) { return memo(`lr:${n}:${managerId}:${isHome ? 'c' : 't'}`, () => { const lineup = lineupFor(n, managerId); return { lineup, ...computeLineupResult({ lineup, ratings: ratingsOf(n), players: playersById, managerCount: Math.max(6, base.league.managerCount), isHome, rules: rules() }) }; }); }
 export function fixturesOf(n) {
   return memo(`fx:${n}`, () => {
     const ids = base.managers.map((m) => m.id); if (ids.length < 2) return [];
@@ -292,7 +305,7 @@ export function fixtureResult(f) {
   const st = matchdayStatus(f.matchday);
   // Senza nessun dato inserito la giornata non produce risultati: niente 0-0 d'ufficio.
   if (st === 'open' || st === 'scheduled' || !hasData(f.matchday)) return { ...f, played: false };
-  const h = lineupResult(f.matchday, f.homeManagerId), a = lineupResult(f.matchday, f.awayManagerId);
+  const h = lineupResult(f.matchday, f.homeManagerId, true), a = lineupResult(f.matchday, f.awayManagerId);
   return { ...f, played: true, homeGoals: h.goals, awayGoals: a.goals, homeScore: h.total, awayScore: a.total, home: h, away: a, status: st };
 }
 export function resultsUntil(n) { const out = []; for (let k = 1; k <= n; k++) for (const f of fixturesOf(k)) { const r = fixtureResult(f); if (r.played) out.push(r); } return out; }

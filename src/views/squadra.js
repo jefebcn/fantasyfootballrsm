@@ -53,11 +53,11 @@ export const squadra = {
       </div>
       <input type="file" id="foto" accept="image/*" hidden>`;
 
-    const personaggi = `${sec('Personaggio in copertina', pers ? `il numero ${pers}` : 'nessuno: si vede la maglia')}
+    const personaggi = `${sec('Personaggio in copertina', pers ? 'scelto' : 'nessuno: si vede la maglia')}
       <div class="a-card"><p class="small muted">Nove personaggi: in una lega da otto ognuno puo' avere il suo. Se non ne scegli nessuno, in copertina resta la tua maglia.</p>
         <div class="pgrid">
           <button class="pcell${pers ? '' : ' on'}" data-pers="0"><span class="pno">${icon('shirt')}</span><small>Maglia</small></button>
-          ${elenco().map((n) => `<button class="pcell${pers === n ? ' on' : ''}" data-pers="${n}">${personaggio(n)}<small>${n}</small></button>`).join('')}
+          ${elenco().map((n) => `<button class="pcell${pers === n ? ' on' : ''}" data-pers="${n}" aria-label="Personaggio ${n}">${personaggio(n)}</button>`).join('')}
         </div></div>`;
 
     const nomi = `${sec('Nome squadra')}

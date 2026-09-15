@@ -2,6 +2,11 @@
 """
 Scontorna i personaggi di media/avatarN.jpg e li salva in media/avatar/N.webp.
 
+Il numero del file e' l'identita' del personaggio e non cambia mai: quando uno
+viene tolto il suo numero resta vuoto invece di far scalare gli altri, se no
+chi l'aveva scelto si ritroverebbe un personaggio diverso. L'elenco vivo sta in
+src/personaggio.js.
+
 Le immagini hanno lo sfondo dipinto dentro. Qui si toglie partendo dai BORDI e
 allargandosi finche' il colore resta simile a quello da cui si e' partiti: cosi'
 un fondo piatto se ne va tutto, mentre i colori uguali che stanno DENTRO il
@@ -26,13 +31,18 @@ ALTEZZA = 620          # il doppio abbondante della misura a schermo
 TOLLERANZA = 40        # quanto puo' scostarsi dal colore di partenza del bordo
 COPERTURA_MAX = 0.82   # oltre questa quota di pixel tolti, il ritaglio e' sospetto
 COPERTURA_MIN = 0.12   # sotto, lo sfondo non e' stato riconosciuto
-# Alzare la tolleranza su 2 e 4 (fondo fotografico) non aiuta: il
-# riempimento supera il contorno e si mangia il personaggio. Restano alla
-# tolleranza normale, e lo script segnala che vanno rifatti su fondo piatto.
-TOLLERANZA_DURA = {}
+# Due casi non vanno con la regola normale, e per motivi opposti:
+#   10 — personaggio su un DEGRADE' arancione: un riferimento fisso non lo
+#        segue e resta un alone. Serve il passo piccolo, che insegue la
+#        sfumatura, con una tolleranza larga a fare da guinzaglio.
+#   12 — tuta bianca su grigio chiarissimo: figura e fondo quasi uguali, e con
+#        la tolleranza normale il riempimento entra nel personaggio. Serve
+#        stringere.
+# (tolleranza, passo) — passo None = si guarda solo il colore di partenza.
+SU_MISURA = {10: (90, 4), 12: (12, None)}
 
 
-def maschera_sfondo(arr, tol):
+def maschera_sfondo(arr, tol, passo=None):
     """Riempimento dai quattro bordi: torna True dove c'e' sfondo."""
     h, w, _ = arr.shape
     fuori = np.zeros((h, w), dtype=bool)
@@ -50,12 +60,19 @@ def maschera_sfondo(arr, tol):
             ny, nx = y + dy, x + dx
             if ny < 0 or nx < 0 or ny >= h or nx >= w or fuori[ny, nx]:
                 continue
-            # Il confronto e' col colore DI PARTENZA di quel bordo, non col
-            # vicino: confrontando col vicino il riempimento striscia dentro al
-            # personaggio seguendo le sfumature, e si mangia tutto (99%).
-            if np.abs(arr[ny, nx].astype(int) - rif.astype(int)).max() <= tol:
-                fuori[ny, nx] = True
-                coda.append((ny, nx, rif))
+            qui, la = arr[ny, nx].astype(int), arr[y, x].astype(int)
+            # Due condizioni insieme. Col solo confronto sul VICINO il
+            # riempimento striscia dentro al personaggio seguendo le sfumature
+            # e si mangia tutto; col solo confronto sul colore DI PARTENZA non
+            # segue un fondo a degrade' e lascia un alone. Serve che ogni passo
+            # sia piccolo E che non ci si allontani troppo da dove si e'
+            # partiti.
+            if np.abs(qui - rif).max() > tol:
+                continue
+            if passo is not None and np.abs(qui - la).max() > passo:
+                continue
+            fuori[ny, nx] = True
+            coda.append((ny, nx, rif))
     return fuori
 
 
@@ -84,10 +101,10 @@ def solo_pezzo_grosso(tenuti):
     return fuori
 
 
-def scontorna(percorso, tol=TOLLERANZA):
+def scontorna(percorso, tol=TOLLERANZA, passo=None):
     im = Image.open(percorso).convert('RGB')
     arr = np.asarray(im)
-    fuori = maschera_sfondo(arr, tol)
+    fuori = maschera_sfondo(arr, tol, passo)
     tenuti = solo_pezzo_grosso(~fuori)
     fuori = ~tenuti
     quota = fuori.mean()
@@ -109,13 +126,12 @@ def scontorna(percorso, tol=TOLLERANZA):
 def main():
     USCITA.mkdir(parents=True, exist_ok=True)
     sospetti = []
-    for n in range(1, 10):
+    numeri = sorted(int(f.stem[6:]) for f in (RADICE / 'media').glob('avatar*.jpg'))
+    print(f'trovati {len(numeri)} sorgenti: {numeri}')
+    for n in numeri:
         src = RADICE / 'media' / f'avatar{n}.jpg'
-        if not src.exists():
-            print(f'  {n}: manca {src.name}'); continue
-        # 2 e 4 hanno una foto vera dietro (stadio, muro di graffiti): il
-        # riempimento si ferma troppo presto, serve piu' margine.
-        ritaglio, quota = scontorna(src, TOLLERANZA_DURA.get(n, TOLLERANZA))
+        tol, passo = SU_MISURA.get(n, (TOLLERANZA, None))
+        ritaglio, quota = scontorna(src, tol, passo)
         if ritaglio is None:
             sospetti.append((n, 'ritaglio vuoto')); continue
         fuori = USCITA / f'{n}.webp'

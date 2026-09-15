@@ -5,13 +5,21 @@
  * in una lega da otto ognuno puo' avere il suo e non se ne ripete nessuno.
  * Chi non ne sceglie uno tiene la maglia.
  */
-export const QUANTI = 9;
-export const elenco = () => Array.from({ length: QUANTI }, (_, i) => i + 1);
+/**
+ * I numeri sono quelli dei file sorgente e non scalano mai: togliendo un
+ * personaggio il suo numero resta vuoto invece di far scivolare gli altri, se
+ * no chi l'aveva scelto si ritroverebbe in copertina qualcun altro. Per questo
+ * nell'elenco ci sono dei buchi, ed e' voluto.
+ */
+const NUMERI = [1, 3, 5, 6, 7, 8, 10, 11, 12];
+export const QUANTI = NUMERI.length;
+export const elenco = () => [...NUMERI];
 
-/** Il personaggio scelto, o null se la squadra tiene la maglia. */
+/** Il personaggio scelto, o null se la squadra tiene la maglia. Un numero non
+ *  piu' in elenco (personaggio ritirato) vale come "nessuno". */
 export const scelto = (m) => {
   const n = Number(m?.kit?.personaggio);
-  return Number.isInteger(n) && n >= 1 && n <= QUANTI ? n : null;
+  return NUMERI.includes(n) ? n : null;
 };
 
 export const personaggio = (n, cls = '') =>

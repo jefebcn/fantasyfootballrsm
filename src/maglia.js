@@ -14,12 +14,10 @@ export const COLORI = [
   '#8E44AD', '#16A085', '#2C3E50', '#111418', '#FFFFFF', '#B9C2CC',
 ];
 
-export const KIT_DEFAULT = { c1: '#1B84C6', numero: 10, nome: '' };
+export const KIT_DEFAULT = { c1: '#1B84C6', nome: '' };
 /** Riempie i buchi: una maglia salvata a metà non deve rompere il disegno. */
 export const kitOf = (m) => ({ ...KIT_DEFAULT, c1: m?.color || KIT_DEFAULT.c1, ...(m?.kit || {}) });
 
-// Taglio moderno: spalle larghe, manica corta, vita appena rientrata, orlo
-// che riallarga. Il collo è a V con la banda, come le maglie da gara di oggi.
 // La maglia è la foto in media/magliahome.jfif ridotta da scripts/make-maglia.py
 // a forma + luce: il colore non è nel file, lo mette il browser fondendo la
 // tinta della squadra sotto i grigi. Vedi .maglia in styles/app.css.
@@ -47,7 +45,7 @@ function scritta(testo, x, y, dim, peso, inchiostro, bordo, spazio = '0') {
 }
 
 /**
- * @param {object} kit  { c1, numero, nome }
+ * @param {object} kit  { c1, nome }
  * @param {string} cls  classi extra
  */
 export function maglia(kit, cls = '') {
@@ -55,15 +53,15 @@ export function maglia(kit, cls = '') {
   const scuro = !chiaro(k.c1);
   const inchiostro = scuro ? '#FFFFFF' : '#16202E';
   const bordo = scuro ? '#0B1220' : '#FFFFFF';
-  const numero = String(k.numero ?? '').replace(/\D/g, '').slice(0, 2);
   const nome = String(k.nome || '').toUpperCase().slice(0, 12);
-  const scritte = (numero || nome)
+  // Niente numero in petto: sulla maglia del riferimento non c'e', e alla
+  // misura della copertina copriva mezzo torace.
+  const scritte = nome
     ? `<svg class="mg-scritte" viewBox="0 0 100 123" aria-hidden="true">
-        ${numero ? scritta(numero, 50, 78, 22, 800, inchiostro, bordo) : ''}
-        ${nome ? scritta(nome, 50, 94, 7, 700, inchiostro, bordo, '.16em') : ''}
+        ${scritta(nome, 50, 86, 9, 700, inchiostro, bordo, '.16em')}
       </svg>` : '';
   return `<div class="maglia ${cls}" style="--c1:${k.c1};--rap:${RAPPORTO}" role="img"
-      aria-label="Maglia${nome ? ` di ${esc(nome)}` : ''}${numero ? `, numero ${numero}` : ''}">
+      aria-label="Maglia${nome ? ` di ${esc(nome)}` : ''}">
     <span class="mg-tinta"></span><img class="mg-luce" src="${BASE}" alt="" decoding="async">${scritte}
   </div>`;
 }

@@ -207,3 +207,51 @@ test('il lock e\' sempre alle 15:00 italiane, da qualunque fuso si guardi', asyn
   // il giorno si prende in Italia: alle 23:00 di New York a Roma e' gia' domani
   assert.equal(oraItaliana(new Date('2026-08-29T03:00:00Z')).toISOString(), '2026-08-29T13:00:00.000Z');
 });
+
+/* ---- asta (artt. 2-3): la regola che conta e' restare con un credito per
+       ogni casella vuota, se no la rosa non si completa piu' ---- */
+
+const G = (id, role, clubId = 'home', q = 10) => ({ id, role, clubId, quotation: q, isActive: true });
+const rosaDi = (...pl) => pl.map((p) => ({ playerId: p.id, pricePaid: 1, player: p }));
+
+test('asta: prezzo, ruolo pieno, doppione e giocatore di un altro', async () => {
+  const { validaAcquisto } = await import('../src/engine.js');
+  const p = G('x', 'A');
+  assert.deepEqual(validaAcquisto({ rosa: [], crediti: 500, player: p, prezzo: 50 }), []);
+  assert.match(validaAcquisto({ rosa: [], crediti: 500, player: p, prezzo: 0 })[0], /almeno 1/);
+  assert.match(validaAcquisto({ rosa: [], crediti: 500, player: p, prezzo: 1.5 })[0], /intero/);
+  assert.match(validaAcquisto({ rosa: [], crediti: 500, player: p, prezzo: 5, giaPreso: true })[0], /altra rosa/);
+  assert.match(validaAcquisto({ rosa: [], crediti: 500, player: { ...p, isActive: false }, prezzo: 5 })[0], /Fuori dal campionato/);
+  // portieri: 3 in rosa e il quarto non entra
+  const treP = rosaDi(G('p1', 'P'), G('p2', 'P'), G('p3', 'P'));
+  assert.match(validaAcquisto({ rosa: treP, crediti: 500, player: G('p4', 'P'), prezzo: 5 })[0], /portiere: già 3\/3/);
+  assert.match(validaAcquisto({ rosa: rosaDi(p), crediti: 500, player: p, prezzo: 5 }).join(' '), /Già in questa rosa/);
+});
+
+test('asta: non si puo\' spendere tanto da non poter completare la rosa', async () => {
+  const { validaAcquisto, offertaMassima } = await import('../src/engine.js');
+  // rosa vuota: 25 caselle. Offrendo per la prima, 24 restano da riempire,
+  // quindi il massimo e' 500-24 = 476, non 500.
+  assert.equal(offertaMassima({ rosa: [], crediti: 500, role: 'A' }), 476);
+  assert.deepEqual(validaAcquisto({ rosa: [], crediti: 500, player: G('x', 'A'), prezzo: 476 }), []);
+  assert.match(validaAcquisto({ rosa: [], crediti: 500, player: G('x', 'A'), prezzo: 477 })[0], /Restano 23 crediti per 24 caselle/);
+  // ultima casella: si puo' spendere tutto
+  const quasi = [];
+  for (const [r, n] of [['P', 3], ['D', 8], ['C', 8], ['A', 5]]) for (let i = 0; i < n; i++) quasi.push(G(`${r}${i}`, r));
+  const rosa24 = rosaDi(...quasi);
+  assert.equal(offertaMassima({ rosa: rosa24, crediti: 30, role: 'A' }), 30);
+  assert.deepEqual(validaAcquisto({ rosa: rosa24, crediti: 30, player: G('ultimo', 'A'), prezzo: 30 }), []);
+  assert.match(validaAcquisto({ rosa: rosa24, crediti: 30, player: G('ultimo', 'A'), prezzo: 31 })[0], /ne servono 31/);
+  // ruolo pieno: non puoi offrire niente per quel ruolo
+  assert.equal(offertaMassima({ rosa: rosaDi(G('a', 'P'), G('b', 'P'), G('c', 'P')), crediti: 100, role: 'P' }), 0);
+});
+
+test('asta: tetto per società quando la lega lo attiva (art. 2.6)', async () => {
+  const { validaAcquisto, DEFAULT_RULES } = await import('../src/engine.js');
+  const R = { ...DEFAULT_RULES, maxPerClub: 2 };
+  const due = rosaDi(G('a', 'D', 'trepenne'), G('b', 'C', 'trepenne'));
+  assert.deepEqual(validaAcquisto({ rosa: due, crediti: 500, player: G('c', 'A', 'folgore'), prezzo: 5, rules: R }), []);
+  assert.match(validaAcquisto({ rosa: due, crediti: 500, player: G('c', 'A', 'trepenne'), prezzo: 5, rules: R })[0], /il tetto è 2/);
+  // spento per difetto: nessun tetto
+  assert.deepEqual(validaAcquisto({ rosa: due, crediti: 500, player: G('c', 'A', 'trepenne'), prezzo: 5 }), []);
+});

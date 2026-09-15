@@ -6,7 +6,7 @@
  * Tutto ciò che il motore calcola è derivato e ricalcolabile da zero.
  */
 import { buildSeason, draftRosters as buildDraft, mulberry32 } from './data.js';
-import { computeRating, computeLineupResult, computeStandings, defaultLineup, DEFAULT_RULES } from './engine.js';
+import { computeRating, computeLineupResult, computeStandings, defaultLineup, validaAcquisto, offertaMassima, DEFAULT_RULES } from './engine.js';
 import * as remote from './backend.js';
 import * as clerk from './auth-clerk.js';
 
@@ -215,7 +215,38 @@ export async function draftRosters() {
   for (const m of base.managers) await remote.updateMember(m.id, { credits: DEFAULT_RULES.budget - rosters[m.id].reduce((s, r) => s + r.pricePaid, 0) });
   await refresh();
 }
-export async function addRosterPlayer(memberId, playerId, price) { await remote.addRosterPlayer(base.league.id, memberId, playerId, price); await remote.updateMember(memberId, { credits: managersById.get(memberId).credits - price }); await refresh(); }
+/** Chi ha gia' un giocatore, in tutta la lega: l'asta lo deve sapere prima di
+ *  offrirlo, anche se poi l'indice unico sul database lo impedisce comunque. */
+export function proprietari() {
+  const m = new Map();
+  for (const mg of base.managers) for (const r of base.rosters[mg.id] || []) m.set(r.playerId, { managerId: mg.id, pricePaid: r.pricePaid });
+  return m;
+}
+/** Stato d'asta di una squadra: crediti, caselle per ruolo, offerta massima. */
+export function statoAsta(managerId) {
+  const rosa = rosterOf(managerId); const r = rules();
+  const per = { P: 0, D: 0, C: 0, A: 0 }; for (const x of rosa) if (x.player) per[x.player.role]++;
+  const crediti = managersById.get(managerId)?.credits ?? 0;
+  const vuote = ['P', 'D', 'C', 'A'].reduce((n, k) => n + Math.max(0, r.roster[k] - per[k]), 0);
+  return { rosa, crediti, per, serve: r.roster, vuote, presi: rosa.length, totale: 25,
+    max: (role) => offertaMassima({ rosa, crediti, role, rules: r }) };
+}
+/** Le ragioni per cui questo acquisto non si puo' fare. Vuoto = si puo'. */
+export function perchePuoiNo(managerId, playerId, prezzo) {
+  const st = statoAsta(managerId); const p = playersById.get(playerId);
+  const pr = proprietari().get(playerId);
+  return validaAcquisto({ rosa: st.rosa, crediti: st.crediti, player: p, prezzo,
+    giaPreso: !!pr && pr.managerId !== managerId, rules: rules() });
+}
+export async function addRosterPlayer(memberId, playerId, price) {
+  // Le regole si applicano qui, non solo nella schermata: cosi' valgono anche
+  // per chi chiama da altrove, e l'errore arriva prima di toccare il database.
+  const err = perchePuoiNo(memberId, playerId, price);
+  if (err.length) throw new Error(err.join(' · '));
+  await remote.addRosterPlayer(base.league.id, memberId, playerId, price);
+  await remote.updateMember(memberId, { credits: managersById.get(memberId).credits - price });
+  await refresh();
+}
 export async function removeRosterPlayer(memberId, playerId) { const r = (base.rosters[memberId] || []).find((x) => x.playerId === playerId); await remote.removeRosterPlayer(base.league.id, playerId); if (r) await remote.updateMember(memberId, { credits: managersById.get(memberId).credits + r.pricePaid }); await refresh(); }
 /** Popola il database con gli eventi di esempio delle prime giornate: solo Giudice Dati, una volta. */
 export async function seedSampleData() { await remote.seedDemo(base, user.id); await refresh(); }

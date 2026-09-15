@@ -14,6 +14,7 @@ export { scheda } from './scheda.js';
 export { impostazioni, avanzate } from './impostazioni.js';
 export { privacy, termini, archiviazione, licenze } from './legali.js';
 export { mercato } from './mercato.js';
+export { asta } from './asta.js';
 export { adminGiornata, adminPartita, adminContestazioni, adminCongela, adminRegistro } from './admin.js';
 export { login, resetLogin, prepareLogin } from './auth.js';
 export { onboarding } from './onboarding.js';

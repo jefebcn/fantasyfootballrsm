@@ -55,7 +55,8 @@ export const adminPartita = {
         ${warn.map((w) => `<div class="warn block">${icon('warn', 'ic sm')}<span>${esc(w)}</span></div>`).join('')}
         <div class="kb" style="margin:auto -16px 0">
           <span class="handle"></span>
-          ${[['goal', 'Gol'], ['assist', 'Assist'], ['own_goal', 'Autogol'], ['yellow', 'Giallo'],
+          ${[['goal', 'Gol'], ['assist', 'Assist'], ...(S.rules().assistSetPiece ? [['assist_set', 'Assist da fermo']] : []),
+             ['own_goal', 'Autogol'], ['yellow', 'Giallo'],
              ['second_yellow', '2° giallo'], ['red_direct', 'Rosso'], ['pen_missed', 'Rig. sbagliato'], ['pen_saved', 'Rig. parato']]
             .map(([k, l]) => `<button class="k" data-ev="${k}" ${frozen ? 'disabled' : ''}>${evTile(k)}${l}</button>`).join('')}
           ${S.rules().level2Events ? `<button class="k" data-ev="pen_won" ${frozen ? 'disabled' : ''}><i>R+</i>Rig. procurato</button><button class="k" data-ev="pen_conceded" ${frozen ? 'disabled' : ''}><i>R−</i>Rig. causato</button>` : ''}

@@ -17,6 +17,11 @@ const LEGA = [
   ['#/voti', 'andamento', 'Andamento voti'],
   ['#/lega', 'trofei', 'Partecipanti'],
 ];
+const REGOLE = [
+  ['#/regolamento', 'premi', 'Regolamento'],
+  ['#/regole', 'impostazioni', 'Opzioni di regolamento'],
+  ['#/admin/registro', 'chat', 'Registro decisioni'],
+];
 const GIUDICE = [
   ['#/admin', 'strumenti', 'Inserisci eventi'],
   ['#/admin/contestazioni', 'supporto', 'Contestazioni'],
@@ -39,9 +44,12 @@ export const gestione = {
     const giudice = S.isJudge()
       ? nota(GIUDICE, '#/admin/contestazioni', `${S.contestazioni().filter((c) => c.status === 'open').length} aperte`)
       : [];
+    const r = S.rules();
+    const regole = nota(REGOLE, '#/regole', S.isLeagueAdmin() ? `${r.subMode === 'free' ? 'modulo libero' : 'stesso ruolo'} · ${r.maxSubs} cambi` : 'sola lettura');
     return `<main class="a-body">
       ${blocco('Gioca', gioca)}
       ${blocco('La lega', lega)}
+      ${blocco('Regole', regole)}
       ${blocco('Giudice Dati', giudice)}
     </main>`;
   },

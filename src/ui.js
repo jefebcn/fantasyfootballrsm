@@ -1,7 +1,8 @@
 /** Componenti UI condivisi: stringhe HTML, nessun framework. */
 import { avatar } from './avatar.js';
 export { avatar } from './avatar.js';
-export const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+import { esc } from './ui-esc.js';
+export { esc };
 export const fmt = (n, min = 1) => (n == null ? 'S.V.' : Number(n).toLocaleString('it-IT', { minimumFractionDigits: min, maximumFractionDigits: 2 }));
 export const signed = (n) => (n > 0 ? '+' : n < 0 ? '−' : '') + fmt(Math.abs(n));
 export const icon = (name, cls = 'ic') => `<svg class="${cls}"><use href="#i-${name}"/></svg>`;
@@ -35,7 +36,9 @@ export const faccia = (p, club, cls = '') =>
 /** Avatar grande per la scheda del giocatore, su un tondo col colore del club. */
 export const avatarGrande = (p, club) =>
   `<span class="av-big" style="--c:${club?.color || '#2B4C7E'}">${avatar(p, club)}</span>`;
-export const crest = (m, cls = '') => `<span class="crest ${cls}" style="background:${m.color}">${esc(m.initials)}</span>`;
+export const crest = (m, cls = '') => (m?.crestUrl
+  ? `<span class="crest foto ${cls}" style="background:${m.color}"><img src="${esc(m.crestUrl)}" alt=""></span>`
+  : `<span class="crest ${cls}" style="background:${m.color}">${esc(m.initials)}</span>`);
 
 /**
  * Icona-maschera: la sagoma arriva da un PNG, il colore dalla CSS. Serve dove

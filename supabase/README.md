@@ -1,5 +1,21 @@
 # Supabase — account e leghe multiple
 
+## Migrazione 002 — eliminare la lega, stemma, maglia, allenatore in seconda
+
+Dopo `schema.sql` e `migrations/001-identita-esterna.sql`, esegui
+`migrations/002-squadra-e-lega.sql` nell'SQL Editor. Aggiunge:
+
+- **eliminazione della lega** riservata a chi l'ha creata (policy `leagues_delete`);
+- **stemma** (`crest_url`) e **maglia** (`kit`) sulla riga del partecipante;
+- **allenatore in seconda** (`vice_user_id`, `vice_code`) con le funzioni
+  `rigenera_codice_vice`, `entra_come_vice` e `togli_vice`.
+
+Il file si puo' rieseguire senza danni.
+
+Lo stemma viene salvato come data URL: l'app riduce la foto a 192px e la
+ricomprime finche' non sta sotto i 60 KB, quindi in tabella finiscono ~15 KB a
+squadra e non serve configurare lo Storage.
+
 ## Progetto collegato
 
 `https://nskgzpbcssnpfuxmbepa.supabase.co` — URL e publishable key sono in `src/config.js`

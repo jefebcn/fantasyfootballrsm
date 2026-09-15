@@ -5,17 +5,17 @@ import { esc, pic } from '../ui.js';
 /** [href, icona in media/icone/lega, etichetta] — la nota si aggiunge in render().
  *  Tre riquadri per riga: ogni blocco tiene un numero di voci multiplo di tre. */
 const GIOCA = [
-  ['#/rosa', 'la-mia-squadra', 'La mia rosa'],
+  ['#/squadra', 'la-mia-squadra', 'La mia squadra'],
+  ['#/rosa', 'rose', 'La mia rosa'],
   ['#/rosa/formazione', 'probabili-formazioni', 'Formazione'],
   ['#/listone', 'calcola', 'Listone'],
   ['#/mercato', 'scambi', 'Mercato libero'],
   ['#/calendario', 'calendario', 'Calendario'],
-  ['#/classifica', 'classifica', 'Classifica'],
 ];
 const LEGA = [
+  ['#/classifica', 'classifica', 'Classifica'],
   ['#/voti', 'andamento', 'Andamento voti'],
-  ['#/lega', 'rose', 'Partecipanti'],
-  ['#/scheda', 'chat', 'Scheda condivisibile'],
+  ['#/lega', 'trofei', 'Partecipanti'],
 ];
 const GIUDICE = [
   ['#/admin', 'strumenti', 'Inserisci eventi'],

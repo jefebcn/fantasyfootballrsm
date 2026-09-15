@@ -133,12 +133,47 @@ export const myLeagues = () => leagues;
 export const currentLeagueId = () => prefs.currentLeagueId;
 export const hasLeague = () => !!prefs.currentLeagueId;
 export const isJudge = () => !!prof?.is_judge;
-export const me = () => base.managers.find((m) => m.userId === user?.id) || null;
+// Il secondo allenatore non ha una squadra sua: la "sua" è quella di cui è vice.
+export const me = () => base.managers.find((m) => m.userId === user?.id)
+  || base.managers.find((m) => m.viceUserId && m.viceUserId === user?.id) || null;
 export const isLeagueAdmin = () => me()?.role === 'admin' || isJudge();
 export async function switchLeague(id) { prefs.currentLeagueId = id; persistPrefs(); await loadAll(); notify(); }
 export async function createLeague(name, team, color, initials) { const id = await remote.createLeague(name, name.length > 14 ? name.split(' ').slice(0, 2).join(' ') : name, team, color, initials); await switchLeague(id); }
 export async function joinLeague(code, team, color, initials) { const id = await remote.joinLeague(code, team, color, initials); await switchLeague(id); }
 export async function setMemberRole(memberId, role) { await remote.updateMember(memberId, { role }); await refresh(); }
+
+// ------------------------------------------------- la mia squadra e la lega
+/** Salva stemma, maglia e nomi della propria squadra. */
+export async function updateMyTeam(patch) {
+  const m = me(); if (!m) throw new Error('Non fai parte di questa lega');
+  const body = {};
+  if (patch.teamName !== undefined) { body.team_name = patch.teamName; body.initials = iniziali(patch.teamName); }
+  if (patch.owner !== undefined) body.owner_name = patch.owner;
+  if (patch.color !== undefined) body.color = patch.color;
+  if (patch.crestUrl !== undefined) body.crest_url = patch.crestUrl;
+  if (patch.kit !== undefined) body.kit = patch.kit;
+  await remote.updateMember(m.id, body); await refresh();
+}
+const iniziali = (t) => String(t || '').replace(/[^A-Za-zÀ-ÿ0-9 ]/g, '').split(/\s+/).filter(Boolean)
+  .map((w) => w[0]).join('').slice(0, 3).toUpperCase() || 'FC';
+
+/** Solo chi ha creato la lega può eliminarla (regola sul server, non qui). */
+export const soPossoEliminareLega = () => !!base.league.createdBy && base.league.createdBy === currentUser()?.id;
+export async function deleteLeague() {
+  const id = base.league.id; if (!id) throw new Error('Nessuna lega');
+  await remote.deleteLeague(id);
+  prefs.currentLeagueId = null; persistPrefs(); await loadAll(); notify();
+}
+
+/** Allenatore in seconda: invito con link, ingresso, revoca. */
+export async function invitaVice() {
+  const m = me(); if (!m) throw new Error('Non fai parte di questa lega');
+  const code = await remote.rigeneraCodiceVice(m.id); await refresh(); return code;
+}
+export async function entraComeVice(code) { const id = await remote.entraComeVice(code); await switchLeague(id); }
+export async function togliVice(memberId) { await remote.togliVice(memberId); await refresh(); }
+/** Sono il secondo allenatore di questa squadra, non il titolare? */
+export const sonoVice = () => { const u = currentUser(); const m = me(); return !!(u && m && m.viceUserId === u.id && m.userId !== u.id); };
 export async function removeMember(memberId) { await remote.removeMember(memberId); await refresh(); }
 export async function draftRosters() {
   const ids = base.managers.map((m) => m.id);

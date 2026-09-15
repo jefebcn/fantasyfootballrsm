@@ -1,5 +1,5 @@
 import * as S from '../state.js';
-import { esc, fmt, icon, badge, crest, roleChip, initials, evTiles, pic, voteRow, dateIt, timeIt, logo } from '../ui.js';
+import { esc, fmt, icon, badge, crest, roleChip, avatar, evTiles, pic, voteRow, dateIt, timeIt, logo } from '../ui.js';
 
 let tab = 'campo';
 const P = (id) => S.playersById.get(id);
@@ -12,18 +12,18 @@ function fieldTeam(res, ratings, evs, mirrored) {
   return order.map((r) => `<div class="line">${byRole[r].map((row) => {
     const shown = row.subFor ? row.playerId : row.playerId; const p = P(shown); const out = row.official ? row.playerId : null;
     const ind = [];
-    if (row.subFor) ind.push(`<i class="sub">${pic('sostituzione-in')}</i>`); if (row.official) ind.push(`<i class="sub">${pic('sostituzione-out')}</i>`);
+    if (row.subFor) ind.push(`<i class="segno">${pic('sostituzione-in')}</i>`); if (row.official) ind.push(`<i class="segno">${pic('sostituzione-out')}</i>`);
     ind.push(evTiles((evs[shown] || []).filter((e) => e.type !== 'assist' || true)).replace(/style="[^"]*"/g, ''));
     const pill = row.official ? `<span class="pill sv"><span>S.V.</span><span>${fmt(row.fantaVote)}</span></span>` : `<span class="pill"><span>${fmt(row.baseVote)}</span><span>${fmt(row.fantaVote)}</span></span>`;
     const cap = row.isCaptain ? '<span class="cap">C</span>' : (res.lineup.viceCaptainId === shown && !row.isCaptain ? '<span class="cap">V</span>' : '');
-    return `<div class="ps" style="--tc:${club(shown).color}"><span class="av">${cap}${initials(p)}${roleChip(row.role)}</span><span class="ind">${ind.join('')}</span>${pill}<b>${esc(p.lastName)}${row.subFor ? ` <small>(x ${esc(P(row.subFor).lastName)})</small>` : ''}</b></div>`;
+    return `<div class="ps" style="--tc:${club(shown).color}"><span class="av faccia">${cap}${avatar(p, club(shown))}${roleChip(row.role)}</span><span class="ind">${ind.join('')}</span>${pill}<b>${esc(p.lastName)}${row.subFor ? ` <small>(x ${esc(P(row.subFor).lastName)})</small>` : ''}</b></div>`;
   }).join('')}</div>`).join('');
 }
 function benchCol(res, ratings) {
   const inUse = new Set(res.rows.map((r) => r.playerId));
   return res.lineup.bench.map((id) => { const r = ratings.get(id); const p = P(id);
     const v = inUse.has(id) ? `<span class="vpill"><span>${fmt(r.baseVote)}</span><span>${fmt(r.fantaVote)}</span></span>` : !r || r.isSV ? (r?.svReason?.includes('rinviata') ? '<span class="vpill sv"><span>S.V.</span><span>rinv.</span></span>' : '<span class="no">⊘</span>') : `<span class="vpill"><span>${fmt(r.baseVote)}</span><span>${fmt(r.fantaVote)}</span></span>`;
-    return `<div class="b2">${roleChip(p.role)}<span class="nm"><b>${esc(p.lastName)}${inUse.has(id) ? ` <i class="sub sm">${pic('sostituzione-in')}</i>` : ''}</b><span>${esc(club(id).name)}</span></span>${v}</div>`; }).join('');
+    return `<div class="b2">${roleChip(p.role)}<span class="nm"><b>${esc(p.lastName)}${inUse.has(id) ? ` <i class="segno sm">${pic('sostituzione-in')}</i>` : ''}</b><span>${esc(club(id).name)}</span></span>${v}</div>`; }).join('');
 }
 
 /**

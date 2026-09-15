@@ -11,7 +11,7 @@ export { regolamento } from './regolamento.js';
 export { regole } from './regole.js';
 export { scheda } from './scheda.js';
 export { impostazioni, avanzate } from './impostazioni.js';
-export { privacy, termini } from './legali.js';
+export { privacy, termini, archiviazione, licenze } from './legali.js';
 export { mercato } from './mercato.js';
 export { adminGiornata, adminPartita, adminContestazioni, adminCongela, adminRegistro } from './admin.js';
 export { login, resetLogin, prepareLogin } from './auth.js';

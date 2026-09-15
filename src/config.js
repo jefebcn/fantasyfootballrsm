@@ -24,6 +24,26 @@ export const CLERK_JWT_TEMPLATE = '';
 /** Indirizzo a cui arriva "Contattaci". Vuoto = la voce spiega come impostarlo. */
 export const CONTATTO = '';
 
+/**
+ * Chi risponde dei dati, cioe' il titolare del trattamento.
+ * Finche' i campi restano vuoti l'informativa NON inventa un nome: dice a chiare
+ * lettere che manca e che va compilato prima di aprire le iscrizioni fuori dal
+ * giro di amici. Meglio un buco dichiarato che un dato falso in un documento
+ * che la gente legge per fidarsi.
+ */
+export const TITOLARE = {
+  nome: '',            // ragione sociale o nome e cognome di chi gestisce l'app
+  sede: '',            // indirizzo completo
+  paese: '',           // es. 'Repubblica di San Marino'
+  codiceOperatore: '', // COE sammarinese, o partita IVA se e' una societa' italiana
+  email: '',           // indirizzo per le richieste sui dati (puo' coincidere con CONTATTO)
+  pec: '',             // facoltativa
+};
+/** Data dell'ultima revisione dei testi legali, in ISO. */
+export const LEGALI_AGGIORNATE = '2026-09-15';
+/** Eta' minima per iscriversi. */
+export const ETA_MINIMA = 14;
+
 /** Lingue dell'interfaccia. Per ora l'app parla solo italiano: quando ne
  *  arriverà un'altra basta aggiungerla qui. */
 export const LINGUE = [['it', 'Italiano']];

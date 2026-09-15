@@ -75,6 +75,8 @@ export const impostazioni = {
     const conto = group('Account', `
       ${row('shield', 'Privacy e dati', 'Cosa salva l\'app, chi lo vede, come si cancella', 'privacy')}
       ${row('book', 'Termini d\'uso', 'Com\'è fatto il gioco e cosa ci si aspetta', 'termini')}
+      ${row('lock', 'Cookie e memoria locale', 'Nessun cookie: cosa resta su questo telefono', 'archiviazione')}
+      ${row('img', 'Licenze e crediti', 'Da dove vengono dati, immagini e codice', 'licenze')}
       ${S.authKind() === 'clerk' ? row('gear', 'Gestisci account', 'Nome, e-mail, password e accessi collegati', 'clerk-profile')
     : row('lock', 'Cambia password', 'Imposta una nuova password per questo account', 'password')}
       ${row('out', 'Esci', 'Torni alla schermata di accesso', 'logout', 'danger')}`);
@@ -97,6 +99,8 @@ export const impostazioni = {
       if (act === 'sfondo') { S.store.set({ sfondoFoto: !S.store.get().sfondoFoto }); ctx.render(); return; }
       if (act === 'privacy') { ctx.go('privacy'); return; }
       if (act === 'termini') { ctx.go('termini'); return; }
+      if (act === 'archiviazione') { ctx.go('archiviazione'); return; }
+      if (act === 'licenze') { ctx.go('licenze'); return; }
       if (act === 'lingua') {
         ctx.sheet(`<h3>Lingua</h3>${LINGUE.map(([k, l]) => `<button class="setting" data-lingua="${k}"><i class="ico">${icon('check')}</i><span class="txt"><b>${l}</b></span></button>`).join('')}
           <p class="auth-hint">Per ora l'app parla solo italiano. Non è una scelta definitiva: quando ci sarà una seconda lingua comparirà qui.</p>`);

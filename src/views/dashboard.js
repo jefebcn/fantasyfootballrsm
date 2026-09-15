@@ -2,6 +2,7 @@ import * as S from '../state.js';
 import * as N from '../notizie.js';
 import { esc, fmt, icon, logo, badge, crest, pic, tile, sec, dateIt, timeIt } from '../ui.js';
 import { maglia, kitOf } from '../maglia.js';
+import { personaggio, scelto } from '../personaggio.js';
 
 const RULES = [
   ['Art. 7.4', 'Rigore parato', 'Vale +3,0 al portiere e −3,0 al tiratore. Sul palo o fuori: −3,0 al tiratore e nessun bonus al portiere.'],
@@ -198,7 +199,8 @@ export const dashboard = {
             <span><b>${esc(S.base.league.shortName || S.base.league.name)}</b>
             <small>${S.base.managers.length} squadre · ${ph.matchday}ª giornata</small></span>${icon('chev', 'ic sm')}</a>
           <h2>${esc(me.teamName)}</h2>
-          <a class="jersey" href="#/squadra" aria-label="Modifica stemma e maglia">${maglia(kitOf(me))}</a>
+          <a class="jersey${scelto(me) ? ' pers' : ''}" href="#/squadra" aria-label="Modifica stemma, maglia e personaggio">
+            ${scelto(me) ? personaggio(scelto(me)) : maglia(kitOf(me))}</a>
           <div class="acts">
             <a href="#/scheda" aria-label="Condividi la scheda"><button>${icon('share')}</button></a>
             <a href="#/squadra" aria-label="La mia squadra"><button>${icon('gear')}</button></a>

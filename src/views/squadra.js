@@ -8,6 +8,7 @@
 import * as S from '../state.js';
 import { esc, icon, crest, sec } from '../ui.js';
 import { maglia, COLORI, kitOf } from '../maglia.js';
+import { personaggio, elenco, scelto } from '../personaggio.js';
 
 const LATO = 192;          // lo stemma non serve più grande di così
 const PESO_MAX = 60 * 1024; // oltre questo si stringe ancora la qualità
@@ -36,6 +37,7 @@ export const squadra = {
     if (!m) return `<main class="a-body"><div class="empty"><p>Non fai parte di questa lega.</p></div></main>`;
     const vice = S.sonoVice();
     const kit = bozza || kitOf(m);
+    const pers = scelto(m);
 
     const testa = `${sec('Stemma e maglia')}
       <div class="a-card sm-testa">
@@ -44,12 +46,19 @@ export const squadra = {
           <button class="sm-pen" data-act="stemma" aria-label="Cambia stemma">${icon('edit', 'ic sm')}</button>
           ${m.crestUrl ? '<button class="sm-via" data-act="stemma-via">Togli la foto</button>' : ''}
         </div>
-        <div class="sm-box"><span class="sm-et">Maglia</span>
-          <span class="sm-img">${maglia(kit)}</span>
-          <button class="sm-pen" data-act="maglia" aria-label="Modifica maglia">${icon('edit', 'ic sm')}</button>
+        <div class="sm-box"><span class="sm-et">${pers ? 'Personaggio' : 'Maglia'}</span>
+          <span class="sm-img">${pers ? personaggio(pers) : maglia(kit)}</span>
+          <button class="sm-pen" data-act="${pers ? 'personaggio' : 'maglia'}" aria-label="Modifica">${icon('edit', 'ic sm')}</button>
         </div>
       </div>
       <input type="file" id="foto" accept="image/*" hidden>`;
+
+    const personaggi = `${sec('Personaggio in copertina', pers ? `il numero ${pers}` : 'nessuno: si vede la maglia')}
+      <div class="a-card"><p class="small muted">Nove personaggi: in una lega da otto ognuno puo' avere il suo. Se non ne scegli nessuno, in copertina resta la tua maglia.</p>
+        <div class="pgrid">
+          <button class="pcell${pers ? '' : ' on'}" data-pers="0"><span class="pno">${icon('shirt')}</span><small>Maglia</small></button>
+          ${elenco().map((n) => `<button class="pcell${pers === n ? ' on' : ''}" data-pers="${n}">${personaggio(n)}<small>${n}</small></button>`).join('')}
+        </div></div>`;
 
     const nomi = `${sec('Nome squadra')}
       <div class="a-card"><input class="field-input" id="team" maxlength="28" value="${esc(m.teamName)}"
@@ -75,7 +84,7 @@ export const squadra = {
       : `<button class="a-btn" data-act="vice-invita">${icon('userplus', 'ic sm')}Crea il link d'invito</button>`}`}
         </div>`;
 
-    return `<main class="a-body">${testa}${nomi}${secondo}</main>`;
+    return `<main class="a-body">${testa}${personaggi}${nomi}${secondo}</main>`;
   },
 
   mount(root, ctx) {
@@ -92,11 +101,18 @@ export const squadra = {
     });
 
     root.querySelector('main').addEventListener('click', async (e) => {
+      const pc = e.target.closest('[data-pers]');
+      if (pc) {
+        const n = Number(pc.dataset.pers);
+        try { await S.updateMyTeam({ kit: { ...kitOf(S.me()), personaggio: n || undefined } }); ctx.toast(n ? 'Personaggio scelto' : 'Torni alla maglia'); }
+        catch (err) { ctx.toast(err.message); }
+        return;
+      }
       const b = e.target.closest('[data-act]'); if (!b) return;
       const act = b.dataset.act;
       if (act === 'stemma') { file.click(); return; }
       if (act === 'stemma-via') { try { await S.updateMyTeam({ crestUrl: null }); ctx.toast('Foto tolta'); } catch (err) { ctx.toast(err.message); } return; }
-      if (act === 'maglia') { apriMaglia(ctx); return; }
+      if (act === 'maglia' || act === 'personaggio') { apriMaglia(ctx); return; }
       if (act === 'vice-invita' || act === 'vice-nuovo') {
         try { await S.invitaVice(); ctx.toast('Link pronto'); } catch (err) { ctx.toast(err.message); } return;
       }

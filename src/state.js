@@ -27,7 +27,7 @@ let onError = (e) => console.error(e);
 export function setErrorHandler(fn) { onError = fn; }
 
 function emptyGlobal() { return { matchEvents: {}, matchOverrides: {}, appearanceOverrides: {}, matchdayStatus: {}, lockServer: {}, changeLog: [] }; }
-function emptyLeague() { return { lineups: {}, contestazioni: [] }; }
+function emptyLeague() { return { lineups: {}, contestazioni: [], scambi: [] }; }
 function load(key, def) { try { const raw = localStorage.getItem(key); return raw ? { ...def, ...JSON.parse(raw) } : { ...def }; } catch { return { ...def }; } }
 function persistPrefs() { try { localStorage.setItem(PREFS_KEY, JSON.stringify(prefs)); } catch { /* quota */ } }
 function refreshManagers() { managersById.clear(); for (const m of base.managers) managersById.set(m.id, m); }
@@ -81,7 +81,12 @@ async function loadAll() {
     const data = await remote.loadLeague(prefs.currentLeagueId);
     base.managers = data.managers; base.rosters = data.rosters;
     base.league = { ...data.league, rules: { ...DEFAULT_RULES, ...data.league.rulesOverride }, managerCount: data.managers.length };
-    L = { lineups: data.lineups, contestazioni: data.contestazioni };
+    L = { lineups: data.lineups, contestazioni: data.contestazioni, scambi: [] };
+    // Gli scambi arrivano dalla 006: su un progetto che non l'ha ancora
+    // applicata la tabella non c'e', e l'app deve funzionare comunque —
+    // senza la scheda Scambi, non con una schermata di errore.
+    try { L.scambi = await remote.loadScambi(prefs.currentLeagueId); L.scambiDisponibili = true; }
+    catch { L.scambi = []; L.scambiDisponibili = false; }
   } else { base.managers = []; base.rosters = {}; base.league = NO_LEAGUE; L = emptyLeague(); }
   if (prof.is_judge) { try { L.contestazioni = await remote.allContestazioni(); } catch (e) { onError(e); } }
   refreshManagers();
@@ -445,6 +450,27 @@ export function avanzamento(n) {
   return { fatte, totali: partite.length, completa: partite.length > 0 && fatte === partite.length };
 }
 export function myFixture(n, managerId) { return fixturesOf(n).find((f) => f.homeManagerId === managerId || f.awayManagerId === managerId) || null; }
+
+// ---------------------------------------------------------------- scambi
+export const scambi = () => L.scambi || [];
+export const scambiDisponibili = () => L.scambiDisponibili !== false;
+/** Le proposte che aspettano una risposta da me. */
+export function scambiDaDecidere() {
+  const io = me()?.id; if (!io) return [];
+  return scambi().filter((t) => t.stato === 'proposta' && t.a === io);
+}
+/** Le proposte che ho fatto io e che nessuno ha ancora deciso. */
+export function scambiInAttesa() {
+  const io = me()?.id; if (!io) return [];
+  return scambi().filter((t) => t.stato === 'proposta' && t.da === io);
+}
+export async function proponiScambio(aMember, offre, chiede, crediti, nota) {
+  const id = await remote.proponiScambio(base.league.id, aMember, offre, chiede, crediti, nota);
+  await refresh(); return id;
+}
+export async function accettaScambio(id) { await remote.accettaScambio(id); await refresh(); }
+export async function rifiutaScambio(id) { await remote.rifiutaScambio(id); await refresh(); }
+export async function annullaScambio(id) { await remote.annullaScambio(id); await refresh(); }
 
 // ---------------------------------------------------------------- Giudice Dati
 const assertOpen = (matchId) => { const m = match(matchId); if (isFrozen(m.matchday)) throw new Error(`Giornata ${m.matchday} congelata (art. 9.2)`); return m; };

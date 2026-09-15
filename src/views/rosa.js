@@ -13,7 +13,7 @@ export const rosa = {
       }).join('')}</div>`;
     }).join('');
     return `<main class="a-body">
-      <div class="chips"><a class="chip on" href="#/rosa" style="text-decoration:none">Rosa 25</a><a class="chip" href="#/rosa/formazione" style="text-decoration:none">Formazione</a></div>
+      <div class="chips"><a class="chip on" href="#/rosa" style="text-decoration:none">Rosa 25</a><a class="chip" href="#/rosa/formazione" style="text-decoration:none">Formazione</a>${S.scambiDisponibili() && S.base.managers.length > 1 ? `<a class="chip" href="#/scambi" style="text-decoration:none">Scambi${S.scambiDaDecidere().length ? ` <b>${S.scambiDaDecidere().length}</b>` : ''}</a>` : ''}</div>
       <div class="a-card a-fase"><div class="r"><p><b>${esc(me.teamName)}</b> · ${esc(me.owner)}</p><span class="small muted">crediti <b class="num" style="color:var(--text)">${me.credits}</b></span></div><p class="small muted">Ultimo fantavoto: giornata ${n}. Tocca un giocatore per lo storico.</p></div>
       ${groups}
     </main>`;

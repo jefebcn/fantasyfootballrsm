@@ -977,6 +977,36 @@ button,a{-webkit-tap-highlight-color:transparent}
 .gr .pt i{font-style:normal;color:var(--text-muted);font-weight:600;padding:0 3px}
 .gr .pt small{font:500 11px var(--font-body);color:var(--text-muted);letter-spacing:-.01em}
 
+/* ------------------------------------------------------------------ scambi */
+/* Una riga della rosa che si puo' toccare per sceglierla: e' un <button>, non
+   un <a>, quindi va riportata a mano all'aspetto di .vr (i browser danno ai
+   bottoni sfondo, bordo e testo centrato tutti loro). */
+.vr.sceglibile{width:100%;border:0;background:transparent;font:inherit;color:inherit;text-align:left;cursor:pointer}
+.vr.sceglibile.scelto{background:var(--primary-soft)}
+.vr.sceglibile.scelto .nm b{color:var(--primary-ink)}
+.vr.sceglibile .fv{color:var(--primary-ink)}
+
+/* Il pareggio dei reparti: verde se i due lati combaciano, rosso se no. */
+.bilancio{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.rb{font:700 11px var(--font-body);padding:4px 8px;border-radius:999px;letter-spacing:-.01em}
+.rb.ok{background:var(--positive-soft);color:var(--positive-ink)}
+.rb.no{background:var(--negative-soft);color:var(--negative-ink)}
+
+.scambio .shead{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px}
+.scambio .shead b{font:700 14px var(--font-display);min-width:0;overflow-wrap:anywhere}
+.scambio .shead .badge{flex:none}
+.scambio.accettata{box-shadow:var(--sh-card),inset 0 0 0 2px var(--positive)}
+.scambio.rifiutata,.scambio.annullata{opacity:.72}
+.scambio .lato{display:flex;flex-wrap:wrap;align-items:baseline;gap:6px;padding:6px 0;border-top:1px solid var(--border)}
+.scambio .lato .chi{font:600 11px var(--font-body);color:var(--text-muted);flex:none}
+.scambio .gioc{font:600 13px var(--font-body);background:var(--surface-sunk);border-radius:8px;padding:3px 8px;overflow-wrap:anywhere}
+.scambio .gioc.niente{background:transparent;color:var(--text-muted);font-weight:500;font-style:italic}
+.scambio .soldi{margin:8px 0 0;font-size:13px;color:var(--text)}
+.scambio .nota{margin:8px 0 0;font-size:12.5px;color:var(--text-muted);font-style:italic;overflow-wrap:anywhere}
+.scambio .azioni{display:flex;gap:8px;margin-top:12px}
+.scambio .azioni .a-btn{flex:1;justify-content:center}
+.a-btn.piccolo{height:34px;padding:0 12px;font-size:12.5px;flex:none}
+
 .cls{background:var(--surface);border-radius:var(--r-md);box-shadow:var(--sh-card);padding:2px 14px;overflow:hidden}
 .crow{display:flex;align-items:center;gap:10px;padding:11px 0;border-top:1px solid var(--border)}
 .crow:first-child{border-top:0}

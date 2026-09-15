@@ -970,3 +970,22 @@ button,a{-webkit-tap-highlight-color:transparent}
 .prow .pmg{width:30px;height:35px;flex:none;display:block}
 .a-card.pericolo{border-left:3px solid var(--negative);display:flex;flex-direction:column;gap:10px}
 .a-btn.danger{background:var(--negative);color:#fff}
+
+/* Profilo: intestazione con i dati dell'account. */
+.pf-testa{display:grid;grid-template-columns:auto 1fr auto;gap:14px;align-items:center;
+  background:var(--surface);border-radius:var(--r-md);box-shadow:var(--sh-card);padding:16px 14px}
+.pf-av{width:64px;height:64px;border-radius:50%;background:var(--c);color:#fff;display:grid;place-items:center;
+  font:800 26px var(--font-display);flex:none}
+.pf-dati{min-width:0;display:flex;flex-direction:column;gap:1px}
+.pf-dati b{font:600 14px var(--font-body);overflow-wrap:anywhere}
+.pf-et{font:600 9.5px var(--font-body);letter-spacing:.08em;text-transform:uppercase;color:var(--text-muted);margin-top:6px}
+.pf-et:first-child{margin-top:0}
+.pf-pen{width:40px;height:40px;border-radius:50%;border:0;cursor:pointer;flex:none;
+  background:var(--primary-soft);color:var(--primary);display:grid;place-items:center}
+.sw{width:42px;height:24px;border-radius:999px;background:var(--border-strong);position:relative;flex:none;transition:background .15s}
+.sw::after{content:"";position:absolute;top:3px;left:3px;width:18px;height:18px;border-radius:50%;background:#fff;
+  box-shadow:0 1px 3px rgba(0,0,0,.3);transition:transform .15s}
+.sw.on{background:var(--positive)}
+.sw.on::after{transform:translateX(18px)}
+.a-card.testo p{margin:0 0 10px;font-size:13.5px;line-height:1.5}
+.a-card.testo p:last-child{margin-bottom:0}

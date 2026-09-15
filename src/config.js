@@ -20,3 +20,10 @@ export const CLERK_PUBLISHABLE_KEY = ''; // Clerk disattivato: l'accesso passa d
 // Vuoto = token di sessione predefinito (integrazione Supabase nativa di Clerk).
 // Valorizzare solo se sul progetto Clerk esiste un JWT template dedicato.
 export const CLERK_JWT_TEMPLATE = '';
+
+/** Indirizzo a cui arriva "Contattaci". Vuoto = la voce spiega come impostarlo. */
+export const CONTATTO = '';
+
+/** Lingue dell'interfaccia. Per ora l'app parla solo italiano: quando ne
+ *  arriverà un'altra basta aggiungerla qui. */
+export const LINGUE = [['it', 'Italiano']];

@@ -40,11 +40,6 @@ COPERTURA_MIN = 0.12   # sotto, lo sfondo non e' stato riconosciuto
 # (tolleranza, passo) — passo None = si guarda solo il colore di partenza.
 SU_MISURA = {
     10: (90, 4),     # personaggio su degrade' arancione: serve inseguire la sfumatura
-    # 18 e 19 hanno dietro un campo da basket disegnato: cielo, alberi, canestro,
-    # asfalto. Un riferimento fisso si ferma al primo stacco e lascia mezzo campo
-    # attaccato; col passo piccolo il riempimento cammina da una zona all'altra.
-    18: (255, 10),
-    19: (255, 8),
 }
 
 

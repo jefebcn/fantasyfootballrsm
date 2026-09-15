@@ -1087,3 +1087,14 @@ button,a{-webkit-tap-highlight-color:transparent}
 .pcell .pno .ic{width:26px;height:26px}
 .pcell small{font:600 10px var(--font-body);color:var(--text-muted)}
 .pcell.on small{color:var(--primary-ink)}   /* --primary sul suo fondo tenue sta a 4,2: serve l'inchiostro dedicato */
+
+/* Elenco leghe: la riga entra, il tasto a destra elimina o fa uscire.
+   Sono due bottoni affiancati perche' uno non puo' stare dentro l'altro. */
+.lgrow{display:flex;align-items:stretch;border-top:1px solid var(--border)}
+/* :first-of-type conta i div, e il primo div della lista e' .vhead:
+   il bordo va tolto alla riga che segue l'intestazione. */
+.vhead + .lgrow{border-top:0}
+.lgrow > .vr{border-top:0;flex:1;min-width:0}
+.lgvia{flex:none;width:52px;border:0;border-left:1px solid var(--border);background:transparent;
+  color:var(--negative-ink);display:grid;place-items:center;cursor:pointer}
+.lgvia:active{background:var(--negative-soft)}

@@ -152,6 +152,7 @@ function cleanAuthUrl() {
 }
 
 async function boot() {
+  registraServiceWorker();
   document.body.insertAdjacentHTML('afterbegin', SPRITE + AVATAR_SPRITE);
   applyTheme();
   window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', applyTheme);
@@ -162,7 +163,48 @@ async function boot() {
   cleanAuthUrl();
   render();
   if (callbackError) toast(callbackError);
-  if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js').catch(() => {});
   window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); window.__installPrompt = e; document.dispatchEvent(new Event('installable')); });
+}
+
+/**
+ * Registrazione e aggiornamento del service worker.
+ *
+ * Si chiama PRIMA di ogni await: stava in fondo a boot(), dopo `await
+ * S.init()`, e con il server lento o irraggiungibile l'aggiornamento non
+ * veniva mai nemmeno chiesto — l'app restava per sempre su una versione
+ * vecchia senza che nulla lo segnalasse.
+ */
+function registraServiceWorker() {
+  // Quando un service worker nuovo prende il comando, la pagina in corso sta
+  // ancora girando col codice vecchio: si ricarica una volta sola, cosi' un
+  // rilascio si vede subito invece che al giro dopo. La guardia evita il
+  // ciclo infinito se il cambio di controllo si ripete.
+  if ('serviceWorker' in navigator) {
+    // Solo se un service worker c'era GIA': alla primissima apertura il
+    // controllo passa da nessuno al primo, e ricaricare li' sarebbe uno sfarfallio
+    // gratuito su una pagina appena aperta.
+    const cambioDiConsegne = !!navigator.serviceWorker.controller;
+    let giaRicaricata = false;
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+      if (!cambioDiConsegne || giaRicaricata) return;
+      giaRicaricata = true;
+      location.reload();
+    });
+    navigator.serviceWorker.register('./sw.js').then((reg) => {
+      // Il controllo automatico del browser non e' garantito quando serve:
+      // lo si chiede all'apertura e ogni volta che l'app torna in primo piano,
+      // che per una PWA sullo schermo Home e' il momento giusto. Con un limite,
+      // per non tempestare il server a ogni cambio di scheda.
+      let ultimo = 0;
+      const controlla = () => { ultimo = Date.now(); reg.update().catch(() => {}); };
+      controlla();                       // all'apertura sempre
+      document.addEventListener('visibilitychange', () => {
+        // al ritorno in primo piano, ma non piu' di una volta ogni cinque
+        // minuti: se no basta cambiare scheda per tempestare il server.
+        if (document.hidden || Date.now() - ultimo < 5 * 60 * 1000) return;
+        controlla();
+      });
+    }).catch(() => {});
+  }
 }
 boot();

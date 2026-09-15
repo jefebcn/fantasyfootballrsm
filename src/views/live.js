@@ -26,6 +26,33 @@ function benchCol(res, ratings) {
     return `<div class="b2">${roleChip(p.role)}<span class="nm"><b>${esc(p.lastName)}${inUse.has(id) ? ` <i class="sub sm">${pic('sostituzione-in')}</i>` : ''}</b><span>${esc(club(id).name)}</span></span>${v}</div>`; }).join('');
 }
 
+/**
+ * Le probabili formazioni di uno scontro non ancora giocato: undici e panchina
+ * dei due fantallenatori, con l'avviso su da dove arriva ciascuna.
+ */
+function probabili(n, h, a, f) {
+  const lato = (m) => {
+    const l = S.lineupFor(n, m.id);
+    const fonte = l.source === 'saved' ? 'formazione salvata'
+      : l.source === 'ufficio' ? "undici d'ufficio: nessuna formazione ancora inviata"
+        : `ultima schierata: ${l.source}`;
+    const riga = (id, cap) => { const p = P(id); return `<div class="pr"><span class="rl">${roleChip(p.role)}</span>
+      <b>${esc(p.name)}${cap ? ` <span class="cap">${cap}</span>` : ''}</b><span>${esc(club(id).name)}</span></div>`; };
+    return `<div class="pcol"><div class="ph2"><b>${esc(m.teamName)}</b><span>${esc(l.formation)}</span></div>
+      ${l.starters.map((id) => riga(id, id === l.captainId ? 'C' : id === l.viceCaptainId ? 'V' : '')).join('')}
+      <div class="ph2 panca"><b>Panchina</b></div>
+      ${l.bench.map((id) => riga(id, '')).join('')}
+      <p class="fonte">${esc(fonte)}</p></div>`;
+  };
+  const lock = S.matchday(n).lockAt;
+  return `<div class="a-card" style="padding:0;overflow:hidden">
+    <p class="prehead">Probabili formazioni · si chiude ${dateIt(lock)} alle ${timeIt(lock)}</p>
+    <div class="prob">${lato(h)}${lato(a)}</div>
+    ${f && S.me() && (f.homeManagerId === S.me().id || f.awayManagerId === S.me().id)
+    ? `<a class="mcta" href="#/rosa/formazione">Schiera la tua formazione${icon('chev', 'ic sm')}</a>` : ''}
+  </div>`;
+}
+
 export const live = {
   title: 'Live', appbar: 'none', nav: false,
   render({ params }) {
@@ -37,8 +64,18 @@ export const live = {
     const inserted = S.matchesOf(n).filter((m) => m.status !== 'scheduled').length;
     const head = `<div class="l-bar"><div class="row"><button class="ib flip" data-back aria-label="Indietro">${icon('chev')}</button><div class="lg">${crest({ color: 'var(--c-titano-800)', initials: 'SR' })}<div style="min-width:0"><b>${esc(S.base.league.name)}</b><span>Giornata ${n}</span></div></div><a class="ib" href="#/calendario/${n}" aria-label="Calendario">${icon('cal')}</a><a class="ib" href="#/scheda" aria-label="Scheda">${icon('share')}</a></div>
       <div class="l-head"><div class="tm"><b>${esc(h.teamName)}</b><span>${played ? r.home.lineup.formation : ''}</span></div><div class="sc">${played ? `${r.homeGoals} – ${r.awayGoals}` : 'VS'}<small>${played ? `${fmt(r.homeScore)} – ${fmt(r.awayScore)}` : dateIt(S.matchday(n).lockAt)}</small></div><div class="tm"><b>${esc(a.teamName)}</b><span>${played ? r.away.lineup.formation : ''}</span></div></div>
-      <div class="l-sub"><span class="badge badge--prov" style="background:rgba(255,255,255,.18);color:#fff">${st === 'frozen' ? icon('lock') + 'Congelato' : st === 'live' ? icon('clock') + `Parziale <small>· ${inserted}/8 partite inserite</small>` : icon('clock') + 'Provvisorio'}</span>${played ? `<button class="a-btn" id="formula">${icon('calc', 'ic sm')}Conversione in gol</button>` : ''}</div></div>`;
-    if (!played) return `<main class="a-body" style="padding:0;gap:0">${head}<div style="padding:16px"><div class="empty">${logo()}<p>La giornata ${n} non è ancora stata giocata. Lock ${dateIt(S.matchday(n).lockAt)} ${timeIt(S.matchday(n).lockAt)}.</p></div></div></main>`;
+      <div class="l-sub"><span class="badge badge--prov" style="background:rgba(255,255,255,.18);color:#fff">${st === 'frozen' ? icon('lock') + 'Congelato' : st === 'live' ? icon('clock') + `Parziale <small>· ${inserted}/8 partite inserite</small>` : st === 'provisional' ? icon('clock') + 'Provvisorio' : icon('clock') + 'Da giocare'}</span>${played ? `<button class="a-btn" id="formula">${icon('calc', 'ic sm')}Conversione in gol</button>` : ''}</div></div>`;
+    // Prima del fischio d'inizio la pagina mostrava solo un vuoto. Le probabili
+    // ci sono gia': lineupFor() ripiega sulla formazione salvata, poi su quella
+    // dell'ultima giornata, poi sull'undici d'ufficio, e dice quale sta usando.
+    if (!played) return `<main class="a-body" style="padding:0;gap:0">${head}
+      <div style="padding:12px 16px 16px;display:flex;flex-direction:column;gap:12px">
+        ${probabili(n, h, a, f)}
+        <div class="a-sec"><b>Partite del campionato</b><span>giornata ${n}</span></div>
+        <div class="real">${S.matchesOf(n).map((m) => { const hc = S.clubsById.get(m.homeClubId), ac = S.clubsById.get(m.awayClubId);
+          return `<div class="rr"><div><b>${esc(hc.name)} — ${esc(ac.name)}</b><span>${m.venue ? esc(m.venue) : ''}</span></div>
+            <span class="sc${m.status === 'played' ? '' : ' stato'}">${m.status === 'played' ? `${m.homeGoals} – ${m.awayGoals}` : m.status === 'postponed' ? 'Rinviata' : timeIt(m.kickoffAt)}</span><span></span></div>`; }).join('')}</div>
+      </div></main>`;
     const c = r.home.conversion;
     const formula = `<div class="a-card" id="formula-card" hidden><p class="formula"><b>Art. 11</b> · ${S.base.league.managerCount} fantallenatori · soglia <b>${fmt(c.threshold)}</b> · passo <b>${fmt(c.step)}</b><br>${fmt(r.homeScore)} → <b>${r.homeGoals} gol</b> · ${fmt(r.awayScore)} → <b>${r.awayGoals} gol</b><br>Parità di fantapunteggio = pareggio (11.1)</p></div>`;
     const notes = [r.home, r.away].map((x, i) => { const m = i ? a : h; const parts = [];

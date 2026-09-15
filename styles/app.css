@@ -1060,8 +1060,15 @@ button,a{-webkit-tap-highlight-color:transparent}
   box-shadow:0 1px 3px rgba(0,0,0,.3);transition:transform .15s}
 .sw.on{background:var(--positive)}
 .sw.on::after{transform:translateX(18px)}
-.a-card.testo p{margin:0 0 10px;font-size:13.5px;line-height:1.5}
+.a-card.testo p{margin:0 0 10px;font-size:13.5px;line-height:1.7}
 .a-card.testo p:last-child{margin-bottom:0}
+/* I link in mezzo a una frase non si possono ingrandire senza spezzare la riga
+   (e WCAG 2.5.8 li esenta apposta). Quello che si puo' fare e' renderli
+   riconoscibili e un po' piu' comodi: sottolineatura staccata e interlinea
+   larga, che alza la riga senza toccare l'impaginato. */
+.a-card.testo a{text-underline-offset:3px;text-decoration-thickness:1.5px;font-weight:600}
+.a-card.testo code{font-family:var(--font-data);font-size:12px;background:var(--surface-2);
+  border-radius:4px;padding:1px 5px}
 
 /* Copertina sull'impaginazione di riferimento: la lega in una targa chiara,
    poi il nome squadra, poi la maglia, e in fondo il marchio del campionato. */

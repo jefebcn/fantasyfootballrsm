@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { computeRating, computeLineupResult, computeStandings, toGoals, validateLineup, defaultLineup, DEFAULT_RULES, movimenti} from '../src/engine.js';
+import { computeRating, computeLineupResult, computeStandings, toGoals, validateLineup, defaultLineup, DEFAULT_RULES, movimenti, recordLega, testaATesta} from '../src/engine.js';
 
 const P = (id, role, clubId = 'home') => ({ id, role, clubId, quotation: 10 });
 const match = (o = {}) => ({ id: 'm1', homeClubId: 'home', awayClubId: 'away', homeGoals: 1, awayGoals: 0, status: 'played', ...o });
@@ -288,4 +288,87 @@ test('movimenti: una squadra entrata dopo non ha un confronto', () => {
   const m = movimenti(prima, dopo);
   assert.equal(m.get('a'), 0);
   assert.equal(m.get('nuova'), null);
+});
+
+// ---------------------------------------------------------- record di lega
+const SF = (matchday, h, a, hg, ag, hs, as_) =>
+  ({ played: true, matchday, homeManagerId: h, awayManagerId: a, homeGoals: hg, awayGoals: ag, homeScore: hs, awayScore: as_ });
+
+test('recordLega: senza partite giocate non inventa numeri', () => {
+  const r = recordLega([{ played: false, matchday: 1 }]);
+  assert.equal(r.vuoto, true);
+  assert.equal(r.migliore, null);
+  assert.deepEqual(r.strisce, []);
+});
+
+test('recordLega: miglior e peggior punteggio, piu\' gol, scarto piu\' largo', () => {
+  const r = recordLega([
+    SF(1, 'a', 'b', 2, 1, 70.5, 64.0),
+    SF(2, 'a', 'c', 4, 0, 82.5, 51.0),
+    SF(3, 'b', 'c', 1, 1, 66.0, 66.0),
+  ]);
+  assert.equal(r.migliore.managerId, 'a');
+  assert.equal(r.migliore.punti, 82.5);
+  assert.equal(r.migliore.matchday, 2);
+  assert.equal(r.peggiore.managerId, 'c');
+  assert.equal(r.peggiore.punti, 51.0);
+  assert.equal(r.piuGol.gol, 4);
+  assert.equal(r.scarto.gol, 4);
+  assert.equal(r.scarto.vincitore, 'a');
+  assert.equal(r.scarto.perdente, 'c');
+});
+
+test('recordLega: a parita\' di record vince la giornata piu\' recente', () => {
+  const r = recordLega([SF(1, 'a', 'b', 1, 0, 70.0, 60.0), SF(5, 'b', 'a', 0, 1, 60.0, 70.0)]);
+  assert.equal(r.migliore.punti, 70.0);
+  assert.equal(r.migliore.matchday, 5, 'a parita\' si racconta quella piu\' recente');
+});
+
+test('recordLega: strisce di vittorie e di risultati utili', () => {
+  const r = recordLega([
+    SF(1, 'a', 'b', 2, 0, 70, 60), SF(2, 'a', 'b', 3, 1, 72, 61),
+    SF(3, 'b', 'a', 1, 1, 65, 65), SF(4, 'a', 'b', 0, 2, 55, 71),
+  ]);
+  const a = r.strisce.find((x) => x.managerId === 'a');
+  assert.deepEqual(a.esiti, ['V', 'V', 'N', 'P']);
+  assert.equal(a.vittorie, 2, 'due vittorie di fila');
+  assert.equal(a.imbattuto, 3, 'tre risultati utili prima della sconfitta');
+  const b = r.strisce.find((x) => x.managerId === 'b');
+  assert.equal(b.vittorie, 1);
+  assert.equal(b.imbattuto, 2, 'pareggio e vittoria in coda');
+});
+
+test('recordLega: medie, massimo e minimo per squadra', () => {
+  const r = recordLega([SF(1, 'a', 'b', 2, 0, 70, 60), SF(2, 'b', 'a', 1, 0, 80, 50)]);
+  const a = r.medie.find((x) => x.managerId === 'a');
+  assert.equal(a.giocate, 2);
+  assert.equal(a.media, 60);
+  assert.equal(a.massimo, 70);
+  assert.equal(a.minimo, 50);
+  assert.equal(r.medie[0].managerId, 'b', 'la media piu\' alta sta davanti');
+});
+
+test('testaATesta: visto da chi lo chiede', () => {
+  const partite = [
+    SF(1, 'a', 'b', 2, 1, 70, 64),
+    SF(6, 'b', 'a', 3, 0, 78, 52),
+    SF(11, 'a', 'b', 1, 1, 66, 66),
+    SF(2, 'a', 'c', 5, 0, 90, 40),   // non c'entra
+  ];
+  const da_a = testaATesta(partite, 'a', 'b');
+  assert.equal(da_a.partite.length, 3, 'solo gli scontri fra le due');
+  assert.deepEqual(da_a.partite.map((f) => f.matchday), [1, 6, 11], 'in ordine di giornata');
+  assert.equal(da_a.v, 1); assert.equal(da_a.n, 1); assert.equal(da_a.p, 1);
+  assert.equal(da_a.golA, 3); assert.equal(da_a.golB, 5);
+  assert.equal(da_a.puntiA, 188, '70 in casa + 52 fuori + 66 in casa'); assert.equal(da_a.puntiB, 208, '64 + 78 + 66');
+  const da_b = testaATesta(partite, 'b', 'a');
+  assert.equal(da_b.v, 1); assert.equal(da_b.p, 1, 'visto dall\'altra parte si ribalta');
+  assert.equal(da_b.golA, 5); assert.equal(da_b.golB, 3);
+});
+
+test('testaATesta: due squadre che non si sono mai incontrate', () => {
+  const r = testaATesta([SF(1, 'a', 'b', 1, 0, 70, 60)], 'a', 'z');
+  assert.equal(r.partite.length, 0);
+  assert.equal(r.v + r.n + r.p, 0);
+  assert.equal(r.puntiA, 0);
 });

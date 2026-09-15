@@ -248,6 +248,91 @@ function makeRow(id, r, role, isCaptain, rules) {
 
 /** Classifica (art. 12). results: [{homeManagerId, awayManagerId, homeGoals, awayGoals, homeScore, awayScore}] */
 /**
+ * I record della lega, dai risultati gia' giocati.
+ *
+ * In una lega fra amici questa e' la parte che si guarda a fine stagione e
+ * quella di cui si discute durante: "il mio 78,5 della quarta" vale piu' di
+ * mezza classifica. Sono tutti dati che c'erano gia' e che nessuno metteva
+ * insieme.
+ *
+ * @param {Array} results righe di fixtureResult() con played = true
+ * @returns record, strisce e medie; i campi sono null quando non c'e' ancora
+ *   niente da dire, cosi' la vista non deve inventarsi uno zero.
+ */
+export function recordLega(results) {
+  const giocati = results.filter((f) => f.played);
+  if (!giocati.length) return { vuoto: true, migliore: null, peggiore: null, piuGol: null, scarto: null, strisce: [], medie: [] };
+
+  const punteggi = [];
+  for (const f of giocati) {
+    punteggi.push({ managerId: f.homeManagerId, matchday: f.matchday, punti: f.homeScore, gol: f.homeGoals, avversario: f.awayManagerId });
+    punteggi.push({ managerId: f.awayManagerId, matchday: f.matchday, punti: f.awayScore, gol: f.awayGoals, avversario: f.homeManagerId });
+  }
+  // A parita' vince la giornata piu' recente: e' quella di cui si parla.
+  const meglio = (a, b, campo) => (b[campo] > a[campo] || (b[campo] === a[campo] && b.matchday > a.matchday) ? b : a);
+  const peggio = (a, b, campo) => (b[campo] < a[campo] || (b[campo] === a[campo] && b.matchday > a.matchday) ? b : a);
+  const migliore = punteggi.reduce((a, b) => meglio(a, b, 'punti'));
+  const peggiore = punteggi.reduce((a, b) => peggio(a, b, 'punti'));
+  const piuGol = punteggi.reduce((a, b) => meglio(a, b, 'gol'));
+  const scarto = giocati
+    .map((f) => ({ matchday: f.matchday, vincitore: f.homeGoals >= f.awayGoals ? f.homeManagerId : f.awayManagerId,
+      perdente: f.homeGoals >= f.awayGoals ? f.awayManagerId : f.homeManagerId,
+      gol: Math.abs(f.homeGoals - f.awayGoals), punti: r1(Math.abs(f.homeScore - f.awayScore)) }))
+    .reduce((a, b) => meglio(a, b, 'gol'));
+
+  // strisce: si guardano in ordine di giornata, squadra per squadra
+  const perSquadra = new Map();
+  for (const x of punteggi) {
+    if (!perSquadra.has(x.managerId)) perSquadra.set(x.managerId, []);
+    perSquadra.get(x.managerId).push(x);
+  }
+  const strisce = []; const medie = [];
+  for (const [managerId, righe] of perSquadra) {
+    righe.sort((a, b) => a.matchday - b.matchday);
+    const esiti = righe.map((x) => {
+      const f = giocati.find((g) => g.matchday === x.matchday
+        && (g.homeManagerId === managerId || g.awayManagerId === managerId));
+      const mio = f.homeManagerId === managerId ? f.homeGoals : f.awayGoals;
+      const suo = f.homeManagerId === managerId ? f.awayGoals : f.homeGoals;
+      return mio > suo ? 'V' : mio < suo ? 'P' : 'N';
+    });
+    let vMax = 0, vOra = 0, iMax = 0, iOra = 0;
+    for (const e of esiti) {
+      vOra = e === 'V' ? vOra + 1 : 0; vMax = Math.max(vMax, vOra);
+      iOra = e === 'P' ? 0 : iOra + 1; iMax = Math.max(iMax, iOra);
+    }
+    strisce.push({ managerId, vittorie: vMax, imbattuto: iMax, esiti });
+    const tot = righe.reduce((s, x) => s + x.punti, 0);
+    medie.push({ managerId, giocate: righe.length, media: r1(tot / righe.length),
+      massimo: Math.max(...righe.map((x) => x.punti)), minimo: Math.min(...righe.map((x) => x.punti)) });
+  }
+  strisce.sort((a, b) => b.vittorie - a.vittorie || b.imbattuto - a.imbattuto);
+  medie.sort((a, b) => b.media - a.media);
+  return { vuoto: false, migliore, peggiore, piuGol, scarto, strisce, medie };
+}
+
+/**
+ * Lo storico fra due squadre.
+ * @returns {{partite:Array, v:number, n:number, p:number, golA:number, golB:number, puntiA:number, puntiB:number}}
+ *   v/n/p sono visti da `a`.
+ */
+export function testaATesta(results, a, b) {
+  const partite = results.filter((f) => f.played
+    && ((f.homeManagerId === a && f.awayManagerId === b) || (f.homeManagerId === b && f.awayManagerId === a)))
+    .sort((x, y) => x.matchday - y.matchday);
+  let v = 0, n = 0, p = 0, golA = 0, golB = 0, puntiA = 0, puntiB = 0;
+  for (const f of partite) {
+    const casa = f.homeManagerId === a;
+    const ga = casa ? f.homeGoals : f.awayGoals, gb = casa ? f.awayGoals : f.homeGoals;
+    golA += ga; golB += gb;
+    puntiA = r1(puntiA + (casa ? f.homeScore : f.awayScore));
+    puntiB = r1(puntiB + (casa ? f.awayScore : f.homeScore));
+    if (ga > gb) v++; else if (ga < gb) p++; else n++;
+  }
+  return { partite, v, n, p, golA, golB, puntiA, puntiB };
+}
+
+/**
  * Di quante posizioni si e' mossa ogni squadra fra due classifiche.
  *
  * @param {Array} prima  classifica prima della giornata

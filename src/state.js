@@ -428,6 +428,22 @@ export function fixtureResult(f) {
 }
 export function resultsUntil(n) { const out = []; for (let k = 1; k <= n; k++) for (const f of fixturesOf(k)) { const r = fixtureResult(f); if (r.played) out.push(r); } return out; }
 export function standings() { return memo('standings', () => computeStandings(base.managers, resultsUntil(currentMatchday()), rules())); }
+/**
+ * La classifica com'era PRIMA della giornata n, per dire di quanto ci si e'
+ * mossi. Con n = 1 non c'e' niente prima: torna tutti a zero, e le frecce
+ * infatti non compaiono.
+ */
+export function standingsPrima(n) { return memo(`stPrima:${n}`, () => computeStandings(base.managers, resultsUntil(n - 1), rules())); }
+/**
+ * Quanto manca alla giornata: quante partite del campionato hanno gia' un
+ * risultato. Serve a dire se la classifica che si sta guardando e' ancora
+ * una proiezione o e' quella buona.
+ */
+export function avanzamento(n) {
+  const partite = matchesOf(n);
+  const fatte = partite.filter((m) => m.status === 'played' || m.status === 'postponed').length;
+  return { fatte, totali: partite.length, completa: partite.length > 0 && fatte === partite.length };
+}
 export function myFixture(n, managerId) { return fixturesOf(n).find((f) => f.homeManagerId === managerId || f.awayManagerId === managerId) || null; }
 
 // ---------------------------------------------------------------- Giudice Dati

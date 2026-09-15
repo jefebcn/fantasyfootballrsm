@@ -247,6 +247,28 @@ function makeRow(id, r, role, isCaptain, rules) {
 }
 
 /** Classifica (art. 12). results: [{homeManagerId, awayManagerId, homeGoals, awayGoals, homeScore, awayScore}] */
+/**
+ * Di quante posizioni si e' mossa ogni squadra fra due classifiche.
+ *
+ * @param {Array} prima  classifica prima della giornata
+ * @param {Array} dopo   classifica adesso
+ * @returns {Map<string, number|null>} positivo = e' salita, negativo = scesa,
+ *   0 = ferma, null = non c'e' un "prima" con cui confrontarla (prima
+ *   giornata, o squadra entrata dopo).
+ */
+export function movimenti(prima, dopo) {
+  const p = new Map(prima.map((r) => [r.managerId, r]));
+  const out = new Map();
+  for (const r of dopo) {
+    const v = p.get(r.managerId);
+    // Senza partite giocate prima, tutte le posizioni valgono uguale: la
+    // classifica "prima" e' un ordine arbitrario e confrontarsi con quella
+    // darebbe frecce senza significato.
+    out.set(r.managerId, !v || !v.played ? null : v.position - r.position);
+  }
+  return out;
+}
+
 export function computeStandings(managers, results, rules = DEFAULT_RULES) {
   const t = new Map(managers.map((m) => [m.id, { managerId: m.id, points: 0, played: 0, won: 0, drawn: 0, lost: 0, gf: 0, gs: 0, fantapunti: 0 }]));
   for (const f of results) {

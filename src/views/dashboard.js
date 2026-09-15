@@ -24,6 +24,21 @@ const RULES = [
  */
 /** L'avviso che il foglio delle notifiche promette da sempre: qui dentro
  *  l'app, dove si vede anche senza aver dato nessun permesso. */
+/**
+ * Il calendario dei lock disallineato e' un guasto silenzioso: il server chiude
+ * le formazioni in un giorno diverso da quello che l'app mostra, e nessuno se
+ * ne accorge finche' non si va a vedere la formazione di un avversario e non
+ * c'e'. La riga di stato sta in Impostazioni avanzate, che va bene quando e'
+ * tutto a posto; quando non lo e' deve venire a galla da sola.
+ */
+function lockDaSistemare() {
+  if (!S.isLeagueAdmin()) return '';
+  const n = S.lockDaSistemare(); if (!n) return '';
+  return tile({ href: '#/impostazioni/avanzate', lead: icon('warn'), leadKind: 'warn',
+    title: 'Calendario dei lock da allineare',
+    sub: `${n} giornate: il server chiude le formazioni in un giorno diverso da quello che vedi qui.` });
+}
+
 function daConsegnare() {
   const p = S.promemoriaFormazione(); if (!p) return '';
   const ore = Math.floor(p.ore);
@@ -252,6 +267,7 @@ export const dashboard = {
           sub: S.isLeagueAdmin() ? "Generale o inserirle dalla gestione lega" : "Le assegna l'admin della lega dopo l'asta" }) : azione(ph)}
       ${ultimiCinque(last, me)}
       ${prossimePartite(ph)}
+      ${lockDaSistemare()}
       ${daConsegnare()}
       ${highlights()}
       ${notizie()}

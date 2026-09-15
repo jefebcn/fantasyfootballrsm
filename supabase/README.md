@@ -1,5 +1,13 @@
 # Supabase — account e leghe multiple
 
+## Cosa manca a questo progetto? Chiedilo al database
+
+Invece di ricordare quali file sono stati eseguiti, incolla
+[`verifica.sql`](verifica.sql) nell'SQL Editor: non scrive niente, elenca cosa
+c'è e cosa manca, riga per riga. Le migrazioni sono tutte ripetibili (`if not
+exists`, `create or replace`, `drop policy if exists`), quindi rieseguirne una
+già fatta non rompe nulla.
+
 ## Migrazione 004 — il lock delle formazioni dal calendario vero
 
 **Da eseguire: `migrations/004-lock-dal-calendario.sql` nell'SQL Editor.**

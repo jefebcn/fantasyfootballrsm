@@ -16,7 +16,7 @@ const ROUTES = [
   ['regolamento', views.regolamento], ['scheda', views.scheda], ['impostazioni', views.impostazioni],
   ['admin', views.adminGiornata], ['admin/partita/:id', views.adminPartita], ['admin/contestazioni', views.adminContestazioni],
   ['admin/congela', views.adminCongela], ['admin/registro', views.adminRegistro], ['mercato', views.mercato],
-  ['login', views.login], ['leghe', views.leghe], ['lega', views.lega], ['setup', views.setup], ['offline', views.offline], ['benvenuto', views.onboarding],
+  ['login', views.login], ['leghe', views.leghe], ['lega', views.lega], ['gestione', views.gestione], ['setup', views.setup], ['offline', views.offline], ['benvenuto', views.onboarding],
 ];
 
 function resolve(hash) {
@@ -71,7 +71,8 @@ function drawer() {
   // icone illustrate dove il soggetto coincide, contorno altrove: stesso riquadro per entrambe
   const item = (href, ic, label, small = '') => {
     const illus = typeof ic === 'object';
-    return `<a class="d-item" href="${href}"><i class="${illus ? 'illus' : ''}">${illus ? pic(ic.m, 'menu') : icon(ic)}</i>${label}${small ? `<small>${small}</small>` : ''}</a>`;
+    const dentro = illus ? pic(ic.m || ic.l, ic.l ? 'lega' : 'menu') : icon(ic);
+    return `<a class="d-item" href="${href}"><i class="${illus ? 'illus' : ''}">${dentro}</i>${label}${small ? `<small>${small}</small>` : ''}</a>`;
   };
   const leagues = S.myLeagues(); const cur = S.currentLeagueId();
   const head = `<div class="d-head"><div><b>${esc(me?.owner || S.profileInfo()?.display_name || u?.email || '')}</b><span>${esc(me?.teamName || u?.email || 'nessuna lega')}</span></div><button data-logout>LOGOUT</button></div>`;
@@ -79,6 +80,7 @@ function drawer() {
   return `<div class="a-drawer${drawerOpen ? ' on' : ''}"><div class="scrim" data-close-drawer></div><div class="panel">
     ${head}${leagueRow}
     ${S.hasLeague() ? `<div class="d-cta"><a class="a-btn" href="#/rosa/formazione" style="text-decoration:none">${icon('shirt', 'ic sm')}Schiera la formazione</a></div>` : ''}
+    ${item('#/gestione', { l: 'impostazioni' }, 'Gestione lega', 'tutte le sezioni')}
     <div class="d-sec"><span class="chip">Setup</span></div>
     ${item('#/lega', { m: 'leghe' }, 'Profilo lega', S.base.league.inviteCode ? `codice ${esc(S.base.league.inviteCode)}` : '')}${item('#/lega', { m: 'squadre' }, 'Partecipanti', String(S.base.managers.length))}${item('#/regolamento', { m: 'guide' }, 'Regolamento ed opzioni')}${item('#/classifica', { m: 'statistiche' }, 'Competizioni')}
     <div class="d-sec"><span class="chip">Gioca</span></div>

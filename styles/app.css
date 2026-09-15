@@ -870,3 +870,15 @@ button,a{-webkit-tap-highlight-color:transparent}
 .auth2 .lbl{color:rgba(255,255,255,.75)}
 .auth2 .field-input{background:rgba(255,255,255,.12);border-color:rgba(255,255,255,.22);color:#fff}
 @media (min-width:520px){ .auth2 .contenuto{max-width:460px;margin:0 auto} }
+
+/* Hub a riquadri (#/gestione): icone duotone, tre per riga. */
+.hub-s{display:flex;flex-direction:column;gap:10px}
+.hub-s > h3{font:600 11px var(--font-body);letter-spacing:.08em;text-transform:uppercase;color:var(--text-muted);padding-left:4px}
+.hub{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.hub-t{display:flex;flex-direction:column;align-items:center;gap:6px;padding:14px 6px 12px;background:var(--surface);border-radius:var(--r-md);box-shadow:var(--sh-card);color:var(--text);text-decoration:none;text-align:center;min-height:104px}
+.hub-t i{width:44px;height:44px;border-radius:12px;background:var(--primary-soft);display:grid;place-items:center;flex:none}
+.hub-t i .pic{width:28px;height:28px}
+.hub-t b{font-size:12.5px;font-weight:600;line-height:1.2}
+.hub-t small{font-size:10.5px;color:var(--text-muted);line-height:1.1;min-height:11px}
+.hub-t:active{transform:scale(.97)}
+@media (max-width:340px){.hub{grid-template-columns:repeat(2,1fr)}}

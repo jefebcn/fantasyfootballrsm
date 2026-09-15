@@ -7,7 +7,7 @@
  */
 import * as S from '../state.js';
 import { esc, icon, crest, sec } from '../ui.js';
-import { maglia, FANTASIE, COLORI, kitOf } from '../maglia.js';
+import { maglia, COLORI, kitOf } from '../maglia.js';
 
 const LATO = 192;          // lo stemma non serve più grande di così
 const PESO_MAX = 60 * 1024; // oltre questo si stringe ancora la qualità
@@ -130,10 +130,7 @@ function apriMaglia(ctx) {
   const disegna = () => {
     ctx.sheet(`<h3>Maglia</h3>
       <div class="mg-prev" id="mg-prev">${maglia(bozza)}</div>
-      <label class="lbl">Colore principale</label><div class="tinte">${tinte('c1')}</div>
-      <label class="lbl">Secondo colore</label><div class="tinte">${tinte('c2')}</div>
-      <label class="lbl">Fantasia</label>
-      <div class="chips" style="flex-wrap:wrap">${FANTASIE.map(([k, l]) => `<button class="chip${bozza.fantasia === k ? ' on' : ''}" data-set="fantasia:${k}">${l}</button>`).join('')}</div>
+      <label class="lbl">Colore</label><div class="tinte">${tinte('c1')}</div>
       <div class="row2" style="margin-top:10px">
         <div><label class="lbl" for="mg-num">Numero</label><input class="field-input" id="mg-num" type="number" min="0" max="99" value="${esc(bozza.numero ?? '')}"></div>
         <div><label class="lbl" for="mg-nome">Nome</label><input class="field-input" id="mg-nome" maxlength="12" value="${esc(bozza.nome || '')}" placeholder="sulla maglia"></div>

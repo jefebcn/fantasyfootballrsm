@@ -27,7 +27,7 @@ let onError = (e) => console.error(e);
 export function setErrorHandler(fn) { onError = fn; }
 
 function emptyGlobal() { return { matchEvents: {}, matchOverrides: {}, appearanceOverrides: {}, matchdayStatus: {}, lockServer: {}, changeLog: [] }; }
-function emptyLeague() { return { lineups: {}, contestazioni: [], scambi: [] }; }
+function emptyLeague() { return { lineups: {}, contestazioni: [], scambi: [], offerte: [] }; }
 function load(key, def) { try { const raw = localStorage.getItem(key); return raw ? { ...def, ...JSON.parse(raw) } : { ...def }; } catch { return { ...def }; } }
 function persistPrefs() { try { localStorage.setItem(PREFS_KEY, JSON.stringify(prefs)); } catch { /* quota */ } }
 function refreshManagers() { managersById.clear(); for (const m of base.managers) managersById.set(m.id, m); }
@@ -81,12 +81,28 @@ async function loadAll() {
     const data = await remote.loadLeague(prefs.currentLeagueId);
     base.managers = data.managers; base.rosters = data.rosters;
     base.league = { ...data.league, rules: { ...DEFAULT_RULES, ...data.league.rulesOverride }, managerCount: data.managers.length };
-    L = { lineups: data.lineups, contestazioni: data.contestazioni, scambi: [] };
+    L = { lineups: data.lineups, contestazioni: data.contestazioni, scambi: [], offerte: [] };
     // Gli scambi arrivano dalla 006: su un progetto che non l'ha ancora
     // applicata la tabella non c'e', e l'app deve funzionare comunque —
     // senza la scheda Scambi, non con una schermata di errore.
     try { L.scambi = await remote.loadScambi(prefs.currentLeagueId); L.scambiDisponibili = true; }
     catch { L.scambi = []; L.scambiDisponibili = false; }
+    // Le finestre del mercato le chiude chi apre l'app: nessuno ha un server
+    // che gira di notte. La funzione e' ripetibile e a finestre non scadute
+    // non fa niente, quindi chiamarla a ogni caricamento non costa.
+    try {
+      L.offerte = await remote.loadOfferte(prefs.currentLeagueId);
+      L.mercatoDisponibile = true;
+      if (L.offerte.some((o) => o.stato === 'aperta' && new Date(o.scadeAt) <= now())) {
+        const quanti = await remote.risolviOfferte(prefs.currentLeagueId);
+        if (quanti) {
+          const d = await remote.loadLeague(prefs.currentLeagueId);
+          base.managers = d.managers; base.rosters = d.rosters;
+          base.league = { ...base.league, managerCount: d.managers.length };
+          L.offerte = await remote.loadOfferte(prefs.currentLeagueId);
+        }
+      }
+    } catch { L.offerte = []; L.mercatoDisponibile = false; }
   } else { base.managers = []; base.rosters = {}; base.league = NO_LEAGUE; L = emptyLeague(); }
   if (prof.is_judge) { try { L.contestazioni = await remote.allContestazioni(); } catch (e) { onError(e); } }
   refreshManagers();
@@ -522,6 +538,39 @@ export async function proponiScambio(aMember, offre, chiede, crediti, nota) {
 export async function accettaScambio(id) { await remote.accettaScambio(id); await refresh(); }
 export async function rifiutaScambio(id) { await remote.rifiutaScambio(id); await refresh(); }
 export async function annullaScambio(id) { await remote.annullaScambio(id); await refresh(); }
+
+// ------------------------------------------------------- mercato svincolati
+export const offerte = () => L.offerte || [];
+export const mercatoDisponibile = () => L.mercatoDisponibile !== false;
+/** Chi non e' in nessuna rosa della lega. */
+export function svincolati() {
+  return memo('svincolati', () => {
+    const presi = new Set();
+    for (const m of base.managers) for (const r of (base.rosters[m.id] || [])) presi.add(r.playerId);
+    return base.players.filter((p) => p.isActive && !presi.has(p.id));
+  });
+}
+/** Le offerte aperte su un giocatore, dalla piu' alta. */
+export function offertePer(playerId) {
+  return offerte().filter((o) => o.playerId === playerId && o.stato === 'aperta')
+    .sort((a, b) => b.crediti - a.crediti || new Date(a.creataAt) - new Date(b.creataAt));
+}
+/** I giocatori con una finestra aperta, quella che scade prima davanti. */
+export function finestreAperte() {
+  const per = new Map();
+  for (const o of offerte()) {
+    if (o.stato !== 'aperta') continue;
+    const x = per.get(o.playerId);
+    if (!x || o.crediti > x.migliore.crediti) per.set(o.playerId, { playerId: o.playerId, migliore: o, scadeAt: o.scadeAt });
+  }
+  return [...per.values()].map((x) => ({ ...x, offerte: offertePer(x.playerId) }))
+    .sort((a, b) => new Date(a.scadeAt) - new Date(b.scadeAt));
+}
+export const mieOfferte = () => { const io = me()?.id; return io ? offerte().filter((o) => o.member === io && o.stato === 'aperta') : []; };
+/** Quanti crediti sono gia' impegnati in offerte aperte. */
+export const impegnati = () => mieOfferte().reduce((s, o) => s + o.crediti, 0);
+export async function offri(playerId, crediti) { await remote.offri(base.league.id, playerId, crediti); await refresh(); }
+export async function ritiraOfferta(id) { await remote.ritiraOfferta(id); await refresh(); }
 
 // ---------------------------------------------------------------- Giudice Dati
 const assertOpen = (matchId) => { const m = match(matchId); if (isFrozen(m.matchday)) throw new Error(`Giornata ${m.matchday} congelata (art. 9.2)`); return m; };

@@ -1,5 +1,31 @@
 # Supabase — account e leghe multiple
 
+## Migrazione 007 — mercato degli svincolati
+
+`migrations/007-mercato-svincolati.sql` aggiunge la tabella `offerte` e le
+funzioni `offri`, `ritira_offerta`, `risolvi_offerte`, `e_svincolato`.
+
+La prima offerta su un giocatore apre una finestra di **24 ore**. Dentro la
+finestra si rilancia, e la finestra **non si allunga**: alla scadenza vince
+l'offerta più alta, a parità la prima arrivata.
+
+**Chi chiude le finestre.** Nessuno, ed è voluto: le chiude `risolvi_offerte`,
+che l'app chiama a ogni caricamento quando vede qualcosa di scaduto. Non serve
+nessun processo che gira di notte, la funzione è ripetibile, e due partecipanti
+che aprono l'app nello stesso istante non assegnano due volte (le righe si
+bloccano con `for update`).
+
+**Cosa controlla il database e cosa no.** Qui stanno le regole che riguardano
+gli altri: che due persone non vincano lo stesso giocatore, che i crediti
+bastino (contando anche le offerte già aperte), che la rosa non passi i 25. I
+limiti di reparto (3-8-8-6) restano nell'app, dov'erano già per l'asta: il
+database non conosce i ruoli, che stanno nel listone, e sforare il proprio
+reparto danneggia solo sé stessi ed è visibile subito.
+
+Se i crediti non bastano più al momento della chiusura, quell'offerta si
+chiude persa e si passa alla successiva, invece di mandare una rosa in
+negativo.
+
 ## Migrazione 006 — scambi fra squadre
 
 `migrations/006-scambi.sql` aggiunge la tabella `trades` e quattro funzioni:
@@ -28,6 +54,7 @@ Su un progetto nuovo, nell'SQL Editor, in quest'ordine:
 5. `migrations/004-lock-dal-calendario.sql`
 6. `migrations/005-notifiche-push.sql`
 7. `migrations/006-scambi.sql`
+8. `migrations/007-mercato-svincolati.sql`
 
 Le migrazioni dalla 001 in poi si possono rieseguire quante volte si vuole.
 

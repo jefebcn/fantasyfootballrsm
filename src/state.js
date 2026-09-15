@@ -25,7 +25,7 @@ let prefs = load(PREFS_KEY, { theme: 'system', installedDismissed: false, curren
 let onError = (e) => console.error(e);
 export function setErrorHandler(fn) { onError = fn; }
 
-function emptyGlobal() { return { matchEvents: {}, matchOverrides: {}, appearanceOverrides: {}, matchdayStatus: {}, changeLog: [] }; }
+function emptyGlobal() { return { matchEvents: {}, matchOverrides: {}, appearanceOverrides: {}, matchdayStatus: {}, lockServer: {}, changeLog: [] }; }
 function emptyLeague() { return { lineups: {}, contestazioni: [] }; }
 function load(key, def) { try { const raw = localStorage.getItem(key); return raw ? { ...def, ...JSON.parse(raw) } : { ...def }; } catch { return { ...def }; } }
 function persistPrefs() { try { localStorage.setItem(PREFS_KEY, JSON.stringify(prefs)); } catch { /* quota */ } }
@@ -85,6 +85,15 @@ async function loadAll() {
   if (prof.is_judge) { try { L.contestazioni = await remote.allContestazioni(); } catch (e) { onError(e); } }
   refreshManagers();
   remote.subscribe(prefs.currentLeagueId, debounced);
+  // Il Giudice Dati allinea il calendario dei lock senza doverselo ricordare:
+  // e' un dato derivato dal calendario, identico a ogni giro, e l'RPC riscrive
+  // solo le righe diverse. Una volta per sessione, e un errore qui non deve
+  // impedire di usare l'app.
+  if (prof?.is_judge && !lockGiaSincronizzati && lockDisallineati().length) {
+    lockGiaSincronizzati = true;
+    try { await remote.syncMatchdayLocks(calendarioLock()); g = await remote.loadGlobal(prof.is_judge); }
+    catch (e) { onError(e); }
+  }
 }
 let timer = null;
 function debounced() { clearTimeout(timer); timer = setTimeout(() => refresh(), 400); }
@@ -259,6 +268,36 @@ export function giornataDaSchierare() {
   return n0;
 }
 /** 'frozen' | 'provisional' | 'live' | 'open' | 'scheduled' */
+/** Il calendario dei lock come lo vede l'app: e' quello che vale. */
+export const calendarioLock = () => base.matchdays.map((md) => ({ matchday: md.number, lock_at: new Date(md.lockAt).toISOString() }));
+/** Le giornate su cui il server applica una data diversa dalla nostra. */
+export function lockDisallineati() {
+  const srv = g.lockServer || {};
+  return calendarioLock().filter((r) => {
+    const v = srv[r.matchday];
+    return !v || Math.abs(+new Date(v) - +new Date(r.lock_at)) > 60000;
+  });
+}
+/** Quante giornate il server non ha ancora, o ha sbagliate. */
+export const lockDaSistemare = () => lockDisallineati().length;
+
+/**
+ * Allinea il server al calendario dell'app. Il lock decide due cose che
+ * contano — se puoi ancora schierare e se puoi vedere le formazioni altrui — e
+ * finche' le due date differivano il server ne applicava una sbagliata di otto
+ * giorni. Qui la fonte e' una sola: questa.
+ */
+let lockGiaSincronizzati = false;
+export async function sincronizzaLock({ forza = false } = {}) {
+  if (!isJudge()) throw new Error('Solo il Giudice Dati può aggiornare il calendario dei lock');
+  const da = forza ? calendarioLock() : lockDisallineati();
+  if (!da.length) return 0;
+  const n = await remote.syncMatchdayLocks(forza ? calendarioLock() : da);
+  lockGiaSincronizzati = true;
+  await refresh();
+  return n ?? da.length;
+}
+
 export function matchdayStatus(n) {
   if (g.matchdayStatus[n]) return g.matchdayStatus[n];
   if (hasData(n)) return 'provisional';

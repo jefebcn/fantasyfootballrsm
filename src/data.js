@@ -50,6 +50,32 @@ const LAST = ['Gasperoni', 'Benedettini', 'Zafferani', 'Marchetti', 'Battistini'
 
 export const SEASON_START = new Date('2026-09-05T15:00:00+02:00'); // sabato della 1ª giornata
 
+/** Scarto di Roma dall'UTC, in ore, nell'istante dato: 2 d'estate, 1 d'inverno. */
+function scartoRoma(t) {
+  const s = new Intl.DateTimeFormat('en-US', { timeZone: 'Europe/Rome', timeZoneName: 'longOffset' }).format(t);
+  const m = /GMT([+-])(\d{2}):(\d{2})/.exec(s);
+  return m ? (m[1] === '-' ? -1 : 1) * (Number(m[2]) + Number(m[3]) / 60) : 1;
+}
+/**
+ * L'istante in cui a Roma sono le `ora` del giorno in cui cade `t`.
+ *
+ * Serve perche' il lock e' un dato che finisce sul server e regola i permessi:
+ * deve essere lo stesso per tutti. Con setHours() sarebbero state le 15:00 del
+ * fuso di chi apriva l'app — le 15:00 a Londra sono le 16:00 a Roma — e il
+ * calendario dipendeva da dove ti trovavi. Le partite si giocano in Italia,
+ * quindi l'orario e' quello italiano e basta.
+ */
+export function oraItaliana(t, ora = 15) {
+  const d = new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Rome', year: 'numeric', month: '2-digit', day: '2-digit' })
+    .format(t).split('-').map(Number);
+  // Roma e' a +1 o a +2: si prova, e si tiene quella coerente con se stessa.
+  for (const off of [2, 1]) {
+    const cand = new Date(Date.UTC(d[0], d[1] - 1, d[2], ora - off));
+    if (Math.abs(scartoRoma(cand) - off) < 0.01) return cand;
+  }
+  return new Date(Date.UTC(d[0], d[1] - 1, d[2], ora - 1));
+}
+
 /** Round robin (algoritmo del cerchio). Ritorna round[] di coppie [a,b]. */
 export function roundRobin(ids) {
   const n = ids.length; const list = [...ids]; const rounds = [];
@@ -154,7 +180,7 @@ export function buildSeason(seed = 20262027) {
     // al vero che ripartire dall'inizio stagione.
     const primo = orari.length ? new Date(Math.min(...orari))
       : new Date((ultimoNoto ?? SEASON_START.getTime()) + (n - ultimoN) * 7 * 86400000);
-    const sat = new Date(primo); sat.setHours(15, 0, 0, 0);
+    const sat = oraItaliana(primo, 15);
     if (orari.length) { ultimoNoto = +sat; ultimoN = n; }
     const md = { id: `md${n}`, number: n, lockAt: sat.toISOString(), saturday: sat.toISOString() };
     matchdays.push(md);

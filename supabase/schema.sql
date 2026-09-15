@@ -128,6 +128,13 @@ create table if not exists public.matchday_status (
   changed_by uuid references public.profiles(id)
 );
 
+create table if not exists public.matchday_locks (
+  matchday int primary key check (matchday between 1 and 30),
+  lock_at timestamptz not null,
+  updated_at timestamptz not null default now(),
+  updated_by uuid references public.profiles(id)
+);
+
 create table if not exists public.change_log (
   id bigserial primary key,
   at timestamptz not null default now(),
@@ -160,10 +167,38 @@ language sql stable security definer set search_path = public as $$
 $$;
 
 -- Lock formazioni (art. 8.3): sabato 15:00 Europe/Rome della giornata n. Allineato a SEASON_START in src/data.js.
+-- Il lock e' un DATO, non una formula: viene dal calendario vero della FSGC,
+-- lo stesso che usa l'app. Prima era '2026-09-05 15:00' + (n-1)*7 giorni, con
+-- otto giorni di scarto su tutte e 30 le giornate rispetto al calendario: la
+-- formazione restava scrivibile per otto giorni dopo la partita e le
+-- formazioni altrui non si potevano leggere fino a otto giorni dopo.
+-- NULL quando la giornata non e' ancora stata sincronizzata: le policy lo
+-- interpretano ciascuna nella propria direzione prudente.
 create or replace function public.matchday_lock_at(n int) returns timestamptz
-language sql immutable as $$
-  select timestamptz '2026-09-05 15:00:00 Europe/Rome' + ((n - 1) * interval '7 days')
+language sql stable security definer set search_path = public as $$
+  select lock_at from public.matchday_locks where matchday = n
 $$;
+
+/** Riscrive il calendario dei lock. La chiama l'app col calendario che ha in
+ *  mano, cosi' le due date non possono divergere: sono la stessa.
+ *  [{"matchday": 1, "lock_at": "2026-08-28T15:00:00+02:00"}, ...] */
+create or replace function public.sync_matchday_locks(p jsonb)
+returns int language plpgsql security definer set search_path = public as $$
+declare scritte int;
+begin
+  if not public.is_judge() then
+    raise exception 'solo il Giudice Dati puo aggiornare il calendario dei lock';
+  end if;
+  insert into public.matchday_locks (matchday, lock_at, updated_at, updated_by)
+  select (e->>'matchday')::int, (e->>'lock_at')::timestamptz, now(), auth.uid()
+    from jsonb_array_elements(p) e
+   where (e->>'matchday')::int between 1 and 30
+  on conflict (matchday) do update
+    set lock_at = excluded.lock_at, updated_at = now(), updated_by = excluded.updated_by
+    where public.matchday_locks.lock_at <> excluded.lock_at;
+  get diagnostics scritte = row_count;
+  return scritte;
+end $$;
 
 create or replace function public.matchday_of(mid text) returns int
 language sql immutable as $$
@@ -273,13 +308,17 @@ create policy rosters_read on public.rosters for select to authenticated using (
 drop policy if exists rosters_write on public.rosters;
 create policy rosters_write on public.rosters for all to authenticated using (public.is_league_admin(league_id)) with check (public.is_league_admin(league_id));
 
+-- Con la tabella dei lock ancora vuota si sbaglia nella direzione che non fa
+-- danno: la scrittura resta aperta (nessuno chiuso fuori dalla propria
+-- formazione) e la lettura resta chiusa (nessuno sbircia le altrui). Le due
+-- coalesce sono diverse di proposito.
 drop policy if exists lineups_read on public.lineups;
 create policy lineups_read on public.lineups for select to authenticated
-  using (public.is_league_member(league_id) and (member_id = public.my_member_id(league_id) or now() >= public.matchday_lock_at(matchday)));
+  using (public.is_league_member(league_id) and (member_id = public.my_member_id(league_id) or now() >= coalesce(public.matchday_lock_at(matchday), 'infinity'::timestamptz)));
 drop policy if exists lineups_write on public.lineups;
 create policy lineups_write on public.lineups for all to authenticated
-  using (member_id = public.my_member_id(league_id) and now() < public.matchday_lock_at(matchday))
-  with check (member_id = public.my_member_id(league_id) and now() < public.matchday_lock_at(matchday));
+  using (member_id = public.my_member_id(league_id) and now() < coalesce(public.matchday_lock_at(matchday), 'infinity'::timestamptz))
+  with check (member_id = public.my_member_id(league_id) and now() < coalesce(public.matchday_lock_at(matchday), 'infinity'::timestamptz));
 
 drop policy if exists contest_read on public.contestazioni;
 create policy contest_read on public.contestazioni for select to authenticated using (public.is_league_member(league_id) or public.is_judge());
@@ -304,6 +343,14 @@ drop policy if exists global_read_status on public.matchday_status;
 create policy global_read_status on public.matchday_status for select to authenticated using (true);
 drop policy if exists global_write_status on public.matchday_status;
 create policy global_write_status on public.matchday_status for all to authenticated using (public.is_judge()) with check (public.is_judge());
+
+alter table public.matchday_locks enable row level security;
+drop policy if exists locks_read on public.matchday_locks;
+create policy locks_read on public.matchday_locks for select to authenticated using (true);
+drop policy if exists locks_write on public.matchday_locks;
+create policy locks_write on public.matchday_locks for all to authenticated using (public.is_judge()) with check (public.is_judge());
+revoke all on function public.sync_matchday_locks(jsonb) from public;
+grant execute on function public.sync_matchday_locks(jsonb) to authenticated;
 drop policy if exists log_read on public.change_log;
 create policy log_read on public.change_log for select to authenticated using (public.is_judge());
 drop policy if exists log_insert on public.change_log;
@@ -312,7 +359,7 @@ create policy log_insert on public.change_log for insert to authenticated with c
 -- ---------------------------------------------------------------- realtime
 do $$ begin
   alter publication supabase_realtime add table public.lineups, public.rosters, public.league_members, public.contestazioni,
-    public.match_overrides, public.match_events, public.match_appearances, public.matchday_status;
+    public.match_overrides, public.match_events, public.match_appearances, public.matchday_status, public.matchday_locks;
 exception when others then null; end $$;
 
 -- Per nominare il Giudice Dati (una volta, dall'SQL Editor):

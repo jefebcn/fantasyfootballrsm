@@ -1,5 +1,32 @@
 # Supabase — account e leghe multiple
 
+## Migrazione 004 — il lock delle formazioni dal calendario vero
+
+**Da eseguire: `migrations/004-lock-dal-calendario.sql` nell'SQL Editor.**
+
+Il lock era calcolato in due posti con due calendari diversi: il server con una
+formula fissa (`'2026-09-05 15:00 Europe/Rome' + (n-1) × 7 giorni`), l'app col
+calendario vero della FSGC. **Otto giorni di scarto su tutte e 30 le giornate**
+(giornata 1: 28 agosto contro 5 settembre; giornata 30: 19 marzo contro 27 marzo),
+e le policy applicavano quella del server. Quindi:
+
+1. la formazione restava scrivibile per otto giorni **dopo** che la partita era
+   finita. L'app la bloccava, ma la protezione che conta è quella del database:
+   chi sa usare le API poteva rifare la formazione sapendo i risultati;
+2. `lineups_read` non lasciava leggere le formazioni degli avversari fino a otto
+   giorni dopo la partita, quindi nella sfida l'avversario compariva con l'undici
+   d'ufficio invece del suo.
+
+La migrazione aggiunge `matchday_locks` (una riga per giornata), fa leggere
+`matchday_lock_at()` da lì e aggiunge `sync_matchday_locks()`, che il Giudice Dati
+usa per scriverci il calendario che l'app ha già in mano. Finché la tabella è vuota
+le policy sbagliano nella direzione prudente: scrittura aperta (nessuno resta chiuso
+fuori dalla propria formazione), lettura chiusa (nessuno sbircia le altrui).
+
+Dopo averla eseguita non serve fare altro: **l'app allinea la tabella da sola** al
+primo accesso del Giudice Dati, e la schermata «Congela giornata» mostra se è
+allineata, con un tasto per rifarlo a mano.
+
 ## Migrazione 003 — uscire da una lega
 
 Esegui `migrations/003-abbandona-lega.sql` nell'SQL Editor. Aggiunge la funzione
@@ -171,9 +198,18 @@ un nome vero non vede quel campo.
 
 - **Generato dal client** (`src/data.js`): società, listone, calendario. Stabili per stagione.
 - **Globale** (una volta per tutte le leghe, scrive solo il Giudice Dati): `match_overrides`,
-  `match_events`, `match_appearances`, `matchday_status`, `change_log` (automatico via trigger).
+  `match_events`, `match_appearances`, `matchday_status`, `matchday_locks`, `change_log`
+  (automatico via trigger).
 - **Per lega**: `leagues`, `league_members` (ruolo `admin` / `fantallenatore`), `rosters`,
   `lineups` (scrivibili solo dal proprietario e solo prima del lock, art. 8.3), `contestazioni`.
+- **Il lock delle formazioni** (art. 8.3) viene da `matchday_locks`, una riga per giornata,
+  scritta dal Giudice Dati con `sync_matchday_locks()` a partire dal calendario vero della
+  FSGC — lo stesso che usa l'app. Prima era una formula (`5 settembre + (n-1) × 7 giorni`)
+  e sbagliava di otto giorni su tutte e 30 le giornate: la formazione restava scrivibile per
+  otto giorni dopo la partita e le formazioni altrui non si potevano leggere fino a otto
+  giorni dopo. L'app allinea la tabella da sola quando entra il Giudice Dati, e la schermata
+  «Congela giornata» dice se è allineata. Con la tabella vuota le policy sbagliano nella
+  direzione prudente: scrittura aperta (nessuno chiuso fuori), lettura chiusa (nessuno sbircia).
 - **Congelamento** (art. 9.2): un trigger rifiuta qualunque scrittura sul dato di una giornata
   con `matchday_status = 'frozen'`, anche per il Giudice Dati.
 - Senza un progetto collegato l'app non entra: non esiste più nessuna modalità demo.

@@ -30,7 +30,7 @@ function builder(table) {
     then(res, rej) {
       try {
         let data = null; const rows = T(table);
-        const pk = { lineups: ['league_id', 'member_id', 'matchday'], match_overrides: ['match_id'], match_appearances: ['match_id', 'player_id'], matchday_status: ['matchday'], profiles: ['id'] }[table] || ['id'];
+        const pk = { lineups: ['league_id', 'member_id', 'matchday'], match_overrides: ['match_id'], match_appearances: ['match_id', 'player_id'], matchday_status: ['matchday'], matchday_locks: ['matchday'], profiles: ['id'] }[table] || ['id'];
         const withDefaults = (r) => ({ id: uid(), created_at: now(), ...r });
         if (op === 'select') { data = apply(rows).map(expand); if (orderBy) data.sort((a, b) => (a[orderBy[0]] > b[orderBy[0]] ? 1 : -1) * (orderBy[1] ? 1 : -1)); if (lim) data = data.slice(0, lim); }
         if (op === 'insert') { const list = (Array.isArray(payload) ? payload : [payload]).map(withDefaults); guardFrozen(table, list); rows.push(...list); data = list.map(expand); }
@@ -94,6 +94,17 @@ export function createClient(_url, _key, opts) {
         const prof = T('profiles').find((p) => p.id === userId);
         if (name === 'create_league') { const l = { id: uid(), name: args.p_name, short_name: args.p_short, invite_code: Math.random().toString(36).slice(2, 8).toUpperCase(), rules: {}, started: false, created_by: userId, created_at: now() }; T('leagues').push(l); T('league_members').push({ id: uid(), league_id: l.id, user_id: userId, role: 'admin', team_name: args.p_team, owner_name: prof.display_name, color: args.p_color, initials: args.p_initials, credits: 500, created_at: now() }); persisti(); return { data: l.id, error: null }; }
         if (name === 'join_league') { const l = T('leagues').find((x) => x.invite_code === args.p_code.toUpperCase()); if (!l) throw new Error('Codice invito non valido'); if (!T('league_members').some((m) => m.league_id === l.id && m.user_id === userId)) T('league_members').push({ id: uid(), league_id: l.id, user_id: userId, role: 'fantallenatore', team_name: args.p_team, owner_name: prof.display_name, color: args.p_color, initials: args.p_initials, credits: 500, created_at: now() }); persisti(); return { data: l.id, error: null }; }
+        if (name === 'sync_matchday_locks') {
+          // Come sul server: solo il Giudice Dati, e riscrive solo cio' che cambia.
+          if (!prof?.is_judge) throw new Error('solo il Giudice Dati puo aggiornare il calendario dei lock');
+          const t = T('matchday_locks'); let n = 0;
+          for (const e of args.p || []) {
+            const riga = t.find((x) => x.matchday === e.matchday);
+            if (!riga) { t.push({ matchday: e.matchday, lock_at: e.lock_at, updated_at: now(), updated_by: userId }); n++; }
+            else if (riga.lock_at !== e.lock_at) { riga.lock_at = e.lock_at; riga.updated_at = now(); n++; }
+          }
+          persisti(); return { data: n, error: null };
+        }
         throw new Error('rpc sconosciuta ' + name);
       } catch (e) { return { data: null, error: { message: e.message } }; }
     },

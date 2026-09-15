@@ -200,11 +200,12 @@ export async function allContestazioni() {
 
 // ---------------------------------------------------------------- dato globale
 export async function loadGlobal(withLog) {
-  const [ov, ev, ap, st, log] = await Promise.all([
+  const [ov, ev, ap, st, lk, log] = await Promise.all([
     must(await sb.from('match_overrides').select('*')),
     must(await sb.from('match_events').select('*').order('minute')),
     must(await sb.from('match_appearances').select('*')),
     must(await sb.from('matchday_status').select('*')),
+    must(await sb.from('matchday_locks').select('*')),
     withLog ? must(await sb.from('change_log').select('*').order('at', { ascending: false }).limit(300)) : [],
   ]);
   const matchOverrides = {}; for (const o of ov) matchOverrides[o.match_id] = { status: o.status, homeGoals: o.home_goals, awayGoals: o.away_goals, ...(o.video_url ? { videoUrl: o.video_url } : {}) };
@@ -212,7 +213,15 @@ export async function loadGlobal(withLog) {
   const appearanceOverrides = {}; for (const a of ap) (appearanceOverrides[a.match_id] ||= []).push({ matchId: a.match_id, playerId: a.player_id, clubId: a.club_id, started: a.started, minutesPlayed: a.minutes_played, enteredAt: a.entered_at });
   const matchdayStatus = {}; for (const s of st) matchdayStatus[s.matchday] = s.status;
   const changeLog = log.map((l) => ({ at: l.at, by: l.by_user, matchId: l.match_id, matchday: l.matchday, what: l.what, payload: l.payload }));
-  return { matchOverrides, matchEvents, appearanceOverrides, matchdayStatus, changeLog };
+  // Il lock che il SERVER applica alle policy: serve per accorgersi se si e'
+  // scostato dal calendario dell'app, non per usarlo al posto suo.
+  const lockServer = {}; for (const r of lk) lockServer[r.matchday] = r.lock_at;
+  return { matchOverrides, matchEvents, appearanceOverrides, matchdayStatus, lockServer, changeLog };
+}
+
+/** Riscrive sul server il calendario dei lock. Solo il Giudice Dati. */
+export async function syncMatchdayLocks(righe) {
+  return must(await sb.rpc('sync_matchday_locks', { p: righe }));
 }
 export async function upsertMatch(matchId, patch, userId) {
   const row = { match_id: matchId, updated_by: userId, updated_at: new Date().toISOString() };

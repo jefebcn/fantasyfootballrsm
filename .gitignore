@@ -3,3 +3,7 @@ __pycache__/
 
 # archivio di lavoro dell'importatore referti: si rigenera, non si versiona a metà
 data/tabellini.json
+
+# scarti degli script di prova: gli screenshot di controllo si rigenerano,
+# non stanno nel repo (MD_campo.png ci era finito per sbaglio)
+/*.png

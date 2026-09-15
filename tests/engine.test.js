@@ -192,3 +192,18 @@ test('fattore campo: si somma solo a chi gioca in casa (art. 11.3)', () => {
   const senza = computeLineupResult({ lineup, ratings, players, managerCount: 10, isHome: true });
   assert.equal(senza.total, fuori.total);
 });
+
+/* ---- il lock e' un dato che finisce sul server: non puo' dipendere dal fuso
+       del telefono di chi apre l'app (art. 8.3) ---- */
+
+test('il lock e\' sempre alle 15:00 italiane, da qualunque fuso si guardi', async () => {
+  const { oraItaliana } = await import('../src/data.js');
+  const aRoma = (d) => new Intl.DateTimeFormat('it-IT', { timeZone: 'Europe/Rome', hour: '2-digit', minute: '2-digit', hour12: false }).format(d);
+  // ora legale (+2) e ora solare (+1): lo scarto dall'UTC cambia, l'ora a Roma no
+  assert.equal(aRoma(oraItaliana(new Date('2026-08-28T19:00:00Z'))), '15:00');
+  assert.equal(aRoma(oraItaliana(new Date('2027-01-08T19:00:00Z'))), '15:00');
+  assert.equal(oraItaliana(new Date('2026-08-28T19:00:00Z')).toISOString(), '2026-08-28T13:00:00.000Z');
+  assert.equal(oraItaliana(new Date('2027-01-08T19:00:00Z')).toISOString(), '2027-01-08T14:00:00.000Z');
+  // il giorno si prende in Italia: alle 23:00 di New York a Roma e' gia' domani
+  assert.equal(oraItaliana(new Date('2026-08-29T03:00:00Z')).toISOString(), '2026-08-29T13:00:00.000Z');
+});

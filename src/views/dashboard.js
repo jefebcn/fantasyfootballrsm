@@ -1,7 +1,6 @@
 import * as S from '../state.js';
 import { videoGiornata, giornateConVideo } from '../video.js';
 import * as AV from '../notifiche.js';
-import { sfondoHome } from '../sfondo.js';
 import * as N from '../notizie.js';
 import { esc, fmt, icon, logo, badge, crest, pic, tile, sec, dateIt, timeIt } from '../ui.js';
 import { maglia, kitOf } from '../maglia.js';
@@ -222,7 +221,7 @@ export const dashboard = {
       <div id="install-slot"></div>
       <div class="a-herowrap">
         <div class="a-hero${S.store.get().sfondoFoto ? ' foto' : ''}">
-          ${S.store.get().sfondoFoto ? `<span class="sfondo">${sfondoHome()}<i></i></span>` : ''}
+          ${S.store.get().sfondoFoto ? '<span class="sfondo"><img src="media/sfondo-home.jpg" alt="" fetchpriority="high"><i></i></span>' : ''}
           ${logo('tw')}<i class="conf"></i>
           <a class="hero-league" href="#/leghe">
             <span><b>${esc(S.base.league.shortName || S.base.league.name)}</b>

@@ -1,0 +1,92 @@
+# Importa da sola i dati del campionato, invece di dipendere da qualcuno che si
+# ricordi di lanciare due script ogni settimana.
+#
+# Se salta una settimana i voti non arrivano, e la giornata si congela martedi'
+# alle 20:00 comunque (art. 9.2): il dato mancante non e' piu' rettificabile.
+# Per questo gira ogni giorno e non solo il lunedi': se la FSGC pubblica in
+# ritardo, il giorno dopo si riprende senza che nessuno debba accorgersene.
+#
+# Non committa se non e' cambiato niente, quindi girare a vuoto non costa nulla.
+
+name: Dati FSGC
+
+on:
+  schedule:
+    - cron: '30 5 * * *'      # ogni giorno, 05:30 UTC (07:30 in Italia d'estate)
+  workflow_dispatch:           # e a mano, dal tasto "Run workflow"
+
+concurrency:
+  group: dati-fsgc
+  cancel-in-progress: false    # due import sovrapposti si pesterebbero i piedi
+
+permissions:
+  contents: write
+
+jobs:
+  importa:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      # data/tabellini.json e' l'archivio che permette allo script di riprendere
+      # da dove era: non e' versionato (a meta' non vale niente) e senza di lui
+      # ogni esecuzione riscaricherebbe da zero tutte le partite giocate — a
+      # fine stagione duecentoquaranta. Qui si conserva tra un giro e l'altro.
+      - name: Riprendi l'archivio dei tabellini
+        uses: actions/cache@v4
+        with:
+          path: data/tabellini.json
+          key: tabellini-${{ github.run_id }}
+          restore-keys: |
+            tabellini-
+
+      # Calendario, risultati, stadi, formazioni ed eventi. Se la FSGC non
+      # risponde lo script solleva e il lavoro fallisce: e' voluto, perche' un
+      # fallimento visibile e' meglio di dati vecchi spacciati per nuovi.
+      - name: Calendario, risultati e referti
+        run: python3 scripts/importa-fsgc.py
+
+      # I video sono un extra: se il feed di YouTube non risponde si tira avanti
+      # con i dati di gara, che sono quelli che fanno i voti.
+      - name: Highlights dal canale FSGC
+        continue-on-error: true
+        run: python3 scripts/importa-video.py
+
+      - name: Cosa e' cambiato
+        id: diff
+        run: |
+          if git diff --quiet -- src/; then
+            echo "cambiato=no" >> "$GITHUB_OUTPUT"
+            echo "Nessun dato nuovo: niente da committare."
+          else
+            echo "cambiato=si" >> "$GITHUB_OUTPUT"
+            git diff --stat -- src/
+          fi
+
+      # La cache e' stale-while-revalidate: senza una versione nuova chi ha
+      # l'app installata vedrebbe i dati della settimana prima al primo avvio.
+      - name: Versione nuova del service worker
+        if: steps.diff.outputs.cambiato == 'si'
+        run: python3 scripts/bump-sw.py
+
+      - name: I test passano ancora
+        if: steps.diff.outputs.cambiato == 'si'
+        run: npm test
+
+      - name: Committa
+        if: steps.diff.outputs.cambiato == 'si'
+        run: |
+          git config user.name  'importatore FSGC'
+          git config user.email 'importatore-fsgc@users.noreply.github.com'
+          git add src/ sw.js
+          git commit -m "dati: import automatico del $(date -u +'%d/%m/%Y')" \
+                     -m "$(git diff --cached --stat -- src/ | tail -1)"
+          git push

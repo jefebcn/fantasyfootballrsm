@@ -293,6 +293,57 @@ export function validateLineup(lineup, players, rules = DEFAULT_RULES) {
 }
 
 /** Formazione d'ufficio (art. 8.4): 4-4-2 con i giocatori di quotazione più alta per ruolo. */
+/**
+ * Puo' comprare? (art. 2-3). Restituisce l'elenco dei perche' no, vuoto se si'.
+ *
+ * La regola che fa la differenza fra un'asta giocabile e una rotta e' l'ultima:
+ * non basta avere i crediti per QUESTO giocatore, bisogna restarne con almeno
+ * uno per ogni casella ancora vuota. Senza, si arriva a fine asta con la rosa
+ * incompleta e non c'e' modo di rimediare.
+ */
+export function validaAcquisto({ rosa, crediti, player, prezzo, giaPreso = false, rules = DEFAULT_RULES }) {
+  const err = [];
+  if (!player) return ['Giocatore sconosciuto'];
+  if (!Number.isInteger(prezzo) || prezzo < 1) err.push('Il prezzo è almeno 1 credito, intero');
+  if (giaPreso) err.push('Già in un\'altra rosa');
+  if (player.isActive === false) err.push('Fuori dal campionato');
+
+  const perRuolo = { P: 0, D: 0, C: 0, A: 0 };
+  for (const r of rosa) if (r.player) perRuolo[r.player.role]++;
+  const serve = rules.roster;
+  if (perRuolo[player.role] >= serve[player.role]) {
+    err.push(`${roleName(player.role)}: già ${perRuolo[player.role]}/${serve[player.role]}`);
+  }
+  if (rosa.some((r) => r.playerId === player.id)) err.push('Già in questa rosa');
+
+  if (rules.maxPerClub) {
+    const dallaSocieta = rosa.filter((r) => r.player && r.player.clubId === player.clubId).length;
+    if (dallaSocieta >= rules.maxPerClub) err.push(`Già ${dallaSocieta} da ${player.clubId}: il tetto è ${rules.maxPerClub}`);
+  }
+
+  if (Number.isInteger(prezzo) && prezzo >= 1) {
+    if (prezzo > crediti) err.push(`Crediti: ne servono ${prezzo}, ce ne sono ${crediti}`);
+    else {
+      // caselle ancora vuote DOPO questo acquisto
+      const vuote = ['P', 'D', 'C', 'A'].reduce((n, r) => n + Math.max(0, serve[r] - perRuolo[r]), 0) - 1;
+      const restano = crediti - prezzo;
+      if (vuote > 0 && restano < vuote) {
+        err.push(`Restano ${restano} crediti per ${vuote} caselle: servono almeno ${vuote}`);
+      }
+    }
+  }
+  return err;
+}
+
+/** Quanto puoi offrire al massimo tenendoti un credito per ogni casella vuota. */
+export function offertaMassima({ rosa, crediti, role, rules = DEFAULT_RULES }) {
+  const perRuolo = { P: 0, D: 0, C: 0, A: 0 };
+  for (const r of rosa) if (r.player) perRuolo[r.player.role]++;
+  if (role && perRuolo[role] >= rules.roster[role]) return 0;
+  const vuoteDopo = ['P', 'D', 'C', 'A'].reduce((n, r) => n + Math.max(0, rules.roster[r] - perRuolo[r]), 0) - 1;
+  return Math.max(0, crediti - Math.max(0, vuoteDopo));
+}
+
 export function defaultLineup(rosterIds, players, formation = '4-4-2') {
   const need = parseModule(formation);
   const byRole = { P: [], D: [], C: [], A: [] };

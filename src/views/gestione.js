@@ -10,6 +10,7 @@ const GIOCA = [
   ['#/rosa', 'rose', 'La mia rosa'],
   ['#/rosa/formazione', 'probabili-formazioni', 'Formazione'],
   ['#/listone', 'calcola', 'Listone'],
+  ['#/asta', 'premi', 'Asta'],
   ['#/mercato', 'scambi', 'Mercato libero'],
   ['#/calendario', 'calendario', 'Calendario'],
 ];

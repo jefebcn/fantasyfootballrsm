@@ -653,8 +653,13 @@ button,a{-webkit-tap-highlight-color:transparent}
 .d-item i .pic,.tile > .lead .pic{width:24px;height:24px}
 .d-item i.illus{background:var(--surface-sunk)}
 .tile > .lead.illus{background:var(--surface-sunk);padding:7px}
-.ps .ind .sub{display:inline-grid;place-items:center;width:18px;height:18px;background:#fff;border-radius:5px;box-shadow:0 1px 3px rgba(0,0,0,.3)}
-.b2 .nm b .sub.sm{display:inline-grid;width:14px;height:14px;vertical-align:-2px}
+/* Segno di sostituzione. Si chiamava .sub come la RIGA di sostituzione della
+   lista voti: quel grid a tre colonne schiacciava l'icona a 0px di larghezza,
+   e sul campo restava un riquadro bianco vuoto. */
+.ps .ind .segno{display:inline-grid;place-items:center;width:18px;height:18px;background:#fff;border-radius:5px;box-shadow:0 1px 3px rgba(0,0,0,.3)}
+.ps .ind .segno .pic{width:14px;height:14px}
+.b2 .nm b .segno.sm{display:inline-grid;place-items:center;width:14px;height:14px;vertical-align:-2px}
+.b2 .nm b .segno.sm .pic{width:14px;height:14px}
 .sheet-ev{display:flex;align-items:center;gap:8px}
 .kb .k .evi{margin-bottom:2px}
 
@@ -923,3 +928,16 @@ button,a{-webkit-tap-highlight-color:transparent}
 .pr .cap{display:inline-grid;place-items:center;width:14px;height:14px;border-radius:50%;background:var(--accent);
   color:var(--c-titano-900);font:800 9px var(--font-display);vertical-align:middle}
 .fonte{margin:8px 0 0;font-size:10px;color:var(--text-muted);line-height:1.3}
+
+/* Avatar dei giocatori (src/avatar.js). */
+.av-fig{display:block;width:100%;height:100%}
+.av-w{position:relative;display:block;width:34px;height:40px;flex:none}
+.av-w .rl{position:absolute;bottom:-1px;right:-5px;width:16px;height:16px;font-size:9px;border:2px solid var(--surface)}
+.av-big{display:grid;place-items:center;width:64px;height:64px;border-radius:50%;flex:none;
+  background:color-mix(in srgb, var(--c) 18%, var(--surface));overflow:hidden}
+.av-big .av-fig{width:58px;height:66px;margin-top:8px}
+/* In campo l'avatar sostituisce il tondo con le iniziali. */
+.ps .av.faccia,.slot .av.faccia{background:transparent;box-shadow:none;width:44px;height:48px;display:block}
+.ps .av.faccia .av-fig,.slot .av.faccia .av-fig{filter:drop-shadow(0 2px 4px rgba(0,0,0,.35))}
+.ps .av.faccia .rl,.slot .av.faccia .rl{bottom:0;right:-4px}
+.ps .av.faccia .cap,.slot .av.faccia .cap{top:-2px;left:-4px}

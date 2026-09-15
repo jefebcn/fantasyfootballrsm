@@ -1,4 +1,6 @@
 /** Componenti UI condivisi: stringhe HTML, nessun framework. */
+import { avatar } from './avatar.js';
+export { avatar } from './avatar.js';
 export const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 export const fmt = (n, min = 1) => (n == null ? 'S.V.' : Number(n).toLocaleString('it-IT', { minimumFractionDigits: min, maximumFractionDigits: 2 }));
 export const signed = (n) => (n > 0 ? '+' : n < 0 ? '−' : '') + fmt(Math.abs(n));
@@ -26,6 +28,13 @@ export function badge(status, extra = '') {
   return `<span class="badge ${cls}">${ic ? icon(ic) : '<i class="pulse"></i>'}${label}${small ? ` <small>· ${esc(small)}</small>` : ''}</span>`;
 }
 export const roleChip = (role) => `<span class="rl rl-${role.toLowerCase()}">${role}</span>`;
+
+/** Avatar del giocatore con il ruolo appeso: sta in una colonna sola. */
+export const faccia = (p, club, cls = '') =>
+  `<span class="av-w ${cls}">${avatar(p, club)}${roleChip(p.role)}</span>`;
+/** Avatar grande per la scheda del giocatore, su un tondo col colore del club. */
+export const avatarGrande = (p, club) =>
+  `<span class="av-big" style="--c:${club?.color || '#2B4C7E'}">${avatar(p, club)}</span>`;
 export const crest = (m, cls = '') => `<span class="crest ${cls}" style="background:${m.color}">${esc(m.initials)}</span>`;
 
 /**

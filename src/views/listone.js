@@ -1,5 +1,5 @@
 import * as S from '../state.js';
-import { esc, fmt, icon, roleChip, ROLE_NAME } from '../ui.js';
+import { esc, fmt, icon, faccia, ROLE_NAME } from '../ui.js';
 
 let q = '', role = null, clubId = null;
 export const listone = {
@@ -11,7 +11,7 @@ export const listone = {
     return `<main class="a-body">
       <div class="topbar" style="padding-top:0"><input class="field-input" id="q" placeholder="Cerca fra ${S.base.players.length} tesserati" value="${esc(q)}" autocomplete="off" style="flex:1"></div>
       <div class="chips sticky"><button class="chip${!role ? ' on' : ''}" data-role="">Tutti</button>${['P', 'D', 'C', 'A'].map((r) => `<button class="chip${role === r ? ' on' : ''}" data-role="${r}">${r}</button>`).join('')}<select id="club" class="select" aria-label="Società"><option value="">Società</option>${S.base.clubs.map((c) => `<option value="${c.id}" ${clubId === c.id ? 'selected' : ''}>${esc(c.name)}</option>`).join('')}</select></div>
-      <div class="vlist">${list.map((p) => { const o = owner.get(p.id); return `<a class="vr" href="#/giocatore/${p.id}" style="text-decoration:none">${roleChip(p.role)}<span class="nm"><b${p.isActive ? '' : ' style="text-decoration:line-through"'}>${esc(p.name)}</b><span>${esc(S.clubsById.get(p.clubId).name)} · ${!p.isActive ? '<b style="color:var(--negative)">fuori campionato</b>' : o ? `di ${esc(o.owner)}` : 'libero'}</span></span><span class="ev"></span><span class="fv" style="font-size:14px">${p.quotation}</span></a>`; }).join('')}</div>
+      <div class="vlist">${list.map((p) => { const o = owner.get(p.id); const cb = S.clubsById.get(p.clubId); return `<a class="vr" href="#/giocatore/${p.id}" style="text-decoration:none">${faccia(p, cb)}<span class="nm"><b${p.isActive ? '' : ' style="text-decoration:line-through"'}>${esc(p.name)}</b><span>${esc(cb.name)} · ${!p.isActive ? '<b style="color:var(--negative)">fuori campionato</b>' : o ? `di ${esc(o.owner)}` : 'libero'}</span></span><span class="ev"></span><span class="fv" style="font-size:14px">${p.quotation}</span></a>`; }).join('')}</div>
       ${list.length === 120 ? '<p class="small muted" style="text-align:center">Mostrati i primi 120: affina la ricerca.</p>' : ''}
     </main>`;
   },

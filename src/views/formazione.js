@@ -9,6 +9,18 @@ function ensureDraft() {
   return draft;
 }
 const P = (id) => S.playersById.get(id);
+
+/** Segnature del campo. viewBox 100x136: il disegno si stira col riquadro,
+ *  ma vector-effect tiene le linee dello stesso spessore. */
+const CAMPO = `<svg class="campo" viewBox="0 0 100 136" preserveAspectRatio="none" aria-hidden="true">
+  <rect x="2" y="2" width="96" height="132" rx="2"/>
+  <path d="M2 68h96"/><circle cx="50" cy="68" r="15"/><circle cx="50" cy="68" r="1.4" fill="rgba(255,255,255,.55)"/>
+  <rect x="26" y="2" width="48" height="20"/><rect x="38" y="2" width="24" height="8"/>
+  <rect x="26" y="114" width="48" height="20"/><rect x="38" y="126" width="24" height="8"/>
+  <path d="M38 22a12 9 0 0 0 24 0"/><path d="M38 114a12 9 0 0 1 24 0"/>
+  <path d="M2 7a5 5 0 0 0 5-5"/><path d="M98 7a5 5 0 0 1-5-5"/>
+  <path d="M2 129a5 5 0 0 1 5 5"/><path d="M98 129a5 5 0 0 0-5 5"/>
+</svg>`;
 const clubOf = (id) => S.clubsById.get(P(id).clubId);
 
 function slotsByRole(d) {
@@ -50,7 +62,7 @@ export const formazione = {
         ${!saved ? `<p class="small muted">Se non consegni, vale ${S.lineupFor(n, me.id).source === 'ufficio' ? 'il 4-4-2 con le quotazioni più alte (art. 8.4)' : `l'ultima formazione valida (${S.lineupFor(n, me.id).source})`}.</p>` : ''}
       </div>
       <div class="chips" data-modules>${S.rules().modules.map((m) => `<button class="chip mod${m === d.formation ? ' on' : ''}" data-mod="${m}" ${locked ? 'disabled' : ''}>${m}</button>`).join('')}</div>
-      <div class="pitch-wrap"><div class="pitch">${line('P')}${line('D')}${line('C')}${line('A')}</div></div>
+      <div class="pitch-wrap"><div class="pitch">${CAMPO}${line('P')}${line('D')}${line('C')}${line('A')}</div></div>
       <div class="a-sec"><b>Panchina</b><span>l'ordine conta: entra il primo del ruolo con voto</span></div>
       <div class="bench">${bench.map((id, i) => `<div class="br" data-bench="${i}"><span class="n">${i + 1}</span>${id ? roleChip(P(id).role) : '<span class="rl" style="background:var(--border-strong)">?</span>'}<b>${id ? `${esc(P(id).name)}<small>${esc(clubOf(id).name)}</small>` : '<span class="muted">Scegli un giocatore</span>'}</b><span style="display:flex;gap:2px">${id && !locked ? `<button class="rm" data-up="${i}" aria-label="Su">↑</button><button class="rm" data-down="${i}" aria-label="Giù">↓</button><button class="rm" data-rmb="${i}" aria-label="Togli">✕</button>` : ''}</span></div>`).join('')}</div>
       ${errors.length ? `<div class="warn block">${icon('warn', 'ic sm')}<span>${errors.map(esc).join(' · ')}</span></div>` : ''}

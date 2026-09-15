@@ -175,21 +175,19 @@ async function boot() {
  * vecchia senza che nulla lo segnalasse.
  */
 function registraServiceWorker() {
-  // Quando un service worker nuovo prende il comando, la pagina in corso sta
-  // ancora girando col codice vecchio: si ricarica una volta sola, cosi' un
-  // rilascio si vede subito invece che al giro dopo. La guardia evita il
-  // ciclo infinito se il cambio di controllo si ripete.
+  // NIENTE ricarica automatica quando arriva un service worker nuovo.
+  //
+  // C'era, e poteva bloccare l'app. La guardia che doveva impedire il ciclo
+  // infinito era una variabile della pagina: dopo location.reload() la pagina e'
+  // nuova e la guardia riparte da zero, quindi non guardava niente. Basta che il
+  // controllo cambi a ogni apertura — per esempio perche' due nodi della rete di
+  // distribuzione servono due versioni diverse di sw.js — e la pagina si ricarica
+  // all'infinito: a schermo sembra tutto normale ma non si riesce a toccare
+  // nulla, perche' ogni tocco arriva su una pagina che sta gia' morendo.
+  //
+  // Il codice nuovo entra comunque alla prossima apertura dell'app: e' come si
+  // comporta di suo una PWA, e non puo' incastrarsi.
   if ('serviceWorker' in navigator) {
-    // Solo se un service worker c'era GIA': alla primissima apertura il
-    // controllo passa da nessuno al primo, e ricaricare li' sarebbe uno sfarfallio
-    // gratuito su una pagina appena aperta.
-    const cambioDiConsegne = !!navigator.serviceWorker.controller;
-    let giaRicaricata = false;
-    navigator.serviceWorker.addEventListener('controllerchange', () => {
-      if (!cambioDiConsegne || giaRicaricata) return;
-      giaRicaricata = true;
-      location.reload();
-    });
     navigator.serviceWorker.register('./sw.js').then((reg) => {
       // Il controllo automatico del browser non e' garantito quando serve:
       // lo si chiede all'apertura e ogni volta che l'app torna in primo piano,

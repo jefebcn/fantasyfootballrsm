@@ -40,8 +40,7 @@ COPERTURA_MIN = 0.12   # sotto, lo sfondo non e' stato riconosciuto
 # (tolleranza, passo) — passo None = si guarda solo il colore di partenza.
 SU_MISURA = {
     10: (90, 4),     # personaggio su degrade' arancione: serve inseguire la sfumatura
-    13: (10, None),  # abito nero su fondo quasi nero: stringere, se no sparisce la giacca
-    15: (16, None),  # viola su viola: stessa cosa
+    17: (60, None),  # rosso acceso fra le gambe: con la tolleranza normale resta li'
 }
 
 

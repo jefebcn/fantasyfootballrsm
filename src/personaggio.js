@@ -11,7 +11,7 @@
  * no chi l'aveva scelto si ritroverebbe in copertina qualcun altro. Per questo
  * nell'elenco ci sono dei buchi, ed e' voluto.
  */
-const NUMERI = [1, 6, 7, 8, 10, 11, 13, 14, 15];
+const NUMERI = [1, 6, 7, 8, 10, 11, 14, 16, 17];
 export const QUANTI = NUMERI.length;
 export const elenco = () => [...NUMERI];
 

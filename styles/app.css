@@ -977,6 +977,42 @@ button,a{-webkit-tap-highlight-color:transparent}
 .gr .pt i{font-style:normal;color:var(--text-muted);font-weight:600;padding:0 3px}
 .gr .pt small{font:500 11px var(--font-body);color:var(--text-muted);letter-spacing:-.01em}
 
+/* --------------------------------------------------------------- confronto */
+.conf{padding:14px}
+.ctesta{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:start;gap:8px;
+  padding-bottom:12px;border-bottom:1px solid var(--border)}
+.ctesta .vs{align-self:center;font:700 11px var(--font-body);color:var(--text-muted);letter-spacing:.08em;text-transform:uppercase}
+.cc{display:flex;flex-direction:column;align-items:center;gap:3px;text-align:center;min-width:0}
+.cc b{font:700 14px var(--font-display);overflow-wrap:anywhere;line-height:1.2}
+.cc span{font:500 11px var(--font-body);color:var(--text-muted);overflow-wrap:anywhere;line-height:1.25}
+.cc em{font:800 20px var(--font-display);font-style:normal;color:var(--primary-ink);
+  background:var(--primary-soft);border-radius:10px;padding:2px 10px;margin-top:3px;font-variant-numeric:tabular-nums}
+.cc em.niente{color:var(--text-muted);background:var(--surface-sunk)}
+/* Le tre colonne sono simmetriche e l'etichetta sta in mezzo: cosi' l'occhio
+   scorre una riga per volta invece di cercare a quale numero appartiene cosa. */
+.cr{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:8px;padding:9px 0;border-top:1px solid var(--border)}
+.cr:first-of-type{border-top:0}
+.cr .v{font:700 15px var(--font-display);text-align:center;font-variant-numeric:tabular-nums;
+  border-radius:8px;padding:3px 0;color:var(--text)}
+.cr .v.top{background:var(--positive-soft);color:var(--positive-ink)}
+.cr .et{font:500 11.5px var(--font-body);color:var(--text-muted);text-align:center;white-space:nowrap}
+
+/* Le ultime cinque giornate. Le colonne sono alte quanto il voto, con la scala
+   che parte da 3: partendo da zero si schiacciavano tutte nello stesso terzo
+   in alto, perche' i fantavoti veri stanno quasi sempre fra 4 e 9. */
+.tend{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:8px;align-items:end;height:112px}
+.tend .cl{display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:3px;height:100%}
+.tend .cl i{width:100%;max-width:34px;background:var(--primary);border-radius:6px 6px 3px 3px;min-height:6px}
+.tend .cl.bene i{background:var(--positive)}
+.tend .cl.male i{background:var(--negative)}
+.tend .cl.sv i{background:var(--surface-sunk);box-shadow:inset 0 0 0 1px var(--border)}
+.tend .cl small{font:700 11px var(--font-display);color:var(--text);font-variant-numeric:tabular-nums}
+.tend .cl b{font:600 10px var(--font-body);color:var(--text-muted)}
+.scarto{font:700 11px var(--font-body);border-radius:999px;padding:2px 7px;margin-left:4px}
+.scarto.su{background:var(--positive-soft);color:var(--positive-ink)}
+.scarto.giu{background:var(--negative-soft);color:var(--negative-ink)}
+.scarto.pari{background:var(--surface-sunk);color:var(--text-muted)}
+
 /* ------------------------------------------------------------------ scambi */
 /* Una riga della rosa che si puo' toccare per sceglierla: e' un <button>, non
    un <a>, quindi va riportata a mano all'aspetto di .vr (i browser danno ai
@@ -1155,8 +1191,13 @@ button,a{-webkit-tap-highlight-color:transparent}
   border-top:1px solid var(--border);text-decoration:none;color:inherit}
 .l5:first-child{border-top:0}
 .l5:active{background:var(--surface-2)}
+/* V, N e P degli ultimi cinque. Il colore del testo non puo' essere bianco
+   fisso: in tema scuro verde e rosso schiariscono, e il bianco sopra
+   scendeva a 2,66 e 3,55 di contrasto. Ogni fondo ha il suo token. */
 .l5 > i{width:26px;height:26px;border-radius:9px;display:grid;place-items:center;font:800 12px var(--font-display);color:#fff}
-.l5 > i.v{background:var(--positive)}.l5 > i.p{background:var(--negative)}.l5 > i.n{background:var(--c-pietra-700)}
+.l5 > i.v{background:var(--positive);color:var(--on-positive)}
+.l5 > i.p{background:var(--negative);color:var(--on-negative)}
+.l5 > i.n{background:var(--c-pietra-700);color:#fff}
 .l5 .nm{min-width:0}
 .l5 .nm b{display:block;font:600 13.5px var(--font-body);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .l5 .nm > span{font-size:11px;color:var(--text-muted)}

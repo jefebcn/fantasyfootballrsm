@@ -76,6 +76,10 @@
   --positive:      var(--c-alloro-500);
   --positive-soft: #E1F5EC;
   --on-negative:   #FFFFFF;
+  /* Sul verde il bianco non ce la fa in nessuno dei due temi (3,41 in chiaro,
+     2,66 in scuro): l'inchiostro scuro sta a 4,81 e 6,17. Sul rosso invece il
+     bianco va bene in chiaro, ed e' per quello che --on-negative resta bianco. */
+  --on-positive:   #16202E;
   --negative-ink:  #B02020;   /* rosso da scrivere su fondo chiaro */
   --positive-ink:  #0F6444;   /* verde da scrivere sopra --positive-soft */
   --accent-ink:    #96640A;   /* oro da scrivere sopra --accent-soft */
@@ -170,6 +174,7 @@
     --positive:      var(--c-alloro-400);
     --positive-soft: #0B3627;
     --on-negative:   #16202E;
+    --on-positive:   #16202E;
     --negative-ink:  #FF9A9A;
     --positive-ink:  #6FD6A6;
     --accent-ink:    #F3C765;
@@ -214,6 +219,7 @@
   --positive:      var(--c-alloro-400);
   --positive-soft: #0B3627;
   --on-negative:   #16202E;
+  --on-positive:   #16202E;
   --negative-ink:  #FF9A9A;
   --positive-ink:  #6FD6A6;
   --accent-ink:  #F3C765;

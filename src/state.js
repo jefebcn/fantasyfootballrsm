@@ -451,6 +451,57 @@ export function avanzamento(n) {
 }
 export function myFixture(n, managerId) { return fixturesOf(n).find((f) => f.homeManagerId === managerId || f.awayManagerId === managerId) || null; }
 
+/**
+ * Il rendimento di un giocatore fin qui: medie, bonus e le ultime giornate.
+ *
+ * Serve a decidere chi schierare, che e' la domanda che si fa ogni settimana e
+ * a cui l'app non rispondeva: la scheda del giocatore elencava le giornate una
+ * per una e la media, ma per confrontare due nomi bisognava aprire due
+ * schermate e tenere i numeri a mente.
+ *
+ * @param {string} playerId
+ * @param {number} [fino] ultima giornata da contare (default: quella corrente)
+ */
+export function rendimento(playerId, fino = currentMatchday()) {
+  return memo(`rend:${playerId}:${fino}`, () => {
+    const p = playersById.get(playerId);
+    const giornate = [];
+    let somma = 0, sommaBase = 0, presenze = 0, minuti = 0;
+    const ev = { goal: 0, assist: 0, assist_set: 0, own_goal: 0, yellow: 0, second_yellow: 0, red_direct: 0, pen_saved: 0, pen_missed: 0, pen_won: 0, pen_conceded: 0 };
+    for (let n = 1; n <= fino; n++) {
+      const r = ratingsOf(n).get(playerId);
+      const m = matchesOf(n).find((x) => p && (x.homeClubId === p.clubId || x.awayClubId === p.clubId));
+      // Una giornata senza partita della sua squadra (riposo, rinvio) non e'
+      // un'assenza: non entra nel conto e non finisce nel grafico.
+      if (!m || m.status === 'scheduled') continue;
+      const suoi = r ? eventsOf(m.id).filter((e) => e.playerId === playerId) : [];
+      for (const e of suoi) if (e.type in ev) ev[e.type]++;
+      if (r && !r.isSV) {
+        presenze++; somma = Math.round((somma + r.fantaVote) * 10) / 10;
+        sommaBase = Math.round((sommaBase + r.baseVote) * 10) / 10;
+        minuti += r.minutes || 0;
+        giornate.push({ n, fv: r.fantaVote, base: r.baseVote, sv: false, minuti: r.minutes || 0 });
+      } else if (m.status === 'played') {
+        giornate.push({ n, fv: null, base: null, sv: true, minuti: 0 });
+      }
+    }
+    const media = presenze ? Math.round((somma / presenze) * 100) / 100 : null;
+    const mediaBase = presenze ? Math.round((sommaBase / presenze) * 100) / 100 : null;
+    // La tendenza guarda le ultime cinque giornate in cui la sua squadra ha
+    // giocato, non le ultime cinque presenze: se e' stato fuori tre volte
+    // conta, e nasconderlo darebbe una media falsamente buona.
+    const ultime = giornate.slice(-5);
+    const conVoto = ultime.filter((x) => !x.sv);
+    const mediaUltime = conVoto.length ? Math.round((conVoto.reduce((s, x) => s + x.fv, 0) / conVoto.length) * 100) / 100 : null;
+    return {
+      player: p, presenze, giocabili: giornate.length, minuti, media, mediaBase, somma,
+      eventi: ev, giornate, ultime, mediaUltime,
+      // quanto scarta la forma recente dalla media stagionale
+      scarto: media !== null && mediaUltime !== null ? Math.round((mediaUltime - media) * 100) / 100 : null,
+    };
+  });
+}
+
 // ---------------------------------------------------------------- scambi
 export const scambi = () => L.scambi || [];
 export const scambiDisponibili = () => L.scambiDisponibili !== false;

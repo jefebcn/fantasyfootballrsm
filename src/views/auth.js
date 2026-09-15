@@ -30,9 +30,7 @@ export const login = {
     const titolo = pending ? 'Controlla la posta' : tab === 'up' ? 'Registrati' : tab === 'link' ? 'Entra col link' : 'Accedi';
     return `<main class="a-body auth2">
       <div class="sfondo">
-        <video id="intro-video" playsinline autoplay muted loop preload="auto" disablepictureinpicture>
-          <source src="media/intro.mp4" type="video/mp4">
-        </video>
+        <img src="media/sfondo-accesso.jpg" alt="" fetchpriority="high" decoding="async">
         <i class="velo"></i>
       </div>
       <div class="contenuto">

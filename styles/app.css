@@ -809,9 +809,10 @@ button,a{-webkit-tap-highlight-color:transparent}
    ========================================================================== */
 .auth2{position:relative;padding:0;display:flex;flex-direction:column;justify-content:flex-end;overflow:hidden}
 .auth2 .sfondo{position:absolute;inset:0;background:var(--grad-hero);z-index:0}
-.auth2 .sfondo video{width:100%;height:100%;object-fit:cover;filter:blur(2px) saturate(.9);opacity:.55}
+.auth2 .sfondo img{width:100%;height:100%;object-fit:cover;object-position:38% 42%;
+  filter:saturate(.85) contrast(1.05)}
 .auth2 .sfondo .velo{position:absolute;inset:0;
-  background:linear-gradient(180deg, rgba(13,23,51,.55) 0%, rgba(13,23,51,.72) 45%, rgba(13,23,51,.94) 100%)}
+  background:linear-gradient(180deg, rgba(13,23,51,.38) 0%, rgba(13,23,51,.62) 42%, rgba(13,23,51,.93) 78%, rgba(13,23,51,.97) 100%)}
 .auth2 .contenuto{position:relative;z-index:1;width:100%;flex:1;min-height:0;
   padding:0 22px calc(28px + env(safe-area-inset-bottom));display:flex;flex-direction:column;gap:12px}
 

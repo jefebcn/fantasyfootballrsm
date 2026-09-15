@@ -1,5 +1,5 @@
 /* Service worker — shell in cache, aggiornamento in background. */
-const VERSION = 'fcs-v1.6.0';
+const VERSION = 'fcs-v1.7.0';
 const SHELL = [
   './', './index.html', './manifest.webmanifest', './styles/app.css', './styles/logo.css', './design/tokens/tokens.css',
   './src/app.js', './src/state.js', './src/data.js', './src/engine.js', './src/ui.js', './src/sprite.js', './src/config.js', './src/backend.js', './src/auth-clerk.js',
@@ -15,6 +15,8 @@ const SHELL = [
   // Le sagome della barra in basso stanno su ogni schermata: vanno precaricate.
   './media/icone/nav/campo.png', './media/icone/nav/maglia-10.png', './media/icone/nav/calendario.png',
   './media/icone/nav/coppa.png', './media/icone/nav/grafico.png',
+  // Sfondo della schermata d'accesso: è la prima cosa che si vede.
+  './media/sfondo-accesso.jpg',
 ];
 self.addEventListener('install', (e) => {
   e.waitUntil(caches.open(VERSION).then((c) => c.addAll(SHELL)).then(() => self.skipWaiting()));

@@ -1,5 +1,5 @@
 import * as S from '../state.js';
-import { esc, fmt, icon, logo, badge, matchCard, sec, dateIt, timeIt } from '../ui.js';
+import { esc, icon, logo, badge, matchCard, sec, dateIt, timeIt } from '../ui.js';
 import { videoDi } from '../video.js';
 
 const STATUS = { played: null, scheduled: null, postponed: 'Rinviata', suspended_before_45: 'Sospesa <45\'', suspended_after_45: 'Sospesa >45\'', awarded: 'A tavolino' };

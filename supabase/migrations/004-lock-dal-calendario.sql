@@ -76,7 +76,7 @@ begin
     raise exception 'solo il Giudice Dati puo aggiornare il calendario dei lock';
   end if;
   insert into public.matchday_locks (matchday, lock_at, updated_at, updated_by)
-  select (e->>'matchday')::int, (e->>'lock_at')::timestamptz, now(), auth.uid()
+  select (e->>'matchday')::int, (e->>'lock_at')::timestamptz, now(), public.current_user_id()
     from jsonb_array_elements(p) e
    where (e->>'matchday')::int between 1 and 30
   on conflict (matchday) do update
@@ -92,5 +92,9 @@ grant execute on function public.sync_matchday_locks(jsonb) to authenticated;
 do $$ begin
   begin
     alter publication supabase_realtime add table public.matchday_locks;
-  exception when duplicate_object then null; end;
+  -- duplicate_object: la tabella c'è già dentro. undefined_object: non è un
+  -- progetto Supabase e quella publication non esiste — il realtime è un di
+  -- più, non deve far fallire la migrazione.
+  exception when duplicate_object then null;
+            when undefined_object then null; end;
 end $$;

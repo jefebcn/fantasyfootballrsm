@@ -1,5 +1,5 @@
 import * as S from '../state.js';
-import { esc, fmt, badge, icon, crest, empty, sec } from '../ui.js';
+import { esc, fmt, badge, crest, empty } from '../ui.js';
 
 export const classifica = {
   title: 'Classifica',

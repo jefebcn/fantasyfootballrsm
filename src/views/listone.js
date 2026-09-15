@@ -1,5 +1,5 @@
 import * as S from '../state.js';
-import { esc, fmt, icon, faccia, ROLE_NAME } from '../ui.js';
+import { esc, faccia } from '../ui.js';
 
 let q = '', role = null, clubId = null;
 export const listone = {

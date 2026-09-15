@@ -45,8 +45,6 @@ export const CLUBS = [
 
 export const VENUES = ['Acquaviva', 'Serravalle', 'Domagnano', 'Montecchio', 'Dogana', 'Faetano', 'Fiorentino'];
 
-const FIRST = ['Alessandro', 'Marco', 'Luca', 'Matteo', 'Andrea', 'Davide', 'Simone', 'Nicola', 'Filippo', 'Lorenzo', 'Tommaso', 'Giacomo', 'Federico', 'Mattia', 'Michele', 'Riccardo', 'Elia', 'Samuele', 'Enrico', 'Giovanni', 'Fabio', 'Manuel', 'Cristian', 'Alex', 'Nicolò', 'Gabriele', 'Diego', 'Kevin', 'Thomas', 'Pietro'];
-const LAST = ['Gasperoni', 'Benedettini', 'Zafferani', 'Marchetti', 'Battistini', 'Righi', 'Ceccoli', 'Simoncini', 'Grandoni', 'Tomassini', 'Dolcini', 'Muccioli', 'Casadei', 'Berardi', 'Mularoni', 'Pasolini', 'Valentini', 'Bonifazi', 'Lazzari', 'Ugolini', 'Moretti', 'Bonini', 'Fabbri', 'Cecchetti', 'Giardi', 'Semprini', 'Guidi', 'Nanni', 'Zonzini', 'Zavoli', 'Rossi', 'Conti', 'Mancini', 'Pini', 'Stefanelli', 'Ferraro', 'Bollini', 'Toccaceli', 'Vitaioli', 'Palazzi', 'Selva', 'Michelotti', 'Della Valle', 'Giulianelli', 'Bugli', 'Cervellini', 'Belloni', 'Amati', 'Capicchioni', 'Forcellini', 'Francini', 'Gatti', 'Lonfernini', 'Maiani', 'Nicolini', 'Pelliccioni', 'Raschi', 'Renzi', 'Santi', 'Tamagnini', 'Ugolini', 'Venturini', 'Zonzini', 'Ercolani', 'Frisoni', 'Giardi', 'Innocenti', 'Manzaroli', 'Mazza', 'Morri', 'Paolini', 'Podeschi', 'Ricci', 'Sartini', 'Tosi', 'Valli'];
 
 export const SEASON_START = new Date('2026-09-05T15:00:00+02:00'); // sabato della 1ª giornata
 
@@ -120,10 +118,12 @@ export function draftRosters(managerIds, players, rnd = mulberry32(7)) {
   return rosters;
 }
 
-export function buildSeason(seed = 20262027) {
-  const rnd = mulberry32(seed);
-  const pick = (arr) => arr[Math.floor(rnd() * arr.length)];
-  const between = (a, b) => a + Math.floor(rnd() * (b - a + 1));
+/**
+ * La stagione non e' piu' generata a caso: listone, calendario ed eventi
+ * vengono dai dati veri (src/listone-dati.js, src/eventi-dati.js). Il seed
+ * resta nella firma perche' lo passano i chiamanti, ma non pesca piu' niente.
+ */
+export function buildSeason(_seed = 20262027) {
 
   // --- Listone (reale, da src/listone-dati.js) ----------------------------
   // Omonimi veri esistono (fratelli, cugini): l'id tiene il progressivo per
@@ -195,7 +195,6 @@ export function buildSeason(seed = 20262027) {
   }
 
   // --- Lega fanta --------------------------------------------------------
-  const clubOf = Object.fromEntries(CLUBS.map((c) => [c.id, c]));
 
   // --- Eventi delle giornate giocate ------------------------------------
   // Presenze ed eventi VERI, dai referti (src/eventi-dati.js): marcatori,

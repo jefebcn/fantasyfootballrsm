@@ -7,3 +7,8 @@ data/tabellini.json
 # scarti degli script di prova: gli screenshot di controllo si rigenerano,
 # non stanno nel repo (MD_campo.png ci era finito per sbaglio)
 /*.png
+
+# dipendenze di sviluppo: servono solo a rigenerare vendor/ e a far girare
+# eslint, non finiscono nel sito
+node_modules/
+package-lock.json

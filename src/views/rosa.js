@@ -1,5 +1,5 @@
 import * as S from '../state.js';
-import { esc, fmt, faccia, ROLE_NAME, ROLE_ORDER, badge, icon } from '../ui.js';
+import { esc, fmt, faccia, ROLE_NAME, ROLE_ORDER } from '../ui.js';
 
 export const rosa = {
   title: 'Rosa', sub: () => 'Rosa · 25 giocatori',

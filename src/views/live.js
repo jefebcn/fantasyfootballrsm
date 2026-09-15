@@ -1,5 +1,5 @@
 import * as S from '../state.js';
-import { esc, fmt, icon, badge, crest, roleChip, avatar, evTiles, pic, voteRow, dateIt, timeIt, logo } from '../ui.js';
+import { esc, fmt, icon, crest, roleChip, avatar, evTiles, pic, voteRow, dateIt, timeIt, logo } from '../ui.js';
 import { videoDi } from '../video.js';
 
 let tab = 'campo';
@@ -11,10 +11,12 @@ function fieldTeam(res, ratings, evs, mirrored) {
   for (const row of res.rows) byRole[row.role].push(row);
   const order = mirrored ? ['A', 'C', 'D', 'P'] : ['P', 'D', 'C', 'A'];
   return order.map((r) => `<div class="line">${byRole[r].map((row) => {
-    const shown = row.subFor ? row.playerId : row.playerId; const p = P(shown); const out = row.official ? row.playerId : null;
+    // playerId e' il subentrato quando subFor c'e', il titolare quando il voto
+    // e' d'ufficio: in tutti i due i casi e' chi va mostrato sul campo.
+    const shown = row.playerId; const p = P(shown);
     const ind = [];
     if (row.subFor) ind.push(`<i class="segno">${pic('sostituzione-in')}</i>`); if (row.official) ind.push(`<i class="segno">${pic('sostituzione-out')}</i>`);
-    ind.push(evTiles((evs[shown] || []).filter((e) => e.type !== 'assist' || true)).replace(/style="[^"]*"/g, ''));
+    ind.push(evTiles(evs[shown] || []).replace(/style="[^"]*"/g, ''));
     const pill = row.official ? `<span class="pill sv"><span>S.V.</span><span>${fmt(row.fantaVote)}</span></span>` : `<span class="pill"><span>${fmt(row.baseVote)}</span><span>${fmt(row.fantaVote)}</span></span>`;
     const cap = row.isCaptain ? '<span class="cap">C</span>' : (res.lineup.viceCaptainId === shown && !row.isCaptain ? '<span class="cap">V</span>' : '');
     return `<div class="ps" style="--tc:${club(shown).color}"><span class="av faccia">${cap}${avatar(p, club(shown))}${roleChip(row.role)}</span><span class="ind">${ind.join('')}</span>${pill}<b>${esc(p.lastName)}${row.subFor ? ` <small>(x ${esc(P(row.subFor).lastName)})</small>` : ''}</b></div>`;

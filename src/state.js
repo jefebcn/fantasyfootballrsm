@@ -90,10 +90,15 @@ async function loadAll() {
   // e' un dato derivato dal calendario, identico a ogni giro, e l'RPC riscrive
   // solo le righe diverse. Una volta per sessione, e un errore qui non deve
   // impedire di usare l'app.
-  if (prof?.is_judge && !lockGiaSincronizzati && lockDisallineati().length) {
-    lockGiaSincronizzati = true;
-    try { await remote.syncMatchdayLocks(calendarioLock()); g = await remote.loadGlobal(prof.is_judge); }
+  if (prof?.is_judge && !lockGiaSincronizzati && !lockInCorso && lockDisallineati().length) {
+    // Il segno di "fatto" va messo DOPO che e' riuscita, non prima: segnandolo
+    // prima, un errore di rete lasciava il calendario disallineato per tutta la
+    // sessione senza piu' riprovare. `lockInCorso` evita solo la sovrapposizione
+    // di due giri, e l'RPC e' comunque ripetibile (riscrive zero righe).
+    lockInCorso = true;
+    try { await remote.syncMatchdayLocks(calendarioLock()); g = await remote.loadGlobal(prof.is_judge); lockGiaSincronizzati = true; }
     catch (e) { onError(e); }
+    finally { lockInCorso = false; }
   }
 }
 let timer = null;
@@ -319,7 +324,7 @@ export const lockDaSistemare = () => lockDisallineati().length;
  * finche' le due date differivano il server ne applicava una sbagliata di otto
  * giorni. Qui la fonte e' una sola: questa.
  */
-let lockGiaSincronizzati = false;
+let lockGiaSincronizzati = false; let lockInCorso = false;
 export async function sincronizzaLock({ forza = false } = {}) {
   if (!isJudge()) throw new Error('Solo il Giudice Dati può aggiornare il calendario dei lock');
   const da = forza ? calendarioLock() : lockDisallineati();

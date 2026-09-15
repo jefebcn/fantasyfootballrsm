@@ -115,7 +115,9 @@ export function render() {
   if (prevPath !== undefined) { const m = root.querySelector('.a-body'); if (m) scrollMemo[prevPath] = m.scrollTop; }
   current = { view, params, path };
   document.title = `${view.title} · Fantacampionato Sammarinese`;
-  root.innerHTML = `<div class="app">${appbar(view, ctx)}${view.render(ctx)}${view.nav === false ? '' : nav(path)}${drawer()}</div>`;
+  // senza barra in basso e' il corpo a dover stare sopra la tacca del telefono:
+  // con la barra ci pensa lei, e sommarli lascerebbe un vuoto in fondo
+  root.innerHTML = `<div class="app${view.nav === false ? ' senza-nav' : ''}">${appbar(view, ctx)}${view.render(ctx)}${view.nav === false ? '' : nav(path)}${drawer()}</div>`;
   if (view.mount) view.mount(root, ctx);
   const body = root.querySelector('.a-body');
   if (body && scrollMemo[path] && prevPath === path) body.scrollTop = scrollMemo[path];

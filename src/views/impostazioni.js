@@ -3,6 +3,7 @@ import { esc, icon, crest, pic } from '../ui.js';
 import { applyTheme } from '../app.js';
 import { CONTATTO, LINGUE } from '../config.js';
 import * as AV from '../notifiche.js';
+import { misure } from '../schermo.js';
 
 const row = (ic, title, sub, action = '', cls = '') => `<button class="setting ${cls}" ${action ? `data-act="${action}"` : 'disabled style="cursor:default"'}><i class="ico${typeof ic === 'object' ? ' illus' : ''}">${typeof ic === 'object' ? pic(ic.m, 'menu') : icon(ic)}</i><span class="txt"><b>${title}</b>${sub ? `<span>${sub}</span>` : ''}</span>${action ? icon('chev', 'ic sm chev') : ''}</button>`;
 /**
@@ -172,6 +173,21 @@ export const impostazioni = {
           <p class="auth-hint">Gli interruttori stanno nel pannello Supabase: qui si legge soltanto come sono messi adesso.</p>`);
         return;
       }
+      if (act === 'schermo') {
+        // I numeri veri del telefono: nel sandbox Chromium dvh, lvh e svh
+        // coincidono sempre e le tacche non esistono, quindi la fascia
+        // scoperta in fondo si vede solo da qui.
+        const { righe, testo } = await misure();
+        ctx.sheet(`<h3>Misure dello schermo</h3>
+          <div class="diag">${righe.map(([k, v]) => `<div class="d-r info"><i>i</i><span><b>${esc(k)}</b><span>${esc(String(v))}</span></span></div>`).join('')}</div>
+          <button class="a-btn sec" id="mis-copia" style="margin-top:12px">Copia le misure</button>
+          <p class="auth-hint">«Scoperto sotto» è quanto resta fra la barra in basso e il bordo dello schermo: deve essere <b>0</b>. Le tacche sono lo spazio che il telefono si tiene per l'isola e per la barretta di casa.</p>`);
+        document.getElementById('mis-copia').onclick = async () => {
+          try { await navigator.clipboard.writeText(testo); ctx.toast('Misure copiate'); }
+          catch { ctx.toast('Copia non permessa: fai uno screenshot'); }
+        };
+        return;
+      }
       if (act === 'server') {
         ctx.sheet(`<h3>Server della lega</h3><p class="auth-hint">Valori pubblici del progetto Supabase (Settings → API). Cambiarli scollega questo dispositivo dalla lega attuale.</p>
           <label class="lbl" for="sv-url" style="margin-top:8px">Project URL</label><input class="field-input" id="sv-url" value="${esc(S.serverUrl() || '')}" autocomplete="off">
@@ -220,7 +236,8 @@ export const avanzate = {
       : `${S.lockDaSistemare()} giornate da allineare — toccami`, 'lock-cal',
     S.lockDaSistemare() === 0 ? '' : 'danger') : ''}
       ${row('gear', 'Server della lega', esc(S.serverHost() || '—'), 'server')}
-      ${row('shield', 'Diagnostica accessi', 'Controlla sul progetto cosa manca ancora per far entrare la gente', 'diagnostica')}`);
+      ${row('shield', 'Diagnostica accessi', 'Controlla sul progetto cosa manca ancora per far entrare la gente', 'diagnostica')}
+      ${row('calc', 'Misure dello schermo', 'Quanto occupa davvero l\'app su questo telefono, tacche comprese', 'schermo')}`);
 
     return `<main class="a-body">${look}${league}${judge}${data}
       <p class="auth-foot">Versione 0.5 · motore ${S.rules().engineVersion}</p></main>`;

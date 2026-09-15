@@ -17,3 +17,4 @@ export { onboarding } from './onboarding.js';
 export { setup, offline } from './setup.js';
 export { leghe } from './leghe.js';
 export { lega } from './lega.js';
+export { gestione } from './gestione.js';

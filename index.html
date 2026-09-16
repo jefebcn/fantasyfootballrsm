@@ -9,7 +9,19 @@
   <meta name="color-scheme" content="light dark">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <!-- "black" e non "black-translucent", e la ragione e' misurata, non estetica.
+       Con black-translucent la pagina disegna anche sotto l'orologio, ma iOS in
+       cambio le da' un viewport alto 793 su uno schermo da 852: svh 793, lvh 852,
+       tacca in alto 59. I 59pt che mancano si accumulano tutti IN FONDO, e li'
+       la pagina non puo' disegnare niente — le scritte della barra in basso
+       finivano dentro quel pezzo e sparivano.
+       Con "black" la web view parte sotto la barra di stato: 793pt da y=59 a
+       y=852. La barra in basso arriva al bordo vero, la tacca in alto vale 0 e
+       l'intestazione blu passa da 124 a 64pt. Il prezzo e' che la striscia
+       dell'orologio non e' piu' blu: e' una fascia scura con il testo bianco,
+       che resta leggibile sia in tema chiaro sia in scuro.
+       Per tornare indietro basta rimettere "black-translucent" qui. -->
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
   <meta name="apple-mobile-web-app-title" content="Fantacampionato">
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="icon" href="icons/icon-192.png" type="image/png">

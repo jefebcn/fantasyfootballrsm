@@ -61,24 +61,73 @@ def riquadro(alpha, soglia=40, minimo=8):
         raise ValueError('icona senza inchiostro')
     return int(xs[0]), int(ys[0]), int(xs[-1]) + 1, int(ys[-1]) + 1
 
-def normalizza(percorso, ottica, max_lato, prova):
+def _posa(ink, nw, nh, dx=0, dy=0):
+    """L'inchiostro riscalato e rimesso al centro della tela.
+
+    `dx`/`dy` servono a raddrizzare le icone con tratti staccati: dopo il
+    salvataggio la sfumatura di una riga di movimento puo' scendere sotto la
+    soglia da un lato solo, e il riquadro che si rilegge risulta spostato.
+    """
+    tela = Image.new('RGBA', (TELA, TELA), (0, 0, 0, 0))
+    tela.paste(ink.resize((nw, nh), Image.LANCZOS),
+               ((TELA - nw) // 2 + dx, (TELA - nh) // 2 + dy))
+    return tela
+
+
+def normalizza(percorso, ottica, max_lato, prova, sorgente=None):
+    """Porta un'icona alla grandezza ottica del gruppo.
+
+    Con `sorgente` (il ritaglio a piena risoluzione) il ricampionamento e'
+    sempre UNO, anche quando la misura va aggiustata: si riparte ogni volta
+    dai pixel originali invece di ritoccare il file gia' rimpicciolito.
+
+    L'aggiustamento serve perche' salvare cambia la misura: su un'icona con
+    tratti sottili — le righe di movimento di azione-pericolosa, il "2" di
+    assist-x2 — la sfumatura del bordo scende sotto la soglia e il riquadro
+    si legge piu' piccolo del dovuto. Senza ripartire dall'originale, il
+    giro dopo la si allargava, e ogni giro costava una ricampionatura: alla
+    grandezza di schermo cambiava in media il 6% dei pixel.
+    """
     im = Image.open(percorso).convert('RGBA')
     x0, y0, x1, y1 = riquadro(im.split()[3])
-    ink = im.crop((x0, y0, x1, y1))
-    w, h = ink.size
+    w, h = x1 - x0, y1 - y0
     k = min(ottica / math.sqrt(w * h), max_lato / w, max_lato / h)
     nw, nh = max(1, round(w * k)), max(1, round(h * k))
-    # Gia' a posto: non la si tocca. Il ritocco costerebbe una ricampionatura
-    # in piu' per niente, e un pixel sfumato che al secondo giro supera la
-    # soglia basterebbe a far ripartire il giro all'infinito.
+
     centrata = (abs(x0 - (TELA - w) // 2) <= 1 and abs(y0 - (TELA - h) // 2) <= 1)
+    # Gia' a posto: non la si tocca, cosi' rilanciare lo script non costa
+    # niente e non cambia un byte.
     if abs(k - 1) < 0.005 and (nw, nh) == (w, h) and centrata:
         return (w, h), (nw, nh)
-    tela = Image.new('RGBA', (TELA, TELA), (0, 0, 0, 0))
-    tela.paste(ink.resize((nw, nh), Image.LANCZOS), ((TELA - nw) // 2, (TELA - nh) // 2))
+
+    if sorgente is None or not sorgente.exists():
+        if not prova:
+            _posa(im.crop((x0, y0, x1, y1)), nw, nh).save(percorso)
+        return (w, h), (nw, nh)
+
+    src = Image.open(sorgente).convert('RGBA')
+    sb = riquadro(src.split()[3])
+    ink = src.crop(sb)
+    sw, sh = sb[2] - sb[0], sb[3] - sb[1]
+    k = min(ottica / math.sqrt(sw * sh), max_lato / sw, max_lato / sh)
+    dx = dy = 0
+    for _ in range(8):
+        nw, nh = max(1, round(sw * k)), max(1, round(sh * k))
+        tela = _posa(ink, nw, nh, dx, dy)
+        mb = riquadro(tela.split()[3])
+        mw, mh = mb[2] - mb[0], mb[3] - mb[1]
+        letta = math.sqrt(mw * mh)
+        # il tetto sul lato vince sempre: li' la misura giusta e' quella, non il bersaglio
+        al_tetto = max(nw, nh) >= max_lato
+        fuori = round((TELA - mw) / 2 - mb[0]), round((TELA - mh) / 2 - mb[1])
+        if (al_tetto or abs(letta / ottica - 1) < 0.005) and max(abs(fuori[0]), abs(fuori[1])) <= 1:
+            break
+        dx += fuori[0]; dy += fuori[1]
+        if not al_tetto:
+            k *= ottica / letta
     if not prova:
         tela.save(percorso)
-    return (w, h), (nw, nh)
+    return (w, h), (mb[2] - mb[0], mb[3] - mb[1])
 
 def main():
     voci = [a for a in sys.argv[1:] if not a.startswith('-')]
@@ -95,7 +144,8 @@ def main():
         file = ([cartella / f'{n}.png' for n in cfg['icone']] if cfg['icone']
                 else sorted(cartella.glob('*.png')))
         for p in file:
-            (w, h), (nw, nh) = normalizza(p, cfg['ottica'], cfg['max_lato'], prova)
+            sorg = RADICE.parent / 'icone-sorgenti' / g / p.name
+            (w, h), (nw, nh) = normalizza(p, cfg['ottica'], cfg['max_lato'], prova, sorg)
             o = math.sqrt(nw * nh)
             esiti.append(o)
             print(f'  {p.stem:22} {w:4}x{h:<6} {nw:4}x{nh:<6}   {100*(o/cfg["ottica"]-1):+5.1f}%')

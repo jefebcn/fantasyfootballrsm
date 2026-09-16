@@ -26,7 +26,7 @@ export const CLERK_PUBLISHABLE_KEY = ''; // Clerk disattivato: l'accesso passa d
 export const CLERK_JWT_TEMPLATE = '';
 
 /** Indirizzo a cui arriva "Contattaci". Vuoto = la voce spiega come impostarlo. */
-export const CONTATTO = '';
+export const CONTATTO = 'support@fantatitano.com';
 
 /**
  * Chi risponde dei dati, cioe' il titolare del trattamento.
@@ -36,15 +36,36 @@ export const CONTATTO = '';
  * che la gente legge per fidarsi.
  */
 export const TITOLARE = {
-  nome: '',            // ragione sociale o nome e cognome di chi gestisce l'app
-  sede: '',            // indirizzo completo
-  paese: '',           // es. 'Repubblica di San Marino'
-  codiceOperatore: '', // COE sammarinese, o partita IVA se e' una societa' italiana
-  email: '',           // indirizzo per le richieste sui dati (puo' coincidere con CONTATTO)
+  nome: 'LFC LLC',
+  sede: 'Marina Plaza, Floor 19, Dubai Marina, Dubai',
+  paese: 'Emirati Arabi Uniti',
+  // Due identificativi diversi, ed etichettarli conta: prima il campo era uno
+  // solo e si chiamava "codiceOperatore", che in pagina usciva come "cod.
+  // operatore 100482910400003" — un'etichetta sbagliata su un documento che la
+  // gente legge per fidarsi.
+  registrazioneFiscale: 'TRN 100482910400003',   // partita IVA degli Emirati
+  licenza: 'DMCC-849201',                        // licenza della zona franca DMCC
+  email: 'support@fantatitano.com',
   pec: '',             // facoltativa
+  /**
+   * Dove stanno i dati e come escono dallo Spazio economico europeo, se ne
+   * escono. Questa frase la scrive chi risponde legalmente, non l'app.
+   *
+   * Serve perche' il titolare e' negli Emirati: i dati stanno su server nello
+   * SEE, ma chi li amministra li guarda da fuori, e quello e' un
+   * trasferimento. Gli Emirati non hanno una decisione di adeguatezza
+   * europea, quindi ci vuole un meccanismo — clausole contrattuali tipo o
+   * altro — e l'app non puo' inventarselo ne' dedurlo.
+   *
+   * Finche' e' vuota, l'informativa dice che manca. Come per il titolare:
+   * meglio un buco dichiarato che una rassicurazione falsa.
+   */
+  trasferimenti: '',
+  /** Rappresentante nello SEE (art. 27 GDPR), se e' stato nominato. */
+  rappresentanteUE: '',
 };
 /** Data dell'ultima revisione dei testi legali, in ISO. */
-export const LEGALI_AGGIORNATE = '2026-09-15';
+export const LEGALI_AGGIORNATE = '2026-09-16';
 /** Eta' minima per iscriversi. */
 export const ETA_MINIMA = 14;
 

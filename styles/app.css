@@ -1339,6 +1339,10 @@ button,a{-webkit-tap-highlight-color:transparent}
 
 /* Avatar dei giocatori (src/avatar.js). */
 .av-fig{display:block;width:100%;height:100%}
+/* Le caricature sono figure intere e piu' alte che larghe: nel riquadro ci
+   stanno in piedi, appoggiate in basso, non schiacciate al centro. */
+.av-cal{width:auto;height:auto;max-width:100%;max-height:150%;object-fit:contain;
+  position:absolute;bottom:0;left:50%;transform:translateX(-50%)}
 .av-w{position:relative;display:block;width:34px;height:40px;flex:none}
 .av-w .rl{position:absolute;bottom:-1px;right:-5px;width:16px;height:16px;font-size:9px;border:2px solid var(--surface)}
 .av-big{display:grid;place-items:center;width:64px;height:64px;border-radius:50%;flex:none;

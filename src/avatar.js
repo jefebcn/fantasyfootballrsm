@@ -111,19 +111,42 @@ const use = (id, attr = '') => `<use href="#av-${id}"${attr ? ' ' + attr : ''}/>
  * @param {string} cls   classi extra sull'elemento
  */
 /**
- * Le caricature disegnate a mano (media/avatar/1NN.webp, ritagliate da
- * scripts/ritaglia-calciatori.py). Sono figure intere, non ritratti: sul campo
- * stanno in piedi sopra il loro nome, come nelle formazioni dei giornali.
+ * Le caricature disegnate a mano (media/avatar/1NN.webp e 2NN.webp, ritagliate
+ * da scripts/ritaglia-avatarcalciatori.py). Sono figure intere, non ritratti:
+ * sul campo stanno in piedi sopra il loro nome, come nelle formazioni dei
+ * giornali.
  *
  * L'assegnazione esce dall'id del giocatore, quindi e' sempre la stessa su
  * ogni schermata: chi ha imparato che Rufer e' quello con le braccia conserte
- * lo ritrova cosi' anche il mese dopo. Finche' sono quattordici e i giocatori
- * sono centinaia si ripetono, ed e' previsto: se ne aggiungono altre, i primi
- * quattordici numeri NON si toccano, se no cambierebbe la faccia a tutti.
+ * lo ritrova cosi' anche il mese dopo.
+ *
+ * Erano quattordici e si ripetevano spesso; ora sono centotrenta, cioe' quasi
+ * una a testa per il listone. Cambiare il numero ricuce l'assegnazione di
+ * tutti — e' il prezzo di un'infornata nuova, e si paga una volta sola.
+ *
+ * L'elenco e' l'intervallo intero perche' i file sono numerati di seguito
+ * dallo script. Che i due insiemi coincidano lo controlla
+ * tests/caricature.test.js: un numero senza file diventa un rettangolo rotto
+ * in campo, un file senza numero e' peso che il telefono scarica e non usa.
  */
-const CARICATURE = [101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114];
+const CARICATURE = Array.from({ length: 130 }, (_, i) => 101 + i);
 
-export const caricatura = (p) => CARICATURE[hash(String(p?.id || 'x')) % CARICATURE.length];
+/**
+ * Quelli col guantone. Il portiere veste diverso dai compagni — e' la regola
+ * del gioco, ed era gia' scritta nel ritratto disegnato qui sotto — ma le
+ * caricature assegnate a caso se la perdevano: in porta finiva un attaccante
+ * in maglia da attaccante. Riconoscerli dal disegno non si puo', quindi sono
+ * elencati a mano, guardandoli. Il 198 sembra uno di loro e non lo e': maglia
+ * gialla, niente guanti.
+ */
+const PORTIERI = [103, 104, 112, 113, 114, 129, 130, 143, 144,
+  158, 160, 174, 182, 186, 199, 206, 218, 219];
+const MOVIMENTO = CARICATURE.filter((n) => !PORTIERI.includes(n));
+
+export const caricatura = (p) => {
+  const gruppo = p?.role === 'P' ? PORTIERI : MOVIMENTO;
+  return gruppo[hash(String(p?.id || 'x')) % gruppo.length];
+};
 
 export function avatar(p, club, cls = '') {
   const n = caricatura(p);

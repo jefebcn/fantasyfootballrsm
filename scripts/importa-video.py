@@ -101,7 +101,14 @@ def main():
         t = f.read_text(encoding='utf-8')
         m = re.search(r'export const PARTITE = (\[.*?\]);', t, re.S)
         if m:
-            for r in json.loads(m.group(1)):
+            # La virgola finale prima di "]" e' legittima in JavaScript — la
+            # scrive questo stesso script, qui sotto, mettendo una virgola dopo
+            # ogni riga — ma NON e' json valido. Quindi json.loads() moriva con
+            # "Expecting value", e questo blocco non ha mai funzionato: il file
+            # non veniva riscritto affatto, cioe' i video nuovi non entravano
+            # mai. Il passo nel workflow ha continue-on-error, quindi cadeva
+            # senza far rumore.
+            for r in json.loads(re.sub(r',(\s*])', r'\1', m.group(1))):
                 vecchie[(r[0], r[1], r[2])] = r
     for r in partite:
         vecchie[(r[0], r[1], r[2])] = r

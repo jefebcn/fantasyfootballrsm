@@ -21,11 +21,11 @@ export const PARTITE = [
   [3, "virtus", "libertas", "U6JvwcIMIwU", "2026-09-14"],
 ];
 export const VIDEO_CANALE = [
+  ["V6Aft2gpc5Y", "U15, San Marino - Gibilterra | Highlights", "2026-09-16"],
   ["nCfgsjsBWrA", "Campionato Sammarinese 2026-27, 3. giornata - VOTA LA PARATA PIÙ BELLA!", "2026-09-14"],
   ["vp3Ox2wYd4A", "Campionato Sammarinese 2026-27, 3. giornata - VOTA IL GOL PIÙ BELLO!", "2026-09-14"],
   ["bA_YMUQFHKY", "Coppa Titano 2026-27, Andata degli Ottavi | HL Murata-Virtus 0-3", "2026-09-11"],
   ["lEqcSfPFZ64", "Coppa Titano 2026-27, Andata degli Ottavi | HL Libertas-Folgore 0-2", "2026-09-11"],
   ["Ca27JB--8iI", "Coppa Titano 2026-27, Andata degli Ottavi | HL Pennarossa-Cailungo 3-0", "2026-09-11"],
   ["WaOOdzp_UkA", "Coppa Titano 2026-27, Andata degli Ottavi | Tre Penne - Juvenes Dogana 2-1", "2026-09-10"],
-  ["h0cp2sbIHy8", "Coppa Titano 2026-27, Andata degli Ottavi | Fiorentino - Tre Fiori 0-1", "2026-09-10"],
 ];

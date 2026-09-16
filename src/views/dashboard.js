@@ -114,13 +114,25 @@ function corrente(f, n, me, riposo) {
   const aperta = st === 'open' || st === 'scheduled';
   const resta = aperta ? manca(md.lockAt) : '';
   const centro = resta ? `<span class="score attesa">${resta}</span>` : `<span class="score vs">VS</span>`;
+  // Finite le partite e inseriti gli eventi i punteggi ci sono gia': manca solo
+  // dire che sono definitivi, e finora quel passo lo faceva il solo Giudice
+  // Dati, quindi la lega restava in sospeso ad aspettare una persona. Adesso il
+  // tasto lo vedono tutti, ma resta spento finche' manca all'appello anche una
+  // sola partita: l'art. 9.2 non ammette rettifiche dopo la chiusura.
+  const chiudibile = S.giornataDaChiudere(n);
   const cta = aperta
     ? `<a class="a-btn big" href="#/rosa/formazione">${saved ? 'Modifica la formazione' : 'Inserisci formazione'}</a>`
-    : `<a class="a-btn big" href="#/voti/${n}">Voti della giornata</a>`;
+    : chiudibile
+      ? `<button class="a-btn big" id="chiudi-giornata"${chiudibile.pronta ? '' : ' disabled'}>${icon('lock', 'ic sm')}Calcola la giornata</button>`
+      : `<a class="a-btn big" href="#/voti/${n}">Voti della giornata</a>`;
   const nota = aperta
     ? (saved ? `Formazione salvata ${dateIt(saved.submittedAt)} · si chiude ${dateIt(md.lockAt)} alle ${timeIt(md.lockAt)}`
              : `Si chiude ${dateIt(md.lockAt)} alle ${timeIt(md.lockAt)}`)
-    : '';
+    : chiudibile
+      ? (chiudibile.pronta
+          ? `Tutte le ${chiudibile.partite} partite hanno gli eventi: da qui i punteggi diventano definitivi`
+          : `Mancano gli eventi di ${chiudibile.mancanti} partite su ${chiudibile.partite}`)
+      : '';
   return sec('Giornata corrente', `${n}ª giornata`) + `<div class="mcard">
     <div class="mrow">${lato(h)}${centro}${lato(a)}</div>
     ${nota ? `<p class="mnota">${esc(nota)}</p>` : ''}
@@ -310,6 +322,19 @@ export const dashboard = {
       slot.querySelector('#inst-no').onclick = () => { S.store.set({ installedDismissed: true }); slot.innerHTML = ''; };
     };
     show(); document.addEventListener('installable', show, { once: true });
+    // Chiudere la giornata e' definitivo (art. 9.2), quindi si chiede conferma
+    // e si aspetta il server prima di dire che e' fatta: se il database
+    // rifiuta — giornata gia' chiusa, nessun evento — il messaggio e' il suo.
+    const ch = root.querySelector('#chiudi-giornata');
+    if (ch) ch.onclick = async () => {
+      const q = S.giornataDaChiudere(); if (!q) return;
+      if (!confirm(`Calcolare la giornata ${q.giornata}? I punteggi diventano definitivi e non si rettificano piu'.`)) return;
+      ch.disabled = true;
+      try { await S.chiudiGiornata(q.giornata); ctx.toast(`Giornata ${q.giornata} calcolata`); }
+      catch (e) { ctx.toast(e.message || 'Non e\' stato possibile calcolare la giornata'); ch.disabled = false; }
+      ctx.render();
+    };
+
     // "Condividi" sulla giornata conclusa: stesso testo della scheda, ma senza
     // uscire dalla dashboard.
     root.querySelector('[data-share]')?.addEventListener('click', async (e) => {

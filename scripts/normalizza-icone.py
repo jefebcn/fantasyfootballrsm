@@ -39,7 +39,7 @@ TELA = 128
 # ritoccarli sarebbe rumore. Per il menu invece servono tutti.
 GRUPPI = {
     'nav':  {'ottica': 100.0, 'max_lato': 120,
-             'icone': ['campo', 'maglia-10', 'calendario', 'coppa', 'grafico']},
+             'icone': ['campo', 'maglia-10', 'calendario', 'coppa', 'grafico', 'aggiorna']},
     'menu': {'ottica': 100.0, 'max_lato': 122, 'icone': None},
     # Eventi: qui il tetto lo detta il palo, 113x73, che e' una porta vista di
     # lato. A grandezza ottica 100 vorrebbe essere largo 132 e sulla tela non ci

@@ -52,7 +52,7 @@ export const crest = (m, cls = '') => {
  * l'icona deve cambiare colore — la barra in basso, che colorando la voce
  * attiva dice dove sei. Un PNG già colorato non potrebbe farlo.
  */
-export const mask = (name, cls = '') => `<i class="mi ${cls}" style="--m:url(/media/icone/nav/${name}.png)"></i>`;
+export const mask = (name, cls = '', cartella = 'nav') => `<i class="mi ${cls}" style="--m:url(/media/icone/${cartella}/${name}.png)"></i>`;
 
 /** Icone illustrate: media/icone/eventi e media/icone/menu. */
 export const pic = (name, cartella = 'eventi', cls = '') => `<img class="pic ${cls}" src="media/icone/${cartella}/${name}.png" alt="" loading="lazy">`;

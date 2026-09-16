@@ -868,19 +868,22 @@ button,a{-webkit-tap-highlight-color:transparent}
 
 /* icone illustrate */
 .pic{display:block;width:100%;height:100%;object-fit:contain;-webkit-user-drag:none}
-.evi{display:inline-grid;place-items:center;width:20px;height:20px;flex:none}
-.vr .ev .evi{width:21px;height:21px}
-.tl .te .evi,.kb .k .evi{width:24px;height:24px}
+/* I riquadri crescono del 6,4% perche' l'inchiostro delle icone evento e'
+   calato di altrettanto quando le ho portate tutte alla stessa grandezza
+   ottica (scripts/normalizza-icone.py): sullo schermo restano come prima. */
+.evi{display:inline-grid;place-items:center;width:21px;height:21px;flex:none}
+.vr .ev .evi{width:22px;height:22px}
+.tl .te .evi,.kb .k .evi{width:26px;height:26px}
 .d-item i .pic,.tile > .lead .pic{width:24px;height:24px}
 .d-item i.illus{background:var(--surface-sunk)}
 .tile > .lead.illus{background:var(--surface-sunk);padding:7px}
 /* Segno di sostituzione. Si chiamava .sub come la RIGA di sostituzione della
    lista voti: quel grid a tre colonne schiacciava l'icona a 0px di larghezza,
    e sul campo restava un riquadro bianco vuoto. */
-.ps .ind .segno{display:inline-grid;place-items:center;width:18px;height:18px;background:#fff;border-radius:5px;box-shadow:0 1px 3px rgba(0,0,0,.3)}
-.ps .ind .segno .pic{width:14px;height:14px}
-.b2 .nm b .segno.sm{display:inline-grid;place-items:center;width:14px;height:14px;vertical-align:-2px}
-.b2 .nm b .segno.sm .pic{width:14px;height:14px}
+.ps .ind .segno{display:inline-grid;place-items:center;width:19px;height:19px;background:#fff;border-radius:5px;box-shadow:0 1px 3px rgba(0,0,0,.3)}
+.ps .ind .segno .pic{width:15px;height:15px}
+.b2 .nm b .segno.sm{display:inline-grid;place-items:center;width:15px;height:15px;vertical-align:-2px}
+.b2 .nm b .segno.sm .pic{width:15px;height:15px}
 .sheet-ev{display:flex;align-items:center;gap:8px}
 .kb .k .evi{margin-bottom:2px}
 

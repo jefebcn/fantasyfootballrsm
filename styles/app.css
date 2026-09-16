@@ -43,6 +43,10 @@ a{color:var(--primary-ink)}   /* --primary sta a 4,23 sul fondo pagina: sotto 4,
 #install-slot:empty{display:none}
 .senza-nav .a-body{padding-bottom:calc(16px + var(--sa-bottom))}
 .a-nav a{text-decoration:none}
+/* 26 e non i 24 di .mi: le icone della barra sono state riportate tutte
+   alla stessa grandezza ottica (scripts/normalizza-icone-nav.py) e a 24
+   venivano piccoline. La pallina dell'avviso segue il riquadro piu' largo. */
+.a-nav .mi{width:26px;height:26px}
 /* Se il riquadro si ferma prima del bordo dello schermo, sotto la barra si
    vedeva il fondo pagina, di un altro colore. Questa "gonna" prolunga il
    colore della barra fino in fondo: quando il riquadro arriva dove deve sta
@@ -230,13 +234,18 @@ hr.sep{border:0;border-top:1px solid var(--border);margin:4px 0}
 .a-rule p b{font-weight:600}
 
 /* bottom nav */
-/* 56 + la tacca fa 90pt su iPhone: la barra di sistema ne fa 83, la nostra
-   ne faceva 98 e lo spazio in fondo si notava. Il riquadro da toccare resta
-   di 46pt (90 - 4 in alto - 40 in basso), sopra i 44 richiesti. */
-.a-nav{flex:none;height:calc(52px + var(--riserva-basso));background:var(--surface);box-shadow:var(--sh-nav);display:grid;grid-template-columns:repeat(5,1fr);padding:4px 4px calc(2px + var(--riserva-basso));position:relative;z-index:3}
-.a-nav button,.a-nav a{border:0;background:transparent;color:var(--text-muted);display:flex;flex-direction:column;align-items:center;gap:3px;font-family:var(--font-body);font-size:11px;font-weight:500;cursor:pointer;position:relative;padding:0;border-radius:8px}
+/* Il corpo della barra e' 53pt, piu' la riserva per la barretta di casa.
+   Dentro il corpo il blocco icona+scritta ha la stessa aria sopra e sotto —
+   5 e 4 — mentre prima ne aveva 4 sopra e 6 sotto piu' tutto lo scarto, e le
+   icone galleggiavano in alto. Il riquadro da toccare resta di 44pt esatti:
+   53 + riserva - 5 - (4 + riserva). */
+.a-nav{flex:none;height:calc(53px + var(--riserva-basso));background:var(--surface);box-shadow:var(--sh-nav);display:grid;grid-template-columns:repeat(5,1fr);padding:5px 4px calc(4px + var(--riserva-basso));position:relative;z-index:3}
+/* justify-content:center: il blocco sta in mezzo al riquadro da toccare
+   invece di appoggiarsi in cima, cosi' l'aria sopra e sotto e' la stessa
+   anche se un giorno il riquadro dovesse crescere. */
+.a-nav button,.a-nav a{border:0;background:transparent;color:var(--text-muted);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;font-family:var(--font-body);font-size:11px;font-weight:500;cursor:pointer;position:relative;padding:0;border-radius:8px}
 .a-nav button.on,.a-nav a.on{color:var(--primary);font-weight:600}
-.a-nav button .dot,.a-nav a .dot{position:absolute;top:0;right:calc(50% - 16px);width:8px;height:8px;border-radius:50%;background:var(--c-cartellino-500);border:2px solid var(--surface)}
+.a-nav button .dot,.a-nav a .dot{position:absolute;top:2px;right:calc(50% - 17px);width:8px;height:8px;border-radius:50%;background:var(--c-cartellino-500);border:2px solid var(--surface)}
 .a-nav a:focus-visible,.a-nav button:focus-visible,.a-appbar .ib:focus-visible,.a-btn:focus-visible,.chip:focus-visible,.vr:focus-visible{outline:2px solid var(--primary);outline-offset:2px}
 
 /* drawer */

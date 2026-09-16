@@ -56,6 +56,17 @@ Poi su GitHub, in *Settings → Secrets and variables → Actions*, aggiungi:
 |---|---|
 | `SUPABASE_FUNCTIONS_URL` | `https://<progetto>.supabase.co/functions/v1` |
 | `PROMEMORIA_TOKEN` | lo stesso del passo 2 |
+| `PROMEMORIA_FUNZIONE` | solo se lo slug non è `promemoria` — vedi sotto |
+
+`<progetto>` è il codice del progetto, quello che si legge nell'indirizzo della
+funzione appena creata e in ogni chiamata che il browser già fa a Supabase: è
+pubblico, non è un segreto.
+
+Lo slug della funzione Supabase lo fissa **alla creazione** e non si può più
+cambiare: il campo *Name* nelle impostazioni avvisa che «your slug and endpoint
+URL will remain the same». Se la funzione è nata con un nome storto, invece di
+ricrearla basta mettere lo slug vero in `PROMEMORIA_FUNZIONE`. Senza quel
+secret si usa `promemoria`.
 
 L'azione `.github/workflows/promemoria.yml` gira ogni ora e chiama la funzione.
 

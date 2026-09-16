@@ -7,6 +7,12 @@
 #
 # Finche' i due secret non sono configurati il lavoro si ferma dicendolo, invece
 # di fallire ogni ora e riempire la casella di posta.
+#
+# Lo slug della funzione si puo' cambiare con il secret PROMEMORIA_FUNZIONE:
+# Supabase lo fissa alla creazione e il campo "Name" del pannello NON lo tocca
+# ("your slug and endpoint URL will remain the same"), quindi una funzione
+# creata con un nome storto resta a quel nome. Meglio una riga qui che
+# ricreare la funzione.
 
 name: Promemoria formazione
 
@@ -42,9 +48,11 @@ jobs:
         env:
           URL: ${{ secrets.SUPABASE_FUNCTIONS_URL }}
           TOKEN: ${{ secrets.PROMEMORIA_TOKEN }}
+          FUNZIONE: ${{ secrets.PROMEMORIA_FUNZIONE }}
         run: |
           set -o pipefail
+          nome="${FUNZIONE:-promemoria}"
           risposta=$(curl -sS --fail-with-body --max-time 60 \
             -H "x-promemoria-token: $TOKEN" \
-            "$URL/promemoria")
+            "${URL%/}/$nome")
           echo "$risposta"

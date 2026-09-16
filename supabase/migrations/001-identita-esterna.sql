@@ -22,80 +22,73 @@ drop policy if exists profiles_update_own on public.profiles;
 drop policy if exists members_update      on public.league_members;
 drop policy if exists members_delete      on public.league_members;
 
--- 1. via i vincoli verso auth.users e le chiavi esterne che bloccano il cambio tipo
+-- 1-3. uuid → text, portandosi dietro tutte le chiavi che puntano a profiles
+--
+--    Questo pezzo e' stato riscritto dopo essere saltato tre volte, sempre
+--    allo stesso modo. Prima l'elenco delle chiavi esterne da sciogliere era
+--    scritto a mano, e ogni migrazione successiva ne aggiungeva una che qui
+--    non c'era: matchday_locks da schema.sql, push_subscriptions dalla 005,
+--    vice_user_id dalla 002. Ogni volta la conversione sbatteva contro il
+--    vincolo rimasto in piedi — "sono di tipi incompatibili" — e ogni volta
+--    si rattoppava aggiungendo una riga, in attesa della prossima.
+--
+--    Adesso le chiavi se le trova da sola nel catalogo: qualunque tabella
+--    punti a profiles(id), oggi o in futuro, viene sciolta, convertita e
+--    riagganciata con la SUA definizione originale, cascade compresi. Tutto
+--    dentro un blocco solo, quindi o riesce tutto o non cambia niente: un
+--    errore a meta' non lascia il database senza vincoli.
 alter table public.profiles drop constraint if exists profiles_id_fkey;
-alter table public.league_members drop constraint if exists league_members_user_id_fkey;
-alter table public.leagues drop constraint if exists leagues_created_by_fkey;
-alter table public.match_overrides drop constraint if exists match_overrides_updated_by_fkey;
-alter table public.match_events drop constraint if exists match_events_created_by_fkey;
-alter table public.matchday_status drop constraint if exists matchday_status_changed_by_fkey;
-alter table public.change_log drop constraint if exists change_log_by_user_fkey;
--- matchday_locks nasce in schema.sql ma è arrivata dopo che questa migrazione
--- era già scritta: senza convertirla anche lei, la chiave esterna del punto 3
--- puntava da un uuid a un text e il database la rifiutava.
-do $$ begin
-  if to_regclass('public.matchday_locks') is not null then
-    alter table public.matchday_locks drop constraint if exists matchday_locks_updated_by_fkey;
-  end if;
-end $$;
--- push_subscriptions nasce nella 005, cioè DOPO questa migrazione. Chi ha un
--- database dove la 005 è già passata nella sua prima versione si ritrova
--- user_id uuid agganciato a profiles(id), e la conversione qui sotto sbatteva
--- contro quel vincolo: "user_id e id sono di tipi incompatibili".
-do $$ begin
-  if to_regclass('public.push_subscriptions') is not null then
-    alter table public.push_subscriptions drop constraint if exists push_subscriptions_user_id_fkey;
-  end if;
-end $$;
 
--- 2. uuid → text
---    Ogni conversione è preceduta dal controllo del tipo attuale: rieseguire
---    questa migrazione su un database già convertito non deve fallire. Senza
---    il controllo ci riprovava lo stesso e Postgres si impuntava sulle policy
---    che nel frattempo aveva creato la 002.
 do $$
 declare
-  t text; c record;
+  c record;
+  tabelle  text[] := '{}';   -- public.league_members, per le ALTER
+  nomi_tab text[] := '{}';   -- league_members, per information_schema
+  nomi     text[] := '{}';
+  defs    text[] := '{}';
+  colonne text[] := '{}';
+  t text;
+  i int;
 begin
+  -- 1. chi punta a profiles(id): me lo dice il catalogo, non un elenco
   for c in
-    select * from (values
-      ('profiles',        'id'),
-      ('league_members',  'user_id'),
-      ('leagues',         'created_by'),
-      ('match_overrides', 'updated_by'),
-      ('match_events',    'created_by'),
-      ('matchday_status', 'changed_by'),
-      ('change_log',      'by_user'),
-      ('matchday_locks',  'updated_by'),
-      ('push_subscriptions', 'user_id')
-    ) as v(tab, col)
+    select con.conrelid::regclass::text as tab,   -- già qualificato e citato al bisogno
+           cls.relname                  as nome_tab,
+           con.conname                  as nome,
+           pg_get_constraintdef(con.oid) as def,
+           att.attname                  as col
+      from pg_constraint con
+      join pg_class cls on cls.oid = con.conrelid
+      join pg_attribute att
+        on att.attrelid = con.conrelid and att.attnum = con.conkey[1]
+     where con.contype = 'f'
+       and con.confrelid = 'public.profiles'::regclass
   loop
-    if to_regclass('public.' || c.tab) is null then continue; end if;
+    tabelle := tabelle || c.tab;  nomi_tab := nomi_tab || c.nome_tab;
+    nomi := nomi || c.nome;       defs := defs || c.def;
+    colonne := colonne || c.col;
+    execute format('alter table %s drop constraint %I', c.tab, c.nome);
+  end loop;
+
+  -- 2. la conversione vera, sull'id e su tutto cio' che lo referenzia
+  select data_type into t from information_schema.columns
+   where table_schema = 'public' and table_name = 'profiles' and column_name = 'id';
+  if t = 'uuid' then
+    alter table public.profiles alter column id type text using id::text;
+  end if;
+  for i in 1 .. coalesce(array_length(tabelle, 1), 0) loop
     select data_type into t from information_schema.columns
-     where table_schema = 'public' and table_name = c.tab and column_name = c.col;
+     where table_schema = 'public' and table_name = nomi_tab[i] and column_name = colonne[i];
     if t = 'uuid' then
-      execute format('alter table public.%I alter column %I type text using %I::text', c.tab, c.col, c.col);
+      execute format('alter table %s alter column %I type text using %I::text',
+                     tabelle[i], colonne[i], colonne[i]);
     end if;
   end loop;
-end $$;
 
--- 3. chiavi esterne verso profiles (non più verso auth.users)
-alter table public.league_members add constraint league_members_user_id_fkey
-  foreign key (user_id) references public.profiles(id) on delete cascade;
-alter table public.leagues        add constraint leagues_created_by_fkey        foreign key (created_by) references public.profiles(id);
-alter table public.match_overrides add constraint match_overrides_updated_by_fkey foreign key (updated_by) references public.profiles(id);
-alter table public.match_events   add constraint match_events_created_by_fkey    foreign key (created_by) references public.profiles(id);
-alter table public.matchday_status add constraint matchday_status_changed_by_fkey foreign key (changed_by) references public.profiles(id);
-alter table public.change_log     add constraint change_log_by_user_fkey         foreign key (by_user)   references public.profiles(id);
-do $$ begin
-  if to_regclass('public.matchday_locks') is not null then
-    alter table public.matchday_locks add constraint matchday_locks_updated_by_fkey
-      foreign key (updated_by) references public.profiles(id);
-  end if;
-  if to_regclass('public.push_subscriptions') is not null then
-    alter table public.push_subscriptions add constraint push_subscriptions_user_id_fkey
-      foreign key (user_id) references public.profiles(id) on delete cascade;
-  end if;
+  -- 3. e si riaggancia tutto com'era
+  for i in 1 .. coalesce(array_length(tabelle, 1), 0) loop
+    execute format('alter table %s add constraint %I %s', tabelle[i], nomi[i], defs[i]);
+  end loop;
 end $$;
 
 -- 4. l'identità corrente, qualunque sia il fornitore

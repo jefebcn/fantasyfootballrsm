@@ -21,10 +21,40 @@ const dataIt = (iso) => { const d = new Date(iso); return Number.isFinite(+d)
 const titolareCompilato = () => !!(TITOLARE.nome && (TITOLARE.email || CONTATTO));
 const rigaTitolare = () => {
   const r = [TITOLARE.nome, TITOLARE.sede, TITOLARE.paese,
-    TITOLARE.codiceOperatore && `cod. operatore ${TITOLARE.codiceOperatore}`,
+    TITOLARE.registrazioneFiscale, TITOLARE.licenza && `licenza ${TITOLARE.licenza}`,
     TITOLARE.email || CONTATTO, TITOLARE.pec].filter(Boolean).map(esc);
   return r.join(' · ');
 };
+
+/**
+ * Dove stanno i dati, e la questione che non si puo' dedurre.
+ *
+ * Il posto dove sono salvati lo sa l'app: il progetto Supabase. Ma chi
+ * amministra quei dati sta negli Emirati, quindi li guarda da fuori dallo
+ * Spazio economico europeo — e quello e' un trasferimento, che vuole un
+ * meccanismo per starci dentro. Qual e' quel meccanismo l'app non lo sa e non
+ * se lo inventa: lo scrive chi risponde, in TITOLARE.trasferimenti.
+ *
+ * Prima qui c'era scritto "non sono previsti trasferimenti fuori dallo Spazio
+ * economico europeo; se un domani servissero, questa pagina lo direbbe
+ * prima". Quel domani e' arrivato col titolare a Dubai, e la frase era
+ * diventata falsa: questa pagina la legge chi vuole capire di chi fidarsi.
+ */
+const rigaDove = () => `I dati vivono in un progetto Supabase${S.serverHost() ? ` (${esc(S.serverHost())})` : ''}, `
+  + 'su server nell\'Unione Europea.'
+  // "ha sede in ${paese}" non si puo' scrivere: in italiano la preposizione
+  // cambia col Paese — in Italia, a San Marino, NEGLI Emirati — e un modello
+  // non la indovina. Col trattino l'articolo non serve e la frase resta giusta
+  // qualunque sia il Paese.
+  + (TITOLARE.paese ? ` Chi risponde di quei dati ha sede fuori dallo Spazio economico europeo — ${esc(TITOLARE.paese)} —`
+    + ' quindi li amministra da fuori.' : '')
+  + (TITOLARE.trasferimenti ? ` ${esc(TITOLARE.trasferimenti)}` : '')
+  + (TITOLARE.rappresentanteUE ? ` Rappresentante nello Spazio economico europeo: ${esc(TITOLARE.rappresentanteUE)}.` : '');
+
+const avvisoTrasferimenti = `<div class="warn block">${icon('warn', 'ic sm')}<span><b>Manca la base del trasferimento fuori dallo SEE.</b>
+  Chi risponde dei dati ha sede fuori dallo Spazio economico europeo, quindi li amministra da fuori: serve dire
+  con quale meccanismo (<code>TITOLARE.trasferimenti</code> in <code>src/config.js</code>) e, se è stato nominato,
+  chi è il rappresentante nello SEE. Finché non c'è, questa informativa non è completa.</span></div>`;
 const avvisoTitolare = `<div class="warn block">${icon('warn', 'ic sm')}<span><b>Manca il titolare del trattamento.</b>
   Finché i dati di chi gestisce l'app non sono compilati (<code>TITOLARE</code> in <code>src/config.js</code>)
   questa informativa non è completa: va riempita prima di aprire le iscrizioni oltre il giro di amici.</span></div>`;
@@ -41,6 +71,7 @@ export const privacy = {
   render() {
     return `<main class="a-body">
       ${titolareCompilato() ? '' : avvisoTitolare}
+      ${TITOLARE.paese && !TITOLARE.trasferimenti ? avvisoTrasferimenti : ''}
       ${blocco('Chi risponde dei tuoi dati', [
     titolareCompilato()
       ? `Titolare del trattamento: ${rigaTitolare()}. Per qualsiasi richiesta sui dati scrivi a quell'indirizzo.`
@@ -65,7 +96,7 @@ export const privacy = {
     ['YouTube:', 'gli highlights stanno sul canale della FSGC. Nessuna richiesta parte verso Google finché non tocchi play su un video; da quel momento Google vede il tuo indirizzo IP e cosa stai guardando, secondo le sue regole, non le nostre. Il dettaglio è in <a href="#/archiviazione">Cookie e memoria locale</a>.'],
   ])}
       ${blocco('Dove sta e per quanto', [
-    `I dati vivono in un progetto Supabase${S.serverHost() ? ` (${esc(S.serverHost())})` : ''}, su server nell'Unione Europea. Non sono previsti trasferimenti fuori dallo Spazio economico europeo; se un domani servissero, questa pagina lo direbbe prima.`,
+    rigaDove(),
     ['Per quanto:', 'finché la tua squadra esiste in una lega. Eliminata la lega o il tuo profilo, i dati vanno via con loro. Il registro delle modifiche ai voti resta finché resta la lega, in forma anonima rispetto a chi non ne fa più parte.'],
     'Il listone, il calendario e i tabellini del campionato non sono dati personali tuoi: arrivano dai referti pubblici della FSGC.',
   ])}
@@ -121,7 +152,7 @@ export const termini = {
   ])}
       ${blocco('Legge e modifiche', [
     TITOLARE.paese
-      ? `Vale la legge di ${esc(TITOLARE.paese)}. Se sei un consumatore, restano ferme le tutele del Paese in cui vivi, che nessuna riga qui può toglierti.`
+      ? `Legge applicabile: ${esc(TITOLARE.paese)}. Se sei un consumatore, restano ferme le tutele del Paese in cui vivi, che nessuna riga qui può toglierti.`
       : 'La legge applicabile sarà indicata insieme ai dati di chi gestisce l\'app. Se sei un consumatore, restano comunque ferme le tutele del Paese in cui vivi.',
     'Se questi termini cambiano lo trovi scritto qui con la data in fondo. Continuare a usare l\'app dopo una modifica vuol dire accettarla; se non ti va, puoi uscire dalla lega.',
   ])}

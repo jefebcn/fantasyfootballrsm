@@ -19,10 +19,10 @@ const radice = new URL('..', import.meta.url).pathname.replace(/\/$/, '');
 const sorgente = readFileSync(`${radice}/src/avatar.js`, 'utf8');
 
 const riga = sorgente.match(/const CARICATURE = ([^;]+);/);
-const elenco = riga ? eval(riga[1]) : null;   // eslint-disable-line no-eval
+const elenco = riga ? eval(riga[1]) : null;
 
 const rigaP = sorgente.match(/const PORTIERI = (\[[^\]]+\]);/);
-const portieri = rigaP ? eval(rigaP[1]) : null;   // eslint-disable-line no-eval
+const portieri = rigaP ? eval(rigaP[1]) : null;
 
 const inCartella = readdirSync(`${radice}/media/avatar`)
   .filter((f) => /^\d+\.webp$/.test(f))

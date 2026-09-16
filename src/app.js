@@ -204,16 +204,23 @@ function misuraAltezza() {
   // e prendere il massimo evita che la barra salti sopra i tasti.
   let h = Math.max(window.innerHeight || 0, document.documentElement.clientHeight || 0, vv ? vv.height : 0);
 
-  // iOS ad app installata, con viewport-fit=cover: la finestra viene dichiarata
-  // alta quanto lo schermo MENO la tacca in alto, pur partendo dal bordo
-  // superiore. Risultato: in fondo restano scoperti esattamente 59pt su un
-  // iPhone con l'isola. Non si indovina: il conto lo dimostra da solo, e solo
-  // quando torna si prende l'altezza dello schermo.
+  if (h > 0) document.documentElement.style.setProperty('--h-app', `${h}px`);
+
+  // iOS ad app installata: la finestra viene dichiarata alta quanto lo schermo
+  // MENO la tacca in alto, pur partendo dal bordo superiore. Quando il conto
+  // torna esatto, vuol dire che il pezzo in fondo iOS non lo da' proprio alla
+  // pagina: li' non disegna niente, e riempie da se' con il colore di fondo.
+  //
+  // Due conseguenze. La prima: NON si puo' allungare il riquadro fino allo
+  // schermo. L'ho provato, e le scritte della barra finivano sotto i 793pt che
+  // iOS disegna davvero — sparite. La seconda, che invece serve: la barretta
+  // di casa sta gia' fuori dalla finestra, quindi tenerle da parte 34pt dentro
+  // la barra e' contarla due volte, e sono 34pt di vuoto in piu' in fondo.
   const t = taccaSopra();
   const schermo = (window.screen && window.screen.height) || 0;
-  if (t > 0 && schermo && Math.abs(h + t - schermo) <= 1) h = schermo;
-
-  if (h > 0) document.documentElement.style.setProperty('--h-app', `${h}px`);
+  const doppioConto = t > 0 && schermo && Math.abs(h + t - schermo) <= 1;
+  const r = document.documentElement.style;
+  if (doppioConto) r.setProperty('--sa-bottom', '0px'); else r.removeProperty('--sa-bottom');
   return h;
 }
 

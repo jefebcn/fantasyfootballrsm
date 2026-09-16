@@ -12,15 +12,13 @@ a{color:var(--primary-ink)}   /* --primary sta a 4,23 sul fondo pagina: sotto 4,
    dal "padding:" della regola vera piu' in basso nel foglio: erano inerti tutti
    e sette, e le schermate usavano i valori fissi tirati a occhio. */
 :root{--sa-top:env(safe-area-inset-top,0px);--sa-bottom:env(safe-area-inset-bottom,0px)}
-/* L'altezza del riquadro ha due casi opposti, e prima ne copriva uno solo.
-   Nel browser le barre di Safari compaiono e spariscono: "inset:0" si misura
-   sul riquadro grande, quindi la barra in basso finisce NASCOSTA sotto quella
-   del browser, e serve 100dvh. Ad app installata le barre non ci sono: dvh
-   puo' solo venire piu' corto del riquadro, mai piu' lungo, e sotto la barra
-   resta scoperto il fondo pagina — la fascia da 59pt. Li' quindi si torna a
-   "inset:0" puro (height:auto con top e bottom a zero riempie esatto). */
-.app{position:fixed;inset:0;height:100dvh;display:flex;flex-direction:column;background:var(--bg);max-width:640px;margin:0 auto;box-shadow:0 0 0 1px var(--border)}
-@media (display-mode:standalone),(display-mode:fullscreen),(display-mode:minimal-ui){.app{height:auto}}
+/* L'altezza la misura il JavaScript e la scrive in --h-app (vedi
+   misuraAltezza() in src/app.js): su iPhone le unita' CSS del viewport non
+   tornano, e il riquadro si fermava 59pt sopra il bordo dello schermo — tanto
+   quanto la tacca in alto — lasciando una fascia scoperta sotto la barra.
+   100dvh resta come ripiego se quel codice non gira: non e' giusto in tutti i
+   casi, ma non e' mai piu' lungo dello schermo. */
+.app{position:fixed;inset:0;height:var(--h-app,100dvh);display:flex;flex-direction:column;background:var(--bg);max-width:640px;margin:0 auto;box-shadow:0 0 0 1px var(--border)}
 @media (min-width:641px){body{background:var(--surface-sunk)}}
 .a-body > *{flex:none}
 .senza-nav .a-body{padding-bottom:calc(16px + var(--sa-bottom))}
@@ -42,7 +40,7 @@ a{color:var(--primary-ink)}   /* --primary sta a 4,23 sul fondo pagina: sotto 4,
 .sql{background:var(--surface-sunk);border:1px solid var(--border);border-radius:10px;
   padding:10px 12px;margin:8px 0;font-family:var(--font-mono);font-size:11.5px;line-height:1.55;
   color:var(--text);white-space:pre-wrap;word-break:break-word;overflow-wrap:anywhere}
-.toast{position:fixed;left:50%;bottom:calc(84px + var(--sa-bottom));transform:translateX(-50%);background:var(--c-pietra-900);color:#fff;padding:10px 16px;border-radius:999px;font-size:13px;font-weight:600;box-shadow:var(--sh-raise);z-index:50;max-width:calc(100% - 32px);opacity:0;transition:opacity var(--mo-base);pointer-events:none}
+.toast{position:fixed;left:50%;bottom:calc(76px + var(--sa-bottom));transform:translateX(-50%);background:var(--c-pietra-900);color:#fff;padding:10px 16px;border-radius:999px;font-size:13px;font-weight:600;box-shadow:var(--sh-raise);z-index:50;max-width:calc(100% - 32px);opacity:0;transition:opacity var(--mo-base);pointer-events:none}
 .toast.on{opacity:1}
 .install{display:flex;gap:12px;align-items:center;background:var(--c-titano-800);color:#fff;padding:10px 12px;border-radius:var(--r-md);font-size:13px}
 .install b{display:block;font-family:var(--font-display)}
@@ -212,7 +210,10 @@ hr.sep{border:0;border-top:1px solid var(--border);margin:4px 0}
 .a-rule p b{font-weight:600}
 
 /* bottom nav */
-.a-nav{flex:none;height:calc(64px + var(--sa-bottom));background:var(--surface);box-shadow:var(--sh-nav);display:grid;grid-template-columns:repeat(5,1fr);padding:6px 4px calc(10px + var(--sa-bottom));position:relative;z-index:3}
+/* 56 + la tacca fa 90pt su iPhone: la barra di sistema ne fa 83, la nostra
+   ne faceva 98 e lo spazio in fondo si notava. Il riquadro da toccare resta
+   di 46pt (90 - 4 in alto - 40 in basso), sopra i 44 richiesti. */
+.a-nav{flex:none;height:calc(56px + var(--sa-bottom));background:var(--surface);box-shadow:var(--sh-nav);display:grid;grid-template-columns:repeat(5,1fr);padding:4px 4px calc(6px + var(--sa-bottom));position:relative;z-index:3}
 .a-nav button,.a-nav a{border:0;background:transparent;color:var(--text-muted);display:flex;flex-direction:column;align-items:center;gap:3px;font-family:var(--font-body);font-size:11px;font-weight:500;cursor:pointer;position:relative;padding:0;border-radius:8px}
 .a-nav button.on,.a-nav a.on{color:var(--primary);font-weight:600}
 .a-nav button .dot,.a-nav a .dot{position:absolute;top:0;right:calc(50% - 16px);width:8px;height:8px;border-radius:50%;background:var(--c-cartellino-500);border:2px solid var(--surface)}

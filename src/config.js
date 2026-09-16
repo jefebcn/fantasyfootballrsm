@@ -37,6 +37,13 @@ export const CONTATTO = 'support@fantatitano.com';
  */
 export const TITOLARE = {
   nome: 'Mediterranean Digital Solutions Ltd',
+  /**
+   * Chi rappresenta la societa'. NON e' il titolare del trattamento: quello
+   * resta la societa', ed e' una distinzione giuridica, non una formalita'.
+   * Qui va la persona che la rappresenta, e in pagina esce attaccata al nome:
+   * "<societa'>, rappresentata da <nome>".
+   */
+  rappresentante: 'Alex Conti',
   sede: 'Level 3, Tower Business Centre, Tower Road, Sliema SLM 1603',
   paese: 'Malta',
   // Due identificativi diversi, ed etichettarli conta: prima il campo era uno

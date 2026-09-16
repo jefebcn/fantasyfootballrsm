@@ -590,6 +590,31 @@ export function addEvent(matchId, ev) {
   return write(async () => { const row = await remote.insertEvent(matchId, ev, user.id); g.matchEvents[matchId] = g.matchEvents[matchId].map((e) => (e.id === tmp.id ? { ...e, id: row.id } : e)); });
 }
 export function removeEvent(matchId, eventId) { assertOpen(matchId); g.matchEvents[matchId] = eventsOf(matchId).filter((e) => e.id !== eventId); notify(); return write(() => remote.deleteEvent(eventId)); }
+/**
+ * La giornata e' pronta per essere chiusa?
+ *
+ * Serve che le partite siano finite e che di OGNUNA ci siano gli eventi: senza
+ * questo controllo si chiuderebbe una giornata a meta', e l'art. 9.2 dice che
+ * dopo non si rettifica piu'. Il database rifiuta comunque una giornata senza
+ * nessun evento, ma quante partite abbia una giornata lo sa solo qui, che ha
+ * il calendario.
+ */
+export function giornataDaChiudere(n = currentMatchday()) {
+  const st = matchdayStatus(n);
+  if (st === 'frozen' || st === 'open' || st === 'scheduled') return null;
+  const partite = matchesOf(n);
+  if (!partite.length) return null;
+  const senza = partite.filter((m) => !(g.matchEvents[m.id] || []).length && !g.matchOverrides[m.id]);
+  return { giornata: n, pronta: senza.length === 0, mancanti: senza.length, partite: partite.length };
+}
+
+/** Chiude la giornata. Lo stato locale si aggiorna solo se il server dice di si'. */
+export async function chiudiGiornata(n = currentMatchday()) {
+  await remote.chiudiGiornata(n);
+  g.matchdayStatus[n] = 'frozen';
+  notify();
+}
+
 export function freezeMatchday(n) { g.matchdayStatus[n] = 'frozen'; notify(); return write(() => remote.setMatchdayStatus(n, 'frozen', user.id)); }
 export function reopenMatchday(n) { delete g.matchdayStatus[n]; notify(); return write(() => remote.setMatchdayStatus(n, null, user.id)); }
 export function addContestazione(c) {

@@ -59,6 +59,10 @@ a{color:var(--primary-ink)}   /* --primary sta a 4,23 sul fondo pagina: sotto 4,
    su fondo blu, accanto a icone ormai tutte piene. Stessa medicina del campo
    nella barra — a quella grandezza il tratto sottile si legge come velatura. */
 .a-appbar .ic{stroke-width:2.4}
+/* Aggiorna e' una maschera invece di un disegno a filo: il colore lo mette la
+   CSS, come alle sagome della barra in basso. 22px perche' il suo inchiostro
+   riempie il riquadro, mentre le due a filo lasciano aria ai bordi. */
+.a-appbar .ib-mi{width:22px;height:22px}
 .a-hero .acts a{text-decoration:none}
 .a-card.a-fase .a-btn{text-decoration:none}
 .a-drawer .panel{width:min(84%,360px);border-radius:0 24px 24px 0}

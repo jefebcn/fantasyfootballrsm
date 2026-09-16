@@ -45,6 +45,7 @@ GRUPPI = {
     # lato. A grandezza ottica 100 vorrebbe essere largo 132 e sulla tela non ci
     # sta: con 122 si ferma a 98, cioe' il 2% sotto. E' il solo che non arriva.
     'eventi': {'ottica': 100.0, 'max_lato': 122, 'icone': None},
+    'lega': {'ottica': 100.0, 'max_lato': 122, 'icone': None},
 }
 
 def riquadro(alpha, soglia=40, minimo=8):

@@ -2,8 +2,14 @@
 #
 # Gira ogni ora e non a un'ora fissa perche' le giornate del campionato non
 # cadono sempre nello stesso giorno: e' la funzione a decidere se e' il momento,
-# guardando quanto manca al lock. Ventitre' volte su ventiquattro risponde
-# "non e' il momento" e non spedisce niente.
+# guardando quanto manca al lock. Quasi sempre risponde "non e' il momento" e
+# non spedisce niente.
+#
+# "Ogni ora" e' un desiderio, non una promessa: GitHub ritarda e salta le corse
+# pianificate quando la piattaforma e' carica. Misurato su questo repository:
+# 3,2 - 6,3 - 5,8 ore fra una corsa e l'altra. Per questo la funzione non si
+# affida piu' a una finestra stretta e chiede al database chi ha gia' ricevuto
+# l'avviso (migrazione 009): una corsa in ritardo arriva tardi, non a vuoto.
 #
 # Finche' i due secret non sono configurati il lavoro si ferma dicendolo, invece
 # di fallire ogni ora e riempire la casella di posta.

@@ -70,6 +70,9 @@ exception when others then
 end $$;
 
 -- promemoria
+-- Attenzione: dalla 009 da_avvisare SCRIVE (segna chi ha avvisato), quindi
+-- chiamarla due volte di fila non da' lo stesso risultato. Qui la prima
+-- chiamata non trova nessuno, quindi non segna niente e la seconda e' pulita.
 insert into public.push_subscriptions (endpoint, user_id, p256dh, auth)
 values ('https://push/1','user_bea','k','a') on conflict (endpoint) do nothing;
 select pg_temp.esige('senza rosa non si avvisa nessuno', (select count(*) from public.da_avvisare(1)) = 0);
@@ -353,5 +356,76 @@ begin
     raise notice 'ok  non si ritira l''offerta di un altro (%)', sqlerrm;
   end;
 end $$;
+
+
+-- ---------------------------------------------------------------------------
+-- Promemoria della formazione: una volta sola, e non dipendente dall'orologio.
+--
+-- La 009 sposta il "non ripetersi" dalla finestra temporale al database. Qui
+-- si controlla proprio quello: che la seconda chiamata non restituisca niente,
+-- e che togliere il segno faccia ripartire l'avviso.
+--
+-- Lo stato di partenza si ricostruisce da zero invece di ereditare quello che
+-- hanno lasciato le prove di sopra: li' in mezzo qualcuno ha abbandonato la
+-- lega, qualcun altro si e' giocato tutta la rosa al mercato, e un conto
+-- scritto a mano su quello stato sarebbe un numero che non dice niente.
+-- ---------------------------------------------------------------------------
+delete from public.promemoria_inviati;
+delete from public.push_subscriptions;
+delete from public.lineups where league_id = :'lega';
+delete from public.rosters where league_id = :'lega';
+insert into public.rosters (league_id, member_id, player_id, price_paid) values
+  (:'lega', :'m_alex', 'q1', 10), (:'lega', :'m_bea', 'q2', 10);
+-- Cip torna vice di Bea: un avviso va anche all'allenatore in seconda, che e'
+-- l'unico altro che puo' consegnare la formazione.
+update public.league_members set vice_user_id = 'user_cip' where id = :'m_bea';
+
+-- Alex da telefono e da tablet: due dispositivi, due avvisi. Un'iscrizione e'
+-- legata al dispositivo, non alla persona (005).
+insert into public.push_subscriptions (endpoint, user_id, p256dh, auth) values
+  ('https://push/alex-telefono', 'user_alex', 'k1', 'a1'),
+  ('https://push/alex-tablet',   'user_alex', 'k2', 'a2'),
+  ('https://push/bea',           'user_bea',  'k3', 'a3'),
+  ('https://push/cip',           'user_cip',  'k4', 'a4'),
+  ('https://push/morto',         'user_bea',  'k5', 'a5');
+update public.push_subscriptions set failed_at = now() where endpoint = 'https://push/morto';
+
+-- Primo giro: i due dispositivi di Alex, quello di Bea e quello del suo vice.
+-- Quello morto no.
+select count(*)::int as primo from public.da_avvisare(7) \gset
+select pg_temp.esige('il primo giro avvisa i quattro dispositivi vivi', :primo = 4);
+select pg_temp.esige('l''indirizzo morto non viene avvisato',
+  not exists (select 1 from public.promemoria_inviati where matchday = 7 and endpoint = 'https://push/morto'));
+select pg_temp.esige('il vice riceve l''avviso della squadra di Bea',
+  exists (select 1 from public.promemoria_inviati where matchday = 7 and endpoint = 'https://push/cip'));
+
+-- Secondo giro subito dopo: non deve uscire piu' niente. E' il punto di tutta
+-- la migrazione: con la versione vecchia qui uscivano di nuovo tutti e quattro,
+-- ed era solo la finestra da 1,2 ore a impedire che succedesse davvero.
+select count(*)::int as secondo from public.da_avvisare(7) \gset
+select pg_temp.esige('il secondo giro non ripete niente', :secondo = 0);
+
+-- Una giornata diversa e' un avviso diverso.
+select count(*)::int as altra from public.da_avvisare(8) \gset
+select pg_temp.esige('un''altra giornata riparte da zero', :altra = 4);
+
+-- Spedizione fallita per un motivo passeggero: il segno si toglie e la corsa
+-- dopo riprova. Senza questo, un servizio push che non risponde per un minuto
+-- escluderebbe quella persona da quella giornata per sempre.
+select public.promemoria_da_rifare(7, array['https://push/bea']) as tolti \gset
+select pg_temp.esige('il segno di chi non ha ricevuto si toglie', :tolti = 1);
+select count(*)::int as riprova from public.da_avvisare(7) \gset
+select pg_temp.esige('e la corsa dopo riprova solo con lui', :riprova = 1);
+
+-- Chi consegna la formazione esce dalla lista: restano i due di Bea.
+insert into public.lineups (league_id, member_id, matchday, lineup)
+  values (:'lega', :'m_alex', 9, '{}'::jsonb);
+select count(*)::int as dopo from public.da_avvisare(9) \gset
+select pg_temp.esige('chi ha consegnato non viene avvisato', :dopo = 2);
+
+-- Chi non ha la rosa non viene avvisato: non e' colpa sua se non puo' schierare.
+delete from public.rosters where league_id = :'lega' and member_id = :'m_bea';
+select count(*)::int as senza from public.da_avvisare(10) \gset
+select pg_temp.esige('senza rosa non si avvisa', :senza = 2);
 
 select 'tutte le prove sulle funzioni sono passate' as esito;

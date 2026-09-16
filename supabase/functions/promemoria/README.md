@@ -80,7 +80,23 @@ curl -s -H "x-promemoria-token: $PROMEMORIA_TOKEN" \
 ```
 
 Risponde `{"spedite":0,"motivo":"nessun lock nella finestra"}` quando non è il
-momento — che è la risposta giusta per ventitré ore su ventiquattro.
+momento — che è la risposta giusta quasi sempre.
+
+## Quando parte l'avviso
+
+Nelle 24 ore prima del lock, alla prima corsa utile, **una volta sola per
+squadra e per dispositivo**. A non ripetersi ci pensa il database
+(`promemoria_inviati`, migrazione 009), non l'orologio.
+
+Prima era il contrario: si spediva solo se il lock cadeva fra 22,8 e 24 ore,
+e la finestra stretta era l'unica cosa che impediva di ripetere l'avviso a
+ogni giro. Funzionava se l'azione passava ogni ora. Non passa ogni ora —
+misurate sulle corse vere: 3,2, 6,3 e 5,8 ore — e con quel passo la finestra
+si mancava tre volte su quattro, restando verde.
+
+Se una spedizione fallisce per un motivo passeggero il segno viene tolto e la
+corsa dopo riprova. Gli indirizzi morti (404 e 410) no: quelli si marcano
+`failed_at` e non si ritentano.
 
 ## Cosa NON serve
 

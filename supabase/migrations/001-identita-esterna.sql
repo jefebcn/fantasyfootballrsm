@@ -38,6 +38,15 @@ do $$ begin
     alter table public.matchday_locks drop constraint if exists matchday_locks_updated_by_fkey;
   end if;
 end $$;
+-- push_subscriptions nasce nella 005, cioè DOPO questa migrazione. Chi ha un
+-- database dove la 005 è già passata nella sua prima versione si ritrova
+-- user_id uuid agganciato a profiles(id), e la conversione qui sotto sbatteva
+-- contro quel vincolo: "user_id e id sono di tipi incompatibili".
+do $$ begin
+  if to_regclass('public.push_subscriptions') is not null then
+    alter table public.push_subscriptions drop constraint if exists push_subscriptions_user_id_fkey;
+  end if;
+end $$;
 
 -- 2. uuid → text
 --    Ogni conversione è preceduta dal controllo del tipo attuale: rieseguire
@@ -57,7 +66,8 @@ begin
       ('match_events',    'created_by'),
       ('matchday_status', 'changed_by'),
       ('change_log',      'by_user'),
-      ('matchday_locks',  'updated_by')
+      ('matchday_locks',  'updated_by'),
+      ('push_subscriptions', 'user_id')
     ) as v(tab, col)
   loop
     if to_regclass('public.' || c.tab) is null then continue; end if;
@@ -81,6 +91,10 @@ do $$ begin
   if to_regclass('public.matchday_locks') is not null then
     alter table public.matchday_locks add constraint matchday_locks_updated_by_fkey
       foreign key (updated_by) references public.profiles(id);
+  end if;
+  if to_regclass('public.push_subscriptions') is not null then
+    alter table public.push_subscriptions add constraint push_subscriptions_user_id_fkey
+      foreign key (user_id) references public.profiles(id) on delete cascade;
   end if;
 end $$;
 

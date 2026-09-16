@@ -14,7 +14,9 @@ Tre icone nella tavola non tornano e NON vengono scritte:
   - fuorigioco    disegnato con due cartellini, identico a espulsione; il
                   fuorigioco lo segnala la bandierina del guardalinee
   - rigore-parato disegnato col fischietto, identico a calcio-inizio; un rigore
-                  parato vuole il guantone
+                  parato vuole il guantone, ed e' arrivato a parte — il suo
+                  originale sta in media/icone-sorgenti/eventi/rigore-parato.png
+                  e questo script non lo tocca
   - espulsione    disegnato giallo+rosso, che pero' e' il DOPPIO GIALLO: quel
                   disegno finisce quindi su espulsione-x2, ed espulsione (il
                   rosso diretto, un cartellino solo) resta quella vecchia

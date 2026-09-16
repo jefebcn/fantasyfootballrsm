@@ -55,6 +55,10 @@ a{color:var(--primary-ink)}   /* --primary sta a 4,23 sul fondo pagina: sotto 4,
 .a-nav::after,.l-nav::after{content:'';position:absolute;top:100%;left:0;right:0;height:100vh;background:var(--surface);pointer-events:none}
 .ib.flip .ic,.flip:not(.ib){transform:rotate(180deg)}
 .a-appbar a.ib{text-decoration:none}
+/* I tre bottoni in alto erano gli unici disegni a filo rimasti: 1,8px di tratto
+   su fondo blu, accanto a icone ormai tutte piene. Stessa medicina del campo
+   nella barra — a quella grandezza il tratto sottile si legge come velatura. */
+.a-appbar .ic{stroke-width:2.4}
 .a-hero .acts a{text-decoration:none}
 .a-card.a-fase .a-btn{text-decoration:none}
 .a-drawer .panel{width:min(84%,360px);border-radius:0 24px 24px 0}

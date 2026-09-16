@@ -5,14 +5,26 @@ progetto, e la chiave privata **non deve passare da una chat né da un commit**.
 
 ## 1. Genera la coppia di chiavi VAPID
 
+Non si *trovano* da nessuna parte: si generano, una volta sola, e da quel
+momento sono le chiavi di questa app.
+
+**Senza terminale** — apri `strumenti/chiavi-vapid.html`: sul sito è
+`/strumenti/chiavi-vapid.html`, oppure scarica il file e aprilo con un doppio
+clic. Il browser genera la coppia da solo (`crypto.subtle`, curva P-256) e non
+la manda a nessuno: la pagina non ha una sola chiamata di rete. Ti dà anche il
+`PROMEMORIA_TOKEN` del passo 2.
+
+**Con un terminale**, lo stesso risultato:
+
 ```sh
 npx web-push generate-vapid-keys
 ```
 
-Stampa due stringhe. La **pubblica** va in `src/config.js`, alla voce
-`VAPID_PUBBLICA`: è pubblica per costruzione, come la chiave anon di Supabase,
-e sta nel frontend senza problemi. La **privata** non va da nessuna parte
-tranne il passo 2.
+In tutti e due i casi escono due stringhe. La **pubblica** (87 caratteri,
+comincia per `B`) va in `src/config.js`, alla voce `VAPID_PUBBLICA`: è pubblica
+per costruzione, come la chiave anon di Supabase, e sta nel frontend senza
+problemi. La **privata** (43 caratteri) non va da nessuna parte tranne il
+passo 2 — né in chat, né in un commit.
 
 ## 2. Mettila nei secret di Supabase, insieme a un token per la chiamata
 
@@ -22,6 +34,9 @@ supabase secrets set VAPID_PRIVATE_KEY='...la privata...'
 supabase secrets set VAPID_SUBJECT='mailto:tuo@indirizzo'
 supabase secrets set PROMEMORIA_TOKEN="$(openssl rand -hex 32)"
 ```
+
+Senza terminale si fa uguale dal pannello: **Edge Functions → Secrets**, quattro
+righe nome/valore.
 
 `PROMEMORIA_TOKEN` serve perché la funzione è raggiungibile da internet: senza,
 chiunque potrebbe farla spedire. Tieni da parte il valore, serve al passo 3.

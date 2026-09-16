@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="it">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Chiavi VAPID — Fantacampionato Sammarinese</title>
+<style>
+  :root{color-scheme:light dark}
+  body{margin:0;padding:28px 20px 60px;font:16px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif;
+    background:#071a29;color:#e8eef5;max-width:760px;margin-inline:auto}
+  h1{font-size:22px;margin:0 0 4px}
+  p.sub{margin:0 0 24px;color:#9db4c8}
+  button{font:600 16px inherit;padding:14px 22px;border:0;border-radius:12px;background:#E5A11B;color:#0b2033;cursor:pointer}
+  button:active{transform:scale(.98)}
+  .k{margin:22px 0 0;padding:16px;border-radius:12px;background:#0f2c44;border:1px solid #1d4363}
+  .k h2{font-size:13px;letter-spacing:.06em;text-transform:uppercase;margin:0 0 8px;color:#8fb8dd}
+  code{display:block;word-break:break-all;font:13px/1.45 ui-monospace,Menlo,Consolas,monospace;
+    background:#071a29;padding:12px;border-radius:8px;border:1px solid #1d4363}
+  .copia{margin-top:10px;font-size:14px;padding:9px 14px;background:#1d4363;color:#e8eef5}
+  .avviso{margin-top:6px;font-size:14px;color:#ffc94d}
+  .nota{margin-top:28px;padding:16px;border-radius:12px;background:#12233a;font-size:14.5px;color:#c6d6e6}
+  .nota b{color:#fff}
+  ol{padding-left:20px} li{margin:8px 0}
+</style>
+<h1>Chiavi VAPID</h1>
+<p class="sub">Si generano qui, dentro il tuo browser. Non partono verso nessun server: non c'è niente da fidarsi.</p>
+
+<button id="via">Genera la coppia di chiavi</button>
+
+<div id="esito" hidden>
+  <div class="k">
+    <h2>Chiave pubblica</h2>
+    <code id="pub"></code>
+    <button class="copia" data-c="pub">Copia la pubblica</button>
+    <p class="avviso" style="color:#9db4c8">Questa è pubblica per costruzione: va in <b>src/config.js</b> e puoi girarla a chiunque.</p>
+  </div>
+  <div class="k">
+    <h2>Chiave privata</h2>
+    <code id="priv"></code>
+    <button class="copia" data-c="priv">Copia la privata</button>
+    <p class="avviso">Questa è un segreto. Va <b>solo</b> nei secret di Supabase — mai in chat, mai su GitHub.</p>
+  </div>
+  <div class="k">
+    <h2>Token della funzione</h2>
+    <code id="tok"></code>
+    <button class="copia" data-c="tok">Copia il token</button>
+    <p class="avviso">Anche questo e' un segreto: <b>PROMEMORIA_TOKEN</b> nei secret di Supabase e, identico, nei secret di GitHub. Serve perche' la funzione e' raggiungibile da internet: senza, chiunque potrebbe farle spedire notifiche.</p>
+  </div>
+  <div class="nota">
+    <b>Cosa farci, nell'ordine</b>
+    <ol>
+      <li>La <b>pubblica</b>: mandala a chi monta l'app, oppure incollala tu in <code style="display:inline;padding:2px 6px">src/config.js</code> alla voce <code style="display:inline;padding:2px 6px">VAPID_PUBBLICA = ''</code>.</li>
+      <li>Nel pannello Supabase, <b>Edge Functions → Secrets</b>, aggiungi:
+        <br><code style="display:inline-block;margin-top:6px">VAPID_PUBLIC_KEY</code> = la pubblica
+        <br><code style="display:inline-block">VAPID_PRIVATE_KEY</code> = la privata
+        <br><code style="display:inline-block">VAPID_SUBJECT</code> = <code style="display:inline;padding:2px 6px">mailto:tuo@indirizzo</code>
+        <br><code style="display:inline-block">PROMEMORIA_TOKEN</code> = il token qui sopra
+      </li>
+      <li>Su GitHub, <b>Settings &rarr; Secrets and variables &rarr; Actions</b>, lo stesso <code style="display:inline;padding:2px 6px">PROMEMORIA_TOKEN</code> e <code style="display:inline;padding:2px 6px">SUPABASE_FUNCTIONS_URL</code>.</li>
+      <li>Chiudi questa pagina. Le chiavi non sono salvate da nessuna parte: se le perdi, se ne generano altre e basta — l'unico effetto è che chi era iscritto alle notifiche deve riscriversi.</li>
+    </ol>
+  </div>
+</div>
+
+<script>
+// base64url: come lo vuole web-push, senza '=' e con -_ al posto di +/
+const b64url = (buf) => btoa(String.fromCharCode(...new Uint8Array(buf)))
+  .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+
+document.getElementById('via').onclick = async () => {
+  // P-256 e' la curva che VAPID richiede (ECDSA su prime256v1)
+  const coppia = await crypto.subtle.generateKey(
+    { name: 'ECDSA', namedCurve: 'P-256' }, true, ['sign', 'verify']);
+  // la pubblica in forma "raw" e' il punto non compresso: 65 byte, inizia con 0x04
+  const pub = await crypto.subtle.exportKey('raw', coppia.publicKey);
+  // la privata sta nella 'd' del JWK, gia' in base64url
+  const jwk = await crypto.subtle.exportKey('jwk', coppia.privateKey);
+  document.getElementById('pub').textContent = b64url(pub);
+  document.getElementById('priv').textContent = jwk.d;
+  // il token non c'entra con VAPID: e' solo 32 byte casuali in esadecimale,
+  // la password con cui l'azione oraria bussa alla funzione
+  const caso = crypto.getRandomValues(new Uint8Array(32));
+  document.getElementById('tok').textContent =
+    [...caso].map((b) => b.toString(16).padStart(2, '0')).join('');
+  document.getElementById('esito').hidden = false;
+  document.getElementById('via').textContent = 'Generane un\'altra coppia';
+};
+
+document.querySelectorAll('.copia').forEach((b) => {
+  b.onclick = async () => {
+    await navigator.clipboard.writeText(document.getElementById(b.dataset.c).textContent);
+    const p = b.textContent; b.textContent = 'Copiata'; setTimeout(() => { b.textContent = p; }, 1400);
+  };
+});
+</script>

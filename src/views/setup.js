@@ -6,7 +6,7 @@ export const setup = {
   title: 'Configura il server', appbar: 'none', nav: false,
   render() {
     return `<main class="a-body auth">
-      <div class="auth-hero">${logo('auth-mark')}<h1>Fantacampionato<br><em>Sammarinese</em></h1>
+      <div class="auth-hero">${logo('auth-mark')}<h1>Fanta<em>titano</em></h1>
         <p>Manca il collegamento al server: senza, l'app non può creare account né leghe.</p></div>
       <div class="a-card auth-card">
         <p class="auth-hint">Inserisci i due valori pubblici del progetto Supabase: <b>Settings → API</b>. Restano su questo dispositivo.</p>

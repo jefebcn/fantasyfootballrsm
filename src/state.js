@@ -16,7 +16,7 @@ export const base = buildSeason();
 export const playersById = new Map(base.players.map((p) => [p.id, p]));
 export const clubsById = new Map(base.clubs.map((c) => [c.id, c]));
 export const managersById = new Map();
-const NO_LEAGUE = { id: null, name: 'Fantacampionato', shortName: 'Fantacampionato', rules: { ...DEFAULT_RULES }, managerCount: 0 };
+const NO_LEAGUE = { id: null, name: 'Fantatitano', shortName: 'Fantatitano', rules: { ...DEFAULT_RULES }, managerCount: 0 };
 base.league = NO_LEAGUE; base.managers = []; base.rosters = {};
 
 let user = null, prof = null, leagues = [];

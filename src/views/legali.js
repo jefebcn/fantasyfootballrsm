@@ -94,7 +94,7 @@ export const termini = {
   render() {
     return `<main class="a-body">
       ${blocco('Cos\'è', [
-    'Fantacampionato Sammarinese è un gioco fra amici sul campionato di San Marino. È gratuito, non ci sono acquisti, abbonamenti né premi in denaro.',
+    'Fantatitano è un gioco fra amici sul campionato di San Marino. È gratuito, non ci sono acquisti, abbonamenti né premi in denaro.',
     'Non è affiliato alla FSGC né alle società del campionato, e non ne rappresenta le posizioni.',
   ])}
       ${blocco('Chi può iscriversi', [

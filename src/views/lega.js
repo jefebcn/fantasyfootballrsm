@@ -26,7 +26,7 @@ export const lega = {
   },
   mount(root, ctx) {
     root.querySelector('main').addEventListener('click', async (e) => {
-      if (e.target.closest('#share-code')) { const text = `Entra nella lega "${S.base.league.name}" del Fantacampionato Sammarinese con il codice ${S.base.league.inviteCode} — ${location.origin}${location.pathname}`; if (navigator.share) { try { await navigator.share({ text }); } catch { /* annullato */ } } else { await navigator.clipboard?.writeText(text); ctx.toast('Invito copiato'); } return; }
+      if (e.target.closest('#share-code')) { const text = `Entra nella lega "${S.base.league.name}" di Fantatitano con il codice ${S.base.league.inviteCode} — ${location.origin}${location.pathname}`; if (navigator.share) { try { await navigator.share({ text }); } catch { /* annullato */ } } else { await navigator.clipboard?.writeText(text); ctx.toast('Invito copiato'); } return; }
       const r = e.target.closest('[data-role]'); if (r) { const [id, role] = r.dataset.role.split(':'); try { await S.setMemberRole(id, role); ctx.toast('Ruolo aggiornato'); } catch (err) { ctx.toast(err.message); } return; }
       const k = e.target.closest('[data-kick]'); if (k && confirm('Rimuovere questo partecipante dalla lega?')) { try { await S.removeMember(k.dataset.kick); } catch (err) { ctx.toast(err.message); } return; }
       if (e.target.closest('#elimina')) {

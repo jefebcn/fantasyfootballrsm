@@ -23,7 +23,7 @@ export const login = {
   render() {
     if (S.authKind() === 'clerk') return `<main class="a-body auth">
       <div class="auth-hero">${logo('auth-mark')}
-        <h1>Fantacampionato<br><em>Sammarinese</em></h1>
+        <h1>Fanta<em>titano</em></h1>
         <p>Voto Titano — il fantacalcio del Titano, senza pagelle.</p></div>
       <div class="a-card auth-card clerk-card"><div id="clerk-slot"><div class="skel" style="height:280px"></div></div></div>
     </main>`;
@@ -34,7 +34,7 @@ export const login = {
         <i class="velo"></i>
       </div>
       <div class="contenuto">
-        <div class="marchio">${logo('auth-mark')}<span>Fantacampionato <b>Sammarinese</b></span></div>
+        <div class="marchio">${logo('auth-mark')}<span>Fanta<b>titano</b></span></div>
         <h1 class="tit">${titolo}</h1>
         ${notice ? `<div class="avviso ${notice.kind}">${icon(notice.kind === 'ok' ? 'check' : 'warn', 'ic sm')}<span>${esc(notice.text)}</span></div>` : ''}
         ${pending ? pendingPanel() : tab === 'link' ? linkPanel() : credentialsPanel()}

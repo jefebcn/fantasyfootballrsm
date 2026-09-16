@@ -51,7 +51,7 @@ e denominazioni, il simbolo delle torri è nostro.
 
 ## Cosa si tiene, cosa si cambia rispetto a Leghe Fantacalcio
 
-| Leghe Fantacalcio | Fantacampionato Sammarinese | Perché |
+| Leghe Fantacalcio | Fantatitano | Perché |
 |---|---|---|
 | Header blu royal `#2C64F6` | Azzurro Titano `#1B84C6` → `#1173B0` | Identità nazionale, non Serie A |
 | CTA "PASSA A PREMIUM" gialla | CTA "SCHIERA LA FORMAZIONE" oro | Non c'è premium al primo anno; lo slot serve all'azione settimanale |

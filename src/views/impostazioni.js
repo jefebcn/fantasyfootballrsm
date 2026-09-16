@@ -186,7 +186,7 @@ export const impostazioni = {
         return;
       }
       if (act === 'contatto') {
-        if (CONTATTO) { location.href = `mailto:${CONTATTO}?subject=${encodeURIComponent('Fantacampionato Sammarinese')}`; return; }
+        if (CONTATTO) { location.href = `mailto:${CONTATTO}?subject=${encodeURIComponent('Fantatitano')}`; return; }
         ctx.sheet(`<h3>Contattaci</h3><p class="auth-hint">Non c'è ancora un indirizzo a cui scrivere: si imposta in <code>src/config.js</code>, alla voce <code>CONTATTO</code>. Finché resta vuoto questa voce non manda niente, invece di aprire una mail verso il nulla.</p>`);
         return;
       }

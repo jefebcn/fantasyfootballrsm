@@ -344,7 +344,7 @@ export const dashboard = {
       const text = `${me.teamName} ${home ? r.homeGoals : r.awayGoals}–${home ? r.awayGoals : r.homeGoals} ${opp.teamName}`
         + ` · giornata ${r.matchday} · ${fmt(home ? r.homeScore : r.awayScore)} fantapunti (Voto Titano)`
         + ` — ${location.origin}${location.pathname}`;
-      if (navigator.share) { try { await navigator.share({ title: 'Fantacampionato Sammarinese', text }); } catch { /* annullato */ } }
+      if (navigator.share) { try { await navigator.share({ title: 'Fantatitano', text }); } catch { /* annullato */ } }
       else window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank', 'noopener');
     });
     N.carica(() => ctx.render());

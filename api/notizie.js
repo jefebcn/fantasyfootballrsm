@@ -49,7 +49,7 @@ const pulisci = (s) => s
 export default async function handler(req, res) {
   try {
     const r = await fetch(FEED, {
-      headers: { 'user-agent': 'Fantacampionato Sammarinese (+https://fantasyfootballrsm.vercel.app)', accept: 'application/rss+xml, text/xml' },
+      headers: { 'user-agent': 'Fantatitano (+https://fantasyfootballrsm.vercel.app)', accept: 'application/rss+xml, text/xml' },
       signal: AbortSignal.timeout(8000),
     });
     if (!r.ok) throw new Error(`feed ${r.status}`);
@@ -79,7 +79,7 @@ export default async function handler(req, res) {
     for (const n of notizie.slice(0, CON_FOTO)) {
       try {
         const a = await fetch(n.link, {
-          headers: { 'user-agent': 'Fantacampionato Sammarinese (+https://fantasyfootballrsm.vercel.app)' },
+          headers: { 'user-agent': 'Fantatitano (+https://fantasyfootballrsm.vercel.app)' },
           signal: AbortSignal.timeout(7000),
         });
         if (!a.ok) continue;

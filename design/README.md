@@ -1,4 +1,4 @@
-# Design — Fantacampionato Sammarinese
+# Design — Fantatitano
 
 Progettazione visiva e funzionale dell'app, costruita **sulla grammatica di interfaccia di
 "Leghe Fantacalcio"** (drawer a sezioni, dashboard con hero-maglia, barra statistiche a

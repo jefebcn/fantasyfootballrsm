@@ -43,7 +43,7 @@ export function sheet(html) {
   if (!html) { sc.classList.remove('on'); sh.classList.remove('on'); sh.innerHTML = ''; return; }
   sh.innerHTML = `<div class="handle"></div>${html}`; sc.classList.add('on'); sh.classList.add('on');
 }
-const splash = () => `<div class="splash">${logo('splash-mark')}<b>Fantacampionato</b><span>Sammarinese</span><i class="splash-bar"><i></i></i></div>`;
+const splash = () => `<div class="splash">${logo('splash-mark')}<b>Fantatitano</b><span>Campionato Sammarinese</span><i class="splash-bar"><i></i></i></div>`;
 
 /**
  * ATTENZIONE a chi cerca il tasto del tema con un selettore.
@@ -102,7 +102,7 @@ function drawer() {
     ${S.isJudge() ? `<div class="d-sec admin"><span class="chip">Giudice Dati</span></div>
     ${item('#/admin', { m: 'voti' }, 'Inserisci eventi', `G${ph.matchday}`)}${item('#/admin/contestazioni', 'flag', 'Contestazioni', `${S.contestazioni().filter((c) => c.status === 'open').length} aperte`)}${item('#/admin/congela', 'lock', 'Congela giornata', 'mar 20:00')}${item('#/admin/registro', 'archive', 'Registro modifiche')}` : ''}
     <a class="d-plain" href="#/impostazioni" style="display:block;text-decoration:none;color:inherit">Utente, impostazioni e privacy</a>
-    <div class="d-foot">Versione 0.5<br>Fantacampionato Sammarinese</div>
+    <div class="d-foot">Versione 0.5<br>Fantatitano</div>
   </div></div>`;
 }
 
@@ -126,7 +126,7 @@ export function render() {
   if (path === 'login' && prevPath !== 'login') views.resetLogin();
   if (prevPath !== undefined) { const m = root.querySelector('.a-body'); if (m) scrollMemo[prevPath] = m.scrollTop; }
   current = { view, params, path };
-  document.title = `${view.title} · Fantacampionato Sammarinese`;
+  document.title = `${view.title} · Fantatitano`;
   // senza barra in basso e' il corpo a dover stare sopra la tacca del telefono:
   // con la barra ci pensa lei, e sommarli lascerebbe un vuoto in fondo
   root.innerHTML = `<div class="app${view.nav === false ? ' senza-nav' : ''}">${appbar(view, ctx)}${view.render(ctx)}${view.nav === false ? '' : nav(path)}${drawer()}</div>`;

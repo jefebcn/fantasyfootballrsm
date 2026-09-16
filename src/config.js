@@ -59,7 +59,7 @@ export const ETA_MINIMA = 14;
  * Finche' resta vuota le push sono spente e l'app lo dice, invece di chiedere
  * un permesso che non userebbe.
  */
-export const VAPID_PUBBLICA = '';
+export const VAPID_PUBBLICA = 'BLrGGXQUEc9KX2oOtPO5ygNu5Z1tcDKmCLMMBX7Dq9IcR4qFwfw65uPoFRXUWHl8_wrxKgYpy4JqYw5k19QEklo';
 
 /** Lingue dell'interfaccia. Per ora l'app parla solo italiano: quando ne
  *  arriverà un'altra basta aggiungerla qui. */

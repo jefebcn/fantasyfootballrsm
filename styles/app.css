@@ -12,6 +12,16 @@ a{color:var(--primary-ink)}   /* --primary sta a 4,23 sul fondo pagina: sotto 4,
    dal "padding:" della regola vera piu' in basso nel foglio: erano inerti tutti
    e sette, e le schermate usavano i valori fissi tirati a occhio. */
 :root{--sa-top:env(safe-area-inset-top,0px);--sa-bottom:env(safe-area-inset-bottom,0px)}
+/* Quanto tiene da parte la barra in basso: 8pt meno della tacca. La barretta
+   di casa e' alta 5pt e sta a 8 dal bordo, quindi dentro i 34pt di riserva ce
+   n'erano una decina che non copriva niente. Con 8 in meno le scritte scendono
+   di altrettanto e restano comunque sopra la barretta, e il riquadro da
+   toccare non entra nella zona dove il sistema prende la strisciata.
+   Dove la tacca non c'e' (Android, telefoni col tasto) il massimo tiene a zero
+   e non cambia niente. Le altre cose che stanno sul fondo — il foglio che sale,
+   le schermate senza barra — continuano a tenere la tacca intera: li' non c'e'
+   una barra a fare da cuscinetto. */
+:root{--riserva-basso:max(var(--sa-bottom) - 8px, 0px)}
 /* L'altezza la misura il JavaScript e la scrive in --h-app (vedi
    misuraAltezza() in src/app.js): su iPhone le unita' CSS del viewport non
    tornano, e il riquadro si fermava 59pt sopra il bordo dello schermo — tanto
@@ -46,7 +56,7 @@ a{color:var(--primary-ink)}   /* --primary sta a 4,23 sul fondo pagina: sotto 4,
 .sql{background:var(--surface-sunk);border:1px solid var(--border);border-radius:10px;
   padding:10px 12px;margin:8px 0;font-family:var(--font-mono);font-size:11.5px;line-height:1.55;
   color:var(--text);white-space:pre-wrap;word-break:break-word;overflow-wrap:anywhere}
-.toast{position:fixed;left:50%;bottom:calc(72px + var(--sa-bottom));transform:translateX(-50%);background:var(--c-pietra-900);color:#fff;padding:10px 16px;border-radius:999px;font-size:13px;font-weight:600;box-shadow:var(--sh-raise);z-index:50;max-width:calc(100% - 32px);opacity:0;transition:opacity var(--mo-base);pointer-events:none}
+.toast{position:fixed;left:50%;bottom:calc(72px + var(--riserva-basso));transform:translateX(-50%);background:var(--c-pietra-900);color:#fff;padding:10px 16px;border-radius:999px;font-size:13px;font-weight:600;box-shadow:var(--sh-raise);z-index:50;max-width:calc(100% - 32px);opacity:0;transition:opacity var(--mo-base);pointer-events:none}
 .toast.on{opacity:1}
 .install{display:flex;gap:12px;align-items:center;background:var(--c-titano-800);color:#fff;padding:10px 12px;border-radius:var(--r-md);font-size:13px}
 .install b{display:block;font-family:var(--font-display)}
@@ -219,7 +229,7 @@ hr.sep{border:0;border-top:1px solid var(--border);margin:4px 0}
 /* 56 + la tacca fa 90pt su iPhone: la barra di sistema ne fa 83, la nostra
    ne faceva 98 e lo spazio in fondo si notava. Il riquadro da toccare resta
    di 46pt (90 - 4 in alto - 40 in basso), sopra i 44 richiesti. */
-.a-nav{flex:none;height:calc(52px + var(--sa-bottom));background:var(--surface);box-shadow:var(--sh-nav);display:grid;grid-template-columns:repeat(5,1fr);padding:4px 4px calc(2px + var(--sa-bottom));position:relative;z-index:3}
+.a-nav{flex:none;height:calc(52px + var(--riserva-basso));background:var(--surface);box-shadow:var(--sh-nav);display:grid;grid-template-columns:repeat(5,1fr);padding:4px 4px calc(2px + var(--riserva-basso));position:relative;z-index:3}
 .a-nav button,.a-nav a{border:0;background:transparent;color:var(--text-muted);display:flex;flex-direction:column;align-items:center;gap:3px;font-family:var(--font-body);font-size:11px;font-weight:500;cursor:pointer;position:relative;padding:0;border-radius:8px}
 .a-nav button.on,.a-nav a.on{color:var(--primary);font-weight:600}
 .a-nav button .dot,.a-nav a .dot{position:absolute;top:0;right:calc(50% - 16px);width:8px;height:8px;border-radius:50%;background:var(--c-cartellino-500);border:2px solid var(--surface)}
@@ -593,7 +603,7 @@ hr.sep{border:0;border-top:1px solid var(--border);margin:4px 0}
 .tot .r span{font-size:12px;color:var(--text-muted)}
 .tot .r.fv b{color:var(--primary)}
 .tot hr{width:64px;border:0;border-top:2px solid var(--text);margin:0}
-.l-nav{flex:none;height:calc(64px + var(--sa-bottom));background:var(--surface);box-shadow:var(--sh-nav);display:grid;grid-template-columns:1fr 1fr auto 1fr 1fr;align-items:center;padding:8px 12px calc(12px + var(--sa-bottom));gap:4px;position:relative;z-index:3}
+.l-nav{flex:none;height:calc(64px + var(--riserva-basso));background:var(--surface);box-shadow:var(--sh-nav);display:grid;grid-template-columns:1fr 1fr auto 1fr 1fr;align-items:center;padding:8px 12px calc(12px + var(--riserva-basso));gap:4px;position:relative;z-index:3}
 .l-nav button{border:0;background:transparent;color:var(--text-muted);display:grid;place-items:center;height:44px;border-radius:14px;cursor:pointer}
 .l-nav button.on{background:var(--surface-sunk);color:var(--positive)}
 .l-nav .sep{width:1px;height:28px;background:var(--border)}

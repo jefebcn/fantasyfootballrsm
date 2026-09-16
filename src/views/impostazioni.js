@@ -8,13 +8,16 @@ import { misure } from '../schermo.js';
 const row = (ic, title, sub, action = '', cls = '') => `<button class="setting ${cls}" ${action ? `data-act="${action}"` : 'disabled style="cursor:default"'}><i class="ico${typeof ic === 'object' ? ' illus' : ''}">${typeof ic === 'object' ? pic(ic.m, 'menu') : icon(ic)}</i><span class="txt"><b>${title}</b>${sub ? `<span>${sub}</span>` : ''}</span>${action ? icon('chev', 'ic sm chev') : ''}</button>`;
 /**
  * Preferenze notifiche. Il permesso lo chiede davvero il browser, e il testo
- * dice fino a dove arrivano: il promemoria scatta all'apertura dell'app, non
- * a telefono chiuso: per quello servono le notifiche push, il cui codice ora
- * c'è tutto (iscrizione, consegna nel service worker, invio in
- * supabase/functions/promemoria) ma resta spento finché non è configurata la
- * chiave VAPID. Il foglio dice a che punto siamo invece di promettere.
+ * dice fino a dove arrivano: il promemoria ad app aperta scatta all'apertura
+ * della dashboard; a telefono chiuso servono le push, che ora hanno la chiave
+ * VAPID e quindi l'iscrizione avviene per davvero. Il foglio dice a che punto
+ * è QUESTO dispositivo — chiave presente, permesso dato, iscrizione viva sono
+ * tre cose diverse — invece di promettere in blocco.
  */
 function apriAvvisi(ctx) {
+  // getSubscription() e' una promessa, il foglio si disegna subito: si parte da
+  // "non iscritto", si chiede, e si ridisegna solo se la risposta cambia le cose.
+  let iscritto = false;
   const disegna = () => {
     const d = S.store.get(); const on = d.avvisi !== false;
     const perm = typeof Notification !== 'undefined' ? Notification.permission : 'unsupported';
@@ -26,9 +29,12 @@ function apriAvvisi(ctx) {
       ${perm === 'denied' ? `<p class="auth-hint">Le notifiche sono bloccate dalle impostazioni del telefono per questo sito: vanno riattivate da lì.</p>` : ''}
       ${on && perm === 'granted' ? `<button class="a-btn sec" data-avvisi="prova" style="margin-top:10px">Mandami un avviso di prova</button>` : ''}
       <p class="auth-hint"><b>Ad app aperta</b> l'avviso arriva${perm === 'granted' ? '' : ' appena dai il permesso'}: si controlla ogni volta che apri la dashboard, e ne arriva uno solo per giornata.</p>
-      <p class="auth-hint"><b>A telefono chiuso</b> ${AV.pushConfigurato()
-    ? 'le notifiche push sono attive: questo dispositivo è iscritto.'
-    : 'servono le notifiche push, e la chiave non è ancora configurata. Il codice c\'è tutto — i passi che restano stanno in <code>supabase/functions/promemoria/README.md</code> — ma finché la chiave manca questa parte è spenta, e preferiamo dirlo che lasciartelo scoprire.'}</p>`);
+      <p class="auth-hint"><b>A telefono chiuso</b> ${!AV.pushConfigurato()
+    ? 'servono le notifiche push, e la chiave non è ancora configurata. Il codice c\'è tutto — i passi che restano stanno in <code>supabase/functions/promemoria/README.md</code> — ma finché la chiave manca questa parte è spenta, e preferiamo dirlo che lasciartelo scoprire.'
+    : iscritto ? 'questo dispositivo è iscritto alle notifiche push.'
+      : perm === 'granted' ? 'le push sono configurate ma questo dispositivo non risulta iscritto: spegni e riaccendi il promemoria qui sopra.'
+        : perm === 'denied' ? 'le push sono configurate, ma le notifiche per questo sito sono bloccate dal telefono: finché non le riattivi da lì non arriva niente.'
+          : 'le push sono configurate: appena dai il permesso, questo dispositivo si iscrive.'}</p>`);
     const sh = document.getElementById('sheet');
     sh.onclick = async (e) => {
       const b = e.target.closest('[data-avvisi]'); if (!b) return;
@@ -46,7 +52,7 @@ function apriAvvisi(ctx) {
       if (v === 'permesso') {
         const esito = await AV.chiediPermesso();
         if (esito === 'granted') await S.iscriviAvvisi().catch(() => { /* push non configurate */ });
-        disegna(); return;
+        disegna(); riallinea(); return;
       }
       S.store.set({ avvisi: v === 'on' });
       if (v === 'on') {
@@ -55,16 +61,20 @@ function apriAvvisi(ctx) {
           if (esito === 'granted') await S.iscriviAvvisi().catch(() => {});
         } else if (AV.permesso() === 'granted') { await S.iscriviAvvisi().catch(() => {}); }
       } else { await S.disiscriviAvvisi().catch(() => {}); }
-      disegna();
+      disegna(); riallinea();
     };
   };
+  const riallinea = () => AV.iscrittoPush().then((v) => {
+    if (v !== iscritto) { iscritto = v; disegna(); }
+  }).catch(() => {});
   disegna();
+  riallinea();
 }
 
 const group = (title, inner) => `<section class="group"><h3>${title}</h3>${inner}</section>`;
 
-/** Le notifiche vere (push sul telefono) hanno bisogno di un server che non
- *  c'è ancora: qui si prepara la preferenza e si dice come stanno le cose. */
+/** Il sottotitolo della riga nel profilo: guarda la preferenza e il permesso,
+ *  che è quello che l'utente può cambiare da qui. */
 const avvisiSottotitolo = (d) => {
   const on = d.avvisi !== false;
   const perm = typeof Notification !== 'undefined' ? Notification.permission : 'unsupported';

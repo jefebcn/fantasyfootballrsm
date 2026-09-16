@@ -68,6 +68,21 @@ export async function iscriviPush() {
   });
   return sub.toJSON();
 }
+/**
+ * Questo dispositivo e' iscritto davvero?
+ *
+ * `pushConfigurato()` dice solo che la chiave c'e'. Finche' era vuota le due
+ * cose coincidevano, perche' senza chiave non ci si poteva iscrivere; da
+ * quando la chiave e' montata no: il permesso puo' mancare, l'utente puo'
+ * aver disiscritto, il browser puo' non avere pushManager. Il foglio delle
+ * impostazioni deve dire quello che e' vero su QUESTO telefono.
+ */
+export async function iscrittoPush() {
+  if (!pushConfigurato() || permesso() !== 'granted') return false;
+  const reg = await registrazione(); if (!reg || !reg.pushManager) return false;
+  try { return !!(await reg.pushManager.getSubscription()); } catch { return false; }
+}
+
 export async function disiscriviPush() {
   const reg = await registrazione(); if (!reg || !reg.pushManager) return false;
   const sub = await reg.pushManager.getSubscription();

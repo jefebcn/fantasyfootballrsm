@@ -1,19 +1,36 @@
 /** Highlights della FSGC. La copertina e' disegnata qui: Google non riceve
  *  niente finche' non si tocca play. */
 import * as S from '../state.js';
-import { esc, icon, dateIt } from '../ui.js';
+import { esc, icon, dateIt, crest } from '../ui.js';
 import { videoGiornata, giornateConVideo, altriVideo, urlCanale, urlIncorpora, urlVideo } from '../video.js';
 
-/** Scheda di una partita: squadre, risultato e il tasto per far partire. */
+/** Lo stemma di un club, con le sigle e i colori che ha gia' il calendario. */
+const scudo = (c) => crest({ color: c.color, initials: c.shortName }, 'vid-stemma');
+
+/**
+ * Scheda di una partita.
+ *
+ * La copertina la disegna l'app, quindi non e' un fotogramma: e' un tabellone.
+ * Il fondo prende i colori delle due squadre, tagliati in diagonale a meta',
+ * cosi' una partita si riconosce prima di leggerla. I colori non ci vanno
+ * puri: il giallo della Folgore col bianco sopra starebbe a 1,9 di contrasto.
+ * Si mescolano al navy al 40%, dose misurata sui sedici club — il caso
+ * peggiore resta la Folgore, e li' il bianco sta a 7,4 e l'oro a 4,8.
+ */
 function scheda(m, v) {
   const h = S.clubsById.get(m.homeClubId), a = S.clubsById.get(m.awayClubId);
-  const ris = m.status === 'played' ? `${m.homeGoals} – ${m.awayGoals}` : '';
+  const giocata = m.status === 'played';
+  const sotto = [dateIt(v.quando), m.venue].filter(Boolean).join(' · ');
   return `<div class="vid" data-vid="${esc(v.id)}">
-    <div class="vid-cop">
-      <div class="vid-sq"><b>${esc(h.name)}</b>${ris ? `<span class="vid-ris">${ris}</span>` : '<span class="vid-vs">—</span>'}<b>${esc(a.name)}</b></div>
+    <div class="vid-cop" style="--ca:${esc(h.color)};--cb:${esc(a.color)}">
+      <div class="vid-sq">
+        <span class="vid-lato">${scudo(h)}<b>${esc(h.name)}</b></span>
+        <span class="${giocata ? 'vid-ris' : 'vid-vs'}">${giocata ? `${m.homeGoals}<i>–</i>${m.awayGoals}` : 'vs'}</span>
+        <span class="vid-lato">${scudo(a)}<b>${esc(a.name)}</b></span>
+      </div>
       <button class="vid-play" aria-label="Guarda gli highlights di ${esc(h.name)} contro ${esc(a.name)}">${icon('play', 'ic')}</button>
     </div>
-    <div class="vid-pie"><span>${esc(dateIt(v.quando))}</span><a href="${urlVideo(v.id)}" target="_blank" rel="noopener">Apri su YouTube</a></div>
+    <div class="vid-pie"><span>${esc(sotto)}</span><a href="${urlVideo(v.id)}" target="_blank" rel="noopener">Apri su YouTube</a></div>
   </div>`;
 }
 

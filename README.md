@@ -68,6 +68,12 @@ Giudice Dati: giornata (8 partite, avanzamento) · inserimento partita in 4 pass
 stato, chi ha giocato, eventi con tastiera, anteprima voti) · contestazioni · congelamento con
 conferma digitata · registro modifiche.
 
+## Chi lo fa
+
+Progetto di **Alex Conti**, che lo cura e ne decide le scelte. Gestito da
+Mediterranean Digital Solutions Ltd (Malta), che è il titolare del trattamento:
+i dati completi stanno in `src/config.js` ed escono nelle pagine legali dell'app.
+
 ## Riferimenti
 
 - Regolamento: *Regolamento Fantatitano — Sistema a Voto Titano* (bozza v1.0)

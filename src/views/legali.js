@@ -20,7 +20,11 @@ const dataIt = (iso) => { const d = new Date(iso); return Number.isFinite(+d)
 /** Il titolare e' compilato solo se c'e' almeno un nome e un recapito. */
 const titolareCompilato = () => !!(TITOLARE.nome && (TITOLARE.email || CONTATTO));
 const rigaTitolare = () => {
-  const r = [TITOLARE.nome, TITOLARE.sede, TITOLARE.paese,
+  // Il rappresentante sta attaccato al nome e non come voce separata: fra due
+  // punti mediani sembrerebbe un dato accanto agli altri, e invece dice CHI
+  // rappresenta quella societa'.
+  const chi = TITOLARE.nome + (TITOLARE.rappresentante ? `, rappresentata da ${TITOLARE.rappresentante}` : '');
+  const r = [chi, TITOLARE.sede, TITOLARE.paese,
     TITOLARE.registrazioneFiscale, TITOLARE.licenza,
     TITOLARE.email || CONTATTO, TITOLARE.telefono, TITOLARE.pec].filter(Boolean).map(esc);
   return r.join(' · ');

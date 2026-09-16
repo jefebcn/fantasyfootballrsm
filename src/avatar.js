@@ -110,7 +110,24 @@ const use = (id, attr = '') => `<use href="#av-${id}"${attr ? ' ' + attr : ''}/>
  * @param {object} club  squadra ({ color }) — la maglia prende il suo colore
  * @param {string} cls   classi extra sull'elemento
  */
+/**
+ * Le caricature disegnate a mano (media/avatar/1NN.webp, ritagliate da
+ * scripts/ritaglia-calciatori.py). Sono figure intere, non ritratti: sul campo
+ * stanno in piedi sopra il loro nome, come nelle formazioni dei giornali.
+ *
+ * L'assegnazione esce dall'id del giocatore, quindi e' sempre la stessa su
+ * ogni schermata: chi ha imparato che Rufer e' quello con le braccia conserte
+ * lo ritrova cosi' anche il mese dopo. Finche' sono quattordici e i giocatori
+ * sono centinaia si ripetono, ed e' previsto: se ne aggiungono altre, i primi
+ * quattordici numeri NON si toccano, se no cambierebbe la faccia a tutti.
+ */
+const CARICATURE = [101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114];
+
+export const caricatura = (p) => CARICATURE[hash(String(p?.id || 'x')) % CARICATURE.length];
+
 export function avatar(p, club, cls = '') {
+  const n = caricatura(p);
+  if (n) return `<img class="av-fig av-cal ${cls}" src="media/avatar/${n}.webp" alt="" decoding="async" loading="lazy">`;
   const h = hash(String(p?.id || 'x'));
   // Il portiere veste diverso dai compagni: è la regola del gioco, non un vezzo.
   const c1 = p?.role === 'P' ? ['#2FA36B', '#E8B53A', '#8E44AD'][h % 3] : (club?.color || '#2B4C7E');

@@ -57,4 +57,20 @@ union all
 select '007-mercato-svincolati.sql', 'funzione risolvi_offerte',
        case when to_regprocedure('public.risolvi_offerte(uuid)') is not null
             then 'fatto' else 'DA FARE' end
+union all
+select '008-chiudi-giornata.sql', 'funzione chiudi_giornata',
+       case when to_regprocedure('public.chiudi_giornata(integer)') is not null
+            then 'fatto' else 'DA FARE' end
+union all
+select '009-promemoria-una-volta-sola.sql', 'tabella promemoria_inviati',
+       case when to_regclass('public.promemoria_inviati') is not null
+            then 'fatto' else 'DA FARE' end
+union all
+-- da_avvisare esiste anche con la sola 005: quello che cambia e' che ora
+-- scrive, quindi non e' piu' "stable". E' la firma della 009 su una funzione
+-- che di nome e parametri e' rimasta identica.
+select '009-promemoria-una-volta-sola.sql', 'da_avvisare segna chi ha avvisato',
+       case when (select provolatile from pg_proc
+                   where oid = to_regprocedure('public.da_avvisare(integer)')) = 'v'
+            then 'fatto' else 'DA FARE' end
 order by 1, 2;

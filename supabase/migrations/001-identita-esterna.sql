@@ -10,18 +10,6 @@
 -- Eseguire nell'SQL Editor dopo schema.sql.
 -- =====================================================================
 
--- 0. via le policy che citano le colonne da convertire.
---    Postgres rifiuta di cambiare il tipo di una colonna nominata da una
---    policy ("cannot alter type of a column used in a policy definition"):
---    finché queste tre restavano in piedi, il punto 2 qui sotto si fermava
---    all'errore e la migrazione non passava su un'installazione nuova.
---    Sono esattamente le tre che il punto 8 ricrea su current_user_id(), e
---    l'elenco è scritto a mano di proposito: buttarne giù una qualsiasi con
---    un ciclo toglierebbe in silenzio regole di sicurezza che nessuno rimette.
-drop policy if exists profiles_update_own on public.profiles;
-drop policy if exists members_update      on public.league_members;
-drop policy if exists members_delete      on public.league_members;
-
 -- 1-3. uuid → text, portandosi dietro tutte le chiavi che puntano a profiles
 --
 --    Questo pezzo e' stato riscritto dopo essere saltato tre volte, sempre
@@ -50,7 +38,18 @@ declare
   t text;
   i int;
 begin
-  -- 1. chi punta a profiles(id): me lo dice il catalogo, non un elenco
+  -- a) le policy che nominano una colonna da convertire vanno tolte prima:
+  --    Postgres rifiuta di cambiare il tipo di una colonna usata in una policy.
+  --    Anche questo elenco era scritto a mano e anche questo e' saltato: la
+  --    002 crea leagues_delete su created_by, e la 001 non poteva saperlo.
+  --    Adesso si chiedono a pg_depend, che sa esattamente quali policy
+  --    dipendono da quali colonne. Ognuna viene annunciata con la sua
+  --    definizione completa prima di sparire: se una non dovesse tornare,
+  --    il testo per rimetterla e' li' nel registro dell'SQL Editor.
+  --    Tornano tutte: queste sotto le rifa' il punto 8, le altre le rifanno
+  --    le migrazioni che le hanno create, che vanno eseguite dopo questa.
+
+  -- b) chi punta a profiles(id): me lo dice il catalogo, non un elenco
   for c in
     select con.conrelid::regclass::text as tab,   -- già qualificato e citato al bisogno
            cls.relname                  as nome_tab,
@@ -70,7 +69,28 @@ begin
     execute format('alter table %s drop constraint %I', c.tab, c.nome);
   end loop;
 
-  -- 2. la conversione vera, sull'id e su tutto cio' che lo referenzia
+  -- c) via le policy appese alle colonne che stiamo per convertire
+  for c in
+    select pol.polname as nome, pol.polrelid::regclass::text as tab,
+           pg_get_expr(pol.polqual, pol.polrelid)      as usando,
+           pg_get_expr(pol.polwithcheck, pol.polrelid) as controllo
+      from pg_depend d
+      join pg_policy pol on pol.oid = d.objid
+     where d.classid = 'pg_policy'::regclass
+       and d.refclassid = 'pg_class'::regclass
+       and (d.refobjid, d.refobjsubid) in (
+             select att.attrelid, att.attnum from pg_attribute att
+              where (att.attrelid = 'public.profiles'::regclass and att.attname = 'id')
+                 or (att.attrelid::regclass::text = any (tabelle)
+                     and att.attname = any (colonne)))
+     group by 1, 2, 3, 4
+  loop
+    raise notice 'tolgo la policy %.% — using (%) with check (%)',
+      c.tab, c.nome, coalesce(c.usando, '—'), coalesce(c.controllo, '—');
+    execute format('drop policy if exists %I on %s', c.nome, c.tab);
+  end loop;
+
+  -- d) la conversione vera, sull'id e su tutto cio' che lo referenzia
   select data_type into t from information_schema.columns
    where table_schema = 'public' and table_name = 'profiles' and column_name = 'id';
   if t = 'uuid' then
@@ -85,7 +105,7 @@ begin
     end if;
   end loop;
 
-  -- 3. e si riaggancia tutto com'era
+  -- e) e si riaggancia tutto com'era
   for i in 1 .. coalesce(array_length(tabelle, 1), 0) loop
     execute format('alter table %s add constraint %I %s', tabelle[i], nomi[i], defs[i]);
   end loop;

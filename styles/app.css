@@ -970,16 +970,33 @@ button,a{-webkit-tap-highlight-color:transparent}
    fasce col nome si dividono lo spazio che avanza e il nome va a capo se
    serve, invece di spingere il punteggio fuori dallo schermo. */
 .giornata{display:flex;flex-direction:column;gap:8px}
-/* minmax(0,1fr) e non 1fr: il minimo di 1fr e' "auto", cioe' min-content,
-   quindi con un nome lungo la colonna si rifiutava di stringersi e la
-   squadra ospite finiva fuori dallo schermo. */
-.gr{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:center;gap:8px;text-decoration:none;color:inherit;
+/* Flex e non griglia. Con "grid-template-columns:minmax(0,1fr) auto
+   minmax(0,1fr)" le colonne venivano calcolate giuste (131px) ma i due blocchi
+   delle squadre si disegnavano a 158 e finivano oltre il bordo dello schermo.
+   Con flex-basis:0 il vincolo tiene: ogni lato prende esattamente meta' di
+   quello che avanza dopo il punteggio, e non porta con se' la larghezza
+   naturale del nome. */
+.gr{display:flex;align-items:center;gap:8px;text-decoration:none;color:inherit;
   background:var(--surface);border-radius:var(--r-md);box-shadow:var(--sh-card);padding:12px 12px;min-height:56px}
 .gr.io{box-shadow:var(--sh-card),inset 0 0 0 2px var(--primary)}
-.gr .sq{display:flex;align-items:center;gap:8px;min-width:0}
-.gr .sq.osp{flex-direction:row-reverse}
-.gr .sq b{font:600 13px var(--font-body);line-height:1.25;overflow-wrap:anywhere;min-width:0}
-.gr .pt{display:flex;flex-direction:column;align-items:center;font:800 17px var(--font-display);color:var(--text);white-space:nowrap}
+.gr .gsq{flex:1 1 0;min-width:0;display:flex;align-items:center;gap:8px}
+.gr .gsq.osp{flex-direction:row-reverse}
+/* .gsq e non .sq: .sq esiste gia' per le schede dell'asta, con width:158px e
+   un bordo. Il blocco della squadra qui dentro se li prendeva tutti e due —
+   ed e' da li' che veniva la larghezza fissa di 158px in una colonna da 131,
+   con la squadra ospite oltre il bordo dello schermo. E' la quarta collisione
+   di nomi in questo foglio: le classi nuove vanno prima cercate.
+
+   Lo stemma non si stringe, il nome prende quello che resta e si taglia coi
+   puntini. Andare a capo qui non funziona: con overflow-wrap:anywhere il nome
+   contribuisce lo stesso con la sua larghezza naturale, il blocco veniva 158px
+   in una colonna da 131 e la squadra ospite finiva oltre il bordo dello
+   schermo. Una riga sola e i puntini e' anche quello che fanno gia' le altre
+   tabelle dell'app. */
+.gr .gsq > :not(b){flex:none}
+.gr .gsq b{flex:1 1 0;min-width:0;font:600 13px var(--font-body);line-height:1.25;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.gr .pt{flex:none;display:flex;flex-direction:column;align-items:center;font:800 17px var(--font-display);color:var(--text);white-space:nowrap}
 .gr .pt i{font-style:normal;color:var(--text-muted);font-weight:600;padding:0 3px}
 .gr .pt small{font:500 11px var(--font-body);color:var(--text-muted);letter-spacing:-.01em}
 

@@ -180,14 +180,56 @@ function cleanAuthUrl() {
  * Il valore finisce in --h-app, che il CSS usa con 100dvh come ripiego se per
  * qualunque motivo questo codice non gira.
  */
+/**
+ * La tacca in alto in pixel veri. Si legge da un padding e non dalla variabile,
+ * perche' getComputedStyle su una custom property torna la stringa
+ * "env(...)" non risolta. Passa da --sa-top, che vale env(safe-area-inset-top):
+ * cosi' le prove possono sostituirla, cosa che con env() non si puo' fare.
+ */
+function taccaSopra() {
+  const dove = document.body || document.documentElement;
+  if (!dove) return 0;
+  const s = document.createElement('div');
+  s.style.cssText = 'position:fixed;left:-9999px;top:0;width:1px;height:1px;'
+    + 'visibility:hidden;pointer-events:none;padding-top:var(--sa-top,0px)';
+  dove.appendChild(s);
+  const v = parseFloat(getComputedStyle(s).paddingTop) || 0;
+  s.remove();
+  return v;
+}
+
 function misuraAltezza() {
-  const h = window.innerHeight;
+  const vv = window.visualViewport;
+  // Il piu' grande fra i tre: la tastiera aperta rimpicciolisce visualViewport,
+  // e prendere il massimo evita che la barra salti sopra i tasti.
+  let h = Math.max(window.innerHeight || 0, document.documentElement.clientHeight || 0, vv ? vv.height : 0);
+
+  // iOS ad app installata, con viewport-fit=cover: la finestra viene dichiarata
+  // alta quanto lo schermo MENO la tacca in alto, pur partendo dal bordo
+  // superiore. Risultato: in fondo restano scoperti esattamente 59pt su un
+  // iPhone con l'isola. Non si indovina: il conto lo dimostra da solo, e solo
+  // quando torna si prende l'altezza dello schermo.
+  const t = taccaSopra();
+  const schermo = (window.screen && window.screen.height) || 0;
+  if (t > 0 && schermo && Math.abs(h + t - schermo) <= 1) h = schermo;
+
   if (h > 0) document.documentElement.style.setProperty('--h-app', `${h}px`);
+  return h;
 }
 
 function seguiAltezza() {
   misuraAltezza();
+  // Si rimisura dopo il caricamento e poco dopo ancora: al primo giro il
+  // foglio di stile puo' non essere ancora applicato, e senza il valore della
+  // tacca il controllo qui sopra non puo' accorgersi di niente. Misurare una
+  // volta sola voleva dire restare per sempre col numero sbagliato.
+  window.addEventListener('load', misuraAltezza);
+  setTimeout(misuraAltezza, 0);
+  setTimeout(misuraAltezza, 300);
+  // tornando all'app dopo averla lasciata in secondo piano
+  window.addEventListener('pageshow', misuraAltezza);
   window.addEventListener('resize', misuraAltezza);
+  if (window.visualViewport) window.visualViewport.addEventListener('resize', misuraAltezza);
   // Dopo una rotazione iOS risponde ancora con i numeri di prima per qualche
   // frame: si rimisura poco dopo, altrimenti resta l'altezza dell'orientamento
   // precedente.

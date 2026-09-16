@@ -36,32 +36,37 @@ export const CONTATTO = 'support@fantatitano.com';
  * che la gente legge per fidarsi.
  */
 export const TITOLARE = {
-  nome: 'LFC LLC',
-  sede: 'Marina Plaza, Floor 19, Dubai Marina, Dubai',
-  paese: 'Emirati Arabi Uniti',
+  nome: 'Mediterranean Digital Solutions Ltd',
+  sede: 'Level 3, Tower Business Centre, Tower Road, Sliema SLM 1603',
+  paese: 'Malta',
   // Due identificativi diversi, ed etichettarli conta: prima il campo era uno
   // solo e si chiamava "codiceOperatore", che in pagina usciva come "cod.
-  // operatore 100482910400003" — un'etichetta sbagliata su un documento che la
-  // gente legge per fidarsi.
-  registrazioneFiscale: 'TRN 100482910400003',   // partita IVA degli Emirati
-  licenza: 'DMCC-849201',                        // licenza della zona franca DMCC
-  email: 'support@fantatitano.com',
+  // operatore <numero>" — un'etichetta sbagliata su un documento che la gente
+  // legge per fidarsi.
+  registrazioneFiscale: 'VAT MT28491034',        // partita IVA maltese
+  licenza: 'MBR C 98450',                        // numero nel registro delle imprese
+  email: 'info@mediterraneandigital.mt',         // per le richieste sui dati
+  telefono: '+356 2133 4567',
   pec: '',             // facoltativa
   /**
-   * Dove stanno i dati e come escono dallo Spazio economico europeo, se ne
-   * escono. Questa frase la scrive chi risponde legalmente, non l'app.
+   * Il titolare sta dentro lo Spazio economico europeo?
    *
-   * Serve perche' il titolare e' negli Emirati: i dati stanno su server nello
-   * SEE, ma chi li amministra li guarda da fuori, e quello e' un
-   * trasferimento. Gli Emirati non hanno una decisione di adeguatezza
-   * europea, quindi ci vuole un meccanismo — clausole contrattuali tipo o
-   * altro — e l'app non puo' inventarselo ne' dedurlo.
+   * Non e' un dettaglio formale: decide se esiste un trasferimento da
+   * dichiarare. I dati stanno su server nell'Unione; se chi li amministra sta
+   * dentro, non escono e non c'e' niente da giustificare. Se sta fuori, li
+   * guarda da fuori, e quello e' un trasferimento che vuole un meccanismo.
    *
-   * Finche' e' vuota, l'informativa dice che manca. Come per il titolare:
-   * meglio un buco dichiarato che una rassicurazione falsa.
+   * Con la societa' di Dubai era false, e l'informativa lo diceva con un
+   * avviso in cima: il Paese non aveva una decisione di adeguatezza europea,
+   * quindi serviva un meccanismo — clausole contrattuali tipo o altro — e
+   * l'app non puo' inventarselo. Con Malta e' true e il problema non esiste.
    */
+  dentroSEE: true,
+  /** Se dentroSEE e' false: con quale meccanismo i dati escono dallo SEE.
+   *  La scrive chi risponde legalmente, non l'app. */
   trasferimenti: '',
-  /** Rappresentante nello SEE (art. 27 GDPR), se e' stato nominato. */
+  /** Rappresentante nello SEE (art. 27 GDPR). Serve a chi NON e' stabilito
+   *  nell'Unione: con un titolare maltese non si applica. */
   rappresentanteUE: '',
 };
 /** Data dell'ultima revisione dei testi legali, in ISO. */

@@ -21,43 +21,45 @@ const dataIt = (iso) => { const d = new Date(iso); return Number.isFinite(+d)
 const titolareCompilato = () => !!(TITOLARE.nome && (TITOLARE.email || CONTATTO));
 const rigaTitolare = () => {
   const r = [TITOLARE.nome, TITOLARE.sede, TITOLARE.paese,
-    TITOLARE.registrazioneFiscale, TITOLARE.licenza && `licenza ${TITOLARE.licenza}`,
-    TITOLARE.email || CONTATTO, TITOLARE.pec].filter(Boolean).map(esc);
+    TITOLARE.registrazioneFiscale, TITOLARE.licenza,
+    TITOLARE.email || CONTATTO, TITOLARE.telefono, TITOLARE.pec].filter(Boolean).map(esc);
   return r.join(' · ');
 };
 
 /**
- * Dove stanno i dati, e la questione che non si puo' dedurre.
+ * Dove stanno i dati, e quando c'e' un trasferimento da dichiarare.
  *
- * Il posto dove sono salvati lo sa l'app: il progetto Supabase. Ma chi
- * amministra quei dati sta negli Emirati, quindi li guarda da fuori dallo
- * Spazio economico europeo — e quello e' un trasferimento, che vuole un
- * meccanismo per starci dentro. Qual e' quel meccanismo l'app non lo sa e non
- * se lo inventa: lo scrive chi risponde, in TITOLARE.trasferimenti.
+ * I dati stanno su server nell'Unione: quello lo sa l'app. Se c'e' un
+ * trasferimento fuori dallo Spazio economico europeo dipende da dove sta chi
+ * li amministra, e quello lo dice la configurazione — non si deduce dal Paese,
+ * perche' vorrebbe dire tenere un elenco di Stati dentro un file di testi.
  *
- * Prima qui c'era scritto "non sono previsti trasferimenti fuori dallo Spazio
- * economico europeo; se un domani servissero, questa pagina lo direbbe
- * prima". Quel domani e' arrivato col titolare a Dubai, e la frase era
- * diventata falsa: questa pagina la legge chi vuole capire di chi fidarsi.
+ * Col titolare a Dubai era fuori, e questa pagina lo diceva con un avviso in
+ * cima: mancava il meccanismo che regge quel trasferimento, e l'app non se lo
+ * inventa. Col titolare a Malta il trasferimento non esiste, e torna la frase
+ * che c'era all'inizio — vera di nuovo, non rimessa per comodita'.
  */
 const rigaDove = () => `I dati vivono in un progetto Supabase${S.serverHost() ? ` (${esc(S.serverHost())})` : ''}, `
   + 'su server nell\'Unione Europea.'
-  // "ha sede in ${paese}" non si puo' scrivere: in italiano la preposizione
-  // cambia col Paese — in Italia, a San Marino, NEGLI Emirati — e un modello
-  // non la indovina. Col trattino l'articolo non serve e la frase resta giusta
-  // qualunque sia il Paese.
-  + (TITOLARE.paese ? ` Chi risponde di quei dati ha sede fuori dallo Spazio economico europeo — ${esc(TITOLARE.paese)} —`
-    + ' quindi li amministra da fuori.' : '')
-  + (TITOLARE.trasferimenti ? ` ${esc(TITOLARE.trasferimenti)}` : '')
-  + (TITOLARE.rappresentanteUE ? ` Rappresentante nello Spazio economico europeo: ${esc(TITOLARE.rappresentanteUE)}.` : '');
+  + (TITOLARE.dentroSEE
+    ? ' Non sono previsti trasferimenti fuori dallo Spazio economico europeo;'
+      + ' se un domani servissero, questa pagina lo direbbe prima.'
+    // "ha sede in ${paese}" non si puo' scrivere: in italiano la preposizione
+    // cambia col Paese — in Italia, a Malta, NEGLI Emirati — e un modello non
+    // la indovina. Col trattino l'articolo non serve.
+    : (TITOLARE.paese ? ` Chi risponde di quei dati ha sede fuori dallo Spazio economico europeo — ${esc(TITOLARE.paese)} —`
+      + ' quindi li amministra da fuori.' : '')
+      + (TITOLARE.trasferimenti ? ` ${esc(TITOLARE.trasferimenti)}` : '')
+      + (TITOLARE.rappresentanteUE ? ` Rappresentante nello Spazio economico europeo: ${esc(TITOLARE.rappresentanteUE)}.` : ''));
+
+const avvisoTitolare = `<div class="warn block">${icon('warn', 'ic sm')}<span><b>Manca il titolare del trattamento.</b>
+  Finché i dati di chi gestisce l'app non sono compilati (<code>TITOLARE</code> in <code>src/config.js</code>)
+  questa informativa non è completa: va riempita prima di aprire le iscrizioni oltre il giro di amici.</span></div>`;
 
 const avvisoTrasferimenti = `<div class="warn block">${icon('warn', 'ic sm')}<span><b>Manca la base del trasferimento fuori dallo SEE.</b>
   Chi risponde dei dati ha sede fuori dallo Spazio economico europeo, quindi li amministra da fuori: serve dire
   con quale meccanismo (<code>TITOLARE.trasferimenti</code> in <code>src/config.js</code>) e, se è stato nominato,
   chi è il rappresentante nello SEE. Finché non c'è, questa informativa non è completa.</span></div>`;
-const avvisoTitolare = `<div class="warn block">${icon('warn', 'ic sm')}<span><b>Manca il titolare del trattamento.</b>
-  Finché i dati di chi gestisce l'app non sono compilati (<code>TITOLARE</code> in <code>src/config.js</code>)
-  questa informativa non è completa: va riempita prima di aprire le iscrizioni oltre il giro di amici.</span></div>`;
 
 const piede = () => `<p class="small muted" style="text-align:center;margin-top:4px">
   Ultimo aggiornamento: ${esc(dataIt(LEGALI_AGGIORNATE))}.</p>`;
@@ -71,7 +73,7 @@ export const privacy = {
   render() {
     return `<main class="a-body">
       ${titolareCompilato() ? '' : avvisoTitolare}
-      ${TITOLARE.paese && !TITOLARE.trasferimenti ? avvisoTrasferimenti : ''}
+      ${!TITOLARE.dentroSEE && !TITOLARE.trasferimenti ? avvisoTrasferimenti : ''}
       ${blocco('Chi risponde dei tuoi dati', [
     titolareCompilato()
       ? `Titolare del trattamento: ${rigaTitolare()}. Per qualsiasi richiesta sui dati scrivi a quell'indirizzo.`

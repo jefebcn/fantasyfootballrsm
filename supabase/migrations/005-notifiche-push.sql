@@ -45,6 +45,10 @@ create policy push_proprie on public.push_subscriptions for all to authenticated
 -- Chi non ha consegnato la formazione di una giornata, con l'indirizzo a cui
 -- scrivergli. La usa la funzione che spedisce, che gira col service_role e
 -- quindi salta le policy: per questo filtra lei sulla giornata richiesta.
+-- Chi ha gia' la prima versione di questa migrazione ha questa funzione che
+-- torna user_id uuid, e "create or replace" non puo' cambiare il tipo di
+-- ritorno: "cannot change return type of existing function". Va tolta prima.
+drop function if exists public.da_avvisare(int);
 create or replace function public.da_avvisare(p_matchday int)
 returns table (user_id text, endpoint text, p256dh text, auth text, league_name text, team_name text)
 language sql stable security definer set search_path = public as $$

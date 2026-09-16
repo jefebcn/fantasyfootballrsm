@@ -10,104 +10,164 @@
 -- Eseguire nell'SQL Editor dopo schema.sql.
 -- =====================================================================
 
--- 1-3. uuid → text, portandosi dietro tutte le chiavi che puntano a profiles
+-- 1-3. uuid → text, portandosi dietro tutto quello che ci si appoggia
 --
---    Questo pezzo e' stato riscritto dopo essere saltato tre volte, sempre
---    allo stesso modo. Prima l'elenco delle chiavi esterne da sciogliere era
---    scritto a mano, e ogni migrazione successiva ne aggiungeva una che qui
---    non c'era: matchday_locks da schema.sql, push_subscriptions dalla 005,
---    vice_user_id dalla 002. Ogni volta la conversione sbatteva contro il
---    vincolo rimasto in piedi — "sono di tipi incompatibili" — e ogni volta
---    si rattoppava aggiungendo una riga, in attesa della prossima.
+--    Questo pezzo e' stato riscritto quattro volte, e ogni riscrittura ha
+--    imparato una cosa. Vale la pena averle scritte, perche' ognuna sembrava
+--    la fine del problema e non lo era.
 --
---    Adesso le chiavi se le trova da sola nel catalogo: qualunque tabella
---    punti a profiles(id), oggi o in futuro, viene sciolta, convertita e
---    riagganciata con la SUA definizione originale, cascade compresi. Tutto
---    dentro un blocco solo, quindi o riesce tutto o non cambia niente: un
---    errore a meta' non lascia il database senza vincoli.
+--    1) L'elenco delle chiavi esterne da sciogliere era scritto a mano, e ogni
+--       migrazione successiva ne aggiungeva una che qui non c'era:
+--       matchday_locks da schema.sql, push_subscriptions dalla 005,
+--       vice_user_id dalla 002.
+--    2) Stessa storia per le policy: Postgres non cambia il tipo di una
+--       colonna nominata da una policy, e la 002 crea leagues_delete su
+--       created_by.
+--    3) Chiavi e policy trovate dal catalogo non bastano su un database
+--       MEZZO migrato. La vecchia 001 scioglieva le chiavi come istruzioni
+--       separate — nell'SQL Editor ognuna fa storia a se' — e poi moriva piu'
+--       avanti: user_id, created_by e le altre restano uuid e senza chiave,
+--       quindi invisibili a chi le cerca dal catalogo. Per quelle serve
+--       l'elenco: non come meccanismo, ma come rete di sicurezza.
+--    4) Il vincolo "check (vice_user_id is null or vice_user_id <> user_id)"
+--       della 002 tiene insieme due colonne: convertendone una alla volta,
+--       dopo la prima si ritrova text da un lato e uuid dall'altro.
+--
+--    Quindi: l'elenco noto UNITO a quello che dice il catalogo; si sciolgono
+--    chiavi e vincoli check che toccano quelle colonne, e le policy che le
+--    nominano; si converte una tabella alla volta ma tutte le sue colonne
+--    nella stessa istruzione; si riaggancia tutto con la definizione
+--    originale. Dentro un blocco solo, cioe' una transazione: o riesce tutto
+--    o non cambia niente.
 alter table public.profiles drop constraint if exists profiles_id_fkey;
 
 do $$
 declare
   c record;
-  tabelle  text[] := '{}';   -- public.league_members, per le ALTER
   nomi_tab text[] := '{}';   -- league_members, per information_schema
-  nomi     text[] := '{}';
-  defs    text[] := '{}';
-  colonne text[] := '{}';
+  colonne  text[] := '{}';
+  vincoli  text[] := '{}';   -- tabella, nome e definizione da rimettere
+  v_nomi   text[] := '{}';
+  v_defs   text[] := '{}';
   t text;
-  i int;
 begin
-  -- a) le policy che nominano una colonna da convertire vanno tolte prima:
-  --    Postgres rifiuta di cambiare il tipo di una colonna usata in una policy.
-  --    Anche questo elenco era scritto a mano e anche questo e' saltato: la
-  --    002 crea leagues_delete su created_by, e la 001 non poteva saperlo.
-  --    Adesso si chiedono a pg_depend, che sa esattamente quali policy
-  --    dipendono da quali colonne. Ognuna viene annunciata con la sua
-  --    definizione completa prima di sparire: se una non dovesse tornare,
-  --    il testo per rimetterla e' li' nel registro dell'SQL Editor.
-  --    Tornano tutte: queste sotto le rifa' il punto 8, le altre le rifanno
-  --    le migrazioni che le hanno create, che vanno eseguite dopo questa.
-
-  -- b) chi punta a profiles(id): me lo dice il catalogo, non un elenco
+  -- a) le colonne d'identita': quelle note piu' quelle che il catalogo trova
   for c in
-    select con.conrelid::regclass::text as tab,   -- già qualificato e citato al bisogno
-           cls.relname                  as nome_tab,
-           con.conname                  as nome,
-           pg_get_constraintdef(con.oid) as def,
-           att.attname                  as col
-      from pg_constraint con
-      join pg_class cls on cls.oid = con.conrelid
-      join pg_attribute att
-        on att.attrelid = con.conrelid and att.attnum = con.conkey[1]
-     where con.contype = 'f'
-       and con.confrelid = 'public.profiles'::regclass
+    select nome_tab, colonna from (
+      select * from (values
+        ('profiles','id'), ('league_members','user_id'), ('league_members','vice_user_id'),
+        ('leagues','created_by'), ('match_overrides','updated_by'), ('match_events','created_by'),
+        ('matchday_status','changed_by'), ('change_log','by_user'),
+        ('matchday_locks','updated_by'), ('push_subscriptions','user_id')
+      ) as noti(nome_tab, colonna)
+      union
+      select cls.relname, att.attname
+        from pg_constraint con
+        join pg_class cls on cls.oid = con.conrelid
+        join pg_attribute att on att.attrelid = con.conrelid and att.attnum = con.conkey[1]
+       where con.contype = 'f' and con.confrelid = 'public.profiles'::regclass
+    ) v
+     where to_regclass('public.' || nome_tab) is not null
+       and exists (select 1 from information_schema.columns
+                    where table_schema='public' and table_name = v.nome_tab and column_name = v.colonna)
   loop
-    tabelle := tabelle || c.tab;  nomi_tab := nomi_tab || c.nome_tab;
-    nomi := nomi || c.nome;       defs := defs || c.def;
-    colonne := colonne || c.col;
-    execute format('alter table %s drop constraint %I', c.tab, c.nome);
+    nomi_tab := nomi_tab || c.nome_tab; colonne := colonne || c.colonna;
   end loop;
 
-  -- c) via le policy appese alle colonne che stiamo per convertire
+  -- b) via le policy appese a quelle colonne. Ognuna viene annunciata con la
+  --    sua definizione: se una non dovesse tornare, il testo per rimetterla
+  --    resta nel registro dell'SQL Editor. Tornano tutte: queste le rifa' il
+  --    punto 8, le altre le migrazioni che le hanno create.
   for c in
-    select pol.polname as nome, pol.polrelid::regclass::text as tab,
-           pg_get_expr(pol.polqual, pol.polrelid)      as usando,
+    select distinct pol.polname as nome, pol.polrelid::regclass::text as tab,
+           pg_get_expr(pol.polqual, pol.polrelid) as usando,
            pg_get_expr(pol.polwithcheck, pol.polrelid) as controllo
       from pg_depend d
       join pg_policy pol on pol.oid = d.objid
-     where d.classid = 'pg_policy'::regclass
-       and d.refclassid = 'pg_class'::regclass
-       and (d.refobjid, d.refobjsubid) in (
-             select att.attrelid, att.attnum from pg_attribute att
-              where (att.attrelid = 'public.profiles'::regclass and att.attname = 'id')
-                 or (att.attrelid::regclass::text = any (tabelle)
-                     and att.attname = any (colonne)))
-     group by 1, 2, 3, 4
+      join pg_attribute att on att.attrelid = d.refobjid and att.attnum = d.refobjsubid
+      join pg_class cls on cls.oid = att.attrelid
+      join pg_namespace ns on ns.oid = cls.relnamespace
+     where d.classid = 'pg_policy'::regclass and d.refclassid = 'pg_class'::regclass
+       and ns.nspname = 'public'
+       and (cls.relname, att.attname) in (
+             select unnest(nomi_tab), unnest(colonne))
   loop
     raise notice 'tolgo la policy %.% — using (%) with check (%)',
-      c.tab, c.nome, coalesce(c.usando, '—'), coalesce(c.controllo, '—');
+      c.tab, c.nome, coalesce(c.usando,'—'), coalesce(c.controllo,'—');
     execute format('drop policy if exists %I on %s', c.nome, c.tab);
   end loop;
 
-  -- d) la conversione vera, sull'id e su tutto cio' che lo referenzia
-  select data_type into t from information_schema.columns
-   where table_schema = 'public' and table_name = 'profiles' and column_name = 'id';
-  if t = 'uuid' then
-    alter table public.profiles alter column id type text using id::text;
-  end if;
-  for i in 1 .. coalesce(array_length(tabelle, 1), 0) loop
-    select data_type into t from information_schema.columns
-     where table_schema = 'public' and table_name = nomi_tab[i] and column_name = colonne[i];
-    if t = 'uuid' then
-      execute format('alter table %s alter column %I type text using %I::text',
-                     tabelle[i], colonne[i], colonne[i]);
-    end if;
+  -- c) via chiavi esterne e vincoli check che toccano quelle colonne, tenendo
+  --    da parte la definizione. Primarie e uniche non si toccano: quelle
+  --    Postgres le ricostruisce da solo cambiando il tipo.
+  for c in
+    select distinct con.oid, con.conrelid::regclass::text as tab, con.conname as nome,
+           pg_get_constraintdef(con.oid) as def
+      from pg_constraint con
+      join pg_depend d on d.objid = con.oid and d.classid = 'pg_constraint'::regclass
+      join pg_attribute att on att.attrelid = d.refobjid and att.attnum = d.refobjsubid
+      join pg_class cls on cls.oid = att.attrelid
+      join pg_namespace ns on ns.oid = cls.relnamespace
+     where con.contype in ('f','c') and ns.nspname = 'public'
+       and (cls.relname, att.attname) in (select unnest(nomi_tab), unnest(colonne))
+  loop
+    vincoli := vincoli || c.tab; v_nomi := v_nomi || c.nome; v_defs := v_defs || c.def;
+    execute format('alter table %s drop constraint %I', c.tab, c.nome);
+  end loop;
+
+  -- d) la conversione: una tabella per volta, ma tutte le sue colonne nella
+  --    stessa istruzione, se no il check della 002 vede i due tipi disallineati
+  for c in
+    select nome_tab, array_agg(colonna) as cols from (
+      select nomi_tab[k] as nome_tab, colonne[k] as colonna
+        from generate_subscripts(nomi_tab, 1) as g(k)
+    ) v
+     where (select data_type from information_schema.columns
+             where table_schema='public' and table_name = v.nome_tab and column_name = v.colonna) = 'uuid'
+     group by nome_tab
+  loop
+    select string_agg(format('alter column %I type text using %I::text', x, x), ', ')
+      into t from unnest(c.cols) as x;
+    execute format('alter table public.%I %s', c.nome_tab, t);
   end loop;
 
   -- e) e si riaggancia tutto com'era
-  for i in 1 .. coalesce(array_length(tabelle, 1), 0) loop
-    execute format('alter table %s add constraint %I %s', tabelle[i], nomi[i], defs[i]);
+  for i in 1 .. coalesce(array_length(vincoli, 1), 0) loop
+    execute format('alter table %s add constraint %I %s', vincoli[i], v_nomi[i], v_defs[i]);
+  end loop;
+
+  -- f) le chiavi note che MANCANO si rimettono
+  --    Su un database mezzo migrato non basta rimettere quelle che si sono
+  --    sciolte qui: la vecchia 001 ne aveva gia' sciolte sei come istruzioni
+  --    separate, che nell'SQL Editor fanno storia a se', e poi era morta.
+  --    Quelle sei non le rimetteva piu' nessuno, e il database restava senza.
+  for c in
+    select * from (values
+      ('league_members','league_members_user_id_fkey','user_id'),
+      ('league_members','league_members_vice_user_id_fkey','vice_user_id'),
+      ('leagues','leagues_created_by_fkey','created_by'),
+      ('match_overrides','match_overrides_updated_by_fkey','updated_by'),
+      ('match_events','match_events_created_by_fkey','created_by'),
+      ('matchday_status','matchday_status_changed_by_fkey','changed_by'),
+      ('change_log','change_log_by_user_fkey','by_user'),
+      ('matchday_locks','matchday_locks_updated_by_fkey','updated_by'),
+      ('push_subscriptions','push_subscriptions_user_id_fkey','user_id')
+    ) as noti(tab, nome, col)
+  loop
+    -- la tabella puo' non esserci (push_subscriptions arriva con la 005) e la
+    -- colonna nemmeno (vice_user_id arriva con la 002): in quel caso la chiave
+    -- la mette la migrazione che la crea, non questa
+    if to_regclass('public.' || c.tab) is not null
+       and exists (select 1 from information_schema.columns
+                    where table_schema = 'public' and table_name = c.tab and column_name = c.col)
+       and not exists (select 1 from pg_constraint where conname = c.nome
+                        and conrelid = ('public.' || c.tab)::regclass) then
+      execute format('alter table public.%I add constraint %I foreign key (%I) references public.profiles(id)%s',
+                     c.tab, c.nome, c.col,
+                     case c.col when 'vice_user_id' then ' on delete set null'
+                                when 'user_id'      then ' on delete cascade'
+                                else '' end);
+    end if;
   end loop;
 end $$;
 

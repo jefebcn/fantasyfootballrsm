@@ -343,6 +343,13 @@ hr.sep{border:0;border-top:1px solid var(--border);margin:4px 0}
 .pitch .campo{position:absolute;inset:0;pointer-events:none}
 .pitch .campo path,.pitch .campo circle,.pitch .campo rect{fill:none;stroke:rgba(255,255,255,.45);stroke-width:1.4;vector-effect:non-scaling-stroke}
 .line{display:flex;justify-content:space-evenly;align-items:flex-start;position:relative;z-index:1;padding:2px 0}
+/* La riga del portiere vuole piu' aria sopra. Le figure sono appoggiate in
+   basso dentro un riquadro da 54px e possono arrivare a 81: sborda 27px, e
+   sopra ce n'erano 20 fra il margine del campo e quello della riga. Mancavano
+   sette pixel, ed era la mano alzata del portiere a pagarli. Si vedeva solo
+   con certi personaggi — 115 su 130 sono alti abbastanza, gli altri no — e
+   questo e' il motivo per cui a volte c'era e a volte no. */
+.line:first-child{padding-top:12px}
 .slot{display:flex;flex-direction:column;align-items:center;gap:5px;width:74px;position:relative;cursor:pointer}
 .slot .av{width:50px;height:54px;border-radius:0;background:transparent;box-shadow:none;display:grid;place-items:center;position:relative}
 .slot .av .rl{position:absolute;bottom:2px;right:-2px;width:19px;height:19px;font-size:9.5px;border:2px solid #fff}
@@ -849,7 +856,15 @@ button,a{-webkit-tap-highlight-color:transparent}
   padding:14px;background:var(--surface);border-radius:var(--r-md);box-shadow:var(--sh-card);
   border:0;text-align:left;font:inherit;color:inherit;cursor:pointer;text-decoration:none}
 .tile:active{background:var(--surface-2)}
-.tile > .lead{width:42px;height:42px;border-radius:12px;display:grid;place-items:center;flex:none;background:var(--primary-soft);color:var(--primary)}
+/* padding:0 dichiarato apposta. Il riquadro prende una classe che dice il
+   tono — warn, gold, live — e "warn" in questa app e' anche il banner di
+   avviso, che ha padding:10px 12px. Quel padding scendeva qui dentro e
+   spingeva il simbolo 3px a destra e 1px in basso, perche' nessuno aveva
+   dichiarato il padding del riquadro: non c'era niente da vincere.
+   Stessa storia con `.lead` della card classifica, ora ristretta a
+   `.a-card.lead`. Due componenti diversi che si chiamano uguale: dichiararlo
+   qui e' l'unica difesa che non dipende da chi arriva dopo. */
+.tile > .lead{width:42px;height:42px;padding:0;border-radius:12px;display:grid;place-items:center;flex:none;background:var(--primary-soft);color:var(--primary)}
 .tile > .lead.gold{background:var(--accent-soft);color:var(--on-accent-soft)}
 .tile > .lead.live{background:var(--positive-soft);color:var(--positive)}
 .tile > .lead.warn{background:var(--warning-soft);color:var(--warning)}
@@ -996,7 +1011,14 @@ button,a{-webkit-tap-highlight-color:transparent}
 .up .where{font-size:11px;color:var(--text-muted);border-top:1px solid var(--border);padding-top:7px;margin-top:auto}
 
 /* --- Anteprima classifica --- */
-.lead{display:block;padding:2px 14px 0;text-decoration:none;color:inherit}
+/* Scritta `.a-card.lead` e non `.lead` nuda: di "lead" in questa app ce ne
+   sono due, questa card e il riquadro colorato dell'icona dentro .tile. La
+   regola generica non toccava ne' il fondo ne' la misura di quel riquadro —
+   li mette `.tile > .lead`, che ha piu' peso — ma il padding si', perche' li'
+   nessuno lo dichiarava. Risultato: il simbolo dentro il quadrato colorato
+   stava 5px troppo a destra e 1px troppo in basso, su OGNI tile dell'app.
+   Si vedeva a occhio nudo appena due tile stavano una sopra l'altra. */
+.a-card.lead{display:block;padding:2px 14px 0;text-decoration:none;color:inherit}
 .lrow{display:flex;align-items:center;gap:10px;padding:9px 0;border-top:1px solid var(--border)}
 .lrow:first-child{border-top:0}
 .lrow.io{background:var(--primary-soft);margin:0 -14px;padding-left:14px;padding-right:14px}
@@ -1423,7 +1445,14 @@ button,a{-webkit-tap-highlight-color:transparent}
    spazio. A 150% comanda l'altezza, e i 66px che ne escono stanno larghi anche
    in una difesa a cinque, dove ogni posto ne ha 78. */
 .ps .av.faccia .av-cal,.slot .av.faccia .av-cal{max-width:150%}
-.ps .av.faccia .rl,.slot .av.faccia .rl{bottom:0;right:-4px}
+/* Il cerchietto del ruolo si sposta nell'angolo in basso a destra, il piu'
+   fuori possibile senza uscire dal posto e senza scendere sulla targhetta del
+   nome — cinque pixel piu' giu' e si mangiava "Perazzini".
+   Misurato sull'inchiostro vero di tutti e 130 i personaggi, non sul loro
+   rettangolo: dov'era copriva in media il 4,6% del disegno e fino al 12%,
+   adesso l'1,9% e al massimo il 7,4%. Zero non si puo' fare: per non toccare
+   niente dovrebbe stare sotto la targhetta, e li' c'e' il nome. */
+.ps .av.faccia .rl,.slot .av.faccia .rl{bottom:-5px;right:-11px}
 .ps .av.faccia .cap,.slot .av.faccia .cap{top:-2px;left:-4px}
 
 /* Maglia: la foto porta forma e luce, la tinta arriva da --c1.

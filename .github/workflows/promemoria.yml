@@ -41,13 +41,34 @@ jobs:
           URL: ${{ secrets.SUPABASE_FUNCTIONS_URL }}
           TOKEN: ${{ secrets.PROMEMORIA_TOKEN }}
         run: |
-          if [ -z "$URL" ] || [ -z "$TOKEN" ]; then
+          # Gli spazi intorno a un secret non si vedono da nessuna parte. Nel
+          # pannello di GitHub il valore e' mascherato, nel registro esce come
+          # *** — e uno spazio davanti all'indirizzo fa morire curl con
+          # "URL rejected: Malformed input to a URL function", tre secondi e
+          # via, senza dire perche'. E' successo: nel registro si vedeva solo
+          # che "URL: ***" aveva uno spazio in piu' di "TOKEN: ***".
+          # Ne' un indirizzo ne' un token esadecimale contengono spazi, quindi
+          # si toglie tutto quello che e' spazio, ritorno a capo compreso.
+          url=$(printf '%s' "$URL" | tr -d '[:space:]')
+          token=$(printf '%s' "$TOKEN" | tr -d '[:space:]')
+          if [ -z "$url" ] || [ -z "$token" ]; then
             echo "pronta=no" >> "$GITHUB_OUTPUT"
             echo "SUPABASE_FUNCTIONS_URL o PROMEMORIA_TOKEN non impostati."
             echo "I passi stanno in supabase/functions/promemoria/README.md."
-          else
-            echo "pronta=si" >> "$GITHUB_OUTPUT"
+            exit 0
           fi
+          if [ "$url" != "$URL" ] || [ "$token" != "$TOKEN" ]; then
+            echo "::warning::Un secret ha spazi o ritorni a capo intorno al valore."
+            echo "Li ignoro, ma conviene ripulirli: Settings -> Secrets -> Actions."
+          fi
+          case "$url" in
+            https://*)
+              echo "pronta=si" >> "$GITHUB_OUTPUT" ;;
+            *)
+              echo "pronta=no" >> "$GITHUB_OUTPUT"
+              echo "::error::SUPABASE_FUNCTIONS_URL non comincia per https:// —"
+              echo "atteso https://<progetto>.supabase.co/functions/v1" ;;
+          esac
 
       - name: Spedisci
         if: steps.cfg.outputs.pronta == 'si'
@@ -57,8 +78,12 @@ jobs:
           FUNZIONE: ${{ secrets.PROMEMORIA_FUNZIONE }}
         run: |
           set -o pipefail
-          nome="${FUNZIONE:-promemoria}"
+          # Ripulito anche qui: i valori non passano dal passo di sopra, e un
+          # output che li portasse in giro finirebbe nel registro.
+          url=$(printf '%s' "$URL" | tr -d '[:space:]')
+          token=$(printf '%s' "$TOKEN" | tr -d '[:space:]')
+          nome=$(printf '%s' "${FUNZIONE:-promemoria}" | tr -d '[:space:]')
           risposta=$(curl -sS --fail-with-body --max-time 60 \
-            -H "x-promemoria-token: $TOKEN" \
-            "${URL%/}/$nome")
+            -H "x-promemoria-token: $token" \
+            "${url%/}/$nome")
           echo "$risposta"

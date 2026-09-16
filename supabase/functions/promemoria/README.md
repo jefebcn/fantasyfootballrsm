@@ -58,6 +58,13 @@ Poi su GitHub, in *Settings → Secrets and variables → Actions*, aggiungi:
 | `PROMEMORIA_TOKEN` | lo stesso del passo 2 |
 | `PROMEMORIA_FUNZIONE` | solo se lo slug non è `promemoria` — vedi sotto |
 
+**Attenzione a cosa si incolla.** Uno spazio o un ritorno a capo davanti al
+valore non si vede in nessun posto: nel pannello il secret è mascherato e nel
+registro esce come `***`. Ma basta a far morire la chiamata con
+`curl: (3) URL rejected: Malformed input to a URL function`, in tre secondi e
+senza spiegare perché. È già successo. Ora il workflow gli spazi li toglie da
+sé e lo segnala, ma vale la pena incollare pulito.
+
 `<progetto>` è il codice del progetto, quello che si legge nell'indirizzo della
 funzione appena creata e in ogni chiamata che il browser già fa a Supabase: è
 pubblico, non è un segreto.

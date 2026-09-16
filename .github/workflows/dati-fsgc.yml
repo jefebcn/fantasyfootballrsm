@@ -36,6 +36,24 @@ jobs:
         with:
           node-version: '22'
 
+      # importa-fsgc.py legge le pagine della FSGC con BeautifulSoup e chiede
+      # il parser 'lxml', che e' un pacchetto a parte. Senza questo passo il
+      # lavoro moriva sempre alla prima riga utile — ModuleNotFoundError: bs4 —
+      # e il campionato non si e' mai importato da solo nemmeno una volta.
+      # Le versioni sono fissate: un import che va a prendere le pagine di un
+      # sito che non controlliamo ha gia' abbastanza modi per rompersi.
+      - name: Le librerie che servono a Python
+        run: python3 -m pip install --quiet 'beautifulsoup4==4.15.0' 'lxml==6.1.3'
+
+      # node_modules e package-lock.json non sono versionati (lo dice
+      # .gitignore: servono a rigenerare vendor/ e a far girare eslint, non
+      # finiscono nel sito). Quindi vanno installati qui, se no `npm test` piu'
+      # sotto non trova eslint. Non si vedeva perche' quel passo gira solo
+      # quando l'import trova dati nuovi, e l'import non e' mai arrivato in
+      # fondo: un secondo guasto in fila al primo.
+      - name: Le librerie che servono a Node
+        run: npm install --no-audit --no-fund
+
       # data/tabellini.json e' l'archivio che permette allo script di riprendere
       # da dove era: non e' versionato (a meta' non vale niente) e senza di lui
       # ogni esecuzione riscaricherebbe da zero tutte le partite giocate — a

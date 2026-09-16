@@ -12,16 +12,20 @@ a{color:var(--primary-ink)}   /* --primary sta a 4,23 sul fondo pagina: sotto 4,
    dal "padding:" della regola vera piu' in basso nel foglio: erano inerti tutti
    e sette, e le schermate usavano i valori fissi tirati a occhio. */
 :root{--sa-top:env(safe-area-inset-top,0px);--sa-bottom:env(safe-area-inset-bottom,0px)}
-/* Quanto tiene da parte la barra in basso: 8pt meno della tacca. La barretta
-   di casa e' alta 5pt e sta a 8 dal bordo, quindi dentro i 34pt di riserva ce
-   n'erano una decina che non copriva niente. Con 8 in meno le scritte scendono
-   di altrettanto e restano comunque sopra la barretta, e il riquadro da
-   toccare non entra nella zona dove il sistema prende la strisciata.
+/* Quanto tiene da parte la barra in basso: 16pt meno della tacca, scelto a
+   occhio da chi la guarda sul telefono. La barretta di casa e' alta 5pt e sta
+   a 8 dal bordo, quindi fin qui non ci finisce sopra: le scritte arrivano a
+   20pt dal bordo e ne restano 7 liberi.
+   Sotto ai 34pt della tacca si entra pero' nella fascia dove iOS prende la
+   strisciata verso l'alto. I tocchi secchi sulle voci continuano ad arrivare —
+   il riquadro da toccare e' alto 46pt e solo la sua parte bassa ci entra — ma
+   una strisciata che parta da li' se la prende il sistema. E' un compromesso
+   voluto, non una svista: 16 e' il punto scelto dopo averlo guardato.
    Dove la tacca non c'e' (Android, telefoni col tasto) il massimo tiene a zero
    e non cambia niente. Le altre cose che stanno sul fondo — il foglio che sale,
    le schermate senza barra — continuano a tenere la tacca intera: li' non c'e'
    una barra a fare da cuscinetto. */
-:root{--riserva-basso:max(var(--sa-bottom) - 8px, 0px)}
+:root{--riserva-basso:max(var(--sa-bottom) - 16px, 0px)}
 /* L'altezza la misura il JavaScript e la scrive in --h-app (vedi
    misuraAltezza() in src/app.js): su iPhone le unita' CSS del viewport non
    tornano, e il riquadro si fermava 59pt sopra il bordo dello schermo — tanto

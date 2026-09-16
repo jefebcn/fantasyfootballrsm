@@ -54,7 +54,16 @@ def ritaglia(m, margine=0.06):
     return out
 
 
-def maschera(m, lato=512):
+# La maschera viaggia in base64 DENTRO styles/logo.css, che si carica a ogni
+# apertura: la sua misura e' peso su ogni avvio, non su una richiesta a parte.
+# Il marchio piu' grande che l'app disegna e' 64px (l'accesso e lo splash),
+# che su uno schermo a tripla densita' fa 192 pixel veri. Una maschera da 256
+# li copre con margine, e a 512 non si guadagna niente: confrontate a 192px,
+# la differenza fra le due e' 0,27 livelli su 255. Costa 15 kB in meno.
+LATO_MASCHERA = 256
+
+
+def maschera(m, lato=LATO_MASCHERA):
     q = m.resize((lato, lato), Image.LANCZOS)
     out = Image.new('RGBA', (lato, lato), (255, 255, 255, 0))
     out.putalpha(q)
@@ -93,11 +102,16 @@ maschera(m).save('media/logo-mask.png')
 # niente riquadro pieno se l'immagine non arriva, e funziona anche offline.
 import base64
 b64 = base64.b64encode(open('media/logo-mask.png', 'rb').read()).decode()
+# La sagoma sta in una variabile CSS e non scritta due volte. Servono due
+# proprieta' — quella prefissata per i Safari vecchi e quella standard — e
+# prima ognuna si portava la sua copia del base64: lo stesso disegno, due
+# volte, su un file che si carica a ogni apertura.
 open('styles/logo.css', 'w').write(
     '/* Generato da scripts/make-logo.py — non modificare a mano. */\n'
     '.logo{display:inline-block;width:24px;height:24px;flex:none;background-color:currentColor;\n'
-    f'  -webkit-mask:url(data:image/png;base64,{b64}) center/contain no-repeat;\n'
-    f'  mask:url(data:image/png;base64,{b64}) center/contain no-repeat}}\n')
+    f'  --sagoma:url(data:image/png;base64,{b64});\n'
+    '  -webkit-mask:var(--sagoma) center/contain no-repeat;\n'
+    '  mask:var(--sagoma) center/contain no-repeat}\n')
 print('styles/logo.css:', round(len(b64) / 1024), 'KB di maschera')
 icona(m, 512).save('icons/icon-512.png')
 icona(m, 192).save('icons/icon-192.png')

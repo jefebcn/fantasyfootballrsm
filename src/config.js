@@ -47,7 +47,11 @@ export const TITOLARE = {
   licenza: 'MBR C 98450',                        // numero nel registro delle imprese
   email: 'info@mediterraneandigital.mt',         // per le richieste sui dati
   telefono: '+356 2133 4567',
-  pec: '',             // facoltativa
+  // Vuota e resta vuota: la PEC e' un'istituzione italiana, una societa'
+  // maltese non ce l'ha. Il campo non si tocca — e' rimasto perche' se un
+  // giorno il titolare fosse italiano tornerebbe utile. Vuoto, la riga del
+  // titolare lo salta e non lascia separatori appesi.
+  pec: '',
   /**
    * Il titolare sta dentro lo Spazio economico europeo?
    *

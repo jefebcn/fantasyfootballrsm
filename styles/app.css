@@ -21,6 +21,12 @@ a{color:var(--primary-ink)}   /* --primary sta a 4,23 sul fondo pagina: sotto 4,
 .app{position:fixed;inset:0;height:var(--h-app,100dvh);display:flex;flex-direction:column;background:var(--bg);max-width:640px;margin:0 auto;box-shadow:0 0 0 1px var(--border)}
 @media (min-width:641px){body{background:var(--surface-sunk)}}
 .a-body > *{flex:none}
+/* Lo spazio per l'invito a installare l'app resta un elemento anche quando e'
+   vuoto, e in una colonna flex con gap:12px produce lo stesso i suoi 12pt: si
+   mangiavano esatti il margine negativo della copertina, e fra l'intestazione
+   blu e la copertina restava una striscia di fondo pagina. Vuoto vuol dire
+   fuori dal conto. */
+#install-slot:empty{display:none}
 .senza-nav .a-body{padding-bottom:calc(16px + var(--sa-bottom))}
 .a-nav a{text-decoration:none}
 /* Se il riquadro si ferma prima del bordo dello schermo, sotto la barra si
@@ -40,7 +46,7 @@ a{color:var(--primary-ink)}   /* --primary sta a 4,23 sul fondo pagina: sotto 4,
 .sql{background:var(--surface-sunk);border:1px solid var(--border);border-radius:10px;
   padding:10px 12px;margin:8px 0;font-family:var(--font-mono);font-size:11.5px;line-height:1.55;
   color:var(--text);white-space:pre-wrap;word-break:break-word;overflow-wrap:anywhere}
-.toast{position:fixed;left:50%;bottom:calc(76px + var(--sa-bottom));transform:translateX(-50%);background:var(--c-pietra-900);color:#fff;padding:10px 16px;border-radius:999px;font-size:13px;font-weight:600;box-shadow:var(--sh-raise);z-index:50;max-width:calc(100% - 32px);opacity:0;transition:opacity var(--mo-base);pointer-events:none}
+.toast{position:fixed;left:50%;bottom:calc(72px + var(--sa-bottom));transform:translateX(-50%);background:var(--c-pietra-900);color:#fff;padding:10px 16px;border-radius:999px;font-size:13px;font-weight:600;box-shadow:var(--sh-raise);z-index:50;max-width:calc(100% - 32px);opacity:0;transition:opacity var(--mo-base);pointer-events:none}
 .toast.on{opacity:1}
 .install{display:flex;gap:12px;align-items:center;background:var(--c-titano-800);color:#fff;padding:10px 12px;border-radius:var(--r-md);font-size:13px}
 .install b{display:block;font-family:var(--font-display)}
@@ -213,7 +219,7 @@ hr.sep{border:0;border-top:1px solid var(--border);margin:4px 0}
 /* 56 + la tacca fa 90pt su iPhone: la barra di sistema ne fa 83, la nostra
    ne faceva 98 e lo spazio in fondo si notava. Il riquadro da toccare resta
    di 46pt (90 - 4 in alto - 40 in basso), sopra i 44 richiesti. */
-.a-nav{flex:none;height:calc(56px + var(--sa-bottom));background:var(--surface);box-shadow:var(--sh-nav);display:grid;grid-template-columns:repeat(5,1fr);padding:4px 4px calc(6px + var(--sa-bottom));position:relative;z-index:3}
+.a-nav{flex:none;height:calc(52px + var(--sa-bottom));background:var(--surface);box-shadow:var(--sh-nav);display:grid;grid-template-columns:repeat(5,1fr);padding:4px 4px calc(2px + var(--sa-bottom));position:relative;z-index:3}
 .a-nav button,.a-nav a{border:0;background:transparent;color:var(--text-muted);display:flex;flex-direction:column;align-items:center;gap:3px;font-family:var(--font-body);font-size:11px;font-weight:500;cursor:pointer;position:relative;padding:0;border-radius:8px}
 .a-nav button.on,.a-nav a.on{color:var(--primary);font-weight:600}
 .a-nav button .dot,.a-nav a .dot{position:absolute;top:0;right:calc(50% - 16px);width:8px;height:8px;border-radius:50%;background:var(--c-cartellino-500);border:2px solid var(--surface)}
@@ -1382,7 +1388,9 @@ button,a{-webkit-tap-highlight-color:transparent}
 
 /* Copertina sull'impaginazione di riferimento: la lega in una targa chiara,
    poi il nome squadra, poi la maglia, e in fondo il marchio del campionato. */
-.a-hero{padding-bottom:16px}
+/* 34 e non 16: la card dei numeri risale di 26pt dentro la copertina, e con
+   16 il marchio in fondo le finiva incollato a 2pt. */
+.a-hero{padding-bottom:34px}
 .a-hero .hero-league{align-self:stretch;justify-content:space-between;background:var(--surface);
   color:var(--text);padding:11px 14px 11px 16px;border-radius:14px;text-transform:none;
   border-left:5px solid var(--accent);box-shadow:0 6px 16px rgba(0,0,0,.18)}
@@ -1402,9 +1410,13 @@ button,a{-webkit-tap-highlight-color:transparent}
     url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16'%3E%3Cpath d='M1 2l12-1v9l-12 1z' fill='%23fff' opacity='.7'/%3E%3C/svg%3E"),
     url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16'%3E%3Cpath d='M2 3l12-2v9l-12 2z' fill='%235BA8DC'/%3E%3C/svg%3E");
   background-position:5% 32%, 16% 82%, 27% 6%, 74% 12%, 88% 70%, 95% 38%}
+/* E' un collegamento, non piu' una scritta: aveva la forma di un tasto —
+   pastiglia, bordo, fondo schiarito — e non faceva niente. Adesso porta dove
+   il Voto Titano e' spiegato, che e' la domanda che fa venire. */
 .a-hero .hero-marchio{position:relative;display:inline-flex;align-self:center;align-items:center;justify-content:center;
-  gap:7px;margin-top:12px;padding:5px 14px 5px 8px;border-radius:999px;color:#fff;
+  gap:7px;margin-top:12px;padding:5px 14px 5px 8px;border-radius:999px;color:#fff;text-decoration:none;
   background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.18)}
+.a-hero .hero-marchio:active{background:rgba(255,255,255,.22)}
 .a-hero .hero-marchio .logo{width:22px;height:22px}
 .a-hero .hero-marchio > span{font:700 11.5px var(--font-display);letter-spacing:.08em;text-transform:uppercase;opacity:.95}
 .a-herowrap + .a-card.a-stats{margin-top:-26px}

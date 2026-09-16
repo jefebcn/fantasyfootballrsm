@@ -264,7 +264,7 @@ export const dashboard = {
             <a href="#/mercato" aria-label="Mercato libero"><button class="gold">${icon('cart')}</button></a>
           </div>
           <p class="hero-owner">${esc(me.owner)}</p>
-          <span class="hero-marchio">${logo()}<span>Voto Titano</span></span>
+          <a class="hero-marchio" href="#/regolamento">${logo()}<span>Voto Titano</span></a>
         </div>
       </div>
       <div class="a-card a-stats">

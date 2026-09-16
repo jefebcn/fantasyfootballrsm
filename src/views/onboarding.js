@@ -15,7 +15,7 @@ let slide = 0;
 const SLIDES = [
   {
     eyebrow: 'Campionato Sammarinese',
-    title: 'Fantacampionato<br><em>Titano</em>',
+    title: 'Fanta<em>titano</em>',
     body: `<p>Il fantacalcio delle sedici squadre di San Marino: asta, rosa, formazione ogni settimana, scontro diretto.</p>
            <p>Con una differenza: qui <b>le pagelle non esistono</b>. Nessuno decide se hai giocato bene. Il voto nasce da quello che è successo in campo.</p>`,
   },

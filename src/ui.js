@@ -8,7 +8,7 @@ export const fmt = (n, min = 1) => (n == null ? 'S.V.' : Number(n).toLocaleStrin
 export const signed = (n) => (n > 0 ? '+' : n < 0 ? '−' : '') + fmt(Math.abs(n));
 export const icon = (name, cls = 'ic') => `<svg class="${cls}"><use href="#i-${name}"/></svg>`;
 /** Il logo originale: una maschera colorata con il colore corrente (styles/logo.css). */
-export const logo = (cls = '') => `<i class="logo ${cls}" role="img" aria-label="Fantacampionato Sammarinese"></i>`;
+export const logo = (cls = '') => `<i class="logo ${cls}" role="img" aria-label="Fantatitano"></i>`;
 export const ROLE_NAME = { P: 'Portieri', D: 'Difensori', C: 'Centrocampisti', A: 'Attaccanti' };
 export const ROLE_ORDER = ['P', 'D', 'C', 'A'];
 const DAYS = ['dom', 'lun', 'mar', 'mer', 'gio', 'ven', 'sab'];

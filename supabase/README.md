@@ -189,7 +189,7 @@ codice a 6 cifre — utile quando l'e-mail si apre in un browser diverso da quel
 in **Authentication → Emails → Magic Link** aggiungi una riga con `{{ .Token }}`:
 
 ```html
-<h2>Entra nel Fantacampionato</h2>
+<h2>Entra in Fantatitano</h2>
 <p><a href="{{ .ConfirmationURL }}">Tocca qui per entrare</a></p>
 <p>Oppure inserisci questo codice nell'app: <strong>{{ .Token }}</strong></p>
 ```
@@ -229,6 +229,9 @@ Senza iscrizione a pagamento non è possibile: è una condizione di Apple, non d
 1. [developer.apple.com](https://developer.apple.com/account) → *Certificates, Identifiers & Profiles*.
 2. *Identifiers* → nuovo **App ID** con la capability **Sign In with Apple** attiva.
 3. *Identifiers* → nuovo **Services ID** (es. `com.fantacampionato.web`): è il *client ID*.
+   Quell'identificatore tiene il nome vecchio apposta: se è già stato creato su Apple
+   non si rinomina, e cambiarlo qui vorrebbe dire scrivere una cosa che là non esiste.
+   Chi parte adesso può usare `com.fantatitano.web`.
    Attiva *Sign In with Apple* → *Configure*:
    - *Primary App ID*: quello del punto 2
    - *Domains and Subdomains*: `nskgzpbcssnpfuxmbepa.supabase.co`

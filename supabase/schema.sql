@@ -1,5 +1,5 @@
 -- =====================================================================
--- Fantacampionato Sammarinese — schema Supabase (Postgres + RLS)
+-- Fantatitano — schema Supabase (Postgres + RLS)
 -- Esegui questo file nell'SQL Editor del progetto Supabase.
 -- Il listone, il calendario e le società restano generati dal client
 -- (src/data.js): qui vivono solo account, leghe e i "delta" del dato.

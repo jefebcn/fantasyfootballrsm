@@ -1,5 +1,5 @@
 /* Service worker — shell in cache, aggiornamento in background. */
-const VERSION = 'fcs-v4.2.44';
+const VERSION = 'fcs-v4.2.45';
 const SHELL = [
   './', './index.html', './manifest.webmanifest', './styles/app.css', './styles/logo.css', './styles/font.css', './design/tokens/tokens.css',
   // I caratteri stanno in casa: nella cache ci vanno, se no senza rete si vede
@@ -46,7 +46,7 @@ self.addEventListener('activate', (e) => {
 self.addEventListener('push', (e) => {
   let d = {};
   try { d = e.data ? e.data.json() : {}; } catch { d = { body: e.data && e.data.text() }; }
-  const titolo = d.titolo || 'Fantacampionato Sammarinese';
+  const titolo = d.titolo || 'Fantatitano';
   e.waitUntil(self.registration.showNotification(titolo, {
     body: d.corpo || '',
     tag: d.tag || 'fcs',

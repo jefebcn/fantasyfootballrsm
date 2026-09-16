@@ -117,7 +117,7 @@ export const squadra = {
         try { await S.invitaVice(); ctx.toast('Link pronto'); } catch (err) { ctx.toast(err.message); } return;
       }
       if (act === 'vice-copia') {
-        const testo = `Vieni ad allenare "${S.me().teamName}" con me sul Fantacampionato Sammarinese: ${linkVice(S.me().viceCode)}`;
+        const testo = `Vieni ad allenare "${S.me().teamName}" con me su Fantatitano: ${linkVice(S.me().viceCode)}`;
         if (navigator.share) { try { await navigator.share({ text: testo }); } catch { /* annullato */ } }
         else { await navigator.clipboard?.writeText(testo); ctx.toast('Link copiato'); }
         return;

@@ -1355,6 +1355,14 @@ button,a{-webkit-tap-highlight-color:transparent}
 /* In campo l'avatar sostituisce il tondo con le iniziali. */
 .ps .av.faccia,.slot .av.faccia{background:transparent;box-shadow:none;width:44px;height:48px;display:block}
 .ps .av.faccia .av-fig,.slot .av.faccia .av-fig{filter:drop-shadow(0 2px 4px rgba(0,0,0,.35))}
+/* Le caricature sono figure in movimento, non ritratti in posa: un portiere in
+   tuffo o una scivolata sono larghi quanto alti. Il riquadro e' 44x48 e
+   l'altezza puo' arrivare a 72, ma con max-width al 100% il limite che comanda
+   e' sempre la larghezza — anche per il disegno tipico, che a 72 di altezza ne
+   vorrebbe 58 di larghezza. Risultato: figure piccole proprio dove c'era
+   spazio. A 150% comanda l'altezza, e i 66px che ne escono stanno larghi anche
+   in una difesa a cinque, dove ogni posto ne ha 78. */
+.ps .av.faccia .av-cal,.slot .av.faccia .av-cal{max-width:150%}
 .ps .av.faccia .rl,.slot .av.faccia .rl{bottom:0;right:-4px}
 .ps .av.faccia .cap,.slot .av.faccia .cap{top:-2px;left:-4px}
 

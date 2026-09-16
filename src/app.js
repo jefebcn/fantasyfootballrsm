@@ -165,7 +165,41 @@ function cleanAuthUrl() {
   if (dirtyHash || dirtyQuery) history.replaceState(null, '', location.pathname + (dirtyHash ? '' : location.hash));
 }
 
+/**
+ * L'altezza del riquadro, misurata invece che dedotta.
+ *
+ * Su iPhone le unita' CSS del viewport sono il pezzo che non torna: con
+ * "position:fixed; inset:0" il riquadro si fermava 59pt sopra il bordo dello
+ * schermo — esattamente l'altezza della tacca in alto — e sotto la barra
+ * restava una fascia scoperta. 100dvh non risolve: puo' solo venire piu' corto.
+ *
+ * window.innerHeight invece dice quanto e' alta la finestra per davvero, e su
+ * iOS non cambia quando si apre la tastiera (li' cambia visualViewport), quindi
+ * non fa saltare la barra sopra i tasti mentre si scrive.
+ *
+ * Il valore finisce in --h-app, che il CSS usa con 100dvh come ripiego se per
+ * qualunque motivo questo codice non gira.
+ */
+function misuraAltezza() {
+  const h = window.innerHeight;
+  if (h > 0) document.documentElement.style.setProperty('--h-app', `${h}px`);
+}
+
+function seguiAltezza() {
+  misuraAltezza();
+  window.addEventListener('resize', misuraAltezza);
+  // Dopo una rotazione iOS risponde ancora con i numeri di prima per qualche
+  // frame: si rimisura poco dopo, altrimenti resta l'altezza dell'orientamento
+  // precedente.
+  window.addEventListener('orientationchange', () => {
+    misuraAltezza();
+    setTimeout(misuraAltezza, 120);
+    setTimeout(misuraAltezza, 400);
+  });
+}
+
 async function boot() {
+  seguiAltezza();
   registraServiceWorker();
   document.body.insertAdjacentHTML('afterbegin', SPRITE + AVATAR_SPRITE);
   applyTheme();

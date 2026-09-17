@@ -113,6 +113,11 @@ a.mrow.tocca{color:inherit;text-decoration:none;cursor:pointer}
 .prow .pchi i{font-style:italic}
 .pr-riga{display:grid;grid-template-columns:72px 1fr 40px;gap:8px;align-items:center;margin-bottom:8px}
 .pr-via{border:0;background:transparent;color:var(--negative);display:grid;place-items:center;cursor:pointer;height:44px}
+/* la riga d'intestazione delle tre colonne: tre numeri senza nome erano da
+   indovinare, e la legenda stava in cima alla scheda, lontana */
+.dett .drow.cap{border-top:0;padding-bottom:2px}
+.dett .drow.cap .v{font-family:var(--font-body);font-size:10.5px;font-weight:600;letter-spacing:.04em;
+  text-transform:uppercase;color:var(--text-muted)}
 .empty{display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center;padding:32px 16px;color:var(--text-muted)}
 .empty svg{width:56px;height:48px;color:var(--border-strong)}
 .sheet-scrim{position:fixed;inset:0;background:rgba(4,31,51,.45);z-index:40;display:none}
@@ -1136,6 +1141,13 @@ button,a{-webkit-tap-highlight-color:transparent}
 /* --- Classifica: una riga per squadra, come la leaderboard del riferimento --- */
 /* Il segmento Classifica/Giornata sta sopra la tabella, non dentro una card:
    .seg da solo si appoggia al fondo pagina e sparisce. */
+/* La barra delle schede e' navigazione: resta in alto mentre la pagina
+   scorre. Il fondo e il margine negativo sono quello che le impedisce di
+   lasciar vedere il contenuto che le passa sotto agli angoli arrotondati. */
+.segwrap{position:sticky;top:0;z-index:3;background:var(--bg);padding:8px 0;margin-top:-8px}
+/* Il badge di stato scorre, perche' e' informazione e non navigazione. */
+.statoriga{display:flex;align-items:center;gap:10px;min-width:0}
+.statoriga .badge{min-width:0}
 .seg-cls{background:var(--surface);box-shadow:var(--sh-card);border-radius:var(--r-md);padding:4px}
 .seg-cls button{flex:1;border:0;background:transparent;color:var(--text-muted);font:600 13px var(--font-body);
   padding:9px 8px;border-radius:8px;cursor:pointer;min-height:38px}

@@ -136,6 +136,19 @@ test('una giornata senza dati non produce risultati: nessun 5,5 d\'ufficio a tap
   assert.equal(res.goals, 0);                   // 60,5 < soglia 69,0
 });
 
+test('testa a testa: un doppio tavolino e\' una sconfitta per due, non un pari', () => {
+  const doppio = { homeManagerId: 'a', awayManagerId: 'b', played: true, ...esitoScontro(null, null) };
+  const h = testaATesta([doppio], 'a', 'b');
+  assert.equal(h.n, 0, 'non e\' un pareggio');
+  assert.equal(h.p, 1, 'e\' una sconfitta');
+  assert.equal(h.v, 0);
+  // e lo dice uguale guardandolo dall'altro lato
+  const h2 = testaATesta([doppio], 'b', 'a');
+  assert.equal(h2.p, 1); assert.equal(h2.n, 0);
+  // il tabellino resta 0-0, che e' quello che si e' visto
+  assert.equal(h.golA, 0); assert.equal(h.golB, 0);
+});
+
 /* ---- lega pubblica: classifica a punti (013) ---- */
 
 const SQ = [{ id: 'a' }, { id: 'b' }, { id: 'c' }];

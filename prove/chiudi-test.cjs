@@ -64,12 +64,20 @@ const ok = [], ko = []; const et = (c, t) => (c ? ok : ko).push(t);
 
   await p.evaluate(() => { location.hash = '#/admin/congela'; }); await w(900);
   const giudice = await p.evaluate(() => ({
-    congela: !!document.querySelector('#freeze-confirm'),
+    calcola: !!document.querySelector('#freeze'),
     riapri: !!document.querySelector('#reopen'),
+    daScrivere: !!document.querySelector('#freeze-confirm'),
     testo: document.querySelector('.freeze h2')?.innerText || '',
+    bottone: document.querySelector('#freeze')?.innerText.trim() || '',
     quale: (document.body.innerText.match(/giornata (\d+)/i) || [])[1],
   }));
-  et(giudice.congela && !giudice.riapri, `il Giudice trova la giornata ${giudice.quale} da congelare, non da riaprire ("${giudice.testo}")`);
+  et(giudice.calcola && !giudice.riapri, `il Giudice trova la giornata ${giudice.quale} da calcolare, non da riaprire ("${giudice.testo}")`);
+  // Il nome e' uno solo in tutta l'app: "calcola". "Congela" resta solo nel
+  // testo dell'art. 9.2, che e' il termine del regolamento.
+  et(/calcola/i.test(giudice.bottone) && !/congela/i.test(giudice.bottone), `e il tasto dice "${giudice.bottone}"`);
+  // Niente parola da scrivere a mano: su un telefono voleva dire aprire la
+  // tastiera e azzeccare le maiuscole. Al suo posto una domanda si'/no.
+  et(!giudice.daScrivere, 'senza parola da scrivere per confermare');
   await p.evaluate(() => { location.hash = '#/'; }); await w(1400);
 
   console.log('  CTA in home:', await p.evaluate(() => {

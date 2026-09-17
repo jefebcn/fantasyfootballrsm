@@ -339,6 +339,31 @@ export function giornataAperta() {
   });
 }
 /**
+ * LA PRIMA GIORNATA DI QUESTA LEGA.
+ *
+ * Una lega nata il 16 settembre non ha una prima, una seconda e una terza
+ * giornata: quelle sono successe prima che esistesse. La dashboard di Alex
+ * chiedeva di calcolare la terza — "mancano gli eventi di 8 partite su 8" —
+ * per una giornata che la sua lega non ha mai giocato.
+ *
+ * E' la prima giornata che era ancora APERTA quando la lega e' stata creata:
+ * se il lock era gia' passato, quella giornata non si poteva piu' schierare,
+ * quindi non e' sua. Si ricava dalla data di creazione e non da una colonna
+ * in piu': cosi' vale anche per le leghe che esistono gia', senza chiedere a
+ * nessuno di caricare niente.
+ *
+ * Senza data di creazione (lega non caricata, prove) si parte dalla prima.
+ */
+export function primaGiornata() {
+  return memo('prima', () => {
+    const nata = base.league.createdAt ? new Date(base.league.createdAt) : null;
+    if (!nata || Number.isNaN(+nata)) return 1;
+    for (const md of base.matchdays) if (nata < new Date(md.lockAt)) return md.number;
+    return 30;
+  });
+}
+
+/**
  * La giornata in cui siamo: l'ultima cominciata.
  *
  * Prima era "l'ultima che ha dati inseriti", e si piantava. Il 17 settembre,
@@ -469,7 +494,7 @@ export function rosterOf(managerId) { return (base.rosters[managerId] || []).map
 export function savedLineup(n, managerId) { return L.lineups[`${n}:${managerId}`] || null; }
 export function lineupFor(n, managerId) {
   const saved = savedLineup(n, managerId); if (saved) return { ...saved, source: 'saved' };
-  for (let k = n - 1; k >= 1; k--) { const prev = L.lineups[`${k}:${managerId}`]; if (prev) return { ...prev, source: `giornata ${k}` }; }
+  for (let k = n - 1; k >= primaGiornata(); k--) { const prev = L.lineups[`${k}:${managerId}`]; if (prev) return { ...prev, source: `giornata ${k}` }; }
   return { ...defaultLineup(rosterIds(managerId).filter((id) => playersById.get(id).isActive), playersById), source: 'ufficio' };
 }
 export function saveLineup(n, managerId, lineup) {
@@ -490,6 +515,9 @@ export function fixturesOf(n) {
     // insieme. Tornare un elenco vuoto e' quello che spegne calendario,
     // pre-match e scheda, che hanno tutti la loro via per "nessuna partita".
     if (aPunti()) return [];
+    // Prima che la lega nascesse non ci sono suoi incontri: il calendario si
+    // fa dalla sua prima giornata in avanti.
+    if (n < primaGiornata()) return [];
     const ids = base.managers.map((m) => m.id); if (ids.length < 2) return [];
     const list = ids.length % 2 ? [...ids, null] : [...ids]; const rounds = [];
     for (let r = 0; r < list.length - 1; r++) { const pairs = []; for (let i = 0; i < list.length / 2; i++) { const a = list[i], b = list[list.length - 1 - i]; if (a && b) pairs.push(r % 2 === 0 ? [a, b] : [b, a]); } rounds.push(pairs); list.splice(1, 0, list.pop()); }
@@ -505,7 +533,7 @@ export function fixtureResult(f) {
   const h = lineupResult(f.matchday, f.homeManagerId, true), a = lineupResult(f.matchday, f.awayManagerId);
   return { ...f, played: true, ...esitoScontro(h, a, rules()), status: st };
 }
-export function resultsUntil(n) { const out = []; for (let k = 1; k <= n; k++) for (const f of fixturesOf(k)) { const r = fixtureResult(f); if (r.played) out.push(r); } return out; }
+export function resultsUntil(n) { const out = []; for (let k = primaGiornata(); k <= n; k++) for (const f of fixturesOf(k)) { const r = fixtureResult(f); if (r.played) out.push(r); } return out; }
 /**
  * I fantapunti di una squadra in una giornata, per la classifica a punti.
  * Senza formazione consegnata sono zero e la giornata conta come giocata: e'
@@ -518,7 +546,7 @@ export function puntiGiornata(n, managerId) {
 /** Le righe (squadra, giornata, punti) di tutte le giornate con i dati. */
 function righePunti(fino) {
   const out = [];
-  for (let k = 1; k <= fino; k++) {
+  for (let k = primaGiornata(); k <= fino; k++) {
     if (!hasData(k)) continue;
     const st = matchdayStatus(k); if (st === 'open' || st === 'scheduled') continue;
     for (const m of base.managers) out.push({ managerId: m.id, matchday: k, punti: puntiGiornata(k, m.id) });
@@ -691,6 +719,11 @@ export function removeEvent(matchId, eventId) { assertOpen(matchId); g.matchEven
  * il calendario.
  */
 export function giornataDaChiudere(n = currentMatchday()) {
+  // Una giornata prima della nascita della lega non e' roba sua: chiederne i
+  // voti vorrebbe dire chiedere di calcolare una partita che non ha giocato.
+  // Il dato del campionato e' globale e quella giornata puo' restare da
+  // congelare per il Giudice: e' un altro mestiere, e ha la sua pagina.
+  if (n < primaGiornata()) return null;
   const st = matchdayStatus(n);
   if (st === 'frozen' || st === 'open' || st === 'scheduled') return null;
   const partite = matchesOf(n);

@@ -1,17 +1,23 @@
 """
-Ricava dal logo originale (media/logo.png) gli asset dell'app:
- - media/logo-mask.png  sagoma su fondo trasparente, usata come maschera CSS:
-                        l'app la colora con currentColor, così funziona su chiaro e su scuro
+Ricava dai due originali gli asset dell'app:
+ - media/logo-mask.png  la corona (da media/logo.png), sagoma su fondo
+                        trasparente usata come maschera CSS: l'app la colora
+                        con currentColor, così funziona su chiaro e su scuro
  - icons/*.png          icone PWA: logo bianco sul gradiente Azzurro Titano
+ - styles/logo.css      le due maschere in base64: .logo (la corona) e
+                        .marchio (il marchio intero, da media/logoenter.jfif —
+                        corona, FANTATITANO e il motto in un pezzo solo)
 
-Uso:  python3 scripts/make-logo.py [sorgente]
-Il file sorgente può essere nero su bianco o già ritagliato con trasparenza.
+Uso:  python3 scripts/make-logo.py [sorgente] [sorgente-marchio]
+I file sorgente possono essere neri su bianco, colorati su bianco, o già
+ritagliati con trasparenza.
 """
 import sys, os
 from PIL import Image
 
 AZZURRO, NOTTE = (0x1B, 0x84, 0xC6), (0x07, 0x2F, 0x4C)
 SRC = sys.argv[1] if len(sys.argv) > 1 else 'media/logo.png'
+SRC_MARCHIO = sys.argv[2] if len(sys.argv) > 2 else 'media/logoenter.jfif'
 
 
 CHIARO, SCURO = 232, 120   # soglie: sopra è sfondo, sotto è inchiostro pieno
@@ -72,6 +78,50 @@ def maschera(m, lato=LATO_MASCHERA):
     return out
 
 
+# IL MARCHIO INTERO, per lo splash.
+#
+# Non e' quadrato: ritagliarlo dentro un quadrato come la corona vorrebbe dire
+# due fasce vuote e un disegno piu' piccolo del necessario. Qui si tiene la
+# sua forma e la CSS riceve anche le proporzioni, cosi' la scatola non le
+# sbaglia.
+#
+# LA LARGHEZZA, e il formato. Anche questa maschera viaggia in base64 dentro
+# styles/logo.css, che si carica a ogni apertura: ogni kilobyte e' peso sul
+# primo disegno, e lo splash e' proprio la schermata che non deve aspettare.
+#
+# Misurato: portate tutte a 690px (i pixel veri di 230px su uno schermo a
+# tripla densita') e confrontate con la sagoma piena, le riduzioni si
+# scostano dal riferimento di 2,96 - 2,33 - 1,85 - 1,40 livelli su 255 a 320,
+# 384, 448 e 512 di larghezza, e pesano 12, 15, 17 e 20 kB di base64. A 448
+# lo scostamento e' meno di un livello su cento e i 3 kB in piu' fino a 512
+# non comprano niente che si veda.
+#
+# WebP senza perdita e non PNG: la stessa sagoma a 448 costa 17 kB di base64
+# in WebP e 26 in PNG. Una maschera e' quasi tutta trasparenza e bordi
+# sfumati, cioe' esattamente dove WebP guadagna.
+LARGO_MARCHIO = 448
+
+
+def ritaglia_libero(m, margine=0.02):
+    box = m.getbbox()
+    if not box:
+        raise SystemExit('Il file del marchio sembra vuoto: nessuna sagoma trovata.')
+    m = m.crop(box)
+    dx, dy = int(m.width * margine), int(m.height * margine)
+    out = Image.new('L', (m.width + 2 * dx, m.height + 2 * dy), 0)
+    out.paste(m, (dx, dy))
+    return out
+
+
+def maschera_larga(m, largo=LARGO_MARCHIO):
+    alto = max(1, round(m.height * largo / m.width))
+    q = m.resize((largo, alto), Image.LANCZOS)
+    out = Image.new('RGBA', (largo, alto), (255, 255, 255, 0))
+    out.paste((255, 255, 255), (0, 0), q)
+    out.putalpha(q)
+    return out
+
+
 def icona(m, lato, pad=0.18, tondo=True):
     im = Image.new('RGBA', (lato, lato), (0, 0, 0, 0))
     p = im.load()
@@ -106,13 +156,28 @@ b64 = base64.b64encode(open('media/logo-mask.png', 'rb').read()).decode()
 # proprieta' — quella prefissata per i Safari vecchi e quella standard — e
 # prima ognuna si portava la sua copia del base64: lo stesso disegno, due
 # volte, su un file che si carica a ogni apertura.
-open('styles/logo.css', 'w').write(
-    '/* Generato da scripts/make-logo.py — non modificare a mano. */\n'
-    '.logo{display:inline-block;width:24px;height:24px;flex:none;background-color:currentColor;\n'
-    f'  --sagoma:url(data:image/png;base64,{b64});\n'
-    '  -webkit-mask:var(--sagoma) center/contain no-repeat;\n'
-    '  mask:var(--sagoma) center/contain no-repeat}\n')
-print('styles/logo.css:', round(len(b64) / 1024), 'KB di maschera')
+righe = ['/* Generato da scripts/make-logo.py — non modificare a mano. */\n',
+         '.logo{display:inline-block;width:24px;height:24px;flex:none;background-color:currentColor;\n',
+         f'  --sagoma:url(data:image/png;base64,{b64});\n',
+         '  -webkit-mask:var(--sagoma) center/contain no-repeat;\n',
+         '  mask:var(--sagoma) center/contain no-repeat}\n']
+b64m = ''
+if os.path.exists(SRC_MARCHIO):
+    mm = maschera_larga(ritaglia_libero(sagoma(SRC_MARCHIO)))
+    mm.save('media/marchio-mask.webp', lossless=True, quality=100, method=6)
+    b64m = base64.b64encode(open('media/marchio-mask.webp', 'rb').read()).decode()
+    righe += [
+        '/* Il marchio intero: corona, nome e motto in un pezzo solo. aspect-ratio\n'
+        '   e non un\'altezza fissa, cosi\' la scatola ha le proporzioni del disegno\n'
+        '   e la maschera non si deforma ne\' lascia aria intorno. */\n',
+        f'.marchio{{display:block;width:230px;aspect-ratio:{mm.width}/{mm.height};flex:none;background-color:currentColor;\n',
+        f'  --marchio:url(data:image/webp;base64,{b64m});\n',
+        '  -webkit-mask:var(--marchio) center/contain no-repeat;\n',
+        '  mask:var(--marchio) center/contain no-repeat}\n']
+else:
+    print(f'nota: manca {SRC_MARCHIO}, .marchio non viene generato')
+open('styles/logo.css', 'w').write(''.join(righe))
+print('styles/logo.css:', round(len(b64) / 1024), 'KB di corona +', round(len(b64m) / 1024), 'KB di marchio')
 icona(m, 512).save('icons/icon-512.png')
 icona(m, 192).save('icons/icon-192.png')
 icona(m, 180, tondo=False).save('icons/apple-touch-icon.png')

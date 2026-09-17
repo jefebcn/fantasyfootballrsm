@@ -1,7 +1,7 @@
 /** Shell applicativa: router hash, app bar, drawer, bottom nav, toast, sheet. */
 import { SPRITE } from './sprite.js';
 import { AVATAR_SPRITE } from './avatar.js';
-import { esc, icon, logo, pic, mask, crest } from './ui.js';
+import { esc, icon, logo, marchio, pic, mask, crest } from './ui.js';
 import * as S from './state.js';
 import * as diagnostica from './diagnostica.js';
 import * as views from './views/index.js';
@@ -57,7 +57,13 @@ export function sheet(html) {
   if (!html) { sc.classList.remove('on'); sh.classList.remove('on'); sh.innerHTML = ''; return; }
   sh.innerHTML = `<div class="handle"></div>${html}`; sc.classList.add('on'); sh.classList.add('on');
 }
-const splash = () => `<div class="splash">${logo('splash-mark')}<b>Fantatitano</b><span>Campionato Sammarinese</span><i class="splash-bar"><i></i></i></div>`;
+// Lo splash: il marchio intero e la barra, niente altro.
+//
+// Prima erano tre pezzi — la corona, il nome, il sottotitolo — messi in
+// colonna dal CSS, con le distanze e i pesi decisi qui e non dal marchio:
+// "quella corona e la scritta sembrano separate". Adesso e' il marchio vero,
+// in un pezzo solo, col suo motto dentro.
+const splash = () => `<div class="splash">${marchio()}<i class="splash-bar"><i></i></i></div>`;
 
 /**
  * ATTENZIONE a chi cerca il tasto del tema con un selettore.

@@ -97,10 +97,14 @@ carica, e il workflow resta verde mentre succede: non c'è niente da
 aggiustare nel nostro codice.
 
 `pg_cron` gira dentro Postgres e passa quando dice di passare. Si installa
-lanciando **una volta** `supabase/promemoria-pianificato.sql` nell'SQL Editor,
-dopo aver riempito le due righe in cima (l'indirizzo delle funzioni e lo stesso
-`PROMEMORIA_TOKEN` del passo 2). Se non le riempi il file si ferma e ti dice
-cosa manca, senza creare niente.
+lanciando **una volta** `supabase/promemoria-pianificato.sql` nell'SQL Editor.
+C'è **una riga da riempire**, il token — lo stesso `PROMEMORIA_TOKEN` del passo
+2, che si rilegge in *Project Settings → Edge Functions → Secrets*; se non si
+riesce più a rileggerlo se ne fa uno nuovo e va nei soliti tre posti (secret di
+Supabase, secret di GitHub, questo file), poi deploy. L'indirizzo è già
+scritto: è il progetto dell'app, lo stesso di `src/config.js`, e non è un
+segreto. Senza il token il file si ferma e dice quale riga riempire, **senza
+creare niente**.
 
 Cosa crea: uno schema `interno` che l'API non espone, indirizzo e token in una
 riga che non legge nessuno (né `anon`, né `authenticated`, né `service_role`),
@@ -126,9 +130,10 @@ token** dopo averlo rifatto.
 `supabase/prove/pianificato.sh` lo esegue per davvero su un Postgres vuoto —
 con `pg_cron` e `pg_net` sostituiti da due estensioni finte con la stessa
 firma, perché quelle vere non si installano fuori da Supabase — e controlla
-18 cose: che coi segnaposto si fermi, che l'indirizzo finale non abbia due
-barre, che il token viaggi nell'intestazione, che non lo legga nessun ruolo
-dell'API e che rilanciarlo non duplichi il lavoro.
+20 cose: che senza il token si fermi, che l'indirizzo scritto nel file sia
+quello di `src/config.js`, che l'indirizzo finale non abbia due barre, che il
+token viaggi nell'intestazione, che non lo legga nessun ruolo dell'API e che
+rilanciarlo non duplichi il lavoro.
 
 ## Come si controlla che funzioni
 

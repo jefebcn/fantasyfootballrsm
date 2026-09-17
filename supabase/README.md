@@ -79,8 +79,8 @@ Su un progetto nuovo, nell'SQL Editor, in quest'ordine:
     vedi sotto.
 
 16. `promemoria-pianificato.sql` — **facoltativo ma consigliato**, e non è una
-    migrazione: va riempito in due righe (indirizzo delle Edge Functions e
-    token del promemoria) e lanciato a mano. Sposta l'orologio dell'avviso
+    migrazione: si riempie **una riga** (il token del promemoria) e si lancia
+    a mano. Sposta l'orologio dell'avviso
     della formazione da GitHub — che accoda e salta le corse pianificate, fino
     a cinque ore e mezza misurate — a `pg_cron`, dentro il database. Vedi
     `functions/promemoria/README.md`, passo 3b.

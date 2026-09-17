@@ -19,7 +19,7 @@ const ROUTES = [
   ['video', views.video], ['regolamento', views.regolamento], ['regole', views.regole], ['scheda', views.scheda], ['impostazioni', views.impostazioni], ['impostazioni/avanzate', views.avanzate], ['scambi', views.scambi], ['privacy', views.privacy], ['termini', views.termini], ['archiviazione', views.archiviazione], ['licenze', views.licenze],
   ['admin', views.adminGiornata], ['admin/partita/:id', views.adminPartita], ['admin/contestazioni', views.adminContestazioni],
   ['admin/congela', views.adminCongela], ['admin/console', views.adminConsole], ['admin/registro', views.adminRegistro], ['mercato', views.mercato], ['asta', views.asta],
-  ['login', views.login], ['leghe', views.leghe], ['lega', views.lega], ['gestione', views.gestione], ['squadra', views.squadra], ['vice/:code', views.vice], ['setup', views.setup], ['offline', views.offline], ['benvenuto', views.onboarding],
+  ['login', views.login], ['leghe', views.leghe], ['lega', views.lega], ['gestione', views.gestione], ['squadra', views.squadra], ['vice/:code', views.vice], ['setup', views.setup], ['offline', views.offline], ['sospeso', views.sospeso], ['benvenuto', views.onboarding],
 ];
 
 function resolve(hash) {
@@ -171,11 +171,15 @@ function drawer() {
 }
 
 let scrollMemo = {};
-const STATE_ROUTE = { unconfigured: 'setup', offline: 'offline', anonymous: 'login', 'no-league': 'leghe' };
+const STATE_ROUTE = { unconfigured: 'setup', offline: 'offline', anonymous: 'login', sospeso: 'sospeso', 'no-league': 'leghe' };
 // La console amministrativa si apre anche senza essere in una lega: chi
 // gestisce l'app non e' detto che giochi, e restare chiusi fuori dai propri
 // strumenti per non avere una squadra non ha senso.
-const ALLOWED = { 'no-league': ['leghe', 'impostazioni', 'admin/console'], anonymous: ['login', 'benvenuto'] };
+// A chi e' sospeso restano le impostazioni e le pagine che ci stanno dentro:
+// da li' si scaricano i propri dati e si cancella l'account, che sono diritti
+// e non si sospendono insieme al resto.
+const ALLOWED = { 'no-league': ['leghe', 'impostazioni', 'admin/console'], anonymous: ['login', 'benvenuto'],
+  sospeso: ['impostazioni', 'impostazioni/avanzate', 'privacy', 'termini', 'archiviazione', 'licenze'] };
 function gate(path) {
   const st = S.appState();
   let target = STATE_ROUTE[st];

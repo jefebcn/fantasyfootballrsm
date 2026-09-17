@@ -120,6 +120,9 @@ a.mrow.tocca{color:inherit;text-decoration:none;cursor:pointer}
   padding:3px 7px;border-radius:999px}
 .adm-u .tag .adm{background:var(--accent-soft);color:var(--on-accent-soft)}
 .adm-u .tag .giu{background:var(--primary-soft);color:var(--primary-ink)}
+/* sospeso: rosso, perche' e' l'unica etichetta che dice "questo account non
+   gioca" — le altre due dicono cosa puo' fare in piu' */
+.adm-u .tag .sos{background:var(--negative-soft);color:var(--negative)}
 .adm-u .dati{display:flex;flex-wrap:wrap;gap:4px 12px;font-size:11px;color:var(--text-muted)}
 .adm-u .dati b{color:var(--negative)}
 .adm-u .azioni{display:flex;flex-wrap:wrap;gap:6px}

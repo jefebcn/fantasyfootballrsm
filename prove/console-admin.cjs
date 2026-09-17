@@ -67,7 +67,7 @@ const ok = [], ko = []; const et = (c, t) => (c ? ok : ko).push(t);
     tab: [...document.querySelectorAll('[data-atab]')].map((x) => x.innerText.trim()),
   }));
   et(num.schede >= 6, `da amministratore la console mostra i numeri (${num.schede} riquadri)`);
-  et(num.tab.length === 3, `con tre schede (${num.tab.join(', ')})`);
+  et(num.tab.length === 4, `con quattro schede (${num.tab.join(', ')})`);
   // Le etichette escono in maiuscolo: il CSS ha text-transform e innerText
   // restituisce il testo RESO. Confronto senza distinguere le maiuscole.
   et(/iscritti/i.test(num.testo) && /leghe/i.test(num.testo), 'fra cui iscritti e leghe');
@@ -105,6 +105,78 @@ const ok = [], ko = []; const et = (c, t) => (c ? ok : ko).push(t);
     return !!s.tables.profiles.find((x) => x.id === s.userId)?.is_admin;
   });
   et(ancoraAdmin, 'non si toglie l\'amministrazione a se stessi: si resterebbe chiusi fuori');
+
+  // ---- MODERAZIONE (015): rinominare quello che si vede, fermare chi lo scrive
+  await p.evaluate(() => { const x = [...document.querySelectorAll('[data-atab]')].find((e) => /squadre/i.test(e.textContent)); x.click(); }); await w(1200);
+  const sq = await p.evaluate(() => ({
+    righe: document.querySelectorAll('.adm-u').length,
+    testo: document.body.innerText.replace(/\n/g, ' '),
+    rinomina: !!document.querySelector('[data-rinomina]'),
+  }));
+  et(sq.righe >= 1, `la scheda delle squadre elenca le squadre di tutti (${sq.righe})`);
+  et(/Squadra di Tizio/.test(sq.testo), 'comprese quelle delle leghe di cui non fa parte');
+  et(sq.rinomina, 'con il tasto per rinominare');
+
+  // il nome nuovo arriva dal prompt: il gestore generale lo accetterebbe
+  // vuoto, e un nome vuoto viene (giustamente) rifiutato
+  p.removeAllListeners('dialog');
+  p.on('dialog', (d) => d.accept(d.type() === 'prompt' ? 'Nome Pulito FC' : ''));
+  // si cerca il bottone per id della squadra e non per nome: se la rinomina
+  // NON funzionasse, cercare per nome farebbe scoppiare la prova invece di
+  // segnare il controllo fallito
+  await p.click('[data-rinomina="m_tizio"]'); await w(1500);
+  const dopoNome = await p.evaluate(() => {
+    const s = JSON.parse(localStorage.getItem('fcs:mock'));
+    const m = s.tables.league_members.find((x) => x.id === 'm_tizio');
+    return { squadra: m.team_name, iniziali: m.initials, schermo: document.body.innerText };
+  });
+  et(dopoNome.squadra === 'Nome Pulito FC', `rinomina la squadra altrui (${dopoNome.squadra})`);
+  et(dopoNome.iniziali === 'NPF', `e ricalcola le iniziali dello stemma (${dopoNome.iniziali})`);
+  et(/Nome Pulito FC/.test(dopoNome.schermo), 'e l\'elenco lo mostra subito');
+
+  // sospendere
+  await p.click('[data-sosp="u_tizio:on"]'); await w(1500);
+  const dopoSosp = await p.evaluate(() => {
+    const s = JSON.parse(localStorage.getItem('fcs:mock'));
+    return { sospeso: !!s.tables.profiles.find((x) => x.id === 'u_tizio').sospeso, schermo: document.body.innerText };
+  });
+  et(dopoSosp.sospeso, 'e sospende chi l\'aveva scritto');
+  et(/sospeso/i.test(dopoSosp.schermo), 'segnandolo nell\'elenco');
+
+  // e da sospeso l'app si chiude: si entra come lui e si guarda
+  await p.evaluate(() => {
+    const s = JSON.parse(localStorage.getItem('fcs:mock'));
+    s.userId = 'u_tizio'; localStorage.setItem('fcs:mock', JSON.stringify(s));
+  });
+  await p.evaluate(() => { location.hash = '#/'; });
+  await p.reload({ waitUntil: 'load' }); await w(2000);
+  const daSospeso = await p.evaluate(() => ({
+    dove: location.hash,
+    testo: document.body.innerText.replace(/\n/g, ' '),
+    impostazioni: !!document.querySelector('a[href="#/impostazioni"]'),
+  }));
+  et(/sospeso/i.test(daSospeso.dove) || /Account sospeso/i.test(daSospeso.testo),
+    `chi e' sospeso trova la schermata che glielo dice (${daSospeso.dove})`);
+  et(/non puoi schierare/i.test(daSospeso.testo), 'e che dice cosa non puo\' fare');
+  et(/non vengono cancellati|restano/i.test(daSospeso.testo), 'e cosa gli resta');
+  et(daSospeso.impostazioni, 'con le impostazioni ancora aperte: i dati si scaricano e l\'account si cancella');
+  // e non si riprende la dashboard scrivendola a mano
+  await p.evaluate(() => { location.hash = '#/rosa'; }); await w(1200);
+  et(/sospeso/i.test(await p.evaluate(() => location.hash)), 'e scrivendo un altro indirizzo torna li\'');
+
+  // si torna amministratori per il resto della prova. Va ripulita anche la
+  // lega corrente: entrando come Tizio l'app si e' ricordata la SUA lega, e
+  // chi amministra non ne fa parte — al riavvio il caricamento fallirebbe e
+  // l'indirizzo scritto a mano andrebbe perso nella catena dei rimbalzi.
+  await p.evaluate(() => {
+    const s = JSON.parse(localStorage.getItem('fcs:mock'));
+    s.userId = s.tables.profiles.find((x) => x.is_admin).id;
+    localStorage.setItem('fcs:mock', JSON.stringify(s));
+    const pr = JSON.parse(localStorage.getItem('fcs:prefs')); pr.currentLeagueId = null;
+    localStorage.setItem('fcs:prefs', JSON.stringify(pr));
+  });
+  await p.reload({ waitUntil: 'load' }); await w(1600);
+  await p.evaluate(() => { location.hash = '#/admin/console'; }); await w(1500);
 
   // ---- leghe: si vedono tutte, anche quelle di cui non fa parte
   await p.evaluate(() => { const x = [...document.querySelectorAll('[data-atab]')].find((e) => /leghe/i.test(e.textContent)); x.click(); }); await w(1200);

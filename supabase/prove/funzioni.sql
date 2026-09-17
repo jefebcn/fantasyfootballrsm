@@ -709,4 +709,150 @@ exception when others then
   raise notice 'ok  un ruolo che non esiste non passa (%)', sqlerrm;
 end $$;
 
+-- ------------------------------------------------------ moderazione (015)
+--
+-- Due strumenti diversi: rinominare quello che si vede, e fermare chi lo
+-- scrive. Si prova tutto e due le volte — che chi amministra possa, e che chi
+-- non amministra NON possa — perche' una funzione SECURITY DEFINER senza il
+-- controllo dentro e' una porta aperta con l'insegna chiusa.
+--
+-- E si prova anche il caso NORMALE: che prima della sospensione la formazione
+-- si salvi e la contestazione si scriva. Se la condizione nuova nelle due
+-- policy fosse storta, il gioco si fermerebbe per tutti e nessuna prova sulla
+-- sospensione lo vedrebbe: passerebbero tutte, dicendo che il sospeso non
+-- scrive.
+--
+-- NOTA SU psql: dentro un blocco dollar-quoted ($$ ... $$) le variabili di
+-- psql NON vengono sostituite — il ":" arriva al server e si becca un errore
+-- di sintassi. I valori che servono dentro i blocchi passano da set_config,
+-- che e' di sessione e si legge anche dopo "set role".
+select matchday from public.matchday_locks where lock_at > now() order by matchday limit 1 \gset aperta_
+select id from public.league_members where league_id = :'lega' and user_id = 'user_bea' \gset m_bea_
+select set_config('prova.lega', :'lega', false),
+       set_config('prova.membro', :'m_bea_id', false),
+       set_config('prova.giornata', :aperta_matchday::text, false);
+
+select pg_temp.entra('user_bea');
+set role authenticated;
+insert into public.lineups (league_id, member_id, matchday, lineup)
+  values (:'lega', :'m_bea_id', :aperta_matchday, '{"modulo":"4-4-2"}'::jsonb);
+insert into public.contestazioni (league_id, member_id, match_id, text)
+  values (:'lega', :'m_bea_id', 'md1_prova', 'il gol non era suo');
+reset role;
+select pg_temp.esige('prima della sospensione la formazione si salva',
+  exists (select 1 from public.lineups where member_id = :'m_bea_id' and matchday = :aperta_matchday));
+select pg_temp.esige('e la contestazione si scrive',
+  exists (select 1 from public.contestazioni where member_id = :'m_bea_id'));
+
+-- l'elenco delle squadre, per arrivare al nome da cambiare
+select pg_temp.entra('user_pub1');
+select pg_temp.esige('l''elenco delle squadre trova per nome squadra',
+  exists (select 1 from public.admin_squadre('Borgo', 50)));
+select pg_temp.esige('e per nome lega',
+  exists (select 1 from public.admin_squadre('Lega di prova', 50)));
+select public.admin_rinomina(:'m_bea_id', 'Nome Pulito FC');
+select pg_temp.esige('chi amministra l''app rinomina una squadra altrui',
+  (select team_name from public.league_members where id = :'m_bea_id') = 'Nome Pulito FC');
+select pg_temp.esige('e le iniziali si ricalcolano da se''',
+  (select initials from public.league_members where id = :'m_bea_id') = 'NPF');
+do $$ begin
+  perform public.admin_rinomina(current_setting('prova.membro')::uuid, '   ');
+  raise exception 'FALLITA: un nome vuoto non doveva passare';
+exception when others then
+  if sqlerrm like 'FALLITA%' then raise; end if;
+  raise notice 'ok  un nome vuoto non passa (%)', sqlerrm;
+end $$;
+
+-- chi non amministra non tocca niente
+select pg_temp.entra('user_bea');
+do $$ begin
+  perform public.admin_rinomina(current_setting('prova.membro')::uuid, 'Me la rinomino io');
+  raise exception 'FALLITA: un utente normale non doveva poter rinominare';
+exception when others then
+  if sqlerrm like 'FALLITA%' then raise; end if;
+  raise notice 'ok  un utente normale non rinomina le squadre (%)', sqlerrm;
+end $$;
+do $$ begin
+  perform public.admin_sospendi('user_cip', true);
+  raise exception 'FALLITA: un utente normale non doveva poter sospendere';
+exception when others then
+  if sqlerrm like 'FALLITA%' then raise; end if;
+  raise notice 'ok  ne'' sospende nessuno (%)', sqlerrm;
+end $$;
+do $$ declare n int; begin
+  select count(*) into n from public.admin_squadre(null, 50);
+  raise exception 'FALLITA: un utente normale non doveva vedere le squadre di tutti (%)', n;
+exception when others then
+  if sqlerrm like 'FALLITA%' then raise; end if;
+  raise notice 'ok  e non vede l''elenco delle squadre di tutti (%)', sqlerrm;
+end $$;
+
+-- sospendere
+select pg_temp.entra('user_pub1');
+do $$ begin
+  perform public.admin_sospendi('user_pub1', true);
+  raise exception 'FALLITA: non doveva potersi sospendere da solo';
+exception when others then
+  if sqlerrm like 'FALLITA%' then raise; end if;
+  raise notice 'ok  non si sospende se stessi (%)', sqlerrm;
+end $$;
+select public.admin_imposta_ruolo('user_pub3', 'is_admin', true);
+do $$ begin
+  perform public.admin_sospendi('user_pub3', true);
+  raise exception 'FALLITA: un amministratore non doveva potersi sospendere cosi''';
+exception when others then
+  if sqlerrm like 'FALLITA%' then raise; end if;
+  raise notice 'ok  un amministratore prima si spoglia e poi si sospende (%)', sqlerrm;
+end $$;
+select public.admin_imposta_ruolo('user_pub3', 'is_admin', false);
+select public.admin_sospendi('user_bea', true);
+select pg_temp.esige('l''amministratore sospende', (select sospeso from public.profiles where id = 'user_bea'));
+select pg_temp.esige('e l''elenco delle persone lo dice',
+  (select sospeso from public.admin_persone(null, 200) where id = 'user_bea'));
+
+-- e il sospeso non gioca piu'
+select pg_temp.entra('user_bea');
+select pg_temp.esige('il sospeso sa di esserlo', public.sono_sospeso());
+do $$ begin
+  perform public.join_league((select invite_code from public.leagues where pubblica limit 1), 'Ancora io', '#123456', 'AI');
+  raise exception 'FALLITA: un sospeso non doveva poter entrare in un''altra lega';
+exception when others then
+  if sqlerrm like 'FALLITA%' then raise; end if;
+  raise notice 'ok  un sospeso non entra in altre leghe (%)', sqlerrm;
+end $$;
+set role authenticated;
+do $$ begin
+  update public.lineups set lineup = '{"modulo":"3-5-2"}'::jsonb
+   where member_id = current_setting('prova.membro')::uuid
+     and matchday = current_setting('prova.giornata')::int;
+  if found then raise exception 'FALLITA: un sospeso non doveva poter cambiare la formazione'; end if;
+  raise notice 'ok  un sospeso non cambia la formazione (nessuna riga scritta)';
+end $$;
+do $$ begin
+  insert into public.contestazioni (league_id, member_id, match_id, text)
+    values (current_setting('prova.lega')::uuid, current_setting('prova.membro')::uuid, 'md2_prova', 'ci riprovo');
+  raise exception 'FALLITA: un sospeso non doveva poter contestare';
+exception when others then
+  if sqlerrm like 'FALLITA%' then raise; end if;
+  raise notice 'ok  un sospeso non contesta (%)', sqlerrm;
+end $$;
+do $$ begin
+  update public.profiles set sospeso = false where id = 'user_bea';
+exception when others then null;
+end $$;
+reset role;
+select pg_temp.esige('e non si riattiva da solo', (select sospeso from public.profiles where id = 'user_bea'));
+
+-- riattivare
+select pg_temp.entra('user_pub1');
+select public.admin_sospendi('user_bea', false);
+select pg_temp.esige('l''amministratore riattiva', not (select sospeso from public.profiles where id = 'user_bea'));
+select pg_temp.entra('user_bea');
+set role authenticated;
+update public.lineups set lineup = '{"modulo":"3-5-2"}'::jsonb
+ where member_id = :'m_bea_id' and matchday = :aperta_matchday;
+reset role;
+select pg_temp.esige('e riattivato torna a schierare',
+  (select lineup->>'modulo' from public.lineups where member_id = :'m_bea_id' and matchday = :aperta_matchday) = '3-5-2');
+
 select 'tutte le prove sulle funzioni sono passate' as esito;

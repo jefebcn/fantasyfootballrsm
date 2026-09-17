@@ -78,7 +78,17 @@ Su un progetto nuovo, nell'SQL Editor, in quest'ordine:
     funzioni della console. **Contiene anche una correzione di sicurezza**:
     vedi sotto.
 
-16. `promemoria-pianificato.sql` — **facoltativo ma consigliato**, e non è una
+16. `migrations/015-moderazione.sql` — gli strumenti per moderare quello che
+    si vede: rinominare una squadra altrui, e sospendere chi scrive nomi che
+    non vanno. Serve prima di aprire l'app al pubblico: nome squadra e nome
+    fantallenatore li scrive chi gioca e li leggono gli altri, e fino alla 014
+    l'unico rimedio a un nome offensivo era chiedere per favore. **Contiene
+    anche la solita correzione di sicurezza**: la policy `profiles_update_own`
+    ora pinta anche la colonna nuova, se no uno si togliva la sospensione da
+    solo — è la stessa lezione della 014, e vale ogni volta che si aggiunge
+    una colonna a `profiles`.
+
+17. `promemoria-pianificato.sql` — **facoltativo ma consigliato**, e non è una
     migrazione: si riempie **una riga** (il token del promemoria) e si lancia
     a mano. Sposta l'orologio dell'avviso
     della formazione da GitHub — che accoda e salta le corse pianificate, fino
@@ -86,6 +96,25 @@ Su un progetto nuovo, nell'SQL Editor, in quest'ordine:
     `functions/promemoria/README.md`, passo 3b.
 
 Le migrazioni dalla 001 in poi si possono rieseguire quante volte si vuole.
+
+### Moderare: rinominare prima, sospendere poi
+
+Sono due strumenti diversi e l'ordine conta. **Rinominare** (console → Squadre
+→ Rinomina) toglie subito il nome da tutte le schermate — classifica, scontro,
+scheda condivisibile — e chi l'ha scritto continua a giocare: risolve il danno.
+**Sospendere** (console → Persone o Squadre → Sospendi) risolve la persona: chi
+è sospeso non schiera, non apre contestazioni e non entra in altre leghe, e lo
+impedisce il database, non l'app. Le squadre e i punti restano, e la
+sospensione si toglie.
+
+Un sospeso trova una schermata che glielo dice, con l'indirizzo a cui
+rispondere, e **le impostazioni restano aperte**: da lì scarica i propri dati e
+cancella l'account. Sono diritti, non premi, e non si sospendono insieme al
+resto.
+
+Quello che la console non fa, e non per dimenticanza: cancellare un account o
+cambiarne la password. Servirebbe la chiave di servizio nel frontend — vedi
+sotto.
 
 ### Tre ruoli, e non vanno confusi
 

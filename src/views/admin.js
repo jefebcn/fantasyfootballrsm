@@ -243,7 +243,7 @@ export const adminRegistro = {
  * se la rifa' la persona — che e' anche l'unico modo in cui resta sua.
  */
 let aTab = 'numeri';        // 'numeri' | 'persone' | 'leghe'
-let cache = { numeri: null, persone: null, leghe: null };
+let cache = { numeri: null, persone: null, squadre: null, leghe: null };
 let cerca = '';
 
 const quando = (iso) => (iso ? `${dateIt(iso)} ${timeIt(iso)}` : '—');
@@ -270,7 +270,7 @@ function persone(list) {
   return `<div class="vlist">${list.map((u) => `<div class="adm-u">
     <div class="riga">
       <span class="nm"><b>${esc(u.nome || '—')}</b><span>${esc(u.email || 'e-mail non disponibile')}</span></span>
-      <span class="tag">${u.is_admin ? '<i class="adm">admin</i>' : ''}${u.is_judge ? '<i class="giu">giudice</i>' : ''}</span>
+      <span class="tag">${u.is_admin ? '<i class="adm">admin</i>' : ''}${u.is_judge ? '<i class="giu">giudice</i>' : ''}${u.sospeso ? '<i class="sos">sospeso</i>' : ''}</span>
     </div>
     <div class="dati">
       <span>iscritto ${quando(u.iscritto)}</span>
@@ -282,6 +282,31 @@ function persone(list) {
       <button class="chip" data-ruolo="is_judge:${esc(u.id)}:${u.is_judge ? 'off' : 'on'}">${u.is_judge ? 'Togli giudice' : 'Fai giudice'}</button>
       <button class="chip" data-ruolo="is_admin:${esc(u.id)}:${u.is_admin ? 'off' : 'on'}">${u.is_admin ? 'Togli admin' : 'Fai admin'}</button>
       ${u.email ? `<button class="chip" data-reset="${esc(u.email)}">Link password</button>` : ''}
+      <button class="chip" data-sosp="${esc(u.id)}:${u.sospeso ? 'off' : 'on'}">${u.sospeso ? 'Riattiva' : 'Sospendi'}</button>
+    </div></div>`).join('')}</div>`;
+}
+
+/**
+ * Le squadre, che e' dove stanno i nomi che si vedono in giro.
+ *
+ * Servono qui perche' il nome di una squadra e quello del fantallenatore li
+ * scrive chi gioca e li leggono gli altri — in classifica, sullo scontro,
+ * nella scheda che si condivide fuori dall'app. Per moderarne uno bisogna
+ * prima trovarlo, e prima di questa scheda l'unico modo era indovinare in
+ * quale lega stesse.
+ */
+function squadre(list) {
+  if (!list) return `<p class="small muted">Sto cercando…</p>`;
+  if (!list.length) return `<p class="small muted">Nessuna squadra con questo nome.</p>`;
+  return `<div class="vlist">${list.map((m) => `<div class="adm-u">
+    <div class="riga">
+      <span class="nm"><b>${esc(m.squadra || '—')}</b><span>${esc(m.fantallenatore || '—')} · ${esc(m.lega || '—')}</span></span>
+      <span class="tag">${m.sospeso ? '<i class="sos">sospeso</i>' : `<i class="giu">${esc(m.iniziali || '')}</i>`}</span>
+    </div>
+    <div class="dati"><span>creata ${quando(m.creata)}</span></div>
+    <div class="azioni">
+      <button class="chip" data-rinomina="${esc(m.member_id)}">Rinomina</button>
+      <button class="chip" data-sosp="${esc(m.user_id)}:${m.sospeso ? 'off' : 'on'}">${m.sospeso ? 'Riattiva' : 'Sospendi'}</button>
     </div></div>`).join('')}</div>`;
 }
 
@@ -310,17 +335,22 @@ export const adminConsole = {
     const barra = `<div class="segwrap"><div class="seg seg-cls">
       <button class="${aTab === 'numeri' ? 'on' : ''}" data-atab="numeri">Numeri</button>
       <button class="${aTab === 'persone' ? 'on' : ''}" data-atab="persone">Persone</button>
+      <button class="${aTab === 'squadre' ? 'on' : ''}" data-atab="squadre">Squadre</button>
       <button class="${aTab === 'leghe' ? 'on' : ''}" data-atab="leghe">Leghe</button></div></div>`;
     let corpo = '';
     if (aTab === 'numeri') corpo = numeri(cache.numeri);
     else if (aTab === 'persone') {
       corpo = `<input class="field-input" id="adm-cerca" placeholder="Cerca per nome o e-mail" value="${esc(cerca)}" autocomplete="off">
         ${persone(cache.persone)}`;
+    } else if (aTab === 'squadre') {
+      corpo = `<input class="field-input" id="adm-cerca" placeholder="Cerca per squadra, fantallenatore o lega" value="${esc(cerca)}" autocomplete="off">
+        ${squadre(cache.squadre)}`;
     } else corpo = leghe(cache.leghe);
     return `<main class="a-body">${barra}
       ${aTab === 'numeri' ? `<div class="a-sec"><b>Come va</b><span>adesso</span></div>` : ''}
       ${corpo}
-      ${aTab === 'persone' ? `<p class="small muted">«Link password» manda alla persona un messaggio per reimpostarla da sé: la password non la può leggere né scrivere nessuno, nemmeno da qui.</p>` : ''}
+      ${aTab === 'persone' ? `<p class="small muted">«Link password» manda alla persona un messaggio per reimpostarla da sé: la password non la può leggere né scrivere nessuno, nemmeno da qui. «Sospendi» le impedisce di schierare, contestare ed entrare in altre leghe: le squadre e i punti restano.</p>` : ''}
+      ${aTab === 'squadre' ? `<p class="small muted">Si comincia sempre da «Rinomina»: toglie subito il nome da tutte le schermate e chi l'ha scritto continua a giocare. «Sospendi» è per chi ne scrive un altro.</p>` : ''}
     </main>`;
   },
   mount(root, ctx) {
@@ -329,7 +359,8 @@ export const adminConsole = {
       try {
         if (aTab === 'numeri' && !cache.numeri) { cache.numeri = await S.adminRiepilogo(); ctx.render(); }
         if (aTab === 'leghe' && !cache.leghe) { cache.leghe = await S.adminLeghe(200); ctx.render(); }
-        if (aTab === 'persone' && !cache.persone) { cache.persone = await S.adminUtenti(cerca, 100); ctx.render(); }
+        if (aTab === 'persone' && !cache.persone) { cache.persone = await S.adminPersone(cerca, 100); ctx.render(); }
+        if (aTab === 'squadre' && !cache.squadre) { cache.squadre = await S.adminSquadre(cerca, 100); ctx.render(); }
       } catch (e) { ctx.toast(e.message || 'Non è stato possibile leggere'); }
     };
     carica();
@@ -339,8 +370,11 @@ export const adminConsole = {
       // una richiesta al database e scrivere "Alessandro" ne farebbe undici.
       inp.onkeydown = async (e) => {
         if (e.key !== 'Enter') return;
-        cerca = inp.value; cache.persone = null;
-        try { cache.persone = await S.adminUtenti(cerca, 100); } catch (err) { ctx.toast(err.message); }
+        cerca = inp.value; cache.persone = null; cache.squadre = null;
+        try {
+          if (aTab === 'squadre') cache.squadre = await S.adminSquadre(cerca, 100);
+          else cache.persone = await S.adminPersone(cerca, 100);
+        } catch (err) { ctx.toast(err.message); }
         ctx.render();
       };
     }
@@ -356,9 +390,46 @@ export const adminConsole = {
         r.disabled = true;
         try {
           await S.adminImpostaRuolo(id, ruolo, verso === 'on');
-          cache.persone = await S.adminUtenti(cerca, 100); cache.numeri = null;
+          cache.persone = await S.adminPersone(cerca, 100); cache.numeri = null;
           ctx.toast('Fatto'); ctx.render();
         } catch (err) { ctx.toast(err.message || 'Non è stato possibile'); r.disabled = false; }
+        return;
+      }
+      // Sospendere e riattivare. La conferma dice cosa comporta, perche'
+      // "sospendi" da solo non dice se l'account viene cancellato.
+      const sp = e.target.closest('[data-sosp]');
+      if (sp) {
+        const [id, verso] = sp.dataset.sosp.split(':');
+        const chi = (cache.persone || []).find((u) => u.id === id)?.nome
+          || (cache.squadre || []).find((m) => m.user_id === id)?.fantallenatore || 'questa persona';
+        const domanda = verso === 'on'
+          ? `Sospendere ${chi}? Non potrà più schierare, contestare né entrare in altre leghe. Le squadre e i punti restano, e la sospensione si può togliere.`
+          : `Riattivare ${chi}?`;
+        if (!confirm(domanda)) return;
+        sp.disabled = true;
+        try {
+          await S.adminSospendi(id, verso === 'on');
+          if (cache.persone) cache.persone = await S.adminPersone(cerca, 100);
+          if (cache.squadre) cache.squadre = await S.adminSquadre(cerca, 100);
+          ctx.toast(verso === 'on' ? 'Sospeso' : 'Riattivato'); ctx.render();
+        } catch (err) { ctx.toast(err.message || 'Non è stato possibile'); sp.disabled = false; }
+        return;
+      }
+      // Rinominare: il nome nuovo si chiede col prompt del sistema e non con
+      // un foglio, perche' e' un campo solo e va fatto in fretta — un nome
+      // offensivo sta online mentre si cerca il bottone.
+      const rn = e.target.closest('[data-rinomina]');
+      if (rn) {
+        const id = rn.dataset.rinomina;
+        const sq = (cache.squadre || []).find((m) => m.member_id === id);
+        const nome = prompt(`Nuovo nome per «${sq?.squadra || 'questa squadra'}»`, sq?.squadra || '');
+        if (nome === null || !nome.trim()) return;
+        rn.disabled = true;
+        try {
+          await S.adminRinomina(id, nome.trim());
+          cache.squadre = await S.adminSquadre(cerca, 100);
+          ctx.toast('Rinominata'); ctx.render();
+        } catch (err) { ctx.toast(err.message || 'Non è stato possibile'); rn.disabled = false; }
         return;
       }
       const rs = e.target.closest('[data-reset]');

@@ -185,7 +185,13 @@ export async function impostaPremi(id, premi) { return must(await sb.rpc('impost
 
 // --- console amministrativa (014)
 export async function adminRiepilogo() { return must(await sb.rpc('admin_riepilogo')) || {}; }
-export async function adminUtenti(cerca, limite = 50) { return must(await sb.rpc('admin_utenti', { p_cerca: cerca || null, p_limite: limite })) || []; }
+// admin_persone e non admin_utenti: la 015 ha aggiunto la colonna "sospeso"
+// all'elenco, e un tipo di ritorno non si cambia con create or replace —
+// spiegato per esteso nella migrazione.
+export async function adminPersone(cerca, limite = 50) { return must(await sb.rpc('admin_persone', { p_cerca: cerca || null, p_limite: limite })) || []; }
+export async function adminSospendi(userId, on) { return must(await sb.rpc('admin_sospendi', { p_user: userId, p_on: on })); }
+export async function adminSquadre(cerca, limite = 50) { return must(await sb.rpc('admin_squadre', { p_cerca: cerca || null, p_limite: limite })) || []; }
+export async function adminRinomina(memberId, squadra, fantallenatore) { return must(await sb.rpc('admin_rinomina', { p_member: memberId, p_squadra: squadra, p_fantallenatore: fantallenatore || null })); }
 export async function adminLeghe(limite = 50) { return must(await sb.rpc('admin_leghe', { p_limite: limite })) || []; }
 export async function adminImpostaRuolo(userId, ruolo, on) { return must(await sb.rpc('admin_imposta_ruolo', { p_user: userId, p_ruolo: ruolo, p_on: on })); }
 

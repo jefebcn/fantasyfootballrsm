@@ -173,6 +173,14 @@ export const isJudge = () => !!prof?.is_judge;
 export const me = () => base.managers.find((m) => m.userId === user?.id)
   || base.managers.find((m) => m.viceUserId && m.viceUserId === user?.id) || null;
 export const isLeagueAdmin = () => me()?.role === 'admin' || isJudge();
+/**
+ * Chi amministra l'APP, che e' un terzo ruolo e non va confuso con gli altri
+ * due: is_judge riguarda il dato del campionato, role='admin' riguarda UNA
+ * lega, questo riguarda il servizio — chi apre le leghe pubbliche, chi nomina
+ * gli altri, chi guarda i numeri. Il primo si nomina a mano in SQL: se si
+ * potesse dall'app, il primo che passa si darebbe i poteri da solo.
+ */
+export const isAdmin = () => !!prof?.is_admin;
 /** Lega aperta a tutti: rose non esclusive, classifica a punti (013). */
 export const legaPubblica = () => !!base.league.pubblica;
 /** La classifica si fa sommando i fantapunti invece che con gli scontri. */
@@ -236,6 +244,27 @@ export async function entraLegaPubblica(id, teamName, color, initials) {
   return id;
 }
 export const leghePubbliche = () => remote.leghePubbliche();
+
+// --- console amministrativa (014)
+export const adminRiepilogo = () => remote.adminRiepilogo();
+export const adminUtenti = (cerca, limite) => remote.adminUtenti(cerca, limite);
+export const adminLeghe = (limite) => remote.adminLeghe(limite);
+export async function adminImpostaRuolo(userId, ruolo, on) {
+  await remote.adminImpostaRuolo(userId, ruolo, on);
+  // Se ho cambiato qualcosa a ME, il mio profilo in memoria e' vecchio.
+  if (userId === user?.id) { prof = await remote.profile(user.id) || prof; notify(); }
+}
+/**
+ * Il link per reimpostare la password, mandato all'indirizzo di chi ha
+ * chiesto aiuto.
+ *
+ * E' tutto quello che si puo' fare, e va detto: leggere o scrivere la
+ * password di un altro richiede la chiave di servizio di Supabase, che nel
+ * frontend non deve stare — sarebbe come consegnare le chiavi del database a
+ * ogni telefono. Il link arriva alla persona e se la reimposta lei, che e'
+ * anche l'unico modo in cui resta sua.
+ */
+export const mandaResetPassword = (email) => remote.resetPassword(email, returnUrl());
 
 /**
  * L'elenco delle pubbliche tenuto in memoria, per chi lo deve leggere senza

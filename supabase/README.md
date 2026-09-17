@@ -74,7 +74,51 @@ Su un progetto nuovo, nell'SQL Editor, in quest'ordine:
 14. `migrations/013-lega-pubblica.sql` — la lega aperta a tutti: rose non
     esclusive, classifica a punti, premi in palio.
 
+15. `migrations/014-console-admin.sql` — il ruolo di chi amministra l'app e le
+    funzioni della console. **Contiene anche una correzione di sicurezza**:
+    vedi sotto.
+
 Le migrazioni dalla 001 in poi si possono rieseguire quante volte si vuole.
+
+### Tre ruoli, e non vanno confusi
+
+| Chi | Dove | Cosa può |
+|---|---|---|
+| **Amministratore dell'app** (`profiles.is_admin`) | tutto il servizio | apre le leghe pubbliche, nomina gli altri, legge la console (persone, leghe, numeri) |
+| **Giudice Dati** (`profiles.is_judge`) | il dato del campionato | inserisce referti, calcola le giornate, allinea i lock |
+| **Admin di lega** (`league_members.role`) | una lega sola | gestisce quella lega e nient'altro |
+
+Il **primo amministratore si nomina a mano**, come il Giudice Dati:
+
+```sql
+update public.profiles set is_admin = true
+ where id = (select id::text from auth.users where lower(email) = lower('tua@email'));
+```
+
+Dall'app non si può, e non è una mancanza: se si potesse, il primo che passa
+si darebbe i poteri da solo.
+
+### Una colonna nuova non è protetta da sola
+
+La policy che impedisce di promuoversi (`profiles_update_own`) confrontava
+solo `is_judge` col valore già presente. Aggiungendo `is_admin` la policy non
+lo sapeva, quindi chiunque — con la chiave pubblicabile che sta nel frontend —
+poteva scrivere `update profiles set is_admin = true` su di sé e prendersi
+l'app: aprire leghe pubbliche, leggere le e-mail di tutti, nominare altri
+amministratori.
+
+La 014 riscrive la policy pretendendo che **entrambi** i campi restino quelli
+che sono: si cambiano solo dalle funzioni, che controllano chi chiama. La
+prova sta in `prove/funzioni.sql` e gira col ruolo `authenticated`, non come
+`postgres`: da superutente la RLS non si applica e la prima stesura passava
+l'aggiornamento dicendo che il buco c'era.
+
+### Cosa la console non può fare
+
+Leggere o cambiare la password di qualcuno. Servirebbe la chiave di servizio
+di Supabase nel frontend, cioè le chiavi del database su ogni telefono. Si
+manda alla persona il link per reimpostarla da sé — che è anche l'unico modo
+in cui la password resta sua.
 
 ### Lega pubblica: cosa cambia nel database
 

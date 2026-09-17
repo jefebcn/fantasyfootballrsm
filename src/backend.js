@@ -167,6 +167,12 @@ export async function entraLegaPubblica(id, teamName, color, initials) {
 export async function leghePubbliche() { return must(await sb.rpc('leghe_pubbliche')) || []; }
 export async function impostaPremi(id, premi) { return must(await sb.rpc('imposta_premi', { p_league: id, p_premi: premi })); }
 
+// --- console amministrativa (014)
+export async function adminRiepilogo() { return must(await sb.rpc('admin_riepilogo')) || {}; }
+export async function adminUtenti(cerca, limite = 50) { return must(await sb.rpc('admin_utenti', { p_cerca: cerca || null, p_limite: limite })) || []; }
+export async function adminLeghe(limite = 50) { return must(await sb.rpc('admin_leghe', { p_limite: limite })) || []; }
+export async function adminImpostaRuolo(userId, ruolo, on) { return must(await sb.rpc('admin_imposta_ruolo', { p_user: userId, p_ruolo: ruolo, p_on: on })); }
+
 export async function updateLeague(id, patch) { return must(await sb.from('leagues').update(patch).eq('id', id).select().single()); }
 export async function deleteLeague(id) { return must(await sb.from('leagues').delete().eq('id', id)); }
 export async function abbandonaLega(id) { return must(await sb.rpc('abbandona_lega', { p_league: id })); }

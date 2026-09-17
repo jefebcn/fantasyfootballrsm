@@ -55,8 +55,45 @@ Su un progetto nuovo, nell'SQL Editor, in quest'ordine:
 6. `migrations/005-notifiche-push.sql`
 7. `migrations/006-scambi.sql`
 8. `migrations/007-mercato-svincolati.sql`
+9. `migrations/008-chiudi-giornata.sql`
+10. `migrations/009-promemoria-una-volta-sola.sql`
+11. `migrations/010-elimina-profilo.sql`
+12. `migrations/011-permessi-per-ruolo.sql` — **questa non è opzionale**: fino
+    alla 010 compresa, ogni funzione del database resta eseguibile dal ruolo
+    anonimo, cioè da chiunque abbia la chiave pubblicabile che sta nel
+    frontend. Una fa danno davvero: `da_avvisare()` restituisce `endpoint`,
+    `p256dh` e `auth` di ogni iscrizione al push, che è quanto basta per
+    spedire una notifica al telefono di qualcuno.
 
 Le migrazioni dalla 001 in poi si possono rieseguire quante volte si vuole.
+
+### Un permesso che non si revocava
+
+Le migrazioni fino alla 010 scrivono `revoke all on function ... from public`,
+e non revocavano niente. Il progetto Supabase nasce con
+
+```sql
+alter default privileges in schema public grant all on functions
+  to postgres, anon, authenticated, service_role;
+```
+
+quindi ogni funzione creata dopo **nasce eseguibile da `anon`**, per un
+permesso dato al ruolo. `PUBLIC` e `anon` sono due cose diverse: revocare al
+primo lascia intatto il secondo.
+
+Le prove non potevano accorgersene, ed è la parte che conta: il Postgres di
+`prova.sh` creava i ruoli ma non i permessi predefiniti, quindi era più severo
+del sistema vero — là un `revoke` da `PUBLIC` bastava per davvero. Ora
+`prove/ambiente.sql` li riproduce, e `prove/permessi.sh` tiene il conto di chi
+può chiamare cosa: gira in CI a ogni push e diventa rosso se una migrazione
+nuova si dimentica di chiudere una funzione.
+
+Perciò ogni funzione nuova va revocata **a `public` e ad `anon`** e concessa a
+`authenticated` a mano. La forma globale
+`alter default privileges revoke execute on functions from public` funzionerebbe
+(provata), ma vale per ogni schema e per ogni funzione creata dal ruolo
+`postgres`, comprese quelle di un'estensione installata dal pannello: si
+romperebbero mesi dopo, in un posto che non c'entra.
 
 `./supabase/prove/prova.sh` fa tutto questo su un Postgres vuoto, due volte di
 fila, e poi chiama le funzioni una per una. Prima non passava: la 001 converte

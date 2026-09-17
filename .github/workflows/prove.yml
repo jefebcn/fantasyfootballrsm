@@ -46,6 +46,8 @@ jobs:
         run: sudo -E PORTA=5455 ./supabase/prove/prova.sh
       - name: Migrazioni su un database mezzo migrato
         run: sudo -E ./supabase/prove/da-vecchio.sh
+      - name: Chi puo' chiamare quali funzioni
+        run: sudo -E PORTA=5467 ./supabase/prove/permessi.sh
       - name: Il salvataggio si rilegge
         run: sudo -E PORTA=5465 ./supabase/prove/salvataggio.sh
 

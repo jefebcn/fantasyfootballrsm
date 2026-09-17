@@ -30,6 +30,11 @@ const UA = 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_5 like Mac OS X) AppleWebKit/6
       Object.defineProperty(navigator, 'maxTouchPoints', { value: 5 });
       if (installata) {
         Object.defineProperty(navigator, 'standalone', { value: true });
+        // Il permesso di partenza NON e' uguale dappertutto: il Chromium di
+        // GitHub Actions parte da 'denied', quello locale da 'default'. La
+        // prova vuole verificare cosa fa l'app quando il permesso e' ancora
+        // da chiedere, quindi lo fissa: e' successo (CI rossa, locale verde).
+        Object.defineProperty(Notification, 'permission', { get: () => 'default', configurable: true });
       } else {
         // Dentro Safari su iPhone Notification non c'e' proprio.
         delete window.Notification;

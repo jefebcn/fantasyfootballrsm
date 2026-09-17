@@ -272,14 +272,35 @@ hr.sep{border:0;border-top:1px solid var(--border);margin:4px 0}
 .a-drawer.on{display:block}
 .a-drawer .scrim{position:absolute;inset:0;background:rgba(4,31,51,.45)}
 .a-drawer .panel{position:absolute;top:0;bottom:0;left:0;width:84%;background:var(--surface);border-radius:36px 0 0 36px;overflow:auto;display:flex;flex-direction:column;box-shadow:var(--sh-raise)}
-.d-head{background:var(--grad-header);color:#fff;padding:calc(16px + var(--sa-top)) 18px 18px;border-radius:0 0 18px 18px;display:flex;justify-content:space-between;align-items:flex-end;gap:10px}
-.d-head b{display:block;font-family:var(--font-display);font-weight:700;font-size:20px;color:var(--c-oro-400)}
-.d-head span{font-size:13px;opacity:.9}
-.d-head button{border:0;background:var(--c-titano-700);color:#fff;font-family:var(--font-display);font-weight:700;font-size:12px;letter-spacing:.08em;padding:9px 14px;border-radius:999px;cursor:pointer}
-.d-league{display:flex;justify-content:space-between;align-items:center;padding:16px 18px;background:var(--surface-sunk);font-family:var(--font-display);font-weight:700;font-size:18px;text-transform:uppercase;color:var(--primary-ink)}
-/* Il piu' dentro il cerchio: --on-primary e non bianco fisso, che in tema
-   scuro (dove --primary e' azzurro chiaro) stava a 2,70. */
-.d-league i{width:34px;height:34px;border-radius:50%;background:var(--primary);color:var(--on-primary);display:grid;place-items:center;font-style:normal;font-size:22px;line-height:1}
+/* La testa del menu: un blocco solo, tre righe, tre domande in ordine —
+   chi sono, in quale lega, cosa faccio. Prima erano tre fondi impilati. */
+.d-head{background:var(--grad-header);color:#fff;padding:calc(14px + var(--sa-top)) 16px 16px;border-radius:0 0 22px 22px;display:flex;flex-direction:column;gap:14px}
+.d-io{display:flex;align-items:center;gap:12px}
+/* Lo stemma ha un bordo del colore della superficie, che dentro la sfumatura
+   della testa non esiste: qui diventa un filo di bianco trasparente. */
+.d-io .crest{width:44px;height:44px;font-size:14px;border:2px solid rgba(255,255,255,.35);box-shadow:none;flex:none}
+/* min-width:0 e' quello che tiene in piedi il troncamento: senza, la riga
+   del nome squadra usciva dalla sua scatola (misurata a 77,8px con dentro
+   "Hasta El Roxy") e sui nomi lunghi sarebbe finita sotto il bottone. */
+.d-chi{flex:1;min-width:0;display:block}
+.d-chi b{display:block;font-family:var(--font-display);font-weight:700;font-size:19px;line-height:1.15;color:var(--c-oro-400);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.d-chi span{display:block;font-size:13px;line-height:1.3;opacity:.88;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.d-esci{flex:none;width:38px;height:38px;border-radius:50%;border:1px solid rgba(255,255,255,.28);
+  background:rgba(255,255,255,.1);color:#fff;display:grid;place-items:center;cursor:pointer;padding:0}
+.d-esci .ic{width:19px;height:19px}
+/* La lega: una scheda dentro la sfumatura, non una banda a se'. Dice quanta
+   gente c'e' e dove porta, invece di un "+" da interpretare. */
+.d-lega{display:flex;align-items:center;gap:12px;padding:11px 12px;border-radius:14px;
+  background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.16);color:#fff;text-decoration:none}
+.d-lega > i{flex:none;width:36px;height:36px;border-radius:10px;background:rgba(255,255,255,.16);display:grid;place-items:center}
+.d-lega > i .ic{width:20px;height:20px}
+.d-lega .chev{margin-left:auto}
+.d-nl{flex:1;min-width:0;display:block}
+.d-nl b{display:block;font-family:var(--font-display);font-weight:700;font-size:16px;line-height:1.2;
+  text-transform:uppercase;letter-spacing:.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.d-nl small{display:block;font-size:11.5px;line-height:1.3;opacity:.82;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.d-lega > .ic{flex:none;opacity:.7}
 .d-cta{margin:14px 16px 6px}
 .d-sec{padding:12px 16px 4px}
 /* --primary-ink e non --primary: le etichette del menu stanno su
@@ -287,10 +308,30 @@ hr.sep{border:0;border-top:1px solid var(--border);margin:4px 0}
    fuori da .a-body, quindi l'audit non ci arrivava. */
 .d-sec .chip{display:inline-block;background:var(--primary-soft);color:var(--primary-ink);font-weight:600;font-size:14px;padding:5px 16px;border-radius:999px}
 .d-sec.admin .chip{background:var(--accent-soft);color:var(--on-accent-soft)}
-.d-item{display:flex;align-items:center;gap:14px;padding:11px 16px;font-size:16px;font-weight:600;color:var(--text);text-decoration:none}
-.d-item i{width:34px;height:34px;border-radius:10px;background:var(--surface-sunk);color:var(--primary);display:grid;place-items:center;flex:none}
-.d-item i .ic{width:20px;height:20px}
-.d-item small{margin-left:auto;font-size:11px;color:var(--text-muted);font-weight:500}
+/* Una griglia, non un flex: le tre colonne (riquadro, etichetta, nota) hanno
+   la stessa larghezza su ogni riga, quindi le etichette partono tutte dallo
+   stesso punto anche quando la nota a destra e' lunga. */
+.d-item{display:grid;grid-template-columns:34px 1fr auto;align-items:center;gap:14px;padding:11px 16px;
+  color:var(--text);text-decoration:none;border:0;background:transparent;width:100%;text-align:left;
+  font:inherit;cursor:pointer}
+.d-item i{width:34px;height:34px;border-radius:10px;background:var(--surface-sunk);color:var(--primary);display:grid;place-items:center}
+/* Una misura sola per tutte: 20px per i contorni e 24px per le illustrate
+   facevano una colonna irregolare, con le righe a contorno visibilmente piu'
+   leggere delle vicine. */
+.d-item i .ic,.d-item i .pic{width:22px;height:22px}
+/* IL PADDING SOTTO NON E' SPAZIATURA: e' la centratura.
+   Il browser centra la RIGA di testo, che e' alta ascendente + discendente
+   del font: la banda delle maiuscole, che e' quella che l'occhio allinea, ne
+   sta sopra il centro. Misurato su questo menu con le metriche del font
+   (fontBoundingBox + altezza della "H"): cadeva 0,99px SOTTO il centro del
+   riquadro, uguale su tutte le voci. Con align-items:center si centra la
+   scatola, quindi una scatola piu' alta sotto di 2x alza il testo di x:
+   0,125em su 16px = 2px, cioe' 1px di rialzo. In em e non in pixel, cosi'
+   regge se il corpo cambia, e vale anche per la nota a destra alla sua
+   misura. Con la correzione: -0,03px. */
+.d-item .et{font-size:16px;font-weight:600;line-height:1.15;padding-bottom:.125em;min-width:0;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.d-item small{font-size:11px;color:var(--text-muted);font-weight:500;padding-bottom:.125em}
 .d-item.lock{color:var(--text-muted)}
 .d-item.lock i{background:var(--surface-sunk);color:var(--text-muted)}
 
@@ -955,7 +996,7 @@ button,a{-webkit-tap-highlight-color:transparent}
 .evi{display:inline-grid;place-items:center;width:21px;height:21px;flex:none}
 .vr .ev .evi{width:22px;height:22px}
 .tl .te .evi,.kb .k .evi{width:26px;height:26px}
-.d-item i .pic,.tile > .lead .pic{width:24px;height:24px}
+.tile > .lead .pic{width:24px;height:24px}
 .d-item i.illus{background:var(--surface-sunk)}
 .tile > .lead.illus{background:var(--surface-sunk);padding:7px}
 /* Segno di sostituzione. Si chiamava .sub come la RIGA di sostituzione della

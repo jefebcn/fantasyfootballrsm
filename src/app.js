@@ -1,7 +1,7 @@
 /** Shell applicativa: router hash, app bar, drawer, bottom nav, toast, sheet. */
 import { SPRITE } from './sprite.js';
 import { AVATAR_SPRITE } from './avatar.js';
-import { esc, icon, logo, pic, mask } from './ui.js';
+import { esc, icon, logo, pic, mask, crest } from './ui.js';
 import * as S from './state.js';
 import * as diagnostica from './diagnostica.js';
 import * as views from './views/index.js';
@@ -96,14 +96,43 @@ function nav(path) {
 function drawer() {
   const me = S.me(); const ph = S.weekPhase(); const u = S.currentUser();
   // icone illustrate dove il soggetto coincide, contorno altrove: stesso riquadro per entrambe
+  // L'etichetta va in uno <span> suo: come nodo di testo nudo finiva in una
+  // scatola anonima che si allineava per RIGA e non per inchiostro, e la
+  // parola cadeva 1,6px sotto il centro del riquadro. Misurato, non a occhio.
   const item = (href, ic, label, small = '') => {
     const illus = typeof ic === 'object';
     const dentro = illus ? pic(ic.m || ic.l, ic.l ? 'lega' : 'menu') : icon(ic);
-    return `<a class="d-item" href="${href}"><i class="${illus ? 'illus' : ''}">${dentro}</i>${label}${small ? `<small>${small}</small>` : ''}</a>`;
+    return `<a class="d-item" href="${href}"><i class="${illus ? 'illus' : ''}">${dentro}</i><span class="et">${label}</span>${small ? `<small>${small}</small>` : ''}</a>`;
   };
   const leagues = S.myLeagues(); const cur = S.currentLeagueId();
-  const head = `<div class="d-head"><div><b>${esc(me?.owner || S.profileInfo()?.display_name || u?.email || '')}</b><span>${esc(me?.teamName || u?.email || 'nessuna lega')}</span></div><button data-logout>LOGOUT</button></div>`;
-  const leagueRow = `<a class="d-league" href="#/leghe" style="text-decoration:none">${esc(S.base.league.name)} <i>+</i></a>${leagues.length > 1 ? `<div class="d-sec"><span class="chip">Le mie leghe</span></div>${leagues.filter((l) => l.id !== cur).map((l) => `<button class="d-item" data-switch="${l.id}" style="border:0;background:transparent;width:100%;font:inherit;font-weight:600;cursor:pointer"><i>${icon('cup')}</i>${esc(l.name)}<small>${l.myRole}</small></button>`).join('')}` : ''}`;
+  const nome = me?.owner || S.profileInfo()?.display_name || u?.email || '';
+
+  // LA TESTA, rifatta. Prima erano tre fondi diversi impilati nei primi 220px
+  // — sfumatura, banda incassata, superficie — e tre gerarchie che si
+  // facevano concorrenza: il nome in oro grande, LOGOUT come pastiglia piena
+  // (un'azione che si usa una volta al mese, col peso visivo di un'azione
+  // principale) e il nome della lega con un "+" che non diceva cosa fa.
+  //
+  // Adesso un blocco solo, e dentro tre righe che rispondono a tre domande in
+  // ordine: chi sono, in quale lega, cosa faccio. La lega diventa una scheda
+  // che si tocca e dice dove porta ("cambia lega") e quanta gente c'e';
+  // l'uscita e' un bottone tondo col simbolo, discreto ma nello stesso posto
+  // di prima. Il giallo resta solo alla formazione, che e' l'azione vera.
+  const stemma = me ? crest(me, 'md')
+    : `<span class="crest md" style="background:var(--c-titano-700);color:#fff">${esc((nome[0] || '?').toUpperCase())}</span>`;
+  const head = `<div class="d-head">
+    <div class="d-io">${stemma}
+      <span class="d-chi"><b>${esc(nome)}</b><span>${esc(me?.teamName || u?.email || 'nessuna lega')}</span></span>
+      <button class="d-esci" data-logout aria-label="Esci dall'account" title="Esci">${icon('exit')}</button>
+    </div>
+    ${S.hasLeague() ? `<a class="d-lega" href="#/leghe">
+      <i>${icon(S.base.league.pubblica ? 'globe' : 'cup')}</i>
+      <span class="d-nl"><b>${esc(S.base.league.name)}</b><small>${S.base.managers.length} ${S.base.managers.length === 1 ? 'partecipante' : 'partecipanti'} · cambia lega</small></span>
+      ${icon('chev', 'ic sm')}
+    </a>` : `<a class="d-lega" href="#/leghe"><i>${icon('cup')}</i>
+      <span class="d-nl"><b>Nessuna lega</b><small>creane una o entra con un codice</small></span>${icon('chev', 'ic sm')}</a>`}
+  </div>`;
+  const leagueRow = leagues.length > 1 ? `<div class="d-sec"><span class="chip">Le mie leghe</span></div>${leagues.filter((l) => l.id !== cur).map((l) => `<button class="d-item" data-switch="${l.id}"><i>${icon('cup')}</i><span class="et">${esc(l.name)}</span><small>${esc(l.myRole)}</small></button>`).join('')}` : '';
   return `<div class="a-drawer${drawerOpen ? ' on' : ''}"><div class="scrim" data-close-drawer></div><div class="panel">
     ${head}${leagueRow}
     ${S.hasLeague() ? `<div class="d-cta"><a class="a-btn" href="#/rosa/formazione" style="text-decoration:none">${icon('shirt', 'ic sm')}Schiera la formazione</a></div>` : ''}

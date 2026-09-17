@@ -20,6 +20,32 @@ export const supportate = () => typeof Notification !== 'undefined' && 'serviceW
 export const permesso = () => (supportate() ? Notification.permission : 'unsupported');
 export const pushConfigurato = () => !!VAPID_PUBBLICA;
 
+/** iPhone e iPad, compreso l'iPad che si presenta come un Mac con lo schermo tattile. */
+export const suiOS = () => /iPhone|iPad|iPod/.test(navigator.userAgent)
+  || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+
+/** Aperta dalla schermata Home, non dentro un browser. */
+export const installata = () => navigator.standalone === true
+  || (typeof matchMedia === 'function' && matchMedia('(display-mode: standalone)').matches);
+
+/**
+ * Perche' le notifiche non sono disponibili, quando non lo sono.
+ *
+ * Su iPhone `Notification` esiste solo se l'app e' stata aggiunta alla
+ * schermata Home e aperta da li': dentro Safari non c'e' proprio, e il foglio
+ * delle impostazioni mostrava l'interruttore senza il bottone del permesso e
+ * senza una parola di spiegazione. Chi cercava "dove si attivano" non trovava
+ * niente da premere. E' successo il 17 settembre, al primo tentativo vero.
+ *
+ * Restituisce null quando sono supportate; altrimenti il motivo, che e' anche
+ * il rimedio.
+ */
+export function motivoNonSupportate() {
+  if (supportate()) return null;
+  if (suiOS() && !installata()) return 'ios-nel-browser';
+  return 'browser-senza';
+}
+
 export async function chiediPermesso() {
   if (!supportate()) return 'unsupported';
   try { return await Notification.requestPermission(); } catch { return permesso(); }

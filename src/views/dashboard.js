@@ -316,9 +316,19 @@ export const dashboard = {
     }
     const slot = root.querySelector('#install-slot');
     const show = () => {
-      if (!window.__installPrompt || S.store.get().installedDismissed || !slot) return;
-      slot.innerHTML = `<div class="install">${logo()}<div style="flex:1"><b>Installa l'app</b>Sulla schermata Home si apre a tutto schermo.</div><button class="ok" id="inst-ok">Installa</button><button class="no" id="inst-no">✕</button></div>`;
-      slot.querySelector('#inst-ok').onclick = async () => { const p = window.__installPrompt; if (!p) return; p.prompt(); await p.userChoice; window.__installPrompt = null; slot.innerHTML = ''; };
+      if (S.store.get().installedDismissed || !slot) return;
+      // Su iPhone l'evento beforeinstallprompt non arriva mai, quindi il banner
+      // non compariva mai: si installa a mano, da Condividi. E la differenza non
+      // e' solo lo schermo intero — le notifiche a telefono chiuso su iPhone
+      // esistono SOLO con l'app installata, quindi senza questo passo la voce
+      // "Preferenze notifiche" resta un interruttore senza bottone.
+      if (!window.__installPrompt && AV.motivoNonSupportate() !== 'ios-nel-browser') return;
+      const ios = !window.__installPrompt;
+      slot.innerHTML = `<div class="install">${logo()}<div style="flex:1"><b>Installa l'app</b>${ios
+        ? 'Tocca <b>Condividi</b> in basso, poi <b>Aggiungi alla schermata Home</b>: si apre a tutto schermo e arrivano le notifiche.'
+        : 'Sulla schermata Home si apre a tutto schermo.'}</div>${ios ? '' : '<button class="ok" id="inst-ok">Installa</button>'}<button class="no" id="inst-no">✕</button></div>`;
+      const ok = slot.querySelector('#inst-ok');
+      if (ok) ok.onclick = async () => { const p = window.__installPrompt; if (!p) return; p.prompt(); await p.userChoice; window.__installPrompt = null; slot.innerHTML = ''; };
       slot.querySelector('#inst-no').onclick = () => { S.store.set({ installedDismissed: true }); slot.innerHTML = ''; };
     };
     show(); document.addEventListener('installable', show, { once: true });

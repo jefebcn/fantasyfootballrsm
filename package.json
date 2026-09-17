@@ -8,11 +8,13 @@
     "test": "eslint . && node --test tests/*.test.js",
     "start": "python3 -m http.server 4173",
     "lint": "eslint .",
-    "vendor": "node scripts/vendor-supabase.mjs"
+    "vendor": "node scripts/vendor-supabase.mjs",
+    "prove": "./prove/tutte.sh"
   },
   "devDependencies": {
     "@supabase/supabase-js": "^2.58.0",
     "esbuild": "^0.28.2",
-    "eslint": "^10.1.0"
+    "eslint": "^10.1.0",
+    "playwright": "^1.56.0"
   }
 }

@@ -1,5 +1,5 @@
 import * as S from '../state.js';
-import { esc, fmt, badge, crest, empty, icon } from '../ui.js';
+import { esc, fmt, badge, crest, empty, icon, dateIt, timeIt } from '../ui.js';
 import { movimenti, conversionParams } from '../engine.js';
 
 let vista = 'classifica';
@@ -148,16 +148,6 @@ export const classifica = {
   render() {
     const me = S.me(); const n = S.currentMatchday(); const st = S.standings();
     const giocate = st.reduce((s, r) => s + r.played, 0);
-    // In una lega pubblica i premi sono il motivo per cui uno entra: si
-    // vedono prima che la classifica esista, non dopo.
-    if (!giocate) return `<main class="a-body">${S.aPunti() ? premiCard({ vincitori: false }) : ''}${empty(
-      S.base.managers.length < 2
-        ? (S.legaPubblica()
-          ? 'La classifica parte quando ci sono almeno due squadre: la lega è pubblica, chiunque può entrare dall\'elenco delle leghe.'
-          : 'La classifica parte quando ci sono almeno due squadre: condividi il codice invito della lega.')
-        : 'Nessuna giornata conclusa: la classifica compare quando il Giudice Dati pubblica i primi voti.',
-      S.base.managers.length < 2 ? `<a class="a-btn" href="#/${S.legaPubblica() ? 'leghe' : 'lega'}" style="text-decoration:none">${S.legaPubblica() ? 'Vedi le leghe pubbliche' : 'Invita i partecipanti'}</a>` : '')}</main>`;
-
     const stato = S.matchdayStatus(n);
     // "In corso" vuol dire: la giornata sta gia' dando punti ma non e' chiusa,
     // quindi quello che si legge e' una proiezione e va detto.
@@ -186,6 +176,35 @@ export const classifica = {
     // invece di aprire su una schermata vuota.
     const segPunti = barra(`<button class="${vista !== 'record' ? 'on' : ''}" data-vista="classifica">Classifica</button>
       <button class="${vista === 'record' ? 'on' : ''}" data-vista="record">Record</button>`);
+
+    // LA CLASSIFICA CHE NON C'E' ANCORA.
+    //
+    // Prima questo ramo uscìva PRIMA della barra, quindi con zero giornate
+    // giocate spariva anche la navigazione: niente schede, niente Record, e
+    // sembrava che la classifica fosse sparita. Adesso la barra resta e lo
+    // schermo dice cosa manca — che non e' mai "il Giudice Dati non ha
+    // pubblicato i voti", com'era scritto prima a prescindere.
+    if (!giocate) {
+      const md = S.matchday(S.primaGiornata());
+      const soli = S.base.managers.length < 2;
+      const testo = soli
+        ? (S.legaPubblica()
+          ? 'La classifica parte quando ci sono almeno due squadre: la lega è pubblica, chiunque può entrare dall\'elenco delle leghe.'
+          : 'La classifica parte quando ci sono almeno due squadre: condividi il codice invito della lega.')
+        : S.primaGiornata() >= n && md && S.now() < new Date(md.lockAt)
+          // La prima giornata della lega non e' ancora cominciata: e' il caso
+          // di una lega appena nata, ed e' un'attesa, non un guasto.
+          ? `La lega parte dalla ${S.primaGiornata()}ª giornata, che si chiude ${dateIt(md.lockAt)} alle ${timeIt(md.lockAt)}. La classifica compare coi primi punteggi.`
+          : 'Nessuna giornata conclusa: la classifica compare quando arrivano i primi voti del campionato.';
+      const azione = soli
+        ? `<a class="a-btn" href="#/${S.legaPubblica() ? 'leghe' : 'lega'}" style="text-decoration:none">${S.legaPubblica() ? 'Vedi le leghe pubbliche' : 'Invita i partecipanti'}</a>`
+        : `<a class="a-btn sec" href="#/rosa/formazione" style="text-decoration:none">Schiera la formazione</a>`;
+      return `<main class="a-body">
+        ${S.aPunti() ? segPunti : seg}
+        ${S.aPunti() ? premiCard({ vincitori: false }) : ''}
+        ${vista === 'record' ? record() : empty(testo, azione)}
+      </main>`;
+    }
 
     if (vista === 'record') {
       return `<main class="a-body">

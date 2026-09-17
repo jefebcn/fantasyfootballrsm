@@ -113,6 +113,27 @@ const MOMENTI = [
       et(/si è giocata prima|nata dalla/.test(cal),
         `${m.etichetta}: il calendario della ${m.attesa - 1}ª dice che è di prima della lega`);
     }
+    // LA CLASSIFICA ANCORA VUOTA non deve perdere le schede, e deve dire cosa
+    // manca. In una lega appena nata manca che si giochi la sua prima
+    // giornata: dare la colpa al Giudice Dati, com'era scritto a
+    // prescindere, mandava a cercare una persona invece di far aspettare una
+    // data.
+    await p.evaluate(() => { location.hash = '#/classifica'; }); await w(1100);
+    const cls = await p.evaluate(() => ({
+      schede: document.querySelectorAll('.seg-cls [data-vista]').length,
+      vuota: !!document.querySelector('.empty'),
+      testo: document.querySelector('.empty')?.innerText.replace(/\n/g, ' ') || '',
+    }));
+    if (cls.vuota) {
+      et(cls.schede >= 2, `${m.etichetta}: a classifica vuota le schede restano (${cls.schede})`);
+      et(!/Giudice Dati/.test(cls.testo), `${m.etichetta}: e non da' la colpa al Giudice Dati`);
+      et(new RegExp(`parte dalla ${m.attesa}ª`).test(cls.testo) || /almeno due squadre/.test(cls.testo),
+        `${m.etichetta}: dice cosa si sta aspettando ("${cls.testo.slice(0, 90)}")`);
+      // e da lì si passa a Record senza uscire dalla schermata
+      await p.evaluate(() => { const x = [...document.querySelectorAll('[data-vista]')].find((e) => /record/i.test(e.textContent)); if (x) x.click(); }); await w(800);
+      const dopoRecord = await p.evaluate(() => ({ accesa: document.querySelector('.seg-cls .on')?.innerText.trim() || '', body: document.body.innerText.slice(0, 200) }));
+      et(/record/i.test(dopoRecord.accesa), `${m.etichetta}: e da lì si passa a Record ("${dopoRecord.accesa}")`);
+    }
     et(errori.length === 0, `${m.etichetta}: nessun errore JS${errori.length ? ' — ' + errori[0] : ''}`);
     await ctx.close();
   }

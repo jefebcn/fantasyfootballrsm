@@ -22,7 +22,7 @@ import { createClient } from 'npm:@supabase/supabase-js@2.58.0';
  */
 const ORE_PRIMA = 24;
 
-Deno.serve(async (req) => {
+const gestisci = async (req: Request): Promise<Response> => {
   // Due guasti diversi, e per mesi rispondevano la stessa identica cosa.
   // Il 17 settembre l'azione pianificata ha preso 401 e dal registro non si
   // capiva se il token fosse sbagliato o se su Supabase non ci fosse proprio:
@@ -30,7 +30,7 @@ Deno.serve(async (req) => {
   // e' un guasto di configurazione (500) e lo dice; 401 vuol dire una cosa
   // sola, cioe' che i due valori non coincidono. Non si rivela niente: il
   // token non compare, e chi passa di qui gia' sa di aver preso un rifiuto.
-  const atteso = Deno.env.get('PROMEMORIA_TOKEN');
+  const atteso = Deno.env.get('PROMEMORIA_TOKEN')?.trim();
   if (!atteso) {
     return new Response(
       'PROMEMORIA_TOKEN non e\' fra i secret di questa funzione: ' +
@@ -38,7 +38,7 @@ Deno.serve(async (req) => {
       { status: 500 },
     );
   }
-  if (req.headers.get('x-promemoria-token') !== atteso) {
+  if (req.headers.get('x-promemoria-token')?.trim() !== atteso) {
     return new Response('token non valido', { status: 401 });
   }
 
@@ -47,10 +47,26 @@ Deno.serve(async (req) => {
   // o tutte e due — ed e' la differenza fra "ho sbagliato a scrivere un nome"
   // e "non li ho mai messi". Il nome del secret non e' un segreto: il segreto
   // e' il valore, che non compare.
-  const pubblica = Deno.env.get('VAPID_PUBLIC_KEY');
-  const privata = Deno.env.get('VAPID_PRIVATE_KEY');
-  const contatto = Deno.env.get('VAPID_SUBJECT') ?? 'mailto:nessuno@example.invalid';
   //
+  // .trim() su tutti e tre, e non e' pignoleria: un valore incollato nel
+  // pannello si porta dietro un ritorno a capo che non si vede da nessuna
+  // parte, e web-push su una chiave con un \n in coda non dice "c'e' uno
+  // spazio", dice 'must be a URL safe Base 64' — cioe' manda a cercare la
+  // chiave sbagliata. E' lo stesso guaio che ha avuto SUPABASE_FUNCTIONS_URL
+  // su GitHub.
+  const pubblica = Deno.env.get('VAPID_PUBLIC_KEY')?.trim();
+  const privata = Deno.env.get('VAPID_PRIVATE_KEY')?.trim();
+
+  // Il soggetto VAPID deve essere un URL: un indirizzo e-mail nudo fa
+  // scoppiare setVapidDetails con "Vapid subject is not a valid URL". Chi
+  // incolla un'e-mail nel pannello ha ragione lui, non la libreria: il
+  // mailto: glielo mettiamo davanti invece di far fallire tutti i promemoria
+  // per due punti e sei lettere.
+  const soggetto = Deno.env.get('VAPID_SUBJECT')?.trim();
+  const contatto = !soggetto
+    ? 'mailto:nessuno@example.invalid'
+    : /^(mailto:|https?:\/\/)/.test(soggetto) ? soggetto : `mailto:${soggetto}`;
+
   // La lista si costruisce DENTRO il controllo, non fuori: una condizione
   // scritta cosi' restringe il tipo, e sotto pubblica e privata sono stringhe
   // sicure. Riempire un array di nomi mancanti e poi guardarne la lunghezza
@@ -67,7 +83,28 @@ Deno.serve(async (req) => {
       attenzione: 'i nomi sono esatti, maiuscole e underscore compresi',
     }, { status: 500 });
   }
-  webpush.setVapidDetails(contatto, pubblica, privata);
+
+  // Le chiavi ci sono ma possono essere quelle sbagliate, e i modi di
+  // sbagliarle sono cinque — provati contro web-push 3.6.7, non immaginati:
+  // scambiate fra loro, con uno spazio intorno, di lunghezza sbagliata.
+  // Tutti finivano in un'eccezione non catturata, cioe' in "Internal Server
+  // Error" nudo: la ragione la sapeva solo il registro di Supabase, e nel
+  // registro dell'azione pianificata non arrivava niente.
+  //
+  // La lunghezza in caratteri la diciamo: non e' il segreto (il segreto e' il
+  // valore) ed e' quasi sempre la cosa che fa capire lo scambio al primo
+  // colpo — 87 e' la pubblica, 43 la privata.
+  try {
+    webpush.setVapidDetails(contatto, pubblica, privata);
+  } catch (err) {
+    return Response.json({
+      errore: 'le chiavi VAPID ci sono ma web-push le rifiuta',
+      dettaglio: (err as Error).message,
+      caratteri: { VAPID_PUBLIC_KEY: pubblica.length, VAPID_PRIVATE_KEY: privata.length },
+      atteso: { VAPID_PUBLIC_KEY: '87 caratteri, comincia per B', VAPID_PRIVATE_KEY: '43 caratteri' },
+      VAPID_SUBJECT: contatto,
+    }, { status: 500 });
+  }
 
   const sb = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!);
 
@@ -124,4 +161,26 @@ Deno.serve(async (req) => {
   if (morti.length) await sb.from('push_subscriptions').update({ failed_at: new Date().toISOString() }).in('endpoint', morti);
 
   return Response.json({ giornate: candidate.map((c) => c.matchday), spedite, scaduti: morti.length, da_rifare: rimessi });
+};
+
+/**
+ * La rete sotto tutto: qualunque cosa scoppi, esce un messaggio leggibile.
+ *
+ * Senza questa, un'eccezione qualsiasi diventa "Internal Server Error" e
+ * basta: cinque righe piu' su setVapidDetails ne lanciava una, e nel registro
+ * dell'azione pianificata arrivava quella frase nuda. Il motivo vero restava
+ * nei log di Supabase, che sono un altro pannello, un altro giro e un'altra
+ * mezz'ora. E' successo il 17 settembre due volte di fila.
+ *
+ * Fuori va il messaggio dell'eccezione, non la pila delle chiamate: la pila
+ * dice i percorsi dei file del runtime e non serve a chi legge il registro.
+ */
+Deno.serve(async (req) => {
+  try {
+    return await gestisci(req);
+  } catch (err) {
+    const messaggio = err instanceof Error ? err.message : String(err);
+    console.error('promemoria: eccezione non prevista', err);
+    return Response.json({ errore: 'eccezione non prevista', dettaglio: messaggio }, { status: 500 });
+  }
 });

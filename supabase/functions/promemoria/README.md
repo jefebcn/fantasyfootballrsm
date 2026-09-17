@@ -41,6 +41,16 @@ righe nome/valore.
 `PROMEMORIA_TOKEN` serve perché la funzione è raggiungibile da internet: senza,
 chiunque potrebbe farla spedire. Tieni da parte il valore, serve al passo 3.
 
+`VAPID_SUBJECT` vuole un URL: `mailto:tuo@indirizzo`, non l'indirizzo nudo. Se
+ci metti solo l'e-mail la funzione aggiunge `mailto:` da sé — prima invece
+scoppiava con `Vapid subject is not a valid URL` e usciva un `Internal Server
+Error` senza spiegazioni.
+
+**Questi secret valgono per il progetto, non per la singola funzione**, e
+stanno in *Project Settings → Edge Functions → Secrets*: creare una funzione
+nuova non li porta con sé né li sostituisce. Aggiungerne una non è mai il
+rimedio a «chiavi VAPID non configurate».
+
 ## 3. Deploy, e la pianificazione
 
 ```sh
@@ -58,8 +68,8 @@ Poi su GitHub, in *Settings → Secrets and variables → Actions*, aggiungi:
 | `PROMEMORIA_TOKEN` | lo stesso del passo 2 |
 | `PROMEMORIA_FUNZIONE` | solo se lo slug non è `promemoria` — vedi sotto |
 
-**Attenzione a cosa si incolla.** Uno spazio o un ritorno a capo davanti al
-valore non si vede in nessun posto: nel pannello il secret è mascherato e nel
+**Attenzione a cosa si incolla**, qui come fra i secret di Supabase. Uno
+spazio o un ritorno a capo davanti al valore non si vede in nessun posto: nel pannello il secret è mascherato e nel
 registro esce come `***`. Ma basta a far morire la chiamata con
 `curl: (3) URL rejected: Malformed input to a URL function`, in tre secondi e
 senza spiegare perché. È già successo. Ora il workflow gli spazi li toglie da
@@ -89,6 +99,14 @@ curl -s -H "x-promemoria-token: $PROMEMORIA_TOKEN" \
 Risponde `{"spedite":0,"motivo":"nessun lock nella finestra"}` quando non è il
 momento — che è la risposta giusta quasi sempre.
 
+E senza chiamare niente, con `npm test`: undici prove prendono il **vero**
+`index.ts`, gli togliono i tipi con esbuild, sostituiscono i due import
+`npm:` e l'oggetto `Deno` con degli stub e lo eseguono in node. Coprono le
+risposte a configurazione storta — token mancante, token sbagliato, una
+chiave VAPID assente, tutte e due, scambiate fra loro, incollate con un
+ritorno a capo — perché è l'unica cosa che finora è andata storta. Non
+coprono database e spedizione: per quelli serve Supabase vero.
+
 ## Se l'azione pianificata fallisce
 
 Il registro della corsa dice adesso `HTTP <codice>` e stampa la risposta della
@@ -101,6 +119,8 @@ funzione. Cosa vuol dire ciascuna:
 | `500` `PROMEMORIA_TOKEN non è fra i secret` | su Supabase quel secret manca | passo 2, poi deploy |
 | `500` `manca fra i secret: VAPID_...` | dice **quale** delle due chiavi non c'è | passo 2: i nomi sono `VAPID_PUBLIC_KEY` e `VAPID_PRIVATE_KEY`, maiuscole e underscore compresi |
 | `404` `NOT_FOUND` | nessuna funzione con quello slug | lo slug è quello **nell'indirizzo**, non il campo *Name*: mettilo in `PROMEMORIA_FUNZIONE` |
+| `500` `le chiavi VAPID ci sono ma web-push le rifiuta` | le legge e non le accetta: il `dettaglio` dice perché e i `caratteri` quanto sono lunghe — **87** è la pubblica, **43** la privata, se escono al contrario le hai scambiate | rimettile nel verso giusto |
+| `500` `eccezione non prevista` | qualcosa si è rotto dove non era previsto | il `dettaglio` è il messaggio vero; la pila completa sta nei log della funzione su Supabase |
 | `500` con un messaggio del database | la funzione è partita e si è rotta dentro | il messaggio dice dove |
 | nessuna risposta | indirizzo sbagliato o progetto in pausa | controlla `SUPABASE_FUNCTIONS_URL` |
 

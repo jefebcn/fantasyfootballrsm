@@ -78,6 +78,13 @@ Su un progetto nuovo, nell'SQL Editor, in quest'ordine:
     funzioni della console. **Contiene anche una correzione di sicurezza**:
     vedi sotto.
 
+16. `promemoria-pianificato.sql` — **facoltativo ma consigliato**, e non è una
+    migrazione: va riempito in due righe (indirizzo delle Edge Functions e
+    token del promemoria) e lanciato a mano. Sposta l'orologio dell'avviso
+    della formazione da GitHub — che accoda e salta le corse pianificate, fino
+    a cinque ore e mezza misurate — a `pg_cron`, dentro il database. Vedi
+    `functions/promemoria/README.md`, passo 3b.
+
 Le migrazioni dalla 001 in poi si possono rieseguire quante volte si vuole.
 
 ### Tre ruoli, e non vanno confusi

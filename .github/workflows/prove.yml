@@ -50,6 +50,8 @@ jobs:
         run: sudo -E PORTA=5467 ./supabase/prove/permessi.sh
       - name: Il salvataggio si rilegge
         run: sudo -E PORTA=5465 ./supabase/prove/salvataggio.sh
+      - name: Il promemoria pianificato nel database
+        run: sudo -E PORTA=5469 ./supabase/prove/pianificato.sh
 
   browser:
     runs-on: ubuntu-latest

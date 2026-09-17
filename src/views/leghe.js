@@ -111,7 +111,7 @@ export const leghe = {
       <div class="startgrid">
         <button class="startcard${form === 'create' ? ' on' : ''}" data-form="create">${pic('leghe', 'menu')}<b>Crea una lega</b><span>Ne diventi admin e ricevi il codice da girare agli altri</span></button>
         <button class="startcard${form === 'join' ? ' on' : ''}" data-form="join">${pic('squadre', 'menu')}<b>Entra con codice</b><span>Ti serve il codice a 6 caratteri dell'organizzatore</span></button>
-        <button class="startcard larga${form === 'pubblica' ? ' on' : ''}" data-form="pubblica">${pic('trofei', 'lega')}<b>Crea una lega pubblica</b><span>Aperta a tutti, senza codice: ognuno si fa la sua rosa e vince chi fa più punti</span></button>
+        ${S.isAdmin() ? `<button class="startcard larga${form === 'pubblica' ? ' on' : ''}" data-form="pubblica">${pic('trofei', 'lega')}<b>Crea una lega pubblica</b><span>Aperta a tutti, senza codice: ognuno si fa la sua rosa e vince chi fa più punti</span></button>` : ''}
       </div>
       ${form === 'create' ? `<div class="a-card" style="display:flex;flex-direction:column;gap:6px"><label class="lbl" for="lname">Nome della lega</label><input class="field-input" id="lname" placeholder="es. I Sudati di RSM" maxlength="40">${teamFields()}<button class="a-btn" id="go-create" style="margin-top:10px">Crea e diventa admin</button></div>` : ''}
       ${form === 'join' ? `<div class="a-card" style="display:flex;flex-direction:column;gap:6px"><label class="lbl" for="code">Codice invito</label><input class="field-input" id="code" placeholder="es. A1B2C3" autocapitalize="characters" maxlength="6">${teamFields()}<button class="a-btn" id="go-join" style="margin-top:10px">Entra nella lega</button></div>` : ''}

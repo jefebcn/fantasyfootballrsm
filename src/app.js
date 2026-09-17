@@ -18,7 +18,7 @@ const ROUTES = [
   ['confronto/:a', views.confronto], ['confronto/:a/:b', views.confronto],
   ['video', views.video], ['regolamento', views.regolamento], ['regole', views.regole], ['scheda', views.scheda], ['impostazioni', views.impostazioni], ['impostazioni/avanzate', views.avanzate], ['scambi', views.scambi], ['privacy', views.privacy], ['termini', views.termini], ['archiviazione', views.archiviazione], ['licenze', views.licenze],
   ['admin', views.adminGiornata], ['admin/partita/:id', views.adminPartita], ['admin/contestazioni', views.adminContestazioni],
-  ['admin/congela', views.adminCongela], ['admin/registro', views.adminRegistro], ['mercato', views.mercato], ['asta', views.asta],
+  ['admin/congela', views.adminCongela], ['admin/console', views.adminConsole], ['admin/registro', views.adminRegistro], ['mercato', views.mercato], ['asta', views.asta],
   ['login', views.login], ['leghe', views.leghe], ['lega', views.lega], ['gestione', views.gestione], ['squadra', views.squadra], ['vice/:code', views.vice], ['setup', views.setup], ['offline', views.offline], ['benvenuto', views.onboarding],
 ];
 
@@ -142,6 +142,8 @@ function drawer() {
     <div class="d-sec"><span class="chip">Gioca</span></div>
     ${S.legaPubblica() ? item('#/asta', { l: 'rose' }, 'La tua rosa', `${S.rosterIds(S.me()?.id).length}/25`) : ''}${item('#/listone', { m: 'quotazioni' }, 'Listone', String(S.base.players.length))}${item('#/mercato', { m: 'trasferimenti' }, 'Mercato libero', 'rilancio 24h')}${item('#/mercato', 'out', 'Fuori dal campionato', String(S.base.players.filter((p) => !p.isActive).length))}${item('#/scheda', { m: 'fantascore' }, 'Scheda condivisibile')}
     ${S.isLeagueAdmin() ? `<div class="d-sec"><span class="chip">Gestione</span></div>${S.legaPubblica() ? item('#/classifica', { l: 'premi' }, 'Premi in palio', `${S.premi().length || 'nessuno'}`) : ''}${item('#/lega', { m: 'squadre' }, 'Gestione rose')}${item('#/lega', { m: 'vice-allenatore' }, 'Partecipanti e ruoli')}` : ''}
+    ${S.isAdmin() ? `<div class="d-sec admin"><span class="chip">Amministrazione</span></div>
+    ${item('#/admin/console', { l: 'strumenti' }, 'Console', 'persone, leghe e numeri')}` : ''}
     ${S.isJudge() ? `<div class="d-sec admin"><span class="chip">Giudice Dati</span></div>
     ${item('#/admin', { m: 'voti' }, 'Inserisci eventi', `G${ph.matchday}`)}${item('#/admin/contestazioni', 'flag', 'Contestazioni', `${S.contestazioni().filter((c) => c.status === 'open').length} aperte`)}${item('#/admin/congela', 'calc', 'Calcola giornata', 'la chiude per sempre')}${item('#/admin/registro', 'archive', 'Registro modifiche')}` : ''}
     <a class="d-plain" href="#/impostazioni" style="display:block;text-decoration:none;color:inherit">Utente, impostazioni e privacy</a>
@@ -151,7 +153,10 @@ function drawer() {
 
 let scrollMemo = {};
 const STATE_ROUTE = { unconfigured: 'setup', offline: 'offline', anonymous: 'login', 'no-league': 'leghe' };
-const ALLOWED = { 'no-league': ['leghe', 'impostazioni'], anonymous: ['login', 'benvenuto'] };
+// La console amministrativa si apre anche senza essere in una lega: chi
+// gestisce l'app non e' detto che giochi, e restare chiusi fuori dai propri
+// strumenti per non avere una squadra non ha senso.
+const ALLOWED = { 'no-league': ['leghe', 'impostazioni', 'admin/console'], anonymous: ['login', 'benvenuto'] };
 function gate(path) {
   const st = S.appState();
   let target = STATE_ROUTE[st];

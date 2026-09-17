@@ -40,6 +40,15 @@ const prepara = (ctx, stato) => ctx.addInitScript((stato) => {
   await p.click('[data-tab="up"]'); await w(p, 250);
   await p.fill('#email', 'uno@e.it'); await p.fill('#name', 'Uno'); await p.fill('#password', 'password123'); await p.click('#primary'); await w(p, 1000);
 
+  // La lega pubblica la apre solo chi amministra l'app (014). Il primo
+  // amministratore si nomina dal database, come il Giudice Dati: qui si fa
+  // quello, che e' il percorso vero e non una scorciatoia della prova.
+  await p.evaluate(() => {
+    const s = JSON.parse(localStorage.getItem('fcs:mock'));
+    s.tables.profiles.find((x) => x.id === s.userId).is_admin = true;
+    localStorage.setItem('fcs:mock', JSON.stringify(s));
+  });
+  await p.reload({ waitUntil: 'load' }); await w(p, 1600);
   await p.click('[data-form="pubblica"]'); await w(p, 500);
   const modulo = await p.evaluate(() => !!document.querySelector('#pname') && !!document.querySelector('#pbudget') && !!document.querySelector('#pmax') && !!document.querySelector('#ppremio'));
   et(modulo, 'il modulo della lega pubblica chiede nome, crediti, massimo e premio');

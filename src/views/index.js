@@ -17,7 +17,7 @@ export { confronto } from './confronto.js';
 export { privacy, termini, archiviazione, licenze } from './legali.js';
 export { mercato } from './mercato.js';
 export { asta } from './asta.js';
-export { adminGiornata, adminPartita, adminContestazioni, adminCongela, adminRegistro } from './admin.js';
+export { adminGiornata, adminPartita, adminContestazioni, adminCongela, adminRegistro, adminConsole } from './admin.js';
 export { login, resetLogin, prepareLogin } from './auth.js';
 export { onboarding } from './onboarding.js';
 export { setup, offline } from './setup.js';

@@ -98,8 +98,59 @@ export function createClient(_url, _key, opts) {
         if (!userId) throw new Error('non autenticato');
         const prof = T('profiles').find((p) => p.id === userId);
         if (name === 'create_league') { const l = { id: uid(), name: args.p_name, short_name: args.p_short, invite_code: Math.random().toString(36).slice(2, 8).toUpperCase(), rules: {}, started: false, created_by: userId, created_at: now() }; T('leagues').push(l); T('league_members').push({ id: uid(), league_id: l.id, user_id: userId, role: 'admin', team_name: args.p_team, owner_name: prof.display_name, color: args.p_color, initials: args.p_initials, credits: 500, created_at: now() }); persisti(); return { data: l.id, error: null }; }
+        // --- console amministrativa (014)
+        const amministro = () => !!T('profiles').find((x) => x.id === userId)?.is_admin;
+        if (name === 'admin_riepilogo') {
+          if (!amministro()) throw new Error("Serve essere amministratore dell'app");
+          return { data: {
+            utenti: T('profiles').length,
+            giudici: T('profiles').filter((x) => x.is_judge).length,
+            amministratori: T('profiles').filter((x) => x.is_admin).length,
+            leghe: T('leagues').length,
+            leghe_pubbliche: T('leagues').filter((l) => l.pubblica).length,
+            squadre: T('league_members').length,
+            rose_complete: 0, formazioni: T('lineups').length,
+            telefoni_push: T('push_subscriptions').filter((x) => !x.failed_at).length,
+            contestazioni_aperte: T('contestazioni').filter((c) => c.status === 'open').length,
+            giornate_congelate: T('matchday_status').filter((m) => m.status === 'frozen').length,
+            iscritti_7_giorni: T('profiles').length,
+          }, error: null };
+        }
+        if (name === 'admin_utenti') {
+          if (!amministro()) throw new Error("Serve essere amministratore dell'app");
+          const q = (args.p_cerca || '').trim().toLowerCase();
+          return { data: T('profiles')
+            .filter((p2) => !q || (p2.display_name || '').toLowerCase().includes(q) || (p2.email || '').toLowerCase().includes(q))
+            .map((p2) => ({ id: p2.id, nome: p2.display_name, email: p2.email || `${p2.id}@example.org`,
+              is_judge: !!p2.is_judge, is_admin: !!p2.is_admin, iscritto: p2.created_at || now(),
+              ultimo_accesso: p2.created_at || now(), email_confermata: p2.created_at || now(),
+              leghe: T('league_members').filter((m) => m.user_id === p2.id).length,
+              squadre: T('league_members').filter((m) => m.user_id === p2.id).length })), error: null };
+        }
+        if (name === 'admin_leghe') {
+          if (!amministro()) throw new Error("Serve essere amministratore dell'app");
+          return { data: T('leagues').map((l) => ({ id: l.id, nome: l.name, pubblica: !!l.pubblica,
+            membri: T('league_members').filter((m) => m.league_id === l.id).length,
+            max_membri: l.max_membri || 12, budget: l.rules?.budget ?? 500, premi: l.premi || [],
+            started: !!l.started, creata: l.created_at,
+            creatore: T('profiles').find((x) => x.id === l.created_by)?.display_name || null })), error: null };
+        }
+        if (name === 'admin_imposta_ruolo') {
+          if (!amministro()) throw new Error("Serve essere amministratore dell'app");
+          if (!['is_judge', 'is_admin'].includes(args.p_ruolo)) throw new Error(`Ruolo sconosciuto: ${args.p_ruolo}`);
+          const u = T('profiles').find((x) => x.id === args.p_user);
+          if (!u) throw new Error('Utente non trovato');
+          if (args.p_user === userId && args.p_ruolo === 'is_admin' && !args.p_on) {
+            throw new Error('Non puoi togliere a te stesso l\'amministrazione: fallo fare a un altro amministratore');
+          }
+          u[args.p_ruolo] = !!args.p_on; persisti(); return { data: true, error: null };
+        }
+
         // --- lega pubblica (013)
         if (name === 'crea_lega_pubblica') {
+          if (!T('profiles').find((x) => x.id === userId)?.is_admin) {
+            throw new Error("Le leghe pubbliche le apre chi amministra l'app");
+          }
           const l = { id: uid(), name: args.p_name, short_name: args.p_short, invite_code: Math.random().toString(36).slice(2, 8).toUpperCase(),
             rules: { budget: args.p_budget }, season_id: 's2026', started: false, created_by: userId, created_at: now(),
             pubblica: true, classifica: 'punti', premi: args.p_premi || [], max_membri: args.p_max };

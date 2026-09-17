@@ -487,7 +487,17 @@ insert into public.profiles (id, display_name) values
   ('user_pub1', 'Primo'), ('user_pub2', 'Secondo'), ('user_pub3', 'Terzo')
 on conflict (id) do nothing;
 
+-- La lega pubblica la apre solo chi amministra l'app (014): il primo
+-- amministratore si nomina a mano, come il Giudice Dati, e qui si fa cosi'.
 select pg_temp.entra('user_pub1');
+do $$ begin
+  perform public.crea_lega_pubblica('Prima del potere','X','Sq','#1B84C6','SQ', 300, 3, '[]'::jsonb);
+  raise exception 'FALLITA: senza is_admin non si doveva poter aprire una lega pubblica';
+exception when others then
+  if sqlerrm like 'FALLITA%' then raise; end if;
+  raise notice 'ok  senza poteri non si apre una lega pubblica (%)', sqlerrm;
+end $$;
+update public.profiles set is_admin = true where id = 'user_pub1';
 select public.crea_lega_pubblica('Titano Open','OPEN','Squadra Uno','#1B84C6','SU', 300, 3,
   '[{"posto":1,"premio":"Una cena"},{"posto":2,"premio":"Un caffe"}]'::jsonb) as lp \gset
 select pg_temp.esige('si crea una lega pubblica', :'lp' is not null);
@@ -607,6 +617,96 @@ do $$ begin
   update public.leagues set classifica = 'scontri' where name = 'Titano Open';
   raise exception 'FALLITA: pubblica + scontri diretti non doveva passare';
 exception when check_violation then raise notice 'ok  una lega pubblica non puo'' andare a scontri diretti';
+end $$;
+
+-- ------------------------------------------------------- console admin (014)
+--
+-- Il pezzo che conta e' l'ultimo: che non si possa diventare amministratori
+-- da soli. Prima della 014 la policy su profiles guardava solo is_judge,
+-- quindi una colonna nuova non era protetta e chiunque poteva promuoversi.
+select pg_temp.entra('user_pub2');
+do $$ begin
+  perform public.admin_riepilogo();
+  raise exception 'FALLITA: un utente normale non doveva leggere il riepilogo';
+exception when others then
+  if sqlerrm like 'FALLITA%' then raise; end if;
+  raise notice 'ok  il riepilogo e'' chiuso a chi non amministra (%)', sqlerrm;
+end $$;
+do $$ begin
+  perform public.admin_utenti(null, 10);
+  raise exception 'FALLITA: un utente normale non doveva leggere l''elenco delle persone';
+exception when others then
+  if sqlerrm like 'FALLITA%' then raise; end if;
+  raise notice 'ok  l''elenco delle persone e'' chiuso (%)', sqlerrm;
+end $$;
+do $$ begin
+  perform public.admin_imposta_ruolo('user_pub2', 'is_admin', true);
+  raise exception 'FALLITA: non si doveva poter nominare nessuno';
+exception when others then
+  if sqlerrm like 'FALLITA%' then raise; end if;
+  raise notice 'ok  i ruoli non li cambia chi non amministra (%)', sqlerrm;
+end $$;
+-- ...e nemmeno scrivendo direttamente sul proprio profilo.
+--
+-- QUESTO PEZZO VA FATTO COL RUOLO VERO. Il resto del file gira come
+-- postgres, che e' superutente: la RLS non gli si applica, e il primo
+-- tentativo di questa prova passava l'aggiornamento e diceva che il buco
+-- c'era. Con "set role authenticated" si diventa il ruolo che usa PostgREST
+-- per chi ha fatto l'accesso, e le policy contano.
+set role authenticated;
+do $$ begin
+  begin
+    update public.profiles set is_admin = true where id = 'user_pub2';
+    raise notice 'ATTENZIONE: l''aggiornamento e'' passato';
+  exception when others then raise notice 'ok  promuoversi amministratore viene rifiutato (%)', sqlerrm;
+  end;
+  begin
+    update public.profiles set is_judge = true where id = 'user_pub2';
+    raise notice 'ATTENZIONE: l''aggiornamento e'' passato';
+  exception when others then raise notice 'ok  nominarsi Giudice Dati viene rifiutato (%)', sqlerrm;
+  end;
+  -- ma il nome se lo cambia, che e' roba sua: se cadesse anche questo, la
+  -- policy sarebbe troppo stretta e non si capirebbe dalle altre due
+  update public.profiles set display_name = 'Secondo detto Cip' where id = 'user_pub2';
+end $$;
+reset role;
+select pg_temp.esige('nessuno si promuove amministratore da solo',
+  not (select is_admin from public.profiles where id = 'user_pub2'));
+select pg_temp.esige('ne'' si nomina Giudice Dati da solo',
+  not (select is_judge from public.profiles where id = 'user_pub2'));
+select pg_temp.esige('il proprio nome invece si cambia',
+  (select display_name from public.profiles where id = 'user_pub2') = 'Secondo detto Cip');
+
+select pg_temp.entra('user_pub1');
+select pg_temp.esige('l''amministratore legge il riepilogo',
+  (public.admin_riepilogo()->>'utenti')::int >= 3);
+select pg_temp.esige('e ci trova le leghe pubbliche contate',
+  (public.admin_riepilogo()->>'leghe_pubbliche')::int >= 1);
+select pg_temp.esige('l''elenco delle persone porta l''e-mail e l''ultimo accesso',
+  exists (select 1 from public.admin_utenti(null, 100) where id = 'user_pub1'));
+select pg_temp.esige('la ricerca per nome funziona',
+  exists (select 1 from public.admin_utenti('Secondo', 50) where id = 'user_pub2'));
+select pg_temp.esige('l''elenco delle leghe vede anche quelle di cui non fa parte',
+  (select count(*) from public.admin_leghe(200)) >= 2);
+select public.admin_imposta_ruolo('user_pub3', 'is_judge', true);
+select pg_temp.esige('l''amministratore nomina un Giudice Dati',
+  (select is_judge from public.profiles where id = 'user_pub3'));
+select public.admin_imposta_ruolo('user_pub3', 'is_judge', false);
+select pg_temp.esige('e glielo toglie',
+  not (select is_judge from public.profiles where id = 'user_pub3'));
+do $$ begin
+  perform public.admin_imposta_ruolo('user_pub1', 'is_admin', false);
+  raise exception 'FALLITA: non doveva potersi togliere l''amministrazione da solo';
+exception when others then
+  if sqlerrm like 'FALLITA%' then raise; end if;
+  raise notice 'ok  non si toglie l''amministrazione a se stessi (%)', sqlerrm;
+end $$;
+do $$ begin
+  perform public.admin_imposta_ruolo('user_pub1', 'is_padrone', true);
+  raise exception 'FALLITA: un ruolo inventato non doveva passare';
+exception when others then
+  if sqlerrm like 'FALLITA%' then raise; end if;
+  raise notice 'ok  un ruolo che non esiste non passa (%)', sqlerrm;
 end $$;
 
 select 'tutte le prove sulle funzioni sono passate' as esito;

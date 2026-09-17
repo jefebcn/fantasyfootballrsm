@@ -200,3 +200,153 @@ export const adminRegistro = {
     return `<main class="a-body">${log.length ? `<div class="tl">${log.map(line).join('')}</div>` : `<div class="empty">${icon('archive')}<p>Nessuna modifica registrata su questo dispositivo.</p></div>`}</main>`;
   },
 };
+
+
+// ------------------------------------------------------------ console app
+/**
+ * La console di chi amministra l'app.
+ *
+ * Nasce da una richiesta precisa: "piu' controllo e autonomia — chi accede,
+ * problemi con le password, creazione leghe pubbliche, chi ha poteri, leghe
+ * private create, dati statistici".
+ *
+ * Tutto quello che si legge qui passa da funzioni del database che
+ * controllano chi chiama (migrazione 014): le leghe altrui e le e-mail la RLS
+ * non le farebbe vedere a nessuno, e giustamente.
+ *
+ * QUELLO CHE NON C'E', e non e' una dimenticanza: cambiare la password di un
+ * altro. Servirebbe la chiave di servizio di Supabase nel frontend, cioe' le
+ * chiavi del database su ogni telefono. Si manda un link per reimpostarla e
+ * se la rifa' la persona — che e' anche l'unico modo in cui resta sua.
+ */
+let aTab = 'numeri';        // 'numeri' | 'persone' | 'leghe'
+let cache = { numeri: null, persone: null, leghe: null };
+let cerca = '';
+
+const quando = (iso) => (iso ? `${dateIt(iso)} ${timeIt(iso)}` : '—');
+
+function numeri(r) {
+  if (!r) return `<p class="small muted">Sto contando…</p>`;
+  const q = [
+    ['Iscritti', r.utenti, `${r.iscritti_7_giorni || 0} negli ultimi 7 giorni`],
+    ['Leghe', r.leghe, `${r.leghe_pubbliche || 0} pubbliche`],
+    ['Squadre', r.squadre, `${r.rose_complete || 0} con la rosa completa`],
+    ['Formazioni consegnate', r.formazioni, ''],
+    ['Telefoni col push', r.telefoni_push, ''],
+    ['Contestazioni aperte', r.contestazioni_aperte, r.contestazioni_aperte ? 'da guardare' : 'nessuna'],
+    ['Giornate calcolate', r.giornate_congelate, ''],
+    ['Con poteri', (r.amministratori || 0) + (r.giudici || 0), `${r.amministratori || 0} admin · ${r.giudici || 0} giudici`],
+  ];
+  return `<div class="adm-numeri">${q.map(([et, v, sotto]) => `<div class="adm-n">
+    <span class="et">${et}</span><b>${v ?? '—'}</b>${sotto ? `<span class="sotto">${esc(sotto)}</span>` : ''}</div>`).join('')}</div>`;
+}
+
+function persone(list) {
+  if (!list) return `<p class="small muted">Sto cercando…</p>`;
+  if (!list.length) return `<p class="small muted">Nessuno con questo nome o indirizzo.</p>`;
+  return `<div class="vlist">${list.map((u) => `<div class="adm-u">
+    <div class="riga">
+      <span class="nm"><b>${esc(u.nome || '—')}</b><span>${esc(u.email || 'e-mail non disponibile')}</span></span>
+      <span class="tag">${u.is_admin ? '<i class="adm">admin</i>' : ''}${u.is_judge ? '<i class="giu">giudice</i>' : ''}</span>
+    </div>
+    <div class="dati">
+      <span>iscritto ${quando(u.iscritto)}</span>
+      <span>ultimo accesso ${quando(u.ultimo_accesso)}</span>
+      <span>${u.email_confermata ? 'e-mail confermata' : '<b>e-mail NON confermata</b>'}</span>
+      <span>${u.leghe} ${u.leghe === 1 ? 'lega' : 'leghe'}</span>
+    </div>
+    <div class="azioni">
+      <button class="chip" data-ruolo="is_judge:${esc(u.id)}:${u.is_judge ? 'off' : 'on'}">${u.is_judge ? 'Togli giudice' : 'Fai giudice'}</button>
+      <button class="chip" data-ruolo="is_admin:${esc(u.id)}:${u.is_admin ? 'off' : 'on'}">${u.is_admin ? 'Togli admin' : 'Fai admin'}</button>
+      ${u.email ? `<button class="chip" data-reset="${esc(u.email)}">Link password</button>` : ''}
+    </div></div>`).join('')}</div>`;
+}
+
+function leghe(list) {
+  if (!list) return `<p class="small muted">Sto guardando…</p>`;
+  if (!list.length) return `<p class="small muted">Nessuna lega.</p>`;
+  return `<div class="vlist">${list.map((l) => {
+    const premio = (l.premi || []).slice().sort((a, b) => a.posto - b.posto)[0];
+    return `<div class="adm-u">
+      <div class="riga"><span class="nm"><b>${esc(l.nome)}</b><span>${esc(l.creatore || '—')} · ${quando(l.creata)}</span></span>
+        <span class="tag">${l.pubblica ? '<i class="adm">pubblica</i>' : '<i class="giu">privata</i>'}</span></div>
+      <div class="dati"><span>${l.membri}${l.pubblica ? `/${l.max_membri}` : ''} squadre</span>
+        <span>${l.budget} crediti</span>
+        <span>${l.started ? 'rose assegnate' : 'in attesa delle rose'}</span>
+        ${premio ? `<span>in palio: ${esc(premio.premio)}</span>` : ''}</div></div>`;
+  }).join('')}</div>`;
+}
+
+export const adminConsole = {
+  title: 'Console', appbar: 'back', sub: () => 'Amministrazione dell\'app',
+  render() {
+    if (!S.isAdmin()) {
+      return `<main class="a-body"><div class="empty">${icon('lock')}<p>Questa console è di chi amministra l'app.</p>
+        <p class="small muted">Il primo amministratore si nomina dal database, non da qui: se si potesse dall'app, chiunque si darebbe i poteri da solo.</p></div></main>`;
+    }
+    const barra = `<div class="segwrap"><div class="seg seg-cls">
+      <button class="${aTab === 'numeri' ? 'on' : ''}" data-atab="numeri">Numeri</button>
+      <button class="${aTab === 'persone' ? 'on' : ''}" data-atab="persone">Persone</button>
+      <button class="${aTab === 'leghe' ? 'on' : ''}" data-atab="leghe">Leghe</button></div></div>`;
+    let corpo = '';
+    if (aTab === 'numeri') corpo = numeri(cache.numeri);
+    else if (aTab === 'persone') {
+      corpo = `<input class="field-input" id="adm-cerca" placeholder="Cerca per nome o e-mail" value="${esc(cerca)}" autocomplete="off">
+        ${persone(cache.persone)}`;
+    } else corpo = leghe(cache.leghe);
+    return `<main class="a-body">${barra}
+      ${aTab === 'numeri' ? `<div class="a-sec"><b>Come va</b><span>adesso</span></div>` : ''}
+      ${corpo}
+      ${aTab === 'persone' ? `<p class="small muted">«Link password» manda alla persona un messaggio per reimpostarla da sé: la password non la può leggere né scrivere nessuno, nemmeno da qui.</p>` : ''}
+    </main>`;
+  },
+  mount(root, ctx) {
+    if (!S.isAdmin()) return;
+    const carica = async () => {
+      try {
+        if (aTab === 'numeri' && !cache.numeri) { cache.numeri = await S.adminRiepilogo(); ctx.render(); }
+        if (aTab === 'leghe' && !cache.leghe) { cache.leghe = await S.adminLeghe(200); ctx.render(); }
+        if (aTab === 'persone' && !cache.persone) { cache.persone = await S.adminUtenti(cerca, 100); ctx.render(); }
+      } catch (e) { ctx.toast(e.message || 'Non è stato possibile leggere'); }
+    };
+    carica();
+    const inp = root.querySelector('#adm-cerca');
+    if (inp) {
+      // Si cerca alla pressione di Invio, non a ogni lettera: ogni ricerca e'
+      // una richiesta al database e scrivere "Alessandro" ne farebbe undici.
+      inp.onkeydown = async (e) => {
+        if (e.key !== 'Enter') return;
+        cerca = inp.value; cache.persone = null;
+        try { cache.persone = await S.adminUtenti(cerca, 100); } catch (err) { ctx.toast(err.message); }
+        ctx.render();
+      };
+    }
+    root.querySelector('main').addEventListener('click', async (e) => {
+      const t = e.target.closest('[data-atab]');
+      if (t) { aTab = t.dataset.atab; ctx.render(); return; }
+      const r = e.target.closest('[data-ruolo]');
+      if (r) {
+        const [ruolo, id, verso] = r.dataset.ruolo.split(':');
+        const nome = (cache.persone || []).find((u) => u.id === id)?.nome || 'questa persona';
+        const che = ruolo === 'is_admin' ? 'amministratore dell\'app' : 'Giudice Dati';
+        if (!confirm(`${verso === 'on' ? 'Dare' : 'Togliere'} a ${nome} i poteri di ${che}?`)) return;
+        r.disabled = true;
+        try {
+          await S.adminImpostaRuolo(id, ruolo, verso === 'on');
+          cache.persone = await S.adminUtenti(cerca, 100); cache.numeri = null;
+          ctx.toast('Fatto'); ctx.render();
+        } catch (err) { ctx.toast(err.message || 'Non è stato possibile'); r.disabled = false; }
+        return;
+      }
+      const rs = e.target.closest('[data-reset]');
+      if (rs) {
+        const mail = rs.dataset.reset;
+        if (!confirm(`Mandare a ${mail} il link per reimpostare la password?`)) return;
+        rs.disabled = true;
+        try { await S.mandaResetPassword(mail); ctx.toast('Link mandato'); }
+        catch (err) { ctx.toast(err.message || 'Non è stato possibile mandarlo'); }
+        rs.disabled = false;
+      }
+    });
+  },
+};

@@ -869,9 +869,27 @@ hr.sep{border:0;border-top:1px solid var(--border);margin:4px 0}
    sui piu' stretti (l'iPhone SE e' largo 320) e un filo di piu' sul tablet.
    L'altezza la porta l'aspect-ratio della maschera, in styles/logo.css. */
 .splash .marchio{width:min(230px,62vw);opacity:.97}
-.splash-bar{display:block;width:120px;height:3px;border-radius:2px;background:rgba(255,255,255,.25);margin-top:34px;overflow:hidden}
-.splash-bar i{display:block;width:40%;height:100%;border-radius:2px;background:var(--c-oro-400);animation:slide 1.1s ease-in-out infinite}
-@keyframes slide{0%{transform:translateX(-110%)}100%{transform:translateX(320%)}}
+/* La barra del caricamento: una cometa, non un blocchetto.
+
+   Il segmento ha una coda che sfuma — un gradiente che parte trasparente e
+   arriva all'oro pieno — e un alone, cosi' ha una direzione: si vede da dove
+   arriva e dove va. Il moto non e' lineare (cubic-bezier): parte piano,
+   accelera in mezzo e frena in fondo, che e' come si muovono le cose vere.
+   Un movimento lineare, a ripetizione, si legge come un meccanismo.
+
+   L'alone lo taglia overflow:hidden, e va bene cosi': serve a scaldare il
+   segmento dentro i tre punti della pista, non a uscirne. */
+.splash-bar{display:block;width:150px;height:3px;border-radius:99px;background:rgba(255,255,255,.18);margin-top:34px;overflow:hidden}
+.splash-bar i{display:block;width:45%;height:100%;border-radius:99px;
+  background:linear-gradient(90deg,rgba(255,216,122,0) 0%,var(--c-oro-300) 55%,var(--c-oro-500) 100%);
+  box-shadow:0 0 10px rgba(255,201,77,.75);
+  animation:slide 1.35s cubic-bezier(.45,.05,.35,1) infinite}
+@keyframes slide{0%{transform:translateX(-95%)}100%{transform:translateX(150%)}}
+/* Chi ha chiesto meno movimento non deve vedere niente che scorra: la pista
+   resta, col segmento fermo in mezzo, e dice lo stesso "sto caricando". */
+@media (prefers-reduced-motion:reduce){
+  .splash-bar i{animation:none;transform:translateX(61%)}
+}
 
 /* --- accesso --- */
 .auth{justify-content:center;gap:14px}

@@ -30,8 +30,13 @@ const TETTO_CSS = 48 * 1024;   // oggi 35 kB: 16 di corona, 17 di marchio
   et(css.length <= TETTO_CSS, `styles/logo.css pesa ${Math.round(css.length / 1024)} kB (tetto ${TETTO_CSS / 1024})`);
   et(/data:image\/webp;base64/.test(css), 'il marchio e\' dentro il CSS, non una richiesta a parte');
 
-  for (const [nome, vp] of [['telefono', { width: 390, height: 844 }], ['stretto', { width: 320, height: 568 }]]) {
-    const ctx = await b.newContext({ viewport: vp, deviceScaleFactor: 2, isMobile: true, hasTouch: true, serviceWorkers: 'block' });
+  for (const [nome, vp, ridotto] of [
+    ['telefono', { width: 390, height: 844 }, false],
+    ['stretto', { width: 320, height: 568 }, false],
+    ['motoridotto', { width: 390, height: 844 }, true],
+  ]) {
+    const ctx = await b.newContext({ viewport: vp, deviceScaleFactor: 2, isMobile: true, hasTouch: true, serviceWorkers: 'block',
+      ...(ridotto ? { reducedMotion: 'reduce' } : {}) });
     await ctx.addInitScript(() => {
       window.__SUPABASE_JS__ = '/tests/mock-supabase.js';
       localStorage.setItem('fcs:auth', 'supabase');
@@ -84,6 +89,41 @@ const TETTO_CSS = 48 * 1024;   // oggi 35 kB: 16 di corona, 17 di marchio
         et(scarto < 1, `${nome}: non e' schiacciato (${scarto.toFixed(2)}% di scarto dalle proporzioni vere)`);
       } else {
         et(false, `${nome}: la maschera non si carica`);
+      }
+    }
+    // LA BARRA DEL CARICAMENTO. E' una cometa: un segmento con la coda che
+    // sfuma e un alone, quindi ha una direzione. Un blocchetto pieno che va
+    // avanti e indietro non dice da dove arriva.
+    const bar = await p.evaluate(() => {
+      const t = document.querySelector('.splash-bar'), i = t?.querySelector('i');
+      if (!t || !i) return null;
+      const cs = getComputedStyle(i), ct = getComputedStyle(t);
+      const rt = t.getBoundingClientRect(), ri = i.getBoundingClientRect();
+      return {
+        coda: /linear-gradient/.test(cs.backgroundImage),
+        alone: cs.boxShadow !== 'none',
+        pista: ct.backgroundColor,
+        tonda: parseFloat(ct.borderRadius) >= 2,
+        anim: i.getAnimations().map((a) => ({ n: a.animationName, s: a.playState })),
+        // il segmento non deve uscire dalla pista: la taglia overflow:hidden
+        dentro: ct.overflow === 'hidden',
+        visibile: ri.width > 0 && ri.height > 0,
+        largo: +(ri.width / rt.width * 100).toFixed(0),
+      };
+    });
+    et(!!bar, `${nome}: la barra del caricamento c'e'`);
+    if (bar) {
+      et(bar.coda, `${nome}: il segmento ha la coda che sfuma (gradiente)`);
+      et(bar.alone, `${nome}: e l'alone`);
+      et(bar.dentro, `${nome}: che resta dentro la pista`);
+      et(bar.largo >= 35 && bar.largo <= 60, `${nome}: il segmento occupa il ${bar.largo}% della pista`);
+      if (ridotto) {
+        // Chi ha chiesto meno movimento non deve vedere niente che scorra, ma
+        // la barra deve restare: se sparisce, lo splash sembra piantato.
+        et(bar.anim.length === 0, `${nome}: niente animazione (${bar.anim.map((a) => a.n).join(',') || 'nessuna'})`);
+        et(bar.visibile, `${nome}: la barra resta visibile lo stesso`);
+      } else {
+        et(bar.anim.some((a) => a.s === 'running'), `${nome}: l'animazione gira (${bar.anim.map((a) => `${a.n}:${a.s}`).join(', ') || 'nessuna'})`);
       }
     }
     et(errori.length === 0, `${nome}: nessun errore JS${errori.length ? ' — ' + errori[0] : ''}`);

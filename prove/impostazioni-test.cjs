@@ -66,6 +66,39 @@ const ok = [], ko = []; const et = (c, t) => (c ? ok : ko).push(t);
     const sistema = await p.evaluate(() => document.documentElement.getAttribute('data-theme'));
     et(sistema === null, `${tema}: "Sistema" togle l'attributo dall'html (${sistema})`);
 
+    // 6. L'INIZIALE DELL'AVATAR SU OGNI COLORE DELLA TAVOLOZZA.
+    // Il colore della squadra l'app lo pesca a caso, e l'iniziale del profilo
+    // era bianca fissa: sull'oro (#d4a017) misurava 2,38 di contrasto. L'audit
+    // lo vedeva una volta su dieci, cioe' quando il caso pescava quel colore.
+    // Qui i colori si impongono tutti, uno dopo l'altro, e la prova non
+    // dipende piu' dalla fortuna.
+    if (tema === 'light') {
+      const TAVOLOZZA = ['#1B84C6', '#2b7a3d', '#8a1d1d', '#5b3fa6', '#c46a00', '#1a1a1a', '#2c7a7b', '#b8321f', '#d4a017', '#0e5e93'];
+      const storti = [];
+      for (const c of TAVOLOZZA) {
+        await p.evaluate((c) => {
+          const s = JSON.parse(localStorage.getItem('fcs:mock'));
+          s.tables.league_members.find((m) => m.user_id === s.userId).color = c;
+          localStorage.setItem('fcs:mock', JSON.stringify(s));
+        }, c);
+        await p.evaluate(() => { location.hash = '#/impostazioni'; });
+        await p.reload({ waitUntil: 'load' }); await w(1500);
+        const m = await p.evaluate(() => {
+          const e = document.querySelector('.pf-av'); if (!e) return null;
+          const cs = getComputedStyle(e);
+          const leggi = (v) => { const n = v.match(/[\d.]+/g).slice(0, 3).map(Number); return { r: n[0], g: n[1], b: n[2] }; };
+          const lum = (c) => { const f = (v) => { v /= 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); };
+            return 0.2126 * f(c.r) + 0.7152 * f(c.g) + 0.0722 * f(c.b); };
+          const a = lum(leggi(cs.color)), b = lum(leggi(cs.backgroundColor));
+          return { r: +(((Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05))).toFixed(2), testo: cs.color, fondo: cs.backgroundColor, px: parseFloat(cs.fontSize) };
+        });
+        if (!m) { storti.push(`${c}: nessun avatar`); continue; }
+        if (m.r < 4.5) storti.push(`${c}: ${m.r} (${m.testo} su ${m.fondo})`);
+      }
+      et(storti.length === 0, storti.length
+        ? `l'iniziale del profilo non si legge su ${storti.length} colori — ${storti.slice(0, 3).join(' | ')}`
+        : `l'iniziale del profilo si legge su tutti i ${TAVOLOZZA.length} colori della tavolozza (AA 4,5)`);
+    }
     et(errori.length === 0, errori.length ? `${tema} eccezioni: ${errori.join(' | ')}` : `${tema}: nessuna eccezione`);
     await ctx.close();
   }

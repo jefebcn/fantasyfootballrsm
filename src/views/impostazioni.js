@@ -1,5 +1,6 @@
 import * as S from '../state.js';
 import { esc, icon, pic } from '../ui.js';
+import { tintaLeggibile } from '../colore.js';
 import { applyTheme } from '../app.js';
 import { CONTATTO, LINGUE } from '../config.js';
 import * as AV from '../notifiche.js';
@@ -98,9 +99,15 @@ export const impostazioni = {
 
     const ruolo = p?.is_judge ? 'Giudice Dati' : me?.role === 'admin' ? 'Amministratore di lega' : me ? 'Fantallenatore' : 'Nessuna lega';
     const iniziale = (p?.display_name || u?.email || '?').trim()[0]?.toUpperCase() || '?';
+    const tinta = tintaLeggibile(me?.color);
 
     const testa = `<div class="pf-testa">
-      <span class="pf-av" style="--c:${me?.color || 'var(--primary)'}">${esc(iniziale)}</span>
+      <!-- Il colore della squadra e' assegnato a caso alla creazione, e su una
+           tinta chiara (l'oro del listone dei colori) l'iniziale bianca fissa
+           scendeva a 2,38 di contrasto. Qui vale la stessa regola degli
+           stemmi: tintaLeggibile() sceglie l'inchiostro e sposta il fondo
+           quanto basta. -->
+      <span class="pf-av" style="--c:${tinta.fondo};color:${tinta.inchiostro}">${esc(iniziale)}</span>
       <div class="pf-dati">
         <span class="pf-et">E-mail</span><b>${esc(u?.email || '—')}</b>
         <span class="pf-et">Nome</span><b>${esc(p?.display_name || '—')}</b>

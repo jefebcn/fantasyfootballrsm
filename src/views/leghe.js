@@ -1,10 +1,12 @@
 import * as S from '../state.js';
 import { esc, icon, crest, logo, pic, sec } from '../ui.js';
+import { COLORI_SQUADRA } from '../colore.js';
 
-const COLORS = ['#1B84C6', '#2b7a3d', '#8a1d1d', '#5b3fa6', '#c46a00', '#1a1a1a', '#2c7a7b', '#b8321f', '#d4a017', '#0e5e93'];
+
 let form = 'none'; // 'create' | 'join' | 'pubblica'
 let pubbliche = null;   // elenco dal server: null = non ancora chiesto
 let entraIn = null;     // id della lega pubblica in cui si sta entrando
+let apriEntra = null;   // arrivati dal banner: ci si scorre sopra una volta sola
 // Con Apple e «Nascondi la mia e-mail» il nome non arriva: lo chiediamo qui,
 // che è il passaggio obbligato prima di entrare in una lega.
 const nameField = () => S.nomeDaCompletare()
@@ -28,7 +30,7 @@ const nameField = () => S.nomeDaCompletare()
 const teamFields = () => `${nameField()}<label class="lbl" for="team">Nome della tua squadra</label><input class="field-input" id="team" placeholder="es. Hasta El Chapo FC" maxlength="28">
   <p class="small muted" style="margin:6px 2px 0">Colori e stemma si scelgono dopo, in «La mia squadra».</p>`;
 /** Un colore di partenza a caso: si cambia in "La mia squadra". */
-const coloreACaso = () => COLORS[Math.floor(Math.random() * COLORS.length)];
+const coloreACaso = () => COLORI_SQUADRA[Math.floor(Math.random() * COLORI_SQUADRA.length)];
 
 /** Tre punti su cosa rende diverso il Voto Titano: la schermata senza lega era vuota. */
 function comeFunziona() {
@@ -123,6 +125,17 @@ export const leghe = {
   mount(root, ctx) {
     // Un colore a caso per questa creazione: non si chiede piu' all'utente.
     const color = coloreACaso();
+    // Chi arriva dal banner del montepremi vuole entrare in QUELLA lega: il
+    // modulo del nome squadra lo trova aperto, e la pagina ci scorre sopra.
+    // Senza questo passaggio finiva nell'elenco e la doveva cercare.
+    try {
+      const chiesta = sessionStorage.getItem('fcs:entra-pubblica');
+      if (chiesta) { sessionStorage.removeItem('fcs:entra-pubblica'); entraIn = chiesta; apriEntra = chiesta; }
+    } catch { /* niente storage: resta l'elenco */ }
+    if (apriEntra) {
+      const modulo = root.querySelector('#go-entra')?.closest('.a-card');
+      if (modulo) { apriEntra = null; modulo.scrollIntoView({ block: 'center', behavior: 'smooth' }); }
+    }
     // L'elenco delle pubbliche si chiede una volta per apertura di schermata,
     // non a ogni ridisegno: senza questa guardia ogni tocco su un colore
     // faceva una richiesta al server.

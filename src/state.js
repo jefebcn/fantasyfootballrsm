@@ -236,6 +236,41 @@ export async function entraLegaPubblica(id, teamName, color, initials) {
   return id;
 }
 export const leghePubbliche = () => remote.leghePubbliche();
+
+/**
+ * L'elenco delle pubbliche tenuto in memoria, per chi lo deve leggere senza
+ * aspettare: la dashboard si disegna tutta insieme e non puo' fermarsi su una
+ * richiesta di rete.
+ *
+ * Si chiede UNA volta per apertura dell'app. Chi chiama passa cosa fare
+ * quando arriva, e nel frattempo legge null, che vuol dire "non lo so
+ * ancora" e non "non ce n'e'": sono due cose diverse e un banner che lampeggia
+ * a ogni ridisegno nasce dal confonderle.
+ */
+let cachePubbliche = null; let inVolo = false;
+export const pubblicheInCache = () => cachePubbliche;
+export function caricaPubbliche(poi) {
+  if (cachePubbliche || inVolo || !user) return;
+  inVolo = true;
+  remote.leghePubbliche()
+    .then((l) => { cachePubbliche = l || []; if (poi) poi(); })
+    .catch(() => { cachePubbliche = []; })
+    .finally(() => { inVolo = false; });
+}
+/**
+ * La lega pubblica da proporre a chi non e' in una: quella col premio piu'
+ * ricco fra quelle in cui non e' ancora dentro e che non sono al completo.
+ * Null quando non c'e' niente da proporre — compresa l'attesa della risposta.
+ */
+export function pubblicaDaProporre() {
+  if (legaPubblica() || !cachePubbliche) return null;
+  const buone = cachePubbliche.filter((l) => !l.dentro && l.membri < l.max_membri);
+  if (!buone.length) return null;
+  const premio = (l) => (l.premi || []).slice().sort((a, b) => a.posto - b.posto)[0] || null;
+  // Col premio davanti: e' quello che fa venire voglia di entrare, e fra due
+  // leghe senza premio conta la piu' popolata, che e' quella che sta partendo.
+  return buone.slice().sort((a, b) => (premio(b) ? 1 : 0) - (premio(a) ? 1 : 0) || b.membri - a.membri)[0];
+}
 export async function salvaPremi(pr) {
   const v = await remote.impostaPremi(base.league.id, pr);
   base.league.premi = v; notify();

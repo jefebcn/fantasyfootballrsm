@@ -13,7 +13,13 @@ export const calendario = {
       <div class="gsel" id="gsel">${Array.from({ length: 30 }, (_, i) => `<a href="#/calendario/${i + 1}" class="gs${i + 1 === n ? ' on' : ''}">G${i + 1}${i + 1 === n ? '<i></i>' : ''}</a>`).join('')}</div>
       ${sec('Scontri di lega', `${fx.length} ${fx.length === 1 ? 'partita' : 'partite'}`)}
       <div class="statusline">${badge(st, st === 'open' ? `lock ${dateIt(md.lockAt)} ${timeIt(md.lockAt)}` : st === 'scheduled' ? dateIt(md.lockAt) : '')}</div>
-      ${fx.length ? fx.map((r) => matchCard(r, S.managersById)).join('') : `<div class="empty piccolo">${logo()}<p>Nessuno scontro: servono almeno due squadre nella lega.</p></div>`}
+      ${fx.length ? fx.map((r) => matchCard(r, S.managersById)).join('')
+    : `<div class="empty piccolo">${logo()}<p>${n < S.primaGiornata()
+      // Il motivo vero, invece di dare la colpa al numero di squadre: questa
+      // giornata e' finita prima che la lega esistesse.
+      ? `La lega è nata dalla ${S.primaGiornata()}ª giornata: la ${n}ª si è giocata prima, e non fa parte di questo campionato.`
+      : S.aPunti() ? 'In una lega pubblica non ci sono scontri diretti: si sommano i fantapunti di ogni giornata.'
+        : 'Nessuno scontro: servono almeno due squadre nella lega.'}</p></div>`}
       ${sec('Partite del campionato', `${n}ª giornata`)}
       ${Object.entries(real.reduce((acc, m) => { (acc[dateIt(m.kickoffAt)] ||= []).push(m); return acc; }, {}))
         .map(([giorno, lista]) => `<div class="daygroup"><div class="dayhead">${esc(giorno)}</div>${lista.map((m) => {

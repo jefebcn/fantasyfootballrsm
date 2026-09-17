@@ -97,6 +97,22 @@ const MOMENTI = [
       et(new RegExp(`GIORNATA ${m.attesa}\\b`, 'i').test(live.testo), `${m.etichetta}: il pre-match apre la giornata ${m.attesa}`);
       et(m.data.test(live.testo), `${m.etichetta}: e ci scrive la sua data di chiusura`);
     }
+    // LE GIORNATE PRIMA DELLA LEGA non sono sue: la lega creata adesso parte
+    // dalla giornata aperta adesso, e di quelle passate non deve chiedere
+    // niente — ne' voti da calcolare, ne' incontri.
+    await p.evaluate(() => { location.hash = '#/'; }); await w(900);
+    const passate = await p.evaluate(() => {
+      const t = document.body.innerText;
+      return { daCalcolare: (t.match(/Da calcolare\s*(\d+)ª/) || [])[1] || null };
+    });
+    et(passate.daCalcolare === null,
+      `${m.etichetta}: non chiede di calcolare giornate di prima della lega (${passate.daCalcolare || 'nessuna'})`);
+    if (m.attesa > 1) {
+      await p.evaluate((n) => { location.hash = `#/calendario/${n}`; }, m.attesa - 1); await w(1000);
+      const cal = await p.evaluate(() => document.body.innerText);
+      et(/si è giocata prima|nata dalla/.test(cal),
+        `${m.etichetta}: il calendario della ${m.attesa - 1}ª dice che è di prima della lega`);
+    }
     et(errori.length === 0, `${m.etichetta}: nessun errore JS${errori.length ? ' — ' + errori[0] : ''}`);
     await ctx.close();
   }

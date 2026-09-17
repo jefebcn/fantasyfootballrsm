@@ -43,6 +43,29 @@ python3 scripts/make-icons.py   # rigenera le icone
 
 Deploy: statico su Vercel dal branch `main`; il design kit resta raggiungibile su `/design/`.
 
+## Che giornata si gioca
+
+Tre nozioni diverse, e tenerle separate è quello che evita il guasto in cui
+l'app annuncia una giornata finita tre settimane prima:
+
+- **`giornataAperta()`** — la prima che si chiude nel futuro. Viene dal
+  calendario FSGC e da nient'altro, quindi non si pianta mai.
+- **`currentMatchday()`** — la più avanti fra l'ultima col lock passato e
+  l'ultima con dei dati inseriti. Era definita solo come la seconda, e senza
+  referti caricati restava la prima per sempre.
+- **`primaGiornata()`** — la prima giornata *di questa lega*: quella ancora
+  aperta quando la lega è stata creata. Una lega nata a metà settembre non ha
+  una prima, una seconda e una terza giornata, e non deve chiederne i voti.
+  Si ricava dalla data di creazione, non da una colonna: così vale anche per
+  le leghe che esistono già.
+
+Da qui derivano il calendario degli scontri (niente prima di `primaGiornata`),
+la classifica, la formazione da schierare e la scheda "Da calcolare" in home.
+
+`prove/giornata-corrente.cjs` sposta l'orologio in tre momenti della stagione
+e controlla cosa dice l'app, compreso che la data di chiusura mostrata non sia
+mai nel passato.
+
 ## Ruoli
 
 | Ruolo | Come si ottiene | Cosa può fare |

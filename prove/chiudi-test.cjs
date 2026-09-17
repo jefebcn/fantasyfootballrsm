@@ -14,10 +14,12 @@ const ok = [], ko = []; const et = (c, t) => (c ? ok : ko).push(t);
     localStorage.setItem('fcs:prefs', JSON.stringify({ onboarded: true, theme: 'dark' }));
     localStorage.setItem('fcs:supabase', JSON.stringify({ url: 'https://mock.supabase.co', key: 'mock-key-mock-key-mock' }));
   });
-  // La giornata corrente nei dati di prova e' la 4a, che non e' ancora stata
-  // giocata: lo stato "da chiudere" non si raggiunge. Si sposta l'orologio a
-  // dopo il suo lock, cosi' la giornata risulta finita e il tasto deve comparire.
-  await ctx.clock.install({ time: new Date('2026-09-20T12:00:00Z') });
+  // L'orologio parte PRIMA del lock della 4a giornata (18/09 15:00) e la lega
+  // si crea qui: una lega parte dalla prima giornata ancora aperta quando
+  // nasce, quindi creandola dopo il 18 la quarta non sarebbe sua e non ci
+  // sarebbe niente da calcolare. Piu' sotto l'orologio si sposta a dopo il
+  // lock, e la quarta diventa una giornata giocata e senza referti.
+  await ctx.clock.install({ time: new Date('2026-09-15T12:00:00Z') });
   const p = await ctx.newPage(); p.on('dialog', d => d.accept());
   const errs = []; p.on('pageerror', e => errs.push(e.message));
   const w = (ms = 450) => p.waitForTimeout(ms);
@@ -54,6 +56,12 @@ const ok = [], ko = []; const et = (c, t) => (c ? ok : ko).push(t);
   // "l'ultima con dei dati" e senza dati non arrivava mai a quello stato. Il
   // giro non serve piu', e la pagina del Giudice si controlla per quello che
   // offre davvero: la quarta non e' congelata, quindi propone di congelarla.
+  // ORA si va oltre il lock della 4a: la lega esiste da prima, quindi quella
+  // giornata e' sua, e' finita e i referti non ci sono.
+  await p.clock.setFixedTime(new Date('2026-09-20T12:00:00Z'));
+  await p.evaluate(() => { location.hash = '#/'; });
+  await p.reload({ waitUntil: 'load' }); await w(1800);
+
   await p.evaluate(() => { location.hash = '#/admin/congela'; }); await w(900);
   const giudice = await p.evaluate(() => ({
     congela: !!document.querySelector('#freeze-confirm'),

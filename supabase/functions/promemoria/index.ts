@@ -133,7 +133,7 @@ const gestisci = async (req: Request): Promise<Response> => {
     for (const g of gente ?? []) {
       const carico = JSON.stringify({
         titolo: `Giornata ${l.matchday}: manca la formazione`,
-        corpo: `${g.team_name} in ${g.league_name}. Si chiude ${quanto}: senza consegna vale l'ultima valida, o il 4-4-2 d'ufficio.`,
+        corpo: `${g.team_name} in ${g.league_name}. Si chiude ${quanto}: senza consegna la partita è persa 0-3 a tavolino.`,
         tag: `formazione-${l.matchday}`,
         url: './#/rosa/formazione',
       });

@@ -79,7 +79,7 @@ function incontri(n) {
     return `<a class="gr${mio ? ' io' : ''}" href="#/live/${f.id}">
       <span class="gsq">${crest(h, 'sm')}<b>${esc(h.teamName)}</b></span>
       <span class="pt">${r.played ? `${r.homeGoals}<i>–</i>${r.awayGoals}` : '<i>vs</i>'}
-        <small>${r.played ? `${fmt(r.homeScore)} – ${fmt(r.awayScore)}` : ''}</small></span>
+        <small>${r.played ? (r.forfait ? 'a tavolino' : `${fmt(r.homeScore)} – ${fmt(r.awayScore)}`) : ''}</small></span>
       <span class="gsq osp"><b>${esc(a.teamName)}</b>${crest(a, 'sm')}</span></a>`;
   }).join('');
   return `<div class="giornata">${righe}</div>`;

@@ -6,7 +6,7 @@
  * Tutto ciò che il motore calcola è derivato e ricalcolabile da zero.
  */
 import { buildSeason, draftRosters as buildDraft, mulberry32 } from './data.js';
-import { computeRating, computeLineupResult, computeStandings, defaultLineup, validaAcquisto, offertaMassima, DEFAULT_RULES , recordLega as computeRecord, testaATesta as computeH2H} from './engine.js';
+import { computeRating, computeLineupResult, computeStandings, defaultLineup, validaAcquisto, offertaMassima, DEFAULT_RULES , recordLega as computeRecord, testaATesta as computeH2H, esitoScontro } from './engine.js';
 import * as remote from './backend.js';
 import * as clerk from './auth-clerk.js';
 import * as AV from './notifiche.js';
@@ -429,7 +429,14 @@ export function saveLineup(n, managerId, lineup) {
   const rec = { ...lineup, submittedAt: now().toISOString() }; L.lineups[`${n}:${managerId}`] = rec; notify();
   return remote.upsertLineup(base.league.id, managerId, n, rec).catch((e) => { onError(e); refresh(); });
 }
-export function lineupResult(n, managerId, isHome = false) { return memo(`lr:${n}:${managerId}:${isHome ? 'c' : 't'}`, () => { const lineup = lineupFor(n, managerId); return { lineup, ...computeLineupResult({ lineup, ratings: ratingsOf(n), players: playersById, managerCount: Math.max(6, base.league.managerCount), isHome, rules: rules() }) }; }); }
+/**
+ * Il punteggio di una squadra in una giornata, dalla formazione CONSEGNATA.
+ * Senza consegna torna null: la partita e' persa a tavolino (art. 8.4) e a
+ * dirlo e' esitoScontro(). lineupFor(), che ripiega sull'ultima schierata o
+ * sull'undici d'ufficio, serve solo all'editor e alle probabili: qui non
+ * entra piu', perche' una formazione mai consegnata non fa punti.
+ */
+export function lineupResult(n, managerId, isHome = false) { return memo(`lr:${n}:${managerId}:${isHome ? 'c' : 't'}`, () => { const lineup = savedLineup(n, managerId); if (!lineup) return null; return { lineup, ...computeLineupResult({ lineup, ratings: ratingsOf(n), players: playersById, managerCount: Math.max(6, base.league.managerCount), isHome, rules: rules() }) }; }); }
 export function fixturesOf(n) {
   return memo(`fx:${n}`, () => {
     const ids = base.managers.map((m) => m.id); if (ids.length < 2) return [];
@@ -445,7 +452,7 @@ export function fixtureResult(f) {
   // Senza nessun dato inserito la giornata non produce risultati: niente 0-0 d'ufficio.
   if (st === 'open' || st === 'scheduled' || !hasData(f.matchday)) return { ...f, played: false };
   const h = lineupResult(f.matchday, f.homeManagerId, true), a = lineupResult(f.matchday, f.awayManagerId);
-  return { ...f, played: true, homeGoals: h.goals, awayGoals: a.goals, homeScore: h.total, awayScore: a.total, home: h, away: a, status: st };
+  return { ...f, played: true, ...esitoScontro(h, a, rules()), status: st };
 }
 export function resultsUntil(n) { const out = []; for (let k = 1; k <= n; k++) for (const f of fixturesOf(k)) { const r = fixtureResult(f); if (r.played) out.push(r); } return out; }
 export function standings() { return memo('standings', () => computeStandings(base.managers, resultsUntil(currentMatchday()), rules())); }

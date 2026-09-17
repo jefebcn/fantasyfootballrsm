@@ -44,6 +44,7 @@ export const DEFAULT_RULES = {
   budget: 500,
   points: { win: 3, draw: 1, loss: 0 },
   maxPerClub: 0, // 0 = nessun tetto (art. 2.6 opzionale)
+  forfeitGoals: 3, // formazione non consegnata: l'avversario vince a tavolino (art. 8.4)
 };
 
 export const SV_STATUSES = new Set(['postponed', 'suspended_before_45', 'awarded']);
@@ -246,7 +247,36 @@ function makeRow(id, r, role, isCaptain, rules) {
   return { playerId: id, role, isSV: false, baseVote: r.baseVote, bonus, fantaVote: r1(r.baseVote + bonus), isCaptain, breakdown: r.breakdown, subFor: null, official: false };
 }
 
-/** Classifica (art. 12). results: [{homeManagerId, awayManagerId, homeGoals, awayGoals, homeScore, awayScore}] */
+/**
+ * L'esito di uno scontro dalle due formazioni CONSEGNATE (art. 8.4).
+ *
+ * Chi non consegna non gioca: niente formazione della settimana prima, niente
+ * undici d'ufficio. La partita e' persa 0-3 a tavolino e il fantapunteggio di
+ * giornata e' zero; chi ha consegnato prende i suoi fantapunti veri ma i gol
+ * sono quelli del tavolino, non quelli della conversione. Se non consegna
+ * nessuno dei due, perdono tutti e due 0-3: come nel calcio vero, e come
+ * l'unica regola che non premia chi si e' dimenticato solo perche' si e'
+ * dimenticato anche l'altro.
+ *
+ * Fino al 17 settembre valeva l'ultima formazione, o il 4-4-2 con le
+ * quotazioni piu' alte. Alex ha deciso cosi'. Il 4-4-2 resta solo come
+ * proposta nell'editor.
+ *
+ * @param home computeLineupResult() del lato casa, o null se non consegnata
+ * @param away idem per il lato ospite
+ * @returns gol, fantapunti e i due lati; `forfait` dice chi non ha consegnato
+ *   ('home', 'away', 'entrambi') o null se hanno giocato tutti e due.
+ */
+export function esitoScontro(home, away, rules = DEFAULT_RULES) {
+  const g = rules.forfeitGoals ?? 3;
+  const vuoto = () => ({ lineup: null, total: 0, goals: 0, rows: [], subsApplied: 0, forfait: true });
+  if (home && away) return { homeGoals: home.goals, awayGoals: away.goals, homeScore: home.total, awayScore: away.total, home, away, forfait: null };
+  if (home) return { homeGoals: g, awayGoals: 0, homeScore: home.total, awayScore: 0, home, away: vuoto(), forfait: 'away' };
+  if (away) return { homeGoals: 0, awayGoals: g, homeScore: 0, awayScore: away.total, home: vuoto(), away, forfait: 'home' };
+  return { homeGoals: 0, awayGoals: 0, homeScore: 0, awayScore: 0, home: vuoto(), away: vuoto(), forfait: 'entrambi' };
+}
+
+/** Classifica (art. 12). results: [{homeManagerId, awayManagerId, homeGoals, awayGoals, homeScore, awayScore, forfait?}] */
 /**
  * I record della lega, dai risultati gia' giocati.
  *
@@ -360,6 +390,13 @@ export function computeStandings(managers, results, rules = DEFAULT_RULES) {
     const h = t.get(f.homeManagerId), a = t.get(f.awayManagerId);
     if (!h || !a) continue;
     h.played++; a.played++;
+    // Doppio tavolino: 0-0 nel tabellino ma non e' un pareggio, perdono in
+    // due. A ciascuno una sconfitta e i gol del tavolino subiti.
+    if (f.forfait === 'entrambi') {
+      const g = rules.forfeitGoals ?? 3;
+      h.lost++; a.lost++; h.gs += g; a.gs += g;
+      continue;
+    }
     h.gf += f.homeGoals; h.gs += f.awayGoals; a.gf += f.awayGoals; a.gs += f.homeGoals;
     h.fantapunti = r1(h.fantapunti + f.homeScore); a.fantapunti = r1(a.fantapunti + f.awayScore);
     if (f.homeGoals > f.awayGoals) { h.won++; a.lost++; h.points += rules.points.win; }
@@ -372,6 +409,7 @@ export function computeStandings(managers, results, rules = DEFAULT_RULES) {
     for (const f of results) {
       const pair = (f.homeManagerId === x.managerId && f.awayManagerId === y.managerId) || (f.homeManagerId === y.managerId && f.awayManagerId === x.managerId);
       if (!pair) continue;
+      if (f.forfait === 'entrambi') continue;      // persa da tutti e due: zero punti a testa
       const xg = f.homeManagerId === x.managerId ? f.homeGoals : f.awayGoals;
       const yg = f.homeManagerId === x.managerId ? f.awayGoals : f.homeGoals;
       if (xg > yg) px += 3; else if (xg < yg) py += 3; else { px++; py++; }

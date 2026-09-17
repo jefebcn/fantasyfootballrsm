@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { computeRating, computeLineupResult, computeStandings, toGoals, validateLineup, defaultLineup, DEFAULT_RULES, movimenti, recordLega, testaATesta} from '../src/engine.js';
+import { computeRating, computeLineupResult, computeStandings, toGoals, validateLineup, defaultLineup, DEFAULT_RULES, movimenti, recordLega, testaATesta, esitoScontro } from '../src/engine.js';
 
 const P = (id, role, clubId = 'home') => ({ id, role, clubId, quotation: 10 });
 const match = (o = {}) => ({ id: 'm1', homeClubId: 'home', awayClubId: 'away', homeGoals: 1, awayGoals: 0, status: 'played', ...o });
@@ -120,7 +120,7 @@ test('classifica: punti › fantapunti › differenza reti (art. 12.2)', () => {
   assert.deepEqual(s.map((r) => r.managerId), ['C', 'A', 'B']);
   assert.equal(s[0].points, 3); assert.equal(s[2].lost, 2);
 });
-test('validazione formazione e formazione d\'ufficio 4-4-2 (art. 8.4)', () => {
+test('validazione formazione e proposta d\'ufficio 4-4-2 per l\'editor (art. 8.4)', () => {
   assert.deepEqual(validateLineup(lineup, players), []);
   assert.ok(validateLineup({ ...lineup, formation: '4-4-2', starters: lineup.starters.slice(0, 10) }, players).length > 0);
   const d = defaultLineup([...players.keys()], players);
@@ -134,6 +134,53 @@ test('una giornata senza dati non produce risultati: nessun 5,5 d\'ufficio a tap
   assert.equal(res.rows.every((r) => r.official), true);
   assert.equal(res.total, 5.5 * 11);
   assert.equal(res.goals, 0);                   // 60,5 < soglia 69,0
+});
+
+/* ---- formazione non consegnata: a tavolino (art. 8.4) ---- */
+
+const giocata = (total) => ({ total, goals: toGoals(total, 10), rows: [{}], subsApplied: [], lineup: { formation: '4-4-2' } });
+
+test('a tavolino: chi non consegna perde 0-3, chi consegna tiene i suoi fantapunti (art. 8.4)', () => {
+  const casa = giocata(80);                        // 80 → 2 gol con 10 squadre, ma a tavolino sono 3
+  const e = esitoScontro(casa, null);
+  assert.equal(e.forfait, 'away');
+  assert.deepEqual([e.homeGoals, e.awayGoals], [3, 0]);
+  assert.deepEqual([e.homeScore, e.awayScore], [80, 0]);
+  assert.equal(e.away.lineup, null); assert.deepEqual(e.away.rows, []); assert.equal(e.away.forfait, true);
+  const r = esitoScontro(null, giocata(66));
+  assert.equal(r.forfait, 'home');
+  assert.deepEqual([r.homeGoals, r.awayGoals], [0, 3]);
+  assert.deepEqual([r.homeScore, r.awayScore], [0, 66]);
+});
+
+test('a tavolino: il numero di gol viene dalle regole', () => {
+  const e = esitoScontro(giocata(70), null, { ...DEFAULT_RULES, forfeitGoals: 2 });
+  assert.deepEqual([e.homeGoals, e.awayGoals], [2, 0]);
+});
+
+test('tutte e due consegnate: nessun tavolino, i gol sono quelli della conversione', () => {
+  const e = esitoScontro(giocata(80), giocata(66));
+  assert.equal(e.forfait, null);
+  assert.deepEqual([e.homeGoals, e.awayGoals], [toGoals(80, 10), toGoals(66, 10)]);
+});
+
+test('nessuno consegna: 0-0 nel tabellino ma perdono in due, niente punto del pareggio', () => {
+  const e = esitoScontro(null, null);
+  assert.equal(e.forfait, 'entrambi');
+  const managers = [{ id: 'a' }, { id: 'b' }];
+  const st = computeStandings(managers, [{ homeManagerId: 'a', awayManagerId: 'b', ...e }]);
+  for (const riga of st) {
+    assert.equal(riga.points, 0); assert.equal(riga.lost, 1); assert.equal(riga.drawn, 0);
+    assert.equal(riga.gf, 0); assert.equal(riga.gs, 3); assert.equal(riga.played, 1);
+  }
+});
+
+test('in classifica il tavolino conta come una vittoria 3-0 normale', () => {
+  const managers = [{ id: 'a' }, { id: 'b' }];
+  const st = computeStandings(managers, [{ homeManagerId: 'a', awayManagerId: 'b', ...esitoScontro(giocata(80), null) }]);
+  const a = st.find((r) => r.managerId === 'a'), b = st.find((r) => r.managerId === 'b');
+  assert.equal(a.points, 3); assert.equal(a.gf, 3); assert.equal(a.fantapunti, 80);
+  assert.equal(b.points, 0); assert.equal(b.gs, 3); assert.equal(b.fantapunti, 0);
 });
 
 /* ---- regole riprese dal fantacalcio e adattate (artt. 5.3, 5.4, 8.5, 11.3) ---- */

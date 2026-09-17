@@ -109,6 +109,7 @@ export const privacy = {
       ${blocco('I tuoi diritti', [
     'Puoi chiedere di <b>vedere</b> i dati che ti riguardano, di <b>correggerli</b>, di <b>cancellarli</b>, di <b>limitarne</b> l\'uso, di <b>riceverli</b> in un formato leggibile da una macchina e di <b>opporti</b> a un trattamento fondato sul legittimo interesse.',
     `Molte cose le fai già da solo: nome squadra, stemma e maglia si cambiano in <a href="#/squadra">La mia squadra</a>, e chi ha creato una lega la elimina da <a href="#/lega">Partecipanti</a> con tutto quello che conteneva, per tutti.`,
+    `<b>Portarli via</b> e <b>cancellare il profilo</b> sono due bottoni in <a href="#/impostazioni">Profilo</a>: il primo ti scarica un file con account, squadra, rosa e formazioni — si costruisce sul tuo telefono e non passa da nessun server; il secondo toglie account, squadre, rose, formazioni e contestazioni, e le leghe in cui sei rimasto solo se ne vanno con te. Se sei amministratore di una lega dove gioca anche qualcun altro si ferma e te lo dice: prima la passi a un altro o la elimini.`,
     titolareCompilato()
       ? `Per il resto scrivi a ${esc(TITOLARE.email || CONTATTO)}: la risposta arriva entro un mese.`
       : 'Per il resto, finché non c\'è un indirizzo indicato, la richiesta va fatta a chi amministra la tua lega.',
@@ -154,7 +155,7 @@ export const termini = {
   ])}
       ${blocco('Chiudere', [
     'Puoi uscire da una lega quando vuoi da Partecipanti. Chi ha creato la lega può eliminarla, e sparisce per tutti.',
-    'Per cancellare l\'account scrivi a chi amministra la lega: vengono rimossi profilo, squadra, rose e formazioni.',
+    'Per cancellare l\'account c\'è un bottone in Profilo: se ne vanno account, squadre, rose, formazioni e contestazioni. Resta il registro delle modifiche ai voti, senza più il tuo nome attaccato — è la prova di come è venuto fuori un punteggio e serve agli altri della lega.',
   ])}
       ${blocco('Legge e modifiche', [
     TITOLARE.paese

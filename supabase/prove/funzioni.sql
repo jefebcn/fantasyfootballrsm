@@ -428,4 +428,53 @@ delete from public.rosters where league_id = :'lega' and member_id = :'m_bea';
 select count(*)::int as senza from public.da_avvisare(10) \gset
 select pg_temp.esige('senza rosa non si avvisa', :senza = 2);
 
+
+-- ---------------------------------------------------------------------------
+-- Cancellare il proprio profilo.
+--
+-- Due cose da provare, e la prima conta quanto la seconda: che si RIFIUTI
+-- quando cancellare lascerebbe una lega senza amministratore.
+-- ---------------------------------------------------------------------------
+insert into public.profiles (id, display_name) values ('user_dino','Dino'), ('user_eva','Eva')
+  on conflict (id) do nothing;
+
+-- Dino crea una lega sua e ci resta da solo
+select pg_temp.entra('user_dino');
+select public.create_league('Lega di Dino','LDD','Dino FC','#333','DFC') as lega_dino \gset
+
+-- Eva entra nella lega di Alex: Alex diventa un amministratore con gente dentro
+select pg_temp.entra('user_eva');
+select public.join_league((select invite_code from public.leagues where id = :'lega'), 'Eva FC', '#888', 'EFC');
+
+-- Alex non può sparire: lascerebbe la sua lega senza amministratore
+select pg_temp.entra('user_alex');
+do $$
+begin
+  begin
+    perform public.elimina_profilo();
+    raise exception 'FALLITA: ha cancellato un amministratore con gente in lega';
+  exception when others then
+    if sqlerrm like 'FALLITA:%' then raise; end if;
+    raise notice 'ok  un amministratore con gente in lega non si cancella (%)', sqlerrm;
+  end;
+end $$;
+select pg_temp.esige('e infatti Alex c''è ancora', exists (select 1 from public.profiles where id='user_alex'));
+
+-- Dino invece è solo: se ne va lui e se ne va la sua lega
+select pg_temp.entra('user_dino');
+insert into public.push_subscriptions (endpoint, user_id, p256dh, auth)
+  values ('https://push/dino','user_dino','k','a');
+select public.elimina_profilo() as esito_dino \gset
+select pg_temp.esige('il profilo di Dino non c''è più', not exists (select 1 from public.profiles where id='user_dino'));
+select pg_temp.esige('la sua lega è sparita con lui', not exists (select 1 from public.leagues where id = :'lega_dino'));
+select pg_temp.esige('la sua squadra è sparita', not exists (select 1 from public.league_members where user_id='user_dino'));
+select pg_temp.esige('e le sue iscrizioni alle notifiche', not exists (select 1 from public.push_subscriptions where user_id='user_dino'));
+select pg_temp.esige('la lega di Alex non è stata toccata', exists (select 1 from public.leagues where id = :'lega'));
+
+-- Eva è dentro la lega di Alex ma non ne è amministratore: può andarsene
+select pg_temp.entra('user_eva');
+select public.elimina_profilo();
+select pg_temp.esige('anche Eva se ne va', not exists (select 1 from public.profiles where id='user_eva'));
+select pg_temp.esige('e la lega di Alex resta in piedi', exists (select 1 from public.leagues where id = :'lega'));
+
 select 'tutte le prove sulle funzioni sono passate' as esito;

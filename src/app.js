@@ -3,6 +3,7 @@ import { SPRITE } from './sprite.js';
 import { AVATAR_SPRITE } from './avatar.js';
 import { esc, icon, logo, pic, mask } from './ui.js';
 import * as S from './state.js';
+import * as diagnostica from './diagnostica.js';
 import * as views from './views/index.js';
 
 const root = document.getElementById('app');
@@ -253,7 +254,14 @@ async function boot() {
   document.body.insertAdjacentHTML('afterbegin', SPRITE + AVATAR_SPRITE);
   applyTheme();
   window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', applyTheme);
-  S.setErrorHandler((e) => { console.error(e); if (S.appState() !== 'offline') toast(e?.message || 'Errore di rete'); });
+  diagnostica.ascolta();
+  S.setErrorHandler((e) => {
+    console.error(e);
+    // Anche quelli che l'app gia' prendeva finiscono nella lista: sono i piu'
+    // utili, perche' sono quelli che l'utente ha visto.
+    diagnostica.segna('app', e?.message || e, e?.stack || '');
+    if (S.appState() !== 'offline') toast(e?.message || 'Errore di rete');
+  });
   const callbackError = authCallbackError();
   root.innerHTML = `<div class="app">${splash()}</div>`;
   await S.init();

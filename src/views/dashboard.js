@@ -189,14 +189,23 @@ function invitoPubblica() {
       'lega pubblica · aperta a tutti senza codice');
   }
 
-  const l = S.pubblicaDaProporre();
+  const l = S.pubblicaInVetrina();
   if (!l) return '';
   const premio = primo(l.premi);
+  const squadre = `${l.membri} ${l.membri === 1 ? 'squadra' : 'squadre'}`;
+  // Iscritto ma con la lega privata davanti: il banner non invita a entrare
+  // dove sei già, ti ci porta. data-vai lo raccoglie il mount qui sotto e
+  // cambia lega.
+  if (l.dentro) {
+    return fascia('#/leghe', premio ? `Montepremi: ${esc(premio.premio)}` : 'La tua lega pubblica',
+      premio ? 'Sei in gara per il montepremi finale' : 'Ci sei dentro: vai a giocare',
+      `${esc(l.name)} · ${squadre} · tocca per andarci`, ` data-vai="${esc(l.id)}"`);
+  }
   // data-entra: chi tocca il banner vuole entrare in questa lega, non vedere
-  // l'elenco delle leghe. Lo raccoglie il mount qui sotto.
+  // l'elenco delle leghe.
   return fascia('#/leghe', premio ? `In palio: ${esc(premio.premio)}` : 'Lega pubblica aperta a tutti',
     premio ? 'Entra e competi per il montepremi finale' : 'Entra: ognuno si fa la sua rosa',
-    `${esc(l.name)} · ${l.membri} ${l.membri === 1 ? 'squadra' : 'squadre'} · senza codice`,
+    `${esc(l.name)} · ${squadre} · senza codice`,
     ` data-entra="${esc(l.id)}"`);
 }
 
@@ -501,6 +510,13 @@ export const dashboard = {
     // e sessionStorage muore con la scheda: se resta appeso non fa danni.
     root.querySelector('[data-entra]')?.addEventListener('click', (e) => {
       try { sessionStorage.setItem('fcs:entra-pubblica', e.currentTarget.dataset.entra); } catch { /* niente storage: si entra dall'elenco */ }
+    });
+    // Già iscritto: il banner cambia lega e resta sulla dashboard, che e' la
+    // stessa cosa che si fa dal menu — due tocchi in meno.
+    root.querySelector('[data-vai]')?.addEventListener('click', async (e) => {
+      e.preventDefault();
+      const id = e.currentTarget.dataset.vai;
+      try { await S.switchLeague(id); ctx.go(''); } catch (err) { ctx.toast(err.message || 'Non ci sono riuscito'); }
     });
     N.carica(() => ctx.render());
     // Le leghe pubbliche: una volta per apertura, e si ridisegna quando

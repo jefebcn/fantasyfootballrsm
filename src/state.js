@@ -156,7 +156,20 @@ export function nomeDaCompletare() {
   const locale = mail.split('@')[0];
   return !!locale && n === locale;
 }
-export async function updateDisplayName(name) { await remote.updateProfile(user.id, { display_name: name }); await refresh(); }
+/**
+ * Cambiare il nome dell'account.
+ *
+ * Il nome che si vede in giro — nel menu, sulla scheda dello scontro, in
+ * classifica — non e' questo: e' la copia dentro league_members. Senza il
+ * secondo passaggio si cambiava il nome e non cambiava niente, che e'
+ * esattamente quello che e' successo ad Alex.
+ */
+export async function updateDisplayName(name) {
+  const vecchio = prof?.display_name || null;
+  await remote.updateProfile(user.id, { display_name: name });
+  await remote.rinominaNelleLeghe(user.id, name, vecchio);
+  await refresh();
+}
 export async function signOut() { authKind() === 'clerk' ? await clerk.signOut() : await remote.signOut(); user = null; await loadAll(); notify(); }
 export function setSupabaseConfig(url, key) { remote.setConfig(url, key); location.reload(); }
 export const checkSetup = () => remote.checkSetup();
@@ -287,18 +300,29 @@ export function caricaPubbliche(poi) {
     .finally(() => { inVolo = false; });
 }
 /**
- * La lega pubblica da proporre a chi non e' in una: quella col premio piu'
- * ricco fra quelle in cui non e' ancora dentro e che non sono al completo.
- * Null quando non c'e' niente da proporre — compresa l'attesa della risposta.
+ * La lega pubblica da mettere in vetrina a chi sta in una lega fra amici.
+ *
+ * Non solo quelle in cui non e' ancora dentro: se c'e' gia' iscritto, il
+ * banner serve lo stesso — porta nella lega pubblica invece di invitarlo a
+ * entrarci, e il campo `dentro` dice quale delle due cose. Prima le righe
+ * `dentro` erano scartate, e chi come Alex era iscritto alla pubblica non
+ * vedeva niente dalle sue leghe private.
+ *
+ * Null quando non c'e' niente da mostrare — compresa l'attesa della
+ * risposta dal server.
  */
-export function pubblicaDaProporre() {
+export function pubblicaInVetrina() {
   if (legaPubblica() || !cachePubbliche) return null;
-  const buone = cachePubbliche.filter((l) => !l.dentro && l.membri < l.max_membri);
+  // al completo si puo' solo guardarla, e non ha senso proporla; se ci sei
+  // dentro il numero di posti non conta
+  const buone = cachePubbliche.filter((l) => l.dentro || l.membri < l.max_membri);
   if (!buone.length) return null;
   const premio = (l) => (l.premi || []).slice().sort((a, b) => a.posto - b.posto)[0] || null;
-  // Col premio davanti: e' quello che fa venire voglia di entrare, e fra due
-  // leghe senza premio conta la piu' popolata, che e' quella che sta partendo.
-  return buone.slice().sort((a, b) => (premio(b) ? 1 : 0) - (premio(a) ? 1 : 0) || b.membri - a.membri)[0];
+  // Col premio davanti: e' quello che fa venire voglia di entrare. Poi la
+  // propria, che e' quella che si vuole aprire; e fra due leghe senza premio
+  // la piu' popolata, che e' quella che sta partendo.
+  return buone.slice().sort((a, b) => (premio(b) ? 1 : 0) - (premio(a) ? 1 : 0)
+    || (b.dentro ? 1 : 0) - (a.dentro ? 1 : 0) || b.membri - a.membri)[0];
 }
 export async function salvaPremi(pr) {
   const v = await remote.impostaPremi(base.league.id, pr);

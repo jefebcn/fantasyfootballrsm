@@ -139,8 +139,8 @@ export const impostazioni = {
   },
 
   mount(root, ctx) {
-    const prompt2 = (title, label, attrs, onSave) => {
-      ctx.sheet(`<h3>${title}</h3><label class="lbl" for="pv">${label}</label><input class="field-input" id="pv" ${attrs}><button class="a-btn" id="pv-save" style="margin-top:12px">Salva</button>`);
+    const prompt2 = (title, label, attrs, onSave, nota = '') => {
+      ctx.sheet(`<h3>${title}</h3><label class="lbl" for="pv">${label}</label><input class="field-input" id="pv" ${attrs}>${nota ? `<p class="auth-hint" style="margin:8px 0 0">${nota}</p>` : ''}<button class="a-btn" id="pv-save" style="margin-top:12px">Salva</button>`);
       document.getElementById('pv-save').onclick = () => onSave(document.getElementById('pv').value.trim());
     };
     root.querySelector('main').addEventListener('click', async (e) => {
@@ -284,7 +284,8 @@ export const impostazioni = {
       }
       if (act === 'seed') { if (!confirm('Caricare nel database le giornate già giocate, con formazioni ed eventi veri presi dai tabellini della FSGC?')) return; try { await S.seedSampleData(); ctx.toast('Giornate giocate caricate'); } catch (err) { ctx.toast(err.message); } return; }
       if (act === 'password') { prompt2('Cambia password', 'Nuova password', 'type="password" autocomplete="new-password" placeholder="almeno 6 caratteri"', async (v) => { if (v.length < 6) { ctx.toast('Almeno 6 caratteri'); return; } try { await S.updatePassword(v); ctx.sheet(null); ctx.toast('Password aggiornata'); } catch (err) { ctx.toast(err.message); } }); return; }
-      if (act === 'name') { prompt2('Cambia nome', 'Come ti chiami', `maxlength="24" value="${esc(S.profileInfo()?.display_name || '')}"`, async (v) => { if (!v) { ctx.toast('Scrivi un nome'); return; } try { await S.updateDisplayName(v); ctx.sheet(null); ctx.toast('Nome aggiornato'); } catch (err) { ctx.toast(err.message); } }); }
+      if (act === 'name') { prompt2('Cambia nome', 'Come ti chiami', `maxlength="24" value="${esc(S.profileInfo()?.display_name || '')}"`, async (v) => { if (!v) { ctx.toast('Scrivi un nome'); return; } try { await S.updateDisplayName(v); ctx.sheet(null); ctx.toast('Nome aggiornato'); } catch (err) { ctx.toast(err.message); } },
+        'Cambia anche il nome che si vede nelle tue leghe. Se in una lega ti sei messo un nome diverso, da "La mia squadra", quello resta.'); }
     });
   },
 };

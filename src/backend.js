@@ -136,6 +136,29 @@ export async function signOut() { await sb.auth.signOut(); }
 export function onAuth(fn) { sb.auth.onAuthStateChange((_e, session) => fn(session?.user || null)); }
 export async function profile(userId) { return must(await sb.from('profiles').select('*').eq('id', userId).maybeSingle()); }
 export async function updateProfile(userId, patch) { return must(await sb.from('profiles').update(patch).eq('id', userId).select().single()); }
+/**
+ * Il nome mostrato nelle leghe.
+ *
+ * Non e' il nome dell'account: ogni riga di league_members si porta la sua
+ * copia (owner_name), scritta quando si entra nella lega. Serve perche' i
+ * profili degli altri non si possono leggere — RLS — e senza quella copia
+ * nella lega si vedrebbero righe senza nome.
+ *
+ * Il prezzo della copia e' che cambiare il nome dell'account non cambiava
+ * niente di visibile. Qui si riallinea, ma solo dove la copia era vuota o
+ * era ancora il nome vecchio: chi nella lega si e' messo un altro nome —
+ * si fa da "La mia squadra" — se lo tiene.
+ *
+ * Le righe si aggiornano una per una e non con un filtro `or`: un nome puo'
+ * contenere virgole e parentesi, che nella sintassi dei filtri di PostgREST
+ * vogliono dire altro.
+ */
+export async function rinominaNelleLeghe(userId, nuovo, vecchio) {
+  const righe = must(await sb.from('league_members').select('id, owner_name').eq('user_id', userId));
+  const daFare = righe.filter((r) => !r.owner_name || r.owner_name === vecchio);
+  for (const r of daFare) must(await sb.from('league_members').update({ owner_name: nuovo }).eq('id', r.id));
+  return daFare.length;
+}
 /** Il profilo nasce da un trigger su auth.users: se manca (trigger assente) lo crea il client. */
 export async function ensureProfile(user) {
   const p = await profile(user.id);

@@ -172,6 +172,36 @@ const prepara = (ctx, stato) => ctx.addInitScript((stato) => {
   });
   et(!!poi && /montepremi/i.test(poi.testo) && poi.href === '#/classifica',
     `una volta entrato il banner passa alla faccia del montepremi ("${poi ? poi.testo.slice(0, 50) : 'assente'}")`);
+  // ---- TERZA FACCIA: iscritto alla pubblica, ma con la lega privata davanti.
+  // E' il caso di Alex: era dentro la lega pubblica, e dalle sue leghe private
+  // non vedeva niente perche' le leghe "dentro" venivano scartate. Qui il
+  // banner non invita a entrare dove sei gia': ti ci porta.
+  const idPrivata = await p.evaluate(() => {
+    const s = JSON.parse(localStorage.getItem('fcs:mock'));
+    const l = s.tables.leagues.find((x) => !x.pubblica);
+    const pr = JSON.parse(localStorage.getItem('fcs:prefs')); pr.currentLeagueId = l.id;
+    localStorage.setItem('fcs:prefs', JSON.stringify(pr));
+    return l.id;
+  });
+  await p.evaluate(() => { location.hash = '#/'; });
+  await p.reload({ waitUntil: 'load' }); await w(p, 2200);
+  const iscritto = await p.evaluate(() => {
+    const a = document.querySelector('.invito');
+    return a && { testo: a.innerText.replace(/\n/g, ' · '), vai: a.getAttribute('data-vai'), entra: a.getAttribute('data-entra') };
+  });
+  et(!!iscritto, 'in una lega privata il banner compare anche a chi e\' gia\' iscritto alla pubblica');
+  if (iscritto) {
+    et(/montepremi/i.test(iscritto.testo) && /300/.test(iscritto.testo), `col montepremi ("${iscritto.testo.slice(0, 60)}")`);
+    et(!!iscritto.vai && !iscritto.entra, 'e porta nella lega pubblica invece di invitarlo a entrarci');
+    // e il tocco cambia lega per davvero
+    await p.click('.invito'); await w(p, 2200);
+    const ora = await p.evaluate(() => {
+      const s = JSON.parse(localStorage.getItem('fcs:mock'));
+      const id = JSON.parse(localStorage.getItem('fcs:prefs')).currentLeagueId;
+      return { id, nome: s.tables.leagues.find((x) => x.id === id)?.name, pubblica: !!s.tables.leagues.find((x) => x.id === id)?.pubblica };
+    });
+    et(ora.pubblica && ora.id !== idPrivata, `toccandolo si passa nella lega pubblica (${ora.nome})`);
+  }
   et(errori.length === 0, `nessun errore JS${errori.length ? ' — ' + errori[0] : ''}`);
   await ctx.close();
   await b.close();

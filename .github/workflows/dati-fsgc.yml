@@ -95,6 +95,18 @@ jobs:
         if: steps.diff.outputs.cambiato == 'si'
         run: python3 scripts/bump-sw.py
 
+      # Il calendario dei lock vive nel database come migrazione generata dal
+      # calendario dell'app: se l'import ha spostato una gara, il file cambia e va
+      # ricaricato su Supabase. Qui si rigenera e si avvisa; caricarlo resta
+      # l'unico passo a mano, ed e' raro.
+      - name: Rigenera il calendario dei lock
+        if: steps.diff.outputs.cambiato == 'si'
+        run: |
+          node scripts/genera-lock.mjs
+          if ! git diff --quiet -- supabase/migrations/012-calendario-lock.sql; then
+            echo "::warning::Il calendario dei lock e' cambiato: carica supabase/migrations/012-calendario-lock.sql nell'SQL Editor di Supabase, se no il server chiude le formazioni nel giorno vecchio."
+          fi
+
       - name: I test passano ancora
         if: steps.diff.outputs.cambiato == 'si'
         run: npm test
@@ -104,7 +116,7 @@ jobs:
         run: |
           git config user.name  'importatore FSGC'
           git config user.email 'importatore-fsgc@users.noreply.github.com'
-          git add src/ sw.js
+          git add src/ sw.js supabase/migrations/012-calendario-lock.sql
           git commit -m "dati: import automatico del $(date -u +'%d/%m/%Y')" \
                      -m "$(git diff --cached --stat -- src/ | tail -1)"
           git push

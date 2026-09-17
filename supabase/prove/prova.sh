@@ -50,6 +50,13 @@ for passata in 1 2; do
 done
 rm -f "$RADICE/.err"
 
+echo "== il calendario dei lock c'e' senza che nessuno apra l'app =="
+# La 012 lo mette nel database: 30 righe, una per giornata, senza un Giudice
+# Dati che debba aprire l'app. Prima la tabella restava vuota e le policy,
+# prudenti, non facevano vedere le formazioni degli avversari a nessuno.
+QUANTE=$("${PSQL[@]}" -t -A -c "select count(*) from public.matchday_locks" | tr -d '[:space:]')
+if [ "$QUANTE" = 30 ]; then verde "  ok  30 giornate in matchday_locks"; else rosso "  KO  matchday_locks ha $QUANTE righe, non 30"; exit 1; fi
+
 echo "== funzioni =="
 # Una volta sola: il file cambia lo stato del database (chi entra, chi esce),
 # rieseguirlo darebbe per forza esiti diversi.

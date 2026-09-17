@@ -212,22 +212,13 @@ export const impostazioni = {
           };
           return;
         }
-        // Il comando bell'e' pronto con l'indirizzo di chi sta guardando: la
-        // riga "si nomina con nomina-giudice.sql" mandava ad aprire un file
-        // nel repo, cercare l'e-mail giusta e sostituirla a mano. Questo e'
-        // l'unico passo dell'installazione che non si puo' fare dall'app,
-        // perche' la policy impedisce di auto-nominarsi — e giustamente.
-        const mia = S.currentUser()?.email || 'la-tua@email';
-        const sql = `update public.profiles set is_judge = true\nwhere id = (select id::text from auth.users where lower(email) = lower('${mia}'));`;
+        // Per chi non e' giudice non c'e' un comando da incollare: il
+        // calendario arriva con la migrazione 012, e se qui manca e' il
+        // progetto a non averla, non l'utente a dover fare qualcosa. Il foglio
+        // con l'SQL da copiare c'era, ed era una cosa da non dare in mano a
+        // chi crea una lega.
         ctx.sheet(`<h3>Calendario dei lock</h3><p class="auth-hint">${n} giornate sul server hanno una data di chiusura diversa da quella dell'app. Finché è così, le formazioni degli avversari non si vedono quando dovrebbero.</p>
-          <p class="auth-hint">Lo sistema il <b>Giudice Dati</b> semplicemente aprendo l'app: si allinea da sé. In questo progetto non ce n'è ancora nessuno, e nominarsi dall'app non si può — la policy lo vieta apposta, altrimenti chiunque si darebbe i poteri da solo.</p>
-          <p class="auth-hint">Incolla questo nell'<b>SQL Editor</b> di Supabase, una volta sola, poi riapri l'app:</p>
-          <pre class="sql">${esc(sql)}</pre>
-          <button class="a-btn sec" id="sql-copia">Copia il comando</button>`);
-        document.getElementById('sql-copia').onclick = async () => {
-          try { await navigator.clipboard.writeText(sql); ctx.toast('Comando copiato'); }
-          catch { ctx.toast('Copia non permessa: selezionalo a mano'); }
-        };
+          <p class="auth-hint">Non dipende da te: il calendario si installa con il database (migrazione <code>012-calendario-lock.sql</code>) e si allinea da sé quando il Giudice Dati apre l'app. Se resta così, segnalalo a chi gestisce il progetto.</p>`);
         return;
       }
       if (act === 'archiviazione') { ctx.go('archiviazione'); return; }

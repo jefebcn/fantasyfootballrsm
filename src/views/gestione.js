@@ -28,7 +28,7 @@ const REGOLE = [
 const GIUDICE = [
   ['#/admin', 'strumenti', 'Inserisci eventi'],
   ['#/admin/contestazioni', 'supporto', 'Contestazioni'],
-  ['#/admin/congela', 'live', 'Congela giornata'],
+  ['#/admin/congela', 'calcola', 'Calcola giornata'],
 ];
 
 const nota = (voci, href, testo) => voci.map((v) => (v[0] === href ? [...v, testo] : v));

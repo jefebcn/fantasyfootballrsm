@@ -143,7 +143,11 @@ export const adminContestazioni = {
 
 // ------------------------------------------------------------ congela
 export const adminCongela = {
-  title: 'Congela giornata', appbar: 'none', nav: false,
+  // "Calcola la giornata" e non "Congela": e' lo stesso atto che in home si
+  // chiama cosi', e due nomi per la stessa cosa facevano sembrare che fossero
+  // due. Congelamento resta nel testo dell'art. 9.2, dove e' il termine del
+  // regolamento.
+  title: 'Calcola giornata', appbar: 'none', nav: false,
   render() {
     const n = S.currentMatchday(); const st = S.matchdayStatus(n); const ms = S.matchesOf(n);
     const checks = [[ms.every((m) => m.status !== 'scheduled'), `${ms.filter((m) => m.status !== 'scheduled').length}/8 partite inserite`], [true, 'Punteggi provvisori pubblicati'], [S.contestazioni().every((c) => c.status !== 'open'), `${S.contestazioni().filter((c) => c.status === 'open').length} contestazioni aperte`], [true, `Registro modifiche: ${S.changeLog().length} voci`],
@@ -156,16 +160,14 @@ export const adminCongela = {
     const ok = checks.every((c) => c[0]);
     if (st === 'frozen') return `<div class="freeze" style="background:var(--c-titano-700)"><button class="ib" data-back style="align-self:flex-start;border:0;background:transparent;color:#fff;cursor:pointer;display:flex;gap:6px;align-items:center">${icon('chev', 'ic flip')} indietro</button><span class="eyebrow" style="color:rgba(255,255,255,.75)">Giudice Dati · giornata ${n}</span><h2>Giornata congelata</h2><p class="art">Art. 9.2 — Dopo le 20:00 di martedì la giornata è definitiva e non è più rettificabile, nemmeno per errori accertati.</p><div class="chk"><div>${icon('lock')}Formazioni, eventi e voti della giornata ${n} sono immutabili.</div></div><button class="a-btn sec" id="reopen" style="margin-top:auto;color:#fff;border-color:rgba(255,255,255,.6)">Riapri (solo stagione pilota)</button></div>`;
     return `<div class="freeze"><button class="ib" data-back style="align-self:flex-start;border:0;background:transparent;color:#fff;cursor:pointer;display:flex;gap:6px;align-items:center">${icon('chev', 'ic flip')} indietro</button>
-      <span class="eyebrow" style="color:rgba(255,255,255,.75)">Giudice Dati · giornata ${n}</span><h2>Congela la giornata</h2>
+      <span class="eyebrow" style="color:rgba(255,255,255,.75)">Giudice Dati · giornata ${n}</span><h2>Calcola la giornata</h2>
       <div class="chk">${checks.map(([c, l]) => `<div>${c ? icon('check') : icon('warn')}${l}</div>`).join('')}</div>
-      <p class="art"><b>Art. 9.2</b> — Dopo le 20:00 di martedì la giornata è congelata e non è più rettificabile, nemmeno per errori accertati. L'eventuale errore non genera compensazioni nelle giornate successive.</p>
-      <input id="freeze-confirm" type="text" placeholder="Scrivi CONGELA per confermare" autocomplete="off" autocapitalize="characters">
-      <button class="a-btn" id="freeze" disabled>${icon('lock', 'ic sm')}Congela giornata ${n}</button>${ok ? '' : '<p class="small" style="opacity:.85;text-align:center">Puoi congelare anche con controlli aperti: il regolamento non ammette rettifiche dopo.</p>'}
+      <p class="art"><b>Art. 9.2</b> — Dal calcolo la giornata è <b>congelata</b>: i punteggi sono definitivi e non si rettificano più, nemmeno per errori accertati. L'eventuale errore non genera compensazioni nelle giornate successive.</p>
+      <button class="a-btn" id="freeze">${icon('calc', 'ic sm')}Calcola la giornata ${n}</button>${ok ? '' : '<p class="small" style="opacity:.85;text-align:center">Puoi congelare anche con controlli aperti: il regolamento non ammette rettifiche dopo.</p>'}
       ${S.lockDaSistemare() ? `<button class="a-btn sec" id="sync-lock" style="color:#fff;border-color:rgba(255,255,255,.6)">Allinea il calendario dei lock (${S.lockDaSistemare()})</button>` : ''}</div>`;
   },
   mount(root, ctx) {
-    const inp = root.querySelector('#freeze-confirm'); const btn = root.querySelector('#freeze');
-    if (inp) inp.oninput = () => { btn.disabled = inp.value.trim().toUpperCase() !== 'CONGELA'; };
+    const btn = root.querySelector('#freeze');
     const sl = root.querySelector('#sync-lock');
     if (sl) sl.onclick = async () => {
       sl.disabled = true;
@@ -173,7 +175,16 @@ export const adminCongela = {
       catch (e) { ctx.toast(e.message || 'Non è stato possibile allineare'); sl.disabled = false; }
       ctx.render();
     };
-    if (btn) btn.onclick = () => { S.freezeMatchday(S.currentMatchday()); ctx.toast(`Giornata ${S.currentMatchday()} congelata`); };
+    // Un tocco e una conferma, invece della parola CONGELA da scrivere a mano.
+    // La parola era una guardia contro il tocco distratto, ma su un telefono
+    // vuol dire aprire la tastiera, azzeccare le maiuscole e chiuderla: a
+    // parita' di difesa, una domanda si' / no costa un decimo. L'atto resta
+    // irreversibile e la domanda lo dice.
+    if (btn) btn.onclick = () => {
+      const n2 = S.currentMatchday();
+      if (!confirm(`Calcolare la giornata ${n2}?\n\nI punteggi diventano definitivi e non si rettificano piu' (art. 9.2).`)) return;
+      S.freezeMatchday(n2); ctx.toast(`Giornata ${n2} calcolata`);
+    };
     root.querySelector('#reopen')?.addEventListener('click', () => { if (confirm('Riaprire la giornata? Solo per la stagione pilota.')) { S.reopenMatchday(S.currentMatchday()); } });
   },
 };

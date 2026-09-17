@@ -357,6 +357,11 @@ export function testaATesta(results, a, b) {
     golA += ga; golB += gb;
     puntiA = r1(puntiA + (casa ? f.homeScore : f.awayScore));
     puntiB = r1(puntiB + (casa ? f.awayScore : f.homeScore));
+    // Doppio tavolino: 0-0 nel tabellino, ma non e' un pareggio — non hanno
+    // consegnato ne' l'uno ne' l'altro, e la classifica lo conta come una
+    // sconfitta per entrambi (art. 8.4). Senza questa riga lo storico diceva
+    // "3 pari" delle stesse partite che in classifica erano tre sconfitte.
+    if (f.forfait === 'entrambi') { p++; continue; }
     if (ga > gb) v++; else if (ga < gb) p++; else n++;
   }
   return { partite, v, n, p, golA, golB, puntiA, puntiB };

@@ -27,17 +27,29 @@ function record() {
     <span class="chi">${esc(nomeSq(chi))}</span><span class="dove">${sotto}</span></div>`;
   const s5 = (esiti) => esiti.slice(-5).map((e) => `<i class="e ${e.toLowerCase()}">${e}</i>`).join('');
   const strisce = r.strisce.filter((x) => x.vittorie > 0).slice(0, 3);
-  return `<div class="recs">
-      ${scheda('Miglior punteggio', r.migliore.managerId, fmt(r.migliore.punti), `giornata ${r.migliore.matchday}`)}
-      ${scheda('Peggior punteggio', r.peggiore.managerId, fmt(r.peggiore.punti), `giornata ${r.peggiore.matchday}`)}
-      ${scheda('Più gol in una giornata', r.piuGol.managerId, r.piuGol.gol, `giornata ${r.piuGol.matchday}`)}
-      ${scheda('Vittoria più larga', r.scarto.vincitore, `+${r.scarto.gol}`, `su ${esc(nomeSq(r.scarto.perdente))}, giornata ${r.scarto.matchday}`)}
-    </div>
+
+  // UNA SCHEDA COMPARE SOLO SE HA QUALCOSA DA DIRE.
+  //
+  // Con una giornata sola giocata "miglior punteggio" e "peggior punteggio"
+  // sono lo stesso fatto, con lo stesso numero, la stessa squadra e la stessa
+  // giornata: due schede identiche una accanto all'altra. E una "vittoria piu'
+  // larga +0" non e' una vittoria, e' un pareggio; "piu' gol in una giornata:
+  // 0" non e' un record, e' l'assenza di gol. Prima uscivano tutte e quattro
+  // con degli zeri, e una schermata di zeri fa credere che qualcosa sia rotto.
+  const schede = [scheda('Miglior punteggio', r.migliore.managerId, fmt(r.migliore.punti), `giornata ${r.migliore.matchday}`)];
+  const unSoloPunteggio = r.migliore.managerId === r.peggiore.managerId
+    && r.migliore.matchday === r.peggiore.matchday;
+  if (!unSoloPunteggio) schede.push(scheda('Peggior punteggio', r.peggiore.managerId, fmt(r.peggiore.punti), `giornata ${r.peggiore.matchday}`));
+  if (r.piuGol.gol > 0) schede.push(scheda('Più gol in una giornata', r.piuGol.managerId, r.piuGol.gol, `giornata ${r.piuGol.matchday}`));
+  if (r.scarto.gol > 0) schede.push(scheda('Vittoria più larga', r.scarto.vincitore, `+${r.scarto.gol}`, `su ${esc(nomeSq(r.scarto.perdente))}, giornata ${r.scarto.matchday}`));
+  return `<div class="recs">${schede.join('')}</div>
+    ${schede.length === 1 ? `<p class="small muted" style="margin:-2px 2px 0">Una giornata sola: i record veri cominciano dalla seconda.</p>` : ''}
     ${strisce.length ? `<div class="a-sec"><b>Strisce</b><span>di fila</span></div>
       <div class="vlist">${strisce.map((x) => `<div class="vr">${crest(S.managersById.get(x.managerId), 'sm')}
         <span class="nm"><b>${esc(nomeSq(x.managerId))}</b><span>${x.vittorie} ${x.vittorie === 1 ? 'vittoria' : 'vittorie'} di fila · ${x.imbattuto} senza perdere</span></span>
         <span class="ultimi">${s5(x.esiti)}</span></div>`).join('')}</div>` : ''}
-    <div class="a-card dett"><div class="dhead"><b>Medie per giornata</b><span>media · massimo · minimo</span></div>
+    <div class="a-card dett"><div class="dhead"><b>Medie per giornata</b></div>
+      <div class="drow cap"><span class="nm"></span><span class="v">media</span><span class="v">max</span><span class="v">min</span></div>
       ${r.medie.map((m) => `<div class="drow${m.managerId === S.me()?.id ? ' io' : ''}"><span class="nm">${esc(nomeSq(m.managerId))}</span>
         <span class="v fp">${fmt(m.media)}</span><span class="v">${fmt(m.massimo)}</span><span class="v">${fmt(m.minimo)}</span></div>`).join('')}</div>`;
 }
@@ -155,19 +167,28 @@ export const classifica = {
 
     const avviso = inCorso ? `<div class="warn info">${icon('clock', 'ic sm')}<span><b>Proiezione.</b> La giornata ${n} non è ancora congelata: ${av.totali ? `${av.fatte} partite su ${av.totali} hanno un risultato` : 'nessuna partita ha ancora un risultato'}. Le frecce dicono come ci si sta muovendo rispetto a prima della giornata.</span></div>` : '';
 
-    const seg = `<div class="seg seg-cls">
-      <button class="${vista === 'classifica' ? 'on' : ''}" data-vista="classifica">Classifica</button>
+    // LA BARRA DELLE SCHEDE RESTA IN ALTO, il badge di stato scorre.
+    //
+    // Era il contrario, ed era al contrario: scorrendo la pagina la barra
+    // Classifica/Giornata/Record finiva dietro l'app bar — misurati 63px
+    // nascosti — mentre restava appiccicato il badge "CONGELATO · giornata 3".
+    // Si perdeva la navigazione e restava l'informazione.
+    //
+    // E l'etichetta a destra del badge diceva "Record" mentre la scheda
+    // "Record" era gia' accesa due centimetri sotto: due volte la stessa
+    // parola, e una riga in meno di spazio per il resto. Via.
+    const barra = (dentro) => `<div class="segwrap"><div class="seg seg-cls">${dentro}</div></div>
+      <div class="statoriga">${badge(stato, `giornata ${n}`)}</div>`;
+    const seg = barra(`<button class="${vista === 'classifica' ? 'on' : ''}" data-vista="classifica">Classifica</button>
       <button class="${vista === 'giornata' ? 'on' : ''}" data-vista="giornata">Giornata ${n}</button>
-      <button class="${vista === 'record' ? 'on' : ''}" data-vista="record">Record</button></div>`;
+      <button class="${vista === 'record' ? 'on' : ''}" data-vista="record">Record</button>`);
     // A punti la scheda "Giornata" non ha incontri da mostrare: si toglie
     // invece di aprire su una schermata vuota.
-    const segPunti = `<div class="seg seg-cls">
-      <button class="${vista !== 'record' ? 'on' : ''}" data-vista="classifica">Classifica</button>
-      <button class="${vista === 'record' ? 'on' : ''}" data-vista="record">Record</button></div>`;
+    const segPunti = barra(`<button class="${vista !== 'record' ? 'on' : ''}" data-vista="classifica">Classifica</button>
+      <button class="${vista === 'record' ? 'on' : ''}" data-vista="record">Record</button>`);
 
     if (vista === 'record') {
       return `<main class="a-body">
-        <div class="topbar">${badge(stato, `giornata ${n}`)}<span style="font:700 13px var(--font-display);color:var(--primary-ink);white-space:nowrap">Record</span></div>
         ${S.aPunti() ? segPunti : seg}
         <div class="a-sec"><b>Record di lega</b><span>fin qui</span></div>
         ${record()}
@@ -180,7 +201,6 @@ export const classifica = {
     // mostrare una schermata vuota.
     if (vista === 'giornata' && !S.aPunti()) {
       return `<main class="a-body">
-        <div class="topbar">${badge(stato, `giornata ${n}`)}<span style="font:700 13px var(--font-display);color:var(--primary-ink);white-space:nowrap">Incontri</span></div>
         ${seg}${avviso}${incontri(n)}
         <p class="tie">Tocca un incontro per vedere i due campi, i voti e la panchina.</p>
       </main>`;
@@ -190,7 +210,6 @@ export const classifica = {
     // scontri diretti. Cambia la tabella e compaiono i premi.
     if (S.aPunti()) {
       return `<main class="a-body">
-        <div class="topbar">${badge(stato, `giornata ${n}`)}<span style="font:700 13px var(--font-display);color:var(--primary-ink);white-space:nowrap">Lega pubblica</span></div>
         ${segPunti}${avviso}
         ${premiCard()}
         ${tabellaPunti(st, me, inCorso, mosse)}
@@ -198,7 +217,6 @@ export const classifica = {
     }
 
     return `<main class="a-body">
-      <div class="topbar">${badge(stato, `giornata ${n}`)}<span style="font:700 13px var(--font-display);color:var(--primary-ink);white-space:nowrap">Campionato</span></div>
       ${seg}${avviso}
       <div class="cls">${st.map((r) => { const m = S.managersById.get(r.managerId);
         const io = r.managerId === me.id;

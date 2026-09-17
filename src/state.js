@@ -325,36 +325,53 @@ export function match(id) { const m = base.matches.find((x) => x.id === id); ret
 export function eventsOf(matchId) { return g.matchEvents[matchId] || []; }
 export function appearancesOf(matchId) { return g.appearanceOverrides[matchId] || []; }
 
-/** Ultima giornata che ha dati inseriti. */
+/**
+ * La prima giornata che si chiude nel futuro: quella su cui si puo' ancora
+ * agire. Viene dal CALENDARIO e da nient'altro, e per questo non si pianta.
+ *
+ * Campionato finito, nessun lock nel futuro: si resta sulla trentesima, e le
+ * schermate diranno onestamente che e' chiusa.
+ */
+export function giornataAperta() {
+  return memo('aperta', () => {
+    for (const md of base.matchdays) if (now() < new Date(md.lockAt)) return md.number;
+    return 30;
+  });
+}
+/**
+ * La giornata in cui siamo: l'ultima cominciata.
+ *
+ * Prima era "l'ultima che ha dati inseriti", e si piantava. Il 17 settembre,
+ * con tre giornate di campionato giocate e nessun voto ancora caricato in
+ * lega, l'app era ferma alla prima: la dashboard annunciava "Giornata 1" e il
+ * pre-match diceva "si chiude ven 28/8", una data di tre settimane prima.
+ *
+ * Il guasto era la definizione, non il calcolo: quale giornata si sta giocando
+ * lo dice il calendario, non chi ha avuto tempo di inserire i referti. Adesso
+ * e' la piu' avanti fra le due — l'ultima col lock passato e l'ultima con dei
+ * dati — cosi' un inserimento in ritardo non la fa mai tornare indietro.
+ *
+ * Non produce risultati dal nulla: fixtureResult() guarda hasData() giornata
+ * per giornata, quindi una giornata cominciata e senza referto resta "da
+ * giocare" e fuori dalla classifica.
+ */
 export function currentMatchday() {
   return memo('current', () => {
     let n = 0;
     for (const id in g.matchOverrides) { const k = +((id.match(/^md(\d+)/) || [])[1]); if (k > n) n = k; }
     for (const k in g.matchdayStatus) if (+k > n) n = +k;
-    return Math.max(1, n);
+    return Math.max(1, n, giornataAperta() - 1);
   });
 }
 export const hasData = (n) => !!g.matchdayStatus[n]
   || matchesOf(n).some((m) => g.matchOverrides[m.id] || (g.matchEvents[m.id] || []).length);
-export function nextMatchday() { const cur = currentMatchday(); return Math.min(30, hasData(cur) ? cur + 1 : cur); }
 /**
- * La prima giornata per cui si fa ancora in tempo a consegnare.
- *
- * Non basta nextMatchday(): se il Giudice non ha ancora inserito i risultati,
- * quella resta indietro e il suo lock e' gia' passato — la schermata della
- * formazione risultava chiusa e i tasti dei moduli erano spenti, senza modo di
- * prepararsi per la giornata dopo. Qui si va avanti fino a trovarne una che si
- * chiude nel futuro; se non ce n'e' piu' nessuna (campionato finito) si torna a
- * quella normale, e la schermata dira' onestamente che e' chiusa.
+ * La prossima da giocare. E' la prima ancora aperta: passato il lock non c'e'
+ * piu' niente da fare su quella giornata, che i suoi voti siano arrivati o no.
  */
-export function giornataDaSchierare() {
-  const n0 = nextMatchday();
-  for (let n = n0; n <= 30; n++) {
-    const md = matchday(n);
-    if (md && now() < new Date(md.lockAt)) return n;
-  }
-  return n0;
-}
+export function nextMatchday() { return giornataAperta(); }
+/** La giornata per cui si fa ancora in tempo a consegnare. */
+export function giornataDaSchierare() { return giornataAperta(); }
 /** 'frozen' | 'provisional' | 'live' | 'open' | 'scheduled' */
 /** Il calendario dei lock come lo vede l'app: e' quello che vale. */
 export const calendarioLock = () => base.matchdays.map((md) => ({ matchday: md.number, lock_at: new Date(md.lockAt).toISOString() }));

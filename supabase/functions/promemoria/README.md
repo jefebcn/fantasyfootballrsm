@@ -96,8 +96,11 @@ curl -s -H "x-promemoria-token: $PROMEMORIA_TOKEN" \
   "https://<progetto>.supabase.co/functions/v1/promemoria"
 ```
 
-Risponde `{"spedite":0,"motivo":"nessun lock nella finestra"}` quando non è il
-momento — che è la risposta giusta quasi sempre.
+Risponde `{"spedite":0,"iscritti":N,"motivo":"nessun lock nella finestra"}`
+quando non è il momento — che è la risposta giusta quasi sempre. `iscritti` è
+il numero di telefoni iscritti al push con l'indirizzo ancora valido: è
+l'unico modo di sapere dall'esterno se un'iscrizione fatta dall'app è arrivata
+al server, perché la tabella la vede solo il proprietario di ogni riga.
 
 E senza chiamare niente, con `npm test`: undici prove prendono il **vero**
 `index.ts`, gli togliono i tipi con esbuild, sostituiscono i due import

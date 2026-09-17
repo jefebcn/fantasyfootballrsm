@@ -89,6 +89,27 @@ curl -s -H "x-promemoria-token: $PROMEMORIA_TOKEN" \
 Risponde `{"spedite":0,"motivo":"nessun lock nella finestra"}` quando non è il
 momento — che è la risposta giusta quasi sempre.
 
+## Se l'azione pianificata fallisce
+
+Il registro della corsa dice adesso `HTTP <codice>` e stampa la risposta della
+funzione. Cosa vuol dire ciascuna:
+
+| Codice | Cosa è successo | Cosa si fa |
+|---|---|---|
+| `2xx` | tutto a posto | niente |
+| `401` `token non valido` | la funzione c'è e ha rifiutato il token | `PROMEMORIA_TOKEN` su GitHub e quello fra i secret di Supabase devono essere **lo stesso identico valore**; dopo averlo cambiato su Supabase la funzione va **ridistribuita** |
+| `500` `PROMEMORIA_TOKEN non è fra i secret` | su Supabase quel secret manca | passo 2, poi deploy |
+| `404` `NOT_FOUND` | nessuna funzione con quello slug | lo slug è quello **nell'indirizzo**, non il campo *Name*: mettilo in `PROMEMORIA_FUNZIONE` |
+| `500` con un messaggio del database | la funzione è partita e si è rotta dentro | il messaggio dice dove |
+| nessuna risposta | indirizzo sbagliato o progetto in pausa | controlla `SUPABASE_FUNCTIONS_URL` |
+
+I due 401 diversi prima erano lo stesso `non autorizzato` e non si distingueva
+il secret mancante dal token sbagliato. Peggio: il workflow chiedeva a curl di
+fallire e si prendeva la risposta con una sostituzione di comando, così quando
+la chiamata andava male la sostituzione moriva e la riga che stampava il
+motivo non veniva mai eseguita. Nel registro restava `curl: (22) ... error:
+401` e basta. Ora il corpo si stampa sempre, prima di decidere se fermarsi.
+
 ## Quando parte l'avviso
 
 Nelle 24 ore prima del lock, alla prima corsa utile, **una volta sola per

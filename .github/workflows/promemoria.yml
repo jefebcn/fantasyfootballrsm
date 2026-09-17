@@ -77,13 +77,47 @@ jobs:
           TOKEN: ${{ secrets.PROMEMORIA_TOKEN }}
           FUNZIONE: ${{ secrets.PROMEMORIA_FUNZIONE }}
         run: |
-          set -o pipefail
           # Ripulito anche qui: i valori non passano dal passo di sopra, e un
           # output che li portasse in giro finirebbe nel registro.
           url=$(printf '%s' "$URL" | tr -d '[:space:]')
           token=$(printf '%s' "$TOKEN" | tr -d '[:space:]')
           nome=$(printf '%s' "${FUNZIONE:-promemoria}" | tr -d '[:space:]')
-          risposta=$(curl -sS --fail-with-body --max-time 60 \
+
+          # Il corpo va su un file e lo stato in una variabile, invece di
+          # prendere tutto da una sostituzione di comando: con --fail-with-body
+          # curl usciva male, la sostituzione moriva e la riga che stampava la
+          # risposta non veniva mai eseguita. Nel registro restava soltanto
+          # "curl: (22) ... error: 401" e il motivo, che la funzione scrive nel
+          # corpo, andava perso. E' successo il 17 settembre: sono serviti
+          # tentativi a mano per sapere cosa avesse risposto.
+          stato=$(curl -sS --max-time 60 -o /tmp/risposta.txt -w '%{http_code}' \
             -H "x-promemoria-token: $token" \
-            "${url%/}/$nome")
-          echo "$risposta"
+            "${url%/}/$nome") || {
+              echo "::error::La funzione non risponde: $url non raggiungibile."
+              exit 1
+            }
+          corpo=$(cat /tmp/risposta.txt)
+          echo "HTTP $stato"
+          echo "$corpo"
+
+          case "$stato" in
+            2*) exit 0 ;;
+            401)
+              echo "::error::La funzione ha detto no al token."
+              echo "PROMEMORIA_TOKEN su GitHub e PROMEMORIA_TOKEN fra i secret"
+              echo "di Supabase devono essere lo stesso identico valore."
+              echo "Supabase: Project Settings -> Edge Functions -> Secrets."
+              echo "Dopo averlo cambiato la funzione va ridistribuita."
+              exit 1 ;;
+            404)
+              echo "::error::Nessuna funzione che si chiami \"$nome\"."
+              echo "Lo slug e' quello nell'indirizzo della funzione su Supabase,"
+              echo "non il campo Name. Si corregge col secret PROMEMORIA_FUNZIONE."
+              exit 1 ;;
+            5*)
+              echo "::error::La funzione e' partita ed e' andata in errore: vedi sopra."
+              exit 1 ;;
+            *)
+              echo "::error::Risposta inattesa: HTTP $stato."
+              exit 1 ;;
+          esac

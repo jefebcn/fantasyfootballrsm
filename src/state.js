@@ -157,17 +157,19 @@ export function nomeDaCompletare() {
   return !!locale && n === locale;
 }
 /**
- * Cambiare il nome dell'account.
+ * Cambiare il nome dell'account, che e' il nome e basta.
  *
- * Il nome che si vede in giro — nel menu, sulla scheda dello scontro, in
- * classifica — non e' questo: e' la copia dentro league_members. Senza il
- * secondo passaggio si cambiava il nome e non cambiava niente, che e'
- * esattamente quello che e' successo ad Alex.
+ * L'app mostra il nome del profilo in ogni schermata, quindi cambiarlo qui
+ * si vede subito. La seconda riga riallinea la copia dentro league_members,
+ * che non serve a mostrarlo ma resta scritta nel database: una copia vecchia
+ * salterebbe fuori dove si legge quella (le contestazioni) o da un client
+ * non aggiornato.
  */
 export async function updateDisplayName(name) {
-  const vecchio = prof?.display_name || null;
   await remote.updateProfile(user.id, { display_name: name });
-  await remote.rinominaNelleLeghe(user.id, name, vecchio);
+  // se le righe non si aggiornano il nome si vede lo stesso: non e' un motivo
+  // per far fallire la modifica
+  await remote.rinominaNelleLeghe(user.id, name).catch(() => {});
   await refresh();
 }
 export async function signOut() { authKind() === 'clerk' ? await clerk.signOut() : await remote.signOut(); user = null; await loadAll(); notify(); }

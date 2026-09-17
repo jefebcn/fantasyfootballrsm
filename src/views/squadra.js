@@ -60,13 +60,23 @@ export const squadra = {
           ${elenco().map((n) => `<button class="pcell${pers === n ? ' on' : ''}" data-pers="${n}" aria-label="Personaggio ${n}">${personaggio(n)}</button>`).join('')}
         </div></div>`;
 
+    // Il nome del fantallenatore non si scrive piu' qui.
+    //
+    // C'era un campo "Nome fantallenatore" che scriveva una copia dentro
+    // l'iscrizione alla lega, e cosi' i nomi erano due: quello dell'account e
+    // quello della lega. Ne compariva uno nelle impostazioni e l'altro nel
+    // menu, e non c'era modo di capire quale fosse quale — "in un posto mi
+    // chiamo Hyrox12 ma nel menu appare il vecchio Conti25". Adesso ce n'e'
+    // uno solo, quello dell'account, e si cambia da dove uno lo va a cercare:
+    // le impostazioni.
     const nomi = `${sec('Nome squadra')}
       <div class="a-card"><input class="field-input" id="team" maxlength="28" value="${esc(m.teamName)}"
-        ${vice ? '' : ''} autocomplete="off" placeholder="Come si chiama la squadra"></div>
-      ${sec('Nome fantallenatore')}
-      <div class="a-card"><input class="field-input" id="owner" maxlength="24" value="${esc(m.owner === '—' ? '' : m.owner)}"
-        autocomplete="off" placeholder="Come ti chiami"></div>
-      <button class="a-btn" id="salva">Salva</button>`;
+        autocomplete="off" placeholder="Come si chiama la squadra"></div>
+      <button class="a-btn" id="salva">Salva</button>
+      ${sec('Il tuo nome')}
+      <a class="setting" href="#/impostazioni" style="text-decoration:none;color:inherit"><i class="ico">${icon('edit')}</i>
+        <span class="txt"><b>${esc(m.owner === '—' ? 'Da scrivere' : m.owner)}</b><span>Il nome dell'account: si cambia dalle impostazioni e vale in tutte le leghe</span></span>
+        ${icon('chev', 'ic sm')}</a>`;
 
     const secondo = vice
       ? `${sec('Allenatore in seconda')}<div class="a-card"><p class="small muted">Sei tu il secondo allenatore di questa squadra: puoi schierare la formazione e cambiare stemma, maglia e nomi, ma la squadra resta di chi l'ha creata.</p>
@@ -130,9 +140,8 @@ export const squadra = {
 
     root.querySelector('#salva')?.addEventListener('click', async () => {
       const team = root.querySelector('#team').value.trim();
-      const owner = root.querySelector('#owner').value.trim();
       if (!team) { ctx.toast('La squadra ha bisogno di un nome'); return; }
-      try { await S.updateMyTeam({ teamName: team, owner }); ctx.toast('Salvato'); } catch (err) { ctx.toast(err.message); }
+      try { await S.updateMyTeam({ teamName: team }); ctx.toast('Salvato'); } catch (err) { ctx.toast(err.message); }
     });
   },
 };

@@ -1,0 +1,74 @@
+# Controlla che l'app e il server siano su, ogni ora.
+#
+# Prima non c'era nulla: se Supabase si fermava o il sito non rispondeva, te ne
+# accorgevi quando qualcuno si lamentava — e il momento peggiore è proprio
+# quello in cui serve, la sera prima del lock.
+#
+# Non serve nessun secret: controlla solo che le porte rispondano. L'indirizzo
+# dell'app si può cambiare col secret INDIRIZZO_APP, se un domani cambia
+# dominio; quello del server esce da src/config.js, cioè da quello che l'app
+# usa davvero — non da un valore scritto qui che potrebbe restare vecchio.
+
+name: Sentinella
+
+on:
+  schedule:
+    - cron: '35 * * * *'      # ogni ora al minuto 35, lontano dagli altri lavori
+  workflow_dispatch:
+
+concurrency:
+  group: sentinella
+  cancel-in-progress: true
+
+jobs:
+  guarda:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: L'app risponde?
+        env:
+          INDIRIZZO: ${{ secrets.INDIRIZZO_APP }}
+        run: |
+          app=$(printf '%s' "${INDIRIZZO:-https://fantasyfootballrsm.vercel.app}" | tr -d '[:space:]')
+          echo "provo $app"
+          codice=$(curl -sS -o /tmp/pagina -w '%{http_code}' --max-time 25 "$app/index.html" 2>/dev/null || true)
+          codice=${codice:-000}
+          echo "risposta: $codice"
+          [ "$codice" = "200" ] || { echo "::error::l'app risponde $codice"; exit 1; }
+          # 200 non basta: una pagina di errore di Vercel è pure lei un 200.
+          grep -qi "fantatitano" /tmp/pagina || { echo "::error::la pagina risponde ma non è l'app"; exit 1; }
+          grep -q "manifest.webmanifest" /tmp/pagina || { echo "::error::manca il manifest: la pagina è incompleta"; exit 1; }
+
+      - name: Il server della lega risponde?
+        run: |
+          # L'indirizzo e la chiave pubblica stanno in src/config.js: sono gli
+          # stessi che usa l'app, quindi se qui rispondono rispondono anche a
+          # chi gioca. La chiave anon è pubblica per costruzione.
+          url=$(grep -oP "SUPABASE_URL\s*=\s*'\K[^']+" src/config.js || true)
+          key=$(grep -oP "SUPABASE_ANON_KEY\s*=\s*'\K[^']+" src/config.js || true)
+          if [ -z "$url" ]; then
+            echo "src/config.js non ha un indirizzo Supabase: l'app lo chiede a chi la usa."
+            echo "Niente da controllare qui."
+            exit 0
+          fi
+          echo "provo ${url}/rest/v1/"
+          # || true e non "set -e che abortisce": se l'host non esiste curl esce
+          # male e il passo morirebbe con il messaggio di curl invece che col
+          # nostro. Qui vogliamo dire NOI cos'è un guasto.
+          codice=$(curl -sS -o /dev/null -w '%{http_code}' --max-time 25 \
+            -H "apikey: $key" "$url/rest/v1/" 2>/dev/null || true)
+          codice=${codice:-000}
+          echo "risposta: $codice"
+          # Provato davvero prima di scriverlo: alla radice di /rest/v1/ Supabase
+          # risponde 401 anche con la chiave giusta. Un 401 vuol dire che il
+          # server C'È e ha risposto — è un rifiuto, non un silenzio. Se qui si
+          # accettassero solo i 2xx questa sentinella suonerebbe ogni ora per
+          # niente, e una sentinella che suona sempre è una che non guarda più
+          # nessuno.
+          # Guasto è: 000, cioè non ha risposto, e 5xx, cioè è rotto dentro.
+          case "$codice" in
+            000) echo "::error::il server della lega non risponde"; exit 1 ;;
+            5*)  echo "::error::il server della lega risponde $codice"; exit 1 ;;
+            *)   echo "il server c'è (risposta $codice)" ;;
+          esac

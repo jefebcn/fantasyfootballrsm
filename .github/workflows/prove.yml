@@ -1,0 +1,75 @@
+# Le prove, a ogni push.
+#
+# Prima non c'era niente: `npm test` compariva solo dentro l'import dei dati, e
+# solo se l'import aveva trovato dati nuovi. Un commit rotto arrivava su Vercel
+# senza che nulla lo fermasse — l'unico controllo era qualcuno che si ricordava
+# di lanciarle a mano.
+#
+# Due mestieri diversi, due lavori:
+#  - "veloci" gira sempre: lint, prove senza browser, migrazioni SQL su un
+#    Postgres vero e il giro del salvataggio. Un paio di minuti.
+#  - "browser" apre l'app e guarda cosa si vede. L'audit su venticinque
+#    schermate resta fuori da qui e gira di notte: da solo vale quanto tutte le
+#    altre insieme, e far aspettare dieci minuti a ogni push si traduce in
+#    qualcuno che smette di guardare i risultati.
+
+name: Prove
+
+on:
+  push:
+  pull_request:
+  schedule:
+    - cron: '40 2 * * *'      # di notte, la passata completa
+  workflow_dispatch:
+
+concurrency:
+  group: prove-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  veloci:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Librerie
+        run: npm install --no-audit --no-fund
+      - name: Lint e prove senza browser
+        run: npm test
+      - name: Postgres per le prove SQL
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq postgresql postgresql-client gnupg
+      - name: Migrazioni su un database pulito
+        run: sudo -E PORTA=5455 ./supabase/prove/prova.sh
+      - name: Migrazioni su un database mezzo migrato
+        run: sudo -E ./supabase/prove/da-vecchio.sh
+      - name: Il salvataggio si rilegge
+        run: sudo -E PORTA=5465 ./supabase/prove/salvataggio.sh
+
+  browser:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Librerie
+        run: npm install --no-audit --no-fund
+      - name: Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Prove col browser
+        # A ogni push senza l'audit; di notte e a mano tutte.
+        env:
+          SALTA: ${{ (github.event_name == 'push' || github.event_name == 'pull_request') && 'audit-ux' || '' }}
+        run: ./prove/tutte.sh
+      - name: Gli screenshot, se qualcosa è andato male
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: schermate-${{ github.run_id }}
+          path: /tmp/tmp.*/
+          if-no-files-found: ignore
+          retention-days: 7

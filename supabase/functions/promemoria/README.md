@@ -87,6 +87,49 @@ secret si usa `promemoria`.
 
 L'azione `.github/workflows/promemoria.yml` gira ogni ora e chiama la funzione.
 
+### 3b. Meglio: l'orologio dentro il database (`pg_cron`)
+
+L'azione di GitHub dice «ogni ora al minuto 7» e non lo fa. Misurato su questo
+repository: fra una corsa e l'altra **3,2 — 6,3 — 5,8 ore**, e il 17 settembre
+**cinque ore e mezza** senza nessuna corsa mentre la finestra dell'avviso era
+aperta. GitHub accoda e salta le corse pianificate quando la piattaforma è
+carica, e il workflow resta verde mentre succede: non c'è niente da
+aggiustare nel nostro codice.
+
+`pg_cron` gira dentro Postgres e passa quando dice di passare. Si installa
+lanciando **una volta** `supabase/promemoria-pianificato.sql` nell'SQL Editor,
+dopo aver riempito le due righe in cima (l'indirizzo delle funzioni e lo stesso
+`PROMEMORIA_TOKEN` del passo 2). Se non le riempi il file si ferma e ti dice
+cosa manca, senza creare niente.
+
+Cosa crea: uno schema `interno` che l'API non espone, indirizzo e token in una
+riga che non legge nessuno (né `anon`, né `authenticated`, né `service_role`),
+la funzione `interno.chiama_promemoria()` che chiama la Edge Function con
+`pg_net`, un registro delle chiamate e il lavoro pianificato **al minuto 37**.
+
+I due orologi convivono, e non è un ripiego: la 009 segna chi è stato
+avvisato, quindi qualunque corsa dentro le 24 ore consegna l'avviso e lo
+consegna una volta sola — `da_avvisare()` segna e restituisce in una sola
+istruzione, quindi due corse sovrapposte non possono spedire due volte.
+GitHub al minuto 7 resta come riserva.
+
+Com'è andata si legge come si leggeva il registro di GitHub:
+
+```sql
+select * from interno.promemoria_ultime;
+```
+
+Il file si può rilanciare quando vuoi: riscrive la configurazione e
+ripianifica il lavoro senza duplicarlo. **È anche il modo di cambiare il
+token** dopo averlo rifatto.
+
+`supabase/prove/pianificato.sh` lo esegue per davvero su un Postgres vuoto —
+con `pg_cron` e `pg_net` sostituiti da due estensioni finte con la stessa
+firma, perché quelle vere non si installano fuori da Supabase — e controlla
+18 cose: che coi segnaposto si fermi, che l'indirizzo finale non abbia due
+barre, che il token viaggi nell'intestazione, che non lo legga nessun ruolo
+dell'API e che rilanciarlo non duplichi il lavoro.
+
 ## Come si controlla che funzioni
 
 Prima del deploy, a mano:

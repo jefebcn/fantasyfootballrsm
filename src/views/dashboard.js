@@ -145,27 +145,59 @@ function corrente(f, n, me, riposo) {
 }
 
 /**
- * L'invito alla lega pubblica, per chi sta in una lega fra amici.
+ * Il banner del montepremi.
  *
  * Sta fra le notizie e la giornata corrente: sopra c'e' il contesto del
- * campionato, sotto quello che devi fare adesso, e in mezzo una cosa che puoi
+ * campionato, sotto quello che devi fare adesso, e in mezzo la cosa che puoi
  * fare in piu'. Piu' in alto ruberebbe il posto alla formazione da
  * consegnare, piu' in basso non lo vedrebbe nessuno.
  *
- * Compare solo se c'e' davvero una lega pubblica aperta in cui non sei
- * dentro, e il premio e' quello vero scritto da chi l'ha aperta: un banner
- * che promette una cifra decisa altrove sarebbe una cosa che l'app non puo'
- * mantenere.
+ * E' una fascia scura, come quelle degli sponsor nelle app di fantacalcio:
+ * in mezzo a schede tutte chiare e' l'unica cosa di un altro colore, e si
+ * vede al primo colpo d'occhio senza urlare. Il fondo e' disegnato dalla CSS
+ * — luce del riflettore e righe del campo — e non e' una foto: una foto sono
+ * duecento kilobyte da scaricare per una striscia alta settanta punti.
+ *
+ * DUE FACCE, perche' il banner serve a due momenti diversi della stessa cosa.
+ * Da fuori invita: porta dritto a entrare nella lega pubblica, col modulo del
+ * nome squadra gia' aperto su QUELLA lega — non nell'elenco, dove poi tocca
+ * cercarla. Da dentro ricorda per cosa si gioca e porta ai premi in palio.
+ *
+ * Il premio scritto e' sempre quello vero, messo da chi ha aperto la lega: un
+ * banner che promette una cifra decisa altrove sarebbe una promessa che
+ * l'app non puo' mantenere. Senza premi, a chi amministra la lega dice che
+ * puo' metterlo lui; agli altri non dice niente e sparisce.
  */
 function invitoPubblica() {
+  const primo = (pr) => (pr || []).slice().sort((a, b) => a.posto - b.posto)[0];
+  const fascia = (href, titolo, riga, sotto, extra = '') => `<a class="invito" href="${href}"${extra}>
+    <i>${pic('trofei', 'lega')}</i>
+    <span class="txt"><b>${titolo}</b><span>${riga}</span>${sotto ? `<span class="sot">${sotto}</span>` : ''}</span>
+    <span class="chev">${icon('chev', 'ic sm')}</span></a>`;
+
+  if (S.legaPubblica()) {
+    const premio = primo(S.premi());
+    const squadre = S.base.managers.length;
+    if (premio) {
+      return fascia('#/classifica', `Montepremi: ${esc(premio.premio)}`,
+        'Sei in gara per il montepremi finale',
+        `${squadre} ${squadre === 1 ? 'squadra' : 'squadre'} · vince chi fa più punti`);
+    }
+    if (!S.isLeagueAdmin()) return '';
+    return fascia('#/classifica', 'Montepremi da definire',
+      'Mettilo in palio tu: lo vedranno tutti qui',
+      'lega pubblica · aperta a tutti senza codice');
+  }
+
   const l = S.pubblicaDaProporre();
   if (!l) return '';
-  const premio = (l.premi || []).slice().sort((a, b) => a.posto - b.posto)[0];
-  return `<a class="invito" href="#/leghe">
-    <i>${pic('trofei', 'lega')}</i>
-    <span class="txt"><b>${premio ? `In palio: ${esc(premio.premio)}` : 'Lega pubblica aperta a tutti'}</b>
-      <span>${esc(l.name)} · ${l.membri} ${l.membri === 1 ? 'squadra' : 'squadre'} · ${premio ? 'entra senza codice' : 'senza codice, ognuno la sua rosa'}</span></span>
-    <span class="cta">Entra${icon('chev', 'ic sm')}</span></a>`;
+  const premio = primo(l.premi);
+  // data-entra: chi tocca il banner vuole entrare in questa lega, non vedere
+  // l'elenco delle leghe. Lo raccoglie il mount qui sotto.
+  return fascia('#/leghe', premio ? `In palio: ${esc(premio.premio)}` : 'Lega pubblica aperta a tutti',
+    premio ? 'Entra e competi per il montepremi finale' : 'Entra: ognuno si fa la sua rosa',
+    `${esc(l.name)} · ${l.membri} ${l.membri === 1 ? 'squadra' : 'squadre'} · senza codice`,
+    ` data-entra="${esc(l.id)}"`);
 }
 
 /**
@@ -462,6 +494,13 @@ export const dashboard = {
         + ` — ${location.origin}${location.pathname}`;
       if (navigator.share) { try { await navigator.share({ title: 'Fantatitano', text }); } catch { /* annullato */ } }
       else window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank', 'noopener');
+    });
+    // Il banner della lega pubblica porta dritto a entrare in QUELLA lega: qui
+    // si segna quale, e la schermata delle leghe apre il modulo da sola. Non
+    // e' un parametro nell'indirizzo perche' il router legge solo il percorso,
+    // e sessionStorage muore con la scheda: se resta appeso non fa danni.
+    root.querySelector('[data-entra]')?.addEventListener('click', (e) => {
+      try { sessionStorage.setItem('fcs:entra-pubblica', e.currentTarget.dataset.entra); } catch { /* niente storage: si entra dall'elenco */ }
     });
     N.carica(() => ctx.render());
     // Le leghe pubbliche: una volta per apertura, e si ridisegna quando

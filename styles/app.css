@@ -124,19 +124,44 @@ a.mrow.tocca{color:inherit;text-decoration:none;cursor:pointer}
 .adm-u .dati b{color:var(--negative)}
 .adm-u .azioni{display:flex;flex-wrap:wrap;gap:6px}
 .adm-u .azioni .chip{min-height:32px;font-size:11.5px;padding:0 10px}
-/* L'invito alla lega pubblica: si fa notare senza urlare — il bordo in oro
-   invece del fondo pieno, che competerebbe col tasto della formazione. */
-.invito{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:12px;
-  background:var(--surface);border:1.5px solid var(--accent);border-radius:var(--r-md);
-  padding:11px 12px;text-decoration:none;color:var(--text);box-shadow:var(--sh-card)}
-.invito > i{width:38px;height:38px;border-radius:10px;background:var(--accent-soft);display:grid;place-items:center}
-.invito > i .pic{width:24px;height:24px}
+/* Il banner del montepremi.
+
+   Una fascia scura in mezzo a schede chiare: e' l'unica cosa di un altro
+   colore nella dashboard, e per questo si vede al primo colpo d'occhio. Il
+   fondo e' disegnato qui — la luce di un riflettore che entra da destra e le
+   righe del manto — e non e' una foto: una foto sono duecento kilobyte per
+   una striscia alta settanta punti, e si scaricherebbe prima di tutto il
+   resto. Il fondo e' scuro in tutti e due i temi, di proposito.
+
+   Il bordo e il titolo sono oro, che qui vuol dire premio: e' lo stesso oro
+   dei premi in palio in classifica. L'audit del contrasto salta chi ha un
+   gradiente sopra — il colore del fondo non si legge da backgroundColor —
+   quindi il contrasto se lo misura la prova del banner, componendo i veli
+   sopra le fermate del gradiente e prendendo il punto piu' chiaro che il
+   fondo puo' assumere, rgb(83,94,92): titolo 4,93:1, riga 5,97:1, riga
+   piccola 4,56:1. Il minimo e' 4,5 e i margini sono stretti: chi schiarisce
+   il fondo o smorza un testo lo scopre dalla prova, non dall'occhio. */
+.invito{position:relative;isolation:isolate;overflow:hidden;
+  display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:13px;
+  padding:13px 14px;border-radius:var(--r-md);text-decoration:none;
+  background:linear-gradient(112deg,#081327 0%,#102540 55%,#16314A 100%);
+  border:1.5px solid var(--c-oro-400);box-shadow:0 6px 18px rgba(8,19,39,.30)}
+.invito::before{content:'';position:absolute;inset:0;z-index:-1;pointer-events:none;
+  background:radial-gradient(130% 150% at 82% -40%, rgba(255,201,77,.18) 0%, rgba(255,201,77,0) 62%),
+    repeating-linear-gradient(101deg, rgba(255,255,255,.05) 0 2px, rgba(255,255,255,0) 2px 30px)}
+.invito > i{flex:none;width:42px;height:42px;border-radius:50%;display:grid;place-items:center;
+  background:rgba(255,201,77,.15);border:1px solid rgba(255,201,77,.5)}
+.invito > i .pic{width:26px;height:26px}
 .invito .txt{min-width:0}
-.invito .txt b{display:block;font:700 14px var(--font-display);line-height:1.2;
+.invito .txt b{display:block;font:700 15px var(--font-display);line-height:1.2;letter-spacing:.03em;
+  /* l'oro chiaro della tavolozza, non quello pieno: su questo fondo il 400
+     misurava 4,41:1 e il minimo e' 4,5 (prove/invito-pubblica.cjs) */
+  text-transform:uppercase;color:var(--c-oro-300);
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.invito .txt span{display:block;font-size:11.5px;color:var(--text-muted);line-height:1.3;
+.invito .txt > span{display:block;font-size:12.5px;line-height:1.35;color:#EAF2F9;margin-top:1px;
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.invito .cta{display:flex;align-items:center;gap:2px;font:700 12px var(--font-display);color:var(--accent);white-space:nowrap}
+.invito .txt > span.sot{font-size:11px;color:#C9D6E2;margin-top:1px}
+.invito .chev{flex:none;display:grid;place-items:center;color:var(--c-oro-300)}
 /* la giornata corrente in una lega a punti: tre numeri, nessun avversario */
 .mrow.punti{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;text-align:center;padding:14px 12px}
 .mrow.punti .pblocco b{display:block;font-family:var(--font-display);font-weight:800;font-size:22px;line-height:1.1;font-variant-numeric:tabular-nums}

@@ -7,6 +7,16 @@
  * serve: meglio una tinta appena diversa che un nome illeggibile.
  */
 
+/**
+ * I colori che l'app assegna a caso alla creazione di una squadra.
+ *
+ * Stanno qui e non nella schermata delle leghe perche' il vincolo che devono
+ * rispettare e' di questo file: sopra ognuno ci va scritta un'iniziale, e
+ * deve restare leggibile. Chi ne aggiunge uno lo scopre dalla prova
+ * (tests/colori-squadra.test.js), non dall'occhio.
+ */
+export const COLORI_SQUADRA = ['#1B84C6', '#2b7a3d', '#8a1d1d', '#5b3fa6', '#c46a00', '#1a1a1a', '#2c7a7b', '#b8321f', '#d4a017', '#0e5e93'];
+
 const CANALI = (hex) => {
   const c = String(hex || '#334455').replace('#', '');
   const v = c.length === 3 ? c.split('').map((x) => x + x).join('') : c.padEnd(6, '0');

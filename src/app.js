@@ -95,9 +95,22 @@ function appbar(view, ctx) {
   if (kind === 'back') return `<header class="a-appbar"><button class="ib flip" data-back aria-label="Indietro">${icon('chev')}</button><div class="t"><b>${esc(league.name)}</b><span>${esc(view.sub?.(ctx) || view.title)}</span></div>${view.actions ? view.actions(ctx) : ''}</header>`;
   return `<header class="a-appbar"><button class="ib" data-open-drawer aria-label="Menu">${icon('menu')}</button><div class="t"><b>${esc(league.name)}</b><span>${esc(view.sub?.(ctx) || view.title)}</span></div><button class="ib" data-refresh aria-label="Aggiorna">${mask('aggiorna', 'ib-mi')}</button><a class="ib" href="#/regolamento" aria-label="Regolamento">${icon('book')}</a><a class="ib" href="#/admin/contestazioni" aria-label="Contestazioni">${icon('flag')}${S.contestazioni().some((c) => c.status === 'open') ? '<i class="dot"></i>' : ''}</a></header>`;
 }
+/**
+ * La barra in basso.
+ *
+ * L'icona sta dentro una pastiglia e l'etichetta sotto: dove sei si vede
+ * dalla pastiglia accesa, non solo dal colore del testo. Il colore da solo e'
+ * un segno debole — su uno schermo al sole, o per chi non distingue bene i
+ * blu, cinque voci grigie e una azzurra si somigliano tutte.
+ *
+ * La pallina dell'avviso sta DENTRO la pastiglia, non nel riquadro della
+ * voce: cosi' resta attaccata all'icona qualunque sia la larghezza della
+ * colonna, che cambia col telefono.
+ */
 function nav(path) {
   const active = path.split('/')[0];
-  return `<nav class="a-nav">${NAV.map(([p, ic, l]) => `<a href="#/${p}" class="${active === p ? 'on' : ''}">${mask(ic)}${l}${p === 'voti' && S.matchdayStatus(S.currentMatchday()) === 'provisional' ? '<i class="dot"></i>' : ''}</a>`).join('')}</nav>`;
+  const avviso = (p) => (p === 'voti' && S.matchdayStatus(S.currentMatchday()) === 'provisional' ? '<i class="dot"></i>' : '');
+  return `<nav class="a-nav">${NAV.map(([p, ic, l]) => `<a href="#/${p}" class="${active === p ? 'on' : ''}"><i class="np">${mask(ic)}${avviso(p)}</i><span>${l}</span></a>`).join('')}</nav>`;
 }
 function drawer() {
   const me = S.me(); const ph = S.weekPhase(); const u = S.currentUser();

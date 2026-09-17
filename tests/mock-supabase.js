@@ -116,6 +116,55 @@ export function createClient(_url, _key, opts) {
             iscritti_7_giorni: T('profiles').length,
           }, error: null };
         }
+        // 015: le persone portano anche "sospeso", le squadre si cercano e si
+        // rinominano, e la sospensione la impone il vero database — qui si
+        // riproducono i controlli che la migrazione fa nel corpo delle funzioni.
+        if (name === 'admin_persone') {
+          if (!amministro()) throw new Error("Serve essere amministratore dell'app");
+          const q = (args.p_cerca || '').trim().toLowerCase();
+          return { data: T('profiles')
+            .filter((p2) => !q || (p2.display_name || '').toLowerCase().includes(q) || (p2.email || '').toLowerCase().includes(q))
+            .map((p2) => ({ id: p2.id, nome: p2.display_name, email: p2.email || `${p2.id}@example.org`,
+              is_judge: !!p2.is_judge, is_admin: !!p2.is_admin, sospeso: !!p2.sospeso,
+              iscritto: p2.created_at || now(),
+              ultimo_accesso: p2.created_at || now(), email_confermata: p2.created_at || now(),
+              leghe: T('league_members').filter((m) => m.user_id === p2.id).length,
+              squadre: T('league_members').filter((m) => m.user_id === p2.id).length })), error: null };
+        }
+        if (name === 'admin_squadre') {
+          if (!amministro()) throw new Error("Serve essere amministratore dell'app");
+          const q = (args.p_cerca || '').trim().toLowerCase();
+          const dentro = (v) => (v || '').toLowerCase().includes(q);
+          return { data: T('league_members')
+            .filter((m) => { const l = T('leagues').find((x) => x.id === m.league_id) || {};
+              const p2 = T('profiles').find((x) => x.id === m.user_id) || {};
+              return !q || dentro(m.team_name) || dentro(m.owner_name) || dentro(p2.display_name) || dentro(l.name); })
+            .map((m) => { const l = T('leagues').find((x) => x.id === m.league_id) || {};
+              const p2 = T('profiles').find((x) => x.id === m.user_id) || {};
+              return { member_id: m.id, squadra: m.team_name, fantallenatore: m.owner_name || p2.display_name || null,
+                iniziali: m.initials, lega: l.name, league_id: m.league_id, user_id: m.user_id,
+                sospeso: !!p2.sospeso, creata: m.created_at }; }), error: null };
+        }
+        if (name === 'admin_rinomina') {
+          if (!amministro()) throw new Error("Serve essere amministratore dell'app");
+          const nome = (args.p_squadra || '').trim();
+          if (!nome) throw new Error('La squadra ha bisogno di un nome');
+          const m = T('league_members').find((x) => x.id === args.p_member);
+          if (!m) throw new Error('Squadra non trovata');
+          m.team_name = nome;
+          m.initials = (nome.replace(/[^A-Za-zÀ-ÿ0-9 ]/g, '').split(/\s+/).filter(Boolean)
+            .map((w) => w[0]).join('').slice(0, 3).toUpperCase()) || 'FC';
+          if ((args.p_fantallenatore || '').trim()) m.owner_name = args.p_fantallenatore.trim();
+          persisti(); return { data: true, error: null };
+        }
+        if (name === 'admin_sospendi') {
+          if (!amministro()) throw new Error("Serve essere amministratore dell'app");
+          const u = T('profiles').find((x) => x.id === args.p_user);
+          if (!u) throw new Error('Utente non trovato');
+          if (args.p_user === userId && args.p_on) throw new Error('Non puoi sospendere te stesso');
+          if (args.p_on && u.is_admin) throw new Error("E' un amministratore: prima togligli l'amministrazione, poi sospendilo");
+          u.sospeso = !!args.p_on; persisti(); return { data: true, error: null };
+        }
         if (name === 'admin_utenti') {
           if (!amministro()) throw new Error("Serve essere amministratore dell'app");
           const q = (args.p_cerca || '').trim().toLowerCase();

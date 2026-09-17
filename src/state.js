@@ -39,11 +39,15 @@ function notify() { cache.clear(); listeners.forEach((fn) => fn()); }
 const memo = (key, fn) => { if (!cache.has(key)) cache.set(key, fn()); return cache.get(key); };
 
 // ---------------------------------------------------------------- avvio
-/** 'unconfigured' | 'offline' | 'anonymous' | 'no-league' | 'ready' */
+/** 'unconfigured' | 'offline' | 'anonymous' | 'sospeso' | 'no-league' | 'ready' */
 export function appState() {
   if (!remote.isConfigured()) return 'unconfigured';
   if (!ready) return 'offline';
   if (!user) return 'anonymous';
+  // Sospeso: prima di qualunque lega. Nel database non puo' schierare ne'
+  // contestare (015) e vedrebbe l'app funzionare a meta', con errori che non
+  // spiegano niente; qui glielo si dice in faccia una volta.
+  if (prof?.sospeso) return 'sospeso';
   if (!prefs.currentLeagueId) return 'no-league';
   return 'ready';
 }
@@ -262,8 +266,17 @@ export const leghePubbliche = () => remote.leghePubbliche();
 
 // --- console amministrativa (014)
 export const adminRiepilogo = () => remote.adminRiepilogo();
-export const adminUtenti = (cerca, limite) => remote.adminUtenti(cerca, limite);
+export const adminPersone = (cerca, limite) => remote.adminPersone(cerca, limite);
 export const adminLeghe = (limite) => remote.adminLeghe(limite);
+// --- moderazione (015)
+export const adminSquadre = (cerca, limite) => remote.adminSquadre(cerca, limite);
+export const adminRinomina = (memberId, squadra, fantallenatore) => remote.adminRinomina(memberId, squadra, fantallenatore);
+export async function adminSospendi(userId, on) {
+  await remote.adminSospendi(userId, on);
+  if (userId === user?.id) { prof = await remote.profile(user.id) || prof; notify(); }
+}
+/** Sospeso: l'app glielo dice e non lo lascia giocare (la 015 lo impedisce anche nel database). */
+export const sospeso = () => !!prof?.sospeso;
 export async function adminImpostaRuolo(userId, ruolo, on) {
   await remote.adminImpostaRuolo(userId, ruolo, on);
   // Se ho cambiato qualcosa a ME, il mio profilo in memoria e' vecchio.

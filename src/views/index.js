@@ -21,6 +21,7 @@ export { adminGiornata, adminPartita, adminContestazioni, adminCongela, adminReg
 export { login, resetLogin, prepareLogin } from './auth.js';
 export { onboarding } from './onboarding.js';
 export { setup, offline } from './setup.js';
+export { sospeso } from './sospeso.js';
 export { leghe } from './leghe.js';
 export { lega } from './lega.js';
 export { gestione } from './gestione.js';

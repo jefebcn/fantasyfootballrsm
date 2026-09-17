@@ -23,9 +23,23 @@ import { createClient } from 'npm:@supabase/supabase-js@2.58.0';
 const ORE_PRIMA = 24;
 
 Deno.serve(async (req) => {
+  // Due guasti diversi, e per mesi rispondevano la stessa identica cosa.
+  // Il 17 settembre l'azione pianificata ha preso 401 e dal registro non si
+  // capiva se il token fosse sbagliato o se su Supabase non ci fosse proprio:
+  // "non autorizzato" copriva tutti e due i casi. Adesso il secret mancante
+  // e' un guasto di configurazione (500) e lo dice; 401 vuol dire una cosa
+  // sola, cioe' che i due valori non coincidono. Non si rivela niente: il
+  // token non compare, e chi passa di qui gia' sa di aver preso un rifiuto.
   const atteso = Deno.env.get('PROMEMORIA_TOKEN');
-  if (!atteso || req.headers.get('x-promemoria-token') !== atteso) {
-    return new Response('non autorizzato', { status: 401 });
+  if (!atteso) {
+    return new Response(
+      'PROMEMORIA_TOKEN non e\' fra i secret di questa funzione: ' +
+      'Project Settings -> Edge Functions -> Secrets, poi ridistribuisci.',
+      { status: 500 },
+    );
+  }
+  if (req.headers.get('x-promemoria-token') !== atteso) {
+    return new Response('token non valido', { status: 401 });
   }
 
   const pubblica = Deno.env.get('VAPID_PUBLIC_KEY');

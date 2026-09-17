@@ -58,6 +58,25 @@ const SOGLIA = 0.6;
         const base = rl.y + (alta - (A + D)) / 2 + A;
         righe.push({ t: lab.textContent.trim().slice(0, 20), d: +((base - capH / 2) - (rb.y + rb.height / 2)).toFixed(2) });
       }
+      // le pastiglie di sezione ("nuvolette"): la riga di testo la si legge col
+      // Range, non col rettangolo dell'elemento, perche' dentro la pastiglia
+      // c'e' il padding e il rettangolo direbbe il posto sbagliato
+      const nuvole = [];
+      for (const c of document.querySelectorAll('.d-sec .chip')) {
+        const nodo = [...c.childNodes].find((n) => n.nodeType === 3);
+        if (!nodo) continue;
+        const rg = document.createRange(); rg.selectNode(nodo);
+        const rt = rg.getBoundingClientRect(), rc = c.getBoundingClientRect();
+        const cs = getComputedStyle(c);
+        g.font = `${cs.fontStyle} ${cs.fontWeight} ${cs.fontSize} ${cs.fontFamily}`;
+        const m = g.measureText(nodo.textContent.trim());
+        const capH = g.measureText('H').actualBoundingBoxAscent;
+        const A = m.fontBoundingBoxAscent, D = m.fontBoundingBoxDescent;
+        const base = rt.y + (rt.height - (A + D)) / 2 + A;
+        nuvole.push({ t: nodo.textContent.trim().slice(0, 20),
+          d: +((base - capH / 2) - (rc.y + rc.height / 2)).toFixed(2),
+          alta: +rc.height.toFixed(1) });
+      }
       // le icone: una misura sola per tutte, contorni e illustrate
       const misure = [...new Set([...document.querySelectorAll('.d-item i > *')]
         .map((f) => { const r = f.getBoundingClientRect(); return `${Math.round(r.width)}x${Math.round(r.height)}`; }))];
@@ -71,7 +90,7 @@ const SOGLIA = 0.6;
         const r = e.getBoundingClientRect(); const rp = document.querySelector('.a-drawer .panel').getBoundingClientRect();
         return r.width > 0 && (r.right > rp.right + 1 || r.left < rp.left - 1);
       }).map((e) => e.className).slice(0, 3);
-      return { righe, misure, sbordano, fuori,
+      return { righe, nuvole, misure, sbordano, fuori,
         pezzi: { stemma: q('.d-io .crest'), nome: q('.d-chi b'), esci: q('.d-esci'), lega: q('.d-lega'), conta: (document.querySelector('.d-nl small')?.textContent || '') } };
     });
 
@@ -80,11 +99,45 @@ const SOGLIA = 0.6;
     et(storte.length === 0, storte.length
       ? `${tema}: ${storte.length} etichette fuori centro (${storte.slice(0, 3).map((x) => `${x.t} ${x.d}`).join(', ')})`
       : `${tema}: tutte le etichette centrate entro ${SOGLIA}px (max ${Math.max(...r.righe.map((x) => Math.abs(x.d))).toFixed(2)})`);
+    const nuvStorte = r.nuvole.filter((x) => Math.abs(x.d) > SOGLIA);
+    et(r.nuvole.length >= 3, `${tema}: ${r.nuvole.length} pastiglie di sezione misurate`);
+    et(nuvStorte.length === 0, nuvStorte.length
+      ? `${tema}: ${nuvStorte.length} pastiglie col testo fuori centro (${nuvStorte.slice(0, 3).map((x) => `${x.t} ${x.d} in una alta ${x.alta}`).join(', ')})`
+      : `${tema}: testo centrato in tutte le pastiglie entro ${SOGLIA}px (max ${Math.max(...r.nuvole.map((x) => Math.abs(x.d))).toFixed(2)})`);
+    // la pastiglia e' un'etichetta, non un bersaglio da toccare: se si porta
+    // dietro il min-height:38px di .chip il testo torna a pendere in alto
+    et(r.nuvole.every((x) => x.alta < 34), `${tema}: pastiglie alte quanto il testo (${r.nuvole[0]?.alta}px), non 38 come i bersagli di tocco`);
     et(r.misure.length === 1, `${tema}: una misura sola per le icone (${r.misure.join(', ')})`);
     et(r.sbordano.length === 0, r.sbordano.length ? `${tema}: testo che esce dalla sua scatola — ${r.sbordano.join(' | ')}` : `${tema}: nessun testo che sborda, anche col nome squadra lungo`);
     et(r.fuori.length === 0, r.fuori.length ? `${tema}: qualcosa esce dal pannello (${r.fuori.join(', ')})` : `${tema}: niente esce dal pannello`);
     et(r.pezzi.stemma && r.pezzi.nome && r.pezzi.esci && r.pezzi.lega, `${tema}: la testa ha stemma, nome, uscita e scheda della lega`);
     et(/partecipant/.test(r.pezzi.conta) && /cambia lega/.test(r.pezzi.conta), `${tema}: la scheda dice quanti sono e dove porta ("${r.pezzi.conta}")`);
+    // LA PORTA. La sezione "Amministrazione" e la voce che porta alla console
+    // le deve vedere solo chi amministra l'app. Questo utente e' il primo
+    // iscritto, quindi nel mock e' Giudice Dati — le sezioni scure esistono —
+    // ma amministratore dell'app non e'. Una volta sola: la porta non cambia
+    // col tema.
+    if (tema === 'light') {
+      const sez = () => p.evaluate(() => ({
+        pastiglie: [...document.querySelectorAll('.d-sec .chip')].map((c) => c.textContent.trim()),
+        console: !!document.querySelector('.a-drawer [href="#/admin/console"]'),
+      }));
+      const senza = await sez();
+      et(!senza.pastiglie.some((t) => /amministrazione/i.test(t)),
+        `chi non amministra l'app non vede la sezione Amministrazione (${senza.pastiglie.join(' · ')})`);
+      et(!senza.console, 'e non vede la voce che porta alla console');
+      // amministratori si diventa come per davvero: dal database
+      await p.evaluate(() => {
+        const s = JSON.parse(localStorage.getItem('fcs:mock'));
+        s.tables.profiles.find((x) => x.id === s.userId).is_admin = true;
+        localStorage.setItem('fcs:mock', JSON.stringify(s));
+      });
+      await p.reload({ waitUntil: 'load' }); await w(1700);
+      await p.click('[data-open-drawer]'); await w(600);
+      const con = await sez();
+      et(con.pastiglie.some((t) => /amministrazione/i.test(t)) && con.console,
+        `a chi amministra l'app compaiono sezione e console (${con.pastiglie.join(' · ')})`);
+    }
     et(errori.length === 0, `${tema}: nessun errore JS${errori.length ? ' — ' + errori[0] : ''}`);
     await ctx.close();
   }

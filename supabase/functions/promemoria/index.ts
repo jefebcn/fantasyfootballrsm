@@ -42,10 +42,31 @@ Deno.serve(async (req) => {
     return new Response('token non valido', { status: 401 });
   }
 
+  // Anche qui, come per il token: prima diceva "chiavi VAPID non configurate"
+  // e basta. Due secret, un messaggio solo, e chi legge non sa se ne manca una
+  // o tutte e due — ed e' la differenza fra "ho sbagliato a scrivere un nome"
+  // e "non li ho mai messi". Il nome del secret non e' un segreto: il segreto
+  // e' il valore, che non compare.
   const pubblica = Deno.env.get('VAPID_PUBLIC_KEY');
   const privata = Deno.env.get('VAPID_PRIVATE_KEY');
   const contatto = Deno.env.get('VAPID_SUBJECT') ?? 'mailto:nessuno@example.invalid';
-  if (!pubblica || !privata) return Response.json({ errore: 'chiavi VAPID non configurate' }, { status: 500 });
+  //
+  // La lista si costruisce DENTRO il controllo, non fuori: una condizione
+  // scritta cosi' restringe il tipo, e sotto pubblica e privata sono stringhe
+  // sicure. Riempire un array di nomi mancanti e poi guardarne la lunghezza
+  // sembra piu' ordinato, ma per il compilatore le due variabili resterebbero
+  // "forse assenti" e il deploy non passerebbe il controllo dei tipi.
+  if (!pubblica || !privata) {
+    const mancanti = [
+      !pubblica ? 'VAPID_PUBLIC_KEY' : null,
+      !privata ? 'VAPID_PRIVATE_KEY' : null,
+    ].filter((n): n is string => n !== null);
+    return Response.json({
+      errore: `manca fra i secret di questa funzione: ${mancanti.join(', ')}`,
+      dove: 'Supabase -> Project Settings -> Edge Functions -> Secrets',
+      attenzione: 'i nomi sono esatti, maiuscole e underscore compresi',
+    }, { status: 500 });
+  }
   webpush.setVapidDetails(contatto, pubblica, privata);
 
   const sb = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!);

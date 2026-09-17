@@ -31,7 +31,14 @@ globalThis.__banco = {
   createClient: () => ({
     from: () => {
       if (rompi) throw new Error(rompi);
-      return { select: async () => ({ data: [], error: null }), update: () => ({ in: async () => ({}) }) };
+      return {
+        // select() normale e' una promessa; con { head: true } e' la conta,
+        // che la funzione incatena con .is().
+        select: (_c, opts) => (opts?.head
+          ? { is: async () => ({ count: 2, error: null }) }
+          : Promise.resolve({ data: [], error: null })),
+        update: () => ({ in: async () => ({}) }),
+      };
     },
     rpc: async () => ({ data: [], error: null }),
   }),
@@ -86,6 +93,8 @@ test('configurazione a posto: risponde 200 e non spedisce niente', async () => {
   const { stato, corpo } = await risposta();
   assert.equal(stato, 200);
   assert.match(corpo, /nessun lock nella finestra/);
+  // e dice quanti telefoni sono iscritti, che da fuori non si puo' sapere
+  assert.match(corpo, /"iscritti":2/);
 });
 
 test('token sbagliato: 401, e non si confonde col token mancante', async () => {

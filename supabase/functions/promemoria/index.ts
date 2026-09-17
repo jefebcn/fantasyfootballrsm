@@ -111,6 +111,14 @@ const gestisci = async (req: Request): Promise<Response> => {
   // Quali giornate hanno il lock nel giorno che viene? Le date stanno su
   // matchday_locks, cioe' la stessa fonte che regola i permessi: se qui si
   // usasse un'altra formula tornerebbe lo scarto di otto giorni.
+  // Quanti telefoni sono iscritti, in ogni risposta. Da fuori la tabella non
+  // si legge (RLS: ognuno vede solo i suoi) e non c'e' altro modo di sapere
+  // se l'iscrizione fatta dall'app e' arrivata al server: "spedite: 0" da
+  // solo non distingue "nessun lock in finestra" da "nessuno iscritto".
+  const { count: iscritti, error: e0 } = await sb.from('push_subscriptions')
+    .select('endpoint', { count: 'exact', head: true }).is('failed_at', null);
+  if (e0) return Response.json({ errore: e0.message }, { status: 500 });
+
   const ora = Date.now();
   const { data: locks, error: e1 } = await sb.from('matchday_locks').select('matchday, lock_at');
   if (e1) return Response.json({ errore: e1.message }, { status: 500 });
@@ -118,7 +126,7 @@ const gestisci = async (req: Request): Promise<Response> => {
   const candidate = (locks ?? []).map((l) => ({
     ...l, ore: (new Date(l.lock_at).getTime() - ora) / 3600000,
   })).filter((l) => l.ore > 0 && l.ore <= ORE_PRIMA);
-  if (!candidate.length) return Response.json({ spedite: 0, motivo: 'nessun lock nella finestra' });
+  if (!candidate.length) return Response.json({ spedite: 0, iscritti, motivo: 'nessun lock nella finestra' });
 
   let spedite = 0; const morti: string[] = []; let rimessi = 0;
   for (const l of candidate) {
@@ -160,7 +168,7 @@ const gestisci = async (req: Request): Promise<Response> => {
   }
   if (morti.length) await sb.from('push_subscriptions').update({ failed_at: new Date().toISOString() }).in('endpoint', morti);
 
-  return Response.json({ giornate: candidate.map((c) => c.matchday), spedite, scaduti: morti.length, da_rifare: rimessi });
+  return Response.json({ giornate: candidate.map((c) => c.matchday), spedite, iscritti, scaduti: morti.length, da_rifare: rimessi });
 };
 
 /**

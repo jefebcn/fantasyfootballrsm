@@ -42,7 +42,26 @@ export const adminPartita = {
 
     const steps = `<div class="chips">${[[1, 'Risultato'], [2, `Chi ha giocato · ${apps.length}`], [3, `Eventi · ${evs.length}`], [4, 'Anteprima voti']].map(([i, l]) => `<button class="chip${step === i ? ' on' : ''}" data-step="${i}">${i} · ${l}</button>`).join('')}</div>`;
     let body = '';
-    if (step === 1) body = `<div class="a-card"><label class="lbl">Risultato</label>${[[h, 'home', m.homeGoals], [a, 'away', m.awayGoals]].map(([c, k, g]) => `<div class="scorerow"><b>${esc(c.name)}</b><div class="stepper"><button data-g="${k}:-1" ${frozen ? 'disabled' : ''}>−</button><b>${g ?? 0}</b><button data-g="${k}:1" ${frozen ? 'disabled' : ''}>+</button></div></div>`).join('')}</div>
+    // IL RISULTATO NON SI CAMBIA DA QUI, e non e' una restrizione: e' un dato
+    // della FSGC, e l'import lo rilegge a ogni giro. Se lo si potesse
+    // correggere a mano, la correzione durerebbe fino al prossimo import e
+    // poi tornerebbe indietro da sola — il tipo di guasto che fa impazzire,
+    // perche' sembra che l'app "si dimentichi".
+    //
+    // C'erano due pulsanti + e - per lato. Uno di quelli ha lasciato sul
+    // database di Alex una sovrascrittura con i gol ospiti nulli, e la
+    // giornata mostrava "3 - null".
+    //
+    // Se la federazione omologa un punteggio diverso (art. 10), quello arriva
+    // col prossimo import: non serve una via a mano, serve che l'import giri.
+    if (step === 1) body = `<div class="a-card"><label class="lbl">Risultato · dalla FSGC</label>
+      <div class="ris-fsgc">
+        <span class="sq">${esc(h.name)}</span>
+        <b class="sc">${m.realHomeGoals ?? '—'} – ${m.realAwayGoals ?? '—'}</b>
+        <span class="sq d">${esc(a.name)}</span>
+      </div>
+      <p class="small muted" style="margin:8px 0 0">Il risultato arriva dal sito della federazione e si aggiorna con l'import: da qui non si modifica. Quello che si inserisce qui sono <b>gli eventi</b> — chi ha segnato, i minuti, i cartellini.</p>
+      ${m.realStatus === 'scheduled' ? `<p class="small muted" style="margin:6px 0 0">Questa partita per la FSGC non è ancora giocata.</p>` : ''}</div>
       <div class="a-card"><label class="lbl">Stato gara (art. 10)</label><div class="chipgrid">${STATUS.map(([k, l]) => `<button class="chip${m.status === k ? ' on' : ''}" data-status="${k}" ${frozen ? 'disabled' : ''}>${l}</button>`).join('')}</div><p class="small muted" style="margin-top:8px">Rinviata, sospesa prima del 45' e a tavolino: S.V. per tutti. Sospesa dopo il 45': eventi validi, niente esito né porta inviolata.</p></div>
       <div class="a-card"><label class="lbl">Video Titani.TV</label>${m.videoUrl ? `<a href="${esc(m.videoUrl)}" target="_blank" rel="noopener" class="small">${esc(m.videoUrl)}</a>` : '<span class="small muted">Nessun link</span>'}</div>`;
     else if (step === 2) {
@@ -76,8 +95,12 @@ export const adminPartita = {
     root.querySelector('main').addEventListener('click', (e) => {
       const st = e.target.closest('[data-step]'); if (st) { step = +st.dataset.step; ctx.render(); return; }
       const sd = e.target.closest('[data-side]'); if (sd) { side = sd.dataset.side; ctx.render(); return; }
-      const g = e.target.closest('[data-g]'); if (g) { const [s, d] = g.dataset.g.split(':'); const key = s === 'home' ? 'homeGoals' : 'awayGoals'; guard(ctx, () => S.setMatch(m.id, { [key]: Math.max(0, (m[key] ?? 0) + +d), status: 'played' })); return; }
-      const ss = e.target.closest('[data-status]'); if (ss) { guard(ctx, () => S.setMatch(m.id, { status: ss.dataset.status, ...(ss.dataset.status === 'played' ? { homeGoals: m.homeGoals ?? 0, awayGoals: m.awayGoals ?? 0 } : {}) })); return; }
+      // I tasti +/- del risultato non ci sono piu': il punteggio e' della FSGC.
+      const ss = e.target.closest('[data-status]');
+      // Lo stato della gara SI cambia: rinviata, sospesa, a tavolino (art. 10)
+      // sono cose che il sito della federazione non dice e che cambiano come
+      // si calcolano i voti. Ma non si tocca il punteggio: quello resta suo.
+      if (ss) { guard(ctx, () => S.setMatch(m.id, { status: ss.dataset.status })); return; }
       const pl = e.target.closest('[data-pl]'); if (pl) {
         const pid = pl.dataset.pl; const apps = S.appearancesOf(m.id); const ap = apps.find((x) => x.playerId === pid);
         if (!ap) { guard(ctx, () => S.setAppearances(m.id, [...apps, { matchId: m.id, playerId: pid, clubId: P(pid).clubId, started: true, minutesPlayed: 90, enteredAt: 0 }])); return; }

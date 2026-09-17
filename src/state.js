@@ -384,8 +384,24 @@ export const now = () => new Date();
 
 // ---------------------------------------------------------------- giornate
 export function matchday(n) { return base.matchdays.find((m) => m.number === n); }
-export function matchesOf(n) { return base.matches.filter((m) => m.matchday === n).map((m) => ({ ...m, ...(g.matchOverrides[m.id] || {}) })); }
-export function match(id) { const m = base.matches.find((x) => x.id === id); return m ? { ...m, ...(g.matchOverrides[id] || {}) } : null; }
+/**
+ * Il risultato di una partita di campionato e' della FSGC, non nostro.
+ *
+ * Le sovrascritture (match_overrides) servono per lo STATO — rinviata,
+ * sospesa, a tavolino (art. 10) — che il sito della federazione non dice e
+ * che cambia come si calcolano i voti. I gol no: quelli arrivano dall'import
+ * e l'import li rilegge a ogni giro, quindi una correzione a mano durerebbe
+ * fino al giro dopo e poi tornerebbe indietro da sola.
+ *
+ * Qui i gol della sovrascrittura si BUTTANO. Non e' solo pulizia: sul
+ * database di Alex ce n'era una con i gol ospiti nulli, e la giornata
+ * mostrava "3 - null". Ignorandoli, righe come quella smettono di fare danno
+ * senza che nessuno debba andare a cancellarle.
+ */
+const senzaGol = (o) => { if (!o) return null; const { homeGoals: _h, awayGoals: _a, ...resto } = o; return resto; };
+const conFSGC = (m) => ({ ...m, ...(senzaGol(g.matchOverrides[m.id]) || {}), homeGoals: m.realHomeGoals, awayGoals: m.realAwayGoals });
+export function matchesOf(n) { return base.matches.filter((m) => m.matchday === n).map(conFSGC); }
+export function match(id) { const m = base.matches.find((x) => x.id === id); return m ? conFSGC(m) : null; }
 export function eventsOf(matchId) { return g.matchEvents[matchId] || []; }
 export function appearancesOf(matchId) { return g.appearanceOverrides[matchId] || []; }
 
@@ -763,7 +779,12 @@ export async function ritiraOfferta(id) { await remote.ritiraOfferta(id); await 
 const assertOpen = (matchId) => { const m = match(matchId); if (isFrozen(m.matchday)) throw new Error(`Giornata ${m.matchday} congelata (art. 9.2)`); return m; };
 const write = (fn) => fn().catch((e) => { onError(e); refresh(); });
 export function setMatch(matchId, patch) {
-  assertOpen(matchId); const next = { ...(g.matchOverrides[matchId] || {}), ...patch }; g.matchOverrides[matchId] = next; notify();
+  assertOpen(matchId);
+  // I gol non passano, da nessun chiamante. La schermata non li offre piu',
+  // ma la regola sta qui perche' e' qui che vale: e' il punto dove si scrive,
+  // e le regole messe solo nella schermata valgono solo per quella schermata.
+  const { homeGoals: _h, awayGoals: _a, ...pulito } = patch;
+  const next = { ...(g.matchOverrides[matchId] || {}), ...pulito }; g.matchOverrides[matchId] = next; notify();
   return write(() => remote.upsertMatch(matchId, next, user.id));
 }
 export function setAppearances(matchId, list) { assertOpen(matchId); g.appearanceOverrides[matchId] = list; notify(); return write(() => remote.replaceAppearances(matchId, list)); }

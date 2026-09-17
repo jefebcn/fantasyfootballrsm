@@ -71,6 +71,14 @@ const ok = [], ko = []; const et = (c, t) => (c ? ok : ko).push(t);
   // Le etichette escono in maiuscolo: il CSS ha text-transform e innerText
   // restituisce il testo RESO. Confronto senza distinguere le maiuscole.
   et(/iscritti/i.test(num.testo) && /leghe/i.test(num.testo), 'fra cui iscritti e leghe');
+  // l'andamento delle iscrizioni: quattordici colonne, e quella di oggi piena
+  const graf = await p.evaluate(() => {
+    const col = [...document.querySelectorAll('.adm-graf .col')];
+    const alte = col.map((c) => parseFloat(getComputedStyle(c.querySelector('i')).height));
+    return { quante: col.length, ultima: alte[alte.length - 1] || 0, max: Math.max(0, ...alte) };
+  });
+  et(graf.quante === 14, `e l'andamento delle iscrizioni a quattordici giorni (${graf.quante} colonne)`);
+  et(graf.ultima > 2, `con la colonna di oggi piena (${graf.ultima}px): gli iscritti di prova sono di oggi`);
 
   // ---- persone: e-mail, ultimo accesso, e i poteri si danno
   await p.evaluate(() => { const x = [...document.querySelectorAll('[data-atab]')].find((e) => /persone/i.test(e.textContent)); x.click(); }); await w(1200);

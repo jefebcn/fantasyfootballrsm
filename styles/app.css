@@ -373,7 +373,17 @@ hr.sep{border:0;border-top:1px solid var(--border);margin:4px 0}
 /* --primary-ink e non --primary: le etichette del menu stanno su
    --primary-soft, e col colore pieno il contrasto era 4,18. Il menu sta
    fuori da .a-body, quindi l'audit non ci arrivava. */
-.d-sec .chip{display:inline-block;background:var(--primary-soft);color:var(--primary-ink);font-weight:600;font-size:14px;padding:5px 16px;border-radius:999px}
+.d-sec .chip{display:inline-flex;align-items:center;justify-content:center;min-height:0;min-width:0;
+  background:var(--primary-soft);color:var(--primary-ink);border:0;cursor:default;
+  font-weight:600;font-size:14px;line-height:1.2;letter-spacing:.01em;
+  /* Prima c'era display:inline-block, che annullava la centratura di .chip
+     (inline-flex + align-items:center) lasciandone in piedi min-height:38px:
+     la riga di testo restava in cima e la banda delle maiuscole cadeva 4px
+     SOPRA il centro della pastiglia. Ora la riga e' centrata davvero, e il
+     padding in em porta la correzione ottica: a padding simmetrico la banda
+     delle maiuscole resta 0,4px sopra il centro, quindi sopra ce ne va
+     0,057em in piu' che sotto. Misurato: 0,00px su tutte le pastiglie. */
+  padding:.417em 1.05em .36em;border-radius:999px}
 .d-sec.admin .chip{background:var(--accent-soft);color:var(--on-accent-soft)}
 /* Una griglia, non un flex: le tre colonne (riquadro, etichetta, nota) hanno
    la stessa larghezza su ogni riga, quindi le etichette partono tutte dallo

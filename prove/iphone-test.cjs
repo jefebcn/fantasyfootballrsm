@@ -60,7 +60,9 @@ async function apri(b, { finestra, schermo, tacca }) {
     // la barretta di casa sta gia' fuori dalla finestra: tenerle da parte 34pt
     // dentro la barra sarebbe contarla due volte
     et(m.saBottom === '0px', `la tacca in basso non viene contata due volte (${m.saBottom})`);
-    et(793 - m.navTop === 53, `senza tacca in basso la barra e' 53 (${793 - m.navTop})`);
+    // 58: l'altezza della barra da quando l'icona ha la sua pastiglia (vedi
+    // prove/barra-test.cjs, che e' il posto dove quella misura si decide)
+    et(793 - m.navTop === 58, `senza tacca in basso la barra e' 58 (${793 - m.navTop})`);
     et(m.scritte === 5, `e le cinque scritte ci sono tutte (${m.scritte})`);
     et(m.scritteSotto <= 793, `l'ultima scritta sta dentro l'area disegnata (fondo a ${m.scritteSotto}, limite 793)`);
     // la barra blu in alto deve venire come sulla sua schermata: ~124pt
@@ -92,7 +94,7 @@ async function apri(b, { finestra, schermo, tacca }) {
     }));
     et(m.varApp === '793px', `la finestra resta quella dichiarata (${m.varApp})`);
     et(m.sa === '34px', `la barretta di casa torna a contare (${m.sa})`);
-    et(m.navAlta === 71, `la barra e' 53 + (34 - 16) = 71 (${m.navAlta})`);
+    et(m.navAlta === 76, `la barra e' 58 + (34 - 16) = 76 (${m.navAlta})`);
     et(m.navBottom === 793, `e chiude il riquadro, che ora sta in fondo allo schermo (${m.navBottom})`);
     et(m.barraBlu <= 70, `l'intestazione blu scende a ${m.barraBlu}pt (prima 124)`);
     et(m.scritte === 5, `le cinque scritte ci sono (${m.scritte})`);

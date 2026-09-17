@@ -350,13 +350,30 @@ hr.sep{border:0;border-top:1px solid var(--border);margin:4px 0}
    5 e 4 — mentre prima ne aveva 4 sopra e 6 sotto piu' tutto lo scarto, e le
    icone galleggiavano in alto. Il riquadro da toccare resta di 44pt esatti:
    53 + riserva - 5 - (4 + riserva). */
-.a-nav{flex:none;height:calc(53px + var(--riserva-basso));background:var(--surface);box-shadow:var(--sh-nav);display:grid;grid-template-columns:repeat(5,1fr);padding:5px 4px calc(4px + var(--riserva-basso));position:relative;z-index:3}
+/* 58 e non 53: dentro ci sta la pastiglia dell'icona (28) con l'etichetta
+   sotto, e i bersagli da toccare restano sopra i 44 richiesti. Il bordo in
+   cima separa la barra dal contenuto: senza, su una schermata chiara la barra
+   e la pagina erano la stessa distesa di bianco. */
+.a-nav{flex:none;height:calc(58px + var(--riserva-basso));background:var(--surface);box-shadow:var(--sh-nav);
+  border-top:1px solid var(--border);display:grid;grid-template-columns:repeat(5,1fr);
+  padding:5px 4px calc(4px + var(--riserva-basso));position:relative;z-index:3}
 /* justify-content:center: il blocco sta in mezzo al riquadro da toccare
    invece di appoggiarsi in cima, cosi' l'aria sopra e sotto e' la stessa
    anche se un giorno il riquadro dovesse crescere. */
-.a-nav button,.a-nav a{border:0;background:transparent;color:var(--text-muted);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;font-family:var(--font-body);font-size:11px;font-weight:500;cursor:pointer;position:relative;padding:0;border-radius:8px}
-.a-nav button.on,.a-nav a.on{color:var(--primary);font-weight:600}
-.a-nav button .dot,.a-nav a .dot{position:absolute;top:2px;right:calc(50% - 17px);width:8px;height:8px;border-radius:50%;background:var(--c-cartellino-500);border:2px solid var(--surface)}
+.a-nav button,.a-nav a{border:0;background:transparent;color:var(--text-muted);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font-family:var(--font-body);font-size:11px;font-weight:500;cursor:pointer;position:relative;padding:0;border-radius:8px}
+/* La pastiglia dell'icona: accesa dice dove sei. La transizione e' sul
+   colore, non sulla posizione: la barra si ridisegna a ogni cambio di
+   schermata, e una pastiglia che scivola ripartirebbe da zero ogni volta. */
+.a-nav .np{position:relative;display:grid;place-items:center;width:54px;height:28px;border-radius:999px;
+  transition:background-color .16s ease,transform .12s ease}
+.a-nav a.on .np,.a-nav button.on .np{background:var(--primary-soft)}
+.a-nav a:active .np{transform:scale(.93)}
+/* --primary-ink e non --primary: il blu pieno sopra la pastiglia soft sta a
+   4,18, che per un disegno basta ma e' tirato, e l'etichetta sul fondo della
+   barra stava a 4,83. Col blu scuro sono 5,35 sulla pastiglia e 6,22
+   sull'etichetta (6,70 e 8,83 col tema scuro), misurati. */
+.a-nav button.on,.a-nav a.on{color:var(--primary-ink);font-weight:700}
+.a-nav .dot{position:absolute;top:-1px;right:7px;width:8px;height:8px;border-radius:50%;background:var(--c-cartellino-500);border:2px solid var(--surface)}
 .a-nav a:focus-visible,.a-nav button:focus-visible,.a-appbar .ib:focus-visible,.a-btn:focus-visible,.chip:focus-visible,.vr:focus-visible{outline:2px solid var(--primary);outline-offset:2px}
 
 /* drawer */

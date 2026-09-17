@@ -109,17 +109,23 @@ const GRUPPI = {
     const nav = document.querySelector('.a-nav').getBoundingClientRect();
     const voci = [...document.querySelectorAll('.a-nav a')];
     const ico = voci.map(a => a.querySelector('.mi').getBoundingClientRect());
-    const testi = voci.map(a => { const n = [...a.childNodes].find(x => x.nodeType === 3 && x.textContent.trim());
+    // l'etichetta sta in uno <span> da quando l'icona ha la sua pastiglia;
+    // prima era un nodo di testo nudo dentro l'<a>. Si cerca in tutti e due i
+    // posti: quello che conta e' la RIGA vera del testo, letta col Range.
+    const testi = voci.map(a => { const el = a.querySelector('span:not(.dot)') || a;
+      const n = [...el.childNodes].find(x => x.nodeType === 3 && x.textContent.trim());
       if (!n) return null; const r = document.createRange(); r.selectNode(n); return r.getBoundingClientRect(); }).filter(Boolean);
     return {
       voceAlta: Math.min(...voci.map(a => Math.round(a.getBoundingClientRect().height))),
       cime: [...new Set(ico.map(r => Math.round((r.top - nav.top) * 10) / 10))],
       lati: [...new Set(ico.map(r => `${Math.round(r.width)}x${Math.round(r.height)}`))],
       sopra: Math.round((ico[0].top - nav.top) * 10) / 10,
-      sotto: Math.round((nav.bottom - Math.max(...testi.map(t => t.bottom))) * 10) / 10,
+      quantiTesti: testi.length,
+      sotto: testi.length ? Math.round((nav.bottom - Math.max(...testi.map(t => t.bottom))) * 10) / 10 : null,
       riserva: 34 - 16,
     };
   });
+  et(g.quantiTesti === 5, `barra: le cinque etichette si trovano e si misurano (${g.quantiTesti})`);
   et(g.cime.length === 1, `barra: le cinque icone partono tutte alla stessa altezza (${g.cime.join(', ')})`);
   et(g.lati.length === 1 && g.lati[0] === '26x26', `barra: e hanno tutte lo stesso riquadro (${g.lati.join(', ')})`);
   et(g.voceAlta >= 44, `barra: il riquadro da toccare e' di ${g.voceAlta}pt`);

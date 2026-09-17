@@ -100,8 +100,11 @@ aggiustare nel nostro codice.
 lanciando **una volta** `supabase/promemoria-pianificato.sql` nell'SQL Editor.
 C'è **una riga da riempire**, il token — lo stesso `PROMEMORIA_TOKEN` del passo
 2, che si rilegge in *Project Settings → Edge Functions → Secrets*; se non si
-riesce più a rileggerlo se ne fa uno nuovo e va nei soliti tre posti (secret di
-Supabase, secret di GitHub, questo file), poi deploy. L'indirizzo è già
+riesce più a rileggerlo se ne fa uno nuovo — `select
+replace(gen_random_uuid()::text,'-','') ||
+replace(gen_random_uuid()::text,'-','')` ne stampa uno buono senza estensioni —
+e va nei soliti tre posti, identico (secret di Supabase, secret di GitHub,
+questo file), poi deploy. L'indirizzo è già
 scritto: è il progetto dell'app, lo stesso di `src/config.js`, e non è un
 segreto. Senza il token il file si ferma e dice quale riga riempire, **senza
 creare niente**.

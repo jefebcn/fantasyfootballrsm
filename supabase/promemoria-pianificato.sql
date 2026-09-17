@@ -36,9 +36,28 @@
 -- ===================== LA RIGA DA RIEMPIRE =====================
 -- Il token: lo stesso valore del secret PROMEMORIA_TOKEN fra i secret delle
 -- Edge Functions su Supabase (Project Settings -> Edge Functions -> Secrets).
--- Non e' un valore nuovo: e' quello. Se non riesci piu' a rileggerlo, fanne
--- uno nuovo e mettilo in tre posti — quel secret, il secret omonimo su GitHub
--- e qui — e ridistribuisci la funzione.
+-- Non e' un valore nuovo: e' quello.
+--
+-- NON E' IL NOME DELLA FUNZIONE. Sono due cose diverse e i nomi si somigliano:
+--   PROMEMORIA_FUNZIONE = 'promemoria-'  -> come si chiama la funzione
+--                                           nell'indirizzo (lo slug)
+--   PROMEMORIA_TOKEN    = una stringa    -> la parola d'ordine che la funzione
+--                         lunga e casuale   pretende, perche' e' raggiungibile
+--                                           da internet
+-- Il token e' lungo di proposito: se qualcuno lo indovina puo' far partire i
+-- promemoria a suo piacimento. Per questo qui sotto un valore piu' corto di
+-- 16 caratteri viene rifiutato.
+--
+-- SE NON RIESCI PIU' A RILEGGERLO — succede, i secret si mostrano mascherati —
+-- se ne fa uno nuovo. Questa riga, lanciata da sola in una query qualunque, ne
+-- stampa uno buono (64 caratteri esadecimali, niente estensioni):
+--
+--   select replace(gen_random_uuid()::text, '-', '') || replace(gen_random_uuid()::text, '-', '') as token_nuovo;
+--
+-- Quel valore va in TRE posti, identico: qui sotto, nel secret
+-- PROMEMORIA_TOKEN delle Edge Functions, e nel secret omonimo su GitHub.
+-- Poi la funzione va ridistribuita (supabase functions deploy promemoria
+-- --no-verify-jwt), perche' il secret nuovo lo prende al deploy.
 --
 -- L'indirizzo e' gia' scritto: e' il progetto di quest'app, lo stesso che sta
 -- in src/config.js e che il browser chiama a ogni schermata. Non e' un

@@ -22,3 +22,27 @@ do $$ begin
     create publication supabase_realtime;
   end if;
 end $$;
+
+-- I PERMESSI PREDEFINITI, che sono la parte che mancava.
+--
+-- Su Supabase il progetto nasce con questo, e non e' un dettaglio:
+--   alter default privileges in schema public grant all on functions
+--     to postgres, anon, authenticated, service_role;
+-- Cioe' ogni funzione creata dopo NASCE eseguibile dal ruolo anonimo, per un
+-- permesso dato al ruolo e non a PUBLIC. Quindi un "revoke all ... from
+-- public" nelle migrazioni non gli toglie niente: PUBLIC e anon sono due cose
+-- diverse.
+--
+-- Senza queste righe il Postgres delle prove era piu' severo del sistema
+-- vero: la' anon non aveva nessun permesso di partenza, un revoke da PUBLIC
+-- bastava, e una funzione lasciata aperta agli anonimi restava verde qui e
+-- aperta la'. Verificato sul progetto vero: elimina_profilo, appena
+-- caricata, si e' fatta eseguire dal ruolo anonimo (si e' fermata da sola,
+-- ma il corpo e' partito).
+--
+-- Le prove devono essere severe come il sistema vero, non di piu' e non di
+-- meno: tutte e due le differenze fanno danno, e questa lo faceva nel verso
+-- peggiore.
+alter default privileges in schema public grant all on functions to anon, authenticated, service_role;
+alter default privileges in schema public grant all on tables to anon, authenticated, service_role;
+alter default privileges in schema public grant all on sequences to anon, authenticated, service_role;

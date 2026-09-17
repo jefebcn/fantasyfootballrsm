@@ -39,6 +39,19 @@ export function toast(msg) {
   const t = document.getElementById('toast'); t.textContent = msg; t.classList.add('on');
   clearTimeout(toast._t); toast._t = setTimeout(() => t.classList.remove('on'), 2400);
 }
+/**
+ * "Nuova versione pronta": una barra sopra la navigazione, con un bottone.
+ * Resta finche' non si tocca. Chi la ignora ha il codice nuovo comunque alla
+ * prossima apertura.
+ */
+export function mostraAggiornamento() {
+  if (document.getElementById('aggiorna')) return;
+  const b = document.createElement('div');
+  b.id = 'aggiorna'; b.className = 'aggiorna'; b.setAttribute('role', 'status');
+  b.innerHTML = '<div><b>Nuova versione pronta</b><span>Tocca per usarla adesso; se no entra alla prossima apertura.</span></div><button type="button">Aggiorna</button>';
+  b.querySelector('button').onclick = () => location.reload();
+  document.body.appendChild(b);
+}
 export function sheet(html) {
   const sc = document.getElementById('sheet-scrim'), sh = document.getElementById('sheet');
   if (!html) { sc.classList.remove('on'); sh.classList.remove('on'); sh.innerHTML = ''; return; }
@@ -292,7 +305,22 @@ function registraServiceWorker() {
   //
   // Il codice nuovo entra comunque alla prossima apertura dell'app: e' come si
   // comporta di suo una PWA, e non puo' incastrarsi.
+  //
+  // Ma "la prossima apertura" su un iPhone puo' essere fra giorni: un'app sulla
+  // schermata Home resta sospesa in memoria e torna su com'era, senza
+  // ricaricare. Alex ha cercato per un quarto d'ora un bottone che c'era da
+  // un'ora, perche' la sua app era ancora quella del giorno prima. Quindi
+  // quando il service worker nuovo prende il controllo si AVVISA — un
+  // bottone, non una ricarica: e' la persona a decidere quando, e un bottone
+  // non puo' andare in ciclo.
   if ('serviceWorker' in navigator) {
+    // Al primo accesso il controllo passa da "nessuno" al primo service
+    // worker: non e' un aggiornamento e non si dice niente.
+    let avevaControllo = !!navigator.serviceWorker.controller;
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+      if (!avevaControllo) { avevaControllo = true; return; }
+      mostraAggiornamento();
+    });
     navigator.serviceWorker.register('./sw.js').then((reg) => {
       // Il controllo automatico del browser non e' garantito quando serve:
       // lo si chiede all'apertura e ogni volta che l'app torna in primo piano,

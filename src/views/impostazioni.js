@@ -22,13 +22,16 @@ function apriAvvisi(ctx) {
   let iscritto = false;
   const disegna = () => {
     const d = S.store.get(); const on = d.avvisi !== false;
-    const perm = typeof Notification !== 'undefined' ? Notification.permission : 'unsupported';
+    const perm = AV.permesso();
+    const motivo = AV.motivoNonSupportate();
     ctx.sheet(`<h3>Preferenze notifiche</h3>
       <button class="setting" data-avvisi="${on ? 'off' : 'on'}"><i class="ico">${icon('bell')}</i>
         <span class="txt"><b>Promemoria della formazione</b><span>Un avviso quando manca poco al lock e non hai ancora schierato</span></span>
         <span class="sw${on ? ' on' : ''}"></span></button>
       ${on && perm === 'default' ? `<button class="a-btn" data-avvisi="permesso" style="margin-top:10px">Consenti le notifiche</button>` : ''}
       ${perm === 'denied' ? `<p class="auth-hint">Le notifiche sono bloccate dalle impostazioni del telefono per questo sito: vanno riattivate da lì.</p>` : ''}
+      ${motivo === 'ios-nel-browser' ? `<p class="auth-hint avvisi-ios"><b>Su iPhone le notifiche funzionano solo con l'app installata.</b> Tocca <b>Condividi</b> (il quadrato con la freccia in basso a Safari), poi <b>Aggiungi alla schermata Home</b>, e apri l'app da lì: qui comparirà il bottone per consentirle.</p>` : ''}
+      ${motivo === 'browser-senza' ? `<p class="auth-hint">Questo browser non supporta le notifiche: da qui l'avviso arriva solo ad app aperta.</p>` : ''}
       ${on && perm === 'granted' ? `<button class="a-btn sec" data-avvisi="prova" style="margin-top:10px">Mandami un avviso di prova</button>` : ''}
       <p class="auth-hint"><b>Ad app aperta</b> l'avviso arriva${perm === 'granted' ? '' : ' appena dai il permesso'}: si controlla ogni volta che apri la dashboard, e ne arriva uno solo per giornata.</p>
       <p class="auth-hint"><b>A telefono chiuso</b> ${!AV.pushConfigurato()
@@ -79,10 +82,12 @@ const group = (title, inner) => `<section class="group"><h3>${title}</h3>${inner
  *  che è quello che l'utente può cambiare da qui. */
 const avvisiSottotitolo = (d) => {
   const on = d.avvisi !== false;
-  const perm = typeof Notification !== 'undefined' ? Notification.permission : 'unsupported';
+  const perm = AV.permesso();
   if (!on) return 'Spenti';
   if (perm === 'granted') return 'Promemoria della formazione attivi';
   if (perm === 'denied') return 'Bloccati dal telefono';
+  // "Da attivare" su un iPhone dentro Safari era una promessa senza bottone.
+  if (AV.motivoNonSupportate() === 'ios-nel-browser') return 'Installa l\'app sulla schermata Home per attivarli';
   return 'Da attivare';
 };
 

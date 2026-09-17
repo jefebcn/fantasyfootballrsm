@@ -3,12 +3,18 @@ import { icon, logo } from '../ui.js';
 import { prepareLogin } from './auth.js';
 
 /**
- * Presentazione per chi apre l'app la prima volta: due schermate sullo sfondo
- * animato disegnato qui sotto in fx(), luci lente nei colori del Titano. Chi e'
- * gia' registrato su questo dispositivo non la rivede piu'.
+ * Presentazione per chi apre l'app la prima volta: due schermate su un video
+ * di sfondo sfocato (media/intro.mp4). Chi e' gia' registrato su questo
+ * dispositivo non la rivede piu'.
  *
- * C'era un video di sfondo (media/intro.mp4): tolto perche' pesava 1,5 MB, piu'
- * di tutta l'app messa insieme, per una schermata che si vede una volta sola.
+ * Sotto al video c'e' sempre lo sfondo animato di fx(), luci lente nei colori
+ * del Titano: il video compare solo quando ha un fotogramma pronto, e se il
+ * file manca o il formato non e' supportato resta quello, senza schermate nere.
+ *
+ * Il video l'avevo tolto il 15 settembre perche' pesa 1,5 MB, piu' di tutta
+ * l'app, per una schermata che si vede una volta. Alex lo ha rivoluto: e' la
+ * prima cosa che si vede dell'app, e vale il peso. Non sta nella cache del
+ * service worker — si scarica una volta, per la presentazione, e basta.
  */
 let slide = 0;
 
@@ -37,6 +43,9 @@ export const onboarding = {
     return `<main class="intro">
       <div class="intro-bg">
         <canvas id="intro-fx"></canvas>
+        <video id="intro-video" playsinline autoplay muted loop preload="auto" disablepictureinpicture>
+          <source src="media/intro.mp4" type="video/mp4">
+        </video>
         <span class="intro-veil"></span>
       </div>
       <div class="intro-top">
@@ -61,6 +70,12 @@ export const onboarding = {
   },
   mount(root, ctx) {
     const main = root.querySelector('.intro');
+    const video = root.querySelector('#intro-video');
+    // Compare solo quando c'e' un fotogramma pronto: se il formato non e'
+    // supportato o il file manca resta lo sfondo animato, senza schermate nere.
+    const show = () => { video.classList.add('on'); video.play().catch(() => {}); };
+    if (video.readyState >= 2) show(); else video.addEventListener('loadeddata', show, { once: true });
+    video.addEventListener('error', () => video.remove(), { once: true });
     fx(root.querySelector('#intro-fx'));
 
     const go = (n) => { slide = Math.max(0, Math.min(SLIDES.length - 1, n)); ctx.render(); };

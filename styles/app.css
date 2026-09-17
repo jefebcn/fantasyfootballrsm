@@ -127,6 +127,13 @@ a.mrow.tocca{color:inherit;text-decoration:none;cursor:pointer}
 .adm-u .dati b{color:var(--negative)}
 .adm-u .azioni{display:flex;flex-wrap:wrap;gap:6px}
 .adm-u .azioni .chip{min-height:32px;font-size:11.5px;padding:0 10px}
+/* Le colonnine delle iscrizioni. Altezza fissa e colonne uguali: un grafico
+   che cambia forma col numero di giorni non si confronta con quello di ieri. */
+.adm-graf{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;align-items:end;gap:3px;height:96px;padding:10px 10px 4px}
+.adm-graf .col{position:relative;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;height:100%;gap:3px}
+.adm-graf .col i{display:block;width:100%;min-height:2px;border-radius:3px 3px 0 0;background:var(--primary);opacity:.85}
+.adm-graf .col small{font-size:9px;color:var(--text-muted);white-space:nowrap}
+.adm-graf .col b{position:absolute;top:-2px;font:700 9.5px var(--font-data);color:var(--text-muted)}
 /* Il banner del montepremi.
 
    Una fascia scura in mezzo a schede chiare: e' l'unica cosa di un altro

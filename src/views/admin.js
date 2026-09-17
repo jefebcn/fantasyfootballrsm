@@ -248,6 +248,40 @@ let cerca = '';
 
 const quando = (iso) => (iso ? `${dateIt(iso)} ${timeIt(iso)}` : '—');
 
+/**
+ * Le iscrizioni degli ultimi quattordici giorni, a colonnine.
+ *
+ * Serve a rispondere alla domanda che un totale non risponde: sta crescendo o
+ * si e' fermata? "Iscritti: 43" e' lo stesso numero il giorno dopo l'apertura
+ * e tre settimane dopo, e nel secondo caso vuol dire che nessuno arriva piu'.
+ *
+ * Si ricava dall'elenco delle persone, che la console sa gia' leggere: niente
+ * funzione nuova nel database, e quindi niente migrazione da caricare a mano.
+ * Il prezzo e' che si conta su chi sta nell'elenco — duecento persone al
+ * massimo, le piu' recenti — e per le iscrizioni degli ultimi quattordici
+ * giorni e' esattamente la parte giusta.
+ */
+function andamento(persone) {
+  if (!persone) return '';
+  const GIORNI = 14;
+  const oggi = new Date(); oggi.setHours(0, 0, 0, 0);
+  const conta = new Array(GIORNI).fill(0);
+  for (const u of persone) {
+    if (!u.iscritto) continue;
+    const d = new Date(u.iscritto); d.setHours(0, 0, 0, 0);
+    const fa = Math.round((oggi - d) / 86400000);
+    if (fa >= 0 && fa < GIORNI) conta[GIORNI - 1 - fa]++;
+  }
+  const max = Math.max(1, ...conta);
+  const totale = conta.reduce((a, b) => a + b, 0);
+  const et = (i) => { const d = new Date(oggi); d.setDate(d.getDate() - (GIORNI - 1 - i)); return `${d.getDate()}/${d.getMonth() + 1}`; };
+  return `<div class="a-sec"><b>Iscrizioni</b><span>${totale} in ${GIORNI} giorni</span></div>
+    <div class="a-card adm-graf">${conta.map((v, i) => `<span class="col" title="${et(i)}: ${v}">
+      <i style="height:${Math.round(v / max * 100)}%"></i><small>${i === 0 || i === GIORNI - 1 ? et(i) : ''}</small>
+      ${v ? `<b>${v}</b>` : ''}</span>`).join('')}</div>
+    <p class="small muted" style="margin:-4px 2px 0">Contate sulle persone in elenco (le 100 più recenti). Se una colonna è vuota, quel giorno non si è iscritto nessuno.</p>`;
+}
+
 function numeri(r) {
   if (!r) return `<p class="small muted">Sto contando…</p>`;
   const q = [
@@ -338,7 +372,7 @@ export const adminConsole = {
       <button class="${aTab === 'squadre' ? 'on' : ''}" data-atab="squadre">Squadre</button>
       <button class="${aTab === 'leghe' ? 'on' : ''}" data-atab="leghe">Leghe</button></div></div>`;
     let corpo = '';
-    if (aTab === 'numeri') corpo = numeri(cache.numeri);
+    if (aTab === 'numeri') corpo = numeri(cache.numeri) + andamento(cache.persone);
     else if (aTab === 'persone') {
       corpo = `<input class="field-input" id="adm-cerca" placeholder="Cerca per nome o e-mail" value="${esc(cerca)}" autocomplete="off">
         ${persone(cache.persone)}`;
@@ -358,6 +392,9 @@ export const adminConsole = {
     const carica = async () => {
       try {
         if (aTab === 'numeri' && !cache.numeri) { cache.numeri = await S.adminRiepilogo(); ctx.render(); }
+        // l'andamento si disegna sull'elenco delle persone: la scheda dei
+        // numeri lo chiede una volta e poi resta in cache come le altre
+        if (aTab === 'numeri' && !cache.persone) { cache.persone = await S.adminPersone(null, 100); ctx.render(); }
         if (aTab === 'leghe' && !cache.leghe) { cache.leghe = await S.adminLeghe(200); ctx.render(); }
         if (aTab === 'persone' && !cache.persone) { cache.persone = await S.adminPersone(cerca, 100); ctx.render(); }
         if (aTab === 'squadre' && !cache.squadre) { cache.squadre = await S.adminSquadre(cerca, 100); ctx.render(); }

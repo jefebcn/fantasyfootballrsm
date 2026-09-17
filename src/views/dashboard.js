@@ -122,20 +122,18 @@ function corrente(f, n, me, riposo) {
   // Dati, quindi la lega restava in sospeso ad aspettare una persona. Adesso il
   // tasto lo vedono tutti, ma resta spento finche' manca all'appello anche una
   // sola partita: l'art. 9.2 non ammette rettifiche dopo la chiusura.
-  const chiudibile = S.giornataDaChiudere(n);
+  // Il tasto "Calcola la giornata" non sta qui: questa card guarda avanti e
+  // riceve sempre una giornata ancora aperta. Chiudere e' un altro momento e
+  // ha una scheda sua (daCalcolare), cosi' in pagina c'e' un solo
+  // #chiudi-giornata invece di tre id uguali con un gestore che ne agganciava
+  // uno.
   const cta = aperta
     ? `<a class="a-btn big" href="#/rosa/formazione">${saved ? 'Modifica la formazione' : 'Inserisci formazione'}</a>`
-    : chiudibile
-      ? `<button class="a-btn big" id="chiudi-giornata"${chiudibile.pronta ? '' : ' disabled'}>${icon('lock', 'ic sm')}Calcola la giornata</button>`
-      : `<a class="a-btn big" href="#/voti/${n}">Voti della giornata</a>`;
+    : `<a class="a-btn big" href="#/voti/${n}">Voti della giornata</a>`;
   const nota = aperta
     ? (saved ? `Formazione salvata ${dateIt(saved.submittedAt)} · si chiude ${dateIt(md.lockAt)} alle ${timeIt(md.lockAt)}`
-             : `Si chiude ${dateIt(md.lockAt)} alle ${timeIt(md.lockAt)}`)
-    : chiudibile
-      ? (chiudibile.pronta
-          ? `Tutte le ${chiudibile.partite} partite hanno gli eventi: da qui i punteggi diventano definitivi`
-          : `Mancano gli eventi di ${chiudibile.mancanti} partite su ${chiudibile.partite}`)
-      : '';
+      : `Si chiude ${dateIt(md.lockAt)} alle ${timeIt(md.lockAt)}`)
+    : '';
   // Il tocco sulle due squadre apre il pre-match a tutto campo — la stessa
   // pagina del link "Probabili e altro", che da solo non si vedeva.
   return sec('Giornata corrente', `${n}ª giornata`) + `<div class="mcard">
@@ -143,6 +141,31 @@ function corrente(f, n, me, riposo) {
     ${nota ? `<p class="mnota">${esc(nota)}</p>` : ''}
     <div class="mact">${cta}</div>
     <a class="mcta" href="#/live/${f.id}">${pic('probabili-formazioni', 'lega', 'mini')}Probabili e altro${icon('chev', 'ic sm')}</a>
+  </div>`;
+}
+
+/**
+ * Una giornata cominciata e non ancora calcolata: i punteggi ci sono gia',
+ * manca dire che sono definitivi.
+ *
+ * Sta in una scheda sua e non dentro la card della giornata corrente, perche'
+ * sono due cose di due momenti diversi: una guarda avanti (schiera), questa
+ * guarda indietro (chiudi). Tenerle insieme obbligava la card a mostrare una
+ * giornata passata, con la sua data di chiusura scaduta.
+ *
+ * Il tasto lo vedono tutti — se no la lega resta in sospeso ad aspettare una
+ * persona — ma resta spento finche' manca all'appello anche una sola partita:
+ * l'art. 9.2 non ammette rettifiche dopo la chiusura.
+ */
+function daCalcolare(ph) {
+  const q = S.giornataDaChiudere(ph.matchday);
+  if (!q) return '';
+  return sec('Da calcolare', `${q.giornata}ª giornata`) + `<div class="mcard">
+    <p class="mnota">${q.pronta
+    ? `Tutte le ${q.partite} partite hanno gli eventi: da qui i punteggi diventano definitivi`
+    : `Mancano gli eventi di ${q.mancanti} partite su ${q.partite}`}</p>
+    <div class="mact"><button class="a-btn big" id="chiudi-giornata"${q.pronta ? '' : ' disabled'}>${icon('lock', 'ic sm')}Calcola la giornata</button></div>
+    <a class="mcta" href="#/voti/${q.giornata}">${pic('voti', 'menu', 'mini')}Voti della ${q.giornata}ª${icon('chev', 'ic sm')}</a>
   </div>`;
 }
 
@@ -159,21 +182,14 @@ function correntePunti(n, me) {
   const saved = S.savedLineup(n, me.id);
   const cls = S.standings(); const mio = cls.find((r) => r.managerId === me.id);
   const punti = aperta ? null : S.puntiGiornata(n, me.id);
-  const chiudibile = S.giornataDaChiudere(n);
   const cta = aperta
     ? `<a class="a-btn big" href="#/rosa/formazione">${saved ? 'Modifica la formazione' : 'Inserisci formazione'}</a>`
-    : chiudibile
-      ? `<button class="a-btn big" id="chiudi-giornata"${chiudibile.pronta ? '' : ' disabled'}>${icon('lock', 'ic sm')}Calcola la giornata</button>`
-      : `<a class="a-btn big" href="#/voti/${n}">Voti della giornata</a>`;
+    : `<a class="a-btn big" href="#/voti/${n}">Voti della giornata</a>`;
   const nota = aperta
     ? (saved
       ? `Formazione salvata ${dateIt(saved.submittedAt)} · si chiude ${dateIt(md.lockAt)} alle ${timeIt(md.lockAt)}`
       : `Si chiude ${dateIt(md.lockAt)} alle ${timeIt(md.lockAt)} — senza consegna questa giornata vale zero`)
-    : chiudibile
-      ? (chiudibile.pronta
-        ? `Tutte le ${chiudibile.partite} partite hanno gli eventi: da qui i punteggi diventano definitivi`
-        : `Mancano gli eventi di ${chiudibile.mancanti} partite su ${chiudibile.partite}`)
-      : '';
+    : '';
   return sec('Giornata corrente', `${n}ª giornata`) + `<div class="mcard">
     <div class="mrow punti">
       <span class="pblocco"><b>${punti === null ? '—' : fmt(punti)}</b><span>${punti === null ? 'da giocare' : 'punti in giornata'}</span></span>
@@ -298,7 +314,18 @@ export const dashboard = {
     const mie = S.resultsUntil(ph.matchday).filter((r) => r.homeManagerId === me.id || r.awayManagerId === me.id);
     const last = mie.slice(-5).reverse();
     const ultima = mie[mie.length - 1] || null;
-    const nCur = ultima && ultima.matchday >= ph.next ? ultima.matchday + 1 : ph.next;
+    // LA CARD E' LA GIORNATA CHE DEVI GIOCARE, sempre: quella ancora aperta.
+    //
+    // Prima faceva due lavori in uno — schierare prima del lock e calcolare
+    // dopo — e per farli seguiva nextMatchday(), che era "l'ultima con dei
+    // dati". Senza voti caricati restava indietro: il 17 settembre, con tre
+    // giornate giocate, annunciava "Giornata 1 · si chiude ven 28/8", una data
+    // di tre settimane prima.
+    //
+    // I due lavori sono di due persone diverse: schierare e' del giocatore,
+    // calcolare e' di chi tiene i conti della lega. Il secondo ha una scheda
+    // sua (daCalcolare), che compare solo quando c'e' da fare.
+    const nCur = ph.next;
     const cur = nCur <= 30 ? S.myFixture(nCur, me.id) : null;
     const riposo = !cur && nCur <= 30 && S.base.managers.length > 1;
     const [art, titolo, testo] = RULES[Math.floor(Date.now() / 86400000) % RULES.length];
@@ -340,6 +367,7 @@ export const dashboard = {
       </div>
       ${notiziaBreve()}
       ${S.aPunti() ? '' : conclusa(ultima)}
+      ${daCalcolare(ph)}
       ${S.aPunti() ? correntePunti(Math.min(30, nCur), me) : corrente(cur, nCur, me, riposo)}
       ${noRoster ? tile({ href: S.isLeagueAdmin() ? '#/lega' : '#/leghe', lead: icon('warn'), leadKind: 'warn',
           title: 'Rose non ancora assegnate',

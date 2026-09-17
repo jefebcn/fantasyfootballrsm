@@ -45,11 +45,23 @@ const ok = [], ko = []; const et = (c, t) => (c ? ok : ko).push(t);
   const seme = await p.evaluate(() => { const x = document.querySelector('[data-act="seed"]'); if (!x) return false; x.click(); return true; });
   if (!seme) throw new Error('bottone del seme sparito: la prova girerebbe a vuoto');
   await w(1600);
-  // Il seme congela le giornate concluse, quindi lo stato "da chiudere" non si
-  // raggiunge da solo: si riapre dalla pagina del Giudice, che e' la via vera.
+  // Lo stato "da calcolare" adesso si raggiunge da se': la giornata corrente
+  // la decide il calendario, quindi col lock del 18/09 passato la quarta
+  // risulta cominciata e senza referti, che e' esattamente il caso.
+  //
+  // Prima questa prova doveva costruirselo a mano — congelare col seme e poi
+  // RIAPRIRE dalla pagina del Giudice — perche' la giornata corrente era
+  // "l'ultima con dei dati" e senza dati non arrivava mai a quello stato. Il
+  // giro non serve piu', e la pagina del Giudice si controlla per quello che
+  // offre davvero: la quarta non e' congelata, quindi propone di congelarla.
   await p.evaluate(() => { location.hash = '#/admin/congela'; }); await w(900);
-  const riaperta = await p.evaluate(() => { const x = document.querySelector('#reopen'); if (!x) return false; x.click(); return true; });
-  await w(1200);
+  const giudice = await p.evaluate(() => ({
+    congela: !!document.querySelector('#freeze-confirm'),
+    riapri: !!document.querySelector('#reopen'),
+    testo: document.querySelector('.freeze h2')?.innerText || '',
+    quale: (document.body.innerText.match(/giornata (\d+)/i) || [])[1],
+  }));
+  et(giudice.congela && !giudice.riapri, `il Giudice trova la giornata ${giudice.quale} da congelare, non da riaprire ("${giudice.testo}")`);
   await p.evaluate(() => { location.hash = '#/'; }); await w(1400);
 
   console.log('  CTA in home:', await p.evaluate(() => {
@@ -61,11 +73,22 @@ const ok = [], ko = []; const et = (c, t) => (c ? ok : ko).push(t);
     return { c: !!btn, spento: btn ? btn.disabled : null, testo: btn ? btn.innerText.trim() : null,
       nota: [...document.querySelectorAll('.mnota')].map(x => x.innerText).join(' | ') };
   });
-  console.log('  riaperta:', riaperta, '· stato:', JSON.stringify(stato));
-  et(riaperta, 'la giornata si riapre dalla pagina del Giudice');
+  console.log('  stato:', JSON.stringify(stato));
   et(stato.c, "il tasto \"Calcola la giornata\" compare in home");
   et(/calcola la giornata/i.test(stato.testo || ''), `dice "${stato.testo}"`);
   et(/partite|eventi/i.test(stato.nota), `e la nota spiega lo stato: "${stato.nota}"`);
+  // Le due schede sono due cose diverse e devono restare separate: "Da
+  // calcolare" guarda indietro, "Giornata corrente" guarda avanti. Tenerle
+  // insieme obbligava la seconda a mostrare una data di chiusura scaduta.
+  const due = await p.evaluate(() => {
+    const t = document.body.innerText;
+    const q = (r) => (t.match(r) || [])[1];
+    return { calcolare: q(/Da calcolare\s*(\d+)ª/), corrente: q(/Giornata corrente\s*(\d+)ª/),
+      unTasto: document.querySelectorAll('#chiudi-giornata').length };
+  });
+  et(due.calcolare && due.corrente && +due.corrente > +due.calcolare,
+    `due schede distinte: da calcolare la ${due.calcolare}ª, da giocare la ${due.corrente}ª`);
+  et(due.unTasto === 1, `un solo tasto "Calcola" in pagina (${due.unTasto})`);
   if (stato.c && !stato.spento) {
     await p.click('#chiudi-giornata'); await w(1400);
     const dopo = await p.evaluate(() => ({ btn: !!document.querySelector('#chiudi-giornata'),

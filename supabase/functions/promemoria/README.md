@@ -99,6 +99,7 @@ funzione. Cosa vuol dire ciascuna:
 | `2xx` | tutto a posto | niente |
 | `401` `token non valido` | la funzione c'è e ha rifiutato il token | `PROMEMORIA_TOKEN` su GitHub e quello fra i secret di Supabase devono essere **lo stesso identico valore**; dopo averlo cambiato su Supabase la funzione va **ridistribuita** |
 | `500` `PROMEMORIA_TOKEN non è fra i secret` | su Supabase quel secret manca | passo 2, poi deploy |
+| `500` `manca fra i secret: VAPID_...` | dice **quale** delle due chiavi non c'è | passo 2: i nomi sono `VAPID_PUBLIC_KEY` e `VAPID_PRIVATE_KEY`, maiuscole e underscore compresi |
 | `404` `NOT_FOUND` | nessuna funzione con quello slug | lo slug è quello **nell'indirizzo**, non il campo *Name*: mettilo in `PROMEMORIA_FUNZIONE` |
 | `500` con un messaggio del database | la funzione è partita e si è rotta dentro | il messaggio dice dove |
 | nessuna risposta | indirizzo sbagliato o progetto in pausa | controlla `SUPABASE_FUNCTIONS_URL` |

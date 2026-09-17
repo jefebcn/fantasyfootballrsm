@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { computeRating, computeLineupResult, computeStandings, toGoals, validateLineup, defaultLineup, DEFAULT_RULES, movimenti, recordLega, testaATesta, esitoScontro } from '../src/engine.js';
+import { computeRating, computeLineupResult, computeStandings, toGoals, validateLineup, defaultLineup, DEFAULT_RULES, movimenti, recordLega, testaATesta, esitoScontro, classificaPunti, premiAssegnati } from '../src/engine.js';
 
 const P = (id, role, clubId = 'home') => ({ id, role, clubId, quotation: 10 });
 const match = (o = {}) => ({ id: 'm1', homeClubId: 'home', awayClubId: 'away', homeGoals: 1, awayGoals: 0, status: 'played', ...o });
@@ -134,6 +134,75 @@ test('una giornata senza dati non produce risultati: nessun 5,5 d\'ufficio a tap
   assert.equal(res.rows.every((r) => r.official), true);
   assert.equal(res.total, 5.5 * 11);
   assert.equal(res.goals, 0);                   // 60,5 < soglia 69,0
+});
+
+/* ---- lega pubblica: classifica a punti (013) ---- */
+
+const SQ = [{ id: 'a' }, { id: 'b' }, { id: 'c' }];
+
+test('classifica a punti: si sommano i fantapunti, chi ne fa piu\' sale', () => {
+  const st = classificaPunti(SQ, [
+    { managerId: 'a', matchday: 1, punti: 70.5 }, { managerId: 'a', matchday: 2, punti: 60 },
+    { managerId: 'b', matchday: 1, punti: 80 }, { managerId: 'b', matchday: 2, punti: 45 },
+    { managerId: 'c', matchday: 1, punti: 66 },
+  ]);
+  // a: 70,5+60 = 130,5 · b: 80+45 = 125 · c: 66
+  assert.deepEqual(st.map((r) => r.managerId), ['a', 'b', 'c']);
+  assert.deepEqual(st.map((r) => r.position), [1, 2, 3]);
+  const a = st[0];
+  assert.equal(a.punti, 130.5); assert.equal(a.played, 2); assert.equal(a.migliore, 70.5); assert.equal(a.media, 65.25);
+  const b = st[1];
+  assert.equal(b.punti, 125); assert.equal(b.migliore, 80);   // la giornata migliore non decide: i punti vengono prima
+  // chi non ha giocato nessuna giornata resta a zero, non sparisce
+  const vuota = classificaPunti(SQ, []);
+  assert.equal(vuota.length, 3);
+  assert.deepEqual([...new Set(vuota.map((r) => r.punti))], [0]);
+});
+
+test('classifica a punti: i fantapunti sono la classifica, non si convertono in gol', () => {
+  const st = classificaPunti(SQ, [{ managerId: 'a', matchday: 1, punti: 71.5 }]);
+  const a = st.find((r) => r.managerId === 'a');
+  assert.equal(a.punti, a.fantapunti);
+  assert.equal(a.punti, 71.5);                 // non 1 gol
+});
+
+test('a pari punti decide la giornata migliore; a pari anche quella, pari merito', () => {
+  const diverse = classificaPunti(SQ, [
+    { managerId: 'a', matchday: 1, punti: 50 }, { managerId: 'a', matchday: 2, punti: 50 },
+    { managerId: 'b', matchday: 1, punti: 70 }, { managerId: 'b', matchday: 2, punti: 30 },
+  ]);
+  assert.deepEqual(diverse.slice(0, 2).map((r) => r.managerId), ['b', 'a']);  // 100 pari, 70 > 50
+  assert.deepEqual(diverse.slice(0, 2).map((r) => r.position), [1, 2]);
+  const identiche = classificaPunti(SQ, [
+    { managerId: 'a', matchday: 1, punti: 60 }, { managerId: 'b', matchday: 1, punti: 60 },
+  ]);
+  assert.deepEqual(identiche.slice(0, 2).map((r) => r.position), [1, 1], 'pari merito allo stesso posto');
+  assert.equal(identiche[2].position, 3, 'e il posto dopo salta il 2');
+});
+
+test('una giornata senza consegna vale zero ed e\' giocata', () => {
+  const st = classificaPunti(SQ, [
+    { managerId: 'a', matchday: 1, punti: 60 }, { managerId: 'a', matchday: 2, punti: 0 },
+  ]);
+  const a = st.find((r) => r.managerId === 'a');
+  assert.equal(a.played, 2); assert.equal(a.punti, 60); assert.equal(a.media, 30);
+});
+
+test('i premi vanno ai posti, e uno su un posto che non esiste resta senza nessuno', () => {
+  const st = classificaPunti(SQ, [
+    { managerId: 'a', matchday: 1, punti: 90 }, { managerId: 'b', matchday: 1, punti: 80 },
+  ]);
+  const p = premiAssegnati([{ posto: 2, premio: 'Un caffè' }, { posto: 1, premio: 'Una cena' }, { posto: 9, premio: 'Niente' }], st);
+  assert.deepEqual(p.map((x) => x.posto), [1, 2, 9]);          // in ordine di posto
+  assert.deepEqual(p[0].squadre, ['a']);
+  assert.deepEqual(p[1].squadre, ['b']);
+  assert.deepEqual(p[2].squadre, [], 'il nono posto in una lega di tre non esiste');
+});
+
+test('un premio a pari merito lo vincono tutte e due', () => {
+  const st = classificaPunti(SQ, [{ managerId: 'a', matchday: 1, punti: 60 }, { managerId: 'b', matchday: 1, punti: 60 }]);
+  const p = premiAssegnati([{ posto: 1, premio: 'Coppa' }], st);
+  assert.deepEqual(p[0].squadre.sort(), ['a', 'b']);
 });
 
 /* ---- formazione non consegnata: a tavolino (art. 8.4) ---- */

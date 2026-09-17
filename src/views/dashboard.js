@@ -146,6 +146,46 @@ function corrente(f, n, me, riposo) {
   </div>`;
 }
 
+/**
+ * La giornata corrente in una lega a punti: non c'e' un avversario da
+ * mostrare, c'e' quanto vale la tua giornata e a che posto ti mette.
+ *
+ * Il posto e' quello che in una lega pubblica si guarda per primo: contro
+ * duecento squadre il proprio punteggio da solo non dice niente.
+ */
+function correntePunti(n, me) {
+  const md = S.matchday(n); const st = S.matchdayStatus(n);
+  const aperta = st === 'open' || st === 'scheduled';
+  const saved = S.savedLineup(n, me.id);
+  const cls = S.standings(); const mio = cls.find((r) => r.managerId === me.id);
+  const punti = aperta ? null : S.puntiGiornata(n, me.id);
+  const chiudibile = S.giornataDaChiudere(n);
+  const cta = aperta
+    ? `<a class="a-btn big" href="#/rosa/formazione">${saved ? 'Modifica la formazione' : 'Inserisci formazione'}</a>`
+    : chiudibile
+      ? `<button class="a-btn big" id="chiudi-giornata"${chiudibile.pronta ? '' : ' disabled'}>${icon('lock', 'ic sm')}Calcola la giornata</button>`
+      : `<a class="a-btn big" href="#/voti/${n}">Voti della giornata</a>`;
+  const nota = aperta
+    ? (saved
+      ? `Formazione salvata ${dateIt(saved.submittedAt)} · si chiude ${dateIt(md.lockAt)} alle ${timeIt(md.lockAt)}`
+      : `Si chiude ${dateIt(md.lockAt)} alle ${timeIt(md.lockAt)} — senza consegna questa giornata vale zero`)
+    : chiudibile
+      ? (chiudibile.pronta
+        ? `Tutte le ${chiudibile.partite} partite hanno gli eventi: da qui i punteggi diventano definitivi`
+        : `Mancano gli eventi di ${chiudibile.mancanti} partite su ${chiudibile.partite}`)
+      : '';
+  return sec('Giornata corrente', `${n}ª giornata`) + `<div class="mcard">
+    <div class="mrow punti">
+      <span class="pblocco"><b>${punti === null ? '—' : fmt(punti)}</b><span>${punti === null ? 'da giocare' : 'punti in giornata'}</span></span>
+      <span class="pblocco"><b>${mio ? mio.position : '–'}</b><span>posto su ${cls.length}</span></span>
+      <span class="pblocco"><b>${mio ? fmt(mio.punti) : '0'}</b><span>punti totali</span></span>
+    </div>
+    ${nota ? `<p class="mnota">${esc(nota)}</p>` : ''}
+    <div class="mact">${cta}</div>
+    <a class="mcta" href="#/classifica">${pic('classifica', 'lega', 'mini')}Classifica e premi${icon('chev', 'ic sm')}</a>
+  </div>`;
+}
+
 /** Gli ultimi cinque incontri di lega: avversaria, esito e risultato. */
 function ultimiCinque(last, me) {
   if (!last.length) return '';
@@ -210,7 +250,7 @@ function classificaBreve(me) {
     ${righe.map((r) => { const m = S.managersById.get(r.managerId); const io = r.managerId === me.id;
       return `<span class="lrow${io ? ' io' : ''}"><i class="pos">${r.position}</i>${crest(m, 'sm')}
         <span class="nm"><b>${esc(m.teamName)}</b><span>${esc(m.owner)}</span></span>
-        <span class="pt"><b>${r.points}</b><span>punti</span></span></span>`; }).join('')}
+        <span class="pt"><b>${S.aPunti() ? fmt(r.punti) : r.points}</b><span>punti</span></span></span>`; }).join('')}
     <span class="lcta">Classifica completa${icon('chev', 'ic sm')}</span></a>`;
 }
 
@@ -251,7 +291,7 @@ export const dashboard = {
   render() {
     const me = S.me(); const ph = S.weekPhase();
     if (!me) return `<main class="a-body"><div class="empty">${logo()}<p>Non fai parte di questa lega.</p><a class="a-btn" href="#/leghe" style="text-decoration:none">Le mie leghe</a></div></main>`;
-    const st = S.standings(); const row = st.find((r) => r.managerId === me.id) || { position: '–', points: 0, played: 0, fantapunti: 0 };
+    const st = S.standings(); const row = st.find((r) => r.managerId === me.id) || { position: '–', points: 0, punti: 0, played: 0, fantapunti: 0 };
     const noRoster = S.rosterIds(me.id).length === 0;
     // Le mie giocate finora: l'ultima e' la "giornata precedente", le cinque in
     // fondo sono lo storico. La corrente e' quella ancora da giocare.
@@ -286,13 +326,21 @@ export const dashboard = {
       </div>
       <div class="a-card a-stats">
         <div><b>${row.position}<sup>ª</sup></b><span>Posizione</span></div>
-        <div><b>${row.points}</b><span>Punti</span></div>
+        ${S.aPunti()
+    // A punti "Punti" e "Fantapunti" sarebbero lo stesso numero due volte:
+    // al suo posto la media, che dice come stai andando e non solo quanto hai
+    // accumulato — con due giornate in meno un totale basso non vuol dire
+    // niente.
+    ? `<div><b>${fmt(row.punti)}</b><span>Punti</span></div>
+        <div><b>${row.played}</b><span>Giornate</span></div>
+        <div><b>${fmt(row.media || 0)}</b><span>Media</span></div>`
+    : `<div><b>${row.points}</b><span>Punti</span></div>
         <div><b>${row.played}</b><span>Partite</span></div>
-        <div><b>${fmt(row.fantapunti)}</b><span>Fantapunti</span></div>
+        <div><b>${fmt(row.fantapunti)}</b><span>Fantapunti</span></div>`}
       </div>
       ${notiziaBreve()}
-      ${conclusa(ultima)}
-      ${corrente(cur, nCur, me, riposo)}
+      ${S.aPunti() ? '' : conclusa(ultima)}
+      ${S.aPunti() ? correntePunti(Math.min(30, nCur), me) : corrente(cur, nCur, me, riposo)}
       ${noRoster ? tile({ href: S.isLeagueAdmin() ? '#/lega' : '#/leghe', lead: icon('warn'), leadKind: 'warn',
           title: 'Rose non ancora assegnate',
           sub: S.isLeagueAdmin() ? "Generale o inserirle dalla gestione lega" : "Le assegna l'admin della lega dopo l'asta" }) : azione(ph)}

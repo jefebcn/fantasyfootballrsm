@@ -384,6 +384,61 @@ export function movimenti(prima, dopo) {
   return out;
 }
 
+/**
+ * La classifica di una lega pubblica: si sommano i fantapunti, chi ne ha piu'
+ * sta piu' in alto. Nessun avversario e nessun gol.
+ *
+ * Non e' una semplificazione: con duecento iscritti un calendario a scontri
+ * diretti non si puo' fare, e un fantapunteggio convertito in gol perderebbe
+ * proprio la cosa che qui decide, cioe' di quanto uno ha fatto meglio.
+ *
+ * A PARI PUNTI si guarda la giornata migliore, e se anche quella e' pari si
+ * resta pari merito: due squadre allo stesso posto. Contava deciderlo, perche'
+ * su questa classifica ci sono dei premi, e un pari merito inventato con un
+ * ordine alfabetico sarebbe una beffa.
+ *
+ * Chi non consegna la formazione non fa punti quella giornata (art. 8.4), ed
+ * e' la stessa regola del tavolino vista da qui: la giornata si conta come
+ * giocata, con zero.
+ *
+ * @param righe [{managerId, matchday, punti}] una per squadra e giornata con i dati
+ * @returns righe ordinate, con punti, giornate giocate (played), media,
+ *   giornata migliore e posizione (i pari merito condividono il posto)
+ */
+export function classificaPunti(managers, righe) {
+  const t = new Map(managers.map((m) => [m.id, {
+    managerId: m.id, punti: 0, fantapunti: 0, played: 0, migliore: 0, media: 0,
+  }]));
+  for (const r of righe) {
+    const x = t.get(r.managerId); if (!x) continue;
+    x.punti = r1(x.punti + r.punti);
+    x.played++;
+    if (r.punti > x.migliore) x.migliore = r1(r.punti);
+  }
+  const rows = [...t.values()].map((x) => ({
+    ...x, fantapunti: x.punti, media: x.played ? r1(x.punti / x.played) : 0,
+  }));
+  rows.sort((a, b) => b.punti - a.punti || b.migliore - a.migliore
+    || String(a.managerId).localeCompare(String(b.managerId)));
+  let posto = 0, prima = null;
+  return rows.map((x, i) => {
+    if (prima === null || x.punti !== prima.punti || x.migliore !== prima.migliore) { posto = i + 1; prima = x; }
+    return { ...x, position: posto };
+  });
+}
+
+/**
+ * Chi vince cosa: accoppia i premi messi in palio alle squadre in classifica.
+ * Un premio su un posto che non esiste (il terzo in una lega di due) resta
+ * senza nessuno, e si vede: meglio che sparisca dai premi o che vada al
+ * primo per sbaglio.
+ */
+export function premiAssegnati(premi, classifica) {
+  return (premi || []).slice().sort((a, b) => a.posto - b.posto).map((p) => ({
+    ...p, squadre: classifica.filter((r) => r.position === p.posto).map((r) => r.managerId),
+  }));
+}
+
 export function computeStandings(managers, results, rules = DEFAULT_RULES) {
   const t = new Map(managers.map((m) => [m.id, { managerId: m.id, points: 0, played: 0, won: 0, drawn: 0, lost: 0, gf: 0, gs: 0, fantapunti: 0 }]));
   for (const f of results) {

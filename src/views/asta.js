@@ -27,23 +27,40 @@ function squadra(m, attiva) {
 }
 
 export const asta = {
-  title: 'Asta', appbar: 'back', sub: () => 'Registra gli acquisti',
+  // title resta una stringa: finisce nel titolo della pagina, dove le altre
+  // viste ne mettono una e una funzione ci comparirebbe come codice. Quello
+  // che cambia fra le due modalita' lo dice sub(), che e' la riga che si
+  // legge in cima alla schermata.
+  title: 'Rosa', appbar: 'back',
+  sub: () => (S.legaPubblica() ? 'Scegli i tuoi 25' : 'Registra gli acquisti'),
   render() {
-    if (!S.isLeagueAdmin()) {
+    // NELLA LEGA PUBBLICA questa schermata cambia padrone: non e' piu' la
+    // console di chi conduce l'asta, e' il posto dove OGNUNO si fa la sua
+    // rosa coi crediti che ha. Un'asta a duecento non si fa in chiamata, e i
+    // giocatori non sono esclusivi (013): la stessa schermata, senza il
+    // selettore delle squadre e senza la lista dei liberi, perche' liberi lo
+    // sono tutti.
+    if (!S.isLeagueAdmin() && !S.legaPubblica()) {
       return `<main class="a-body"><div class="empty">${icon('lock')}<p>L'asta la conduce l'amministratore della lega.</p>
         <p class="small muted">Puoi seguirla dalla tua rosa: si riempie da sola mentre lui registra gli acquisti.</p>
         <a class="a-btn sec" href="#/rosa" style="text-decoration:none">La mia rosa</a></div></main>`;
     }
     const mgr = S.base.managers;
     if (!mgr.length) return `<main class="a-body"><div class="empty">${icon('users')}<p>Nessuna squadra in lega: prima servono i partecipanti.</p></div></main>`;
-    if (!compratore || !mgr.some((m) => m.id === compratore)) compratore = mgr[0].id;
+    const mia = S.legaPubblica();
+    if (mia) compratore = S.me()?.id || mgr[0].id;
+    else if (!compratore || !mgr.some((m) => m.id === compratore)) compratore = mgr[0].id;
 
     const pr = S.proprietari();
     const st = S.statoAsta(compratore);
     const q = cerca.trim().toLowerCase();
     // I conteggi sulle pastiglie dicono quanti ne restano per ruolo, quindi si
     // fanno prima di filtrare per ruolo (ma dopo la ricerca, se no mentono).
-    const tuttiLiberi = S.base.players.filter((p) => p.isActive && !pr.has(p.id)
+    // Nella pubblica si toglie dall'elenco solo chi e' GIA' NELLA MIA rosa:
+    // che un altro l'abbia preso non mi riguarda.
+    const miei = new Set(st.rosa.map((x) => x.playerId));
+    const tuttiLiberi = S.base.players.filter((p) => p.isActive
+      && (mia ? !miei.has(p.id) : !pr.has(p.id))
       && (!q || p.name.toLowerCase().includes(q) || S.clubsById.get(p.clubId).name.toLowerCase().includes(q)));
     const liberi = tuttiLiberi.filter((p) => ruolo === 'tutti' || p.role === ruolo)
       .sort((a, b) => b.quotation - a.quotation);
@@ -56,12 +73,17 @@ export const asta = {
         <span class="nm"><b>${esc(p.name)}</b><span>${esc(S.clubsById.get(p.clubId).name)} · quot. ${p.quotation}</span></span>
         <span class="q">${pieno ? 'ruolo pieno' : `max ${max}`}</span></button>`;
     };
-    const ultimi = [...pr.entries()].slice(-6).reverse();
+    const ultimi = mia
+      ? st.rosa.slice(-6).reverse().map((x) => [x.playerId, { managerId: compratore, pricePaid: x.pricePaid }])
+      : [...pr.entries()].slice(-6).reverse();
     return `<main class="a-body">
-      <div class="a-sec"><b>Squadre</b><span>tocca chi sta comprando</span></div>
-      <div class="sqs">${mgr.map((m) => squadra(m, m.id === compratore)).join('')}</div>
+      ${mia ? `<div class="a-sec"><b>La tua squadra</b><span>${st.crediti} crediti</span></div>
+        <div class="sqs">${squadra(S.me(), true)}</div>
+        <p class="small muted" style="margin:-4px 2px 0">Lega pubblica: i giocatori non sono esclusivi, lo stesso può stare nella rosa di tutti. Vale il tetto per ruolo e quello dei crediti.</p>`
+    : `<div class="a-sec"><b>Squadre</b><span>tocca chi sta comprando</span></div>
+        <div class="sqs">${mgr.map((m) => squadra(m, m.id === compratore)).join('')}</div>`}
       ${st.vuote === 0 ? `<div class="warn info">${icon('check', 'ic sm')}<span>Rosa completa: 25 su 25.</span></div>` : ''}
-      <div class="a-sec"><b>Da assegnare</b><span>${liberi.length} liberi</span></div>
+      <div class="a-sec"><b>${mia ? 'Da scegliere' : 'Da assegnare'}</b><span>${liberi.length} ${mia ? 'disponibili' : 'liberi'}</span></div>
       <input class="field-input" id="cerca" placeholder="Cerca giocatore o società" value="${esc(cerca)}" autocomplete="off">
       <div class="scelte">${RUOLI.map(([k, l]) => {
       const n = k === 'tutti' ? tuttiLiberi.length : tuttiLiberi.filter((x) => x.role === k).length;

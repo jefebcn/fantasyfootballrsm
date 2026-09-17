@@ -1,6 +1,6 @@
 import * as S from '../state.js';
 import { esc, fmt, badge, crest, empty, icon } from '../ui.js';
-import { movimenti } from '../engine.js';
+import { movimenti, conversionParams } from '../engine.js';
 
 let vista = 'classifica';
 let contro = null;
@@ -85,16 +85,66 @@ function incontri(n) {
   return `<div class="giornata">${righe}</div>`;
 }
 
+/**
+ * I premi in palio, con chi li sta vincendo adesso.
+ *
+ * Restano una promessa fra persone: l'app li scrive e li mostra, non li
+ * gestisce e non li paga, e lo dice invece di lasciarlo capire.
+ */
+function premiCard({ vincitori = true } = {}) {
+  const pr = S.premiOra();
+  const admin = S.isLeagueAdmin();
+  if (!pr.length) {
+    return admin
+      ? `<div class="a-card premi vuoti"><div class="ph"><b>Premi</b></div>
+          <p class="small muted">Non c'è niente in palio. Puoi metterci quello che vuoi: una cena, una coppa, i diritti di sfottò per un anno.</p>
+          <button class="a-btn sec" data-premi>Metti in palio un premio</button></div>`
+      : '';
+  }
+  // Finche' non si e' giocata una giornata sono tutti a zero, quindi "chi
+  // vince adesso" sarebbe un pari merito fra tutti: un'informazione falsa,
+  // meglio mostrare solo cosa c'e' in palio.
+  const riga = (p) => {
+    const chi = p.squadre.map((id) => S.managersById.get(id)).filter(Boolean);
+    return `<div class="prow"><span class="pposto">${p.posto}º</span>
+      <span class="ppre">${esc(p.premio)}</span>
+      ${vincitori ? `<span class="pchi">${chi.length ? chi.map((m) => esc(m.teamName)).join(', ') : '<i>nessuno a questo posto</i>'}</span>` : '<span class="pchi"></span>'}</div>`;
+  };
+  return `<div class="a-card premi"><div class="ph"><b>Premi in palio</b><span>${vincitori ? 'chi li vince se finisse adesso' : 'la classifica non è ancora partita'}</span></div>
+    ${pr.map(riga).join('')}
+    <p class="small muted">I premi sono un accordo fra i partecipanti: l'app li scrive e li mostra, non li gestisce.</p>
+    ${admin ? '<button class="a-btn sec" data-premi>Modifica i premi</button>' : ''}</div>`;
+}
+
+/** La classifica di una lega pubblica: la somma dei fantapunti, e basta. */
+function tabellaPunti(st, me, inCorso, mosse) {
+  return `<div class="cls">${st.map((r) => { const m = S.managersById.get(r.managerId);
+    const io = r.managerId === me?.id;
+    return `<div class="crow${io ? ' io' : ''}">
+      <i class="pos">${r.position}</i>${inCorso ? freccia(mosse.get(r.managerId)) : ''}${crest(m, 'sm')}
+      <span class="nm"><b>${esc(m.teamName)}</b><span>${esc(m.owner)} · ${r.played} ${r.played === 1 ? 'giornata' : 'giornate'}</span></span>
+      <span class="pt"><b>${fmt(r.punti)}</b><span>punti</span></span></div>`; }).join('')}</div>
+    <div class="a-card dett"><div class="dhead"><b>Dettaglio</b><span>giornate · media · migliore</span></div>
+      ${st.map((r) => { const m = S.managersById.get(r.managerId);
+    return `<div class="drow${r.managerId === me?.id ? ' io' : ''}"><span class="nm">${r.position}. ${esc(m.teamName)}</span>
+        <span class="v">${r.played}</span><span class="v">${fmt(r.media)}</span><span class="v fp">${fmt(r.migliore)}</span></div>`; }).join('')}</div>
+    <p class="tie"><b>A pari punti</b> conta la giornata migliore; se è pari anche quella si resta pari merito, allo stesso posto. Chi non consegna la formazione fa zero in quella giornata (art. 8.4).</p>`;
+}
+
 export const classifica = {
   title: 'Classifica',
   render() {
     const me = S.me(); const n = S.currentMatchday(); const st = S.standings();
     const giocate = st.reduce((s, r) => s + r.played, 0);
-    if (!giocate) return `<main class="a-body">${empty(
+    // In una lega pubblica i premi sono il motivo per cui uno entra: si
+    // vedono prima che la classifica esista, non dopo.
+    if (!giocate) return `<main class="a-body">${S.aPunti() ? premiCard({ vincitori: false }) : ''}${empty(
       S.base.managers.length < 2
-        ? 'La classifica parte quando ci sono almeno due squadre: condividi il codice invito della lega.'
+        ? (S.legaPubblica()
+          ? 'La classifica parte quando ci sono almeno due squadre: la lega è pubblica, chiunque può entrare dall\'elenco delle leghe.'
+          : 'La classifica parte quando ci sono almeno due squadre: condividi il codice invito della lega.')
         : 'Nessuna giornata conclusa: la classifica compare quando il Giudice Dati pubblica i primi voti.',
-      S.base.managers.length < 2 ? '<a class="a-btn" href="#/lega" style="text-decoration:none">Invita i partecipanti</a>' : '')}</main>`;
+      S.base.managers.length < 2 ? `<a class="a-btn" href="#/${S.legaPubblica() ? 'leghe' : 'lega'}" style="text-decoration:none">${S.legaPubblica() ? 'Vedi le leghe pubbliche' : 'Invita i partecipanti'}</a>` : '')}</main>`;
 
     const stato = S.matchdayStatus(n);
     // "In corso" vuol dire: la giornata sta gia' dando punti ma non e' chiusa,
@@ -109,23 +159,41 @@ export const classifica = {
       <button class="${vista === 'classifica' ? 'on' : ''}" data-vista="classifica">Classifica</button>
       <button class="${vista === 'giornata' ? 'on' : ''}" data-vista="giornata">Giornata ${n}</button>
       <button class="${vista === 'record' ? 'on' : ''}" data-vista="record">Record</button></div>`;
+    // A punti la scheda "Giornata" non ha incontri da mostrare: si toglie
+    // invece di aprire su una schermata vuota.
+    const segPunti = `<div class="seg seg-cls">
+      <button class="${vista !== 'record' ? 'on' : ''}" data-vista="classifica">Classifica</button>
+      <button class="${vista === 'record' ? 'on' : ''}" data-vista="record">Record</button></div>`;
 
     if (vista === 'record') {
       return `<main class="a-body">
         <div class="topbar">${badge(stato, `giornata ${n}`)}<span style="font:700 13px var(--font-display);color:var(--primary-ink);white-space:nowrap">Record</span></div>
-        ${seg}
+        ${S.aPunti() ? segPunti : seg}
         <div class="a-sec"><b>Record di lega</b><span>fin qui</span></div>
         ${record()}
-        <div class="a-sec"><b>Testa a testa</b><span>i tuoi scontri</span></div>
-        ${scontri(contro)}
+        ${S.aPunti() ? '' : `<div class="a-sec"><b>Testa a testa</b><span>i tuoi scontri</span></div>${scontri(contro)}`}
       </main>`;
     }
 
-    if (vista === 'giornata') {
+    // A punti non ci sono incontri: se si arriva qui con la vista "giornata"
+    // — per esempio cambiando lega — si torna alla classifica invece di
+    // mostrare una schermata vuota.
+    if (vista === 'giornata' && !S.aPunti()) {
       return `<main class="a-body">
         <div class="topbar">${badge(stato, `giornata ${n}`)}<span style="font:700 13px var(--font-display);color:var(--primary-ink);white-space:nowrap">Incontri</span></div>
         ${seg}${avviso}${incontri(n)}
         <p class="tie">Tocca un incontro per vedere i due campi, i voti e la panchina.</p>
+      </main>`;
+    }
+
+    // Lega pubblica: nessun avversario, nessun gol, nessuno spareggio da
+    // scontri diretti. Cambia la tabella e compaiono i premi.
+    if (S.aPunti()) {
+      return `<main class="a-body">
+        <div class="topbar">${badge(stato, `giornata ${n}`)}<span style="font:700 13px var(--font-display);color:var(--primary-ink);white-space:nowrap">Lega pubblica</span></div>
+        ${segPunti}${avviso}
+        ${premiCard()}
+        ${tabellaPunti(st, me, inCorso, mosse)}
       </main>`;
     }
 
@@ -143,15 +211,71 @@ export const classifica = {
           return `<div class="drow${r.managerId === me.id ? ' io' : ''}"><span class="nm">${r.position}. ${esc(m.teamName)}</span>
             <span class="v">${r.played}</span><span class="v">${r.dr > 0 ? '+' : ''}${r.dr}</span><span class="v fp">${fmt(r.fantapunti)}</span></div>`; }).join('')}</div>
       <p class="tie"><b>Spareggi</b> (art. 12.2): punti › fantapunti totali (FP) › differenza reti › scontri diretti.</p>
-      <div class="a-card a-rule"><span class="art">Art. 11</span><p><b>Conversione in gol:</b> con ${S.base.league.managerCount} ${S.base.league.managerCount === 1 ? 'fantallenatore' : 'fantallenatori'} il primo gol scatta a ${fmt(S.lineupResult(n, me.id).conversion.threshold)} e se ne aggiunge uno ogni ${fmt(S.lineupResult(n, me.id).conversion.step)} punti. Parità di fantapunteggio = pareggio.</p></div>
+      ${(() => {
+    // I parametri della conversione vengono dalle regole, non dal risultato
+    // di una formazione: lineupResult() torna null a chi non ha consegnato
+    // (art. 8.4) e questa riga andava in errore, portandosi via la
+    // classifica intera. Sono un dato della lega, non di una squadra.
+    const c = conversionParams(S.base.league.managerCount, S.rules());
+    return `<div class="a-card a-rule"><span class="art">Art. 11</span><p><b>Conversione in gol:</b> con ${S.base.league.managerCount} ${S.base.league.managerCount === 1 ? 'fantallenatore' : 'fantallenatori'} il primo gol scatta a ${fmt(c.threshold)} e se ne aggiunge uno ogni ${fmt(c.step)} punti. Parità di fantapunteggio = pareggio.</p></div>`;
+  })()}
     </main>`;
   },
   mount(root, ctx) {
     root.querySelector('main').addEventListener('click', (e) => {
       const h = e.target.closest('[data-h2h]');
       if (h) { contro = h.dataset.h2h; ctx.render(); return; }
+      if (e.target.closest('[data-premi]')) { apriPremi(ctx); return; }
       const b = e.target.closest('[data-vista]'); if (!b) return;
       vista = b.dataset.vista; ctx.render();
     });
   },
 };
+
+/**
+ * L'editor dei premi, per chi amministra la lega.
+ *
+ * Righe posto + descrizione, fino a dieci. La forma la ricontrolla il
+ * database (premi_validi in 013): qui si guida, non si difende — le due cose
+ * non sono la stessa e quella che conta e' la seconda.
+ */
+function apriPremi(ctx) {
+  let righe = S.premi().length ? S.premi().map((p) => ({ ...p })) : [{ posto: 1, premio: '' }];
+  const disegna = () => {
+    ctx.sheet(`<h3>Premi in palio</h3>
+      <p class="auth-hint">Quello che vince chi arriva in una certa posizione. È un accordo fra voi: l'app lo scrive e lo mostra, non lo gestisce.</p>
+      <div id="pr-righe">${righe.map((r, i) => `<div class="pr-riga">
+        <input class="field-input pr-posto" type="number" min="1" max="99" value="${r.posto}" aria-label="Posto" inputmode="numeric">
+        <input class="field-input pr-premio" value="${esc(r.premio)}" placeholder="es. una cena offerta" maxlength="120" aria-label="Premio">
+        <button class="pr-via" data-via="${i}" aria-label="Togli">${icon('trash', 'ic sm')}</button></div>`).join('')}</div>
+      ${righe.length < 10 ? '<button class="a-btn sec" id="pr-piu" style="margin-top:8px">Aggiungi un premio</button>' : '<p class="small muted">Dieci premi sono il massimo.</p>'}
+      <button class="a-btn" id="pr-salva" style="margin-top:10px">Salva i premi</button>`);
+    const sh = document.getElementById('sheet');
+    // Si rilegge dai campi prima di ogni cosa: se no, aggiungere una riga
+    // cancellava quello che era stato appena scritto nelle altre.
+    const leggi = () => {
+      righe = [...sh.querySelectorAll('.pr-riga')].map((d) => ({
+        posto: parseInt(d.querySelector('.pr-posto').value, 10) || 1,
+        premio: d.querySelector('.pr-premio').value,
+      }));
+    };
+    sh.onclick = async (e) => {
+      const via = e.target.closest('[data-via]');
+      if (via) { leggi(); righe.splice(+via.dataset.via, 1); if (!righe.length) righe = [{ posto: 1, premio: '' }]; disegna(); return; }
+      if (e.target.closest('#pr-piu')) {
+        leggi();
+        righe.push({ posto: Math.min(99, Math.max(...righe.map((r) => r.posto)) + 1), premio: '' });
+        disegna(); return;
+      }
+      const salva = e.target.closest('#pr-salva');
+      if (salva) {
+        leggi();
+        const puliti = righe.filter((r) => r.premio.trim());
+        salva.disabled = true;
+        try { await S.salvaPremi(puliti); ctx.sheet(null); ctx.toast(puliti.length ? 'Premi salvati' : 'Premi rimossi'); ctx.render(); }
+        catch (err) { ctx.toast(err.message || 'Non è stato possibile salvare'); salva.disabled = false; }
+      }
+    };
+  };
+  disegna();
+}

@@ -609,6 +609,17 @@ export function giornataDaChiudere(n = currentMatchday()) {
 }
 
 /** Chiude la giornata. Lo stato locale si aggiorna solo se il server dice di si'. */
+/**
+ * Cancella il profilo di chi e' entrato.
+ *
+ * Non tocca niente in memoria: chi chiama fa uscire l'utente subito dopo, e
+ * al prossimo accesso non c'e' piu' niente da caricare. Aggiornare lo stato
+ * locale di un account che non esiste piu' sarebbe lavoro per nessuno.
+ */
+export async function eliminaProfilo() {
+  return remote.eliminaProfilo();
+}
+
 export async function chiudiGiornata(n = currentMatchday()) {
   await remote.chiudiGiornata(n);
   g.matchdayStatus[n] = 'frozen';

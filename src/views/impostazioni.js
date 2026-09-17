@@ -3,6 +3,8 @@ import { esc, icon, pic } from '../ui.js';
 import { applyTheme } from '../app.js';
 import { CONTATTO, LINGUE } from '../config.js';
 import * as AV from '../notifiche.js';
+import * as diagnostica from '../diagnostica.js';
+import { scaricaMieiDati } from '../miei-dati.js';
 import { misure } from '../schermo.js';
 
 const row = (ic, title, sub, action = '', cls = '') => `<button class="setting ${cls}" ${action ? `data-act="${action}"` : 'disabled style="cursor:default"'}><i class="ico${typeof ic === 'object' ? ' illus' : ''}">${typeof ic === 'object' ? pic(ic.m, 'menu') : icon(ic)}</i><span class="txt"><b>${title}</b>${sub ? `<span>${sub}</span>` : ''}</span>${action ? icon('chev', 'ic sm chev') : ''}</button>`;
@@ -110,12 +112,15 @@ export const impostazioni = {
 
     const conto = group('Account', `
       ${row('shield', 'Privacy e dati', 'Cosa salva l\'app, chi lo vede, come si cancella', 'privacy')}
+      ${row('down', 'Scarica i tuoi dati', 'Un file con account, squadra, rosa e formazioni', 'esporta')}
+      ${row('warn', 'Segnala un problema', diagnostica.quantiErrori() ? `${diagnostica.quantiErrori()} errori in questa sessione` : 'Manda com\'è fatto il telefono e cos\'è andato storto', 'segnala')}
       ${row('book', 'Termini d\'uso', 'Com\'è fatto il gioco e cosa ci si aspetta', 'termini')}
       ${row('lock', 'Cookie e memoria locale', 'Nessun cookie: cosa resta su questo telefono', 'archiviazione')}
       ${row('img', 'Licenze e crediti', 'Da dove vengono dati, immagini e codice', 'licenze')}
       ${S.authKind() === 'clerk' ? row('gear', 'Gestisci account', 'Nome, e-mail, password e accessi collegati', 'clerk-profile')
     : row('lock', 'Cambia password', 'Imposta una nuova password per questo account', 'password')}
-      ${row('out', 'Esci', 'Torni alla schermata di accesso', 'logout', 'danger')}`);
+      ${row('out', 'Esci', 'Torni alla schermata di accesso', 'logout', 'danger')}
+      ${row('trash', 'Cancella il profilo', 'Via account, squadre, rose e formazioni. Non si torna indietro', 'elimina-profilo', 'danger')}`);
 
     return `<main class="a-body">${testa}${generale}${conto}
       <p class="auth-foot">Versione 0.5 · motore ${S.rules().engineVersion}</p></main>`;
@@ -142,6 +147,48 @@ export const impostazioni = {
       if (act === 'avanzate') { ctx.go('impostazioni/avanzate'); return; }
       if (act === 'sfondo') { S.store.set({ sfondoFoto: !S.store.get().sfondoFoto }); ctx.render(); return; }
       if (act === 'privacy') { ctx.go('privacy'); return; }
+      if (act === 'esporta') {
+        // Il file si costruisce qui e non passa da nessun server: e' roba tua,
+        // non c'e' motivo di farla viaggiare per consegnartela.
+        const dati = scaricaMieiDati();
+        const quante = dati.legaAperta ? dati.legaAperta.formazioniConsegnate.length : 0;
+        ctx.toast(`Scaricato: ${dati.legheACuiPartecipi.length} leghe, ${quante} formazioni`);
+        return;
+      }
+      if (act === 'segnala') {
+        const testo = diagnostica.rapporto({ versione: await diagnostica.versioneInCache() });
+        if (CONTATTO) {
+          location.href = `mailto:${CONTATTO}?subject=${encodeURIComponent('Fantatitano — segnalazione')}`
+            + `&body=${encodeURIComponent(testo)}`;
+          return;
+        }
+        // Senza un indirizzo a cui mandarlo, almeno te lo mettiamo negli
+        // appunti: cosi' lo incolli dove vuoi invece di non poterlo dare a
+        // nessuno.
+        try { await navigator.clipboard.writeText(testo); ctx.toast('Segnalazione copiata'); }
+        catch { ctx.sheet(`<h3>Segnalazione</h3><pre class="sm-link">${esc(testo)}</pre>`); }
+        return;
+      }
+      if (act === 'elimina-profilo') {
+        ctx.sheet(`<h3>Cancellare il profilo?</h3>
+          <p class="auth-hint">Spariscono account, squadre in ogni lega, rose, formazioni consegnate e contestazioni.
+          Le leghe in cui sei rimasto solo se ne vanno con te. <b>Non si torna indietro.</b></p>
+          <p class="auth-hint">Resta il registro delle modifiche ai voti, senza più il tuo nome attaccato:
+          è la prova di come è venuto fuori un punteggio e serve agli altri della lega.</p>
+          <button class="a-btn sec" data-conferma="no" style="margin-top:10px">Lascia stare</button>
+          <button class="a-btn danger" data-conferma="si" style="margin-top:8px">Sì, cancella tutto</button>`);
+        const foglio = document.getElementById('sheet');
+        foglio.onclick = async (ev) => {
+          const b = ev.target.closest('[data-conferma]'); if (!b) return;
+          if (b.dataset.conferma === 'no') { ctx.sheet(''); return; }
+          try {
+            const esito = await S.eliminaProfilo();
+            ctx.toast(esito || 'Profilo cancellato');
+            await S.signOut();
+          } catch (err) { ctx.toast(err?.message || 'Non è stato possibile cancellare'); }
+        };
+        return;
+      }
       if (act === 'termini') { ctx.go('termini'); return; }
       if (act === 'lock-cal') {
         // Il calendario dei lock lo scrive solo il Giudice Dati: se manca, un

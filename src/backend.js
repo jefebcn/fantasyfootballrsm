@@ -276,6 +276,8 @@ export async function deleteEvent(id) { return must(await sb.from('match_events'
 /** Chiude la giornata senza essere il Giudice Dati: il controllo sta nella
  *  funzione (008), non nei permessi della tabella, che restano come sono. */
 export async function chiudiGiornata(n) { return must(await sb.rpc('chiudi_giornata', { p_matchday: n })); }
+/** Cancella il proprio profilo. Si rifiuta se lasceresti una lega senza amministratore. */
+export async function eliminaProfilo() { return must(await sb.rpc('elimina_profilo')); }
 export async function setMatchdayStatus(n, status, userId) { if (!status) return must(await sb.from('matchday_status').delete().eq('matchday', n)); return must(await sb.from('matchday_status').upsert({ matchday: n, status, changed_by: userId, changed_at: new Date().toISOString() })); }
 
 /** Carica il dato demo generato (giornate già giocate) nel DB: solo Giudice Dati, solo su tabelle vuote. */

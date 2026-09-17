@@ -43,6 +43,16 @@ python3 scripts/make-icons.py   # rigenera le icone
 
 Deploy: statico su Vercel dal branch `main`; il design kit resta raggiungibile su `/design/`.
 
+**Le prove decidono se il deploy parte.** `vercel.json` passa a Vercel un
+`ignoreCommand` (`scripts/vercel-controlla.sh`) che, prima del build, gira lint
+e prove senza browser: se qualcosa è rosso il deploy **non parte** e resta
+online la versione di prima. Attenzione alla logica, che è rovesciata perché
+l'ignoreCommand risponde a «devo ignorare questo commit?»: uscita 0 = ignora
+(niente deploy), uscita 1 = procedi. Prima la CI girava in parallelo al deploy,
+quindi una versione rotta era online da un pezzo quando il rosso arrivava.
+Le prove col browser restano in CI: servono un Chromium, e dieci minuti di
+attesa a ogni push non si mettono davanti a una distribuzione.
+
 ## Che giornata si gioca
 
 Tre nozioni diverse, e tenerle separate è quello che evita il guasto in cui

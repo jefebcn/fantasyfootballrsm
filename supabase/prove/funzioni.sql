@@ -477,4 +477,136 @@ select public.elimina_profilo();
 select pg_temp.esige('anche Eva se ne va', not exists (select 1 from public.profiles where id='user_eva'));
 select pg_temp.esige('e la lega di Alex resta in piedi', exists (select 1 from public.leagues where id = :'lega'));
 
+-- ------------------------------------------------------- lega pubblica (013)
+--
+-- Le due cose che la distinguono da una lega fra amici: ci si entra senza
+-- codice, e i giocatori NON sono esclusivi. La seconda e' quella che regge
+-- tutto il resto: con l'esclusivita' addosso, dal ventesimo iscritto non ci
+-- sarebbero piu' portieri.
+insert into public.profiles (id, display_name) values
+  ('user_pub1', 'Primo'), ('user_pub2', 'Secondo'), ('user_pub3', 'Terzo')
+on conflict (id) do nothing;
+
+select pg_temp.entra('user_pub1');
+select public.crea_lega_pubblica('Titano Open','OPEN','Squadra Uno','#1B84C6','SU', 300, 3,
+  '[{"posto":1,"premio":"Una cena"},{"posto":2,"premio":"Un caffe"}]'::jsonb) as lp \gset
+select pg_temp.esige('si crea una lega pubblica', :'lp' is not null);
+select pg_temp.esige('nasce pubblica e a punti',
+  (select pubblica and classifica = 'punti' from public.leagues where id = :'lp'));
+select pg_temp.esige('i crediti finiscono nelle regole e nella squadra',
+  (select (rules->>'budget')::int = 300 from public.leagues where id = :'lp')
+  and (select credits = 300 from public.league_members where league_id = :'lp' and user_id = 'user_pub1'));
+select pg_temp.esige('i premi sono due, normalizzati',
+  (select jsonb_array_length(premi) = 2 and premi->0->>'premio' = 'Una cena'
+     and (premi->0->>'posto')::int = 1 from public.leagues where id = :'lp'));
+
+-- si entra senza codice
+select pg_temp.entra('user_pub2');
+select public.entra_lega_pubblica(:'lp', 'Squadra Due', '#27ae60', 'SD');
+select pg_temp.esige('si entra senza codice invito',
+  (select count(*) from public.league_members where league_id = :'lp') = 2);
+select pg_temp.esige('e con i crediti della lega, non con 500 d''ufficio',
+  (select credits = 300 from public.league_members where league_id = :'lp' and user_id = 'user_pub2'));
+-- rientrare non e' un errore e non crea un doppione
+select public.entra_lega_pubblica(:'lp', 'Squadra Due', '#27ae60', 'SD');
+select pg_temp.esige('rientrare non fa un doppione',
+  (select count(*) from public.league_members where league_id = :'lp') = 2);
+
+-- LO STESSO GIOCATORE in due rose: qui si deve poter fare
+select pg_temp.entra('user_pub1');
+insert into public.rosters (league_id, member_id, player_id, price_paid)
+  values (:'lp', (select id from public.league_members where league_id = :'lp' and user_id='user_pub1'), 'giocatore-uno', 10);
+insert into public.rosters (league_id, member_id, player_id, price_paid)
+  values (:'lp', (select id from public.league_members where league_id = :'lp' and user_id='user_pub2'), 'giocatore-uno', 12);
+select pg_temp.esige('nella lega pubblica lo stesso giocatore sta in due rose',
+  (select count(*) from public.rosters where league_id = :'lp' and player_id = 'giocatore-uno' and released_at is null) = 2);
+select pg_temp.esige('e la colonna dell''esclusivita'' resta nulla',
+  (select count(*) from public.rosters where league_id = :'lp' and lega_esclusiva is not null) = 0);
+
+-- ...mentre nella lega privata di Alex no, e il vincolo e' un indice unico
+insert into public.rosters (league_id, member_id, player_id, price_paid)
+  values (:'lega', (select id from public.league_members where league_id = :'lega' and user_id='user_alex'), 'giocatore-due', 10);
+do $$
+declare mid uuid;
+begin
+  select id into mid from public.league_members where league_id = (select id from public.leagues where name='Lega di prova') and user_id='user_bea';
+  begin
+    insert into public.rosters (league_id, member_id, player_id, price_paid)
+      values ((select id from public.leagues where name='Lega di prova'), mid, 'giocatore-due', 10);
+    raise exception 'FALLITA: nella lega privata il giocatore doveva restare esclusivo';
+  exception when unique_violation then raise notice 'ok  nella lega privata il giocatore resta esclusivo';
+  end;
+end $$;
+
+-- la lega al completo
+select pg_temp.entra('user_pub3');
+select public.entra_lega_pubblica(:'lp', 'Squadra Tre', '#8e44ad', 'ST');
+select pg_temp.esige('il terzo entra e la lega e'' al completo (max 3)',
+  (select count(*) from public.league_members where league_id = :'lp') = 3);
+insert into public.profiles (id, display_name) values ('user_pub4', 'Quarto') on conflict (id) do nothing;
+select pg_temp.entra('user_pub4');
+do $$ begin
+  perform public.entra_lega_pubblica((select id from public.leagues where name='Titano Open'), 'Squadra Quattro', '#c0392b', 'SQ');
+  raise exception 'FALLITA: il quarto non doveva entrare in una lega da tre';
+exception when others then
+  if sqlerrm like 'FALLITA%' then raise; end if;
+  raise notice 'ok  il quarto trova la lega al completo (%)', sqlerrm;
+end $$;
+
+-- una lega privata non si apre senza codice
+do $$ begin
+  perform public.entra_lega_pubblica((select id from public.leagues where name='Lega di prova'), 'Intrusa', '#000000', 'IN');
+  raise exception 'FALLITA: nella lega privata si doveva entrare solo col codice';
+exception when others then
+  if sqlerrm like 'FALLITA%' then raise; end if;
+  raise notice 'ok  la lega privata non si apre senza codice (%)', sqlerrm;
+end $$;
+
+-- l'elenco: numeri e nomi di lega, e dice se ci sei dentro
+select pg_temp.entra('user_pub4');
+select pg_temp.esige('l''elenco delle pubbliche mostra la lega con i suoi iscritti',
+  (select membri = 3 and max_membri = 3 and budget = 300 and not dentro
+     from public.leghe_pubbliche() where name = 'Titano Open'));
+select pg_temp.esige('e non ci mette dentro le leghe private',
+  not exists (select 1 from public.leghe_pubbliche() where name = 'Lega di prova'));
+select pg_temp.entra('user_pub1');
+select pg_temp.esige('a chi e'' dentro lo dice',
+  (select dentro from public.leghe_pubbliche() where name = 'Titano Open'));
+
+-- i premi: li cambia solo chi amministra, e la forma si controlla
+select pg_temp.entra('user_pub2');
+do $$ begin
+  perform public.imposta_premi((select id from public.leagues where name='Titano Open'), '[]'::jsonb);
+  raise exception 'FALLITA: un partecipante non doveva poter cambiare i premi';
+exception when others then
+  if sqlerrm like 'FALLITA%' then raise; end if;
+  raise notice 'ok  i premi non li cambia un partecipante (%)', sqlerrm;
+end $$;
+select pg_temp.entra('user_pub1');
+select public.imposta_premi((select id from public.leagues where name='Titano Open'),
+  '[{"posto":"1","premio":"  Coppa del Titano  "}]'::jsonb);
+select pg_temp.esige('l''amministratore li cambia, e la descrizione arriva ripulita',
+  (select premi->0->>'premio' = 'Coppa del Titano' from public.leagues where name='Titano Open'));
+do $$ begin
+  perform public.imposta_premi((select id from public.leagues where name='Titano Open'), '[{"posto":0,"premio":"x"}]'::jsonb);
+  raise exception 'FALLITA: il posto 0 non doveva passare';
+exception when others then
+  if sqlerrm like 'FALLITA%' then raise; end if;
+  raise notice 'ok  un posto fuori scala non passa (%)', sqlerrm;
+end $$;
+do $$ begin
+  perform public.imposta_premi((select id from public.leagues where name='Titano Open'), '[{"posto":1}]'::jsonb);
+  raise exception 'FALLITA: un premio senza descrizione non doveva passare';
+exception when others then
+  if sqlerrm like 'FALLITA%' then raise; end if;
+  raise notice 'ok  un premio senza descrizione non passa (%)', sqlerrm;
+end $$;
+
+-- e una lega pubblica non puo' finire a scontri diretti
+do $$ begin
+  update public.leagues set classifica = 'scontri' where name = 'Titano Open';
+  raise exception 'FALLITA: pubblica + scontri diretti non doveva passare';
+exception when check_violation then raise notice 'ok  una lega pubblica non puo'' andare a scontri diretti';
+end $$;
+
 select 'tutte le prove sulle funzioni sono passate' as esito;

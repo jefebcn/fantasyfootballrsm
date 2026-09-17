@@ -71,7 +71,27 @@ Su un progetto nuovo, nell'SQL Editor, in quest'ordine:
     formazioni degli avversari non si vedevano mai. Non si modifica a mano;
     se il calendario cambia, l'import la rigenera e avvisa di ricaricarla.
 
+14. `migrations/013-lega-pubblica.sql` — la lega aperta a tutti: rose non
+    esclusive, classifica a punti, premi in palio.
+
 Le migrazioni dalla 001 in poi si possono rieseguire quante volte si vuole.
+
+### Lega pubblica: cosa cambia nel database
+
+Una lega privata e una pubblica sono due giochi diversi, e la differenza sta
+in tre colonne di `leagues`: `pubblica`, `classifica` (`scontri` o `punti`) e
+`premi`. Un vincolo tiene insieme le prime due, perché una lega pubblica con
+il calendario a scontri diretti fra duecento squadre non vuol dire niente.
+
+Il pezzo delicato è **l'esclusività dei giocatori**. Nelle leghe private un
+giocatore sta in una rosa sola, e lo garantiva un indice unico su
+`(league_id, player_id)`. Un indice non può guardare un'altra tabella per
+sapere se quella lega è pubblica, e un trigger non è un vincolo: due
+inserimenti nello stesso istante lo passano entrambi. Quindi `rosters` ha una
+colonna `lega_esclusiva` che porta il `league_id` solo per le leghe private e
+`null` per le pubbliche, con l'indice unico su quella: nelle private
+garantisce davvero, anche sotto corsa, e nelle pubbliche non vincola niente,
+perché più `null` non sono un duplicato.
 
 ### Un permesso che non si revocava
 

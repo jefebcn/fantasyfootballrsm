@@ -98,6 +98,50 @@ export function createClient(_url, _key, opts) {
         if (!userId) throw new Error('non autenticato');
         const prof = T('profiles').find((p) => p.id === userId);
         if (name === 'create_league') { const l = { id: uid(), name: args.p_name, short_name: args.p_short, invite_code: Math.random().toString(36).slice(2, 8).toUpperCase(), rules: {}, started: false, created_by: userId, created_at: now() }; T('leagues').push(l); T('league_members').push({ id: uid(), league_id: l.id, user_id: userId, role: 'admin', team_name: args.p_team, owner_name: prof.display_name, color: args.p_color, initials: args.p_initials, credits: 500, created_at: now() }); persisti(); return { data: l.id, error: null }; }
+        // --- lega pubblica (013)
+        if (name === 'crea_lega_pubblica') {
+          const l = { id: uid(), name: args.p_name, short_name: args.p_short, invite_code: Math.random().toString(36).slice(2, 8).toUpperCase(),
+            rules: { budget: args.p_budget }, season_id: 's2026', started: false, created_by: userId, created_at: now(),
+            pubblica: true, classifica: 'punti', premi: args.p_premi || [], max_membri: args.p_max };
+          T('leagues').push(l);
+          T('league_members').push({ id: uid(), league_id: l.id, user_id: userId, role: 'admin', team_name: args.p_team,
+            owner_name: prof.display_name, color: args.p_color, initials: args.p_initials, credits: args.p_budget, created_at: now() });
+          persisti(); return { data: l.id, error: null };
+        }
+        if (name === 'entra_lega_pubblica') {
+          const l = T('leagues').find((x) => x.id === args.p_league);
+          if (!l) throw new Error('Lega non trovata');
+          if (!l.pubblica) throw new Error("Questa lega non e' pubblica: serve il codice invito");
+          const dentro = T('league_members').filter((m) => m.league_id === l.id);
+          if (!dentro.some((m) => m.user_id === userId)) {
+            if (dentro.length >= l.max_membri) throw new Error(`Lega al completo (${dentro.length} su ${l.max_membri})`);
+            T('league_members').push({ id: uid(), league_id: l.id, user_id: userId, team_name: args.p_team, role: 'fantallenatore',
+              owner_name: prof.display_name, color: args.p_color, initials: args.p_initials,
+              credits: l.rules?.budget ?? 500, created_at: now() });
+          }
+          persisti(); return { data: l.id, error: null };
+        }
+        if (name === 'leghe_pubbliche') {
+          return { data: T('leagues').filter((l) => l.pubblica).map((l) => ({
+            id: l.id, name: l.name, short_name: l.short_name, premi: l.premi || [],
+            membri: T('league_members').filter((m) => m.league_id === l.id).length,
+            max_membri: l.max_membri, budget: l.rules?.budget ?? 500, creata: l.created_at,
+            dentro: T('league_members').some((m) => m.league_id === l.id && m.user_id === userId),
+          })), error: null };
+        }
+        if (name === 'imposta_premi') {
+          const l = T('leagues').find((x) => x.id === args.p_league);
+          if (!l) throw new Error('Lega non trovata');
+          const mio = T('league_members').find((m) => m.league_id === l.id && m.user_id === userId);
+          if (!mio || mio.role !== 'admin') throw new Error('Solo chi amministra la lega puo cambiare i premi');
+          const pr = (args.p_premi || []).map((x, i) => {
+            const posto = parseInt(x.posto, 10);
+            if (!(posto >= 1 && posto <= 99)) throw new Error(`Premio ${i + 1}: il posto e un numero da 1 a 99`);
+            if (!String(x.premio || '').trim()) throw new Error(`Premio ${i + 1}: manca la descrizione`);
+            return { posto, premio: String(x.premio).trim() };
+          });
+          l.premi = pr; persisti(); return { data: pr, error: null };
+        }
         if (name === 'join_league') { const l = T('leagues').find((x) => x.invite_code === args.p_code.toUpperCase()); if (!l) throw new Error('Codice invito non valido'); if (!T('league_members').some((m) => m.league_id === l.id && m.user_id === userId)) T('league_members').push({ id: uid(), league_id: l.id, user_id: userId, role: 'fantallenatore', team_name: args.p_team, owner_name: prof.display_name, color: args.p_color, initials: args.p_initials, credits: 500, created_at: now() }); persisti(); return { data: l.id, error: null }; }
         if (name === 'sync_matchday_locks') {
           // Interruttore per provare il caso in cui la sincronizzazione fallisce

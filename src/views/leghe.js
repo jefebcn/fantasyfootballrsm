@@ -2,7 +2,9 @@ import * as S from '../state.js';
 import { esc, icon, crest, logo, pic, sec } from '../ui.js';
 
 const COLORS = ['#1B84C6', '#2b7a3d', '#8a1d1d', '#5b3fa6', '#c46a00', '#1a1a1a', '#2c7a7b', '#b8321f', '#d4a017', '#0e5e93'];
-let form = 'none'; // 'create' | 'join'
+let form = 'none'; // 'create' | 'join' | 'pubblica'
+let pubbliche = null;   // elenco dal server: null = non ancora chiesto
+let entraIn = null;     // id della lega pubblica in cui si sta entrando
 // Con Apple e «Nascondi la mia e-mail» il nome non arriva: lo chiediamo qui,
 // che è il passaggio obbligato prima di entrare in una lega.
 const nameField = () => S.nomeDaCompletare()
@@ -19,6 +21,60 @@ function comeFunziona() {
     ['quotazioni', 'Rosa da 25', 'Listone del campionato sammarinese, 500 crediti all\'asta, mercato libero fra una giornata e l\'altra.'],
   ];
   return sec('Come funziona') + `<div class="a-card howto">${punti.map(([ic, t, d]) => `<div class="how"><i>${pic(ic, 'menu')}</i><span><b>${t}</b><span>${d}</span></span></div>`).join('')}</div>`;
+}
+
+/**
+ * Il modulo per creare una lega pubblica.
+ *
+ * Tre cose che una lega fra amici non ha, e che qui vanno decise da chi la
+ * apre: quanti crediti ha ognuno per farsi la rosa, quanta gente ci sta, e
+ * cosa c'e' in palio. I premi si possono aggiungere anche dopo, dalla
+ * classifica: qui basta uno.
+ */
+function moduloPubblica() {
+  return `<div class="a-card" style="display:flex;flex-direction:column;gap:6px">
+    <p class="auth-hint" style="margin:0 0 4px"><b>Come funziona una lega pubblica.</b> Ci entra chiunque, senza codice. I giocatori non sono esclusivi: possono stare nella rosa di tutti, altrimenti dal ventesimo iscritto non resterebbero più portieri. Non ci sono scontri diretti: ogni giornata i tuoi fantapunti si sommano, e vince chi ne ha di più.</p>
+    <label class="lbl" for="pname">Nome della lega</label>
+    <input class="field-input" id="pname" placeholder="es. Titano Open" maxlength="40">
+    <div class="due">
+      <span><label class="lbl" for="pbudget">Crediti a testa</label>
+        <input class="field-input" id="pbudget" type="number" value="500" min="50" max="5000" inputmode="numeric"></span>
+      <span><label class="lbl" for="pmax">Massimo partecipanti</label>
+        <input class="field-input" id="pmax" type="number" value="200" min="2" max="1000" inputmode="numeric"></span>
+    </div>
+    <label class="lbl" for="ppremio">Premio per il primo <span class="muted">(facoltativo)</span></label>
+    <input class="field-input" id="ppremio" placeholder="es. una cena offerta" maxlength="120">
+    ${teamFields()}
+    <button class="a-btn" id="go-pubblica" style="margin-top:10px">Crea la lega pubblica</button>
+  </div>`;
+}
+
+/**
+ * Le leghe pubbliche in cui si puo' entrare. L'elenco arriva dal server con
+ * una funzione sua (leghe_pubbliche), perche' le leghe di cui non fai parte
+ * la policy non te le farebbe vedere — e giustamente: di quelle altrui qui
+ * escono solo il nome, quanti sono e cosa c'e' in palio.
+ */
+function elencoPubbliche() {
+  if (pubbliche === null) return `<div class="a-sec"><b>Leghe pubbliche</b></div><p class="small muted" style="margin:0 2px">Sto guardando quali ci sono…</p>`;
+  if (!pubbliche.length) return '';
+  const riga = (l) => {
+    const pieno = l.membri >= l.max_membri;
+    const primo = (l.premi || []).slice().sort((a, b) => a.posto - b.posto)[0];
+    return `<div class="lgrow">
+      <button class="vr" data-pubblica="${l.id}" ${l.dentro || pieno ? 'disabled' : ''}>
+        ${crest({ color: 'var(--accent)', initials: (l.short_name || l.name).slice(0, 2).toUpperCase() }, 'sm')}
+        <span class="nm"><b>${esc(l.name)}</b><span>${l.membri}${l.max_membri < 1000 ? `/${l.max_membri}` : ''} squadre · ${l.budget} crediti${primo ? ` · in palio: ${esc(primo.premio)}` : ''}</span></span>
+        <span class="ev"></span>
+        <span class="fv" style="font-size:12px">${l.dentro ? icon('check', 'ic sm') : pieno ? 'al completo' : 'entra'}</span>
+      </button></div>`;
+  };
+  return `<div class="a-sec"><b>Leghe pubbliche</b><span>${pubbliche.length}</span></div>
+    <div class="vlist">${pubbliche.map(riga).join('')}</div>
+    ${entraIn ? `<div class="a-card" style="display:flex;flex-direction:column;gap:6px">
+      <p class="auth-hint" style="margin:0">Stai entrando in <b>${esc(pubbliche.find((l) => l.id === entraIn)?.name || '')}</b>. Ti servono un nome per la squadra e un colore.</p>
+      ${teamFields()}<button class="a-btn" id="go-entra" style="margin-top:10px">Entra nella lega</button></div>` : ''}
+    <p class="small muted" style="margin:-4px 2px 0">Nelle leghe pubbliche non serve il codice: si entra e si fa la propria rosa.</p>`;
 }
 
 export const leghe = {
@@ -38,14 +94,24 @@ export const leghe = {
       <div class="startgrid">
         <button class="startcard${form === 'create' ? ' on' : ''}" data-form="create">${pic('leghe', 'menu')}<b>Crea una lega</b><span>Ne diventi admin e ricevi il codice da girare agli altri</span></button>
         <button class="startcard${form === 'join' ? ' on' : ''}" data-form="join">${pic('squadre', 'menu')}<b>Entra con codice</b><span>Ti serve il codice a 6 caratteri dell'organizzatore</span></button>
+        <button class="startcard larga${form === 'pubblica' ? ' on' : ''}" data-form="pubblica">${pic('trofei', 'lega')}<b>Crea una lega pubblica</b><span>Aperta a tutti, senza codice: ognuno si fa la sua rosa e vince chi fa più punti</span></button>
       </div>
       ${form === 'create' ? `<div class="a-card" style="display:flex;flex-direction:column;gap:6px"><label class="lbl" for="lname">Nome della lega</label><input class="field-input" id="lname" placeholder="es. I Sudati di RSM" maxlength="40">${teamFields()}<button class="a-btn" id="go-create" style="margin-top:10px">Crea e diventa admin</button></div>` : ''}
       ${form === 'join' ? `<div class="a-card" style="display:flex;flex-direction:column;gap:6px"><label class="lbl" for="code">Codice invito</label><input class="field-input" id="code" placeholder="es. A1B2C3" autocapitalize="characters" maxlength="6">${teamFields()}<button class="a-btn" id="go-join" style="margin-top:10px">Entra nella lega</button></div>` : ''}
+      ${form === 'pubblica' ? moduloPubblica() : ''}
+      ${elencoPubbliche()}
       ${mine.length ? '' : comeFunziona()}
     </main>`;
   },
   mount(root, ctx) {
     let color = COLORS[0];
+    // L'elenco delle pubbliche si chiede una volta per apertura di schermata,
+    // non a ogni ridisegno: senza questa guardia ogni tocco su un colore
+    // faceva una richiesta al server.
+    if (pubbliche === null) {
+      S.leghePubbliche().then((l) => { pubbliche = l; ctx.render(); })
+        .catch(() => { pubbliche = []; ctx.render(); });
+    }
     root.querySelector('main').addEventListener('click', async (e) => {
       const f = e.target.closest('[data-form]'); if (f) { form = form === f.dataset.form ? 'none' : f.dataset.form; ctx.render(); return; }
       const c = e.target.closest('[data-color]'); if (c) { color = c.dataset.color; root.querySelectorAll('[data-color]').forEach((b) => b.classList.toggle('on', b === c)); return; }
@@ -83,6 +149,44 @@ export const leghe = {
       if (bc) { if (bc.disabled) return; const name = root.querySelector('#lname').value.trim(); const t = team(); if (!name) { ctx.toast('Dai un nome alla lega'); return; } if (!t) return; if (!await salvaNome()) return;
         occupa(bc);
         try { await S.createLeague(name, t, color, initials(t)); ctx.toast('Lega creata'); form = 'none'; ctx.go('lega'); } catch (err) { ctx.toast(err.message); libera(bc); } return; }
+      // scelta di una lega pubblica: prima si chiede nome squadra e colore
+      const pb = e.target.closest('[data-pubblica]');
+      if (pb) { entraIn = entraIn === pb.dataset.pubblica ? null : pb.dataset.pubblica; ctx.render(); return; }
+
+      const be = e.target.closest('#go-entra');
+      if (be) {
+        if (be.disabled) return;
+        const t = team(); if (!t) return; if (!await salvaNome()) return;
+        occupa(be);
+        try {
+          await S.entraLegaPubblica(entraIn, t, color, initials(t));
+          entraIn = null; pubbliche = null; ctx.toast('Sei dentro'); ctx.go('');
+        } catch (err) { ctx.toast(err.message); libera(be); }
+        return;
+      }
+
+      const bp = e.target.closest('#go-pubblica');
+      if (bp) {
+        if (bp.disabled) return;
+        const name = root.querySelector('#pname').value.trim();
+        const budget = parseInt(root.querySelector('#pbudget').value, 10);
+        const max = parseInt(root.querySelector('#pmax').value, 10);
+        const premio = root.querySelector('#ppremio').value.trim();
+        const t = team();
+        if (!name) { ctx.toast('Dai un nome alla lega'); return; }
+        if (!Number.isInteger(budget) || budget < 50 || budget > 5000) { ctx.toast('I crediti vanno da 50 a 5000'); return; }
+        if (!Number.isInteger(max) || max < 2 || max > 1000) { ctx.toast('I partecipanti vanno da 2 a 1000'); return; }
+        if (!t) return; if (!await salvaNome()) return;
+        occupa(bp);
+        try {
+          await S.creaLegaPubblica(name, t, color, initials(t), {
+            budget, max, premi: premio ? [{ posto: 1, premio }] : [],
+          });
+          form = 'none'; pubbliche = null; ctx.toast('Lega pubblica creata'); ctx.go('lega');
+        } catch (err) { ctx.toast(err.message); libera(bp); }
+        return;
+      }
+
       const bj = e.target.closest('#go-join');
       if (bj) { if (bj.disabled) return; const code = root.querySelector('#code').value.trim(); const t = team(); if (code.length < 4) { ctx.toast('Inserisci il codice invito'); return; } if (!t) return; if (!await salvaNome()) return;
         occupa(bj);

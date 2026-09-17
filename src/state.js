@@ -6,7 +6,7 @@
  * Tutto ciò che il motore calcola è derivato e ricalcolabile da zero.
  */
 import { buildSeason, draftRosters as buildDraft, mulberry32 } from './data.js';
-import { computeRating, computeLineupResult, computeStandings, defaultLineup, validaAcquisto, offertaMassima, DEFAULT_RULES , recordLega as computeRecord, testaATesta as computeH2H, esitoScontro } from './engine.js';
+import { computeRating, computeLineupResult, computeStandings, defaultLineup, validaAcquisto, offertaMassima, DEFAULT_RULES , recordLega as computeRecord, testaATesta as computeH2H, esitoScontro, classificaPunti as computeClassificaPunti, premiAssegnati as computePremi } from './engine.js';
 import * as remote from './backend.js';
 import * as clerk from './auth-clerk.js';
 import * as AV from './notifiche.js';
@@ -173,6 +173,12 @@ export const isJudge = () => !!prof?.is_judge;
 export const me = () => base.managers.find((m) => m.userId === user?.id)
   || base.managers.find((m) => m.viceUserId && m.viceUserId === user?.id) || null;
 export const isLeagueAdmin = () => me()?.role === 'admin' || isJudge();
+/** Lega aperta a tutti: rose non esclusive, classifica a punti (013). */
+export const legaPubblica = () => !!base.league.pubblica;
+/** La classifica si fa sommando i fantapunti invece che con gli scontri. */
+export const aPunti = () => base.league.classifica === 'punti';
+export const premi = () => base.league.premi || [];
+export const maxMembri = () => base.league.maxMembri || 12;
 export async function switchLeague(id) { prefs.currentLeagueId = id; persistPrefs(); await loadAll(); notify(); }
 export async function createLeague(name, team, color, initials) { const id = await remote.createLeague(name, name.length > 14 ? name.split(' ').slice(0, 2).join(' ') : name, team, color, initials); await switchLeague(id); }
 export async function joinLeague(code, team, color, initials) { const id = await remote.joinLeague(code, team, color, initials); await switchLeague(id); }
@@ -218,6 +224,24 @@ export async function deleteLeague(id = base.league.id) {
   persistPrefs(); await loadAll(); notify();
 }
 /** Uscire da una lega altrui: la riga del partecipante se ne va, la lega resta. */
+// --- lega pubblica (013)
+export async function creaLegaPubblica(name, teamName, color, initials, { budget = 500, max = 200, premi: pr = [] } = {}) {
+  const id = await remote.creaLegaPubblica(name, name, teamName, color, initials, budget, max, pr);
+  await switchLeague(id);
+  return id;
+}
+export async function entraLegaPubblica(id, teamName, color, initials) {
+  await remote.entraLegaPubblica(id, teamName, color, initials);
+  await switchLeague(id);
+  return id;
+}
+export const leghePubbliche = () => remote.leghePubbliche();
+export async function salvaPremi(pr) {
+  const v = await remote.impostaPremi(base.league.id, pr);
+  base.league.premi = v; notify();
+  return v;
+}
+
 export async function abbandonaLega(id) {
   await remote.abbandonaLega(id);
   if (id === prefs.currentLeagueId) prefs.currentLeagueId = null;
@@ -263,7 +287,13 @@ export function perchePuoiNo(managerId, playerId, prezzo) {
   const st = statoAsta(managerId); const p = playersById.get(playerId);
   const pr = proprietari().get(playerId);
   return validaAcquisto({ rosa: st.rosa, crediti: st.crediti, player: p, prezzo,
-    giaPreso: !!pr && pr.managerId !== managerId, rules: rules() });
+    // Nella lega pubblica un giocatore non e' di nessuno: sta nella rosa di
+    // chi lo vuole. Senza questo, dal ventesimo iscritto non resterebbero
+    // piu' portieri, e il vincolo nel database l'abbiamo tolto proprio per
+    // questo (013). Le altre regole — caselle per ruolo, crediti, doppioni
+    // nella PROPRIA rosa — valgono identiche.
+    giaPreso: !legaPubblica() && !!pr && pr.managerId !== managerId,
+    rules: rules() });
 }
 export async function addRosterPlayer(memberId, playerId, price) {
   // Le regole si applicano qui, non solo nella schermata: cosi' valgono anche
@@ -439,6 +469,10 @@ export function saveLineup(n, managerId, lineup) {
 export function lineupResult(n, managerId, isHome = false) { return memo(`lr:${n}:${managerId}:${isHome ? 'c' : 't'}`, () => { const lineup = savedLineup(n, managerId); if (!lineup) return null; return { lineup, ...computeLineupResult({ lineup, ratings: ratingsOf(n), players: playersById, managerCount: Math.max(6, base.league.managerCount), isHome, rules: rules() }) }; }); }
 export function fixturesOf(n) {
   return memo(`fx:${n}`, () => {
+    // In una lega a punti non ci sono scontri diretti: si gioca contro tutti
+    // insieme. Tornare un elenco vuoto e' quello che spegne calendario,
+    // pre-match e scheda, che hanno tutti la loro via per "nessuna partita".
+    if (aPunti()) return [];
     const ids = base.managers.map((m) => m.id); if (ids.length < 2) return [];
     const list = ids.length % 2 ? [...ids, null] : [...ids]; const rounds = [];
     for (let r = 0; r < list.length - 1; r++) { const pairs = []; for (let i = 0; i < list.length / 2; i++) { const a = list[i], b = list[list.length - 1 - i]; if (a && b) pairs.push(r % 2 === 0 ? [a, b] : [b, a]); } rounds.push(pairs); list.splice(1, 0, list.pop()); }
@@ -455,13 +489,46 @@ export function fixtureResult(f) {
   return { ...f, played: true, ...esitoScontro(h, a, rules()), status: st };
 }
 export function resultsUntil(n) { const out = []; for (let k = 1; k <= n; k++) for (const f of fixturesOf(k)) { const r = fixtureResult(f); if (r.played) out.push(r); } return out; }
-export function standings() { return memo('standings', () => computeStandings(base.managers, resultsUntil(currentMatchday()), rules())); }
+/**
+ * I fantapunti di una squadra in una giornata, per la classifica a punti.
+ * Senza formazione consegnata sono zero e la giornata conta come giocata: e'
+ * la stessa regola del tavolino (art. 8.4) vista da una lega senza avversari.
+ */
+export function puntiGiornata(n, managerId) {
+  const r = lineupResult(n, managerId);
+  return r ? r.total : 0;
+}
+/** Le righe (squadra, giornata, punti) di tutte le giornate con i dati. */
+function righePunti(fino) {
+  const out = [];
+  for (let k = 1; k <= fino; k++) {
+    if (!hasData(k)) continue;
+    const st = matchdayStatus(k); if (st === 'open' || st === 'scheduled') continue;
+    for (const m of base.managers) out.push({ managerId: m.id, matchday: k, punti: puntiGiornata(k, m.id) });
+  }
+  return out;
+}
+export function classificaAPunti(fino = currentMatchday()) {
+  return memo(`cp:${fino}`, () => computeClassificaPunti(base.managers, righePunti(fino)));
+}
+/** La classifica della lega, nel modo che quella lega usa. */
+export function standings() {
+  return memo('standings', () => (aPunti()
+    ? classificaAPunti(currentMatchday())
+    : computeStandings(base.managers, resultsUntil(currentMatchday()), rules())));
+}
+/** I premi in palio con chi li sta vincendo adesso. */
+export function premiOra() { return memo('premi', () => computePremi(premi(), standings())); }
 /**
  * La classifica com'era PRIMA della giornata n, per dire di quanto ci si e'
  * mossi. Con n = 1 non c'e' niente prima: torna tutti a zero, e le frecce
  * infatti non compaiono.
  */
-export function standingsPrima(n) { return memo(`stPrima:${n}`, () => computeStandings(base.managers, resultsUntil(n - 1), rules())); }
+export function standingsPrima(n) {
+  return memo(`stPrima:${n}`, () => (aPunti()
+    ? classificaAPunti(n - 1)
+    : computeStandings(base.managers, resultsUntil(n - 1), rules())));
+}
 /**
  * Quanto manca alla giornata: quante partite del campionato hanno gia' un
  * risultato. Serve a dire se la classifica che si sta guardando e' ancora

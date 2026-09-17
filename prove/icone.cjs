@@ -143,12 +143,23 @@ const GRUPPI = {
     const sfondi = [...new Set(voci.map(i => getComputedStyle(i).backgroundColor))];
     return { quante: voci.length, tessere: [...new Set(dati.map(d => d.tessera))], pics: [...new Set(dati.map(d => d.pic))],
       su: [...new Set(dati.map(d => d.su))], giu: [...new Set(dati.map(d => d.giu))], sx: [...new Set(dati.map(d => d.sx))], sfondi,
-      bordi: [...new Set([...document.querySelectorAll('.a-drawer .d-item i')].map(i => Math.round(i.getBoundingClientRect().left)))] };
+      bordi: [...new Set([...document.querySelectorAll('.a-drawer .d-item i')].map(i => Math.round(i.getBoundingClientRect().left)))],
+      // anche le icone di contorno del menu: la misura deve essere LA STESSA
+      // delle illustrate, se no la colonna e' irregolare e le voci a contorno
+      // sembrano piu' leggere. Prima erano 20 contro 24.
+      contorni: [...new Set([...document.querySelectorAll('.a-drawer .d-item i > svg')]
+        .map(i => { const r = i.getBoundingClientRect(); return `${Math.round(r.width)}x${Math.round(r.height)}`; }))] };
   });
   console.log('  menu in pagina:', m.quante, 'icone illustrate · tessera', m.tessere.join('/'), '· pic', m.pics.join('/'));
   et(m.quante >= 8, `menu: ${m.quante} icone illustrate nel pannello`);
   et(m.tessere.length === 1, `menu: stessa tessera per tutte (${m.tessere.join(', ')})`);
-  et(m.pics.length === 1 && m.pics[0] === '24x24', `menu: stesso riquadro per tutte (${m.pics.join(', ')})`);
+  // Non si fissa il numero: si pretende che sia UNO SOLO, e lo stesso per le
+  // illustrate e per quelle di contorno. Il valore e' una scelta di disegno e
+  // puo' cambiare; che siano tutte uguali no. Prima qui c'era scritto 24x24 a
+  // mano, e la prova e' diventata rossa il giorno che le ho pareggiate a 22.
+  et(m.pics.length === 1, `menu: stesso riquadro per tutte le illustrate (${m.pics.join(', ')})`);
+  et(m.contorni.length === 1 && (!m.pics.length || m.contorni[0] === m.pics[0]),
+    `menu: illustrate e di contorno della stessa misura (${m.pics.join(',')} e ${m.contorni.join(',')})`);
   et(m.su.length === 1 && m.giu.length === 1 && Math.abs(m.su[0] - m.giu[0]) <= 0.5,
     `menu: aria uguale sopra e sotto dentro la tessera (${m.su.join(',')} sopra, ${m.giu.join(',')} sotto)`);
   et(m.sx.length === 1, `menu: stessa aria a sinistra (${m.sx.join(', ')})`);

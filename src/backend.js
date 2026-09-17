@@ -154,6 +154,19 @@ export async function myLeagues(userId) {
 }
 export async function createLeague(name, shortName, teamName, color, initials) { return must(await sb.rpc('create_league', { p_name: name, p_short: shortName, p_team: teamName, p_color: color, p_initials: initials })); }
 export async function joinLeague(code, teamName, color, initials) { return must(await sb.rpc('join_league', { p_code: code, p_team: teamName, p_color: color, p_initials: initials })); }
+// --- lega pubblica (013)
+export async function creaLegaPubblica(name, shortName, teamName, color, initials, budget, max, premi) {
+  return must(await sb.rpc('crea_lega_pubblica', {
+    p_name: name, p_short: shortName, p_team: teamName, p_color: color, p_initials: initials,
+    p_budget: budget, p_max: max, p_premi: premi,
+  }));
+}
+export async function entraLegaPubblica(id, teamName, color, initials) {
+  return must(await sb.rpc('entra_lega_pubblica', { p_league: id, p_team: teamName, p_color: color, p_initials: initials }));
+}
+export async function leghePubbliche() { return must(await sb.rpc('leghe_pubbliche')) || []; }
+export async function impostaPremi(id, premi) { return must(await sb.rpc('imposta_premi', { p_league: id, p_premi: premi })); }
+
 export async function updateLeague(id, patch) { return must(await sb.from('leagues').update(patch).eq('id', id).select().single()); }
 export async function deleteLeague(id) { return must(await sb.from('leagues').delete().eq('id', id)); }
 export async function abbandonaLega(id) { return must(await sb.rpc('abbandona_lega', { p_league: id })); }
@@ -205,7 +218,7 @@ export async function loadLeague(id) {
   for (const r of rosters) (rosterMap[r.member_id] ||= []).push({ playerId: r.player_id, pricePaid: r.price_paid });
   const lineupMap = {}; for (const l of lineups) lineupMap[`${l.matchday}:${l.member_id}`] = { ...l.lineup, submittedAt: l.submitted_at };
   const contestazioni = contest.map((c) => ({ id: c.id, at: c.created_at, by: c.member_id, matchId: c.match_id, playerId: c.player_id, minute: c.minute, text: c.text, status: c.status, note: c.note, resolvedAt: c.resolved_at }));
-  return { league: { id: league.id, name: league.name, shortName: league.short_name || league.name, inviteCode: league.invite_code, started: league.started, createdBy: league.created_by, createdAt: league.created_at, rulesOverride: league.rules || {} }, managers, rosters: rosterMap, lineups: lineupMap, contestazioni };
+  return { league: { id: league.id, name: league.name, shortName: league.short_name || league.name, inviteCode: league.invite_code, started: league.started, createdBy: league.created_by, createdAt: league.created_at, rulesOverride: league.rules || {}, pubblica: !!league.pubblica, classifica: league.classifica || 'scontri', premi: league.premi || [], maxMembri: league.max_membri || 12 }, managers, rosters: rosterMap, lineups: lineupMap, contestazioni };
 }
 export async function upsertLineup(leagueId, memberId, matchday, lineup) {
   // submittedAt e source non vanno nel JSON della formazione: il primo lo

@@ -10,8 +10,25 @@ let entraIn = null;     // id della lega pubblica in cui si sta entrando
 const nameField = () => S.nomeDaCompletare()
   ? `<label class="lbl" for="who">Come ti chiami</label><input class="field-input" id="who" placeholder="es. Alex" maxlength="40" autocomplete="name">`
   : '';
+/**
+ * Il nome della squadra, e basta.
+ *
+ * C'era una fila di dieci pastiglie colorate da scegliere. Non si capiva cosa
+ * cambiassero, e soprattutto NON DAVANO SEGNO: la pastiglia scelta doveva
+ * colorarsi di --primary, ma ognuna ha il suo colore scritto inline, che
+ * vince sulla classe. Il tocco funzionava, il colpo d'occhio no — quindi
+ * sembrava un comando rotto.
+ *
+ * Tolto invece di aggiustato: il colore si sceglie davvero dopo, in "La mia
+ * squadra", dove si disegna la maglia intera e si carica lo stemma. Chiederlo
+ * qui era chiedere una decisione prima di avere il contesto per prenderla, e
+ * su una schermata dove si vuole solo cominciare a giocare. Alla creazione ne
+ * arriva uno a caso, che e' un punto di partenza come un altro.
+ */
 const teamFields = () => `${nameField()}<label class="lbl" for="team">Nome della tua squadra</label><input class="field-input" id="team" placeholder="es. Hasta El Chapo FC" maxlength="28">
-  <label class="lbl" for="color" style="margin-top:8px">Colore</label><div class="chipgrid" id="colors">${COLORS.map((c, i) => `<button class="chip${i === 0 ? ' on' : ''}" data-color="${c}" style="width:34px;height:34px;padding:0;background:${c};border-color:${c}" aria-label="${c}"></button>`).join('')}</div>`;
+  <p class="small muted" style="margin:6px 2px 0">Colori e stemma si scelgono dopo, in «La mia squadra».</p>`;
+/** Un colore di partenza a caso: si cambia in "La mia squadra". */
+const coloreACaso = () => COLORS[Math.floor(Math.random() * COLORS.length)];
 
 /** Tre punti su cosa rende diverso il Voto Titano: la schermata senza lega era vuota. */
 function comeFunziona() {
@@ -104,7 +121,8 @@ export const leghe = {
     </main>`;
   },
   mount(root, ctx) {
-    let color = COLORS[0];
+    // Un colore a caso per questa creazione: non si chiede piu' all'utente.
+    const color = coloreACaso();
     // L'elenco delle pubbliche si chiede una volta per apertura di schermata,
     // non a ogni ridisegno: senza questa guardia ogni tocco su un colore
     // faceva una richiesta al server.
@@ -114,7 +132,6 @@ export const leghe = {
     }
     root.querySelector('main').addEventListener('click', async (e) => {
       const f = e.target.closest('[data-form]'); if (f) { form = form === f.dataset.form ? 'none' : f.dataset.form; ctx.render(); return; }
-      const c = e.target.closest('[data-color]'); if (c) { color = c.dataset.color; root.querySelectorAll('[data-color]').forEach((b) => b.classList.toggle('on', b === c)); return; }
       const v = e.target.closest('[data-via]');
       if (v) {
         const [azione, id] = v.dataset.via.split(':');

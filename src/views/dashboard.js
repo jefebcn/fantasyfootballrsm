@@ -145,6 +145,30 @@ function corrente(f, n, me, riposo) {
 }
 
 /**
+ * L'invito alla lega pubblica, per chi sta in una lega fra amici.
+ *
+ * Sta fra le notizie e la giornata corrente: sopra c'e' il contesto del
+ * campionato, sotto quello che devi fare adesso, e in mezzo una cosa che puoi
+ * fare in piu'. Piu' in alto ruberebbe il posto alla formazione da
+ * consegnare, piu' in basso non lo vedrebbe nessuno.
+ *
+ * Compare solo se c'e' davvero una lega pubblica aperta in cui non sei
+ * dentro, e il premio e' quello vero scritto da chi l'ha aperta: un banner
+ * che promette una cifra decisa altrove sarebbe una cosa che l'app non puo'
+ * mantenere.
+ */
+function invitoPubblica() {
+  const l = S.pubblicaDaProporre();
+  if (!l) return '';
+  const premio = (l.premi || []).slice().sort((a, b) => a.posto - b.posto)[0];
+  return `<a class="invito" href="#/leghe">
+    <i>${pic('trofei', 'lega')}</i>
+    <span class="txt"><b>${premio ? `In palio: ${esc(premio.premio)}` : 'Lega pubblica aperta a tutti'}</b>
+      <span>${esc(l.name)} · ${l.membri} ${l.membri === 1 ? 'squadra' : 'squadre'} · ${premio ? 'entra senza codice' : 'senza codice, ognuno la sua rosa'}</span></span>
+    <span class="cta">Entra${icon('chev', 'ic sm')}</span></a>`;
+}
+
+/**
  * Una giornata cominciata e non ancora calcolata: i punteggi ci sono gia',
  * manca dire che sono definitivi.
  *
@@ -338,7 +362,7 @@ export const dashboard = {
           ${logo('tw')}<i class="conf"></i>
           <a class="hero-league" href="#/leghe">
             <span><b>${esc(S.base.league.shortName || S.base.league.name)}</b>
-            <small>${S.base.managers.length} squadre · ${ph.matchday}ª giornata</small></span>${icon('chev', 'ic sm')}</a>
+            <small>${S.base.managers.length} ${S.base.managers.length === 1 ? 'squadra' : 'squadre'} · ${ph.next}ª giornata</small></span>${icon('chev', 'ic sm')}</a>
           <h2>${esc(me.teamName)}</h2>
           <a class="jersey${scelto(me) ? ' pers' : ''}" href="#/squadra" aria-label="Modifica stemma, maglia e personaggio">
             ${scelto(me) ? personaggio(scelto(me)) : maglia(kitOf(me))}</a>
@@ -366,6 +390,7 @@ export const dashboard = {
         <div><b>${fmt(row.fantapunti)}</b><span>Fantapunti</span></div>`}
       </div>
       ${notiziaBreve()}
+      ${invitoPubblica()}
       ${S.aPunti() ? '' : conclusa(ultima)}
       ${daCalcolare(ph)}
       ${S.aPunti() ? correntePunti(Math.min(30, nCur), me) : corrente(cur, nCur, me, riposo)}
@@ -439,6 +464,10 @@ export const dashboard = {
       else window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank', 'noopener');
     });
     N.carica(() => ctx.render());
+    // Le leghe pubbliche: una volta per apertura, e si ridisegna quando
+    // arrivano. Se non ce ne sono, il banner non compare e non si e' perso
+    // niente.
+    S.caricaPubbliche(() => ctx.render());
     // 'error' non risale: si ascolta in cattura. Una foto che non carica sparisce
     // insieme al suo riquadro, invece di lasciare l'icona di immagine rotta.
     root.addEventListener('error', (e) => {

@@ -99,12 +99,14 @@ const ok = [], ko = []; const et = (c, t) => (c ? ok : ko).push(t);
         ? `l'iniziale del profilo non si legge su ${storti.length} colori — ${storti.slice(0, 3).join(' | ')}`
         : `l'iniziale del profilo si legge su tutti i ${TAVOLOZZA.length} colori della tavolozza (AA 4,5)`);
     }
-    // 7. CAMBIARE IL NOME DEVE CAMBIARE IL NOME.
-    // "Se cambio nome nell'app non avviene modifica": il nome che si vede in
-    // giro non e' quello dell'account, e' la copia dentro league_members
-    // (owner_name), scritta quando si entra nella lega. Si cambiava il primo
-    // e non si vedeva niente. Ora si riallinea la copia — ma non dove uno si
-    // e' messo un nome diverso a mano.
+    // 7. UN NOME SOLO, E CAMBIARLO SI VEDE.
+    // Due segnalazioni di fila sulla stessa cosa: "se cambio nome nell'app non
+    // avviene modifica", e poi "in un posto mi chiamo Hyrox12 ma nel menu
+    // appare il vecchio Conti25". Il nome mostrato era la copia dentro
+    // league_members (owner_name), scritta all'ingresso nella lega e mai piu'
+    // toccata. Ora l'app mostra il nome vivo del profilo e la copia si
+    // riallinea: qui si prova che cambiarlo si vede, e che una copia vecchia
+    // rimasta nel database non vince piu' sul nome dell'account.
     if (tema === 'light') {
       await p.evaluate(() => { location.hash = '#/impostazioni'; }); await w(900);
       await p.click('[data-act="name"]'); await w(500);
@@ -124,23 +126,42 @@ const ok = [], ko = []; const et = (c, t) => (c ? ok : ko).push(t);
       const menu = await p.evaluate(() => document.querySelector('.d-chi b')?.innerText || '');
       et(/Alex Conti/i.test(menu), `e nel menu c'è il nome nuovo ("${menu}")`);
       await p.evaluate(() => { document.querySelector('.a-drawer .scrim')?.click(); }); await w(300);
-      // un nome scelto a mano per quella lega non si tocca
+      // LA COPIA VECCHIA NON VINCE. E' il caso di Alex: nel database resta
+      // scritto il nome di prima, e il menu mostrava quello. Qui la copia si
+      // sporca a mano, senza toccare il profilo, e il nome giusto deve
+      // restare quello dell'account.
       await p.evaluate(() => {
         const s = JSON.parse(localStorage.getItem('fcs:mock'));
-        s.tables.league_members.find((m) => m.user_id === s.userId).owner_name = 'Il Capitano';
+        s.tables.league_members.find((m) => m.user_id === s.userId).owner_name = 'Conti25';
         localStorage.setItem('fcs:mock', JSON.stringify(s));
       });
-      await p.evaluate(() => { location.hash = '#/impostazioni'; });
-      await p.reload({ waitUntil: 'load' }); await w(1600);
+      await p.evaluate(() => { location.hash = '#/'; });
+      await p.reload({ waitUntil: 'load' }); await w(2000);
+      await p.click('[data-open-drawer]'); await w(600);
+      const sporca = await p.evaluate(() => document.querySelector('.d-chi b')?.innerText || '');
+      et(/Alex Conti/i.test(sporca) && !/Conti25/i.test(sporca),
+        `una copia vecchia nel database non vince sul nome dell'account ("${sporca}")`);
+      await p.evaluate(() => { document.querySelector('.a-drawer .scrim')?.click(); }); await w(300);
+      // e cambiando di nuovo il nome la copia si riallinea
+      await p.evaluate(() => { location.hash = '#/impostazioni'; }); await w(1000);
       await p.click('[data-act="name"]'); await w(500);
       await p.fill('#pv', 'Alessandro Conti'); await p.click('#pv-save'); await w(1800);
-      const soprannome = await p.evaluate(() => {
+      const riallineata = await p.evaluate(() => {
         const s = JSON.parse(localStorage.getItem('fcs:mock'));
         return { conto: s.tables.profiles.find((x) => x.id === s.userId).display_name,
           lega: s.tables.league_members.find((m) => m.user_id === s.userId).owner_name };
       });
-      et(soprannome.conto === 'Alessandro Conti' && soprannome.lega === 'Il Capitano',
-        `un nome scelto a mano nella lega resta suo (${soprannome.conto} / ${soprannome.lega})`);
+      et(riallineata.conto === 'Alessandro Conti' && riallineata.lega === 'Alessandro Conti',
+        `e la copia nel database si riallinea (${riallineata.conto} / ${riallineata.lega})`);
+      // il secondo nome non si scrive piu' da "La mia squadra"
+      await p.evaluate(() => { location.hash = '#/squadra'; }); await w(1400);
+      const squadra = await p.evaluate(() => ({
+        campo: !!document.querySelector('#owner'),
+        testo: document.body.innerText.replace(/\n/g, ' '),
+      }));
+      et(!squadra.campo, 'in "La mia squadra" non c\'è più un secondo nome da scrivere');
+      et(/impostazioni/i.test(squadra.testo) && /Alessandro Conti/.test(squadra.testo),
+        'e dice qual è il tuo nome e dove si cambia');
     }
     et(errori.length === 0, errori.length ? `${tema} eccezioni: ${errori.join(' | ')}` : `${tema}: nessuna eccezione`);
     await ctx.close();

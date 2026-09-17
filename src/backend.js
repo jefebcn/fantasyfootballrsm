@@ -137,27 +137,20 @@ export function onAuth(fn) { sb.auth.onAuthStateChange((_e, session) => fn(sessi
 export async function profile(userId) { return must(await sb.from('profiles').select('*').eq('id', userId).maybeSingle()); }
 export async function updateProfile(userId, patch) { return must(await sb.from('profiles').update(patch).eq('id', userId).select().single()); }
 /**
- * Il nome mostrato nelle leghe.
+ * Riallinea la copia del nome nelle proprie iscrizioni (owner_name).
  *
- * Non e' il nome dell'account: ogni riga di league_members si porta la sua
- * copia (owner_name), scritta quando si entra nella lega. Serve perche' i
- * profili degli altri non si possono leggere — RLS — e senza quella copia
- * nella lega si vedrebbero righe senza nome.
+ * L'app mostra il nome vivo del profilo, quindi questo non serve a far
+ * vedere il nome nuovo: serve a non lasciare in giro copie vecchie. Le
+ * legge chi guarda una contestazione, e le leggerebbe un client non
+ * aggiornato.
  *
- * Il prezzo della copia e' che cambiare il nome dell'account non cambiava
- * niente di visibile. Qui si riallinea, ma solo dove la copia era vuota o
- * era ancora il nome vecchio: chi nella lega si e' messo un altro nome —
- * si fa da "La mia squadra" — se lo tiene.
- *
- * Le righe si aggiornano una per una e non con un filtro `or`: un nome puo'
- * contenere virgole e parentesi, che nella sintassi dei filtri di PostgREST
- * vogliono dire altro.
+ * Nomi diversi da lega a lega non esistono piu' — ce n'e' uno, quello
+ * dell'account — quindi si riallineano tutte, senza eccezioni.
  */
-export async function rinominaNelleLeghe(userId, nuovo, vecchio) {
-  const righe = must(await sb.from('league_members').select('id, owner_name').eq('user_id', userId));
-  const daFare = righe.filter((r) => !r.owner_name || r.owner_name === vecchio);
-  for (const r of daFare) must(await sb.from('league_members').update({ owner_name: nuovo }).eq('id', r.id));
-  return daFare.length;
+export async function rinominaNelleLeghe(userId, nuovo) {
+  const righe = must(await sb.from('league_members').select('id').eq('user_id', userId));
+  for (const r of righe) must(await sb.from('league_members').update({ owner_name: nuovo }).eq('id', r.id));
+  return righe.length;
 }
 /** Il profilo nasce da un trigger su auth.users: se manca (trigger assente) lo crea il client. */
 export async function ensureProfile(user) {
@@ -232,7 +225,13 @@ export async function loadScambi(leagueId) {
   }));
 }
 
-const toManager = (m) => ({ id: m.id, userId: m.user_id, teamName: m.team_name, owner: m.owner_name || m.profile?.display_name || '—', color: m.color, initials: m.initials || m.team_name.slice(0, 2).toUpperCase(), credits: m.credits, role: m.role, crestUrl: m.crest_url || null, kit: m.kit || {}, viceUserId: m.vice_user_id || null, viceCode: m.vice_code || null, viceName: m.vice?.display_name || null });
+// Il nome di chi allena: quello del suo profilo, non la copia in
+// owner_name. La copia si scrive quando uno entra nella lega e poi resta
+// ferma: chi cambiava il nome dell'account continuava a vedersi chiamare col
+// vecchio in tutta l'app — nel menu, sullo scontro, in classifica. I profili
+// si possono leggere tutti (policy profiles_read), quindi il nome vivo c'e'
+// per ognuno; la copia resta come ripiego per i profili cancellati.
+const toManager = (m) => ({ id: m.id, userId: m.user_id, teamName: m.team_name, owner: m.profile?.display_name || m.owner_name || '—', color: m.color, initials: m.initials || m.team_name.slice(0, 2).toUpperCase(), credits: m.credits, role: m.role, crestUrl: m.crest_url || null, kit: m.kit || {}, viceUserId: m.vice_user_id || null, viceCode: m.vice_code || null, viceName: m.vice?.display_name || null });
 
 export async function loadLeague(id) {
   const [league, members, rosters, lineups, contest] = await Promise.all([

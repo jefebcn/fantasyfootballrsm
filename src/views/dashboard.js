@@ -32,7 +32,10 @@ const RULES = [
  * tutto a posto; quando non lo e' deve venire a galla da sola.
  */
 function lockDaSistemare() {
-  if (!S.isLeagueAdmin()) return '';
+  // Solo al Giudice Dati, che e' l'unico che puo' rimediare dall'app. Per
+  // tutti gli altri il calendario arriva con la migrazione 012 e non c'e'
+  // niente da fare: un avviso senza rimedio e' solo ansia.
+  if (!S.isJudge()) return '';
   const n = S.lockDaSistemare(); if (!n) return '';
   return tile({ href: '#/impostazioni/avanzate', lead: icon('warn'), leadKind: 'warn',
     title: 'Calendario dei lock da allineare',
@@ -59,7 +62,7 @@ function daConsegnare() {
   const quando = ore >= 24 ? `${Math.floor(ore / 24)}g ${ore % 24}h` : ore >= 1 ? `${ore} ore` : 'meno di un\'ora';
   return tile({ href: '#/rosa/formazione', lead: icon('clock'), leadKind: 'warn',
     title: `Giornata ${p.giornata}: manca la formazione`,
-    sub: `Si chiude fra ${quando}. Senza consegna vale l'ultima valida, o il 4-4-2 d'ufficio (art. 8.4).` });
+    sub: `Si chiude fra ${quando}. Senza consegna la partita è persa 0-3 a tavolino (art. 8.4).` });
 }
 
 function azione(ph) {
@@ -133,8 +136,10 @@ function corrente(f, n, me, riposo) {
           ? `Tutte le ${chiudibile.partite} partite hanno gli eventi: da qui i punteggi diventano definitivi`
           : `Mancano gli eventi di ${chiudibile.mancanti} partite su ${chiudibile.partite}`)
       : '';
+  // Il tocco sulle due squadre apre il pre-match a tutto campo — la stessa
+  // pagina del link "Probabili e altro", che da solo non si vedeva.
   return sec('Giornata corrente', `${n}ª giornata`) + `<div class="mcard">
-    <div class="mrow">${lato(h)}${centro}${lato(a)}</div>
+    <a class="mrow tocca" href="#/live/${f.id}" aria-label="Apri lo scontro">${lato(h)}${centro}${lato(a)}</a>
     ${nota ? `<p class="mnota">${esc(nota)}</p>` : ''}
     <div class="mact">${cta}</div>
     <a class="mcta" href="#/live/${f.id}">${pic('probabili-formazioni', 'lega', 'mini')}Probabili e altro${icon('chev', 'ic sm')}</a>

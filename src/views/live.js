@@ -48,8 +48,10 @@ function campoProbabile(l, mirrored) {
 /** Il campo delle probabili, con i due undici e le due panchine sotto. */
 function probabiliCampo(n, h, a) {
   const lh = S.lineupFor(n, h.id), la = S.lineupFor(n, a.id);
-  const fonte = (l) => (l.source === 'saved' ? 'formazione salvata'
-    : l.source === 'ufficio' ? "undici d'ufficio: nessuna formazione ancora inviata" : `ultima schierata: ${l.source}`);
+  // Le probabili di chi non ha consegnato sono una proposta, e va detto: dal
+  // 17 settembre senza consegna la partita e' persa 0-3 a tavolino (art. 8.4).
+  const fonte = (l) => (l.source === 'saved' ? 'formazione consegnata'
+    : l.source === 'ufficio' ? "non consegnata: proposta d'ufficio, senza consegna è 0-3 a tavolino" : `non consegnata: proposta dall'ultima schierata (${l.source}), senza consegna è 0-3 a tavolino`);
   // Panchine appaiate per posto: il primo panchinaro di un ruolo e' quello che
   // entra se un titolare di quel ruolo non prende voto (art. 8.2), quindi il
   // confronto che conta e' posto per posto, non squadra dopo squadra.
@@ -77,9 +79,9 @@ function probabiliCampo(n, h, a) {
 function probabili(n, h, a, f) {
   const lato = (m) => {
     const l = S.lineupFor(n, m.id);
-    const fonte = l.source === 'saved' ? 'formazione salvata'
-      : l.source === 'ufficio' ? "undici d'ufficio: nessuna formazione ancora inviata"
-        : `ultima schierata: ${l.source}`;
+    const fonte = l.source === 'saved' ? 'formazione consegnata'
+      : l.source === 'ufficio' ? "non consegnata: proposta d'ufficio, senza consegna è 0-3 a tavolino"
+        : `non consegnata: proposta dall'ultima schierata (${l.source}), senza consegna è 0-3 a tavolino`;
     const riga = (id, cap) => { const p = P(id); return `<div class="pr"><span class="rl">${roleChip(p.role)}</span>
       <b>${esc(p.name)}${cap ? ` <span class="cap">${cap}</span>` : ''}</b><span>${esc(club(id).name)}</span></div>`; };
     return `<div class="pcol"><div class="ph2"><b>${esc(m.teamName)}</b><span>${esc(l.formation)}</span></div>
@@ -107,11 +109,12 @@ export const live = {
     const played = r.played;
     const inserted = S.matchesOf(n).filter((m) => m.status !== 'scheduled').length;
     const head = `<div class="l-bar"><div class="row"><button class="ib flip" data-back aria-label="Indietro">${icon('chev')}</button><div class="lg">${crest({ color: 'var(--c-titano-800)', initials: 'SR' })}<div style="min-width:0"><b>${esc(S.base.league.name)}</b><span>Giornata ${n}</span></div></div><a class="ib" href="#/calendario/${n}" aria-label="Calendario">${icon('cal')}</a><a class="ib" href="#/scheda" aria-label="Scheda">${icon('share')}</a></div>
-      <div class="l-head"><div class="tm"><b>${esc(h.teamName)}</b><span>${played ? r.home.lineup.formation : ''}</span></div><div class="sc">${played ? `${r.homeGoals} – ${r.awayGoals}` : 'VS'}<small>${played ? `${fmt(r.homeScore)} – ${fmt(r.awayScore)}` : dateIt(S.matchday(n).lockAt)}</small></div><div class="tm"><b>${esc(a.teamName)}</b><span>${played ? r.away.lineup.formation : ''}</span></div></div>
+      <div class="l-head"><div class="tm"><b>${esc(h.teamName)}</b><span>${played ? (r.home.lineup?.formation || 'non consegnata') : ''}</span></div><div class="sc">${played ? `${r.homeGoals} – ${r.awayGoals}` : 'VS'}<small>${played ? `${fmt(r.homeScore)} – ${fmt(r.awayScore)}` : dateIt(S.matchday(n).lockAt)}</small></div><div class="tm"><b>${esc(a.teamName)}</b><span>${played ? (r.away.lineup?.formation || 'non consegnata') : ''}</span></div></div>
       <div class="l-sub"><span class="badge badge--prov" style="background:rgba(255,255,255,.18);color:#fff">${st === 'frozen' ? icon('lock') + 'Congelato' : st === 'live' ? icon('clock') + `Parziale <small>· ${inserted}/8 partite inserite</small>` : st === 'provisional' ? icon('clock') + 'Provvisorio' : icon('clock') + 'Da giocare'}</span>${played ? `<button class="a-btn" id="formula">${icon('calc', 'ic sm')}Conversione in gol</button>` : ''}</div></div>`;
     // Prima del fischio d'inizio la pagina mostrava solo un vuoto. Le probabili
     // ci sono gia': lineupFor() ripiega sulla formazione salvata, poi su quella
-    // dell'ultima giornata, poi sull'undici d'ufficio, e dice quale sta usando.
+    // dell'ultima giornata, poi sull'undici d'ufficio, e dice quale sta usando —
+    // e che senza consegna non conta: e' 0-3 a tavolino.
     const campionato = `<div class="real">${S.matchesOf(n).map((m) => { const hc = S.clubsById.get(m.homeClubId), ac = S.clubsById.get(m.awayClubId);
       return `<div class="rr"><div><b>${esc(hc.name)} — ${esc(ac.name)}</b><span>${m.venue ? esc(m.venue) : ''}</span></div>
         <span class="sc${m.status === 'played' ? '' : ' stato'}">${m.status === 'played' ? `${m.homeGoals} – ${m.awayGoals}` : m.status === 'postponed' ? 'Rinviata' : timeIt(m.kickoffAt)}</span>
@@ -129,6 +132,19 @@ export const live = {
           : `<div class="a-sec"><b>Partite del campionato</b><span>giornata ${n}</span></div>${campionato}`;
       return `<main class="a-body" style="padding:0;gap:0">${head}
         <div style="padding:12px 16px 16px;display:flex;flex-direction:column;gap:12px">${pre}</div></main>${barra}`;
+    }
+    // A tavolino non c'e' un campo da disegnare: chi non ha consegnato non ha
+    // undici, voti, panchina. Si dice cosa e' successo e chi ha vinto, e si
+    // lascia la scheda del campionato.
+    if (r.forfait) {
+      const chi = r.forfait === 'entrambi' ? `${esc(h.teamName)} e ${esc(a.teamName)} non hanno consegnato`
+        : `${esc(r.forfait === 'home' ? h.teamName : a.teamName)} non ha consegnato`;
+      const esito = r.forfait === 'entrambi' ? 'persa 0-3 da tutte e due'
+        : `vince ${esc(r.forfait === 'home' ? a.teamName : h.teamName)} 3-0`;
+      const spiega = `<div class="a-card tavolino"><p><b>Partita a tavolino</b> · art. 8.4</p><p>${chi} la formazione entro il lock: ${esito}. ${r.forfait === 'entrambi' ? 'Zero fantapunti per entrambe.' : 'Chi ha consegnato tiene i suoi fantapunti; chi no ne ha zero.'}</p></div>`;
+      const body = tab === 'altro' ? campionato : spiega;
+      return `<main class="a-body" style="padding:0;gap:0">${head}
+        <div style="padding:12px 16px 16px;display:flex;flex-direction:column;gap:12px">${body}</div></main>${barra}`;
     }
     const c = r.home.conversion;
     const formula = `<div class="a-card" id="formula-card" hidden><p class="formula"><b>Art. 11</b> · ${S.base.league.managerCount} fantallenatori · soglia <b>${fmt(c.threshold)}</b> · passo <b>${fmt(c.step)}</b><br>${fmt(r.homeScore)} → <b>${r.homeGoals} gol</b> · ${fmt(r.awayScore)} → <b>${r.awayGoals} gol</b><br>Parità di fantapunteggio = pareggio (11.1)</p></div>`;

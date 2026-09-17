@@ -70,7 +70,7 @@ export async function avvisaFormazione(p, { giaAvvisato, segna }) {
   const quando = ore >= 24 ? `${Math.floor(ore / 24)} giorni` : ore >= 1 ? `${ore} ore` : 'meno di un\'ora';
   try {
     await reg.showNotification(`Giornata ${p.giornata}: manca la formazione`, {
-      body: `Si chiude fra ${quando}. Senza consegna vale l'ultima valida, o il 4-4-2 d'ufficio.`,
+      body: `Si chiude fra ${quando}. Senza consegna la partita è persa 0-3 a tavolino.`,
       tag: `formazione-${p.giornata}`,       // una sola, e si sostituisce
       renotify: false,
       icon: './icons/icon-192.png',

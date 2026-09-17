@@ -99,13 +99,13 @@ export function matchCard(r, managers, { meta = '', badgeHtml = '' } = {}) {
   const side = (m) => `<div class="side">${crest(m)}<b>${esc(m.teamName)}</b><span class="own">${esc(m.owner)}</span></div>`;
   const head = (badgeHtml || meta) ? `<div class="mhead">${badgeHtml}<span class="when">${esc(meta)}</span></div>` : '';
   const foot = r.played
-    ? `<div class="mfoot"><span>${fmt(r.homeScore)}</span><em>fantapunti</em><span>${fmt(r.awayScore)}</span></div>
+    ? `<div class="mfoot"><span>${fmt(r.homeScore)}</span><em>${r.forfait ? 'a tavolino · art. 8.4' : 'fantapunti'}</em><span>${fmt(r.awayScore)}</span></div>
        <div class="mcta">${r.status === 'frozen' ? '' : pic('live', 'menu', 'mini')}${r.status === 'frozen' ? 'Vedi la partita' : 'Segui il Live'}${icon('chev', 'ic sm')}</div>`
     : '';
   const body = `<div class="mrow">${side(h)}<span class="score${r.played ? '' : ' vs'}">${r.played ? `${r.homeGoals} – ${r.awayGoals}` : 'VS'}</span>${side(a)}</div>`;
-  return r.played
-    ? `<a class="mcard" href="#/live/${r.id}">${head}${body}${foot}</a>`
-    : `<div class="mcard">${head}${body}</div>`;
+  // Anche prima del fischio la card apre lo scontro: il pre-match a tutto
+  // campo c'e', ed era raggiungibile solo dopo che la partita era giocata.
+  return `<a class="mcard" href="#/live/${r.id}">${head}${body}${foot}</a>`;
 }
 
 export const empty = (text, cta = '') => `<div class="empty">${logo()}<p>${text}</p>${cta}</div>`;

@@ -9,6 +9,19 @@ export const signed = (n) => (n > 0 ? '+' : n < 0 ? '−' : '') + fmt(Math.abs(n
 export const icon = (name, cls = 'ic') => `<svg class="${cls}"><use href="#i-${name}"/></svg>`;
 /** Il logo originale: una maschera colorata con il colore corrente (styles/logo.css). */
 export const logo = (cls = '') => `<i class="logo ${cls}" role="img" aria-label="Fantatitano"></i>`;
+/**
+ * Il marchio intero: corona, nome e motto in un pezzo solo.
+ *
+ * Serve dove il marchio e' il soggetto della schermata — lo splash — e non
+ * un'icona in mezzo ad altro. Prima li' c'erano tre pezzi separati (la
+ * corona, "Fantatitano", "Campionato Sammarinese") disegnati dal CSS: le
+ * distanze e i pesi non erano quelli del marchio, e si vedeva.
+ *
+ * Anche questa e' una maschera colorata con currentColor, non un'immagine:
+ * sul blu dello splash e' bianca, e se un giorno servisse su fondo chiaro
+ * basta il colore del testo.
+ */
+export const marchio = (cls = '') => `<i class="marchio ${cls}" role="img" aria-label="Fantatitano"></i>`;
 export const ROLE_NAME = { P: 'Portieri', D: 'Difensori', C: 'Centrocampisti', A: 'Attaccanti' };
 export const ROLE_ORDER = ['P', 'D', 'C', 'A'];
 const DAYS = ['dom', 'lun', 'mar', 'mer', 'gio', 'ven', 'sab'];

@@ -87,9 +87,13 @@ Q() { psql -h /tmp -p "$PORTA" -U postgres -d prova -t -A -c "$1"; }
 
 echo "== il file com'e' scaricato non deve creare niente =="
 USCITA=$("${P[@]}" -f supabase/promemoria-pianificato.sql 2>&1); ESITO=$?
-[ $ESITO -ne 0 ]; et $? "coi segnaposto al loro posto si ferma"
-echo "$USCITA" | grep -qi "indirizzo"; et $? "e dice cosa manca ($(echo "$USCITA" | grep -oi "Manca l'indirizzo[^.]*" | head -1 | cut -c1-40)...)"
+[ $ESITO -ne 0 ]; et $? "col segnaposto del token al suo posto si ferma"
+echo "$USCITA" | grep -qi "Manca il token"; et $? "e dice quale riga riempire ($(echo "$USCITA" | grep -oi "nella riga [^.]*" | head -1 | cut -c1-44)...)"
 [ "$(Q "select count(*) from pg_namespace where nspname = 'interno'")" = 0 ]; et $? "e non ha creato lo schema interno"
+# l'indirizzo e' gia' scritto: che sia quello del progetto di quest'app lo
+# dice src/config.js, ed e' l'unico posto dove sta scritto due volte
+grep -q "$(sed -n "s/.*SUPABASE_URL = '\(https:[^']*\)'.*/\1/p" src/config.js)" supabase/promemoria-pianificato.sql
+et $? "l'indirizzo scritto nel file e' quello di src/config.js"
 
 # il token corto e' l'altro modo di sbagliare: un token vuoto passerebbe il
 # controllo dell'indirizzo e la funzione risponderebbe 401 a ogni giro
@@ -97,12 +101,16 @@ echo "$USCITA" | grep -qi "indirizzo"; et $? "e dice cosa manca ($(echo "$USCITA
 # usa: il segnaposto compare anche nel controllo, e sostituirlo la' dentro
 # renderebbe il controllo sempre vero
 riempi() { # url, token
-  sed -e "/set_config('promemoria.url'/s|https://IL-TUO-PROGETTO.functions.supabase.co|$1|" \
+  sed -e "/set_config('promemoria.url'/s|'https://[^']*'|'$1'|" \
       -e "/set_config('promemoria.token'/s|IL-TOKEN-DEL-PROMEMORIA|$2|" supabase/promemoria-pianificato.sql
 }
 riempi 'https://prova.functions.supabase.co' 'corto' > /tmp/corto.sql
 USCITA=$("${P[@]}" -f /tmp/corto.sql 2>&1); ESITO=$?
 [ $ESITO -ne 0 ] && echo "$USCITA" | grep -qi "token"; et $? "e un token troppo corto lo rifiuta"
+# un indirizzo senza https:// e' l'altro modo di sbagliare la riga
+riempi 'prova.functions.supabase.co' 'token-di-prova-abcdef123456' > /tmp/nohttps.sql
+USCITA=$("${P[@]}" -f /tmp/nohttps.sql 2>&1); ESITO=$?
+[ $ESITO -ne 0 ] && echo "$USCITA" | grep -qi "indirizzo"; et $? "e un indirizzo senza https:// lo rifiuta"
 
 echo "== col file riempito =="
 TOKEN='token-di-prova-abcdef123456'
@@ -140,7 +148,7 @@ riempi 'https://prova.functions.supabase.co' 'token-nuovo-abcdef123456' > /tmp/n
 "${P[@]}" -f /tmp/nuovo.sql >/dev/null 2>&1
 [ "$(Q "select headers->>'x-promemoria-token' from net.chiamate order by id desc limit 1")" = 'token-nuovo-abcdef123456' ]; et $? "e rilanciarlo e' il modo di cambiare il token"
 
-rm -f /tmp/corto.sql /tmp/pieno.sql /tmp/nuovo.sql
+rm -f /tmp/corto.sql /tmp/nohttps.sql /tmp/pieno.sql /tmp/nuovo.sql
 echo
 if [ $ko -eq 0 ]; then verde "tutto a posto ($ok controlli)"; else rosso "$ko problemi su $((ok+ko))"; fi
 exit $([ $ko -eq 0 ] && echo 0 || echo 1)

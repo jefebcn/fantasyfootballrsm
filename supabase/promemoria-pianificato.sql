@@ -18,9 +18,10 @@
 -- indirizzo e token della funzione, una funzione che la chiama con pg_net, un
 -- registro delle chiamate e il lavoro pianificato.
 --
--- COME SI USA. Riempi le DUE righe qui sotto e lancia tutto il file nel SQL
--- Editor di Supabase. Se le righe non sono riempite il file si ferma e te lo
--- dice, senza creare niente.
+-- COME SI USA. C'e' UNA riga da riempire, il token, ed e' segnata qui sotto:
+-- tutto il resto non si tocca. Poi si lancia tutto il file nel SQL Editor di
+-- Supabase. Se il token non c'e' il file si ferma e te lo dice, senza creare
+-- niente.
 --
 -- SI PUO' RILANCIARE quando vuoi: riscrive la configurazione e ripianifica il
 -- lavoro senza duplicarlo. E' anche il modo di cambiare il token dopo averlo
@@ -32,14 +33,19 @@
 --   {"giornate":[4],"spedite":1,"iscritti":1}
 
 
--- ===================== LE DUE RIGHE DA RIEMPIRE =====================
--- 1) l'indirizzo delle Edge Functions del progetto: lo stesso valore del
---    secret SUPABASE_FUNCTIONS_URL su GitHub (senza spazi intorno).
--- 2) il token: lo stesso valore del secret PROMEMORIA_TOKEN fra i secret
---    delle Edge Functions su Supabase. Non e' un valore nuovo: e' quello.
-select set_config('promemoria.url',   'https://IL-TUO-PROGETTO.functions.supabase.co', false),
+-- ===================== LA RIGA DA RIEMPIRE =====================
+-- Il token: lo stesso valore del secret PROMEMORIA_TOKEN fra i secret delle
+-- Edge Functions su Supabase (Project Settings -> Edge Functions -> Secrets).
+-- Non e' un valore nuovo: e' quello. Se non riesci piu' a rileggerlo, fanne
+-- uno nuovo e mettilo in tre posti — quel secret, il secret omonimo su GitHub
+-- e qui — e ridistribuisci la funzione.
+--
+-- L'indirizzo e' gia' scritto: e' il progetto di quest'app, lo stesso che sta
+-- in src/config.js e che il browser chiama a ogni schermata. Non e' un
+-- segreto, e si cambia solo se il progetto cambia.
+select set_config('promemoria.url',   'https://nskgzpbcssnpfuxmbepa.supabase.co/functions/v1', false),
        set_config('promemoria.token', 'IL-TOKEN-DEL-PROMEMORIA', false);
--- ====================================================================
+-- ===============================================================
 
 
 -- Il controllo viene prima di tutto il resto: se il file parte com'e' stato
@@ -49,11 +55,11 @@ declare
   u text := coalesce(current_setting('promemoria.url', true), '');
   t text := coalesce(current_setting('promemoria.token', true), '');
 begin
-  if u not like 'https://%' or u like '%IL-TUO-PROGETTO%' then
-    raise exception 'Manca l''indirizzo: riempi la prima delle due righe in cima al file (e'' lo stesso valore del secret SUPABASE_FUNCTIONS_URL su GitHub).';
+  if u not like 'https://%' then
+    raise exception 'L''indirizzo non va: deve cominciare con https:// ed e'' la riga set_config(''promemoria.url'') in cima al file.';
   end if;
   if t = 'IL-TOKEN-DEL-PROMEMORIA' or length(t) < 16 then
-    raise exception 'Manca il token, o e'' troppo corto: riempi la seconda delle due righe in cima al file col valore del secret PROMEMORIA_TOKEN delle Edge Functions.';
+    raise exception 'Manca il token: nella riga set_config(''promemoria.token'') in cima al file, al posto di IL-TOKEN-DEL-PROMEMORIA, va il valore del secret PROMEMORIA_TOKEN (Supabase -> Project Settings -> Edge Functions -> Secrets). E'' l''unica riga da riempire.';
   end if;
 end $$;
 
@@ -76,7 +82,14 @@ create schema if not exists interno;
 revoke all on schema interno from public;
 
 
--- 3. Indirizzo e token, una riga sola.
+-- 3. Indirizzo, token e nome della funzione: una riga sola.
+--
+-- Lo slug e' 'promemoria-', col trattino in fondo: non e' un errore di
+-- battitura, e' come si chiama la funzione su questo progetto — misurato
+-- chiamandola (senza trattino risponde 404 NOT_FOUND). E' lo stesso valore
+-- che sta nel secret PROMEMORIA_FUNZIONE su GitHub. Se un giorno la funzione
+-- si ridistribuisce con un altro slug:
+--   update interno.promemoria_config set funzione = 'promemoria' where id = 1;
 create table if not exists interno.promemoria_config (
   id       int primary key default 1 check (id = 1),
   url      text not null check (url like 'https://%'),

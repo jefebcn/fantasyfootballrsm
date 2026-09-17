@@ -64,6 +64,12 @@ Su un progetto nuovo, nell'SQL Editor, in quest'ordine:
     frontend. Una fa danno davvero: `da_avvisare()` restituisce `endpoint`,
     `p256dh` e `auth` di ogni iscrizione al push, che è quanto basta per
     spedire una notifica al telefono di qualcuno.
+13. `migrations/012-calendario-lock.sql` — le 30 date di chiusura delle
+    formazioni, **generate** dal calendario dell'app con
+    `node scripts/genera-lock.mjs`. Prima arrivavano al server solo quando un
+    Giudice Dati apriva l'app: senza giudice la tabella restava vuota e le
+    formazioni degli avversari non si vedevano mai. Non si modifica a mano;
+    se il calendario cambia, l'import la rigenera e avvisa di ricaricarla.
 
 Le migrazioni dalla 001 in poi si possono rieseguire quante volte si vuole.
 

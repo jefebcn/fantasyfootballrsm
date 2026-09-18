@@ -76,6 +76,65 @@ jobs:
             echo "::error::e-mail di tutti: non lo salvo in chiaro."
             exit 1
           fi
+
+          # ---- la stringa si guarda PRIMA di usarla.
+          #
+          # Senza questi controlli l'unica cosa che si vede e' il FATAL di
+          # Postgres — "password authentication failed for user postgres" —
+          # che e' lo stesso identico messaggio per tre errori diversi: la
+          # password sbagliata, l'utente sbagliato e il segnaposto rimasto
+          # dentro. E' successo alla prima configurazione, e il registro non
+          # aiutava in nessun modo.
+          #
+          # Nessuno di questi controlli stampa la password: si dice cosa non va
+          # e dove si rimedia. L'utente e l'indirizzo invece si stampano, e non
+          # sono segreti: il codice del progetto sta gia' nel frontend.
+          resto=${url#*://}
+          cred=${resto%@*}; ospite=${resto##*@}
+          utente=${cred%%:*}; parola=${cred#*:}
+          host=${ospite%%[:/]*}; porta=${ospite##*:}; porta=${porta%%/*}
+          echo "utente: $utente"
+          echo "server: $host:$porta"
+
+          case "$parola" in
+            ''|"$utente") echo "::error::Nella stringa manca la password: c'e' solo l'utente."; exit 1 ;;
+            *'[YOUR-PASSWORD]'*|*'['*|*']'*)
+              echo "::error::Nella stringa sono rimaste le parentesi quadre: erano il segnaposto."
+              echo "::error::Va sostituito TUTTO [YOUR-PASSWORD], parentesi comprese, con la password."
+              exit 1 ;;
+          esac
+
+          # Il pooler vuole l'utente col codice del progetto attaccato. Con
+          # "postgres" e basta risponde password sbagliata, che manda a
+          # cercare il guasto dalla parte sbagliata.
+          case "$host" in
+            *pooler.supabase.com)
+              case "$utente" in
+                postgres.*) ;;
+                *) echo "::error::Col pooler l'utente e' postgres.<codice-progetto>, non $utente."
+                   echo "::error::Ricopia la riga intera da Supabase → Connect → Session pooler."
+                   exit 1 ;;
+              esac
+              if [ "$porta" = "6543" ]; then
+                echo "::error::La porta 6543 e' il pooler a transazioni: pg_dump non ci lavora."
+                echo "::error::Serve il Session pooler, porta 5432."
+                exit 1
+              fi ;;
+          esac
+
+          # Caratteri che in un indirizzo vogliono dire altro: ? apre i
+          # parametri, @ separa host e credenziali, / chiude l'autorita'.
+          # In una password vanno scritti codificati (?=%3F, @=%40, /=%2F,
+          # #=%23, %=%25) oppure, molto meglio, si sceglie una password di
+          # sole lettere e numeri.
+          case "$parola" in
+            *'?'*|*'@'*|*'/'*|*'#'*|*' '*)
+              echo "::error::La password dentro la stringa contiene un carattere che va codificato"
+              echo "::error::(? @ / # o uno spazio). O la codifichi, o — piu' semplice — la rifai"
+              echo "::error::di sole lettere e numeri: Project Settings → Database → Reset database password."
+              exit 1 ;;
+          esac
+
           echo "pronta=si" >> "$GITHUB_OUTPUT"
 
       # Il client di sistema è più vecchio del server di Supabase, e pg_dump si

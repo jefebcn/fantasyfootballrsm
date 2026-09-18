@@ -19,7 +19,7 @@ Aggiornata al 17 settembre 2026 · fa riferimento al codice di quella data.
 | Organizzatore | Mediterranean Digital Solutions Ltd — `src/config.js`, `TITOLARE` |
 | Rappresentante | Alex Conti |
 | Sede | Level 3, Tower Business Centre, Tower Road, Sliema SLM 1603, Malta |
-| Contatto | `support@fantatitano.com` |
+| Contatto | `support@fantatitano.site` |
 | App | Fantatitano, applicazione web (PWA) |
 
 ## 2. Cos'è il gioco, in concreto

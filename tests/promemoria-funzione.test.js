@@ -138,7 +138,7 @@ test('una chiave incollata col ritorno a capo funziona lo stesso', async () => {
 });
 
 test('un indirizzo e-mail nudo come VAPID_SUBJECT non ferma i promemoria', async () => {
-  con({ ...buone, VAPID_SUBJECT: 'support@fantatitano.com' });
+  con({ ...buone, VAPID_SUBJECT: 'support@fantatitano.site' });
   assert.equal((await risposta()).stato, 200);
 });
 

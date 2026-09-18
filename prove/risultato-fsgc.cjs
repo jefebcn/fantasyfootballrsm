@@ -18,10 +18,21 @@ const ok = [], ko = []; const et = (c, t) => (c ? ok : ko).push(t);
 (async () => {
   const b = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium' }).catch(() => chromium.launch());
   const ctx = await b.newContext({ viewport: { width: 393, height: 852 }, isMobile: true, hasTouch: true, serviceWorkers: 'block' });
+  // L'orologio si ferma al 12 settembre: la 3a giornata (11/9) e' quella
+  // corrente, ed e' la sua lista che il Giudice apre entrando. Senza fermarlo
+  // la prova era una mina a tempo — girava verde finche' il campionato vero
+  // stava alla 3a, e dal 18 settembre la pagina si apriva sulla 4a, dove i
+  // risultati non ci sono ancora e "3 – 0" non poteva esserci.
   await ctx.addInitScript(() => {
     window.__SUPABASE_JS__ = '/tests/mock-supabase.js';
     localStorage.setItem('fcs:auth', 'supabase');
     localStorage.setItem('fcs:prefs', JSON.stringify({ onboarded: true, theme: 'dark' }));
+    const Vero = Date; const scarto = new Vero('2026-09-12T10:00:00Z').getTime() - Vero.now();
+    class Finto extends Vero {
+      constructor(...a) { if (!a.length) super(Vero.now() + scarto); else super(...a); }
+      static now() { return Vero.now() + scarto; }
+    }
+    window.Date = Finto;
     localStorage.setItem('fcs:supabase', JSON.stringify({ url: 'https://mock.supabase.co', key: 'mock-key-mock-key-mock' }));
   });
   const p = await ctx.newPage(); p.on('dialog', d => d.accept());

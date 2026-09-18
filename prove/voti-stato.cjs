@@ -30,7 +30,20 @@ const ok = [], ko = []; const et = (c, t) => (c ? ok : ko).push(t);
 // giocata, quindi la giornata e' "live" e le sue gare sono tutte da giocare.
 const QUANDO = '2026-09-18T16:00:00Z';
 
-const avvia = async (b, { motoRidotto = false } = {}) => {
+/**
+ * Finge che la FSGC abbia gia' pubblicato i referti di qualche gara della 4a.
+ * I risultati veri stanno in src/calendario-dati.js (generato dall'import), e
+ * si riscrivono al volo: e' l'unico modo di vedere una giornata a meta'.
+ */
+const conRisultati = async (p, quante) => {
+  await p.route('**/calendario-dati.js', async (route) => {
+    const r = await route.fetch(); let t = await r.text(); let n = 0;
+    t = t.replace(/(\[4,[^\n]*?),null,null\]/g, (m, a) => (n++ < quante ? `${a},2,1]` : m));
+    await route.fulfill({ body: t, headers: { 'content-type': 'text/javascript' } });
+  });
+};
+
+const avvia = async (b, { motoRidotto = false, arrivate = 0 } = {}) => {
   const ctx = await b.newContext({
     viewport: { width: 393, height: 852 }, isMobile: true, hasTouch: true, serviceWorkers: 'block',
     ...(motoRidotto ? { reducedMotion: 'reduce' } : {}),
@@ -48,6 +61,7 @@ const avvia = async (b, { motoRidotto = false } = {}) => {
     window.Date = Finto;
   }, { iso: QUANDO });
   const p = await ctx.newPage(); p.on('dialog', d => d.accept());
+  if (arrivate) await conRisultati(p, arrivate);
   const errori = []; p.on('pageerror', e => errori.push(e.message));
   const w = (ms = 450) => p.waitForTimeout(ms);
   await p.goto(`${BASE}/#/`, { waitUntil: 'load' }); await w(1300);
@@ -192,13 +206,38 @@ const QUANTO_DIPINGE = () => {
   // ---- 2. il pallino del live dipinge dentro la sua cassetta -----------
   for (const motoRidotto of [false, true]) {
     const come = motoRidotto ? 'con le animazioni ridotte' : 'con le animazioni accese';
-    const { ctx, p, w, errori } = await avvia(b, { motoRidotto });
+    const { ctx, p, w, errori } = await avvia(b, { motoRidotto, arrivate: 3 });
     await p.evaluate(() => { location.hash = '#/voti/4'; }); await w(1000);
     const vivo = await p.evaluate(() => {
       const bd = document.querySelector('.topbar .badge');
       return { cls: bd ? bd.className : '', testo: bd ? bd.innerText.trim() : '' };
     });
     et(/badge--live/.test(vivo.cls), `la 4ª giornata si annuncia in corso (${vivo.testo || 'niente pastiglia'})`);
+
+    // La barra non e' solo una pastiglia larga mezza schermata: dice quante
+    // gare sono arrivate. Qui ne sono arrivate tre su otto.
+    const barra = await p.evaluate(() => {
+      const bar = document.querySelector('.topbar .statolive');
+      if (!bar) return null;
+      const t = bar.querySelector('.statolive-t'), pieno = bar.querySelector('.statolive-t i');
+      const tb = document.querySelector('.topbar').getBoundingClientRect();
+      const bb = bar.getBoundingClientRect(), rt = t.getBoundingClientRect(), rp = pieno.getBoundingClientRect();
+      return {
+        conto: bar.querySelector('b')?.textContent.trim() || '',
+        ora: t.getAttribute('aria-valuenow'), max: t.getAttribute('aria-valuemax'),
+        etichetta: t.getAttribute('aria-label') || '',
+        quota: rt.width ? rp.width / rt.width : 0,
+        traccia: rt.width,
+        sfora: Math.max(bb.right - tb.right, tb.left - bb.left),
+      };
+    });
+    if (!barra) { et(false, `${come}: manca la barra della giornata in corso`); } else {
+      et(barra.conto === '3/8', `${come}: la barra conta le gare arrivate (${barra.conto})`);
+      et(barra.ora === '3' && barra.max === '8', `${come}: e lo dice anche a chi legge con la voce (${barra.ora}/${barra.max}, "${barra.etichetta}")`);
+      et(Math.abs(barra.quota - 3 / 8) < 0.02, `${come}: l'avanzamento è lungo quanto deve (${(barra.quota * 100).toFixed(1)}%)`);
+      et(barra.traccia >= 26, `${come}: la traccia resta visibile (${barra.traccia.toFixed(0)}px)`);
+      et(barra.sfora <= 0.51, `${come}: e la barra non esce dalla testata (${barra.sfora.toFixed(2)}px)`);
+    }
 
     const m = await p.evaluate(QUANTO_DIPINGE);
     if (m.errore) { et(false, `${come}: ${m.errore}`); } else {

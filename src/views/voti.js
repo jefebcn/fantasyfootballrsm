@@ -33,6 +33,24 @@ function notaStato(m) {
   return `<div class="vnota vnota--${s.cls}">${icon(s.ic)}<div class="vnota-t"><b>${esc(s.t)}</b><span>${esc(s.d || quando)}</span></div>${sv}</div>`;
 }
 
+/**
+ * La barra della giornata in corso.
+ *
+ * Una pastiglia larga mezza schermata con dentro due parole e basta non dice
+ * niente: la domanda vera, con la giornata aperta, e' "quante partite sono
+ * gia' arrivate". Quelle arrivano dall'import della FSGC (ogni mattina, o
+ * dalle mani del Giudice Dati), quindi qui si conta e si mostra: pastiglia,
+ * avanzamento, conteggio.
+ */
+function barraLive(n) {
+  const gare = S.matchesOf(n);
+  const arrivate = gare.filter((m) => m.status !== 'scheduled').length;
+  const quota = gare.length ? Math.round((arrivate / gare.length) * 100) : 0;
+  return `<div class="statolive">${badge('live')}
+    <i class="statolive-t" role="progressbar" aria-valuenow="${arrivate}" aria-valuemin="0" aria-valuemax="${gare.length}" aria-label="Partite con i voti"><i style="width:${quota}%"></i></i>
+    <b>${arrivate}/${gare.length}</b></div>`;
+}
+
 let filter = { role: null, mine: false };
 export const voti = {
   title: 'Voti', sub: ({ params }) => `Voti · Giornata ${params.n || S.currentMatchday()}`,
@@ -52,7 +70,7 @@ export const voti = {
       return `<div class="vlist"><div class="vhead">${title} <span>${m.venue ? esc(m.venue) : ''}</span></div>${nota}${rows.map(({ ap, p, r }) => voteRow(p, S.clubsById.get(p.clubId), r ? { ...r, events: evs[p.id] || [] } : null, { minutes: ap.minutesPlayed, extra: st === 'provisional' ? `<a href="#" data-contest="${p.id}" data-match="${m.id}">Segnala un errore</a>` : '' })).join('')}</div>`;
     }).join('');
     return `<main class="a-body">
-      <div class="topbar">${badge(st, st === 'provisional' ? 'fino a mar 18:00' : '')}<select id="gsel-v" class="select" aria-label="Giornata">${Array.from({ length: 30 }, (_, i) => `<option value="${i + 1}" ${i + 1 === n ? 'selected' : ''}>Giornata ${i + 1}</option>`).join('')}</select></div>
+      <div class="topbar">${st === 'live' ? barraLive(n) : badge(st, st === 'provisional' ? 'fino a mar 18:00' : '')}<select id="gsel-v" class="select" aria-label="Giornata">${Array.from({ length: 30 }, (_, i) => `<option value="${i + 1}" ${i + 1 === n ? 'selected' : ''}>Giornata ${i + 1}</option>`).join('')}</select></div>
       <div class="chips sticky"><button class="chip${!filter.role && !filter.mine ? ' on' : ''}" data-f="all">Tutti</button><button class="chip${filter.mine ? ' on' : ''}" data-f="mine">Solo miei</button>${['P', 'D', 'C', 'A'].map((r) => `<button class="chip${filter.role === r ? ' on' : ''}" data-f="${r}">${r}</button>`).join('')}</div>
       ${blocks || `<div class="empty">${logo()}<p>Nessun voto per la giornata ${n}: ${st === 'open' || st === 'scheduled' ? 'le partite non sono ancora state giocate.' : 'nessun evento inserito.'}</p></div>`}
     </main>`;

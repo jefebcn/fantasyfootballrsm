@@ -952,6 +952,15 @@ button,a{-webkit-tap-highlight-color:transparent}
 /* --- barra di testata delle liste: badge a sinistra, selettore a destra --- */
 .topbar{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;position:sticky;top:0;z-index:2;background:var(--bg);padding:8px 0;margin-top:-8px}
 .topbar .badge{flex:1 1 auto;min-width:0}
+/* La giornata in corso: la pastiglia da sola lasciava mezza barra di verde
+   vuoto. Accanto ci sta quello che si vuole sapere davvero — quante partite
+   sono gia' arrivate — come avanzamento e come conteggio. */
+.statolive{flex:1 1 auto;min-width:0;display:flex;align-items:center;gap:10px}
+.topbar .statolive .badge{flex:none}
+.statolive-t{flex:1 1 auto;min-width:26px;height:6px;border-radius:999px;background:var(--positive-soft);box-shadow:inset 0 0 0 1px rgba(30,158,106,.28);overflow:hidden}
+.statolive-t i{display:block;height:100%;border-radius:inherit;background:var(--positive);transition:width .4s ease}
+.statolive b{flex:none;font-family:var(--font-data);font-size:11px;font-weight:600;color:var(--text-muted);font-variant-numeric:tabular-nums}
+@media (prefers-reduced-motion:reduce){.statolive-t i{transition:none}}
 .chips.sticky{position:sticky;top:52px;z-index:2;background:var(--bg);padding-block:6px}
 /* Tutti i moduli visibili insieme: a schermo stretto scorrevano fuori e gli
    ultimi due non si vedevano. In griglia ci stanno su due file. */

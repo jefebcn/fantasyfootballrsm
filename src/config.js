@@ -25,8 +25,15 @@ export const CLERK_PUBLISHABLE_KEY = ''; // Clerk disattivato: l'accesso passa d
 // Valorizzare solo se sul progetto Clerk esiste un JWT template dedicato.
 export const CLERK_JWT_TEMPLATE = '';
 
-/** Indirizzo a cui arriva "Contattaci". Vuoto = la voce spiega come impostarlo. */
-export const CONTATTO = 'support@fantatitano.com';
+/**
+ * Indirizzo a cui arriva "Contattaci". Vuoto = la voce spiega come impostarlo.
+ *
+ * Il dominio e' fantatitano.site: e' quello comprato davvero. Prima qui c'era
+ * .com, che non e' di nessuno di noi — e un indirizzo scritto nell'app, nelle
+ * pagine legali e nella schermata di chi viene sospeso deve ricevere per
+ * davvero: e' l'unica strada che quelle persone hanno per rispondere.
+ */
+export const CONTATTO = 'support@fantatitano.site';
 
 /**
  * Chi risponde dei dati, cioe' il titolare del trattamento.

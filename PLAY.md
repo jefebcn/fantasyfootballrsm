@@ -13,10 +13,19 @@ marcate **TU**; il resto è già nel repository.
 
 ## 0. Cosa serve prima di cominciare
 
-- **Account Google Play Console**: 25 $ una volta sola (**TU**)
-- Il **dominio** che serve l'app: `fantatitano.site` — deve essere già in
-  piedi su Vercel, con HTTPS
-- Un computer con **Node** e un **JDK 17** per generare il pacchetto
+- **Account Google Play Console**: Alex ne ha già uno (ha pubblicato un'altra
+  app), quindi i 25 $ e l'attesa della verifica sono già passati. Due cose da
+  guardare lo stesso (**TU**): che la **verifica d'identità** dell'account sia
+  completa — Google l'ha resa obbligatoria e senza quella non si pubblica — e
+  **con che nome** l'account è intestato, perché quel nome si vede nello Store
+  e l'informativa dell'app dichiara come titolare del trattamento
+  Mediterranean Digital Solutions Ltd: se l'account è personale, le due cose
+  raccontano storie diverse a chi legge.
+- Il **dominio** che serve l'app: `fantatitano.site` — deve **già puntare a
+  Vercel** con HTTPS. Finché risponde la pagina "coming soon" del registrar,
+  niente di quello che c'è sotto funziona: né `privacy.html`, né
+  `assetlinks.json`, né gli indirizzi di ritorno degli accessi.
+- Per generare il pacchetto: **niente**, se usi PWABuilder (punto 4).
 
 Quello che *non* serve: Android Studio, e scrivere codice Android.
 
@@ -74,7 +83,32 @@ quello in rete sia identico a quello nel repository.
 Fino a quel momento l'app **funziona lo stesso**, ma con la barra del
 browser in cima. È il difetto numero uno delle TWA pubblicate di fretta.
 
-## 4. Generare il pacchetto (Bubblewrap)
+## 4. Generare il pacchetto
+
+### La via senza installare niente: PWABuilder
+
+È un sito, non un programma: fa lo stesso lavoro di Bubblewrap ma nel browser,
+e non vuole né Node né il JDK.
+
+- Vai su **pwabuilder.com**, incolla `https://fantatitano.site`
+- Ti fa un rapporto sulla PWA (manifesto, service worker, icone): quello che
+  chiede lo abbiamo già
+- **Package for stores → Android → Generate**, con queste risposte:
+  - *Package ID*: `site.fantatitano.app` (lo stesso di assetlinks.json)
+  - *App name*: Fantatitano · *Launcher name*: Fantatitano
+  - *Signing key*: **Create new** — e poi **scarica e conserva** lo zip che ti
+    dà: dentro c'è il keystore e le sue password (**TU**)
+- Scarichi lo zip: contiene `app-release-bundle.aab` (quello da caricare su
+  Play), il keystore, e un `assetlinks.json` di esempio
+
+Attenzione a una cosa: l'impronta che PWABuilder mette in quell'esempio è
+quella della chiave che ha appena creato. Se su Play usi la **firma di Play**
+(l'impostazione predefinita, e conviene), l'impronta buona è quella che il
+Play Console mostra dopo il caricamento — vedi il punto 3.
+
+### La via da riga di comando: Bubblewrap
+
+Serve Node e un **JDK 17**.
 
 ```sh
 npm install -g @bubblewrap/cli

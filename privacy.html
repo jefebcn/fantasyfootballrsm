@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Privacy · Fantatitano</title>
+<meta name="description" content="Che dati tiene Fantatitano, chi li vede e come si cancellano.">
+<meta name="theme-color" content="#1B84C6">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="stylesheet" href="design/tokens/tokens.css">
+<link rel="stylesheet" href="styles/font.css">
+<link rel="stylesheet" href="styles/app.css">
+<style>
+  /* La pagina sta in piedi da sola: niente riquadro dell'app, niente barre. */
+  body{margin:0;background:var(--bg);color:var(--text);font-family:var(--font-body)}
+  .stat{max-width:720px;margin:0 auto;padding:24px 16px calc(40px + env(safe-area-inset-bottom,0px))}
+  .stat header{display:flex;align-items:center;gap:12px;margin-bottom:18px}
+  .stat header b{font:800 20px var(--font-display);text-transform:uppercase;letter-spacing:.02em}
+  .stat header span{font-size:12px;color:var(--text-muted)}
+  .stat .a-body{padding:0;gap:14px;display:flex;flex-direction:column}
+  .stat .torna{display:inline-block;margin-top:24px;font-size:13px;color:var(--primary)}
+</style>
+</head>
+<body>
+<div class="stat">
+  <header><img src="icons/icon-192.png" alt="" width="40" height="40" style="border-radius:10px">
+    <span><b>Fantatitano</b><br><span>Privacy</span></span></header>
+  <main class="a-body">
+      
+      
+      <section class="group"><h3>Chi risponde dei tuoi dati</h3>
+  <div class="a-card testo"><p>Titolare del trattamento: Mediterranean Digital Solutions Ltd, rappresentata da Alex Conti · Level 3, Tower Business Centre, Tower Road, Sliema SLM 1603 · Malta · VAT MT28491034 · MBR C 98450 · info@mediterraneandigital.mt · +356 2133 4567. Per qualsiasi richiesta sui dati scrivi a quell'indirizzo.</p><p>Non c'è un responsabile della protezione dei dati (DPO): l'app non fa trattamenti su larga scala né monitoraggio sistematico, quindi non è obbligatorio.</p></div></section>
+      <section class="group"><h3>Cosa viene salvato e perché</h3>
+  <div class="a-card testo"><p><b>Il tuo account:</b> indirizzo e-mail e nome che scegli, per farti entrare e riconoscerti. La password non la vede nessuno, nemmeno chi amministra: la custodisce Supabase, cifrata.</p><p><b>La tua squadra:</b> nome, stemma, maglia, rosa, formazioni e punteggi di ogni giornata. Senza questi il gioco non esiste.</p><p><b>Quello che fai nella lega:</b> contestazioni aperte e, per il Giudice Dati, il registro delle modifiche ai voti. Servono a poter ricostruire come è venuto fuori un punteggio.</p><p>Non ci sono profilazione, pubblicità, tracciatori di terze parti né cookie di marketing. Nessun dato viene venduto o ceduto.</p></div></section>
+      <section class="group"><h3>Su quale base</h3>
+  <div class="a-card testo"><p><b>Contratto:</b> account, squadra, rose, formazioni e punteggi. Sono quello che ti serve per giocare: senza, l'app non può darti il servizio che hai chiesto iscrivendoti.</p><p><b>Legittimo interesse:</b> il registro delle modifiche del Giudice Dati e i log tecnici del server, per tenere in piedi il servizio e poter dimostrare come è stato calcolato un voto contestato.</p><p><b>Consenso:</b> solo per quello che scegli tu, come caricare una foto come stemma. Lo puoi togliere quando vuoi rimuovendo la foto.</p></div></section>
+      <section class="group"><h3>Chi lo vede</h3>
+  <div class="a-card testo"><p>Gli altri partecipanti della tua lega vedono nome squadra, nome fantallenatore, stemma, maglia, rosa e formazioni una volta chiuse le giornate. È il gioco.</p><p>La tua e-mail non è visibile agli altri partecipanti.</p><p><b>Fornitori:</b> Supabase (banca dati e accessi) tratta i dati per conto di chi gestisce l'app, come responsabile del trattamento, e non li usa per sé.</p><p><b>YouTube:</b> gli highlights stanno sul canale della FSGC. Nessuna richiesta parte verso Google finché non tocchi play su un video; da quel momento Google vede il tuo indirizzo IP e cosa stai guardando, secondo le sue regole, non le nostre. Il dettaglio è in Cookie e memoria locale.</p></div></section>
+      <section class="group"><h3>Dove sta e per quanto</h3>
+  <div class="a-card testo"><p>I dati vivono in un progetto Supabase (nskgzpbcssnpfuxmbepa.supabase.co), su server nell'Unione Europea. Non sono previsti trasferimenti fuori dallo Spazio economico europeo; se un domani servissero, questa pagina lo direbbe prima.</p><p><b>Per quanto:</b> finché la tua squadra esiste in una lega. Eliminata la lega o il tuo profilo, i dati vanno via con loro. Il registro delle modifiche ai voti resta finché resta la lega, in forma anonima rispetto a chi non ne fa più parte.</p><p>Il listone, il calendario e i tabellini del campionato non sono dati personali tuoi: arrivano dai referti pubblici della FSGC.</p></div></section>
+      <section class="group"><h3>I tuoi diritti</h3>
+  <div class="a-card testo"><p>Puoi chiedere di <b>vedere</b> i dati che ti riguardano, di <b>correggerli</b>, di <b>cancellarli</b>, di <b>limitarne</b> l'uso, di <b>riceverli</b> in un formato leggibile da una macchina e di <b>opporti</b> a un trattamento fondato sul legittimo interesse.</p><p>Molte cose le fai già da solo: nome squadra, stemma e maglia si cambiano in La mia squadra, e chi ha creato una lega la elimina da Partecipanti con tutto quello che conteneva, per tutti.</p><p><b>Portarli via</b> e <b>cancellare il profilo</b> sono due bottoni in Profilo: il primo ti scarica un file con account, squadra, rosa e formazioni — si costruisce sul tuo telefono e non passa da nessun server; il secondo toglie account, squadre, rose, formazioni e contestazioni, e le leghe in cui sei rimasto solo se ne vanno con te. Se sei amministratore di una lega dove gioca anche qualcun altro si ferma e te lo dice: prima la passi a un altro o la elimini.</p><p>Per il resto scrivi a info@mediterraneandigital.mt: la risposta arriva entro un mese.</p><p>Se ritieni che i tuoi dati siano trattati male puoi rivolgerti all'autorità di controllo del tuo Paese: in Italia il Garante per la protezione dei dati personali, a San Marino l'Autorità Garante per la protezione dei dati personali.</p></div></section>
+      <section class="group"><h3>Minori</h3>
+  <div class="a-card testo"><p>L'app non è pensata per chi ha meno di 14 anni e non chiede né usa dati di bambini. Se ti accorgi che un profilo appartiene a un minore di quell'età, segnalalo a chi amministra la lega: viene rimosso.</p></div></section>
+      <section class="group"><h3>Se questa pagina cambia</h3>
+  <div class="a-card testo"><p>Le modifiche importanti vengono scritte qui con la data in fondo. Se cambiasse qualcosa di sostanziale — un fornitore nuovo, un trattamento nuovo — lo trovi segnalato nell'app, non solo in questa pagina.</p></div></section>
+      <section class="group"><h3>Onestà su questa pagina</h3>
+  <div class="a-card testo"><p>Questo testo descrive come funziona l'app oggi ed è scritto per farsi capire, non da un legale. Prima di aprire le iscrizioni fuori dal giro di amici va fatto rivedere da chi di dovere, insieme all'accordo con la FSGC per nomi e prestazioni degli atleti.</p></div></section>
+      <p class="small muted" style="text-align:center;margin-top:4px">
+  Ultimo aggiornamento: 17 settembre 2026.</p>
+    </main>
+  <a class="torna" href="./#/privacy">Apri questa pagina dentro l'app</a>
+</div>
+</body>
+</html>

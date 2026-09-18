@@ -180,7 +180,14 @@ const STATE_ROUTE = { unconfigured: 'setup', offline: 'offline', anonymous: 'log
 // e non si sospendono insieme al resto.
 const ALLOWED = { 'no-league': ['leghe', 'impostazioni', 'admin/console'], anonymous: ['login', 'benvenuto'],
   sospeso: ['impostazioni', 'impostazioni/avanzate', 'privacy', 'termini', 'archiviazione', 'licenze'] };
+// Le pagine legali si leggono SEMPRE: senza account, senza collegamento,
+// anche prima di configurare il server. Un'informativa raggiungibile solo a
+// cose funzionanti non e' un'informativa, ed e' anche quello che chiede chi
+// controlla un'app prima di pubblicarla (le stesse pagine escono statiche in
+// privacy.html e termini.html, vedi scripts/genera-legali.cjs).
+const SEMPRE = ['privacy', 'termini', 'archiviazione', 'licenze'];
 function gate(path) {
+  if (SEMPRE.includes(path)) return null;
   const st = S.appState();
   let target = STATE_ROUTE[st];
   // Chi apre l'app per la prima volta vede la presentazione; chi si è già registrato no.

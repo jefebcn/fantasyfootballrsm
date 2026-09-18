@@ -1,0 +1,12 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "site.fantatitano.app",
+      "sha256_cert_fingerprints": [
+        "DA:MET:TER:E-L-A:SH:A2:56:DE:LL:A-C:HI:AV:E-D:I-F:IR:MA:DI:PL:AY"
+      ]
+    }
+  }
+]

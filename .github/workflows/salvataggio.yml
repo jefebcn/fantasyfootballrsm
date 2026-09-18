@@ -129,11 +129,20 @@ jobs:
           # sole lettere e numeri.
           case "$parola" in
             *'?'*|*'@'*|*'/'*|*'#'*|*' '*)
-              echo "::error::La password dentro la stringa contiene un carattere che va codificato"
-              echo "::error::(? @ / # o uno spazio). O la codifichi, o — piu' semplice — la rifai"
-              echo "::error::di sole lettere e numeri: Project Settings → Database → Reset database password."
+              echo "::error::La password dentro la stringa contiene un carattere che va codificato."
+              echo "::error::Sostituiscilo cosi': ? = %3F · @ = %40 · / = %2F · # = %23 · spazio = %20"
+              echo "::error::Oppure, piu' semplice, rifai la password di sole lettere e numeri:"
+              echo "::error::Project Settings → Database → Reset database password."
               exit 1 ;;
           esac
+          # Un % da solo e' l'altro modo di sbagliare: nell'indirizzo comincia
+          # una codifica, quindi %3F vale "?" ma %pippo non vale niente e la
+          # password arriva al server diversa da com'e' scritta.
+          if printf '%s' "$parola" | grep -qE '%($|[^0-9A-Fa-f]|[0-9A-Fa-f]($|[^0-9A-Fa-f]))'; then
+            echo "::error::Nella password c'e' un % che non e' una codifica valida."
+            echo "::error::Un % che fa parte della password si scrive %25; %3F vale ?, %40 vale @."
+            exit 1
+          fi
 
           echo "pronta=si" >> "$GITHUB_OUTPUT"
 

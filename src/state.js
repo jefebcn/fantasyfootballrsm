@@ -450,7 +450,10 @@ export function giornateDaCaricare() {
     const gare = base.matches.filter((m) => m.matchday === md.number);
     if (!gare.some((m) => conReferto.has(m.id))) continue;
     const inLega = gare.some((m) => (g.matchEvents[m.id] || []).length || (g.appearanceOverrides[m.id] || []).length);
-    if (!inLega) out.push(md.number);
+    // Una giornata congelata e' chiusa per sempre (art. 9.2) e il database
+    // rifiuta di scriverci: provarci a ogni apertura vorrebbe dire un errore
+    // in faccia al Giudice ogni volta, per una cosa che non si puo' fare.
+    if (!inLega && matchdayStatus(md.number) !== 'frozen') out.push(md.number);
   }
   return out;
 }

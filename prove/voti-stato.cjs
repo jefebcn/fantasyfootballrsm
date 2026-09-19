@@ -38,7 +38,10 @@ const QUANDO = '2026-09-18T16:00:00Z';
 const conRisultati = async (p, quante) => {
   await p.route('**/calendario-dati.js', async (route) => {
     const r = await route.fetch(); let t = await r.text(); let n = 0;
-    t = t.replace(/(\[4,[^\n]*?),null,null\]/g, (m, a) => (n++ < quante ? `${a},2,1]` : m));
+    // Si riscrivono TUTTE le righe della 4a, anche quelle che un risultato ce
+    // l'hanno gia': il campionato va avanti e il file cambia da solo, ma la
+    // prova deve dire la stessa cosa oggi e fra tre giornate.
+    t = t.replace(/(\[4,[^\n]*?),(?:null|\d+),(?:null|\d+)\]/g, (m, a) => (n++ < quante ? `${a},2,1]` : `${a},null,null]`));
     await route.fulfill({ body: t, headers: { 'content-type': 'text/javascript' } });
   });
 };
@@ -61,7 +64,7 @@ const avvia = async (b, { motoRidotto = false, arrivate = 0 } = {}) => {
     window.Date = Finto;
   }, { iso: QUANDO });
   const p = await ctx.newPage(); p.on('dialog', d => d.accept());
-  if (arrivate) await conRisultati(p, arrivate);
+  await conRisultati(p, arrivate);
   const errori = []; p.on('pageerror', e => errori.push(e.message));
   const w = (ms = 450) => p.waitForTimeout(ms);
   await p.goto(`${BASE}/#/`, { waitUntil: 'load' }); await w(1300);
@@ -238,6 +241,18 @@ const QUANTO_DIPINGE = () => {
       et(barra.traccia >= 26, `${come}: la traccia resta visibile (${barra.traccia.toFixed(0)}px)`);
       et(barra.sfora <= 0.51, `${come}: e la barra non esce dalla testata (${barra.sfora.toFixed(2)}px)`);
     }
+
+    // Le tre gare finite hanno il risultato ma nessun voto caricato in lega.
+    // Prima sparivano dalla schermata — nessuna riga, nessuna nota, blocco
+    // scartato — e della partita giocata non restava traccia.
+    const finite = await p.evaluate(() => [...document.querySelectorAll('.vlist')].map((x) => ({
+      testa: x.querySelector('.vhead')?.innerText.replace(/\n/g, ' ') || '',
+      nota: x.querySelector('.vnota')?.innerText.replace(/\n/g, ' ') || '',
+    })));
+    const conRisultato = finite.filter((x) => /\d\s*[–-]\s*\d/.test(x.testa));
+    et(conRisultato.length === 3, `${come}: le gare finite restano in pagina col risultato (${conRisultato.length}/3)`);
+    et(conRisultato.every((x) => /Voti in arrivo/.test(x.nota)),
+      `${come}: e dicono che i voti devono ancora arrivare ("${(conRisultato[0] || {}).nota || 'niente nota'}")`);
 
     const m = await p.evaluate(QUANTO_DIPINGE);
     if (m.errore) { et(false, `${come}: ${m.errore}`); } else {

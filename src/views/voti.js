@@ -19,14 +19,18 @@ const STATI = {
   awarded: { ic: 'flag', cls: 'tavolino', t: 'Decisa a tavolino', d: 'Il campo non fa testo: la gara è assegnata a tavolino (art. 10).' },
 };
 /** La riga di stato in cima alla lista dei voti di una gara. */
-function notaStato(m) {
-  if (m.status === 'played') return '';
+function notaStato(m, righe) {
+  // Partita finita ma nessun voto in lega: il risultato del campionato arriva
+  // dall'import della FSGC, i voti invece nascono dagli eventi caricati nel
+  // database. Senza una riga qui il blocco spariva dallo schermo — la gara
+  // era stata giocata e della gara non restava traccia.
+  if (m.status === 'played') return righe ? '' : `<div class="vnota vnota--attesa">${icon('clock')}<div class="vnota-t"><b>Voti in arrivo</b><span>La partita è finita: i voti compaiono quando il referto viene caricato in lega.</span></div></div>`;
   const s = STATI[m.status] || { ic: 'clock', cls: 'attesa', t: 'Voti non disponibili' };
   // Per una gara ancora da giocare la cosa utile e' quando si gioca: la data
   // ce l'ha il calendario. Se l'ora e' gia' passata si aspetta il referto.
   const quando = m.kickoffAt && new Date(m.kickoffAt) > S.now()
     ? `Si gioca ${dateIt(m.kickoffAt)} alle ${timeIt(m.kickoffAt)}.`
-    : 'I voti arrivano quando il Giudice Dati carica il referto.';
+    : 'In attesa del referto: da lì arrivano risultato e voti.';
   // "S.V. per tutti" solo dove e' vero davvero: la lista degli stati senza
   // voto e' quella del motore (art. 10), non una copia scritta qui.
   const sv = SV_STATUSES.has(m.status) ? '<span class="vnota-e">S.V. per tutti</span>' : '';
@@ -44,10 +48,12 @@ function notaStato(m) {
  */
 function barraLive(n) {
   const gare = S.matchesOf(n);
+  // "Finite" vuol dire che il risultato del campionato e' arrivato: e' il dato
+  // che si muove per primo. I voti dei singoli possono arrivare dopo.
   const arrivate = gare.filter((m) => m.status !== 'scheduled').length;
   const quota = gare.length ? Math.round((arrivate / gare.length) * 100) : 0;
   return `<div class="statolive">${badge('live')}
-    <i class="statolive-t" role="progressbar" aria-valuenow="${arrivate}" aria-valuemin="0" aria-valuemax="${gare.length}" aria-label="Partite con i voti"><i style="width:${quota}%"></i></i>
+    <i class="statolive-t" role="progressbar" aria-valuenow="${arrivate}" aria-valuemin="0" aria-valuemax="${gare.length}" aria-label="Partite finite"><i style="width:${quota}%"></i></i>
     <b>${arrivate}/${gare.length}</b></div>`;
 }
 
@@ -64,7 +70,7 @@ export const voti = {
       if (filter.role) rows = rows.filter((x) => x.p.role === filter.role);
       if (filter.mine) rows = rows.filter((x) => mine.has(x.p.id));
       rows.sort((x, y) => (y.r?.isSV ? -1 : y.r?.fantaVote ?? -1) - (x.r?.isSV ? -1 : x.r?.fantaVote ?? -1));
-      const nota = notaStato(m);
+      const nota = notaStato(m, rows.length);
       if (!rows.length && !nota) return '';
       const title = m.status === 'played' ? `${esc(h.name)} ${m.homeGoals} – ${m.awayGoals} ${esc(a.name)}` : `${esc(h.name)} — ${esc(a.name)}`;
       return `<div class="vlist"><div class="vhead">${title} <span>${m.venue ? esc(m.venue) : ''}</span></div>${nota}${rows.map(({ ap, p, r }) => voteRow(p, S.clubsById.get(p.clubId), r ? { ...r, events: evs[p.id] || [] } : null, { minutes: ap.minutesPlayed, extra: st === 'provisional' ? `<a href="#" data-contest="${p.id}" data-match="${m.id}">Segnala un errore</a>` : '' })).join('')}</div>`;

@@ -58,6 +58,12 @@ const MOMENTI = [
     // un avversario, cosi' c'e' uno scontro da mostrare
     await p.evaluate(() => {
       const s = JSON.parse(localStorage.getItem('fcs:mock'));
+      // "nessun voto" e' la premessa di questa prova: la lega e' appena nata e
+      // in lega non c'e' ancora niente. Nel mock il primo iscritto nasce
+      // Giudice Dati, e il Giudice all'apertura si porta dentro i referti da
+      // solo: qui gli si toglie il ruolo e si svuota quel che aveva caricato.
+      const p0 = s.tables.profiles.find((x) => x.id === s.userId); if (p0) p0.is_judge = false;
+      s.tables.match_events = []; s.tables.match_appearances = [];
       const io = s.tables.league_members[0];
       s.tables.profiles.push({ id: 'u_riv', display_name: 'Wesly', is_judge: false });
       s.tables.league_members.push({ ...io, id: 'm_riv', user_id: 'u_riv', role: 'fantallenatore', team_name: 'Fuego Roxy', owner_name: 'Wesly', color: '#c0392b', initials: 'FR' });

@@ -115,6 +115,27 @@ async function loadAll() {
   // e' un dato derivato dal calendario, identico a ogni giro, e l'RPC riscrive
   // solo le righe diverse. Una volta per sessione, e un errore qui non deve
   // impedire di usare l'app.
+  // Stessa idea del calendario dei lock: i referti che la FSGC ha pubblicato
+  // entrano in lega da soli, senza che il Giudice debba ricordarsi un bottone.
+  // L'import gira ogni due ore e scrive il calendario; i voti pero' nascono
+  // dagli eventi, che stanno nel database. Qui si colma quel passo.
+  //
+  // Solo il Giudice Dati puo' scrivere (lo dicono le regole della tabella, non
+  // questo controllo), una volta per sessione, e solo giornate che in lega
+  // sono vuote: due sessioni aperte insieme non si pestano i piedi perche' la
+  // seconda, dopo il caricamento della prima, non le vede piu' vuote.
+  if (prof?.is_judge && !refertiGiaCaricati && !refertiInCorso) {
+    const mancanti = giornateDaCaricare();
+    if (!mancanti.length) { refertiGiaCaricati = true; } else {
+      refertiInCorso = true;
+      try {
+        const esito = await remote.caricaReferti(base, user.id, mancanti);
+        g = await remote.loadGlobal(prof.is_judge);
+        refertiGiaCaricati = true; avvisoReferti = esito;
+      } catch (e) { onError(e); }
+      finally { refertiInCorso = false; }
+    }
+  }
   if (prof?.is_judge && !lockGiaSincronizzati && !lockInCorso && lockDisallineati().length) {
     // Il segno di "fatto" va messo DOPO che e' riuscita, non prima: segnandolo
     // prima, un errore di rete lasciava il calendario disallineato per tutta la
@@ -408,8 +429,41 @@ export async function addRosterPlayer(memberId, playerId, price) {
   await refresh();
 }
 export async function removeRosterPlayer(memberId, playerId) { const r = (base.rosters[memberId] || []).find((x) => x.playerId === playerId); await remote.removeRosterPlayer(base.league.id, playerId); if (r) await remote.updateMember(memberId, { credits: managersById.get(memberId).credits + r.pricePaid }); await refresh(); }
-/** Popola il database con gli eventi di esempio delle prime giornate: solo Giudice Dati, una volta. */
-export async function seedSampleData() { await remote.seedDemo(base, user.id); await refresh(); }
+/**
+ * Le giornate che hanno il referto della FSGC e in lega non hanno ancora
+ * niente.
+ *
+ * Il risultato di campionato e i voti sono due cose diverse: il primo arriva
+ * dall'import dentro il calendario, i secondi nascono dagli eventi scritti nel
+ * database. Finche' gli eventi non ci sono, una gara finita in lega non ha
+ * voti.
+ *
+ * Una giornata che in lega ha gia' anche un solo evento o una sola presenza
+ * non si tocca: gli eventi si inseriscono e non si aggiornano, quindi
+ * ricaricarla conterebbe i gol due volte. Se il Giudice ne ha messo uno a
+ * mano, quella giornata resta sua.
+ */
+export function giornateDaCaricare() {
+  const conReferto = new Set([...base.events.map((e) => e.matchId), ...base.appearances.map((a) => a.matchId)]);
+  const out = [];
+  for (const md of base.matchdays) {
+    const gare = base.matches.filter((m) => m.matchday === md.number);
+    if (!gare.some((m) => conReferto.has(m.id))) continue;
+    const inLega = gare.some((m) => (g.matchEvents[m.id] || []).length || (g.appearanceOverrides[m.id] || []).length);
+    if (!inLega) out.push(md.number);
+  }
+  return out;
+}
+/** Porta in lega i referti che mancano. Ripetibile: a giornate gia' dentro non fa niente. */
+export async function caricaRefertiMancanti() {
+  const giornate = giornateDaCaricare();
+  if (!giornate.length) return { giornate: [], presenze: 0, eventi: 0 };
+  const esito = await remote.caricaReferti(base, user.id, giornate);
+  await refresh();
+  return esito;
+}
+/** L'avviso da mostrare una volta, quando il caricamento e' avvenuto da solo. */
+export function prendiAvvisoReferti() { const a = avvisoReferti; avvisoReferti = null; return a; }
 function hashStr(s) { let h = 2166136261; for (const c of String(s)) { h ^= c.charCodeAt(0); h = Math.imul(h, 16777619); } return h >>> 0; }
 
 export const store = {
@@ -537,6 +591,7 @@ export const lockDaSistemare = () => lockDisallineati().length;
  * giorni. Qui la fonte e' una sola: questa.
  */
 let lockGiaSincronizzati = false; let lockInCorso = false;
+let refertiGiaCaricati = false; let refertiInCorso = false; let avvisoReferti = null;
 export async function sincronizzaLock({ forza = false } = {}) {
   if (!isJudge()) throw new Error('Solo il Giudice Dati può aggiornare il calendario dei lock');
   const da = forza ? calendarioLock() : lockDisallineati();
@@ -583,16 +638,22 @@ export function promemoriaFormazione() {
 
 export function matchdayStatus(n) {
   if (g.matchdayStatus[n]) return g.matchdayStatus[n];
-  if (hasData(n)) return 'provisional';
   if (now() >= new Date(matchday(n).lockAt)) {
     // "Live in corso" solo finche' si gioca davvero. Prima bastava che il lock
     // fosse passato, quindi la 1a giornata restava "live" per sempre se in lega
     // non erano ancora stati caricati i voti: sullo schermo una giornata finita
     // tre settimane prima si annunciava in corso.
+    //
+    // E si guarda PRIMA se si gioca ancora, poi se i voti ci sono. Da quando i
+    // referti entrano in lega da soli, il sabato mattina una giornata aveva
+    // gia' i voti delle tre del venerdi' sera: bastava quello per dichiararla
+    // "provvisoria, contestazioni fino a martedi'" mentre cinque partite non
+    // erano ancora cominciate.
     const reali = matchesOf(n);
-    const inCorso = !reali.length || reali.some((m) => m.status !== 'played');
-    return inCorso ? 'live' : 'partial';
+    if (!reali.length || reali.some((m) => m.status !== 'played')) return 'live';
+    return hasData(n) ? 'provisional' : 'partial';
   }
+  if (hasData(n)) return 'provisional';
   return n === nextMatchday() ? 'open' : 'scheduled';
 }
 export function isFrozen(n) { return matchdayStatus(n) === 'frozen'; }

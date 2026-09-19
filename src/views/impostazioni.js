@@ -282,7 +282,15 @@ export const impostazioni = {
         };
         return;
       }
-      if (act === 'seed') { if (!confirm('Caricare nel database le giornate già giocate, con formazioni ed eventi veri presi dai tabellini della FSGC?')) return; try { await S.seedSampleData(); ctx.toast('Giornate giocate caricate'); } catch (err) { ctx.toast(err.message); } return; }
+      if (act === 'seed') {
+        // Le giornate gia' in lega non si ricaricano: lo decide state.js, qui
+        // si dice solo cosa e' successo. Premerlo due volte non fa danno.
+        const mancanti = S.giornateDaCaricare();
+        if (!mancanti.length) { ctx.toast('I referti sono già tutti in lega'); return; }
+        if (!confirm(`Caricare in lega i referti FSGC ${mancanti.length === 1 ? `della giornata ${mancanti[0]}` : `delle giornate ${mancanti.join(', ')}`}? Formazioni, marcatori, assist e cartellini veri.`)) return;
+        try { const e = await S.caricaRefertiMancanti(); ctx.toast(`Caricati: ${e.eventi} eventi, ${e.presenze} presenze`); } catch (err) { ctx.toast(err.message); }
+        return;
+      }
       if (act === 'password') { prompt2('Cambia password', 'Nuova password', 'type="password" autocomplete="new-password" placeholder="almeno 6 caratteri"', async (v) => { if (v.length < 6) { ctx.toast('Almeno 6 caratteri'); return; } try { await S.updatePassword(v); ctx.sheet(null); ctx.toast('Password aggiornata'); } catch (err) { ctx.toast(err.message); } }); return; }
       if (act === 'name') { prompt2('Cambia nome', 'Come ti chiami', `maxlength="24" value="${esc(S.profileInfo()?.display_name || '')}"`, async (v) => { if (!v) { ctx.toast('Scrivi un nome'); return; } try { await S.updateDisplayName(v); ctx.sheet(null); ctx.toast('Nome aggiornato'); } catch (err) { ctx.toast(err.message); } },
         'E\' il nome che si vede in tutte le tue leghe: nel menu, sulla scheda dello scontro e in classifica.'); }
@@ -309,7 +317,7 @@ export const avanzate = {
 
     const judge = p?.is_judge ? group('Giudice Dati', `
       ${row({ m: 'voti' }, 'Inserisci eventi', `Giornata ${S.currentMatchday()}`, 'admin')}
-      ${row({ m: 'statistiche' }, 'Carica le giornate giocate', 'Formazioni, marcatori, assist e cartellini veri dai tabellini FSGC', 'seed')}`) : '';
+      ${row({ m: 'statistiche' }, 'Carica i referti mancanti', 'Succede da solo all\'apertura: qui si forza a mano', 'seed')}`) : '';
 
     const data = group('Dati', `
       ${row({ m: 'quotazioni' }, 'Da dove vengono i dati', 'Lega, formazioni e voti sul server; listone e calendario generati dall\'app')}

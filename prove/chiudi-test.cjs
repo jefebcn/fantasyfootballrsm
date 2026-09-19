@@ -21,6 +21,15 @@ const ok = [], ko = []; const et = (c, t) => (c ? ok : ko).push(t);
   // lock, e la quarta diventa una giornata giocata e senza referti.
   await ctx.clock.install({ time: new Date('2026-09-15T12:00:00Z') });
   const p = await ctx.newPage(); p.on('dialog', d => d.accept());
+  // La 4a giornata si e' GIOCATA TUTTA: si riscrive il calendario, che il
+  // campionato vero fa cambiare da solo una partita alla volta. Serve perche'
+  // una giornata con ancora una partita da giocare non e' da calcolare — e'
+  // in corso, e l'app adesso lo dice invece di offrire un tasto spento.
+  await p.route('**/calendario-dati.js', async (route) => {
+    const r = await route.fetch(); const t = (await r.text())
+      .replace(/(\[4,[^\n]*?),(?:null|\d+),(?:null|\d+)\]/g, '$1,2,1]');
+    await route.fulfill({ body: t, headers: { 'content-type': 'text/javascript' } });
+  });
   const errs = []; p.on('pageerror', e => errs.push(e.message));
   const w = (ms = 450) => p.waitForTimeout(ms);
   await p.goto(`${BASE}/#/`, { waitUntil: 'load' }); await w(1300);

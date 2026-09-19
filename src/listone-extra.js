@@ -13,6 +13,7 @@ export const LISTONE_EXTRA = [
   ["faetano","Cristiano","Abbadessa","C"],
   ["trepenne","Danilo Ezequiel","Rinaldi","C"],
   ["academy","Gabriele","Montali","C"],
+  ["academy","Marco","Zavoli","C"],
   ["trepenne","Mario Meddi","Cordioli","C"],
   ["trepenne","Mattia Luciano","Cenni","C"],
   ["cosmos","Richard Ulloa","Brito","C"],

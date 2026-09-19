@@ -3,16 +3,26 @@
 #
 # Se salta una settimana i voti non arrivano, e la giornata si congela martedi'
 # alle 20:00 comunque (art. 9.2): il dato mancante non e' piu' rettificabile.
-# Per questo gira ogni giorno e non solo il lunedi': se la FSGC pubblica in
-# ritardo, il giorno dopo si riprende senza che nessuno debba accorgersene.
+# Per questo gira di continuo e non solo il lunedi': se la FSGC pubblica in
+# ritardo, il giro dopo si riprende senza che nessuno debba accorgersene.
 #
 # Non committa se non e' cambiato niente, quindi girare a vuoto non costa nulla.
 
 name: Dati FSGC
 
+# GitHub non fa partire i lavori pianificati all'ora scritta: li mette in coda
+# e li serve quando ha macchine libere. Su questo repository il cron delle
+# 05:30 e' partito alle 09:55, alle 10:09, alle 10:06 — quattro ore e mezza
+# dopo, tutte le volte. Risultato: le partite del venerdi' sera si vedevano
+# nell'app il sabato a mezzogiorno, e uno che apre l'app la mattina non trova
+# niente. Un solo appuntamento al giorno, per giunta spostato, non regge.
+#
+# Quindi si prova ogni due ore. Girare a vuoto non costa: se la FSGC non ha
+# pubblicato niente di nuovo il lavoro non committa e finisce in un minuto, e
+# su un repository pubblico i minuti di Actions non si pagano.
 on:
   schedule:
-    - cron: '30 5 * * *'      # ogni giorno, 05:30 UTC (07:30 in Italia d'estate)
+    - cron: '7 */2 * * *'      # ogni due ore (GitHub la servira' quando puo')
   workflow_dispatch:           # e a mano, dal tasto "Run workflow"
 
 concurrency:

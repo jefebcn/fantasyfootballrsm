@@ -40,6 +40,12 @@ const conta = (p) => p.evaluate(() => {
   });
   const p = await ctx.newPage(); p.on('dialog', (d) => d.accept());
   const errori = []; p.on('pageerror', (e) => errori.push(e.message));
+  // Gli errori che l'app gia' prende (rete, database) non arrivano a
+  // 'pageerror': finiscono in console e in un avviso a schermo. Per sapere se
+  // il Giudice si becca un errore in faccia bisogna guardare li'.
+  // (le lamentele della rete non contano: qui interessa solo quella della
+  //  giornata congelata, che e' l'errore che si prenderebbe il Giudice)
+  const lamentele = []; p.on('console', (m) => { if (m.type() === 'error' && /congelat/i.test(m.text())) lamentele.push(m.text()); });
   const w = (ms = 450) => p.waitForTimeout(ms);
   await p.goto(`${BASE}/#/`, { waitUntil: 'load' }); await w(1300);
   await p.click('[data-tab="up"]'); await w(250);
@@ -89,6 +95,31 @@ const conta = (p) => p.evaluate(() => {
   const quarto = await conta(p);
   et(quarto.per[1] === primo.per[1], `una giornata svuotata torna dentro per intero (1ª: ${quarto.per[1] || 0}, attesi ${primo.per[1]})`);
   et(quarto.per[3] === 1, `e la 3ª resta come l'ha lasciata il Giudice (${quarto.per[3] || 0})`);
+
+  // UNA GIORNATA CONGELATA non si tocca: e' chiusa per sempre (art. 9.2) e il
+  // database rifiuta di scriverci. Senza questo controllo il Giudice si
+  // sarebbe preso un errore in faccia a ogni apertura.
+  await p.evaluate(() => {
+    const s = JSON.parse(localStorage.getItem('fcs:mock'));
+    s.tables.match_events = s.tables.match_events.filter((r) => !/^md1_/.test(r.match_id));
+    s.tables.match_appearances = s.tables.match_appearances.filter((r) => !/^md1_/.test(r.match_id));
+    (s.tables.matchday_status ||= []).push({ matchday: 1, status: 'frozen' });
+    localStorage.setItem('fcs:mock', JSON.stringify(s));
+  });
+  const primaDelGelo = errori.length, lamentelePrima = lamentele.length;
+  await p.reload({ waitUntil: 'load' }); await w(2600);
+  const gelata = await conta(p);
+  et(!gelata.per[1], `una giornata congelata non si prova nemmeno a caricarla (1ª: ${gelata.per[1] || 0} eventi)`);
+  et(errori.length === primaDelGelo && lamentele.length === lamentelePrima,
+    `e non prende un errore in faccia (${lamentele.slice(lamentelePrima)[0] || 'nessun errore sulla giornata congelata'})`);
+  await p.evaluate(() => {
+    const s = JSON.parse(localStorage.getItem('fcs:mock'));
+    s.tables.matchday_status = s.tables.matchday_status.filter((r) => r.matchday !== 1);
+    localStorage.setItem('fcs:mock', JSON.stringify(s));
+  });
+  await p.reload({ waitUntil: 'load' }); await w(2600);
+  const scongelata = await conta(p);
+  et(scongelata.per[1] === primo.per[1], `e appena si scongela rientra (1ª: ${scongelata.per[1] || 0})`);
 
   // E i voti adesso ci sono davvero: la schermata Voti della 1ª ha le righe.
   await p.evaluate(() => { location.hash = '#/voti/1'; }); await w(1200);

@@ -154,7 +154,15 @@ function drawer() {
   const leagueRow = leagues.length > 1 ? `<div class="d-sec"><span class="chip">Le mie leghe</span></div>${leagues.filter((l) => l.id !== cur).map((l) => `<button class="d-item" data-switch="${l.id}"><i>${icon('cup')}</i><span class="et">${esc(l.name)}</span><small>${esc(l.myRole)}</small></button>`).join('')}` : '';
   return `<div class="a-drawer${drawerOpen ? ' on' : ''}"><div class="scrim" data-close-drawer></div><div class="panel">
     ${head}${leagueRow}
-    ${S.hasLeague() ? `<div class="d-cta"><a class="a-btn" href="#/rosa/formazione" style="text-decoration:none">${icon('shirt', 'ic sm')}Schiera la formazione</a></div>` : ''}
+    ${S.hasLeague() ? `<div class="d-cta">${(() => {
+    // Finche' la giornata in corso non e' finita non si schiera per la
+    // prossima: il tasto porterebbe a un avviso. Al suo posto quello che in
+    // questo momento c'e' davvero da guardare.
+    const b = S.schieramentoBloccato();
+    return b
+      ? `<a class="a-btn" href="#/voti/${b.inGioco}" style="text-decoration:none">${icon('votes', 'ic sm')}Voti della ${b.inGioco}ª</a>`
+      : `<a class="a-btn" href="#/rosa/formazione" style="text-decoration:none">${icon('shirt', 'ic sm')}Schiera la formazione</a>`;
+  })()}</div>` : ''}
     ${item('#/gestione', { l: 'impostazioni' }, 'Gestione lega', 'tutte le sezioni')}${item('#/squadra', { l: 'la-mia-squadra' }, 'La mia squadra', 'stemma, maglia e nomi')}
     <div class="d-sec"><span class="chip">Setup</span></div>
     ${item('#/lega', { m: 'leghe' }, 'Profilo lega', S.base.league.inviteCode ? `codice ${esc(S.base.league.inviteCode)}` : '')}${item('#/lega', { m: 'squadre' }, 'Partecipanti', String(S.base.managers.length))}${item('#/regolamento', { m: 'guide' }, 'Regolamento ed opzioni')}${item('#/classifica', { m: 'statistiche' }, 'Competizioni')}

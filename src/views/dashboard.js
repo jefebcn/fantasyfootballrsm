@@ -65,9 +65,12 @@ function daConsegnare() {
     sub: `Si chiude fra ${quando}. Senza consegna la partita è persa 0-3 a tavolino (art. 8.4).` });
 }
 
-function azione(ph) {
+function azione(ph, bloccato = null) {
   const st = S.matchdayStatus(ph.matchday);
   if (st !== 'live' && st !== 'provisional') return '';
+  // Se la card della giornata corrente e' gia' quella in corso, questa
+  // scheda direbbe la stessa cosa e porterebbe allo stesso posto.
+  if (bloccato && bloccato.inGioco === ph.matchday) return '';
   return tile({ href: `#/voti/${ph.matchday}`, lead: icon('votes'), leadKind: 'warn',
     title: `Voti della giornata ${ph.matchday}`,
     sub: st === 'live' ? 'Punteggi in arrivo mano a mano che il Giudice inserisce gli eventi'
@@ -102,12 +105,15 @@ function conclusa(r) {
     </div></div>`;
 }
 
+/** Perche' la formazione della prossima non si puo' ancora consegnare. */
+const attesaProssima = (b) => `${b.mancanti === 1 ? 'Manca una partita' : `Mancano ${b.mancanti} partite su ${b.partite}`}: la formazione della ${b.giornata}ª si apre a giornata finita`;
+
 /**
  * La giornata in corso: contro chi si gioca, quanto manca al lock, l'invio
  * della formazione e la scheda della partita. Prima la sfida compariva solo a
  * giornata giocata, quindi tra il lunedì e il sabato non si sapeva più con chi.
  */
-function corrente(f, n, me, riposo) {
+function corrente(f, n, me, riposo, bloccato = null) {
   if (riposo) return sec('Giornata corrente', `${n}ª giornata`)
     + tile({ href: '#/calendario', lead: icon('cal'), title: 'Turno di riposo', sub: 'In questa giornata non hai avversarie' });
   if (!f) return '';
@@ -133,7 +139,7 @@ function corrente(f, n, me, riposo) {
   const nota = aperta
     ? (saved ? `Formazione salvata ${dateIt(saved.submittedAt)} · si chiude ${dateIt(md.lockAt)} alle ${timeIt(md.lockAt)}`
       : `Si chiude ${dateIt(md.lockAt)} alle ${timeIt(md.lockAt)}`)
-    : '';
+    : bloccato ? attesaProssima(bloccato) : '';
   // Il tocco sulle due squadre apre il pre-match a tutto campo — la stessa
   // pagina del link "Probabili e altro", che da solo non si vedeva.
   return sec('Giornata corrente', `${n}ª giornata`) + `<div class="mcard">
@@ -222,7 +228,11 @@ function invitoPubblica() {
  * persona — ma resta spento finche' manca all'appello anche una sola partita:
  * l'art. 9.2 non ammette rettifiche dopo la chiusura.
  */
-function daCalcolare(ph) {
+function daCalcolare(ph, bloccato = null) {
+  // Una giornata che si sta ancora giocando non si puo' chiudere: il tasto
+  // sarebbe spento e la scheda ripeterebbe quello che la card qui sotto dice
+  // gia' — "mancano cinque partite". Torna quando c'e' davvero da fare.
+  if (bloccato && bloccato.inGioco === ph.matchday) return '';
   const q = S.giornataDaChiudere(ph.matchday);
   if (!q) return '';
   return sec('Da calcolare', `${q.giornata}ª giornata`) + `<div class="mcard">
@@ -241,7 +251,7 @@ function daCalcolare(ph) {
  * Il posto e' quello che in una lega pubblica si guarda per primo: contro
  * duecento squadre il proprio punteggio da solo non dice niente.
  */
-function correntePunti(n, me) {
+function correntePunti(n, me, bloccato = null) {
   const md = S.matchday(n); const st = S.matchdayStatus(n);
   const aperta = st === 'open' || st === 'scheduled';
   const saved = S.savedLineup(n, me.id);
@@ -254,7 +264,7 @@ function correntePunti(n, me) {
     ? (saved
       ? `Formazione salvata ${dateIt(saved.submittedAt)} · si chiude ${dateIt(md.lockAt)} alle ${timeIt(md.lockAt)}`
       : `Si chiude ${dateIt(md.lockAt)} alle ${timeIt(md.lockAt)} — senza consegna questa giornata vale zero`)
-    : '';
+    : bloccato ? attesaProssima(bloccato) : '';
   return sec('Giornata corrente', `${n}ª giornata`) + `<div class="mcard">
     <div class="mrow punti">
       <span class="pblocco"><b>${punti === null ? '—' : fmt(punti)}</b><span>${punti === null ? 'da giocare' : 'punti in giornata'}</span></span>
@@ -390,7 +400,12 @@ export const dashboard = {
     // I due lavori sono di due persone diverse: schierare e' del giocatore,
     // calcolare e' di chi tiene i conti della lega. Il secondo ha una scheda
     // sua (daCalcolare), che compare solo quando c'e' da fare.
-    const nCur = ph.next;
+    // UNA GIORNATA PER VOLTA. Finche' quella in corso non e' finita la card
+    // resta sua: prima annunciava "Giornata corrente · 5ª" con dentro
+    // "INSERISCI FORMAZIONE" mentre la 4ª aveva ancora cinque partite da
+    // giocare. La prossima arriva quando questa ha finito.
+    const bloccato = S.schieramentoBloccato();
+    const nCur = bloccato ? bloccato.inGioco : ph.next;
     const cur = nCur <= 30 ? S.myFixture(nCur, me.id) : null;
     const riposo = !cur && nCur <= 30 && S.base.managers.length > 1;
     const [art, titolo, testo] = RULES[Math.floor(Date.now() / 86400000) % RULES.length];
@@ -433,11 +448,11 @@ export const dashboard = {
       ${notiziaBreve()}
       ${invitoPubblica()}
       ${S.aPunti() ? '' : conclusa(ultima)}
-      ${daCalcolare(ph)}
-      ${S.aPunti() ? correntePunti(Math.min(30, nCur), me) : corrente(cur, nCur, me, riposo)}
+      ${daCalcolare(ph, bloccato)}
+      ${S.aPunti() ? correntePunti(Math.min(30, nCur), me, bloccato) : corrente(cur, nCur, me, riposo, bloccato)}
       ${noRoster ? tile({ href: S.isLeagueAdmin() ? '#/lega' : '#/leghe', lead: icon('warn'), leadKind: 'warn',
           title: 'Rose non ancora assegnate',
-          sub: S.isLeagueAdmin() ? "Generale o inserirle dalla gestione lega" : "Le assegna l'admin della lega dopo l'asta" }) : azione(ph)}
+          sub: S.isLeagueAdmin() ? "Generale o inserirle dalla gestione lega" : "Le assegna l'admin della lega dopo l'asta" }) : azione(ph, bloccato)}
       ${ultimiCinque(last, me)}
       ${prossimePartite(ph)}
       ${lockDaSistemare()}

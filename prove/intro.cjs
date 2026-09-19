@@ -7,13 +7,19 @@
  * che la schermata sia quella giusta, che il video ci sia col suo file e che
  * il file arrivi davvero dal server (200 e video/mp4).
  *
- * QUELLO CHE QUESTA PROVA NON PUO' DIRE: che si veda. Il Chromium delle
- * prove non ha i decodificatori proprietari — canPlayType per H.264 risponde
- * "" — quindi qui il video non parte mai, e un video buono e uno rotto si
- * somigliano. Il formato lo controlla tests/intro-video.test.js guardando
- * dentro il file. Qui si controlla l'altra meta': che con un video che non
- * parte la schermata resti guardabile, perche' e' esattamente quello che
- * succede su un browser senza quei codec.
+ * QUELLO CHE QUESTA PROVA NON PUO' DIRE: che si veda. Dipende dai
+ * decodificatori proprietari del browser che la esegue — il Chromium
+ * scaricato da Playwright H.264 non lo legge, quello che si trova sulle
+ * macchine di GitHub si' — e infatti la prova era rossa su GitHub e verde
+ * qui: dava per scontato che il video non partisse mai e pretendeva un video
+ * trasparente, mentre la' il video partiva davvero. Sbagliava lei: il
+ * formato lo controlla tests/intro-video.test.js guardando dentro il file, e
+ * quello che conta qui e' la regola, vera dovunque — il video si accende
+ * SOLO con un fotogramma pronto, se no resta trasparente e sotto si vede lo
+ * sfondo animato. Niente buchi neri.
+ *
+ * Il caso "video che non arriva" non si aspetta piu' che sia il browser a
+ * non saperlo leggere: si stacca il file e si guarda cosa resta.
  */
 const { chromium } = require('playwright');
 const BASE = process.env.BASE || 'http://localhost:4173';
@@ -45,8 +51,9 @@ const ok = [], ko = []; const et = (c, t) => (c ? ok : ko).push(t);
       video: !!v, sorgente: v?.querySelector('source')?.getAttribute('src') || null,
       attributi: v ? ['muted', 'autoplay', 'playsinline', 'loop'].filter((a) => v.hasAttribute(a)) : [],
       canvas: !!cv, canvasSiVede: vis(cv),
-      // senza codec il video resta trasparente: e' la classe .on che lo accende
+      // .on accende il video, e la mette solo chi ha visto un fotogramma
       opacita: v ? getComputedStyle(v).opacity : null,
+      pronto: v ? v.readyState >= 2 : null,
       sfocato: v ? /blur/.test(getComputedStyle(v).filter) : null,
       testoSiVede: vis(body) && body.innerText.trim().length > 10,
       titolo: document.querySelector('.intro-body h1')?.innerText.trim() || '',
@@ -61,11 +68,44 @@ const ok = [], ko = []; const et = (c, t) => (c ? ok : ko).push(t);
   et(risposte[0] && /video\/mp4/.test(risposte[0].tipo), `servito come video (${risposte[0]?.tipo})`);
   et(r.canvas && r.canvasSiVede, 'sotto c\'e\' lo sfondo animato di riserva');
   et(r.sfocato, 'il video e\' sfocato, cosi\' il testo sopra si legge');
-  et(r.opacita === '0', `senza codec resta trasparente invece di lasciare un buco nero (opacita' ${r.opacita})`);
+  et(r.opacita === '0' || r.pronto, `si accende solo con un fotogramma pronto, se no resta trasparente (opacita' ${r.opacita}, fotogramma ${r.pronto ? 'si' : 'no'})`);
   et(r.testoSiVede, `e il testo della presentazione si legge lo stesso ("${r.titolo.slice(0, 40)}")`);
   et(errori.length === 0, `nessun errore JS${errori.length ? ' — ' + errori[0] : ''}`);
 
   await ctx.close();
+
+  // --- il video che non arriva ------------------------------------------
+  // Un file mancante, o un formato che il browser non legge, finiscono nello
+  // stesso posto: l'elemento va via e sotto resta lo sfondo animato. Qui si
+  // stacca proprio il file, cosi' la prova non dipende piu' da quali codec
+  // ha la macchina che la esegue.
+  const ctx2 = await b.newContext({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 2, isMobile: true, hasTouch: true, serviceWorkers: 'block' });
+  await ctx2.addInitScript(() => {
+    window.__SUPABASE_JS__ = '/tests/mock-supabase.js';
+    localStorage.setItem('fcs:supabase', JSON.stringify({ url: 'https://mock.supabase.co', key: 'mock-key-mock-key-mock' }));
+  });
+  const p2 = await ctx2.newPage();
+  const errori2 = []; p2.on('pageerror', (e) => errori2.push(e.message));
+  await p2.route('**/intro.mp4', (route) => route.abort());
+  await p2.goto(`${BASE}/#/`, { waitUntil: 'load' });
+  await p2.waitForSelector('.intro', { timeout: 10000 });
+  await p2.waitForTimeout(2000);
+  const senza = await p2.evaluate(() => {
+    const v = document.querySelector('#intro-video'), cv = document.querySelector('#intro-fx');
+    const body = document.querySelector('.intro-body');
+    const vis = (e) => { if (!e) return false; const b = e.getBoundingClientRect(); return b.width > 0 && b.height > 0; };
+    return {
+      video: !!v, opacita: v ? getComputedStyle(v).opacity : null,
+      canvas: vis(cv), testo: vis(body) && body.innerText.trim().length > 10,
+      titolo: document.querySelector('.intro-body h1')?.innerText.trim() || '',
+    };
+  });
+  et(!senza.video || senza.opacita === '0', `video staccato: niente buco nero (${senza.video ? `opacita' ${senza.opacita}` : 'elemento tolto'})`);
+  et(senza.canvas, 'video staccato: sotto resta lo sfondo animato');
+  et(senza.testo, `video staccato: e la presentazione si legge lo stesso ("${senza.titolo.slice(0, 40)}")`);
+  et(errori2.length === 0, `video staccato: nessun errore JS${errori2.length ? ' — ' + errori2[0] : ''}`);
+  await ctx2.close();
+
   await b.close();
   for (const t of ok) console.log('  ok  ' + t);
   for (const t of ko) console.log('  KO  ' + t);

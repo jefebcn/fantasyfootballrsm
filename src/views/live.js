@@ -94,7 +94,7 @@ function probabili(n, h, a, f) {
   return `<div class="a-card" style="padding:0;overflow:hidden">
     <p class="prehead">Probabili formazioni · si chiude ${dateIt(lock)} alle ${timeIt(lock)}</p>
     <div class="prob">${lato(h)}${lato(a)}</div>
-    ${f && S.me() && (f.homeManagerId === S.me().id || f.awayManagerId === S.me().id)
+    ${f && S.me() && !S.schieramentoBloccato() && (f.homeManagerId === S.me().id || f.awayManagerId === S.me().id)
     ? `<a class="mcta" href="#/rosa/formazione">Schiera la tua formazione${icon('chev', 'ic sm')}</a>` : ''}
   </div>`;
 }
@@ -127,7 +127,7 @@ export const live = {
       const mio = f && S.me() && (f.homeManagerId === S.me().id || f.awayManagerId === S.me().id);
       const pre = tab === 'campo'
         ? `<p class="prehead libero">Probabili formazioni · si chiude ${dateIt(lock)} alle ${timeIt(lock)}</p>${probabiliCampo(n, h, a)}
-           ${mio ? `<a class="a-btn sec" href="#/rosa/formazione" style="text-decoration:none">Schiera la tua formazione</a>` : ''}`
+           ${mio && !S.schieramentoBloccato() ? `<a class="a-btn sec" href="#/rosa/formazione" style="text-decoration:none">Schiera la tua formazione</a>` : ''}`
         : tab === 'lista' ? probabili(n, h, a, f)
           : `<div class="a-sec"><b>Partite del campionato</b><span>giornata ${n}</span></div>${campionato}`;
       return `<main class="a-body" style="padding:0;gap:0">${head}

@@ -572,6 +572,53 @@ export const hasData = (n) => !!g.matchdayStatus[n]
  */
 export function nextMatchday() { return giornataAperta(); }
 /** La giornata per cui si fa ancora in tempo a consegnare. */
+/**
+ * La giornata che si sta giocando adesso, se ce n'e' una.
+ *
+ * "Si gioca ancora" vuol dire: il lock e' passato e almeno una partita non ha
+ * ancora un esito. Non basta "non giocata": una gara rinviata, sospesa o
+ * assegnata a tavolino un esito ce l'ha, e se bastasse quella una rinviata a
+ * data da destinarsi terrebbe in ostaggio la giornata per sempre.
+ *
+ * Le giornate prima della nascita della lega non sono sue e non contano: una
+ * lega creata di sabato non deve aspettare la fine di una giornata che non ha
+ * giocato.
+ */
+export function giornataInGioco() {
+  const n = giornataAperta() - 1;
+  if (n < 1 || n < primaGiornata()) return null;
+  const md = matchday(n); if (!md) return null;
+  if (now() < new Date(md.lockAt)) return null;
+  return matchesOf(n).some((m) => m.status === 'scheduled') ? n : null;
+}
+
+// Quando manca meno di cosi' al lock, la formazione si apre comunque.
+const ORE_VALVOLA = 48;
+
+/**
+ * Perche' la formazione della prossima giornata non si puo' ancora consegnare.
+ *
+ * Una giornata per volta: finche' si gioca quella in corso non si schiera per
+ * la prossima. Sullo schermo si leggeva "Giornata corrente · 5ª · INSERISCI
+ * FORMAZIONE" mentre la 4ª aveva ancora cinque partite da giocare, e le due
+ * cose insieme non stanno in piedi.
+ *
+ * LA VALVOLA. Se il lock della prossima si avvicina — meno di due giorni — si
+ * apre lo stesso, anche se la giornata in corso non e' finita. Senza, una
+ * partita mai giocata o mai importata bloccherebbe la consegna fino al lock, e
+ * chi non consegna perde 0-3 a tavolino (art. 8.4): il danno di aprire presto
+ * e' un fastidio, quello di non aprire e' una giornata persa da tutti.
+ *
+ * Torna null quando non c'e' niente che blocca.
+ */
+export function schieramentoBloccato() {
+  const inGioco = giornataInGioco();
+  if (inGioco === null) return null;
+  const n = giornataAperta(); const md = matchday(n); if (!md) return null;
+  if (new Date(md.lockAt) - now() <= ORE_VALVOLA * 3600000) return null;
+  const gare = matchesOf(inGioco);
+  return { giornata: n, inGioco, mancanti: gare.filter((m) => m.status === 'scheduled').length, partite: gare.length };
+}
 export function giornataDaSchierare() { return giornataAperta(); }
 /** 'frozen' | 'provisional' | 'live' | 'open' | 'scheduled' */
 /** Il calendario dei lock come lo vede l'app: e' quello che vale. */
@@ -630,6 +677,7 @@ export async function disiscriviAvvisi() {
 export function promemoriaFormazione() {
   const io = me(); if (!io) return null;
   const n = giornataDaSchierare(); const md = matchday(n); if (!md) return null;
+  if (schieramentoBloccato()) return null;   // non si avvisa per una cosa che non si puo' ancora fare
   const st = matchdayStatus(n);
   if (st !== 'open' && st !== 'scheduled') return null;   // giornata gia' chiusa
   if (savedLineup(n, io.id)) return null;                  // consegnata
@@ -681,6 +729,11 @@ export function lineupFor(n, managerId) {
   return { ...defaultLineup(rosterIds(managerId).filter((id) => playersById.get(id).isActive), playersById), source: 'ufficio' };
 }
 export function saveLineup(n, managerId, lineup) {
+  // La regola sta qui e non solo nella schermata: una regola messa solo nella
+  // schermata vale solo per quella schermata, e qui ci si arriva anche da un
+  // collegamento diretto.
+  const b = schieramentoBloccato();
+  if (b && n === b.giornata) throw new Error(`La ${b.inGioco}ª giornata è ancora in corso: la formazione della ${n}ª si apre quando finisce`);
   const rec = { ...lineup, submittedAt: now().toISOString() }; L.lineups[`${n}:${managerId}`] = rec; notify();
   return remote.upsertLineup(base.league.id, managerId, n, rec).catch((e) => { onError(e); refresh(); });
 }

@@ -68,6 +68,19 @@ function autofill(d, rosterIds) {
 export const formazione = {
   title: 'Formazione', sub: () => 'Rosa · Formazione',
   render() {
+    // Una giornata per volta: finche' quella in corso non e' finita, la
+    // prossima non si schiera. Qui ci si arriva anche da un collegamento
+    // diretto o da un segnalibro, quindi il controllo non puo' stare solo
+    // sulla dashboard — e la regola vera sta comunque in saveLineup.
+    const b = S.schieramentoBloccato();
+    if (b) {
+      const g = S.matchesOf(b.inGioco);
+      const prossime = g.filter((m) => m.status === 'scheduled').slice(0, 3);
+      return `<main class="a-body"><div class="empty">${icon('clock')}
+        <p><b>La ${b.inGioco}ª giornata è ancora in corso.</b><br>La formazione della ${b.giornata}ª si apre quando finisce: ${b.mancanti === 1 ? 'manca una partita' : `mancano ${b.mancanti} partite su ${b.partite}`}.</p>
+        ${prossime.length ? `<p class="small muted">${prossime.map((m) => `${esc(S.clubsById.get(m.homeClubId).name)} — ${esc(S.clubsById.get(m.awayClubId).name)} · ${dateIt(m.kickoffAt)} alle ${timeIt(m.kickoffAt)}`).join('<br>')}</p>` : ''}
+        <a class="a-btn" href="#/voti/${b.inGioco}" style="text-decoration:none">Voti della ${b.inGioco}ª</a></div></main>`;
+    }
     const d = ensureDraft(); normalize(d); const me = S.me(); const n = S.giornataDaSchierare(); const md = S.matchday(n); const st = S.matchdayStatus(n);
     const locked = st !== 'open' && st !== 'scheduled';
     const s = slotsByRole(d); const errors = validateLineup({ ...d, starters: d.starters.filter(Boolean), bench: d.bench.filter(Boolean) }, S.playersById);
@@ -99,6 +112,7 @@ export const formazione = {
     </main>`;
   },
   mount(root, ctx) {
+    if (S.schieramentoBloccato()) return;   // la schermata e' un avviso, non ha niente da agganciare
     const d = ensureDraft(); const n = S.giornataDaSchierare(); const me = S.me(); const st = S.matchdayStatus(n);
     if (st !== 'open' && st !== 'scheduled') return;
     const rosterIds = S.rosterIds(me.id).filter((id) => P(id).isActive);
@@ -154,7 +168,8 @@ export const formazione = {
       if (e.target.closest('#confirm')) {
         const errors = validateLineup({ ...d, starters: d.starters.filter(Boolean), bench: d.bench.filter(Boolean) }, S.playersById);
         if (errors.length) { ctx.toast(errors[0]); return; }
-        S.saveLineup(n, me.id, { ...d, bench: d.bench.filter(Boolean) }); ctx.toast(`Formazione salvata · giornata ${n}`);
+        try { S.saveLineup(n, me.id, { ...d, bench: d.bench.filter(Boolean) }); ctx.toast(`Formazione salvata · giornata ${n}`); }
+        catch (err) { ctx.toast(err.message); ctx.render(); }
       }
     });
   },

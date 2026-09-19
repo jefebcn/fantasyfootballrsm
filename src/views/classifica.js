@@ -198,7 +198,9 @@ export const classifica = {
           : 'Nessuna giornata conclusa: la classifica compare quando arrivano i primi voti del campionato.';
       const azione = soli
         ? `<a class="a-btn" href="#/${S.legaPubblica() ? 'leghe' : 'lega'}" style="text-decoration:none">${S.legaPubblica() ? 'Vedi le leghe pubbliche' : 'Invita i partecipanti'}</a>`
-        : `<a class="a-btn sec" href="#/rosa/formazione" style="text-decoration:none">Schiera la formazione</a>`;
+        : S.schieramentoBloccato()
+          ? `<a class="a-btn sec" href="#/voti/${S.schieramentoBloccato().inGioco}" style="text-decoration:none">Voti della ${S.schieramentoBloccato().inGioco}ª</a>`
+          : `<a class="a-btn sec" href="#/rosa/formazione" style="text-decoration:none">Schiera la formazione</a>`;
       return `<main class="a-body">
         ${S.aPunti() ? segPunti : seg}
         ${S.aPunti() ? premiCard({ vincitori: false }) : ''}

@@ -1,6 +1,6 @@
 import * as S from '../state.js';
 import { validateLineup, parseModule } from '../engine.js';
-import { esc, roleChip, faccia, ROLE_NAME, badge, icon, avatar, dateIt, timeIt } from '../ui.js';
+import { esc, roleChip, faccia, ROLE_NAME, badge, icon, avatar, dateIt, timeIt, fmt } from '../ui.js';
 
 let draft = null; let draftFor = null;
 function ensureDraft() {
@@ -28,7 +28,7 @@ const clubOf = (id) => S.clubsById.get(P(id).clubId);
  *  (togli e sostituisci stanno nel foglio, come per gli slot in campo).
  *  Il segno "1º" marca chi entra per primo in quel ruolo: e' l'unica cosa che
  *  l'ordine della panchina decide davvero (art. 8.2). */
-function benchRow(id, i, bench, locked) {
+function benchRow(id, i, bench, locked, voto = '') {
   if (!id) return `<div class="br vuota" data-bench="${i}"><span class="n">${i + 1}</span>
     <span class="av-ph">+</span><span class="nm"><b>Aggiungi un panchinaro</b><span>tocca per scegliere</span></span></div>`;
   const p = P(id); const primo = bench.findIndex((x) => x && P(x).role === p.role) === i;
@@ -36,6 +36,7 @@ function benchRow(id, i, bench, locked) {
   return `<div class="br" data-bench="${i}"><span class="n">${i + 1}</span>
     ${faccia(p, clubOf(id))}
     <span class="nm"><b>${esc(p.name)}</b><span>${esc(clubOf(id).name)} · quot. ${p.quotation}</span></span>
+    ${voto}
     <span class="primo${primo ? '' : ' no'}"${primo ? ` title="Primo ${ROLE_NAME[p.role].slice(0, -1).toLowerCase()} della panchina: entra lui se un ${ROLE_NAME[p.role].slice(0, -1).toLowerCase()} titolare non prende voto"` : ' aria-hidden="true"'}>${primo ? `1º ${p.role}` : ''}</span>
     ${locked ? '' : `<span class="acts"><button class="rm" data-up="${i}" aria-label="Sposta su ${esc(p.name)}" ${su ? '' : 'disabled'}>${icon('up', 'ic sm')}</button><button class="rm" data-down="${i}" aria-label="Sposta giù ${esc(p.name)}" ${giu ? '' : 'disabled'}>${icon('down', 'ic sm')}</button></span>`}</div>`;
 }
@@ -68,26 +69,29 @@ function autofill(d, rosterIds) {
 export const formazione = {
   title: 'Formazione', sub: () => 'Rosa · Formazione',
   render() {
-    // Una giornata per volta: finche' quella in corso non e' finita, la
-    // prossima non si schiera. Qui ci si arriva anche da un collegamento
-    // diretto o da un segnalibro, quindi il controllo non puo' stare solo
-    // sulla dashboard — e la regola vera sta comunque in saveLineup.
+    // MENTRE SI GIOCA QUESTA SCHERMATA NON E' PIU' L'EDITOR: e' la squadra in
+    // campo. Si guarda la formazione consegnata per la giornata in corso, coi
+    // voti che arrivano mano a mano. Prima qui c'era solo un avviso, e la
+    // squadra che stava giocando non si vedeva da nessuna parte — ed e' la
+    // cosa che si apre l'app per guardare, la domenica pomeriggio.
+    //
+    // La prossima giornata non si schiera lo stesso: il divieto vero sta in
+    // saveLineup, perche' una regola messa solo nella schermata vale solo per
+    // quella schermata.
+    const me = S.me();
     const b = S.schieramentoBloccato();
-    if (b) {
-      const g = S.matchesOf(b.inGioco);
-      const prossime = g.filter((m) => m.status === 'scheduled').slice(0, 3);
-      return `<main class="a-body"><div class="empty">${icon('clock')}
-        <p><b>La ${b.inGioco}ª giornata è ancora in corso.</b><br>La formazione della ${b.giornata}ª si apre quando finisce: ${b.mancanti === 1 ? 'manca una partita' : `mancano ${b.mancanti} partite su ${b.partite}`}.</p>
-        ${prossime.length ? `<p class="small muted">${prossime.map((m) => `${esc(S.clubsById.get(m.homeClubId).name)} — ${esc(S.clubsById.get(m.awayClubId).name)} · ${dateIt(m.kickoffAt)} alle ${timeIt(m.kickoffAt)}`).join('<br>')}</p>` : ''}
-        <a class="a-btn" href="#/voti/${b.inGioco}" style="text-decoration:none">Voti della ${b.inGioco}ª</a></div></main>`;
-    }
-    const d = ensureDraft(); normalize(d); const me = S.me(); const n = S.giornataDaSchierare(); const md = S.matchday(n); const st = S.matchdayStatus(n);
+    const n = b ? b.inGioco : S.giornataDaSchierare(); const md = S.matchday(n); const st = S.matchdayStatus(n);
     const locked = st !== 'open' && st !== 'scheduled';
+    const d = b ? S.lineupFor(n, me.id) : (() => { const x = ensureDraft(); normalize(x); return x; })();
+    // I voti ci sono solo a giornata cominciata, e arrivano una partita per
+    // volta: chi non ha ancora giocato semplicemente non ce l'ha.
+    const voti = locked ? S.ratingsOf(n) : null;
+    const voto = (id) => { const r = voti && voti.get(id); return r ? `<i class="fvc${r.isSV ? ' sv' : ''}">${r.isSV ? 'S.V.' : fmt(r.fantaVote)}</i>` : ''; };
     const s = slotsByRole(d); const errors = validateLineup({ ...d, starters: d.starters.filter(Boolean), bench: d.bench.filter(Boolean) }, S.playersById);
     const saved = S.savedLineup(n, me.id);
     const fx = S.myFixture(n, me.id); const opp = fx ? S.managersById.get(fx.homeManagerId === me.id ? fx.awayManagerId : fx.homeManagerId) : null;
     const slot = (id, role, i) => id
-      ? `<div class="slot" data-slot="${role}:${i}"><span class="av faccia">${d.captainId === id ? '<span class="cap">C</span>' : d.viceCaptainId === id ? '<span class="cap">V</span>' : ''}${avatar(P(id), S.clubsById.get(P(id).clubId))}${roleChip(role)}</span><b>${esc(P(id).lastName)}</b></div>`
+      ? `<div class="slot" data-slot="${role}:${i}"><span class="av faccia">${d.captainId === id ? '<span class="cap">C</span>' : d.viceCaptainId === id ? '<span class="cap">V</span>' : ''}${avatar(P(id), S.clubsById.get(P(id).clubId))}${roleChip(role)}${voto(id)}</span><b>${esc(P(id).lastName)}</b></div>`
       : `<div class="slot vuoto" data-slot="${role}:${i}"><span class="av">+</span><b>${ROLE_NAME[role].slice(0, -1).replace('Portier', 'Portiere')}</b></div>`;
     const line = (role) => `<div class="line" data-line="${role.toLowerCase()}">${s[role].map((id, i) => slot(id, role, i)).join('')}</div>`;
     const bench = Array.from({ length: 7 }, (_, i) => d.bench[i] || null);
@@ -98,17 +102,22 @@ export const formazione = {
           ${locked ? badge('live') : badge('open')}</div>
         <div class="fase-lock">${icon('clock', 'ic sm')}<span>${locked ? 'bloccata da' : 'si chiude'} <b>${dateIt(md.lockAt)} ${timeIt(md.lockAt)}</b></span>
           <span class="sep"></span>${saved ? `<span>salvata ${dateIt(saved.submittedAt)} ${timeIt(saved.submittedAt)}</span>` : '<span class="da-fare">da consegnare</span>'}</div>
-        ${!saved ? `<p class="small muted"><b>Se non consegni, la partita è persa 0-3 a tavolino</b> (art. 8.4). Quella qui sotto è solo una proposta — ${S.lineupFor(n, me.id).source === 'ufficio' ? 'il 4-4-2 con le quotazioni più alte' : `l'ultima che hai schierato (${S.lineupFor(n, me.id).source})`} — e non conta finché non la confermi.</p>` : ''}
+        ${!saved && !locked ? `<p class="small muted"><b>Se non consegni, la partita è persa 0-3 a tavolino</b> (art. 8.4). Quella qui sotto è solo una proposta — ${S.lineupFor(n, me.id).source === 'ufficio' ? 'il 4-4-2 con le quotazioni più alte' : `l'ultima che hai schierato (${S.lineupFor(n, me.id).source})`} — e non conta finché non la confermi.</p>` : ''}
+        ${!saved && locked ? `<p class="small muted"><b>Formazione non consegnata</b>: la partita è persa 0-3 a tavolino (art. 8.4). Quella qui sotto non conta, è solo l'ultima proposta.</p>` : ''}
+        ${b ? `<div class="fase-punti"><span>Punti in giornata</span><b>${fmt(S.puntiGiornata(n, me.id))}</b></div>
+        <p class="small muted">${b.mancanti === 1 ? 'Manca una partita' : `Mancano ${b.mancanti} partite su ${b.partite}`}: i voti arrivano mano a mano, e la formazione della ${b.giornata}ª si apre a giornata finita.</p>` : ''}
       </div>
-      <div class="a-sec"><b>Modulo</b><span>${esc(d.formation)} · titolari ${d.starters.filter(Boolean).length}/11</span></div>
-      <div class="moduli" data-modules>${S.rules().modules.map((m) => `<button class="chip mod${m === d.formation ? ' on' : ''}" data-mod="${m}" ${locked ? 'disabled' : ''}>${m}</button>`).join('')}</div>
+      <div class="a-sec"><b>${b ? 'In campo' : 'Modulo'}</b><span>${esc(d.formation)} · titolari ${d.starters.filter(Boolean).length}/11</span></div>
+      ${b ? '' : `<div class="moduli" data-modules>${S.rules().modules.map((m) => `<button class="chip mod${m === d.formation ? ' on' : ''}" data-mod="${m}" ${locked ? 'disabled' : ''}>${m}</button>`).join('')}</div>`}
       <div class="pitch-wrap"><div class="pitch">${CAMPO}${line('P')}${line('D')}${line('C')}${line('A')}</div></div>
       <div class="a-sec"><b>Panchina</b><span>${bench.filter(Boolean).length}/7</span></div>
       <p class="small muted nota">L'ordine conta: al posto di un titolare senza voto entra il <b>primo panchinaro dello stesso ruolo</b> (art. 8.2).</p>
-      <div class="bench">${bench.map((id, i) => benchRow(id, i, bench, locked)).join('')}</div>
+      <div class="bench">${bench.map((id, i) => benchRow(id, i, bench, locked, voto(id))).join('')}</div>
       ${errors.length ? `<div class="warn block">${icon('warn', 'ic sm')}<span>${errors.map(esc).join(' · ')}</span></div>` : ''}
-      <button class="a-btn" id="confirm" ${locked || errors.length ? 'disabled' : ''}>${icon('check', 'ic sm')}${locked ? 'Formazione bloccata' : `Conferma formazione · ${d.starters.filter(Boolean).length}/11`}</button>
-      <p class="small muted" style="text-align:center">Capitano e vice: tocca un titolare. Il capitano raddoppia bonus e malus (art. 6).</p>
+      ${b
+    ? `<a class="a-btn" href="#/voti/${n}" style="text-decoration:none">${icon('votes', 'ic sm')}Voti della ${n}ª</a>`
+    : `<button class="a-btn" id="confirm" ${locked || errors.length ? 'disabled' : ''}>${icon('check', 'ic sm')}${locked ? 'Formazione bloccata' : `Conferma formazione · ${d.starters.filter(Boolean).length}/11`}</button>`}
+      <p class="small muted" style="text-align:center">${b ? `La formazione della ${b.giornata}ª si apre quando la ${n}ª è finita.` : 'Capitano e vice: tocca un titolare. Il capitano raddoppia bonus e malus (art. 6).'}</p>
     </main>`;
   },
   mount(root, ctx) {

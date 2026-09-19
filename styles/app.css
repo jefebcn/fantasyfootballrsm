@@ -558,6 +558,16 @@ hr.sep{border:0;border-top:1px solid var(--border);margin:4px 0}
 .slot .av .cap{position:absolute;top:-2px;left:-2px;width:19px;height:19px;border-radius:50%;background:var(--c-oro-400);color:var(--c-titano-900);font:800 10px var(--font-display);display:grid;place-items:center;border:2px solid #fff;z-index:2}
 /* Targhetta col nome, come sui campi delle formazioni: il testo bianco sul
    verde chiaro del prato stava a meno di 3 di contrasto. */
+/* Il voto in campo: sta appeso alla faccia, come sui campi delle app di
+   fantacalcio. Compare solo a giornata cominciata e solo per chi ha giocato. */
+.slot .fvc{position:absolute;top:-4px;right:-8px;z-index:2;font:700 10px var(--font-data);font-style:normal;
+  min-width:26px;text-align:center;padding:2px 4px;border-radius:8px;background:var(--c-titano-900);color:#fff;border:2px solid #fff}
+.slot .fvc.sv{background:#5B6B7C}
+.br .fvc{font:700 12px var(--font-data);font-style:normal;color:var(--text);margin-left:auto;padding-left:8px}
+.br .fvc.sv{color:var(--text-muted);font-size:11px}
+.fase-punti{display:flex;align-items:baseline;justify-content:space-between;gap:10px;padding-top:4px}
+.fase-punti span{font-size:12px;color:var(--text-muted)}
+.fase-punti b{font-family:var(--font-display);font-size:22px;font-variant-numeric:tabular-nums}
 .slot b{font:600 10.5px var(--font-body);text-align:center;line-height:1;white-space:nowrap;overflow:hidden;
   text-overflow:ellipsis;max-width:74px;background:rgba(9,32,20,.78);border-radius:6px;padding:3px 7px}
 /* "vuoto", non "empty": .empty e' lo stile degli SCHERMI vuoti (padding 40px,

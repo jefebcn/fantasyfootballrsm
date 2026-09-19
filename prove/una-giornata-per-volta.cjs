@@ -95,14 +95,41 @@ const MOMENTI = [
       et(!dash.promemoria, `${m.etichetta}: nessun promemoria per una cosa che non si può fare`);
       et(dash.rimandi === 1, `${m.etichetta}: un solo rimando ai voti della giornata in corso (${dash.rimandi})`);
 
-      // dal collegamento diretto si arriva a un avviso, non al campo
-      await p.evaluate(() => { location.hash = '#/rosa/formazione'; }); await w(1000);
+      // ROSA → FORMAZIONE MENTRE SI GIOCA non e' un muro: e' la squadra in
+      // campo. Prima qui c'era solo l'avviso "la 4ª è ancora in corso", e la
+      // squadra che stava giocando non si vedeva da nessuna parte — ed e' la
+      // cosa che si apre l'app per guardare, la domenica pomeriggio.
+      //
+      // Si schiera apposta un undici di gente che ha giocato davvero la prima
+      // partita della giornata: cosi' i voti ci sono tutti e si conta.
+      const undici = await p.evaluate(async () => {
+        const S = await import('/src/state.js');
+        const perRuolo = { P: [], D: [], C: [], A: [] };
+        for (const a of S.appearancesOf('md4_m1')) { const g = S.playersById.get(a.playerId); if (g) perRuolo[g.role].push(g.id); }
+        const titolari = [...perRuolo.P.slice(0, 1), ...perRuolo.D.slice(0, 4), ...perRuolo.C.slice(0, 4), ...perRuolo.A.slice(0, 2)];
+        if (titolari.length < 11) return 0;
+        S.saveLineup(4, S.me().id, { formation: '4-4-2', starters: titolari, bench: [], captainId: titolari[0], viceCaptainId: titolari[1] });
+        return titolari.length;
+      });
+      await p.reload({ waitUntil: 'load' }); await w(2000);
+      await p.evaluate(() => { location.hash = '#/rosa/formazione'; }); await w(1200);
       const schermo = await p.evaluate(() => ({
         campo: !!document.querySelector('.campo'),
-        testo: document.querySelector('.empty')?.innerText.replace(/\n/g, ' ') || '',
+        pieni: document.querySelectorAll('.slot:not(.vuoto)').length,
+        voti: document.querySelectorAll('.fvc').length,
+        conferma: !!document.querySelector('#confirm'),
+        moduli: [...document.querySelectorAll('[data-mod]')].filter((x) => !x.disabled).length,
+        aiVoti: !!document.querySelector('a[href="#/voti/4"]'),
+        testo: document.body.innerText.replace(/\n/g, ' '),
       }));
-      et(!schermo.campo, `${m.etichetta}: il campo non si apre nemmeno dal collegamento diretto`);
-      et(/ancora in corso/i.test(schermo.testo), `${m.etichetta}: e spiega perché ("${schermo.testo.slice(0, 60)}")`);
+      et(schermo.campo && schermo.pieni >= 11, `${m.etichetta}: la squadra in campo si vede (${schermo.pieni} caselle piene)`);
+      et(undici === 11 && schermo.voti === 11, `${m.etichetta}: e ogni giocatore che ha giocato porta il suo voto (${schermo.voti} su ${undici})`);
+      et(/Punti in giornata/i.test(schermo.testo), `${m.etichetta}: col punteggio della giornata in cima`);
+      et(!schermo.conferma && schermo.moduli === 0, `${m.etichetta}: ma non si tocca niente (conferma ${schermo.conferma ? 'c\'è' : 'no'}, moduli ${schermo.moduli})`);
+      et(schermo.aiVoti, `${m.etichetta}: e si passa ai voti della giornata`);
+      await p.screenshot({ path: `${process.env.USCITA || '/tmp'}/formazione-in-corso.png`, fullPage: true }).catch(() => {});
+      et(/si apre quando la 4ª è finita|si apre a giornata finita/i.test(schermo.testo),
+        `${m.etichetta}: e dice quando si potrà schierare la prossima`);
 
       // e la regola vale dove si scrive, non solo dove si guarda
       const scritto = await p.evaluate(async () => {

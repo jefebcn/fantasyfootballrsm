@@ -73,6 +73,20 @@ const avvia = async (b, { motoRidotto = false, arrivate = 0 } = {}) => {
   await p.click('#primary'); await w(1000);
   await p.click('[data-form="create"]'); await w(250);
   await p.fill('#lname', 'Torneo Titano'); await p.fill('#team', 'Hasta El Roxy'); await p.click('#go-create'); await w(1400);
+  // Qui si guarda la schermata con gli occhi di chi gioca, non del Giudice
+  // Dati: il Giudice, aprendo l'app, si porta dentro i referti da solo, e
+  // allora non esisterebbe piu' il caso "gara finita, voti non ancora in
+  // lega" — che e' proprio quello che questa prova deve guardare. Nel mock il
+  // primo iscritto nasce Giudice, quindi il ruolo si toglie.
+  await p.evaluate(() => {
+    const s = JSON.parse(localStorage.getItem('fcs:mock'));
+    s.tables.profiles.find((x) => x.id === s.userId).is_judge = false;
+    // e si svuota quello che il Giudice aveva gia' portato dentro all'atto
+    // dell'iscrizione: la lega torna com'e' prima che qualcuno carichi i voti
+    s.tables.match_events = []; s.tables.match_appearances = [];
+    localStorage.setItem('fcs:mock', JSON.stringify(s));
+  });
+  await p.reload({ waitUntil: 'load' }); await w(1800);
   return { ctx, p, w, errori };
 };
 
@@ -171,7 +185,7 @@ const QUANTO_DIPINGE = () => {
         // la nota sta in cima alla lista, prima delle righe dei voti
         prima: x.previousElementSibling?.className || '',
       })),
-      vecchie: document.querySelectorAll('.vlist .vb').length,
+      vecchie: document.querySelectorAll('.vhead + .vb').length,
     }));
 
     const parole = /\b(scheduled|played|postponed|suspended_before_45|suspended_after_45|awarded|partial|provisional|frozen)\b/i;
@@ -180,7 +194,7 @@ const QUANTO_DIPINGE = () => {
     et(v.note.length >= 4, `ogni gara senza voti ha la sua nota di stato (${v.note.length})`);
     et(v.note.every((x) => x.icona), 'ogni nota ha la sua icona');
     et(v.note.every((x) => /vhead/.test(x.prima)), 'la nota sta subito sotto il titolo della gara');
-    et(v.vecchie === 0, `la nota non usa più la griglia dei bonus (.vb rimasti: ${v.vecchie})`);
+    et(v.vecchie === 0, `la nota non è più una riga della griglia dei bonus (.vb attaccati al titolo: ${v.vecchie})`);
 
     const cerca = (re) => v.note.find((x) => re.test(x.testo));
     const attesa = cerca(/Non ancora giocata/);

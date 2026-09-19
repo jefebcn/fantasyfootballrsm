@@ -76,6 +76,37 @@ la classifica, la formazione da schierare e la scheda "Da calcolare" in home.
 e controlla cosa dice l'app, compreso che la data di chiusura mostrata non sia
 mai nel passato.
 
+
+## Dal campo alla lega: due binari, non uno
+
+Il **risultato di campionato** e i **voti della lega** si muovono in momenti
+diversi, e confonderli e' stato il guasto di sabato 19 settembre: tre partite
+giocate il venerdi' sera, e nell'app niente.
+
+- Il risultato, gli stadi e i tabellini arrivano dall'import della FSGC
+  (`scripts/importa-fsgc.py`, workflow `Dati FSGC`) dentro
+  `src/calendario-dati.js` e `src/eventi-dati.js`. Sono file del repository:
+  entrano in produzione con un deploy. Il lavoro si propone **ogni due ore**,
+  perche' GitHub le corse pianificate le accoda — il cron delle 05:30 e'
+  partito alle 09:55, alle 10:09, alle 10:06.
+- I voti dei singoli invece nascono dagli **eventi nel database**
+  (`match_events`, `match_appearances`): finche' quelli mancano, una gara
+  finita in lega non ha voti, e la schermata Voti lo dice ("Voti in arrivo").
+
+Il secondo passo era un bottone da premere a mano, e UNA VOLTA SOLA: gli
+eventi si inseriscono e non si aggiornano, quindi la seconda premuta avrebbe
+contato ogni gol due volte. Adesso succede da solo, all'apertura del Giudice
+Dati (`state.js`, accanto al calendario dei lock), con due regole:
+
+- si caricano solo le giornate che in lega sono **vuote** — una che ha gia'
+  anche un solo evento e' roba del Giudice e non si tocca;
+- una giornata per volta, e se si rompe a meta' si ripulisce: mezza giornata
+  dentro non verrebbe mai piu' completata.
+
+`migrations/016-eventi-senza-doppioni.sql` mette la stessa regola nel
+database, dove vale anche se due Giudici aprono l'app insieme.
+`prove/referti-lega.cjs` misura tutto: entrano da soli, riaprire non duplica,
+una giornata svuotata rientra, una toccata a mano resta com'e'.
 ## Ruoli
 
 | Ruolo | Come si ottiene | Cosa può fare |

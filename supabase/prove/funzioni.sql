@@ -855,4 +855,34 @@ reset role;
 select pg_temp.esige('e riattivato torna a schierare',
   (select lineup->>'modulo' from public.lineups where member_id = :'m_bea_id' and matchday = :aperta_matchday) = '3-5-2');
 
+-- ---------------------------------------------------------------- 016: doppioni
+-- I referti entrano in lega da soli, e l'app carica solo le giornate vuote.
+-- Quel controllo sta nel browser: due Giudici che aprono l'app insieme
+-- vedrebbero la stessa giornata vuota e la scriverebbero tutti e due. Qui si
+-- controlla che il database dica di no.
+select pg_temp.esige('l''indice unico sugli eventi c''e''',
+  exists (select 1 from pg_indexes where schemaname = 'public' and indexname = 'match_events_unico'));
+select pg_temp.entra('user_alex');   -- il Giudice Dati delle prove
+set role authenticated;
+insert into public.match_events (match_id, player_id, club_id, minute, type)
+  values ('md9_m1', 'tale_10', 'tale', 55, 'goal');
+do $$ begin
+  insert into public.match_events (match_id, player_id, club_id, minute, type)
+    values ('md9_m1', 'tale_10', 'tale', 55, 'goal');
+  perform set_config('prova.doppione', 'passato', false);
+exception when unique_violation then
+  perform set_config('prova.doppione', 'rifiutato', false);
+end $$;
+select pg_temp.esige('lo stesso evento due volte viene rifiutato',
+  current_setting('prova.doppione', true) = 'rifiutato');
+select pg_temp.esige('e resta una riga sola',
+  (select count(*) from public.match_events where match_id = 'md9_m1') = 1);
+-- un evento diverso nello stesso minuto ci sta: l'ammonizione non e' il gol
+insert into public.match_events (match_id, player_id, club_id, minute, type)
+  values ('md9_m1', 'tale_10', 'tale', 55, 'yellow');
+select pg_temp.esige('un altro tipo di evento nello stesso minuto passa',
+  (select count(*) from public.match_events where match_id = 'md9_m1') = 2);
+delete from public.match_events where match_id = 'md9_m1';
+reset role;
+
 select 'tutte le prove sulle funzioni sono passate' as esito;

@@ -88,7 +88,17 @@ Su un progetto nuovo, nell'SQL Editor, in quest'ordine:
     solo — è la stessa lezione della 014, e vale ogni volta che si aggiunge
     una colonna a `profiles`.
 
-17. `promemoria-pianificato.sql` — **facoltativo ma consigliato**, e non è una
+17. `migrations/016-eventi-senza-doppioni.sql` — un evento due volte non deve
+    poterci stare. I tabellini della FSGC entrano in lega da soli
+    all'apertura del Giudice Dati, e l'app carica solo le giornate che in lega
+    sono **vuote**; quel controllo però sta nel browser, e due Giudici che
+    aprono l'app nello stesso momento vedrebbero tutti e due la giornata
+    vuota. L'indice unico scrive la regola dove vale davvero: il secondo giro
+    viene rifiutato invece di far valere ogni gol il doppio. Se l'indice non
+    si crea, vuol dire che i doppioni ci sono già: la query per trovarli è
+    dentro il file.
+
+18. `promemoria-pianificato.sql` — **facoltativo ma consigliato**, e non è una
     migrazione: si riempie **una riga** (il token del promemoria) e si lancia
     a mano. Sposta l'orologio dell'avviso
     della formazione da GitHub — che accoda e salta le corse pianificate, fino

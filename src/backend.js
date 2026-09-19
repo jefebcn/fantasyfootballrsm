@@ -327,21 +327,42 @@ export async function chiudiGiornata(n) { return must(await sb.rpc('chiudi_giorn
 export async function eliminaProfilo() { return must(await sb.rpc('elimina_profilo')); }
 export async function setMatchdayStatus(n, status, userId) { if (!status) return must(await sb.from('matchday_status').delete().eq('matchday', n)); return must(await sb.from('matchday_status').upsert({ matchday: n, status, changed_by: userId, changed_at: new Date().toISOString() })); }
 
-/** Carica il dato demo generato (giornate già giocate) nel DB: solo Giudice Dati, solo su tabelle vuote. */
-export async function seedDemo(base, userId) {
-  const played = base.matches.filter((m) => m.status !== 'scheduled');
-  must(await sb.from('match_overrides').upsert(played.map((m) => ({ match_id: m.id, status: m.status, home_goals: m.homeGoals, away_goals: m.awayGoals, video_url: m.videoUrl, updated_by: userId }))));
-  const apps = base.appearances.map((a) => ({ match_id: a.matchId, player_id: a.playerId, club_id: a.clubId, started: a.started, minutes_played: a.minutesPlayed, entered_at: a.enteredAt ?? 0 }));
-  for (let i = 0; i < apps.length; i += 200) must(await sb.from('match_appearances').upsert(apps.slice(i, i + 200)));
-  const evs = base.events.map((e) => ({ match_id: e.matchId, player_id: e.playerId, club_id: e.clubId, minute: e.minute, type: e.type, created_by: userId }));
-  for (let i = 0; i < evs.length; i += 200) must(await sb.from('match_events').insert(evs.slice(i, i + 200)));
-  // Si congelano solo le giornate concluse per intero: se una partita non è
-  // ancora stata giocata la giornata resta aperta, come vuole l'art. 9.2.
-  const perGiornata = {};
-  for (const m of base.matches) (perGiornata[m.matchday] ||= []).push(m);
-  for (const [n, ms] of Object.entries(perGiornata)) {
-    if (ms.every((m) => m.realStatus === 'played')) await setMatchdayStatus(+n, 'frozen', userId);
+/**
+ * Porta in lega i tabellini di alcune giornate: presenze ed eventi veri, come
+ * li ha pubblicati la FSGC e come li ha scritti l'import in src/eventi-dati.js.
+ *
+ * I gol delle partite di campionato NON si scrivono qui: il risultato e' un
+ * fatto della federazione e l'app lo legge dal calendario (conFSGC). Qui
+ * servono le presenze e gli eventi, perche' e' da quelli che nascono i voti.
+ *
+ * Le giornate le sceglie chi chiama, e ne passa solo di vuote: gli eventi si
+ * INSERISCONO, non si aggiornano, e la tabella non ha una chiave che li
+ * distingua. Caricare due volte la stessa giornata vorrebbe dire contare i
+ * gol due volte.
+ */
+export async function caricaReferti(base, userId, giornate) {
+  let presenze = 0, eventi = 0; const fatte = [];
+  // Una giornata per volta, e se una si rompe a meta' si ripulisce: chi
+  // chiama riconosce le giornate da fare perche' in lega sono VUOTE, quindi
+  // una mezza giornata dentro non verrebbe mai piu' completata — e i voti di
+  // quelle partite resterebbero sbagliati per sempre. Meglio non averla.
+  for (const n of [...new Set(giornate)].sort((a, b) => a - b)) {
+    const gare = new Set(base.matches.filter((m) => m.matchday === n).map((m) => m.id));
+    const apps = base.appearances.filter((a) => gare.has(a.matchId))
+      .map((a) => ({ match_id: a.matchId, player_id: a.playerId, club_id: a.clubId, started: a.started, minutes_played: a.minutesPlayed, entered_at: a.enteredAt ?? 0 }));
+    const evs = base.events.filter((e) => gare.has(e.matchId))
+      .map((e) => ({ match_id: e.matchId, player_id: e.playerId, club_id: e.clubId, minute: e.minute, type: e.type, created_by: userId }));
+    try {
+      for (let i = 0; i < apps.length; i += 200) must(await sb.from('match_appearances').upsert(apps.slice(i, i + 200)));
+      for (let i = 0; i < evs.length; i += 200) must(await sb.from('match_events').insert(evs.slice(i, i + 200)));
+    } catch (e) {
+      const ids = [...gare];
+      try { await sb.from('match_events').delete().in('match_id', ids); await sb.from('match_appearances').delete().in('match_id', ids); } catch { /* la pulizia e' un di piu' */ }
+      throw e;
+    }
+    presenze += apps.length; eventi += evs.length; fatte.push(n);
   }
+  return { giornate: fatte, presenze, eventi };
 }
 
 // ---------------------------------------------------------------- realtime

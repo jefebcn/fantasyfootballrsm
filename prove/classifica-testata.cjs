@@ -79,11 +79,16 @@ const ok = [], ko = []; const et = (c, t) => (c ? ok : ko).push(t);
     const st = document.querySelector('.statoriga');
     const r = s.getBoundingClientRect();
     return { nascosta: +(app.bottom - r.top).toFixed(1), segTop: +r.top.toFixed(1),
-      badgeTop: st ? +st.getBoundingClientRect().top.toFixed(1) : null, appBottom: +app.bottom.toFixed(1) };
+      badgeTop: st ? +st.getBoundingClientRect().top.toFixed(1) : null, appBottom: +app.bottom.toFixed(1),
+      // quanto ha scorso DAVVERO: una pagina corta si ferma prima dei 200px
+      // chiesti, e pretendere che il badge finisca dietro l'app bar voleva
+      // dire pretendere una certa quantita' di contenuto sotto.
+      scorso: +document.querySelector('.a-body').scrollTop.toFixed(1) };
   });
   et(dopo.nascosta <= 0, `scorrendo la barra delle schede resta tutta visibile (${dopo.nascosta}px sotto l'app bar)`);
   et(dopo.segTop < prima.seg + 2, 'ed è rimasta in alto invece di scorrere via');
-  et(dopo.badgeTop !== null && dopo.badgeTop < dopo.appBottom, 'mentre il badge di stato è scorso via, come deve');
+  et(dopo.badgeTop !== null && Math.abs((prima.badge - dopo.badgeTop) - dopo.scorso) <= 1,
+    `mentre il badge di stato scorre con la pagina (sceso ${(prima.badge - dopo.badgeTop).toFixed(1)}px su ${dopo.scorso}px scorsi)`);
 
   // 3. i tasti restano raggiungibili: si cambia scheda a pagina scorsa
   await p.evaluate(() => { const x = [...document.querySelectorAll('[data-vista]')].find((e) => /^Classifica$/i.test(e.textContent.trim())); if (x) x.click(); }); await w(900);

@@ -325,6 +325,17 @@ function seguiAltezza() {
   });
 }
 
+/**
+ * Quando i referti entrano in lega da soli (solo per il Giudice Dati), lo si
+ * dice: e' una scrittura sul database, e una scrittura silenziosa e' peggio
+ * di una rumorosa.
+ */
+function avvisaReferti() {
+  const a = S.prendiAvvisoReferti(); if (!a) return;
+  const g = a.giornate.length === 1 ? `la giornata ${a.giornate[0]}` : `le giornate ${a.giornate.join(', ')}`;
+  toast(`Referti FSGC caricati in lega: ${g} · ${a.eventi} eventi`);
+}
+
 async function boot() {
   seguiAltezza();
   registraServiceWorker();
@@ -345,6 +356,7 @@ async function boot() {
   cleanAuthUrl();
   render();
   if (callbackError) toast(callbackError);
+  avvisaReferti();
   window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); window.__installPrompt = e; document.dispatchEvent(new Event('installable')); });
 }
 

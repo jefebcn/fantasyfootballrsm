@@ -20,6 +20,10 @@ concurrency:
   group: sentinella
   cancel-in-progress: true
 
+permissions:
+  actions: read          # per sapere quand'e' andato bene l'ultimo import
+  contents: read
+
 jobs:
   guarda:
     runs-on: ubuntu-latest
@@ -72,3 +76,12 @@ jobs:
             5*)  echo "::error::il server della lega risponde $codice"; exit 1 ;;
             *)   echo "il server c'è (risposta $codice)" ;;
           esac
+
+      # Le porte aperte non bastano: un'app su con dentro i risultati della
+      # settimana scorsa, per chi la apre, e' rotta lo stesso. Questo passo
+      # guarda l'ultima corsa riuscita dell'import (vedi lo script).
+      - name: L'import dei dati è vivo?
+        env:
+          REPO: ${{ github.repository }}
+          GH_TOKEN: ${{ github.token }}
+        run: bash scripts/controlla-import.sh

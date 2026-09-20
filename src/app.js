@@ -340,8 +340,8 @@ function seguiAltezza() {
  */
 function avvisaReferti() {
   const a = S.prendiAvvisoReferti(); if (!a) return;
-  const g = a.giornate.length === 1 ? `la giornata ${a.giornate[0]}` : `le giornate ${a.giornate.join(', ')}`;
-  toast(`Referti FSGC caricati in lega: ${g} · ${a.eventi} eventi`);
+  const g = a.giornate.length === 1 ? `giornata ${a.giornate[0]}` : `giornate ${a.giornate.join(', ')}`;
+  toast(`Referti FSGC: ${a.gare.length === 1 ? 'una partita' : `${a.gare.length} partite`} in lega (${g}) · ${a.eventi} eventi`);
 }
 
 async function boot() {

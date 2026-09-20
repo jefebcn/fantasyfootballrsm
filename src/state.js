@@ -125,7 +125,7 @@ async function loadAll() {
   // sono vuote: due sessioni aperte insieme non si pestano i piedi perche' la
   // seconda, dopo il caricamento della prima, non le vede piu' vuote.
   if (prof?.is_judge && !refertiGiaCaricati && !refertiInCorso) {
-    const mancanti = giornateDaCaricare();
+    const mancanti = gareDaCaricare();
     if (!mancanti.length) { refertiGiaCaricati = true; } else {
       refertiInCorso = true;
       try {
@@ -430,38 +430,37 @@ export async function addRosterPlayer(memberId, playerId, price) {
 }
 export async function removeRosterPlayer(memberId, playerId) { const r = (base.rosters[memberId] || []).find((x) => x.playerId === playerId); await remote.removeRosterPlayer(base.league.id, playerId); if (r) await remote.updateMember(memberId, { credits: managersById.get(memberId).credits + r.pricePaid }); await refresh(); }
 /**
- * Le giornate che hanno il referto della FSGC e in lega non hanno ancora
+ * Le partite che hanno il referto della FSGC e in lega non hanno ancora
  * niente.
  *
- * Il risultato di campionato e i voti sono due cose diverse: il primo arriva
- * dall'import dentro il calendario, i secondi nascono dagli eventi scritti nel
- * database. Finche' gli eventi non ci sono, una gara finita in lega non ha
- * voti.
+ * SI RAGIONA PER PARTITA, non per giornata. Prima si guardava la giornata
+ * intera: "se in lega ha gia' qualcosa, non la tocco". Ma una giornata arriva
+ * a pezzi — il venerdi' sera tre partite, il sabato pomeriggio altre tre — e
+ * con la giornata gia' "sporca" delle prime tre, le altre non entravano piu'.
+ * Sullo schermo: "FOLGORE 2 - 0 SM ACADEMY · Voti in arrivo" per sempre.
  *
- * Una giornata che in lega ha gia' anche un solo evento o una sola presenza
- * non si tocca: gli eventi si inseriscono e non si aggiornano, quindi
- * ricaricarla conterebbe i gol due volte. Se il Giudice ne ha messo uno a
- * mano, quella giornata resta sua.
+ * La regola che serve e' piu' fine: una PARTITA che in lega ha gia' un evento
+ * o una presenza non si tocca — puo' averceli messi il Giudice a mano, e
+ * ricaricarla conterebbe i gol due volte — tutte le altre entrano.
  */
-export function giornateDaCaricare() {
+export function gareDaCaricare() {
   const conReferto = new Set([...base.events.map((e) => e.matchId), ...base.appearances.map((a) => a.matchId)]);
-  const out = [];
-  for (const md of base.matchdays) {
-    const gare = base.matches.filter((m) => m.matchday === md.number);
-    if (!gare.some((m) => conReferto.has(m.id))) continue;
-    const inLega = gare.some((m) => (g.matchEvents[m.id] || []).length || (g.appearanceOverrides[m.id] || []).length);
+  const congelate = new Set(base.matchdays.filter((md) => matchdayStatus(md.number) === 'frozen').map((md) => md.number));
+  return base.matches.filter((m) => conReferto.has(m.id)
     // Una giornata congelata e' chiusa per sempre (art. 9.2) e il database
     // rifiuta di scriverci: provarci a ogni apertura vorrebbe dire un errore
     // in faccia al Giudice ogni volta, per una cosa che non si puo' fare.
-    if (!inLega && matchdayStatus(md.number) !== 'frozen') out.push(md.number);
-  }
-  return out;
+    && !congelate.has(m.matchday)
+    && !(g.matchEvents[m.id] || []).length && !(g.appearanceOverrides[m.id] || []).length)
+    .map((m) => m.id);
 }
+/** Le giornate toccate da un elenco di partite: serve solo a scriverlo in italiano. */
+export const giornateDi = (gare) => [...new Set(gare.map((id) => +((id.match(/^md(\d+)/) || [])[1])))].filter(Boolean).sort((a, b) => a - b);
 /** Porta in lega i referti che mancano. Ripetibile: a giornate gia' dentro non fa niente. */
 export async function caricaRefertiMancanti() {
-  const giornate = giornateDaCaricare();
-  if (!giornate.length) return { giornate: [], presenze: 0, eventi: 0 };
-  const esito = await remote.caricaReferti(base, user.id, giornate);
+  const gare = gareDaCaricare();
+  if (!gare.length) return { gare: [], giornate: [], presenze: 0, eventi: 0 };
+  const esito = await remote.caricaReferti(base, user.id, gare);
   await refresh();
   return esito;
 }

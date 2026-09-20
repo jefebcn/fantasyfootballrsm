@@ -340,29 +340,28 @@ export async function setMatchdayStatus(n, status, userId) { if (!status) return
  * distingua. Caricare due volte la stessa giornata vorrebbe dire contare i
  * gol due volte.
  */
-export async function caricaReferti(base, userId, giornate) {
+export async function caricaReferti(base, userId, gare) {
   let presenze = 0, eventi = 0; const fatte = [];
-  // Una giornata per volta, e se una si rompe a meta' si ripulisce: chi
-  // chiama riconosce le giornate da fare perche' in lega sono VUOTE, quindi
-  // una mezza giornata dentro non verrebbe mai piu' completata — e i voti di
-  // quelle partite resterebbero sbagliati per sempre. Meglio non averla.
-  for (const n of [...new Set(giornate)].sort((a, b) => a - b)) {
-    const gare = new Set(base.matches.filter((m) => m.matchday === n).map((m) => m.id));
-    const apps = base.appearances.filter((a) => gare.has(a.matchId))
+  // Una PARTITA per volta, e se una si rompe a meta' si ripulisce: chi chiama
+  // riconosce le partite da fare perche' in lega sono VUOTE, quindi mezza
+  // partita dentro non verrebbe mai piu' completata — e i voti di quella gara
+  // resterebbero sbagliati per sempre.
+  for (const id of [...new Set(gare)]) {
+    const apps = base.appearances.filter((a) => a.matchId === id)
       .map((a) => ({ match_id: a.matchId, player_id: a.playerId, club_id: a.clubId, started: a.started, minutes_played: a.minutesPlayed, entered_at: a.enteredAt ?? 0 }));
-    const evs = base.events.filter((e) => gare.has(e.matchId))
+    const evs = base.events.filter((e) => e.matchId === id)
       .map((e) => ({ match_id: e.matchId, player_id: e.playerId, club_id: e.clubId, minute: e.minute, type: e.type, created_by: userId }));
     try {
       for (let i = 0; i < apps.length; i += 200) must(await sb.from('match_appearances').upsert(apps.slice(i, i + 200)));
       for (let i = 0; i < evs.length; i += 200) must(await sb.from('match_events').insert(evs.slice(i, i + 200)));
     } catch (e) {
-      const ids = [...gare];
-      try { await sb.from('match_events').delete().in('match_id', ids); await sb.from('match_appearances').delete().in('match_id', ids); } catch { /* la pulizia e' un di piu' */ }
+      try { await sb.from('match_events').delete().eq('match_id', id); await sb.from('match_appearances').delete().eq('match_id', id); } catch { /* la pulizia e' un di piu' */ }
       throw e;
     }
-    presenze += apps.length; eventi += evs.length; fatte.push(n);
+    presenze += apps.length; eventi += evs.length; fatte.push(id);
   }
-  return { giornate: fatte, presenze, eventi };
+  const giornate = [...new Set(fatte.map((id) => +((id.match(/^md(\d+)/) || [])[1])))].filter(Boolean).sort((a, b) => a - b);
+  return { gare: fatte, giornate, presenze, eventi };
 }
 
 // ---------------------------------------------------------------- realtime

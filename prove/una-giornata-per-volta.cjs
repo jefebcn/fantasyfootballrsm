@@ -110,7 +110,11 @@ const MOMENTI = [
         // guardare come l'app spiega il totale.
         const perRuolo = (lista) => { const o = { P: [], D: [], C: [], A: [] }; for (const id of lista) { const g = S.playersById.get(id); if (g) o[g.role].push(g.id); } return o; };
         const giocata = perRuolo(S.appearancesOf('md4_m1').map((a) => a.playerId));
-        const gara = S.matchesOf(4).find((m) => m.status === 'scheduled');
+        // Una gara di cui la FSGC non ha ancora pubblicato il referto: i suoi
+        // giocatori non hanno voto. Si cerca per referto e non per risultato,
+        // perche' i due dati arrivano in momenti diversi e il file dei
+        // tabellini cambia da solo a ogni import.
+        const gara = S.matchesOf(4).find((m) => !S.appearancesOf(m.id).length);
         const ferma = perRuolo(S.base.players.filter((g) => g.clubId === gara.homeClubId).map((g) => g.id));
         const titolari = [
           ...giocata.P.slice(0, 1), ...giocata.D.slice(0, 2), ...giocata.C.slice(0, 2), ...giocata.A.slice(0, 1),

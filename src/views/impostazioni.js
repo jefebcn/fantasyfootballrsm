@@ -285,9 +285,10 @@ export const impostazioni = {
       if (act === 'seed') {
         // Le giornate gia' in lega non si ricaricano: lo decide state.js, qui
         // si dice solo cosa e' successo. Premerlo due volte non fa danno.
-        const mancanti = S.giornateDaCaricare();
+        const mancanti = S.gareDaCaricare();
         if (!mancanti.length) { ctx.toast('I referti sono già tutti in lega'); return; }
-        if (!confirm(`Caricare in lega i referti FSGC ${mancanti.length === 1 ? `della giornata ${mancanti[0]}` : `delle giornate ${mancanti.join(', ')}`}? Formazioni, marcatori, assist e cartellini veri.`)) return;
+        const gio = S.giornateDi(mancanti);
+        if (!confirm(`Caricare in lega i referti FSGC di ${mancanti.length === 1 ? 'una partita' : `${mancanti.length} partite`} (${gio.length === 1 ? `giornata ${gio[0]}` : `giornate ${gio.join(', ')}`})? Formazioni, marcatori, assist e cartellini veri.`)) return;
         try { const e = await S.caricaRefertiMancanti(); ctx.toast(`Caricati: ${e.eventi} eventi, ${e.presenze} presenze`); } catch (err) { ctx.toast(err.message); }
         return;
       }

@@ -104,9 +104,18 @@ const MOMENTI = [
       // partita della giornata: cosi' i voti ci sono tutti e si conta.
       const undici = await p.evaluate(async () => {
         const S = await import('/src/state.js');
-        const perRuolo = { P: [], D: [], C: [], A: [] };
-        for (const a of S.appearancesOf('md4_m1')) { const g = S.playersById.get(a.playerId); if (g) perRuolo[g.role].push(g.id); }
-        const titolari = [...perRuolo.P.slice(0, 1), ...perRuolo.D.slice(0, 4), ...perRuolo.C.slice(0, 4), ...perRuolo.A.slice(0, 2)];
+        // Sei giocatori dalla prima partita della giornata, che si e' giocata
+        // (e quindi hanno il voto) e cinque da una che non si e' ancora
+        // giocata: e' la situazione vera di una domenica pomeriggio, e serve a
+        // guardare come l'app spiega il totale.
+        const perRuolo = (lista) => { const o = { P: [], D: [], C: [], A: [] }; for (const id of lista) { const g = S.playersById.get(id); if (g) o[g.role].push(g.id); } return o; };
+        const giocata = perRuolo(S.appearancesOf('md4_m1').map((a) => a.playerId));
+        const gara = S.matchesOf(4).find((m) => m.status === 'scheduled');
+        const ferma = perRuolo(S.base.players.filter((g) => g.clubId === gara.homeClubId).map((g) => g.id));
+        const titolari = [
+          ...giocata.P.slice(0, 1), ...giocata.D.slice(0, 2), ...giocata.C.slice(0, 2), ...giocata.A.slice(0, 1),
+          ...ferma.D.slice(0, 2), ...ferma.C.slice(0, 2), ...ferma.A.slice(0, 1),
+        ];
         if (titolari.length < 11) return 0;
         S.saveLineup(4, S.me().id, { formation: '4-4-2', starters: titolari, bench: [], captainId: titolari[0], viceCaptainId: titolari[1] });
         return titolari.length;
@@ -120,11 +129,26 @@ const MOMENTI = [
         conferma: !!document.querySelector('#confirm'),
         moduli: [...document.querySelectorAll('[data-mod]')].filter((x) => !x.disabled).length,
         aiVoti: !!document.querySelector('a[href="#/voti/4"]'),
+        totale: +(document.querySelector('.fase-punti b')?.innerText.replace(',', '.') || 0),
+        sommaVoti: [...document.querySelectorAll('.fvc')].reduce((s, x) => s + (+x.innerText.replace(',', '.') || 0), 0),
         testo: document.body.innerText.replace(/\n/g, ' '),
       }));
       et(schermo.campo && schermo.pieni >= 11, `${m.etichetta}: la squadra in campo si vede (${schermo.pieni} caselle piene)`);
-      et(undici === 11 && schermo.voti === 11, `${m.etichetta}: e ogni giocatore che ha giocato porta il suo voto (${schermo.voti} su ${undici})`);
-      et(/Punti in giornata/i.test(schermo.testo), `${m.etichetta}: col punteggio della giornata in cima`);
+      et(undici === 11 && schermo.voti === 6, `${m.etichetta}: chi ha giocato porta il suo voto, gli altri no (${schermo.voti} badge su ${undici} titolari)`);
+      // DA DOVE VIENE IL TOTALE. Con sei voti sul campo e un totale di 62,5 la
+      // domanda e' legittima: chi non ha ancora giocato non vale zero, vale il
+      // voto d'ufficio (art. 8.6). Se il numero non si spiega sembra sbagliato.
+      et(/Punti se finisse adesso/i.test(schermo.testo), `${m.etichetta}: il totale dice di essere un "se finisse adesso"`);
+      et(/6 su 11/.test(schermo.testo), `${m.etichetta}: e dice quanti hanno il voto`);
+      et(/5 valgono 5,5 d'ufficio/.test(schermo.testo) || /5 valgono 5,5 d’ufficio/.test(schermo.testo),
+        `${m.etichetta}: e che gli altri valgono il voto d'ufficio (art. 8.6)`);
+      // IL CONTO DEVE TORNARE con quello che si vede: i numeri in campo piu'
+      // i voti d'ufficio di chi non ha ancora giocato fanno il totale. Prima
+      // in campo compariva il voto grezzo del capitano (1,5) mentre nel totale
+      // pesava il doppio del malus (-2,5), e il conto non tornava di quattro
+      // punti — senza che niente lo dicesse.
+      et(Math.abs(schermo.totale - (schermo.sommaVoti + (11 - 6) * 5.5)) < 0.06,
+        `${m.etichetta}: e il conto torna (${schermo.totale} = ${schermo.sommaVoti} in campo + 5 × 5,5)`);
       et(!schermo.conferma && schermo.moduli === 0, `${m.etichetta}: ma non si tocca niente (conferma ${schermo.conferma ? 'c\'è' : 'no'}, moduli ${schermo.moduli})`);
       et(schermo.aiVoti, `${m.etichetta}: e si passa ai voti della giornata`);
       await p.screenshot({ path: `${process.env.USCITA || '/tmp'}/formazione-in-corso.png`, fullPage: true }).catch(() => {});

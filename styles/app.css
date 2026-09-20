@@ -563,6 +563,7 @@ hr.sep{border:0;border-top:1px solid var(--border);margin:4px 0}
 .slot .fvc{position:absolute;top:-4px;right:-8px;z-index:2;font:700 10px var(--font-data);font-style:normal;
   min-width:26px;text-align:center;padding:2px 4px;border-radius:8px;background:var(--c-titano-900);color:#fff;border:2px solid #fff}
 .slot .fvc.sv{background:#5B6B7C}
+.slot .fvc.cap{background:var(--c-oro-500);color:var(--c-titano-900)}
 .br .fvc{font:700 12px var(--font-data);font-style:normal;color:var(--text);margin-left:auto;padding-left:8px}
 .br .fvc.sv{color:var(--text-muted);font-size:11px}
 .fase-punti{display:flex;align-items:baseline;justify-content:space-between;gap:10px;padding-top:4px}

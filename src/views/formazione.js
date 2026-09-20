@@ -85,8 +85,23 @@ export const formazione = {
     const d = b ? S.lineupFor(n, me.id) : (() => { const x = ensureDraft(); normalize(x); return x; })();
     // I voti ci sono solo a giornata cominciata, e arrivano una partita per
     // volta: chi non ha ancora giocato semplicemente non ce l'ha.
+    //
+    // In campo si mostra il numero CHE CONTA, non il voto grezzo: il capitano
+    // raddoppia bonus e malus (art. 6), quindi un portiere da 1,5 sulla
+    // fascia di capitano nel totale pesa -2,5. Mostrare 1,5 e sommare -2,5
+    // faceva un conto che non tornava — ed e' la prima cosa che si guarda.
     const voti = locked ? S.ratingsOf(n) : null;
-    const voto = (id) => { const r = voti && voti.get(id); return r ? `<i class="fvc${r.isSV ? ' sv' : ''}">${r.isSV ? 'S.V.' : fmt(r.fantaVote)}</i>` : ''; };
+    const esito = locked ? S.lineupResult(n, me.id) : null;
+    const perTitolare = new Map();
+    if (esito) esito.rows.forEach((r, i) => perTitolare.set(esito.lineup.starters[i], r));
+    const grezzo = (id) => { const r = voti && voti.get(id); return r ? `<i class="fvc${r.isSV ? ' sv' : ''}">${r.isSV ? 'S.V.' : fmt(r.fantaVote)}</i>` : ''; };
+    const voto = (id) => {
+      const r = perTitolare.get(id);
+      if (!r) return grezzo(id);
+      if (r.official) return '';                       // non ha ancora giocato
+      if (r.subFor === id) return '<i class="fvc sv" title="Senza voto: al suo posto entra un panchinaro (art. 8.2)">&#8646;</i>';
+      return `<i class="fvc${r.isCaptain ? ' cap' : ''}"${r.isCaptain ? ' title="Capitano: bonus e malus raddoppiati (art. 6)"' : ''}>${fmt(r.fantaVote)}</i>`;
+    };
     const s = slotsByRole(d); const errors = validateLineup({ ...d, starters: d.starters.filter(Boolean), bench: d.bench.filter(Boolean) }, S.playersById);
     const saved = S.savedLineup(n, me.id);
     const fx = S.myFixture(n, me.id); const opp = fx ? S.managersById.get(fx.homeManagerId === me.id ? fx.awayManagerId : fx.homeManagerId) : null;
@@ -104,15 +119,27 @@ export const formazione = {
           <span class="sep"></span>${saved ? `<span>salvata ${dateIt(saved.submittedAt)} ${timeIt(saved.submittedAt)}</span>` : '<span class="da-fare">da consegnare</span>'}</div>
         ${!saved && !locked ? `<p class="small muted"><b>Se non consegni, la partita è persa 0-3 a tavolino</b> (art. 8.4). Quella qui sotto è solo una proposta — ${S.lineupFor(n, me.id).source === 'ufficio' ? 'il 4-4-2 con le quotazioni più alte' : `l'ultima che hai schierato (${S.lineupFor(n, me.id).source})`} — e non conta finché non la confermi.</p>` : ''}
         ${!saved && locked ? `<p class="small muted"><b>Formazione non consegnata</b>: la partita è persa 0-3 a tavolino (art. 8.4). Quella qui sotto non conta, è solo l'ultima proposta.</p>` : ''}
-        ${b ? `<div class="fase-punti"><span>Punti in giornata</span><b>${fmt(S.puntiGiornata(n, me.id))}</b></div>
-        <p class="small muted">${b.mancanti === 1 ? 'Manca una partita' : `Mancano ${b.mancanti} partite su ${b.partite}`}: i voti arrivano mano a mano, e la formazione della ${b.giornata}ª si apre a giornata finita.</p>` : ''}
+        ${b ? (() => {
+    // DA DOVE VIENE IL NUMERO. Con due voti sul campo e un totale di 62,5 la
+    // domanda e' legittima: chi non ha ancora giocato non vale zero, vale il
+    // voto d'ufficio (art. 8.6), e il totale e' quindi "quanto farei se la
+    // giornata finisse adesso". Senza dirlo, quel numero sembra sbagliato.
+    const res = esito;
+    if (!res) return `<p class="small muted">${b.mancanti === 1 ? 'Manca una partita' : `Mancano ${b.mancanti} partite su ${b.partite}`}: la formazione della ${b.giornata}ª si apre a giornata finita.</p>`;
+    const ufficio = res.rows.filter((r) => r.official).length;
+    const conVoto = res.rows.length - ufficio;
+    const cambi = res.subsApplied.length;
+    return `<div class="fase-punti"><span>Punti se finisse adesso</span><b>${fmt(res.total)}</b></div>
+        <p class="small muted"><b>${conVoto} su ${res.rows.length}</b> ${conVoto === 1 ? 'ha' : 'hanno'} il voto${cambi ? ` · ${cambi} ${cambi === 1 ? 'entrato dalla panchina' : 'entrati dalla panchina'}` : ''}${ufficio ? ` · ${ufficio === 1 ? 'uno vale' : `${ufficio} valgono`} ${fmt(S.rules().noSubVote)} d'ufficio finché non gioca${ufficio === 1 ? '' : 'no'} (art. 8.6)` : ''}.</p>
+        <p class="small muted">${b.mancanti === 1 ? 'Manca una partita' : `Mancano ${b.mancanti} partite su ${b.partite}`}: i voti arrivano mano a mano, e la formazione della ${b.giornata}ª si apre a giornata finita.</p>`;
+  })() : ''}
       </div>
       <div class="a-sec"><b>${b ? 'In campo' : 'Modulo'}</b><span>${esc(d.formation)} · titolari ${d.starters.filter(Boolean).length}/11</span></div>
       ${b ? '' : `<div class="moduli" data-modules>${S.rules().modules.map((m) => `<button class="chip mod${m === d.formation ? ' on' : ''}" data-mod="${m}" ${locked ? 'disabled' : ''}>${m}</button>`).join('')}</div>`}
       <div class="pitch-wrap"><div class="pitch">${CAMPO}${line('P')}${line('D')}${line('C')}${line('A')}</div></div>
       <div class="a-sec"><b>Panchina</b><span>${bench.filter(Boolean).length}/7</span></div>
       <p class="small muted nota">L'ordine conta: al posto di un titolare senza voto entra il <b>primo panchinaro dello stesso ruolo</b> (art. 8.2).</p>
-      <div class="bench">${bench.map((id, i) => benchRow(id, i, bench, locked, voto(id))).join('')}</div>
+      <div class="bench">${bench.map((id, i) => benchRow(id, i, bench, locked, grezzo(id))).join('')}</div>
       ${errors.length ? `<div class="warn block">${icon('warn', 'ic sm')}<span>${errors.map(esc).join(' · ')}</span></div>` : ''}
       ${b
     ? `<a class="a-btn" href="#/voti/${n}" style="text-decoration:none">${icon('votes', 'ic sm')}Voti della ${n}ª</a>`

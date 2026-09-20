@@ -67,10 +67,16 @@ const conta = (p) => p.evaluate(() => {
   et(secondo.totale === primo.totale && secondo.presenze === primo.presenze,
     `riaprire l'app non duplica niente (${secondo.totale} eventi, ${secondo.presenze} presenze)`);
 
-  // UNA GIORNATA TOCCATA A MANO NON SI TOCCA. Si svuota la 3ª e ci si lascia
-  // dentro un solo evento, come se il Giudice l'avesse messo lui: il
-  // caricamento deve girarle attorno, se no quel che ha fatto lui verrebbe
-  // sommato al referto.
+  // UNA PARTITA TOCCATA A MANO NON SI TOCCA, LE ALTRE DELLA SUA GIORNATA SI'.
+  //
+  // Qui stava il guasto vero: la regola guardava la GIORNATA intera — "se in
+  // lega ha gia' qualcosa non la tocco" — ma una giornata arriva a pezzi, il
+  // venerdi' sera tre partite e il sabato altre tre. Con la giornata gia'
+  // "sporca" delle prime, le altre non entravano piu': sullo schermo "FOLGORE
+  // 2 - 0 SM ACADEMY · Voti in arrivo" per sempre.
+  //
+  // Si svuota la 3ª e ci si lascia dentro un solo evento su una partita sola,
+  // come se ce l'avesse messo il Giudice.
   await p.evaluate(() => {
     const s = JSON.parse(localStorage.getItem('fcs:mock'));
     const suaGiornata = (r) => /^md3_/.test(r.match_id);
@@ -81,7 +87,15 @@ const conta = (p) => p.evaluate(() => {
   });
   await p.reload({ waitUntil: 'load' }); await w(2600);
   const terzo = await conta(p);
-  et(terzo.per[3] === 1, `una giornata con dentro roba del Giudice non si ricarica (3ª: ${terzo.per[3] || 0} eventi)`);
+  const perGara = await p.evaluate(() => {
+    const s = JSON.parse(localStorage.getItem('fcs:mock'));
+    const o = {};
+    for (const e of s.tables.match_events) if (/^md3_/.test(e.match_id)) o[e.match_id] = (o[e.match_id] || 0) + 1;
+    return o;
+  });
+  et(perGara.md3_m1 === 1, `la partita toccata dal Giudice resta com'è (md3_m1: ${perGara.md3_m1 || 0} eventi)`);
+  et(Object.keys(perGara).length > 1 && terzo.per[3] > 1,
+    `ma le altre partite della stessa giornata entrano lo stesso (${Object.keys(perGara).length} partite, ${terzo.per[3] || 0} eventi)`);
 
   // UNA GIORNATA VUOTA INVECE SI RICARICA: senza questo il controllo di sopra
   // sarebbe vero anche se il caricamento non funzionasse piu'.
@@ -94,7 +108,7 @@ const conta = (p) => p.evaluate(() => {
   await p.reload({ waitUntil: 'load' }); await w(2600);
   const quarto = await conta(p);
   et(quarto.per[1] === primo.per[1], `una giornata svuotata torna dentro per intero (1ª: ${quarto.per[1] || 0}, attesi ${primo.per[1]})`);
-  et(quarto.per[3] === 1, `e la 3ª resta come l'ha lasciata il Giudice (${quarto.per[3] || 0})`);
+  et(quarto.per[3] === terzo.per[3], `e la 3ª resta com'era (${quarto.per[3] || 0})`);
 
   // UNA GIORNATA CONGELATA non si tocca: e' chiusa per sempre (art. 9.2) e il
   // database rifiuta di scriverci. Senza questo controllo il Giudice si

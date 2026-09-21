@@ -359,6 +359,41 @@ function leghe(list) {
   }).join('')}</div>`;
 }
 
+/**
+ * Gli sponsor, dalla console.
+ *
+ * Il modulo e' uno solo: vuoto crea, con un id modifica. Due moduli separati
+ * vorrebbero dire due volte gli stessi campi e due volte gli stessi errori.
+ */
+let spBozza = null;
+const oggiISO = () => new Date().toISOString().slice(0, 10);
+function sponsor() {
+  const elenco = S.sponsorTutti();
+  const b = spBozza || { nome: '', claim: '', logo: '', link: '', dal: oggiISO(), al: '', attivo: true };
+  const oggi = oggiISO();
+  const stato = (x) => (!x.attivo ? ['spento', 'sos'] : x.dal > oggi ? ['programmato', ''] : x.al && x.al < oggi ? ['scaduto', 'sos'] : ['in corso', 'ok']);
+  return `<div class="adm-sp">
+    ${elenco.length ? elenco.map((x) => { const [testo, cls] = stato(x); return `<div class="adm-u">
+      <div><b>${esc(x.nome)}</b><span>${esc(x.claim || '—')} · dal ${esc(x.dal)}${x.al ? ` al ${esc(x.al)}` : ' (senza scadenza)'}</span></div>
+      <span class="tag ${cls}">${testo}</span>
+      <button class="chip" data-sp-mod="${esc(x.id)}">Modifica</button>
+      <button class="chip" data-sp-del="${esc(x.id)}">Elimina</button>
+    </div>`; }).join('') : '<p class="small muted">Nessuno spazio venduto, per ora.</p>'}
+    <div class="a-sec"><b>${b.id ? 'Modifica' : 'Nuovo'}</b><span>${b.id ? esc(b.nome) : 'spazio sponsor'}</span></div>
+    <label class="lbl" for="sp-nome">Nome</label><input class="field-input" id="sp-nome" value="${esc(b.nome)}" maxlength="40" placeholder="Come si chiama">
+    <label class="lbl" for="sp-claim">Una riga sotto</label><input class="field-input" id="sp-claim" value="${esc(b.claim)}" maxlength="60" placeholder="es. Dal 1972 a Borgo Maggiore">
+    <label class="lbl" for="sp-logo">Logo (indirizzo)</label><input class="field-input" id="sp-logo" value="${esc(b.logo)}" placeholder="/media/sponsor/nome.png">
+    <label class="lbl" for="sp-link">Dove porta</label><input class="field-input" id="sp-link" value="${esc(b.link)}" placeholder="https://…">
+    <div class="sp-date">
+      <span><label class="lbl" for="sp-dal">Dal</label><input class="field-input" id="sp-dal" type="date" value="${esc(b.dal)}"></span>
+      <span><label class="lbl" for="sp-al">Al (vuoto = sempre)</label><input class="field-input" id="sp-al" type="date" value="${esc(b.al || '')}"></span>
+    </div>
+    <label class="lbl"><input type="checkbox" id="sp-attivo" ${b.attivo ? 'checked' : ''}> Acceso</label>
+    <div class="chips" style="margin-top:10px"><button class="a-btn" id="sp-salva">${b.id ? 'Salva le modifiche' : 'Aggiungi'}</button>
+      ${b.id ? '<button class="chip" id="sp-annulla">Annulla</button>' : ''}</div>
+  </div>`;
+}
+
 export const adminConsole = {
   title: 'Console', appbar: 'back', sub: () => 'Amministrazione dell\'app',
   render() {
@@ -370,7 +405,8 @@ export const adminConsole = {
       <button class="${aTab === 'numeri' ? 'on' : ''}" data-atab="numeri">Numeri</button>
       <button class="${aTab === 'persone' ? 'on' : ''}" data-atab="persone">Persone</button>
       <button class="${aTab === 'squadre' ? 'on' : ''}" data-atab="squadre">Squadre</button>
-      <button class="${aTab === 'leghe' ? 'on' : ''}" data-atab="leghe">Leghe</button></div></div>`;
+      <button class="${aTab === 'leghe' ? 'on' : ''}" data-atab="leghe">Leghe</button>
+      <button class="${aTab === 'sponsor' ? 'on' : ''}" data-atab="sponsor">Sponsor</button></div></div>`;
     let corpo = '';
     if (aTab === 'numeri') corpo = numeri(cache.numeri) + andamento(cache.persone);
     else if (aTab === 'persone') {
@@ -379,11 +415,13 @@ export const adminConsole = {
     } else if (aTab === 'squadre') {
       corpo = `<input class="field-input" id="adm-cerca" placeholder="Cerca per squadra, fantallenatore o lega" value="${esc(cerca)}" autocomplete="off">
         ${squadre(cache.squadre)}`;
-    } else corpo = leghe(cache.leghe);
+    } else if (aTab === 'sponsor') corpo = sponsor();
+    else corpo = leghe(cache.leghe);
     return `<main class="a-body">${barra}
       ${aTab === 'numeri' ? `<div class="a-sec"><b>Come va</b><span>adesso</span></div>` : ''}
       ${corpo}
       ${aTab === 'persone' ? `<p class="small muted">«Link password» manda alla persona un messaggio per reimpostarla da sé: la password non la può leggere né scrivere nessuno, nemmeno da qui. «Sospendi» le impedisce di schierare, contestare ed entrare in altre leghe: le squadre e i punti restano.</p>` : ''}
+      ${aTab === 'sponsor' ? `<p class="small muted">Le date fanno il lavoro da sole: lo sponsor compare il giorno che comincia e sparisce il giorno dopo la scadenza, senza che nessuno debba ricordarsene. Il logo può stare nel repository (<code>/media/sponsor/nome.png</code>) o essere un indirizzo esterno.</p>` : ''}
       ${aTab === 'squadre' ? `<p class="small muted">Si comincia sempre da «Rinomina»: toglie subito il nome da tutte le schermate e chi l'ha scritto continua a giocare. «Sospendi» è per chi ne scrive un altro.</p>` : ''}
     </main>`;
   },
@@ -418,6 +456,27 @@ export const adminConsole = {
     root.querySelector('main').addEventListener('click', async (e) => {
       const t = e.target.closest('[data-atab]');
       if (t) { aTab = t.dataset.atab; ctx.render(); return; }
+      const mod = e.target.closest('[data-sp-mod]');
+      if (mod) { spBozza = { ...S.sponsorTutti().find((x) => x.id === mod.dataset.spMod) }; ctx.render(); return; }
+      const del = e.target.closest('[data-sp-del]');
+      if (del) {
+        const chi = S.sponsorTutti().find((x) => x.id === del.dataset.spDel);
+        if (!confirm(`Eliminare lo spazio di ${chi ? chi.nome : 'questo sponsor'}? Sparisce dall'app subito.`)) return;
+        try { await S.eliminaSponsor(del.dataset.spDel); spBozza = null; ctx.toast('Eliminato'); ctx.render(); }
+        catch (err) { ctx.toast(err.message || 'Non è stato possibile'); }
+        return;
+      }
+      if (e.target.closest('#sp-annulla')) { spBozza = null; ctx.render(); return; }
+      if (e.target.closest('#sp-salva')) {
+        const v = (id) => root.querySelector(id)?.value.trim() || '';
+        const dati = { id: spBozza?.id, nome: v('#sp-nome'), claim: v('#sp-claim'), logo: v('#sp-logo'),
+          link: v('#sp-link'), dal: v('#sp-dal') || oggiISO(), al: v('#sp-al'), attivo: !!root.querySelector('#sp-attivo')?.checked };
+        if (!dati.nome) { ctx.toast('Serve almeno il nome'); return; }
+        if (dati.al && dati.al < dati.dal) { ctx.toast('La fine viene prima dell\'inizio'); return; }
+        try { await S.salvaSponsor(dati); spBozza = null; ctx.toast('Salvato'); ctx.render(); }
+        catch (err) { ctx.toast(err.message || 'Non è stato possibile salvare'); }
+        return;
+      }
       const r = e.target.closest('[data-ruolo]');
       if (r) {
         const [ruolo, id, verso] = r.dataset.ruolo.split(':');

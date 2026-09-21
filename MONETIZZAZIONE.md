@@ -11,21 +11,23 @@ Oggi l'app gira **gratis**, ma su piani pensati per progetti personali.
 
 | Voce | Oggi | Appena si monetizza |
 |---|---|---|
-| Vercel | Hobby, €0 | **Pro, 20 $/mese** — obbligato: il piano Hobby è «for personal, non-commercial use», e un banner sponsor rende il sito commerciale |
+| Vercel | **Pro, già pagato** | nessun costo in più: il piano commerciale c'è già, ed è quello che serve col banner sponsor |
 | Supabase | Free, €0 | Free regge ancora un po' (500 MB, 50k utenti/mese); **Pro 25 $/mese** quando servono i backup giornalieri e più spazio |
 | Resend | Free, 100 e-mail/giorno | 20 $/mese oltre |
-| Dominio | ~20 €/anno | uguale |
+| Dominio | **1 €** il primo anno (~20 € al rinnovo) | uguale |
 | Play Console | 25 $ una tantum, già pagati | — |
 
-**Conto in tasca:**
+**Conto in tasca** (Vercel Pro è già pagato e non entra nel conto di
+Fantatitano, che ci gira sopra insieme al resto):
 
-- oggi, uso personale: **~20 € l'anno**
-- con un solo sponsor e Vercel Pro: **~250–300 € l'anno**
-- con Supabase Pro e Resend a pagamento: **~800 € l'anno**
-- più il montepremi da 300 €: **~1.100 € l'anno** nello scenario più caro
+- oggi: **1 € il primo anno** — il dominio, e basta
+- col rinnovo del dominio: **~20 € l'anno**
+- se servono Supabase Pro e Resend a pagamento: **~560 € l'anno**
+- più il montepremi da 300 €: **~860 € l'anno** nello scenario più caro
 
 Il numero da tenere in testa è questo: **il pareggio sta sotto i mille euro a
-stagione**. Non serve un modello di business, serve *uno sponsor*.
+stagione, e oggi sta sotto i venti**. Non serve un modello di business: serve
+*uno sponsor*, e serve prima per il montepremi che per i server.
 
 ## 2. Il vincolo che decide tutto
 
@@ -113,8 +115,11 @@ della seconda stagione, non prima.
 
 In ordine, e sono tutte cose piccole:
 
-1. **Slot sponsor gestibile dalla console** — logo, link, periodo. Oggi il
-   banner è scritto nel codice: per cambiare sponsor servirebbe un rilascio.
+1. ~~**Slot sponsor gestibile dalla console**~~ — **fatto** (migrazione 017).
+   Console → Sponsor: nome, riga, logo, collegamento, dal/al, acceso. Compare
+   da solo il giorno che comincia, sparisce il giorno dopo la scadenza. Lo
+   spazio è dichiarato (targhetta «Sponsor», `rel="sponsored"`) e gli
+   indirizzi pericolosi non diventano collegamenti.
 2. **Conteggio di impressioni e tocchi** del banner. È quello che rende
    rinnovabile uno sponsor: senza un numero, l'anno dopo si ricomincia a
    trattare da zero.

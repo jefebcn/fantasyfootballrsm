@@ -174,6 +174,35 @@ function corrente(f, n, me, riposo, bloccato = null) {
  * l'app non puo' mantenere. Senza premi, a chi amministra la lega dice che
  * puo' metterlo lui; agli altri non dice niente e sparisce.
  */
+/**
+ * Lo spazio dello sponsor.
+ *
+ * Sta sotto la fascia del montepremi e sopra quello che devi fare: si vede
+ * aprendo l'app, ma non ruba il posto alla formazione da consegnare.
+ *
+ * E' dichiarato: la targhetta dice "Sponsor" e il collegamento porta
+ * rel="sponsored". Uno spazio comprato che si finge contenuto dell'app
+ * inganna chi legge e, il giorno che ci si accorge, costa piu' di quanto abbia
+ * reso.
+ */
+const INDIRIZZO_OK = /^(https?:\/\/|\/)/i;
+function fasciaSponsor() {
+  const sp = S.sponsorInVetrina(); if (!sp) return '';
+  // Gli indirizzi li scrive chi amministra, ma "lo scrive uno di cui mi fido"
+  // non e' un controllo: un javascript: in quel campo diventerebbe codice che
+  // gira nel telefono di chiunque apra l'app.
+  const link = INDIRIZZO_OK.test(sp.link || '') ? sp.link : '';
+  const logo = INDIRIZZO_OK.test(sp.logo || '') ? sp.logo : '';
+  const dentro = `<span class="spon-tag">Sponsor</span>
+    ${logo ? `<img class="spon-logo" src="${esc(logo)}" alt="${esc(sp.nome)}" loading="lazy">`
+    : `<span class="spon-logo vuoto">${esc(sp.nome.slice(0, 2).toUpperCase())}</span>`}
+    <span class="spon-txt"><b>${esc(sp.nome)}</b>${sp.claim ? `<span>${esc(sp.claim)}</span>` : ''}</span>
+    ${link ? `<span class="spon-chev">${icon('chev', 'ic sm')}</span>` : ''}`;
+  return link
+    ? `<a class="spon" href="${esc(link)}" target="_blank" rel="noopener sponsored" data-sponsor="${esc(sp.id)}">${dentro}</a>`
+    : `<div class="spon" data-sponsor="${esc(sp.id)}">${dentro}</div>`;
+}
+
 function invitoPubblica() {
   const primo = (pr) => (pr || []).slice().sort((a, b) => a.posto - b.posto)[0];
   const fascia = (href, titolo, riga, sotto, extra = '') => `<a class="invito" href="${href}"${extra}>
@@ -447,6 +476,7 @@ export const dashboard = {
       </div>
       ${notiziaBreve()}
       ${invitoPubblica()}
+      ${fasciaSponsor()}
       ${S.aPunti() ? '' : conclusa(ultima)}
       ${daCalcolare(ph, bloccato)}
       ${S.aPunti() ? correntePunti(Math.min(30, nCur), me, bloccato) : corrente(cur, nCur, me, riposo, bloccato)}

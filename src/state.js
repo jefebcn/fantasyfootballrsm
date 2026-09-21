@@ -110,6 +110,10 @@ async function loadAll() {
   } else { base.managers = []; base.rosters = {}; base.league = NO_LEAGUE; L = emptyLeague(); }
   if (prof.is_judge) { try { L.contestazioni = await remote.allContestazioni(); } catch (e) { onError(e); } }
   refreshManagers();
+  // Lo sponsor arriva dalla 017: su un progetto che non l'ha ancora applicata
+  // la tabella non c'e', e l'app deve funzionare comunque — senza banner, non
+  // con una schermata di errore. Stessa scelta fatta per gli scambi.
+  try { sponsor = await remote.caricaSponsor(); } catch { sponsor = []; }
   remote.subscribe(prefs.currentLeagueId, debounced);
   // Il Giudice Dati allinea il calendario dei lock senza doverselo ricordare:
   // e' un dato derivato dal calendario, identico a ogni giro, e l'RPC riscrive
@@ -640,6 +644,24 @@ export const lockDaSistemare = () => lockDisallineati().length;
  * giorni. Qui la fonte e' una sola: questa.
  */
 let lockGiaSincronizzati = false; let lockInCorso = false;
+let sponsor = [];
+/**
+ * Lo sponsor da mostrare adesso, se c'e'.
+ *
+ * Chi non amministra riceve dal database solo quelli in corso (la finestra la
+ * applica la policy della 017), quindi qui non si ricontrolla niente: si
+ * prende il piu' recente. A chi amministra tornano anche i programmati e gli
+ * scaduti, e allora la finestra va guardata — se no in vetrina finirebbe uno
+ * sponsor che comincia il mese prossimo.
+ */
+export function sponsorInVetrina() {
+  const oggi = now().toISOString().slice(0, 10);
+  return sponsor.find((s) => s.attivo && s.dal <= oggi && (!s.al || s.al >= oggi)) || null;
+}
+/** Tutti quelli che il database lascia vedere: per la console. */
+export const sponsorTutti = () => sponsor.slice();
+export async function salvaSponsor(s) { const r = await remote.salvaSponsor(s, user.id); await refresh(); return r; }
+export async function eliminaSponsor(id) { await remote.eliminaSponsor(id); await refresh(); }
 let refertiGiaCaricati = false; let refertiInCorso = false; let avvisoReferti = null;
 export async function sincronizzaLock({ forza = false } = {}) {
   if (!isJudge()) throw new Error('Solo il Giudice Dati può aggiornare il calendario dei lock');

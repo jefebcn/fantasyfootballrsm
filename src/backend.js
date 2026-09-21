@@ -284,6 +284,25 @@ export async function allContestazioni() {
   return rows.map((c) => ({ id: c.id, at: c.created_at, by: c.member_id, byName: c.member?.owner_name || c.member?.team_name, leagueName: c.league?.name, matchId: c.match_id, playerId: c.player_id, minute: c.minute, text: c.text, status: c.status, note: c.note }));
 }
 
+// ---------------------------------------------------------------- sponsor
+const daRiga = (r) => ({ id: r.id, nome: r.nome, claim: r.claim || '', logo: r.logo_url || '', link: r.link || '', dal: r.dal, al: r.al, attivo: r.attivo !== false });
+/**
+ * Gli sponsor che il database lascia vedere.
+ *
+ * La finestra (attivo, dal, al) la applica la policy, non questa funzione: a
+ * chi amministra tornano anche quelli programmati e quelli scaduti, a tutti
+ * gli altri solo quello in corso. Cosi' la schermata non deve sapere le
+ * regole, e una regola sola vale per tutti i modi di chiedere il dato.
+ */
+export async function caricaSponsor() { return must(await sb.from('sponsor').select('*').order('dal', { ascending: false })).map(daRiga); }
+export async function salvaSponsor(s, userId) {
+  const riga = { nome: s.nome, claim: s.claim || null, logo_url: s.logo || null, link: s.link || null,
+    dal: s.dal, al: s.al || null, attivo: s.attivo !== false, creato_da: userId };
+  if (s.id) return daRiga(must(await sb.from('sponsor').update(riga).eq('id', s.id).select().single()));
+  return daRiga(must(await sb.from('sponsor').insert(riga).select().single()));
+}
+export async function eliminaSponsor(id) { return must(await sb.from('sponsor').delete().eq('id', id)); }
+
 // ---------------------------------------------------------------- dato globale
 export async function loadGlobal(withLog) {
   const [ov, ev, ap, st, lk, log] = await Promise.all([

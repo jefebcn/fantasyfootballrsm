@@ -175,8 +175,21 @@ a.mrow.tocca{color:inherit;text-decoration:none;cursor:pointer}
 /* la console: le date dello sponsor stanno su una riga sola */
 .sp-date{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .adm-sp{display:flex;flex-direction:column;gap:8px}
-.adm-sp .adm-u{display:grid;grid-template-columns:1fr auto auto auto;gap:8px;align-items:center}
-.adm-sp .tag.ok{background:var(--positive-soft);color:var(--positive-ink)}
+/* La riga dello sponsor segue la forma delle altre righe della console
+   (.riga/.nm/.tag/.azioni): prima stava su una griglia sua di quattro colonne,
+   e con tre bottoni di fianco il nome finiva incolonnato una lettera per riga.
+   La riga sotto il nome qui puo' andare a capo: ci sono le date, e troncarle
+   vorrebbe dire nascondere proprio il pezzo che decide quando si vede. */
+.adm-sp .nm > span{white-space:normal;overflow:visible}
+.adm-sp .tag i.ok{background:var(--positive-soft);color:var(--positive-ink)}
+.adm-sp .tag i.sos{background:var(--negative-soft);color:var(--negative)}
+.adm-sp .tag i{background:var(--surface-2, var(--accent-soft));color:var(--text-muted)}
+/* Il rendiconto sotto il nome: due numeri e la percentuale, non un grafico.
+   E' quello che si legge al telefono mentre si e' seduti davanti a chi lo
+   paga. */
+.sp-conti{display:block;margin-top:3px;font-size:12px;line-height:1.45;color:var(--text)}
+.sp-conti b{font-weight:700}
+.sp-conti .muted,.sp-conti.muted{color:var(--text-muted);font-weight:400}
 /* Lo spazio dello sponsor: dichiarato, non travestito da contenuto.
    Chiaro dove la fascia del montepremi e' scura, cosi' non si confondono a
    colpo d'occhio: una e' un invito dell'app, l'altra e' uno spazio comprato. */

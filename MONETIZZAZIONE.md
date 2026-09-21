@@ -120,9 +120,18 @@ In ordine, e sono tutte cose piccole:
    da solo il giorno che comincia, sparisce il giorno dopo la scadenza. Lo
    spazio è dichiarato (targhetta «Sponsor», `rel="sponsored"`) e gli
    indirizzi pericolosi non diventano collegamenti.
-2. **Conteggio di impressioni e tocchi** del banner. È quello che rende
-   rinnovabile uno sponsor: senza un numero, l'anno dopo si ricomincia a
-   trattare da zero.
+2. ~~**Conteggio di impressioni e tocchi**~~ — **fatto** (migrazione 018).
+   Console → Sponsor: sotto ogni nome, viste, tocchi e percentuale di tocco,
+   più gli ultimi sette giorni. Una **vista è un dispositivo in un giorno**,
+   non un disegno della schermata: chi apre l'app dieci volte oggi conta uno.
+   È un numero più piccolo e più difendibile — quello gonfio, al primo
+   controllo di uno sponsor serio, si sgonfia e porta via la fiducia.
+   Non si registra chi guarda: per ogni sponsor c'è una riga al giorno con
+   due numeri, nessun identificativo, nessun indirizzo IP. Il contatore è
+   l'unica porta di scrittura della tabella e rifiuta gli sponsor fuori
+   finestra. Resta possibile, come per qualunque contatore che non scheda
+   chi lo tocca, che qualcuno chiami la funzione più volte: è il prezzo di
+   non tenere un registro delle persone, e va detto a chi compra.
 3. **Pagina sponsor** con i ringraziamenti, e un piccolo kit: iscritti,
    sessioni, formazioni consegnate per giornata.
 4. **Leghe private a pagamento**: un link di pagamento (Stripe o simile) e un

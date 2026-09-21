@@ -662,6 +662,66 @@ export function sponsorInVetrina() {
 export const sponsorTutti = () => sponsor.slice();
 export async function salvaSponsor(s) { const r = await remote.salvaSponsor(s, user.id); await refresh(); return r; }
 export async function eliminaSponsor(id) { await remote.eliminaSponsor(id); await refresh(); }
+
+/* ---------------------------------------------------------------- rendiconto
+ * Quante viste e quanti tocchi (018): e' il pezzo che rende RINNOVABILE uno
+ * sponsor. Senza un numero, l'anno dopo si ricomincia a trattare da zero.
+ *
+ * UNA VISTA PER DISPOSITIVO AL GIORNO. La dashboard si ridisegna a ogni
+ * apertura e a ogni ritorno da un'altra schermata: contare ogni disegno
+ * darebbe un numero gonfio, e un numero gonfio al primo controllo si sgonfia
+ * — cioe' vale meno di nessun numero. Il tocco invece si conta sempre, perche'
+ * e' un gesto e non un'apparizione.
+ *
+ * Il "gia' visto" sta in due posti apposta: la memoria del telefono, che dura
+ * fra un'apertura e l'altra, e un insieme in memoria per il caso in cui quella
+ * memoria non ci sia (navigazione privata, spazio finito). Senza il secondo,
+ * un telefono senza storage conterebbe una vista a ogni disegno.
+ */
+const VISTO_KEY = 'fcs:sponsor-visto';
+const visteDiSessione = new Set();
+export function contaSponsor(id, tipo) {
+  if (!id || (tipo !== 'vista' && tipo !== 'tocco')) return false;
+  if (tipo === 'vista') {
+    const oggi = now().toISOString().slice(0, 10);
+    const marchio = `${id}:${oggi}`;
+    if (visteDiSessione.has(marchio)) return false;
+    let visto = null;
+    try { visto = localStorage.getItem(VISTO_KEY); } catch { visto = null; }
+    if (visto === marchio) return false;
+    visteDiSessione.add(marchio);
+    // Una chiave sola, non un elenco: lo sponsor in vetrina e' uno, e una
+    // mappa che cresce per sempre nella memoria del telefono e' una perdita
+    // lenta che nessuno va mai a guardare.
+    try { localStorage.setItem(VISTO_KEY, marchio); } catch { /* niente storage: basta l'insieme di sessione */ }
+  }
+  remote.segnaSponsor(id, tipo);      // non si aspetta: e' un contatore, non un salvataggio
+  return true;
+}
+
+let conteggi = [];
+/** I conteggi che il database lascia vedere: solo a chi amministra (018). */
+export async function caricaConteggiSponsor() {
+  try { conteggi = await remote.caricaConteggiSponsor(); } catch { conteggi = []; }
+  return conteggi;
+}
+/**
+ * Il rendiconto di uno sponsor: totali, e gli ultimi sette giorni.
+ *
+ * I giorni senza righe non esistono nella tabella — nessuno li scrive — quindi
+ * "giorni" conta i giorni in cui qualcosa e' successo, non quelli passati.
+ */
+export function rendicontoSponsor(id) {
+  const righe = conteggi.filter((r) => r.sponsorId === id);
+  const somma = (rr, k) => rr.reduce((t, r) => t + (r[k] || 0), 0);
+  const limite = new Date(now().getTime() - 7 * 86400000).toISOString().slice(0, 10);
+  const ultimi = righe.filter((r) => r.giorno >= limite);
+  const viste = somma(righe, 'viste');
+  return { viste, tocchi: somma(righe, 'tocchi'), giorni: righe.length,
+    viste7: somma(ultimi, 'viste'), tocchi7: somma(ultimi, 'tocchi'),
+    // La percentuale di tocco su zero viste non e' zero: non esiste.
+    ctr: viste ? somma(righe, 'tocchi') / viste : null };
+}
 let refertiGiaCaricati = false; let refertiInCorso = false; let avvisoReferti = null;
 export async function sincronizzaLock({ forza = false } = {}) {
   if (!isJudge()) throw new Error('Solo il Giudice Dati può aggiornare il calendario dei lock');

@@ -54,6 +54,15 @@ ok "applicati"
 # Se ne aggiungi una al database, aggiungila qui: e' una scelta, e va scritta.
 APERTE="is_judge is_league_admin is_league_member my_member_id matchday_is_frozen
         matchday_lock_at matchday_of current_user_id log_change guard_frozen trade_conta"
+# E una che scrive, aperta all'anonimo di proposito: conta_sponsor (018). La
+# fascia dello sponsor la vede chiunque apra l'app, anche prima di avere un
+# account, e un contatore che conta solo gli iscritti non e' il numero che si
+# porta a un rinnovo. Ha tre limiti, ed e' per quelli che sta in questo
+# elenco invece che fuori: accetta due soli tipi, scrive solo su uno sponsor
+# dentro la sua finestra, e non restituisce niente — non e' una porta per
+# leggere. I limiti li provano supabase/prove/funzioni.sql e il controllo
+# qui sotto.
+APERTE="$APERTE conta_sponsor"
 # Su una riga sola, con uno spazio davanti e dietro: il confronto piu' sotto
 # cerca " nome " e i ritorni a capo dell'elenco lo facevano fallire per gli
 # ultimi di ogni riga. Preso dal guardiano stesso alla prima corsa, che e' il
@@ -75,6 +84,23 @@ while read -r nome firma; do
   esac
 done <<< "$LISTA"
 [ "$SFUGGITE" = 0 ] && ok "nessuna, a parte quelle aperte di proposito"
+
+echo "== la sola funzione che l'anonimo puo' scrivere non apre altro =="
+# Aperta si', ma limitata: se un giorno restituisse righe invece di void
+# diventerebbe un modo per leggere il database senza account, e se l'anonimo
+# avesse i permessi sulla tabella il contatore si potrebbe riempire a mano.
+if [ "$(V "select pg_get_function_result('public.conta_sponsor(uuid,text)'::regprocedure)")" = void ]; then
+  ok "conta_sponsor non restituisce niente"
+else
+  ko "conta_sponsor ora restituisce qualcosa: da anonimo diventa una finestra sul database"
+fi
+for pr in select insert update delete; do
+  if [ "$(V "select has_table_privilege('anon','public.sponsor_conteggi','$pr')")" = f ]; then
+    ok "l'anonimo non ha $pr sui conteggi"
+  else
+    ko "l'anonimo ha $pr su sponsor_conteggi: il rendiconto si scrive a mano"
+  fi
+done
 
 echo "== le due del service role sono chiuse anche a chi ha fatto l'accesso =="
 for f in "da_avvisare(int)" "promemoria_da_rifare(int,text[])"; do

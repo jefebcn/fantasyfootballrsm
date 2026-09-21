@@ -11,6 +11,23 @@ marcate **TU**; il resto è già nel repository.
 
 ---
 
+## Stato al 21 settembre: la base è in piedi
+
+Misurato dall'esterno, non dato per buono:
+
+| | |
+|---|---|
+| `https://fantatitano.site/` | 200, serve l'app (versione uguale al repository) |
+| `https://www.fantatitano.site/` | 308 verso il dominio nudo, col percorso conservato |
+| `…/.well-known/assetlinks.json` | **200 `application/json`, diretto** — nessun redirect |
+| `privacy.html`, `termini.html` | 200 |
+| Posta in uscita (Resend su `send`) | MX, SPF e DKIM a posto; conferma e-mail attiva e provata |
+| Posta in arrivo (`support@`) | inoltro ImprovMX, provato |
+
+Quindi di questo documento restano da fare i punti **4** (generare il
+pacchetto) e **5** (Play Console), piu' la riga dell'impronta al punto 3 —
+che si puo' scrivere solo dopo, perche' quel valore lo produce Play.
+
 ## 0. Cosa serve prima di cominciare
 
 - **Account Google Play Console**: Alex ne ha già uno (ha pubblicato un'altra
@@ -21,10 +38,10 @@ marcate **TU**; il resto è già nel repository.
   e l'informativa dell'app dichiara come titolare del trattamento
   Mediterranean Digital Solutions Ltd: se l'account è personale, le due cose
   raccontano storie diverse a chi legge.
-- Il **dominio** che serve l'app: `fantatitano.site` — deve **già puntare a
-  Vercel** con HTTPS. Finché risponde la pagina "coming soon" del registrar,
-  niente di quello che c'è sotto funziona: né `privacy.html`, né
-  `assetlinks.json`, né gli indirizzi di ritorno degli accessi.
+- Il **dominio** che serve l'app: `fantatitano.site` — **fatto**, punta a
+  Vercel con HTTPS e il dominio nudo è quello primario (vedi lo stato qui
+  sopra). Il verso conta: se fosse il `www` a servire l'app, `assetlinks.json`
+  risponderebbe con un redirect e Android non lo seguirebbe.
 - Per generare il pacchetto: **niente**, se usi PWABuilder (punto 4).
 
 Quello che *non* serve: Android Studio, e scrivere codice Android.

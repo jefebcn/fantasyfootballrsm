@@ -14,7 +14,7 @@ const ROUTES = [
   ['', views.dashboard], ['rosa', views.rosa], ['rosa/formazione', views.formazione],
   ['calendario', views.calendario], ['calendario/:n', views.calendario],
   ['classifica', views.classifica], ['voti', views.voti], ['voti/:n', views.voti],
-  ['live/:id', views.live], ['listone', views.listone], ['giocatore/:id', views.giocatore],
+  ['live/:id', views.live], ['listone', views.listone], ['negozio', views.negozio], ['giocatore/:id', views.giocatore],
   ['confronto/:a', views.confronto], ['confronto/:a/:b', views.confronto],
   ['video', views.video], ['regolamento', views.regolamento], ['regole', views.regole], ['scheda', views.scheda], ['impostazioni', views.impostazioni], ['impostazioni/avanzate', views.avanzate], ['scambi', views.scambi], ['privacy', views.privacy], ['termini', views.termini], ['archiviazione', views.archiviazione], ['licenze', views.licenze], ['cancella-account', views.cancella],
   ['admin', views.adminGiornata], ['admin/partita/:id', views.adminPartita], ['admin/contestazioni', views.adminContestazioni],
@@ -167,7 +167,7 @@ function drawer() {
     <div class="d-sec"><span class="chip">Setup</span></div>
     ${item('#/lega', { m: 'leghe' }, 'Profilo lega', S.base.league.inviteCode ? `codice ${esc(S.base.league.inviteCode)}` : '')}${item('#/lega', { m: 'squadre' }, 'Partecipanti', String(S.base.managers.length))}${item('#/regolamento', { m: 'guide' }, 'Regolamento ed opzioni')}${item('#/classifica', { m: 'statistiche' }, 'Competizioni')}
     <div class="d-sec"><span class="chip">Gioca</span></div>
-    ${S.legaPubblica() ? item('#/asta', { l: 'rose' }, 'La tua rosa', `${S.rosterIds(S.me()?.id).length}/25`) : ''}${item('#/listone', { m: 'quotazioni' }, 'Listone', String(S.base.players.length))}${item('#/mercato', { m: 'trasferimenti' }, 'Mercato libero', 'rilancio 24h')}${item('#/mercato', 'out', 'Fuori dal campionato', String(S.base.players.filter((p) => !p.isActive).length))}${item('#/scheda', { m: 'fantascore' }, 'Scheda condivisibile')}
+    ${S.legaPubblica() ? item('#/negozio', { l: 'rose' }, 'La tua rosa', `${S.rosterIds(S.me()?.id).length}/25`) : ''}${item('#/listone', { m: 'quotazioni' }, 'Listone', String(S.base.players.length))}${item('#/mercato', { m: 'trasferimenti' }, 'Mercato libero', 'rilancio 24h')}${item('#/mercato', 'out', 'Fuori dal campionato', String(S.base.players.filter((p) => !p.isActive).length))}${item('#/scheda', { m: 'fantascore' }, 'Scheda condivisibile')}
     ${S.isLeagueAdmin() ? `<div class="d-sec"><span class="chip">Gestione</span></div>${S.legaPubblica() ? item('#/classifica', { l: 'premi' }, 'Premi in palio', `${S.premi().length || 'nessuno'}`) : ''}${item('#/lega', { m: 'squadre' }, 'Gestione rose')}${item('#/lega', { m: 'vice-allenatore' }, 'Partecipanti e ruoli')}` : ''}
     ${S.isAdmin() ? `<div class="d-sec admin"><span class="chip">Amministrazione</span></div>
     ${item('#/admin/console', { l: 'strumenti' }, 'Console', 'persone, leghe e numeri')}` : ''}

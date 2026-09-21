@@ -190,6 +190,48 @@ a.mrow.tocca{color:inherit;text-decoration:none;cursor:pointer}
 .sp-conti{display:block;margin-top:3px;font-size:12px;line-height:1.45;color:var(--text)}
 .sp-conti b{font-weight:700}
 .sp-conti .muted,.sp-conti.muted{color:var(--text-muted);font-weight:400}
+/* ==========================================================================
+   Il negozio della lega aperta
+   ========================================================================== */
+/* L'invito in home: e' la prima cosa da fare per chi entra in una lega aperta
+   senza giocatori, quindi e' oro pieno — non una tessera fra le tessere. */
+.negozio-cta{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:12px;
+  padding:13px 14px;border-radius:var(--r-md);text-decoration:none;
+  background:linear-gradient(135deg,var(--c-oro-300),var(--c-oro-500));color:#1A1302;
+  box-shadow:0 6px 18px rgba(229,161,27,.28)}
+.negozio-cta:active{transform:scale(.995)}
+.negozio-cta > i{width:40px;height:40px;border-radius:12px;background:rgba(26,19,2,.14);display:grid;place-items:center}
+.negozio-cta .ic{width:21px;height:21px;color:#1A1302}
+.negozio-cta .txt{min-width:0;display:block}
+.negozio-cta .txt b{display:block;font:800 15.5px var(--font-display)}
+.negozio-cta .txt > span{display:block;font-size:12.5px;line-height:1.35;opacity:.82}
+.negozio-cta .chev{display:grid;place-items:center;opacity:.7}
+
+/* La testata del negozio: crediti, quanti ne hai, e le quattro quote. Sono i
+   quattro numeri che decidono ogni acquisto, quindi stanno sempre sotto gli
+   occhi mentre si scorre l'elenco. */
+.neg-testa{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;padding:12px 10px;
+  background:var(--surface);border:1px solid var(--border);border-radius:var(--r-md);text-align:center}
+.neg-num b,.neg-q b{display:block;font:800 17px var(--font-display);color:var(--text)}
+.neg-num small{font-size:11px;font-weight:600;opacity:.6}
+.neg-num span,.neg-q span{display:block;font-size:10.5px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.04em}
+.neg-q b{font-size:14px;color:var(--text-muted)}
+.neg-q.pieno b{color:var(--positive-ink)}
+.neg-quando{display:flex;align-items:flex-start;gap:8px;font-size:12.5px;line-height:1.45;color:var(--text-muted);margin:0}
+.neg-quando .ic{flex:none;width:15px;height:15px;margin-top:2px}
+.neg-quando.chiuso{color:var(--negative)}
+.neg-fatto{display:flex;align-items:center;gap:10px;padding:11px 13px;border-radius:var(--r-md);
+  background:var(--positive-soft);color:var(--positive-ink)}
+.neg-fatto b{display:block;font:800 14px var(--font-display)}
+.neg-fatto span span{font-size:12px;opacity:.85}
+.neg-fatto .a-btn{width:auto;padding:0 14px;height:36px;flex:none}
+.neg-piu{min-width:38px;height:34px;font:800 17px var(--font-display);line-height:1}
+.neg-piu[disabled]{opacity:.35}
+.neg-via{min-width:38px;height:34px;color:var(--negative)}
+.neg-ok{display:grid;place-items:center;width:38px;color:var(--positive-ink)}
+.neg-dentro{opacity:.75}
+.chips .chip i{font-style:normal;font-weight:800;opacity:.65;margin-left:2px}
+
 /* Lo spazio dello sponsor: dichiarato, non travestito da contenuto.
    Chiaro dove la fascia del montepremi e' scura, cosi' non si confondono a
    colpo d'occhio: una e' un invito dell'app, l'altra e' uno spazio comprato. */

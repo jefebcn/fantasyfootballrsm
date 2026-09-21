@@ -111,6 +111,44 @@ export function createClient(_url, _key, opts) {
           persisti(); return { data: null, error: null };
         }
         if (!userId) throw new Error('non autenticato');
+        // Il negozio della lega aperta (019). Le regole sono quelle della
+        // funzione vera, nello stesso ordine: se qui fossero piu' larghe, la
+        // prova direbbe che si puo' fare una cosa che in produzione il
+        // database rifiuta.
+        if (name === 'mercato_aperto' || name === 'compra_giocatore' || name === 'vendi_giocatore') {
+          const lega = T('leagues').find((l) => l.id === args.p_league);
+          const mio = T('league_members').find((m) => m.league_id === args.p_league && m.user_id === userId);
+          const aperto = () => {
+            if (!lega || !lega.pubblica || !mio) return false;
+            const entrato = new Date(mio.created_at || 0);
+            const prossimi = T('matchday_locks').filter((k) => new Date(k.lock_at) > entrato)
+              .sort((a, b) => a.matchday - b.matchday);
+            return prossimi.length ? new Date(prossimi[0].lock_at) > new Date() : false;
+          };
+          if (name === 'mercato_aperto') return { data: aperto(), error: null };
+          if (!mio) throw new Error('Non sei in questa lega');
+          if (!lega.pubblica) throw new Error("In questa lega la rosa si fa con l'asta, non dal negozio");
+          if (!aperto()) throw new Error('Il mercato è chiuso: la tua prima giornata è già cominciata');
+          const mie = () => T('rosters').filter((r) => r.league_id === args.p_league && r.member_id === mio.id && !r.released_at);
+          if (name === 'vendi_giocatore') {
+            const r = mie().find((x) => x.player_id === args.p_player);
+            if (!r) throw new Error('Questo giocatore non è in rosa');
+            tables.rosters = T('rosters').filter((x) => x !== r);
+            mio.credits += r.price_paid; persisti();
+            return { data: { player_id: args.p_player, reso: r.price_paid, crediti: mio.credits }, error: null };
+          }
+          const q = T('quotazioni').find((x) => x.player_id === args.p_player);
+          if (!q) throw new Error(`Giocatore sconosciuto (${args.p_player})`);
+          if (mie().some((x) => x.player_id === args.p_player)) throw new Error("Ce l'hai già in rosa");
+          const quote = { P: 3, D: 8, C: 8, A: 6, ...(lega.rules?.roster || {}) };
+          const quanti = mie().filter((x) => (T('quotazioni').find((z) => z.player_id === x.player_id) || {}).ruolo === q.ruolo).length;
+          if (quanti >= quote[q.ruolo]) throw new Error(`Hai già ${quote[q.ruolo]} giocatori in quel ruolo: è il massimo`);
+          if (mio.credits < q.quotazione) throw new Error(`Ti restano ${mio.credits} crediti e ne servono ${q.quotazione}`);
+          T('rosters').push({ id: uid(), league_id: args.p_league, member_id: mio.id, player_id: args.p_player,
+            price_paid: q.quotazione, released_at: null });
+          mio.credits -= q.quotazione; persisti();
+          return { data: { player_id: args.p_player, prezzo: q.quotazione, crediti: mio.credits }, error: null };
+        }
         const prof = T('profiles').find((p) => p.id === userId);
         if (name === 'create_league') { const l = { id: uid(), name: args.p_name, short_name: args.p_short, invite_code: Math.random().toString(36).slice(2, 8).toUpperCase(), rules: {}, started: false, created_by: userId, created_at: now() }; T('leagues').push(l); T('league_members').push({ id: uid(), league_id: l.id, user_id: userId, role: 'admin', team_name: args.p_team, owner_name: prof.display_name, color: args.p_color, initials: args.p_initials, credits: 500, created_at: now() }); persisti(); return { data: l.id, error: null }; }
         // Chiudere la giornata (008): il finto database applica le stesse tre

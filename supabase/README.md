@@ -121,7 +121,31 @@ Su un progetto nuovo, nell'SQL Editor, in quest'ordine:
     `prove/permessi.sh`, che controlla anche che non restituisca niente e che
     l'anonimo non abbia permessi sulla tabella. In lettura: solo `is_admin`.
 
-20. `promemoria-pianificato.sql` — **facoltativo ma consigliato**, e non è una
+20. `migrations/019-negozio-lega-aperta.sql` — **il negozio della lega
+    aperta**: chi entra si fa la rosa da solo, subito, senza asta. Nelle leghe
+    pubbliche lo stesso giocatore può stare in dieci squadre (è la 013), e
+    allora un'asta sarebbe una fila per comprare aria. Due funzioni,
+    `compra_giocatore` e `vendi_giocatore`, scrivono nella rosa di chi le
+    chiama portandosi dentro i controlli: iscritto alla lega, lega pubblica,
+    quote per ruolo, crediti, e **mercato aperto** solo fino alla chiusura
+    delle formazioni della prima giornata utile dopo il tuo ingresso.
+    La policy `rosters_write` non si tocca: chi scrive è la funzione.
+
+    **Il prezzo lo legge il database**, dalla tabella `quotazioni`, non da
+    quello che manda il telefono: in una lega con un montepremi un prezzo che
+    arriva dal client è una cassa lasciata aperta. Quindi **dopo la
+    migrazione va caricato il listino**:
+
+    ```sh
+    node scripts/genera-quotazioni.mjs     # scrive supabase/seed-quotazioni.sql
+    ```
+
+    e quel file si incolla nel SQL Editor (422 giocatori, ~23 kB). Si
+    rigenera ogni volta che cambia il listone: prezzi e identificativi
+    vengono dalla stessa sorgente dell'app, non da una copia scritta a mano.
+    Senza listino il negozio non vende e lo dice.
+
+21. `promemoria-pianificato.sql` — **facoltativo ma consigliato**, e non è una
     migrazione: si riempie **una riga** (il token del promemoria) e si lancia
     a mano. Sposta l'orologio dell'avviso
     della formazione da GitHub — che accoda e salta le corse pianificate, fino

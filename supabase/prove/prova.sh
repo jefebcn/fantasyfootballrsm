@@ -50,6 +50,17 @@ for passata in 1 2; do
 done
 rm -f "$RADICE/.err"
 
+echo "== il listino del negozio si carica =="
+# Il file lo genera scripts/genera-quotazioni.mjs dal listone dell'app: qui si
+# applica per davvero, cosi' un errore di sintassi in un file GENERATO non si
+# scopre incollandolo nel SQL Editor di produzione.
+if "${PSQL[@]}" -q -v ON_ERROR_STOP=1 -f supabase/seed-quotazioni.sql >/dev/null 2>"$RADICE/.err"; then
+  QUANTI=$("${PSQL[@]}" -t -A -c "select count(*) from public.quotazioni" | tr -d '[:space:]')
+  verde "  ok  $QUANTI giocatori nel listino"
+else
+  rosso "  KO  seed-quotazioni.sql non si applica"; grep -i error "$RADICE/.err" | head -3; rm -f "$RADICE/.err"; exit 1
+fi
+
 echo "== il calendario dei lock c'e' senza che nessuno apra l'app =="
 # La 012 lo mette nel database: 30 righe, una per giornata, senza un Giudice
 # Dati che debba aprire l'app. Prima la tabella restava vuota e le policy,

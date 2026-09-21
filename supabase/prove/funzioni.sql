@@ -1009,4 +1009,117 @@ reset role;
 select pg_temp.esige('cancellato lo sponsor, spariscono i suoi conteggi',
   (select count(*) from public.sponsor_conteggi) = 0);
 
+-- ------------------------------------------- 019: il negozio della lega aperta
+-- Chi entra in una lega aperta deve potersi fare la squadra da solo. Le
+-- regole che lo rendono un gioco e non un self-service stanno tutte dentro
+-- la funzione, quindi vanno ESEGUITE: un corpo plpgsql non viene controllato
+-- quando lo si crea.
+select pg_temp.entra('user_pub1');
+set role authenticated;
+select public.crea_lega_pubblica('Titano Open','TOP','Hasta El Roxy','#1B84C6','HER', 100, 50, '[]'::jsonb) as aperta \gset
+reset role;
+-- Il listino di prova: due portieri, un difensore caro e uno da pochi soldi.
+insert into public.quotazioni (player_id, ruolo, quotazione, nome, club) values
+  ('prova_p1', 'P', 10, 'Portiere Uno', 'Prova'),
+  ('prova_p2', 'P', 12, 'Portiere Due', 'Prova'),
+  ('prova_p3', 'P', 8, 'Portiere Tre', 'Prova'),
+  ('prova_p4', 'P', 9, 'Portiere Quattro', 'Prova'),
+  ('prova_d1', 'D', 95, 'Difensore Caro', 'Prova'),
+  ('prova_d2', 'D', 7, 'Difensore Semplice', 'Prova')
+on conflict (player_id) do nothing;
+
+select pg_temp.entra('user_pub1');
+set role authenticated;
+select pg_temp.esige('il mercato e'' aperto appena entri',
+  public.mercato_aperto(:'aperta'));
+select public.compra_giocatore(:'aperta', 'prova_p1');
+select pg_temp.esige('il giocatore entra in rosa',
+  (select count(*) from public.rosters where league_id = :'aperta' and released_at is null) = 1);
+-- IL PREZZO LO DECIDE IL DATABASE: chi compra dice solo chi vuole.
+select pg_temp.esige('e si paga la quotazione del listino, non quella che dici tu',
+  (select price_paid from public.rosters where league_id = :'aperta' and player_id = 'prova_p1') = 10);
+select pg_temp.esige('i crediti scendono di quello che e'' costato',
+  (select credits from public.league_members where league_id = :'aperta' and user_id = 'user_pub1') = 90);
+
+-- due volte lo stesso no
+do $$ begin
+  perform public.compra_giocatore((select id from public.leagues where short_name = 'TOP'), 'prova_p1');
+  raise exception 'FALLITA: lo stesso giocatore non doveva entrare due volte';
+exception when others then
+  if sqlerrm like 'FALLITA%' then raise; end if;
+  raise notice 'ok  lo stesso giocatore non si compra due volte (%)', sqlerrm;
+end $$;
+
+-- un giocatore che non esiste nel listino non ha prezzo, quindi non si vende
+do $$ begin
+  perform public.compra_giocatore((select id from public.leagues where short_name = 'TOP'), 'inventato_99');
+  raise exception 'FALLITA: un giocatore fuori listino non doveva passare';
+exception when others then
+  if sqlerrm like 'FALLITA%' then raise; end if;
+  raise notice 'ok  fuori dal listino non si compra (%)', sqlerrm;
+end $$;
+
+-- I CREDITI SONO UN LIMITE VERO. Ne restano 90 e il difensore costa 95:
+-- senza questo controllo il budget sarebbe un numero scritto sullo schermo.
+do $$ begin
+  perform public.compra_giocatore((select id from public.leagues where short_name = 'TOP'), 'prova_d1');
+  raise exception 'FALLITA: 95 crediti con 90 in tasca non dovevano bastare';
+exception when others then
+  if sqlerrm like 'FALLITA%' then raise; end if;
+  raise notice 'ok  senza crediti non si compra (%)', sqlerrm;
+end $$;
+select pg_temp.esige('e la rosa e'' rimasta di uno',
+  (select count(*) from public.rosters r join public.leagues l on l.id = r.league_id
+    where l.short_name = 'TOP' and r.released_at is null) = 1);
+
+-- la quota per ruolo: tre portieri e basta
+select public.compra_giocatore((select id from public.leagues where short_name = 'TOP'), 'prova_p2');
+select public.compra_giocatore((select id from public.leagues where short_name = 'TOP'), 'prova_p3');
+do $$ begin
+  perform public.compra_giocatore((select id from public.leagues where short_name = 'TOP'), 'prova_p4');
+  raise exception 'FALLITA: il quarto portiere non doveva entrare';
+exception when others then
+  if sqlerrm like 'FALLITA%' then raise; end if;
+  raise notice 'ok  quattro portieri no, tre sono il massimo (%)', sqlerrm;
+end $$;
+
+-- si vende, e torna indietro esattamente quello che si e' pagato
+select public.vendi_giocatore((select id from public.leagues where short_name = 'TOP'), 'prova_p2');
+select pg_temp.esige('venduto, il giocatore esce dalla rosa',
+  (select count(*) from public.rosters r join public.leagues l on l.id = r.league_id
+    where l.short_name = 'TOP' and r.released_at is null) = 2);
+select pg_temp.esige('e i crediti tornano interi',
+  (select credits from public.league_members m join public.leagues l on l.id = m.league_id
+    where l.short_name = 'TOP' and m.user_id = 'user_pub1') = 100 - 10 - 8);
+reset role;
+
+-- CHI NON E' DELLA LEGA NON COMPRA. E' la stessa cosa che impedisce di
+-- riempire la rosa di un altro: la funzione guarda chi la chiama, non chi le
+-- si dichiara.
+select pg_temp.entra('user_bea');
+set role authenticated;
+do $$ begin
+  perform public.compra_giocatore((select id from public.leagues where short_name = 'TOP'), 'prova_d2');
+  raise exception 'FALLITA: un estraneo non doveva poter comprare';
+exception when others then
+  if sqlerrm like 'FALLITA%' then raise; end if;
+  raise notice 'ok  chi non e'' nella lega non compra (%)', sqlerrm;
+end $$;
+reset role;
+
+-- NELLA LEGA PRIVATA IL NEGOZIO NON APRE: li' la rosa si fa con l'asta, e un
+-- negozio aperto di fianco la svuoterebbe di senso.
+select pg_temp.entra('user_alex');
+set role authenticated;
+select pg_temp.esige('nella lega privata il mercato non e'' mai aperto',
+  not public.mercato_aperto(:'lega'));
+do $$ begin
+  perform public.compra_giocatore((select id from public.leagues where short_name = 'LDP'), 'prova_d2');
+  raise exception 'FALLITA: nella lega privata non si doveva poter comprare';
+exception when others then
+  if sqlerrm like 'FALLITA%' then raise; end if;
+  raise notice 'ok  nella lega privata il negozio e'' chiuso (%)', sqlerrm;
+end $$;
+reset role;
+
 select 'tutte le prove sulle funzioni sono passate' as esito;

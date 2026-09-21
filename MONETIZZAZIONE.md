@@ -1,0 +1,142 @@
+# Far camminare Fantatitano con le sue gambe
+
+Piano economico, scritto con i numeri veri: quanto costa tenerla in piedi,
+quanto può rendere, e in che ordine conviene muoversi.
+
+---
+
+## 1. Il bersaglio: quanto costa davvero
+
+Oggi l'app gira **gratis**, ma su piani pensati per progetti personali.
+
+| Voce | Oggi | Appena si monetizza |
+|---|---|---|
+| Vercel | Hobby, €0 | **Pro, 20 $/mese** — obbligato: il piano Hobby è «for personal, non-commercial use», e un banner sponsor rende il sito commerciale |
+| Supabase | Free, €0 | Free regge ancora un po' (500 MB, 50k utenti/mese); **Pro 25 $/mese** quando servono i backup giornalieri e più spazio |
+| Resend | Free, 100 e-mail/giorno | 20 $/mese oltre |
+| Dominio | ~20 €/anno | uguale |
+| Play Console | 25 $ una tantum, già pagati | — |
+
+**Conto in tasca:**
+
+- oggi, uso personale: **~20 € l'anno**
+- con un solo sponsor e Vercel Pro: **~250–300 € l'anno**
+- con Supabase Pro e Resend a pagamento: **~800 € l'anno**
+- più il montepremi da 300 €: **~1.100 € l'anno** nello scenario più caro
+
+Il numero da tenere in testa è questo: **il pareggio sta sotto i mille euro a
+stagione**. Non serve un modello di business, serve *uno sponsor*.
+
+## 2. Il vincolo che decide tutto
+
+San Marino ha **34.000 abitanti**. Il campionato sammarinese ha un seguito di
+nicchia dentro una nicchia. Una stima onesta:
+
+- prima stagione: **100–300 iscritti**
+- se prende bene: **500–1.500**
+
+Con questi numeri, tutti i modelli «da app» sono fuori discussione: la
+pubblicità programmatica ha senso sopra le centinaia di migliaia di
+impressioni, un freemium di massa sopra le decine di migliaia di utenti.
+
+**Ma il numero piccolo non è il problema: è il prodotto.** Trecento
+sammarinesi che ogni settimana aprono un'app sul campionato locale sono un
+pubblico che nessun cartellone raggiunge con quella precisione. Per un'azienda
+del posto valgono più di diecimila impressioni generiche comprate a caso. È
+questo che si vende — non il traffico.
+
+## 3. Le strade, in ordine di resa
+
+### a) Sponsor locale — la principale
+
+Il banner c'è già (quello scuro fra le notizie e la giornata corrente,
+`.invito`): è nato per il montepremi, e lo stesso spazio regge un logo.
+
+- **uno sponsor principale**: 800–1.500 € a stagione
+- oppure **tre sponsor** da 400 € l'uno, a rotazione
+
+Cosa riceve: logo nel banner, «presented by» sulla lega pubblica, menzione nei
+canali. Chi cercare: banche e assicurazioni sammarinesi, concessionarie,
+negozi di sport, bar e ristoranti legati al calcio locale. L'accordo con la
+FSGC, quando c'è, è la leva migliore: vende credibilità, non spazio.
+
+### b) Premi in natura invece che in denaro
+
+Una cena per due, un abbonamento, materiale sportivo offerti da un negozio.
+Costo per noi: zero. E cambia il profilo legale del concorso, che con il
+denaro in palio è la parte più delicata (vedi `legale/montepremi-bozza.md`).
+
+### c) Leghe private a pagamento — non l'ingresso, le funzioni
+
+5–10 € a lega per stagione, per funzioni in più (regole su misura, più
+partecipanti, statistiche). Trenta leghe fanno 150–300 €.
+
+**Regola da non violare:** si paga per le *funzioni*, mai per entrare in una
+lega con un premio in palio. Pagamento + premio = concorso a premi con tutto
+quello che comporta.
+
+### d) «Titano Pro» — abbonamento del giocatore
+
+5 € a stagione per statistiche avanzate, notifiche live, personalizzazioni.
+Su 300 iscritti con una conversione del 5–10% sono 75–150 €: non risolve, ma
+copre la posta e qualche costo minore.
+
+### Quello che NON conviene fare
+
+- **Pubblicità programmatica**: a questi volumi rende pochi euro, e riempie di
+  banner un'app che oggi si legge bene. Si perde più di quanto si guadagna.
+- **Affiliazioni con le scommesse**: le policy di Google Play sul gioco
+  d'azzardo, gli iscritti **dai 14 anni** (`ETA_MINIMA` in `src/config.js`) e
+  il rapporto con la federazione. Tre buoni motivi per lasciar perdere: paga
+  bene e brucia tutto il resto.
+
+## 4. Il piano, stagione per stagione
+
+**Stagione 1 — pareggiare.**
+Un solo sponsor principale (800–1.000 €) e premi in natura. Copre Vercel Pro,
+il dominio, e avanza. Obiettivo vero: arrivare a fine stagione con i numeri in
+mano.
+
+**Stagione 2 — reggersi.**
+Due o tre sponsor, leghe private a pagamento, montepremi in denaro finanziato
+dagli sponsor e non di tasca. Qui serve il rendiconto: quanti erano, quanto
+sono tornati, quanti hanno toccato il banner.
+
+**Stagione 3 — crescere o restare.**
+L'unica via per numeri più grandi è uscire da San Marino: altri campionati
+piccoli con lo stesso problema (Andorra, Gibilterra, Liechtenstein, Malta) o i
+dilettanti romagnoli. Il motore dei voti non ha niente di sammarinese dentro:
+cambia il calendario e i tesserati. È una decisione da prendere con i dati
+della seconda stagione, non prima.
+
+## 5. Cosa va costruito prima di vendere
+
+In ordine, e sono tutte cose piccole:
+
+1. **Slot sponsor gestibile dalla console** — logo, link, periodo. Oggi il
+   banner è scritto nel codice: per cambiare sponsor servirebbe un rilascio.
+2. **Conteggio di impressioni e tocchi** del banner. È quello che rende
+   rinnovabile uno sponsor: senza un numero, l'anno dopo si ricomincia a
+   trattare da zero.
+3. **Pagina sponsor** con i ringraziamenti, e un piccolo kit: iscritti,
+   sessioni, formazioni consegnate per giornata.
+4. **Leghe private a pagamento**: un link di pagamento (Stripe o simile) e un
+   flag sulla lega. Nessuna carta di credito passa per noi.
+
+## 6. Le cose legali da sistemare prima del primo euro
+
+- **Chi fattura allo sponsor.** L'informativa dichiara come titolare del
+  trattamento Mediterranean Digital Solutions Ltd. Se a incassare è un'altra
+  entità — o una persona fisica — le due cose vanno allineate prima di
+  firmare, non dopo.
+- **Il concorso a premi**: `legale/montepremi-bozza.md`, da chiudere prima di
+  annunciare il montepremi dentro lo Store (policy di Play compresa).
+- **Vercel Hobby non è ammesso per uso commerciale**: il giorno che entra un
+  euro di sponsor, il piano va cambiato. È scritto nelle loro FAQ.
+
+## 7. Il numero da guardare
+
+Non gli iscritti: **quanti consegnano la formazione ogni settimana**. È la
+metrica che dice se l'app è viva, ed è quella che convince uno sponsor a
+rinnovare. La console amministrativa ha già la scheda «Numeri»: da lì si
+ricava, e va guardata ogni lunedì.

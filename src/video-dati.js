@@ -19,13 +19,21 @@ export const PARTITE = [
   [3, "murata", "sangiovanni", "ew8MLD5_AC8", "2026-09-14"],
   [3, "trefiori", "domagnano", "5vdKTg10rFM", "2026-09-14"],
   [3, "virtus", "libertas", "U6JvwcIMIwU", "2026-09-14"],
+  [4, "domagnano", "lafiorita", "UCsZHEdbWDg", "2026-09-21"],
+  [4, "folgore", "academy", "EB4gtQB_HqM", "2026-09-21"],
+  [4, "libertas", "faetano", "pvxr7rD3-Xw", "2026-09-21"],
+  [4, "murata", "cosmos", "ABEm9MZIr1s", "2026-09-21"],
+  [4, "pennarossa", "fiorentino", "EPA_4x8ZtUM", "2026-09-21"],
+  [4, "sangiovanni", "cailungo", "vbiJ3a0eLtk", "2026-09-21"],
+  [4, "trefiori", "virtus", "Zx-scog25wU", "2026-09-21"],
+  [4, "trepenne", "juvenes", "bH4FpWAHP2o", "2026-09-21"],
 ];
 export const VIDEO_CANALE = [
+  ["zsomoTLWsfU", "Campionato Sammarinese 2026-27, 4. giornata - VOTA LA PARATA PIÙ BELLA!", "2026-09-21"],
+  ["ZElMKq4bydc", "Campionato Sammarinese 2026-27, 4. giornata - VOTA IL GOL PIÙ BELLO!", "2026-09-21"],
   ["UUMa2xfdLMI", "U15, San Marino - Liechtenstein | Highlights", "2026-09-20"],
   ["hBMUJRh-BoA", "U15, San Marino -  Andorra | Highlights", "2026-09-19"],
   ["V6Aft2gpc5Y", "U15, San Marino - Gibilterra | Highlights", "2026-09-16"],
   ["nCfgsjsBWrA", "Campionato Sammarinese 2026-27, 3. giornata - VOTA LA PARATA PIÙ BELLA!", "2026-09-14"],
   ["vp3Ox2wYd4A", "Campionato Sammarinese 2026-27, 3. giornata - VOTA IL GOL PIÙ BELLO!", "2026-09-14"],
-  ["bA_YMUQFHKY", "Coppa Titano 2026-27, Andata degli Ottavi | HL Murata-Virtus 0-3", "2026-09-11"],
-  ["lEqcSfPFZ64", "Coppa Titano 2026-27, Andata degli Ottavi | HL Libertas-Folgore 0-2", "2026-09-11"],
 ];

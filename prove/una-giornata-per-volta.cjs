@@ -46,9 +46,27 @@ const MOMENTI = [
     const w = (ms = 450) => p.waitForTimeout(ms);
     // Quante partite della 4a hanno un risultato: si riscrive il calendario,
     // che nel frattempo il campionato fa cambiare da solo.
+    // Il campionato va avanti da solo: risultati e tabellini della 4ª cambiano
+    // a ogni import. Qui si riscrivono tutti e due — e in modo COERENTE: le
+    // gare "giocate" hanno il risultato e il referto, le altre non hanno né
+    // l'uno né l'altro. Se no capita quello che è capitato: la prova cercava
+    // una gara senza referto e non ne trovava più.
+    const giocate = [];
     await p.route('**/calendario-dati.js', async (route) => {
       const r = await route.fetch(); let t = await r.text(); let n = 0;
-      t = t.replace(/(\[4,[^\n]*?),(?:null|\d+),(?:null|\d+)\]/g, (x, a) => (n++ < m.giocate ? `${a},2,1]` : `${a},null,null]`));
+      t = t.replace(/\[4,"([a-z0-9]+)","([a-z0-9]+)"([^\n]*?),(?:null|\d+),(?:null|\d+)\]/g, (x, casa, ospite, resto) => {
+        const dentro = n++ < m.giocate;
+        if (dentro) giocate.push(`${casa}|${ospite}`);
+        return `[4,"${casa}","${ospite}"${resto},${dentro ? '2,1' : 'null,null'}]`;
+      });
+      await route.fulfill({ body: t, headers: { 'content-type': 'text/javascript' } });
+    });
+    await p.route('**/eventi-dati.js', async (route) => {
+      const r = await route.fetch();
+      const t = (await r.text()).split('\n').filter((riga) => {
+        const q = /^\s*\{g:4,casa:"([a-z0-9]+)",ospite:"([a-z0-9]+)"/.exec(riga);
+        return !q || giocate.includes(`${q[1]}|${q[2]}`);
+      }).join('\n');
       await route.fulfill({ body: t, headers: { 'content-type': 'text/javascript' } });
     });
     await p.goto(`${BASE}/#/`, { waitUntil: 'load' }); await w(1300);

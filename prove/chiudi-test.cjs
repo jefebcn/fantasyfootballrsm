@@ -117,8 +117,16 @@ const ok = [], ko = []; const et = (c, t) => (c ? ok : ko).push(t);
   if (stato.c && !stato.spento) {
     await p.click('#chiudi-giornata'); await w(1400);
     const dopo = await p.evaluate(() => ({ btn: !!document.querySelector('#chiudi-giornata'),
-      voti: !!document.querySelector('a.a-btn.big[href^="#/voti"]') }));
-    et(!dopo.btn && dopo.voti, 'premuto: la giornata si chiude e il tasto torna "Voti della giornata"');
+      // Chiusa la 4ª, la home guarda avanti: la card della giornata corrente
+      // passa alla 5ª e offre la formazione. Prima questa prova si aspettava
+      // "Voti della giornata", ma era un'attesa mai messa alla prova — il
+      // tasto restava spento perche' i referti non c'erano, e questo pezzo non
+      // girava mai.
+      formazione: !!document.querySelector('a.a-btn.big[href="#/rosa/formazione"]'),
+      voti: !!document.querySelector('a.a-btn.big[href^="#/voti"]'),
+      corrente: (document.body.innerText.match(/Giornata corrente\s*(\d+)ª/) || [])[1] }));
+    et(!dopo.btn, 'premuto: la giornata si chiude e il tasto "Calcola" sparisce');
+    et(dopo.formazione || dopo.voti, `e la home guarda avanti, alla ${dopo.corrente || '?'}ª (${dopo.formazione ? 'formazione' : dopo.voti ? 'voti' : 'niente'})`);
   }
   et(errs.length === 0, `nessun errore JS${errs.length ? ': ' + errs[0] : ''}`);
   await b.close();

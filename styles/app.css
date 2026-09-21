@@ -172,6 +172,28 @@ a.mrow.tocca{color:inherit;text-decoration:none;cursor:pointer}
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .invito .txt > span.sot{font-size:11px;color:#C9D6E2;margin-top:1px}
 .invito .chev{flex:none;display:grid;place-items:center;color:var(--c-oro-300)}
+/* la console: le date dello sponsor stanno su una riga sola */
+.sp-date{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.adm-sp{display:flex;flex-direction:column;gap:8px}
+.adm-sp .adm-u{display:grid;grid-template-columns:1fr auto auto auto;gap:8px;align-items:center}
+.adm-sp .tag.ok{background:var(--positive-soft);color:var(--positive-ink)}
+/* Lo spazio dello sponsor: dichiarato, non travestito da contenuto.
+   Chiaro dove la fascia del montepremi e' scura, cosi' non si confondono a
+   colpo d'occhio: una e' un invito dell'app, l'altra e' uno spazio comprato. */
+.spon{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:12px;
+  padding:10px 14px;border-radius:var(--r-md);text-decoration:none;color:inherit;
+  background:var(--surface);border:1px solid var(--border);box-shadow:var(--sh-card);position:relative}
+.spon-tag{position:absolute;top:-7px;left:12px;padding:1px 7px;border-radius:999px;
+  font:700 9px var(--font-body);letter-spacing:.12em;text-transform:uppercase;
+  background:var(--surface-2);border:1px solid var(--border);color:var(--text-muted)}
+.spon-logo{width:44px;height:44px;border-radius:10px;object-fit:contain;background:var(--surface-2);flex:none}
+.spon-logo.vuoto{display:grid;place-items:center;font:700 15px var(--font-display);color:var(--text-muted)}
+.spon-txt{min-width:0}
+.spon-txt b{display:block;font:600 14.5px var(--font-body);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.spon-txt span{display:block;font-size:12px;line-height:1.35;color:var(--text-muted);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.spon-chev{color:var(--text-muted);display:grid;place-items:center}
+.spon:active{background:var(--surface-2)}
 /* la giornata corrente in una lega a punti: tre numeri, nessun avversario */
 .mrow.punti{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;text-align:center;padding:14px 12px}
 .mrow.punti .pblocco b{display:block;font-family:var(--font-display);font-weight:800;font-size:22px;line-height:1.1;font-variant-numeric:tabular-nums}

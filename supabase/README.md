@@ -98,7 +98,16 @@ Su un progetto nuovo, nell'SQL Editor, in quest'ordine:
     si crea, vuol dire che i doppioni ci sono già: la query per trovarli è
     dentro il file.
 
-18. `promemoria-pianificato.sql` — **facoltativo ma consigliato**, e non è una
+18. `migrations/017-sponsor.sql` — lo spazio dello sponsor, amministrabile
+    dalla console senza rilasci. Una tabella e non una costante perché uno
+    sponsor cambia a stagione e chi lo vende non è chi sa rilasciare. Due
+    regole stanno nel database e non nella schermata, perché dietro c'è un
+    contratto: **la finestra delle date** (chi gioca vede solo quello in
+    corso; chi amministra vede anche i programmati e gli scaduti, se no non
+    potrebbe caricarne uno per il mese prossimo) e **chi può scrivere** (solo
+    `is_admin`: uno sponsor che si mette da solo non è uno sponsor).
+
+19. `promemoria-pianificato.sql` — **facoltativo ma consigliato**, e non è una
     migrazione: si riempie **una riga** (il token del promemoria) e si lancia
     a mano. Sposta l'orologio dell'avviso
     della formazione da GitHub — che accoda e salta le corse pianificate, fino

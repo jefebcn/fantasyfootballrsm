@@ -885,4 +885,55 @@ select pg_temp.esige('un altro tipo di evento nello stesso minuto passa',
 delete from public.match_events where match_id = 'md9_m1';
 reset role;
 
+-- ---------------------------------------------------------------- 017: sponsor
+-- Lo spazio si vende, quindi due cose devono valere nel database e non nella
+-- schermata: la finestra delle date (c'e' un contratto dietro) e chi puo'
+-- scrivere (uno sponsor che si mette da solo non e' uno sponsor).
+select pg_temp.entra('user_pub1');          -- amministratore dell'app
+set role authenticated;
+insert into public.sponsor (nome, claim, dal, al) values
+  ('Bar Titano', 'in corso', current_date - 3, current_date + 3),
+  ('Domani Srl', 'programmato', current_date + 2, null),
+  ('Ieri Spa', 'scaduto', current_date - 30, current_date - 1),
+  ('Spento Srl', 'spento', current_date - 3, null);
+update public.sponsor set attivo = false where nome = 'Spento Srl';
+reset role;
+select pg_temp.esige('chi amministra li vede tutti e quattro',
+  (select count(*) from public.sponsor) = 4);
+
+-- chi gioca vede solo quello in corso: niente programmati, niente scaduti
+select pg_temp.entra('user_bea');
+set role authenticated;
+select pg_temp.esige('chi gioca vede solo quello in corso',
+  (select count(*) from public.sponsor) = 1
+  and (select nome from public.sponsor) = 'Bar Titano');
+-- e non puo' vendersi uno spazio da solo
+do $$ begin
+  insert into public.sponsor (nome, dal) values ('Me stesso', current_date);
+  raise exception 'FALLITA: chi non amministra non doveva poter aggiungere uno sponsor';
+exception when others then
+  if sqlerrm like 'FALLITA%' then raise; end if;
+  raise notice 'ok  chi non amministra non si vende lo spazio (%)', sqlerrm;
+end $$;
+-- ne' cancellare quello che c'e'
+delete from public.sponsor;
+reset role;
+select pg_temp.esige('ne'' puo'' cancellare quello degli altri',
+  (select count(*) from public.sponsor) = 4);
+
+-- il giorno dopo la scadenza sparisce da solo: nessuno deve ricordarsene
+select pg_temp.entra('user_pub1');
+set role authenticated;
+update public.sponsor set al = current_date - 1 where nome = 'Bar Titano';
+reset role;
+select pg_temp.entra('user_bea');
+set role authenticated;
+select pg_temp.esige('scaduto ieri, non lo vede piu'' nessuno',
+  (select count(*) from public.sponsor) = 0);
+reset role;
+select pg_temp.entra('user_pub1');
+set role authenticated;
+delete from public.sponsor;
+reset role;
+
 select 'tutte le prove sulle funzioni sono passate' as esito;

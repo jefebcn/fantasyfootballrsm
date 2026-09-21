@@ -57,6 +57,10 @@ const ok = [], ko = []; const et = (c, t) => (c ? ok : ko).push(t);
       sfocato: v ? /blur/.test(getComputedStyle(v).filter) : null,
       testoSiVede: vis(body) && body.innerText.trim().length > 10,
       titolo: document.querySelector('.intro-body h1')?.innerText.trim() || '',
+      // Il nome dell'app nella prima schermata e' il MARCHIO, non una scritta
+      // che gli somiglia: stesso peso, stessa spaziatura, stesse lettere.
+      marchio: (() => { const m = document.querySelector('.intro-marchio .marchio'); if (!m) return null;
+        const b = m.getBoundingClientRect(); return { largo: Math.round(b.width), alto: Math.round(b.height) }; })(),
     };
   });
 
@@ -69,7 +73,9 @@ const ok = [], ko = []; const et = (c, t) => (c ? ok : ko).push(t);
   et(r.canvas && r.canvasSiVede, 'sotto c\'e\' lo sfondo animato di riserva');
   et(r.sfocato, 'il video e\' sfocato, cosi\' il testo sopra si legge');
   et(r.opacita === '0' || r.pronto, `si accende solo con un fotogramma pronto, se no resta trasparente (opacita' ${r.opacita}, fotogramma ${r.pronto ? 'si' : 'no'})`);
-  et(r.testoSiVede, `e il testo della presentazione si legge lo stesso ("${r.titolo.slice(0, 40)}")`);
+  et(r.testoSiVede, 'e il testo della presentazione si legge lo stesso');
+  et(!!r.marchio && r.marchio.largo >= 200, `il nome e' il marchio vero, non una scritta rifatta (${r.marchio ? `${r.marchio.largo}x${r.marchio.alto}` : 'assente'})`);
+  et(!r.titolo, `e non c'e' anche un titolo scritto a parte (${r.titolo || 'nessuno'})`);
   et(errori.length === 0, `nessun errore JS${errori.length ? ' — ' + errori[0] : ''}`);
 
   await ctx.close();
@@ -97,12 +103,12 @@ const ok = [], ko = []; const et = (c, t) => (c ? ok : ko).push(t);
     return {
       video: !!v, opacita: v ? getComputedStyle(v).opacity : null,
       canvas: vis(cv), testo: vis(body) && body.innerText.trim().length > 10,
-      titolo: document.querySelector('.intro-body h1')?.innerText.trim() || '',
+      marchio: !!document.querySelector('.intro-marchio .marchio'),
     };
   });
   et(!senza.video || senza.opacita === '0', `video staccato: niente buco nero (${senza.video ? `opacita' ${senza.opacita}` : 'elemento tolto'})`);
   et(senza.canvas, 'video staccato: sotto resta lo sfondo animato');
-  et(senza.testo, `video staccato: e la presentazione si legge lo stesso ("${senza.titolo.slice(0, 40)}")`);
+  et(senza.testo && senza.marchio, `video staccato: e la presentazione si legge lo stesso, marchio compreso (${senza.marchio ? 'marchio ok' : 'marchio assente'})`);
   et(errori2.length === 0, `video staccato: nessun errore JS${errori2.length ? ' — ' + errori2[0] : ''}`);
   await ctx2.close();
 

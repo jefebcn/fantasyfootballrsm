@@ -1,5 +1,5 @@
 import * as S from '../state.js';
-import { icon, logo } from '../ui.js';
+import { icon, logo, marchio } from '../ui.js';
 import { prepareLogin } from './auth.js';
 
 /**
@@ -20,13 +20,18 @@ let slide = 0;
 
 const SLIDES = [
   {
-    eyebrow: 'Campionato Sammarinese',
-    title: 'Fanta<em>titano</em>',
+    // IL TITOLO E' IL MARCHIO, non una scritta che gli somiglia. "Fantatitano"
+    // scritto col font dell'app aveva un altro peso e un'altra spaziatura di
+    // quello del logo — due volte lo stesso nome, in due modi diversi, nella
+    // prima schermata che si vede dell'app.
+    marchio: true,
     body: `<p>Il fantacalcio delle sedici squadre di San Marino: asta, rosa, formazione ogni settimana, scontro diretto.</p>
            <p>Con una differenza: qui <b>le pagelle non esistono</b>. Nessuno decide se hai giocato bene. Il voto nasce da quello che è successo in campo.</p>`,
   },
   {
     eyebrow: 'Come funziona',
+    // Stessa regola del marchio, applicata alle parole: la prima pesante, la
+    // seconda leggera e spaziata. E' quello che fa FANTA/TITANO.
     title: 'Tre cose<br><em>da sapere</em>',
     points: [
       ['calc', 'Il Voto Titano', 'Si parte da 6,0. Si aggiunge l\'esito della squadra e ogni evento del referto: gol, assist, porta inviolata, cartellini, rigori. Il conto è sempre visibile, riga per riga.'],
@@ -50,12 +55,15 @@ export const onboarding = {
       </div>
       <div class="intro-top">
         ${slide ? `<button class="intro-back" data-prev aria-label="Indietro">${icon('chev', 'ic flip')}</button>` : '<span></span>'}
-        ${logo('intro-mark')}
+        ${s.marchio ? '<span></span>' : logo('intro-mark')}
         <button class="intro-skip" data-skip>Salta</button>
       </div>
       <div class="intro-body">
-        <span class="intro-eyebrow">${s.eyebrow}</span>
-        <h1>${s.title}</h1>
+        ${s.marchio
+    // La corona in cima sparisce quando sotto c'e' il marchio intero: due
+    // corone nella stessa schermata sono una di troppo.
+    ? `<div class="intro-marchio">${marchio()}</div>`
+    : `<span class="intro-eyebrow">${s.eyebrow}</span><h1>${s.title}</h1>`}
         ${s.body || ''}
         ${s.points ? `<ul class="intro-points">${s.points.map(([ic, t, d], i) => `<li style="--i:${i}"><i>${icon(ic)}</i><div><b>${t}</b><span>${d}</span></div></li>`).join('')}</ul>` : ''}
       </div>

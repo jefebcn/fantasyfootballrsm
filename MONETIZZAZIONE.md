@@ -132,8 +132,12 @@ In ordine, e sono tutte cose piccole:
    finestra. Resta possibile, come per qualunque contatore che non scheda
    chi lo tocca, che qualcuno chiami la funzione più volte: è il prezzo di
    non tenere un registro delle persone, e va detto a chi compra.
-3. **Pagina sponsor** con i ringraziamenti, e un piccolo kit: iscritti,
-   sessioni, formazioni consegnate per giornata.
+3. ~~**Pagina sponsor** con i ringraziamenti e il kit~~ — **saltata**, per
+   scelta di Alex (21 settembre). Non è bloccante: i numeri che sarebbero
+   finiti nel kit ci sono già nella console (scheda Numeri e rendiconto dello
+   sponsor), e si leggono da lì quando servono. Resta qui scritta perché il
+   giorno che gli sponsor diventano più di uno, una pagina che li ringrazia
+   pubblicamente è la cosa che li fa rinnovare senza chiederlo.
 4. **Leghe private a pagamento**: un link di pagamento (Stripe o simile) e un
    flag sulla lega. Nessuna carta di credito passa per noi.
 

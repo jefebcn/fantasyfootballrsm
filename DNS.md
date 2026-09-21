@@ -13,6 +13,28 @@ sito/app vale su **un** host, e i redirect non li segue.
 
 ---
 
+## 0. Cosa c'è adesso nel pannello (letto il 21/09)
+
+Sette record. Tre si toccano, quattro si lasciano stare.
+
+| Tipo | Nome | Valore di adesso | Cosa farne |
+|---|---|---|---|
+| A | `@` | *WebsiteBuilder Site* | **cambiare**: è il "coming soon". Prima scollega il prodotto, se no GoDaddy lo rimette |
+| CNAME | `www` | `fantatitano.site.` | **cambiare** col valore unico del progetto Vercel |
+| TXT | `_dmarc` | `v=DMARC1; p=quarantine; …` | **guardare**: vedi sotto, con `p=quarantine` le e-mail di Resend rischiano la quarantena finché SPF e DKIM non ci sono |
+| NS | `@` | `ns55/ns56.domaincontrol.com` | lasciare: il DNS resta a GoDaddy |
+| SOA | `@` | `ns55.domaincontrol.com` | lasciare (non si tocca) |
+| CNAME | `_domainconnect` | `_domainconnect.gd.domaincontrol.com` | lasciare: serve ai pannelli guidati di GoDaddy |
+
+Il dominio nudo oggi risponde `76.223.105.230` e `13.248.243.5`, che sono gli
+indirizzi del sito GoDaddy: è la conferma che il record `A @` è ancora il loro.
+
+Sul `_dmarc`: quel record dice "se una e-mail dice di venire da
+fantatitano.site ma non è autenticata, mettila in quarantena". È giusto
+tenerlo, ma **prima** devono esserci SPF e DKIM di Resend (passo 4), se no le
+e-mail dell'app finiscono in spam. Mentre configuri, se qualcosa non torna,
+abbassalo a `p=none` e rimettilo a `quarantine` quando Resend dice *Verified*.
+
 ## 1. GoDaddy: togli di mezzo il "coming soon"
 
 Oggi il dominio risponde con la pagina del **Website Builder** di GoDaddy.

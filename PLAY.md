@@ -140,7 +140,7 @@ e non vuole né Node né il JDK.
 - Ti fa un rapporto sulla PWA (manifesto, service worker, icone): quello che
   chiede lo abbiamo già
 - **Package for stores → Android → Generate**, con queste risposte:
-  - *Package ID*: `site.fantatitano.app` (lo stesso di assetlinks.json)
+  - *Package ID*: `app.fantatitano.site` (lo stesso di assetlinks.json)
   - *App name*: Fantatitano · *Launcher name*: Fantatitano
   - *Signing key*: **Create new** — e poi **scarica e conserva** lo zip che ti
     dà: dentro c'è il keystore e le sue password (**TU**)
@@ -163,7 +163,7 @@ bubblewrap init --manifest https://fantatitano.site/manifest.webmanifest
 
 Risponde alle domande così:
 
-- **Package name**: `site.fantatitano.app` (è quello già scritto in
+- **Package name**: `app.fantatitano.site` (è quello già scritto in
   assetlinks.json: se lo cambi, cambialo anche lì)
 - **App name**: Fantatitano · **Short name**: Fantatitano
 - **Display mode**: standalone · **Orientation**: portrait

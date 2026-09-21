@@ -1,5 +1,5 @@
 import * as S from '../state.js';
-import { esc, icon, logo } from '../ui.js';
+import { esc, icon, logo, marchio } from '../ui.js';
 
 let tab = 'in';            // 'in' | 'up' | 'link'
 let pending = null;        // { email, kind: 'confirm' | 'link' }
@@ -34,7 +34,7 @@ export const login = {
         <i class="velo"></i>
       </div>
       <div class="contenuto">
-        <div class="marchio">${logo('auth-mark')}<span>Fanta<b>titano</b></span></div>
+        <div class="testata">${marchio()}</div>
         <h1 class="tit">${titolo}</h1>
         ${notice ? `<div class="avviso ${notice.kind}">${icon(notice.kind === 'ok' ? 'check' : 'warn', 'ic sm')}<span>${esc(notice.text)}</span></div>` : ''}
         ${pending ? pendingPanel() : tab === 'link' ? linkPanel() : credentialsPanel()}

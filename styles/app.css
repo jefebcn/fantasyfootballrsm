@@ -1084,7 +1084,13 @@ button,a{-webkit-tap-highlight-color:transparent}
 .intro-back{display:grid;place-items:center;text-align:left}
 .intro-skip{font:600 13px var(--font-body);opacity:.75;text-align:right}
 
-.intro-body{flex:1;display:flex;flex-direction:column;justify-content:center;gap:14px;padding-block:16px}
+/* Tutto in asse: occhiello, titolo e testo stanno al centro come il marchio,
+   i pallini e il bottone. Erano gli unici pezzi allineati a sinistra, e in una
+   schermata larga 346pt si vedeva. Le schede sotto restano allineate a
+   sinistra dentro: hanno l'icona di fianco, e un testo centrato accanto a
+   un'icona a sinistra e' una riga che non torna. */
+.intro-body{flex:1;display:flex;flex-direction:column;justify-content:center;align-items:center;
+  gap:14px;padding-block:16px;text-align:center}
 .intro-eyebrow{font:600 11px var(--font-body);letter-spacing:.16em;text-transform:uppercase;opacity:.8}
 /* I titoli della presentazione seguono la regola del marchio: la prima parola
    pesante e stretta, la seconda leggera e spaziata — e' quello che fa
@@ -1096,11 +1102,12 @@ button,a{-webkit-tap-highlight-color:transparent}
 /* Il marchio come titolo: e' il soggetto della prima schermata. */
 .intro-marchio{display:flex;justify-content:center;padding-block:2px 8px}
 .intro-marchio .marchio{width:min(320px,74vw);filter:drop-shadow(0 2px 22px rgba(0,0,0,.4))}
-.intro-body p{font-size:15.5px;line-height:1.55;opacity:.92;max-width:34ch}
+.intro-body p{font-size:15.5px;line-height:1.55;opacity:.92;max-width:34ch;margin-inline:auto}
 .intro-body p+p{margin-top:10px}
 .intro-body p b{font-weight:700;color:var(--c-oro-300)}
 
-.intro-points{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:12px}
+.intro-points{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:12px;
+  align-self:stretch;text-align:left}
 .intro-points li{display:flex;gap:14px;align-items:flex-start;background:rgba(255,255,255,.10);border:1px solid rgba(255,255,255,.16);
   border-radius:16px;padding:14px;backdrop-filter:blur(6px);animation:rise .45s both;animation-delay:calc(var(--i) * .08s)}
 .intro-points i{width:38px;height:38px;border-radius:11px;background:rgba(255,255,255,.16);display:grid;place-items:center;flex:none}
@@ -1558,11 +1565,17 @@ button,a{-webkit-tap-highlight-color:transparent}
 .auth2 .contenuto{position:relative;z-index:1;width:100%;flex:1;min-height:0;
   padding:0 22px calc(28px + var(--sa-bottom));display:flex;flex-direction:column;gap:12px}
 
-.auth2 .marchio{display:flex;align-items:center;gap:9px;margin-bottom:auto;padding-top:calc(26px + var(--sa-top));
-  font:500 13px var(--font-body);color:rgba(255,255,255,.72);letter-spacing:.02em}
-.auth2 .marchio b{font-weight:800;color:#fff}
-.auth2 .marchio .auth-mark{width:26px;height:26px;background:#fff}
-.auth2 .tit{font:900 40px/1.05 var(--font-display);color:#fff;margin:0 0 6px;letter-spacing:-.01em}
+/* La testata e' il marchio intero, centrato. Prima era una corona piccola
+   accanto a "Fantatitano" scritto col font dell'app: la classe .marchio, pero',
+   porta con se' la maschera del logo (logo.css), e quella maschera copriva
+   corona e testo disegnando il marchio vero. Si vedeva la cosa giusta per
+   sbaglio. Ora e' il marchio e basta, e sta in asse con tutto il resto. */
+.auth2 .testata{display:flex;justify-content:center;margin-bottom:auto;padding-top:calc(26px + var(--sa-top))}
+.auth2 .testata .marchio{width:min(214px,56vw);color:#fff;opacity:.96;filter:drop-shadow(0 2px 18px rgba(0,0,0,.38))}
+/* Titolo, avvisi e code in mezzo: su questa schermata era in asse solo il
+   bottone, e il titolo partiva da sinistra mentre tutto il resto era centrato. */
+.auth2 .tit{font:900 40px/1.05 var(--font-display);color:#fff;margin:0 0 6px;letter-spacing:-.01em;text-align:center}
+.auth2 .nota,.auth2 .auth-sent,.auth2 .auth-hint{text-align:center}
 
 .auth2 .campo{position:relative}
 .auth2 .campo input{width:100%;height:54px;border-radius:14px;border:1px solid rgba(255,255,255,.22);

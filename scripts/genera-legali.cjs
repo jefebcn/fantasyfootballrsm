@@ -24,6 +24,10 @@ const { writeFileSync } = require('fs');
 const PAGINE = [
   ['privacy', 'privacy.html', 'Privacy', 'Che dati tiene Fantatitano, chi li vede e come si cancellano.'],
   ['termini', 'termini.html', 'Termini d\'uso', 'Come si sta in Fantatitano: cosa promette l\'app e cosa si aspetta da chi gioca.'],
+  // Play pretende che la strada per cancellare l'account si apra dal web,
+  // senza installare l'app e senza fare l'accesso: quindi questa pagina deve
+  // esistere anche come HTML statico, non solo dietro al cancelletto.
+  ['cancella-account', 'cancella-account.html', 'Cancellare l\'account', 'Come si cancella l\'account Fantatitano: dall\'app o per e-mail, e cosa succede ai dati.'],
 ];
 const PORTA = 4199;
 

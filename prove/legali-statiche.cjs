@@ -19,7 +19,10 @@
 const { chromium } = require('playwright');
 const BASE = process.env.BASE || 'http://localhost:4173';
 const ok = [], ko = []; const et = (c, t) => (c ? ok : ko).push(t);
-const PAGINE = [['privacy.html', 'privacy', 'Privacy'], ['termini.html', 'termini', 'Termini']];
+const PAGINE = [['privacy.html', 'privacy', 'Privacy'], ['termini.html', 'termini', 'Termini'],
+  // Questa la chiede Google Play: la strada per cancellare l'account deve
+  // aprirsi dal web, senza installare niente e senza accesso.
+  ['cancella-account.html', 'cancella-account', 'Cancellare']];
 // Minuscolo di proposito: innerText restituisce il testo RESO, e i titoli di
 // sezione escono in maiuscolo per via del CSS — nella statica e nell'app le
 // regole che li toccano non sono le stesse. Confrontare distinguendo le

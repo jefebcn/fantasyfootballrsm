@@ -16,7 +16,7 @@ const ROUTES = [
   ['classifica', views.classifica], ['voti', views.voti], ['voti/:n', views.voti],
   ['live/:id', views.live], ['listone', views.listone], ['giocatore/:id', views.giocatore],
   ['confronto/:a', views.confronto], ['confronto/:a/:b', views.confronto],
-  ['video', views.video], ['regolamento', views.regolamento], ['regole', views.regole], ['scheda', views.scheda], ['impostazioni', views.impostazioni], ['impostazioni/avanzate', views.avanzate], ['scambi', views.scambi], ['privacy', views.privacy], ['termini', views.termini], ['archiviazione', views.archiviazione], ['licenze', views.licenze],
+  ['video', views.video], ['regolamento', views.regolamento], ['regole', views.regole], ['scheda', views.scheda], ['impostazioni', views.impostazioni], ['impostazioni/avanzate', views.avanzate], ['scambi', views.scambi], ['privacy', views.privacy], ['termini', views.termini], ['archiviazione', views.archiviazione], ['licenze', views.licenze], ['cancella-account', views.cancella],
   ['admin', views.adminGiornata], ['admin/partita/:id', views.adminPartita], ['admin/contestazioni', views.adminContestazioni],
   ['admin/congela', views.adminCongela], ['admin/console', views.adminConsole], ['admin/registro', views.adminRegistro], ['mercato', views.mercato], ['asta', views.asta],
   ['login', views.login], ['leghe', views.leghe], ['lega', views.lega], ['gestione', views.gestione], ['squadra', views.squadra], ['vice/:code', views.vice], ['setup', views.setup], ['offline', views.offline], ['sospeso', views.sospeso], ['benvenuto', views.onboarding],
@@ -187,13 +187,13 @@ const STATE_ROUTE = { unconfigured: 'setup', offline: 'offline', anonymous: 'log
 // da li' si scaricano i propri dati e si cancella l'account, che sono diritti
 // e non si sospendono insieme al resto.
 const ALLOWED = { 'no-league': ['leghe', 'impostazioni', 'admin/console'], anonymous: ['login', 'benvenuto'],
-  sospeso: ['impostazioni', 'impostazioni/avanzate', 'privacy', 'termini', 'archiviazione', 'licenze'] };
+  sospeso: ['impostazioni', 'impostazioni/avanzate', 'privacy', 'termini', 'archiviazione', 'licenze', 'cancella-account'] };
 // Le pagine legali si leggono SEMPRE: senza account, senza collegamento,
 // anche prima di configurare il server. Un'informativa raggiungibile solo a
 // cose funzionanti non e' un'informativa, ed e' anche quello che chiede chi
 // controlla un'app prima di pubblicarla (le stesse pagine escono statiche in
 // privacy.html e termini.html, vedi scripts/genera-legali.cjs).
-const SEMPRE = ['privacy', 'termini', 'archiviazione', 'licenze'];
+const SEMPRE = ['privacy', 'termini', 'archiviazione', 'licenze', 'cancella-account'];
 function gate(path) {
   if (SEMPRE.includes(path)) return null;
   const st = S.appState();

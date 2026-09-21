@@ -24,6 +24,17 @@ Misurato dall'esterno, non dato per buono:
 | Posta in uscita (Resend su `send`) | MX, SPF e DKIM a posto; conferma e-mail attiva e provata |
 | Posta in arrivo (`support@`) | inoltro ImprovMX, provato |
 
+**Aggiornato al 21 settembre, sera.** Adesso e' pronto anche tutto il
+materiale della scheda, che di solito e' la parte che fa perdere una
+giornata:
+
+| | |
+|---|---|
+| Otto screenshot 1080×1920 | `store/*.jpg`, rigenerabili con `node scripts/schermate-store.cjs` |
+| Grafica d'intestazione 1024×500 | `store/grafica-1024x500.jpg` |
+| Nome, descrizioni, categoria, Data safety | `store/scheda-play.md`, gia' dentro i limiti |
+| Pagina per cancellare l'account | `cancella-account.html` — **Play la pretende**, vedi il punto 2 |
+
 Quindi di questo documento restano da fare i punti **4** (generare il
 pacchetto) e **5** (Play Console), piu' la riga dell'impronta al punto 3 —
 che si puo' scrivere solo dopo, perche' quel valore lo produce Play.
@@ -77,6 +88,24 @@ Quell'ultima riga non è un dettaglio: Play **pretende** che un'app con
 account permetta di cancellarlo dall'app *e* che esista una pagina che
 spiega come si chiede la cancellazione. L'app il bottone ce l'ha già
 (Profilo → elimina), la pagina adesso anche.
+
+
+### La pagina che fa respingere le app: cancellare l'account
+
+Play pretende, per **ogni app che fa creare un account**, due strade per
+cancellarlo: una dentro l'app (c'e' gia': Profilo → Elimina account) e una
+**raggiungibile dal web**, senza installare niente e senza fare l'accesso. La
+pagina deve nominare l'app come sta nella scheda e dire come si chiede.
+
+E' `https://fantatitano.site/cancella-account.html`, e nel Play Console va
+incollata nel campo apposito del modulo **Data safety**. Come privacy e
+termini, non si scrive a mano: si genera dall'app con
+`node scripts/genera-legali.cjs`, e `prove/legali-statiche.cjs` controlla che
+le due copie dicano la stessa cosa.
+
+Dice quello che il database fa davvero (migrazione 010), compreso il caso in
+cui la cancellazione **si rifiuta**: chi amministra una lega dove gioca anche
+qualcun altro non puo' sparire e basta.
 
 ## 3. Il file che toglie la barra dell'indirizzo
 
@@ -153,12 +182,15 @@ bubblewrap build          # produce app-release-bundle.aab
 
 - Crea l'app, carica `app-release-bundle.aab` su una **traccia interna** (non
   in produzione: la traccia interna si apre in minuti e la vedi solo tu)
-- Compila: descrizione breve e lunga, categoria **Sport**, icona 512, grafica
-  di intestazione 1024×500, **almeno due screenshot** di telefono
-- **Data safety**: l'app raccoglie e-mail e nome, li usa per far funzionare
-  l'account, sono cifrati in transito e si cancellano dall'app. Le risposte
-  devono combaciare con quello che dice `privacy.html`, che è scritto
-  guardando il codice
+- Compila la scheda: i testi, la categoria, i tag e gli indirizzi da incollare
+  stanno **gia' scritti** in `store/scheda-play.md`; le immagini in `store/`
+  (otto screenshot 1080×1920 e la grafica 1024×500, tutte JPEG perche' Play
+  non vuole il canale alfa). L'icona 512 e' `icons/icon-512.png`
+- Nel modulo **Data safety** ricordati il campo della **cancellazione
+  dell'account**: `https://fantatitano.site/cancella-account.html`
+- **Data safety**: le risposte, voce per voce e col perche', stanno in
+  `store/scheda-play.md`. Devono combaciare con `privacy.html`, che e' scritto
+  guardando il codice: se divergono, quella che conta per Google e' la loro
 - **Content rating**: questionario, categoria sport/gioco
 - **Target audience**: l'app accetta iscritti **dai 14 anni** (`ETA_MINIMA` in
   `src/config.js`). Se dichiari un pubblico che comprende i minori, Play

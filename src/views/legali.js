@@ -110,6 +110,7 @@ export const privacy = {
       ${blocco('I tuoi diritti', [
     'Puoi chiedere di <b>vedere</b> i dati che ti riguardano, di <b>correggerli</b>, di <b>cancellarli</b>, di <b>limitarne</b> l\'uso, di <b>riceverli</b> in un formato leggibile da una macchina e di <b>opporti</b> a un trattamento fondato sul legittimo interesse.',
     `Molte cose le fai già da solo: nome squadra, stemma e maglia si cambiano in <a href="#/squadra">La mia squadra</a>, e chi ha creato una lega la elimina da <a href="#/lega">Partecipanti</a> con tutto quello che conteneva, per tutti.`,
+    'Se non hai l\'app sottomano, la strada per cancellare l\'account è scritta per intero su <b>fantatitano.site/cancella-account.html</b>: si legge senza installare niente e senza fare l\'accesso.',
     `<b>Portarli via</b> e <b>cancellare il profilo</b> sono due bottoni in <a href="#/impostazioni">Profilo</a>: il primo ti scarica un file con account, squadra, rosa e formazioni — si costruisce sul tuo telefono e non passa da nessun server; il secondo toglie account, squadre, rose, formazioni e contestazioni, e le leghe in cui sei rimasto solo se ne vanno con te. Se sei amministratore di una lega dove gioca anche qualcun altro si ferma e te lo dice: prima la passi a un altro o la elimini.`,
     titolareCompilato()
       ? `Per il resto scrivi a ${esc(TITOLARE.email || CONTATTO)}: la risposta arriva entro un mese.`
@@ -168,6 +169,55 @@ export const termini = {
     'Anche questo testo descrive le intenzioni del progetto ed è scritto per farsi capire: non è un contratto redatto da un legale.',
   ])}
       ${piede()}
+    </main>`;
+  },
+};
+
+/**
+ * Cancellare l'account, spiegato a chi NON ha l'app aperta.
+ *
+ * Non e' una pagina di cortesia: Google Play pretende, per ogni app che fa
+ * creare un account, due strade per cancellarlo — una dentro l'app e una
+ * raggiungibile dal web, senza installare niente e senza fare l'accesso. Deve
+ * dire di quale app si parla, chi la pubblica, e come si chiede. Senza, la
+ * pubblicazione torna indietro.
+ *
+ * Il testo dice quello che il database fa davvero (migrazione 010), compreso
+ * il caso in cui la cancellazione si RIFIUTA: chi amministra una lega dove
+ * gioca anche qualcun altro non puo' sparire e basta.
+ */
+export const cancella = {
+  title: "Cancellare l'account", appbar: 'back', sub: () => 'Due strade, e cosa succede ai dati',
+  render() {
+    return `<main class="a-body">
+      ${blocco('Di quale app si parla', [
+    `Questa pagina riguarda <b>Fantatitano</b> — il fantacalcio sul Campionato Sammarinese, all'indirizzo <b>fantatitano.site</b>${titolareCompilato() ? `, pubblicata da ${esc(TITOLARE.nome)}` : ''}.`,
+    'Vale per l\'account con cui entri nell\'app: e-mail e nome che hai scelto.',
+  ])}
+      ${blocco('Dall\'app, e basta un minuto', [
+    'Apri <b>Profilo</b> dalla barra in basso, scendi fino a <b>Elimina account</b> e conferma. Non passa da nessuno: la cancellazione è immediata.',
+    'Prima di cancellare puoi <b>scaricare i tuoi dati</b> dalla stessa schermata, in un file che resta a te.',
+  ])}
+      ${blocco('Senza aprire l\'app', [
+    `Scrivi a <b>${esc(CONTATTO)}</b> dall'indirizzo con cui ti sei iscritto, chiedendo la cancellazione dell'account Fantatitano. Serve solo a riconoscerti: un altro indirizzo potrebbe essere chiunque.`,
+    'La richiesta viene eseguita <b>entro 30 giorni</b>, e in genere molto prima. Se non arriva risposta, riscrivi: non c\'è un modulo da compilare.',
+  ])}
+      ${blocco('Cosa viene cancellato', [
+    'Il <b>profilo</b>: indirizzo e-mail e nome.',
+    'Le tue <b>squadre in ogni lega</b>, con rose, formazioni consegnate e contestazioni aperte.',
+    'Gli <b>indirizzi per le notifiche</b> dei tuoi dispositivi.',
+    'Le <b>leghe dove eri rimasto solo</b>: senza di te sarebbero vuote, e una lega vuota non la riapre nessuno.',
+  ])}
+      ${blocco('Cosa resta, e perché non è una dimenticanza', [
+    'Il <b>registro delle modifiche ai voti</b> e chi ha congelato una giornata restano, <b>senza più il tuo nome attaccato</b>: sono la prova di come è venuto fuori un punteggio, e servono agli altri della lega, non a te.',
+    'I <b>risultati delle giornate già chiuse</b> restano nella storia della lega, per la stessa ragione: una classifica a cui si tolgono le partite giocate non è più una classifica.',
+  ])}
+      ${blocco('Un caso in cui la cancellazione si ferma', [
+    'Se <b>amministri una lega dove gioca anche qualcun altro</b>, l\'app non ti cancella e te lo dice: spariresti lasciando una lega senza nessuno che la governa. Passa la lega a un\'altra persona, o eliminala, e poi cancella l\'account.',
+  ])}
+      ${blocco('I dati, prima di cancellarli', [
+    `Cosa tiene l'app e perché sta scritto nell'informativa privacy, su ${esc('fantatitano.site/privacy.html')}.`,
+  ])}
     </main>`;
   },
 };

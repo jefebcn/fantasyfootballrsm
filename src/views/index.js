@@ -14,7 +14,7 @@ export { scheda } from './scheda.js';
 export { impostazioni, avanzate } from './impostazioni.js';
 export { scambi } from './scambi.js';
 export { confronto } from './confronto.js';
-export { privacy, termini, archiviazione, licenze } from './legali.js';
+export { privacy, termini, archiviazione, licenze, cancella } from './legali.js';
 export { mercato } from './mercato.js';
 export { asta } from './asta.js';
 export { adminGiornata, adminPartita, adminContestazioni, adminCongela, adminRegistro, adminConsole } from './admin.js';

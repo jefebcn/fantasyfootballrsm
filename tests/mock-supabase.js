@@ -98,6 +98,21 @@ export function createClient(_url, _key, opts) {
         if (!userId) throw new Error('non autenticato');
         const prof = T('profiles').find((p) => p.id === userId);
         if (name === 'create_league') { const l = { id: uid(), name: args.p_name, short_name: args.p_short, invite_code: Math.random().toString(36).slice(2, 8).toUpperCase(), rules: {}, started: false, created_by: userId, created_at: now() }; T('leagues').push(l); T('league_members').push({ id: uid(), league_id: l.id, user_id: userId, role: 'admin', team_name: args.p_team, owner_name: prof.display_name, color: args.p_color, initials: args.p_initials, credits: 500, created_at: now() }); persisti(); return { data: l.id, error: null }; }
+        // Chiudere la giornata (008): il finto database applica le stesse tre
+        // condizioni del vero, se no la prova passa dove il server direbbe di
+        // no. Qui mancava del tutto, e il pezzo di prova che ci contava non
+        // girava mai — il tasto restava spento per altri motivi.
+        if (name === 'chiudi_giornata') {
+          const n = args.p_matchday;
+          if (!T('league_members').some((m) => m.user_id === userId)) throw new Error('Solo chi è in una lega può chiudere la giornata');
+          if (T('matchday_status').some((x) => x.matchday === n && x.status === 'frozen')) throw new Error(`La giornata ${n} è già chiusa`);
+          const gare = new Set(T('match_events').map((e) => e.match_id).filter((id) => +((id.match(/^md(\d+)_m/) || [])[1]) === n));
+          if (!gare.size) throw new Error(`La giornata ${n} non ha ancora nessun evento: non c'è niente da chiudere`);
+          const riga = T('matchday_status').find((x) => x.matchday === n);
+          if (riga) { riga.status = 'frozen'; riga.changed_at = now(); riga.changed_by = userId; }
+          else T('matchday_status').push({ matchday: n, status: 'frozen', changed_by: userId, changed_at: now() });
+          persisti(); return { data: null, error: null };
+        }
         // --- console amministrativa (014)
         const amministro = () => !!T('profiles').find((x) => x.id === userId)?.is_admin;
         if (name === 'admin_riepilogo') {

@@ -11,6 +11,7 @@ export { giocatore } from './giocatore.js';
 export { regolamento } from './regolamento.js';
 export { regole } from './regole.js';
 export { scheda } from './scheda.js';
+export { negozio } from './negozio.js';
 export { impostazioni, avanzate } from './impostazioni.js';
 export { scambi } from './scambi.js';
 export { confronto } from './confronto.js';

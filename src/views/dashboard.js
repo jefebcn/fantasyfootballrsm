@@ -203,6 +203,33 @@ function fasciaSponsor() {
     : `<div class="spon" data-sponsor="${esc(sp.id)}">${dentro}</div>`;
 }
 
+/**
+ * «Costruisci la tua rosa»: il bottone che nella lega aperta serve davvero.
+ *
+ * Chi entra in una lega aperta di mercoledi' sera si trova dentro senza
+ * giocatori. Prima la dashboard gli diceva "Rose non ancora assegnate — le
+ * assegna l'admin dopo l'asta", che in una lega aperta e' falso due volte:
+ * non c'e' un'asta e non c'e' un admin che gliele assegni. Se la rosa e'
+ * incompleta questo e' il primo bottone che deve vedere, prima di tutto il
+ * resto — e dice quanto manca, quanto ha da spendere e quando chiude.
+ */
+function invitoNegozio() {
+  const n = S.negozio(); if (!n || n.completa) return '';
+  const quando = n.chiude
+    ? `${n.chiude.toLocaleDateString('it-IT', { weekday: 'short', day: 'numeric', month: 'numeric' })} ${String(n.chiude.getHours()).padStart(2, '0')}:${String(n.chiude.getMinutes()).padStart(2, '0')}`
+    : null;
+  if (!n.aperto) {
+    return tile({ href: '#/negozio', lead: icon('lock'), leadKind: 'warn',
+      title: `Rosa incompleta: ${n.mancanti} da prendere`,
+      sub: 'Il mercato è chiuso: la tua prima giornata è già cominciata' });
+  }
+  return `<a class="negozio-cta" href="#/negozio" data-negozio>
+    <i>${icon('cart')}</i>
+    <span class="txt"><b>Costruisci la tua rosa</b>
+      <span>${n.mancanti === 25 ? 'Scegli i tuoi 25 giocatori' : `Mancano ${n.mancanti} giocatori`} · ${n.crediti} crediti${quando ? ` · fino a ${quando}` : ''}</span></span>
+    <span class="chev">${icon('chev', 'ic sm')}</span></a>`;
+}
+
 function invitoPubblica() {
   const primo = (pr) => (pr || []).slice().sort((a, b) => a.posto - b.posto)[0];
   const fascia = (href, titolo, riga, sotto, extra = '') => `<a class="invito" href="${href}"${extra}>
@@ -474,13 +501,14 @@ export const dashboard = {
         <div><b>${row.played}</b><span>Partite</span></div>
         <div><b>${fmt(row.fantapunti)}</b><span>Fantapunti</span></div>`}
       </div>
+      ${invitoNegozio()}
       ${notiziaBreve()}
       ${invitoPubblica()}
       ${fasciaSponsor()}
       ${S.aPunti() ? '' : conclusa(ultima)}
       ${daCalcolare(ph, bloccato)}
       ${S.aPunti() ? correntePunti(Math.min(30, nCur), me, bloccato) : corrente(cur, nCur, me, riposo, bloccato)}
-      ${noRoster ? tile({ href: S.isLeagueAdmin() ? '#/lega' : '#/leghe', lead: icon('warn'), leadKind: 'warn',
+      ${noRoster && !S.legaPubblica() ? tile({ href: S.isLeagueAdmin() ? '#/lega' : '#/leghe', lead: icon('warn'), leadKind: 'warn',
           title: 'Rose non ancora assegnate',
           sub: S.isLeagueAdmin() ? "Generale o inserirle dalla gestione lega" : "Le assegna l'admin della lega dopo l'asta" }) : azione(ph, bloccato)}
       ${ultimiCinque(last, me)}

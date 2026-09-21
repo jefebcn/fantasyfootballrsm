@@ -12,3 +12,5 @@ data/tabellini.json
 # eslint, non finiscono nel sito
 node_modules/
 package-lock.json
+# lo scarto di supabase/prove/prova.sh quando una migrazione fallisce
+.err

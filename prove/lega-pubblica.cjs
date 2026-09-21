@@ -63,30 +63,40 @@ const prepara = (ctx, stato) => ctx.addInitScript((stato) => {
   // il menu dice che è pubblica e porta alla propria rosa
   await p.evaluate(() => { location.hash = '#/'; }); await w(p, 800);
   await p.click('[data-open-drawer]'); await w(p, 600);
-  const menu = await p.evaluate(() => ({ testo: document.querySelector('.a-drawer .panel')?.innerText || '', rosa: !!document.querySelector('.a-drawer a[href="#/asta"]') }));
+  const menu = await p.evaluate(() => ({ testo: document.querySelector('.a-drawer .panel')?.innerText || '', rosa: !!document.querySelector('.a-drawer a[href="#/negozio"]') }));
   et(menu.rosa, 'nel menu c\'è "La tua rosa"');
   et(/Premi in palio/.test(menu.testo), 'e per l\'amministratore la voce dei premi');
   await p.evaluate(() => { document.querySelector('.a-drawer .scrim')?.click(); }); await w(p, 300);
 
-  // ---- la propria rosa: si compra da soli
+  // ---- la propria rosa: si compra da soli, dal negozio
+  //
+  // L'asta qui non c'e' piu': in una lega aperta i giocatori non sono
+  // esclusivi, quindi non c'e' niente da contendersi. Chi arriva su #/asta
+  // per un vecchio collegamento trova la strada, non un vicolo cieco.
   await p.evaluate(() => { location.hash = '#/asta'; }); await w(p, 1000);
-  const rosa = await p.evaluate(() => ({
-    testo: document.body.innerText.slice(0, 400),
-    quante: document.querySelectorAll('.sqs .sq').length,
-    disponibili: document.querySelectorAll('.alist .ar').length,
+  const dirotta = await p.evaluate(() => ({
+    testo: document.body.innerText,
+    verso: document.querySelector('a[href="#/negozio"]')?.getAttribute('href') || '',
   }));
-  et(rosa.quante === 1, `si vede solo la propria squadra (${rosa.quante})`);
-  et(/non sono esclusivi/.test(rosa.testo), 'e la schermata dice che i giocatori non sono esclusivi');
-  et(rosa.disponibili > 0, `ci sono giocatori da scegliere (${rosa.disponibili})`);
-  // compra il primo
-  const primoId = await p.evaluate(() => document.querySelector('.alist .ar')?.dataset.pl);
-  await p.click(`[data-pl="${primoId}"]`); await w(p, 700);
-  await p.evaluate(() => { const i = document.querySelector('#sheet input'); if (i) { i.value = '10'; i.dispatchEvent(new Event('input', { bubbles: true })); } });
-  await p.evaluate(() => { const b = [...document.querySelectorAll('#sheet button')].find((x) => /conferm|assegn|compra/i.test(x.textContent)); if (b) b.click(); });
-  await w(p, 1400);
+  et(dirotta.verso === '#/negozio', `da #/asta si viene mandati al negozio (${dirotta.verso || 'da nessuna parte'})`);
+  et(/non c'è l'asta|non sono esclusivi|rosa te la fai/i.test(dirotta.testo), 'spiegando perché qui l\'asta non serve');
+
+  // Il listino, come in produzione (supabase/seed-quotazioni.sql).
+  await p.evaluate(async () => {
+    const S = await import('/src/state.js');
+    const s = JSON.parse(localStorage.getItem('fcs:mock'));
+    s.tables.quotazioni = S.base.players.map((g) => ({ player_id: g.id, ruolo: g.role, quotazione: g.quotation, nome: g.name }));
+    s.tables.matchday_locks = S.base.matchdays.map((md) => ({ matchday: md.number, lock_at: new Date(md.lockAt).toISOString() }));
+    localStorage.setItem('fcs:mock', JSON.stringify(s));
+  });
+  await p.reload({ waitUntil: 'load' }); await w(p, 1600);
+  await p.evaluate(() => { location.hash = '#/negozio'; }); await w(p, 1200);
+  const primoId = await p.evaluate(() => document.querySelector('[data-compra]:not([disabled])')?.dataset.compra || null);
+  et(!!primoId, 'nel negozio ci sono giocatori da comprare');
+  await p.click(`[data-compra="${primoId}"]`); await w(p, 1400);
   const comprato = await p.evaluate((pid) => {
     const s = JSON.parse(localStorage.getItem('fcs:mock'));
-    return { righe: (s.tables.rosters || []).length, mio: (s.tables.rosters || []).some((r) => r.player_id === pid),
+    return { mio: (s.tables.rosters || []).some((r) => r.player_id === pid),
       crediti: s.tables.league_members[0].credits };
   }, primoId);
   et(comprato.mio, 'il giocatore entra nella mia rosa');
@@ -122,10 +132,10 @@ const prepara = (ctx, stato) => ctx.addInitScript((stato) => {
   et(dentro.crediti === 300, `e parte coi crediti della lega (${dentro.crediti})`);
 
   // LA COSA CHE REGGE TUTTO: il giocatore preso dal primo è ancora disponibile
-  await p.evaluate(() => { location.hash = '#/asta'; }); await w(p, 1100);
+  await p.evaluate(() => { location.hash = '#/negozio'; }); await w(p, 1300);
   const ancora = await p.evaluate((pid) => ({
-    presente: !!document.querySelector(`[data-pl="${pid}"]`),
-    quanti: document.querySelectorAll('.alist .ar').length,
+    presente: !!document.querySelector(`[data-compra="${pid}"]`),
+    quanti: document.querySelectorAll('[data-compra]').length,
   }), primoId);
   et(ancora.presente, 'il giocatore già preso dal primo resta disponibile per il secondo');
 

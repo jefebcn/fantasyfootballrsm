@@ -801,6 +801,46 @@ export function ratingsOf(n) {
 }
 
 // ---------------------------------------------------------------- formazioni
+/* ------------------------------------------------- il negozio (lega aperta)
+ * In una lega aperta non c'e' l'asta: la rosa te la fai quando entri, subito,
+ * e i giocatori non sono esclusivi — lo stesso puo' stare in dieci squadre.
+ * L'asta ha senso quando il giocatore e' uno solo; qui sarebbe una fila per
+ * comprare aria.
+ *
+ * QUI DENTRO NON SI DECIDE NIENTE. Il prezzo, le quote, i crediti e la
+ * chiusura li applica il database (migrazione 019): questo serve a disegnare
+ * la schermata e a non far toccare un bottone che tanto verrebbe rifiutato.
+ * Se le due regole divergessero, vince quella del database.
+ */
+export function negozio() {
+  if (!legaPubblica()) return null;
+  const io = me(); if (!io) return null;
+  const quote = { ...DEFAULT_RULES.roster, ...(rules().roster || {}) };
+  const per = { P: 0, D: 0, C: 0, A: 0 };
+  for (const r of base.rosters[io.id] || []) {
+    const g = playersById.get(r.playerId); if (g) per[g.role]++;
+  }
+  const manca = {}; let mancanti = 0;
+  for (const r of ['P', 'D', 'C', 'A']) { manca[r] = Math.max(0, quote[r] - per[r]); mancanti += manca[r]; }
+  // La tua prima giornata e' la prima che si chiude dopo che sei entrato:
+  // stessa regola della funzione mercato_aperto(), scritta una seconda volta
+  // solo per poterla mostrare.
+  const entrato = io.entrato ? new Date(io.entrato) : null;
+  const prima = entrato ? base.matchdays.find((md) => new Date(md.lockAt) > entrato) : null;
+  const chiude = prima ? new Date(prima.lockAt) : null;
+  return { crediti: io.credits ?? 0, quote, per, manca, mancanti,
+    completa: mancanti === 0, giornata: prima ? prima.number : null, chiude,
+    aperto: !!chiude && now() < chiude };
+}
+export async function compraGiocatore(playerId) {
+  const r = await remote.compraGiocatore(base.league.id, playerId);
+  await refresh(); return r;
+}
+export async function vendiGiocatore(playerId) {
+  const r = await remote.vendiGiocatore(base.league.id, playerId);
+  await refresh(); return r;
+}
+
 export function rosterIds(managerId) { return (base.rosters[managerId] || []).map((r) => r.playerId); }
 export function rosterOf(managerId) { return (base.rosters[managerId] || []).map((r) => ({ ...r, player: playersById.get(r.playerId), club: clubsById.get(playersById.get(r.playerId).clubId) })); }
 export function savedLineup(n, managerId) { return L.lineups[`${n}:${managerId}`] || null; }

@@ -40,7 +40,21 @@ export const asta = {
     // giocatori non sono esclusivi (013): la stessa schermata, senza il
     // selettore delle squadre e senza la lista dei liberi, perche' liberi lo
     // sono tutti.
-    if (!S.isLeagueAdmin() && !S.legaPubblica()) {
+    // NELLA LEGA APERTA QUESTA SCHERMATA NON SERVE PIU'. Ci provava: mostrava
+    // l'elenco e faceva scrivere il prezzo a mano. Ma i gestori dei tocchi
+    // sono dietro un "se non amministri la lega, esci" (vedi mount), quindi
+    // per chiunque non fosse l'amministratore era una vetrina che non si
+    // apriva; e la scrittura andava dritta in rosters, che le policy lasciano
+    // scrivere solo a chi amministra. Funzionava per una persona sola, e il
+    // prezzo lo decideva il telefono. Adesso c'e' il negozio (019), dove il
+    // prezzo lo dice il listino del database e chi compra puo' essere
+    // chiunque sia nella lega.
+    if (S.legaPubblica()) {
+      return `<main class="a-body"><div class="empty">${icon('cart')}<p>Qui la rosa te la fai da solo, dal negozio.</p>
+        <p class="small muted">In una lega aperta non c'è l'asta: lo stesso giocatore può stare nella rosa di tutti, quindi non c'è niente da contendersi. Si sceglie e si compra, subito.</p>
+        <a class="a-btn" href="#/negozio" style="text-decoration:none">Vai al negozio</a></div></main>`;
+    }
+    if (!S.isLeagueAdmin()) {
       return `<main class="a-body"><div class="empty">${icon('lock')}<p>L'asta la conduce l'amministratore della lega.</p>
         <p class="small muted">Puoi seguirla dalla tua rosa: si riempie da sola mentre lui registra gli acquisti.</p>
         <a class="a-btn sec" href="#/rosa" style="text-decoration:none">La mia rosa</a></div></main>`;

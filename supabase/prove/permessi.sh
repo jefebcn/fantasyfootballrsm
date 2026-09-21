@@ -122,7 +122,8 @@ echo "== e l'app funziona ancora: chi ha fatto l'accesso arriva alle sue =="
 for f in "create_league(text,text,text,text,text)" "join_league(text,text,text,text)" \
          "entra_come_vice(text)" "elimina_profilo()" "abbandona_lega(uuid)" \
          "chiudi_giornata(int)" "proponi_scambio(uuid,uuid,jsonb,jsonb,int,text)" \
-         "offri(uuid,text,int)" "sync_matchday_locks(jsonb)"; do
+         "offri(uuid,text,int)" "sync_matchday_locks(jsonb)" \
+         "compra_giocatore(uuid,text)" "vendi_giocatore(uuid,text)" "mercato_aperto(uuid)"; do
   [ "$(V "select has_function_privilege('authenticated','public.$f','execute')")" = t ] \
     && ok "$f" \
     || ko "$f non e' piu' eseguibile da chi ha fatto l'accesso"

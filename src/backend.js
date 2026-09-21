@@ -237,7 +237,7 @@ export async function loadScambi(leagueId) {
 // vecchio in tutta l'app — nel menu, sullo scontro, in classifica. I profili
 // si possono leggere tutti (policy profiles_read), quindi il nome vivo c'e'
 // per ognuno; la copia resta come ripiego per i profili cancellati.
-const toManager = (m) => ({ id: m.id, userId: m.user_id, teamName: m.team_name, owner: m.profile?.display_name || m.owner_name || '—', color: m.color, initials: m.initials || m.team_name.slice(0, 2).toUpperCase(), credits: m.credits, role: m.role, crestUrl: m.crest_url || null, kit: m.kit || {}, viceUserId: m.vice_user_id || null, viceCode: m.vice_code || null, viceName: m.vice?.display_name || null });
+const toManager = (m) => ({ id: m.id, userId: m.user_id, teamName: m.team_name, owner: m.profile?.display_name || m.owner_name || '—', color: m.color, initials: m.initials || m.team_name.slice(0, 2).toUpperCase(), credits: m.credits, role: m.role, entrato: m.created_at, crestUrl: m.crest_url || null, kit: m.kit || {}, viceUserId: m.vice_user_id || null, viceCode: m.vice_code || null, viceName: m.vice?.display_name || null });
 
 export async function loadLeague(id) {
   const [league, members, rosters, lineups, contest] = await Promise.all([
@@ -282,6 +282,29 @@ export async function resolveContestazione(id, status, note) { return must(await
 export async function allContestazioni() {
   const rows = must(await sb.from('contestazioni').select('*, member:league_members(team_name, owner_name), league:leagues(name)').order('created_at', { ascending: false }));
   return rows.map((c) => ({ id: c.id, at: c.created_at, by: c.member_id, byName: c.member?.owner_name || c.member?.team_name, leagueName: c.league?.name, matchId: c.match_id, playerId: c.player_id, minute: c.minute, text: c.text, status: c.status, note: c.note }));
+}
+
+// --------------------------------------------------- negozio (lega aperta)
+/**
+ * Compra e vendi passano da due funzioni del database (019), non da una
+ * scrittura diretta: il PREZZO lo decide il listino che sta li', non questo
+ * telefono. Chi compra puo' dire soltanto chi vuole.
+ */
+export async function compraGiocatore(leagueId, playerId) {
+  const { data, error } = await sb.rpc('compra_giocatore', { p_league: leagueId, p_player: playerId });
+  if (error) throw new Error(error.message);
+  return data;
+}
+export async function vendiGiocatore(leagueId, playerId) {
+  const { data, error } = await sb.rpc('vendi_giocatore', { p_league: leagueId, p_player: playerId });
+  if (error) throw new Error(error.message);
+  return data;
+}
+/** Se il mercato di questa lega e' ancora aperto per me. */
+export async function mercatoAperto(leagueId) {
+  const { data, error } = await sb.rpc('mercato_aperto', { p_league: leagueId });
+  if (error) return false;      // la 019 non c'e' ancora: il negozio non esiste, e basta
+  return !!data;
 }
 
 // ---------------------------------------------------------------- sponsor

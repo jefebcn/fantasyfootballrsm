@@ -1,11 +1,13 @@
 [
   {
-    "relation": ["delegate_permission/common.handle_all_urls"],
+    "relation": [
+      "delegate_permission/common.handle_all_urls"
+    ],
     "target": {
       "namespace": "android_app",
       "package_name": "app.fantatitano.site",
       "sha256_cert_fingerprints": [
-        "DA:MET:TER:E-L-A:SH:A2:56:DE:LL:A-C:HI:AV:E-D:I-F:IR:MA:DI:PL:AY"
+        "C2:56:27:1E:EB:DE:0E:AF:4A:DE:CA:A4:33:40:D9:8F:63:5E:F9:BD:2C:2B:AA:03:AC:F2:68:5F:61:E7:2A:B5"
       ]
     }
   }

@@ -302,6 +302,24 @@ export async function salvaSponsor(s, userId) {
   return daRiga(must(await sb.from('sponsor').insert(riga).select().single()));
 }
 export async function eliminaSponsor(id) { return must(await sb.from('sponsor').delete().eq('id', id)); }
+/**
+ * Il contatore delle viste e dei tocchi (018).
+ *
+ * Non aspetta e non alza mai un errore: un contatore che rompe la dashboard
+ * e' molto peggio di un contatore che non conta. Se la 018 non e' ancora
+ * applicata, o la rete non c'e', la schermata non se ne accorge.
+ *
+ * La tabella non e' scrivibile da nessuno: si passa solo da questa funzione,
+ * che dentro il database controlla il tipo e la finestra dello sponsor.
+ */
+export function segnaSponsor(id, tipo) {
+  return sb.rpc('conta_sponsor', { p_sponsor: id, p_tipo: tipo }).then(() => true).catch(() => false);
+}
+/** Il rendiconto, per la console: una riga per sponsor per giorno. */
+export async function caricaConteggiSponsor() {
+  return must(await sb.from('sponsor_conteggi').select('*').order('giorno', { ascending: false }))
+    .map((r) => ({ sponsorId: r.sponsor_id, giorno: r.giorno, viste: r.viste || 0, tocchi: r.tocchi || 0 }));
+}
 
 // ---------------------------------------------------------------- dato globale
 export async function loadGlobal(withLog) {

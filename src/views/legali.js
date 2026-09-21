@@ -88,7 +88,8 @@ export const privacy = {
     ['Il tuo account:', 'indirizzo e-mail e nome che scegli, per farti entrare e riconoscerti. La password non la vede nessuno, nemmeno chi amministra: la custodisce Supabase, cifrata.'],
     ['La tua squadra:', 'nome, stemma, maglia, rosa, formazioni e punteggi di ogni giornata. Senza questi il gioco non esiste.'],
     ['Quello che fai nella lega:', 'contestazioni aperte e, per il Giudice Dati, il registro delle modifiche ai voti. Servono a poter ricostruire come è venuto fuori un punteggio.'],
-    'Non ci sono profilazione, pubblicità, tracciatori di terze parti né cookie di marketing. Nessun dato viene venduto o ceduto.',
+    'Non ci sono profilazione, tracciatori di terze parti né cookie di marketing. Nessun dato viene venduto o ceduto.',
+    ['Lo spazio sponsor:', 'in home può comparire uno spazio comprato, dichiarato con la targhetta «Sponsor». <b>Non viene scelto in base a chi sei</b>: è lo stesso per tutti, perché è uno solo. Di quello spazio si contano due numeri al giorno — quante volte è comparso e quante è stato toccato — e basta: nessun identificativo, nessun indirizzo IP, nessuna riga che ti riguardi. Non si può risalire a te perché non c\'è niente da cui risalire.'],
   ])}
       ${blocco('Su quale base', [
     ['Contratto:', 'account, squadra, rose, formazioni e punteggi. Sono quello che ti serve per giocare: senza, l\'app non può darti il servizio che hai chiesto iscrivendoti.'],
@@ -180,10 +181,12 @@ export const archiviazione = {
       ['fcs:supabase', 'indirizzo del server, se l\'hai impostato a mano'],
       ['fcs:email', 'l\'e-mail ricordata nella schermata di accesso, se l\'hai chiesto'],
       ['sb-…-auth-token', 'la sessione di accesso, tenuta da Supabase per non farti rifare l\'accesso a ogni apertura. Se ne va quando esci dall\'account'],
+      ['fcs:sponsor-visto', 'quale spazio sponsor è già stato contato oggi su questo telefono, così non viene contato due volte. È un nome e una data, niente di tuo'],
     ];
     return `<main class="a-body">
       ${blocco('Nessun banner, e il motivo', [
     'Questa app <b>non usa cookie</b>. Non ce n\'è uno, né di profilazione né di statistica: non c\'è nessun sistema di analisi del traffico e nessuno strumento di terzi che ti segua.',
+    'L\'unica cosa che viene contata è lo <b>spazio sponsor</b>: quante volte è comparso e quante è stato toccato, due numeri al giorno per quello spazio. Non per persona, e senza sapere chi sei. Su questo telefono resta solo un promemoria (<code>fcs:sponsor-visto</code>) che serve a non contare la stessa giornata due volte.',
     'Quello che usa è la memoria locale del browser, e solo per cose tecniche che servono a far funzionare l\'app come l\'hai lasciata. Per questo non compare una finestra a chiederti il consenso: per l\'archiviazione strettamente necessaria non va chiesto, e chiedertelo lo stesso sarebbe solo un fastidio inutile.',
     'Anche i caratteri sono serviti da qui. Prima arrivavano da Google Fonts, il che mandava il tuo indirizzo IP a Google a ogni apertura senza che nessuno l\'avesse chiesto: adesso i file stanno nell\'app.',
     'Stessa storia per <code>supabase-js</code>, la libreria che parla col server: arrivava da una rete di distribuzione esterna, che a ogni avvio vedeva il tuo indirizzo IP. Adesso sta anche lei dentro l\'app. <b>All\'apertura non parte nessuna richiesta fuori da questo sito</b> tranne quella al nostro server, che serve a farti entrare.',
@@ -197,7 +200,7 @@ export const archiviazione = {
       ${blocco('Dove non arriva', [
     'Questa roba resta su questo dispositivo, in questo browser. Non parte verso nessun server, né il nostro né altri, e non è leggibile da altri siti.',
     'Un video avviato può lasciare qualcosa nella memoria del riquadro di YouTube, che è di Google e non nostra: la cancelli svuotando i dati del sito dal browser, come tutto il resto.',
-    'Non c\'è nient\'altro: niente sessionStorage, niente banche dati nel browser, nessuna chiave oltre quelle elencate qui sopra.',
+    'Non c\'è nient\'altro: niente banche dati nel browser e nessuna chiave oltre quelle elencate qui sopra. Nel sessionStorage — che si svuota da solo chiudendo la scheda — finisce una cosa sola: quale lega pubblica hai toccato, per aprirti il modulo giusto.',
   ])}
       ${blocco('Come si cancella', [
     'Da <a href="#/impostazioni">Profilo</a> puoi uscire dall\'account: la sessione se ne va.',

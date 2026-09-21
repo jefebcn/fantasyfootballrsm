@@ -936,4 +936,77 @@ set role authenticated;
 delete from public.sponsor;
 reset role;
 
+-- ------------------------------------------------- 018: il rendiconto
+-- Il contatore e' l'unica porta di scrittura della tabella dei conteggi, ed
+-- e' aperto anche a chi non ha un account: la fascia la vede chiunque apra
+-- l'app. Quindi le regole che contano stanno DENTRO la funzione, e qui si
+-- eseguono — creare una funzione plpgsql non ne controlla il corpo.
+select pg_temp.entra('user_pub1');
+set role authenticated;
+insert into public.sponsor (nome, dal, al) values
+  ('Contato', current_date - 1, current_date + 5),
+  ('Finito', current_date - 30, current_date - 1);
+reset role;
+select id from public.sponsor where nome = 'Contato' \gset conta_
+select id from public.sponsor where nome = 'Finito' \gset finito_
+
+-- da anonimo: e' il caso vero, la fascia si vede anche senza account
+set role anon;
+select public.conta_sponsor(:'conta_id', 'vista');
+select public.conta_sponsor(:'conta_id', 'tocco');
+select public.conta_sponsor(:'conta_id', 'tocco');
+-- fuori finestra non si conta, e non si sbaglia: uno sponsor scaduto mentre
+-- qualcuno aveva l'app aperta non e' un guasto da mostrare a chi legge
+select public.conta_sponsor(:'finito_id', 'vista');
+reset role;
+
+select pg_temp.esige('una riga sola, per sponsor e per giorno',
+  (select count(*) from public.sponsor_conteggi) = 1);
+select pg_temp.esige('con una vista e due tocchi',
+  (select viste = 1 and tocchi = 2 from public.sponsor_conteggi where sponsor_id = :'conta_id'));
+select pg_temp.esige('sullo sponsor finito non si conta niente',
+  (select count(*) from public.sponsor_conteggi where sponsor_id = :'finito_id') = 0);
+
+-- un tipo inventato non passa: se no il giorno che qualcuno scrive 'vsita'
+-- il conteggio sparisce in silenzio e il rendiconto mente
+set role anon;
+do $$ begin
+  perform public.conta_sponsor((select id from public.sponsor where nome = 'Contato'), 'clic');
+  raise exception 'FALLITA: un tipo inventato non doveva passare';
+exception when others then
+  if sqlerrm like 'FALLITA%' then raise; end if;
+  raise notice 'ok  un tipo inventato viene rifiutato (%)', sqlerrm;
+end $$;
+-- e la tabella resta chiusa: nessuno scrive a mano, nemmeno per correggere
+do $$ begin
+  insert into public.sponsor_conteggi (sponsor_id, giorno, viste)
+    values ((select id from public.sponsor where nome = 'Contato'), current_date, 9999);
+  raise exception 'FALLITA: un anonimo non doveva poter scrivere i conteggi';
+exception when others then
+  if sqlerrm like 'FALLITA%' then raise; end if;
+  raise notice 'ok  i conteggi non si scrivono a mano (%)', sqlerrm;
+end $$;
+reset role;
+
+-- chi gioca non li legge: non e' un segreto, ma e' un dato da trattativa
+select pg_temp.entra('user_bea');
+set role authenticated;
+select pg_temp.esige('chi gioca non vede il rendiconto',
+  (select count(*) from public.sponsor_conteggi) = 0);
+reset role;
+select pg_temp.entra('user_pub1');
+set role authenticated;
+select pg_temp.esige('chi amministra lo vede',
+  (select count(*) from public.sponsor_conteggi) = 1);
+reset role;
+
+-- e se lo spazio si cancella, il rendiconto se ne va con lui: non restano
+-- conteggi appesi a uno sponsor che non esiste piu'
+select pg_temp.entra('user_pub1');
+set role authenticated;
+delete from public.sponsor where nome in ('Contato', 'Finito');
+reset role;
+select pg_temp.esige('cancellato lo sponsor, spariscono i suoi conteggi',
+  (select count(*) from public.sponsor_conteggi) = 0);
+
 select 'tutte le prove sulle funzioni sono passate' as esito;

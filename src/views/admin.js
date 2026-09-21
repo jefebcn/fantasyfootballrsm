@@ -242,8 +242,8 @@ export const adminRegistro = {
  * chiavi del database su ogni telefono. Si manda un link per reimpostarla e
  * se la rifa' la persona — che e' anche l'unico modo in cui resta sua.
  */
-let aTab = 'numeri';        // 'numeri' | 'persone' | 'leghe'
-let cache = { numeri: null, persone: null, squadre: null, leghe: null };
+let aTab = 'numeri';        // 'numeri' | 'persone' | 'squadre' | 'leghe' | 'sponsor'
+let cache = { numeri: null, persone: null, squadre: null, leghe: null, conteggi: null };
 let cerca = '';
 
 const quando = (iso) => (iso ? `${dateIt(iso)} ${timeIt(iso)}` : '—');
@@ -367,6 +367,21 @@ function leghe(list) {
  */
 let spBozza = null;
 const oggiISO = () => new Date().toISOString().slice(0, 10);
+/**
+ * Il rendiconto sotto il nome: e' quello che si porta al rinnovo.
+ *
+ * Le viste sono giorni-dispositivo, non disegni della schermata: chi apre
+ * l'app dieci volte in un giorno vale uno. E' un numero piu' piccolo e piu'
+ * difendibile — al primo controllo di uno sponsor serio, l'altro si sgonfia.
+ */
+function rendiconto(id) {
+  const r = S.rendicontoSponsor(id);
+  if (!r.viste && !r.tocchi) return '<span class="sp-conti muted">nessuna vista ancora registrata</span>';
+  const pct = r.ctr === null ? '—' : `${(r.ctr * 100).toFixed(1).replace('.', ',')}%`;
+  const pl = (n, uno, molti) => `<b>${n}</b> ${n === 1 ? uno : molti}`;
+  return `<span class="sp-conti">${pl(r.viste, 'vista', 'viste')} · ${pl(r.tocchi, 'tocco', 'tocchi')} · ${pct}
+    <span class="muted">(7 giorni: ${r.viste7} / ${r.tocchi7} · ${r.giorni} ${r.giorni === 1 ? 'giorno' : 'giorni'} con dati)</span></span>`;
+}
 function sponsor() {
   const elenco = S.sponsorTutti();
   const b = spBozza || { nome: '', claim: '', logo: '', link: '', dal: oggiISO(), al: '', attivo: true };
@@ -374,10 +389,15 @@ function sponsor() {
   const stato = (x) => (!x.attivo ? ['spento', 'sos'] : x.dal > oggi ? ['programmato', ''] : x.al && x.al < oggi ? ['scaduto', 'sos'] : ['in corso', 'ok']);
   return `<div class="adm-sp">
     ${elenco.length ? elenco.map((x) => { const [testo, cls] = stato(x); return `<div class="adm-u">
-      <div><b>${esc(x.nome)}</b><span>${esc(x.claim || '—')} · dal ${esc(x.dal)}${x.al ? ` al ${esc(x.al)}` : ' (senza scadenza)'}</span></div>
-      <span class="tag ${cls}">${testo}</span>
-      <button class="chip" data-sp-mod="${esc(x.id)}">Modifica</button>
-      <button class="chip" data-sp-del="${esc(x.id)}">Elimina</button>
+      <div class="riga">
+        <div class="nm"><b>${esc(x.nome)}</b><span>${esc(x.claim || '—')} · dal ${esc(x.dal)}${x.al ? ` al ${esc(x.al)}` : ' (senza scadenza)'}</span></div>
+        <span class="tag"><i class="${cls}">${testo}</i></span>
+      </div>
+      ${rendiconto(x.id)}
+      <div class="azioni">
+        <button class="chip" data-sp-mod="${esc(x.id)}">Modifica</button>
+        <button class="chip" data-sp-del="${esc(x.id)}">Elimina</button>
+      </div>
     </div>`; }).join('') : '<p class="small muted">Nessuno spazio venduto, per ora.</p>'}
     <div class="a-sec"><b>${b.id ? 'Modifica' : 'Nuovo'}</b><span>${b.id ? esc(b.nome) : 'spazio sponsor'}</span></div>
     <label class="lbl" for="sp-nome">Nome</label><input class="field-input" id="sp-nome" value="${esc(b.nome)}" maxlength="40" placeholder="Come si chiama">
@@ -421,7 +441,8 @@ export const adminConsole = {
       ${aTab === 'numeri' ? `<div class="a-sec"><b>Come va</b><span>adesso</span></div>` : ''}
       ${corpo}
       ${aTab === 'persone' ? `<p class="small muted">«Link password» manda alla persona un messaggio per reimpostarla da sé: la password non la può leggere né scrivere nessuno, nemmeno da qui. «Sospendi» le impedisce di schierare, contestare ed entrare in altre leghe: le squadre e i punti restano.</p>` : ''}
-      ${aTab === 'sponsor' ? `<p class="small muted">Le date fanno il lavoro da sole: lo sponsor compare il giorno che comincia e sparisce il giorno dopo la scadenza, senza che nessuno debba ricordarsene. Il logo può stare nel repository (<code>/media/sponsor/nome.png</code>) o essere un indirizzo esterno.</p>` : ''}
+      ${aTab === 'sponsor' ? `<p class="small muted">Una <b>vista</b> è un dispositivo in un giorno, non un disegno della schermata: chi apre l'app dieci volte oggi conta uno. Non si registra chi guarda: per ogni sponsor c'è una riga al giorno con due numeri, e nient'altro.</p>
+        <p class="small muted">Le date fanno il lavoro da sole: lo sponsor compare il giorno che comincia e sparisce il giorno dopo la scadenza, senza che nessuno debba ricordarsene. Il logo può stare nel repository (<code>/media/sponsor/nome.png</code>) o essere un indirizzo esterno.</p>` : ''}
       ${aTab === 'squadre' ? `<p class="small muted">Si comincia sempre da «Rinomina»: toglie subito il nome da tutte le schermate e chi l'ha scritto continua a giocare. «Sospendi» è per chi ne scrive un altro.</p>` : ''}
     </main>`;
   },
@@ -436,6 +457,10 @@ export const adminConsole = {
         if (aTab === 'leghe' && !cache.leghe) { cache.leghe = await S.adminLeghe(200); ctx.render(); }
         if (aTab === 'persone' && !cache.persone) { cache.persone = await S.adminPersone(cerca, 100); ctx.render(); }
         if (aTab === 'squadre' && !cache.squadre) { cache.squadre = await S.adminSquadre(cerca, 100); ctx.render(); }
+        // I conteggi (018): una volta per apertura della console. Se la
+        // migrazione non c'e' ancora tornano vuoti e la scheda funziona lo
+        // stesso — si vede "nessuna vista", non un errore.
+        if (aTab === 'sponsor' && !cache.conteggi) { cache.conteggi = await S.caricaConteggiSponsor(); ctx.render(); }
       } catch (e) { ctx.toast(e.message || 'Non è stato possibile leggere'); }
     };
     carica();

@@ -95,6 +95,21 @@ export function createClient(_url, _key, opts) {
     from: builder,
     async rpc(name, args) {
       try {
+        // Il contatore dello sponsor (018) sta PRIMA del controllo
+        // dell'account: nel vero si puo' chiamare anche da anonimo, e una
+        // prova che lo chiama sempre da iscritto non proverebbe quel caso.
+        // La finestra e' la stessa del database: fuori non si conta e non si
+        // sbaglia, si torna indietro e basta.
+        if (name === 'conta_sponsor') {
+          if (args.p_tipo !== 'vista' && args.p_tipo !== 'tocco') throw new Error('tipo sconosciuto: ' + args.p_tipo);
+          const oggi = new Date().toISOString().slice(0, 10);
+          const sp = T('sponsor').find((x) => x.id === args.p_sponsor);
+          if (!sp || sp.attivo === false || sp.dal > oggi || (sp.al && sp.al < oggi)) return { data: null, error: null };
+          let riga = T('sponsor_conteggi').find((x) => x.sponsor_id === args.p_sponsor && x.giorno === oggi);
+          if (!riga) { riga = { sponsor_id: args.p_sponsor, giorno: oggi, viste: 0, tocchi: 0 }; T('sponsor_conteggi').push(riga); }
+          if (args.p_tipo === 'vista') riga.viste++; else riga.tocchi++;
+          persisti(); return { data: null, error: null };
+        }
         if (!userId) throw new Error('non autenticato');
         const prof = T('profiles').find((p) => p.id === userId);
         if (name === 'create_league') { const l = { id: uid(), name: args.p_name, short_name: args.p_short, invite_code: Math.random().toString(36).slice(2, 8).toUpperCase(), rules: {}, started: false, created_by: userId, created_at: now() }; T('leagues').push(l); T('league_members').push({ id: uid(), league_id: l.id, user_id: userId, role: 'admin', team_name: args.p_team, owner_name: prof.display_name, color: args.p_color, initials: args.p_initials, credits: 500, created_at: now() }); persisti(); return { data: l.id, error: null }; }

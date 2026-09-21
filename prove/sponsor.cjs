@@ -83,6 +83,42 @@ const giorno = (scarto) => { const d = new Date(); d.setDate(d.getDate() + scart
     await p.screenshot({ path: `${process.env.USCITA || '/tmp'}/sponsor.png` }).catch(() => {});
   }
 
+  // IL RENDICONTO (018). E' il pezzo che rende RINNOVABILE uno sponsor:
+  // senza un numero, l'anno dopo si ricomincia a trattare da zero. Qui si
+  // guarda che il numero sia difendibile, non solo che esista.
+  const conti = () => p.evaluate(() => (JSON.parse(localStorage.getItem('fcs:mock')).tables.sponsor_conteggi || []));
+  const primo = await conti();
+  et(primo.length === 1 && primo[0].viste === 1 && primo[0].tocchi === 0,
+    `aperta la dashboard, la vista e' contata una volta (${JSON.stringify(primo)})`);
+
+  // UNA VISTA PER DISPOSITIVO AL GIORNO. Si esce e si rientra, poi si
+  // ricarica tutta la pagina: la dashboard si ridisegna tre volte e il
+  // numero non si muove. Un contatore che conta i disegni dice numeri grossi
+  // e indifendibili — al primo controllo di chi paga si sgonfia.
+  await p.evaluate(() => { location.hash = '#/classifica'; }); await w(600);
+  await p.evaluate(() => { location.hash = '#/'; }); await w(900);
+  await p.reload({ waitUntil: 'load' }); await w(1600);
+  const dopo = await conti();
+  et(dopo.length === 1 && dopo[0].viste === 1,
+    `tre disegni dopo, la vista resta una (viste: ${dopo[0] ? dopo[0].viste : 'nessuna riga'})`);
+
+  // IL TOCCO SI CONTA SEMPRE: e' un gesto, non un'apparizione. Il
+  // collegamento apre un'altra scheda, che qui si chiude subito.
+  await ctx.route('https://esempio.sm/**', (r) => r.abort());
+  p.on('popup', (pg) => pg.close().catch(() => {}));
+  await p.click('.spon'); await w(900);
+  const conTocco = await conti();
+  et(conTocco[0] && conTocco[0].tocchi === 1 && conTocco[0].viste === 1,
+    `il tocco e' contato, e non conta anche come vista (${JSON.stringify(conTocco[0])})`);
+
+  // E si legge dalla console, che e' dove si guarda prima di rinnovare.
+  await p.evaluate(() => { location.hash = '#/admin/console'; }); await w(900);
+  await p.evaluate(() => { const t = [...document.querySelectorAll('[data-atab]')].find((x) => x.dataset.atab === 'sponsor'); if (t) t.click(); }); await w(900);
+  const rendiconto = await p.evaluate(() => document.querySelector('.sp-conti')?.innerText.replace(/\n/g, ' ') || '');
+  et(/1 vista\b/.test(rendiconto) && /1 tocco\b/.test(rendiconto), `la console lo dice a chi vende ("${rendiconto}")`);
+  et(/100,0%/.test(rendiconto), 'con la percentuale di tocco');
+  await p.screenshot({ path: `${process.env.USCITA || '/tmp'}/sponsor-rendiconto.png` }).catch(() => {});
+
   // UN INDIRIZZO PERICOLOSO NON DIVENTA UN COLLEGAMENTO. Lo scrive chi
   // amministra, ma "lo scrive uno di cui mi fido" non è un controllo: un
   // javascript: in quel campo girerebbe nel telefono di chiunque apra l'app.
@@ -111,6 +147,22 @@ const giorno = (scarto) => { const d = new Date(); d.setDate(d.getDate() + scart
   await p.fill('#sp-dal', giorno(-10)); await p.fill('#sp-al', giorno(-1)); await p.click('#sp-salva'); await w(1200);
   await p.evaluate(() => { location.hash = '#/'; }); await w(900);
   et(!(await p.$('.spon')), 'scaduto ieri, sparisce da solo');
+
+  // E FUORI FINESTRA NON SI CONTA. La regola non sta nella schermata: si
+  // chiama il contatore a mano, come potrebbe fare chiunque abbia la chiave
+  // pubblica, e il database non deve aggiungere niente a uno sponsor
+  // scaduto. Se la finestra vivesse solo nella dashboard, questo passerebbe.
+  const idScaduto = await p.evaluate(() => JSON.parse(localStorage.getItem('fcs:mock')).tables.sponsor[0].id);
+  const prima = await conti();
+  await p.evaluate(async (id) => {
+    const S = await import('/src/state.js');
+    localStorage.removeItem('fcs:sponsor-visto');      // togliamo anche il freno del telefono
+    S.contaSponsor(id, 'vista');
+  }, idScaduto);
+  await w(800);
+  const poi = await conti();
+  et(JSON.stringify(prima) === JSON.stringify(poi),
+    `su uno sponsor scaduto il contatore non aggiunge niente (${JSON.stringify(poi)})`);
 
   et(errori.length === 0, `nessun errore JS${errori.length ? ' — ' + errori[0] : ''}`);
   await b.close();

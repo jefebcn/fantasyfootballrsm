@@ -107,7 +107,21 @@ Su un progetto nuovo, nell'SQL Editor, in quest'ordine:
     potrebbe caricarne uno per il mese prossimo) e **chi può scrivere** (solo
     `is_admin`: uno sponsor che si mette da solo non è uno sponsor).
 
-19. `promemoria-pianificato.sql` — **facoltativo ma consigliato**, e non è una
+19. `migrations/018-sponsor-conteggi.sql` — il rendiconto: quante viste e
+    quanti tocchi. È il pezzo che rende **rinnovabile** uno sponsor, perché
+    senza un numero l'anno dopo si ricomincia a trattare da zero. Una riga per
+    sponsor per giorno, due numeri: **nessun identificativo di chi guarda,
+    nessun indirizzo IP, nessuna riga per persona** — un registro di
+    comportamento non serve a vendere uno spazio e sarebbe un dato personale
+    da dichiarare, conservare e cancellare. La tabella non ha nessuna policy
+    di scrittura: la sola porta è `conta_sponsor(uuid, text)`, che accetta
+    due soli tipi e scrive solo per uno sponsor **dentro la sua finestra**.
+    È eseguibile anche dal ruolo anonimo, di proposito — la fascia la vede
+    chiunque apra l'app — e per questo è dichiarata in
+    `prove/permessi.sh`, che controlla anche che non restituisca niente e che
+    l'anonimo non abbia permessi sulla tabella. In lettura: solo `is_admin`.
+
+20. `promemoria-pianificato.sql` — **facoltativo ma consigliato**, e non è una
     migrazione: si riempie **una riga** (il token del promemoria) e si lancia
     a mano. Sposta l'orologio dell'avviso
     della formazione da GitHub — che accoda e salta le corse pianificate, fino

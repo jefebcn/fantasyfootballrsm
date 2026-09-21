@@ -563,6 +563,17 @@ export const dashboard = {
       const id = e.currentTarget.dataset.vai;
       try { await S.switchLeague(id); ctx.go(''); } catch (err) { ctx.toast(err.message || 'Non ci sono riuscito'); }
     });
+    // LO SPONSOR SI CONTA QUI, non dentro render(): render() gira anche per
+    // disegnare una lista che e' cambiata, e conterebbe viste che nessuno ha
+    // visto. Qui la fascia e' nel documento per davvero. Il resto della regola
+    // — una sola vista per dispositivo al giorno — sta in S.contaSponsor.
+    const spon = root.querySelector('.spon');
+    if (spon) {
+      S.contaSponsor(spon.dataset.sponsor, 'vista');
+      // Il tocco si conta prima di uscire: il collegamento apre un'altra
+      // scheda (target=_blank), quindi questa resta viva e la chiamata parte.
+      spon.addEventListener('click', () => S.contaSponsor(spon.dataset.sponsor, 'tocco'));
+    }
     N.carica(() => ctx.render());
     // Le leghe pubbliche: una volta per apertura, e si ridisegna quando
     // arrivano. Se non ce ne sono, il banner non compare e non si e' perso

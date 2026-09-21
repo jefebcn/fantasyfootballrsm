@@ -26,7 +26,7 @@ const SLIDES = [
     // prima schermata che si vede dell'app.
     marchio: true,
     body: `<p>Il fantacalcio delle sedici squadre di San Marino: asta, rosa, formazione ogni settimana, scontro diretto.</p>
-           <p>Con una differenza: qui <b>le pagelle non esistono</b>. Nessuno decide se hai giocato bene. Il voto nasce da quello che è successo in campo.</p>`,
+           <p>Qui il voto non è un'opinione: <b>lo scrive la partita</b>. Gol, assist, porta inviolata, cartellini — quello che c'è nel referto, e nient'altro.</p>`,
   },
   {
     eyebrow: 'Come funziona',

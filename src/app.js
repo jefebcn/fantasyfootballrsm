@@ -5,6 +5,7 @@ import { esc, icon, logo, marchio, pic, mask, crest } from './ui.js';
 import * as S from './state.js';
 import * as diagnostica from './diagnostica.js';
 import * as views from './views/index.js';
+import * as AV from './notifiche.js';
 
 const root = document.getElementById('app');
 let current = null; // { view, params }
@@ -112,6 +113,28 @@ function nav(path) {
   const avviso = (p) => (p === 'voti' && S.matchdayStatus(S.currentMatchday()) === 'provisional' ? '<i class="dot"></i>' : '');
   return `<nav class="a-nav">${NAV.map(([p, ic, l]) => `<a href="#/${p}" class="${active === p ? 'on' : ''}"><i class="np">${mask(ic)}${avviso(p)}</i><span>${l}</span></a>`).join('')}</nav>`;
 }
+/**
+ * "Installa l'app": finche' non e' sullo Store, la strada e' la schermata
+ * Home del telefono.
+ *
+ * NON E' LO STESSO BOTTONE SU TUTTI I TELEFONI, e non per capriccio. Su
+ * Android e sui browser che lo permettono esiste una richiesta di sistema,
+ * e il tocco la apre. Su iPhone quella richiesta NON ESISTE: Apple non la
+ * fornisce, e l'unico modo e' Condividi -> Aggiungi alla schermata Home.
+ * Un bottone che li' non fa niente sarebbe peggio di nessun bottone, quindi
+ * li' si aprono le istruzioni, con i nomi delle voci come le vede chi legge.
+ *
+ * A app gia' installata la voce sparisce: e' il modo piu' corto di dire che
+ * hai finito.
+ */
+function vociInstalla() {
+  if (AV.installata()) return '';
+  const ios = AV.suiOS();
+  const sub = ios ? 'Condividi → Aggiungi alla Home' : 'schermo intero e notifiche';
+  return `<div class="d-sec"><span class="chip">App</span></div>
+    <button class="d-item d-installa" data-installa><i>${icon('down')}</i><span class="et">Installa l'app</span><small>${sub}</small></button>`;
+}
+
 function drawer() {
   const me = S.me(); const ph = S.weekPhase(); const u = S.currentUser();
   // icone illustrate dove il soggetto coincide, contorno altrove: stesso riquadro per entrambe
@@ -163,6 +186,7 @@ function drawer() {
       ? `<a class="a-btn" href="#/voti/${b.inGioco}" style="text-decoration:none">${icon('votes', 'ic sm')}Voti della ${b.inGioco}ª</a>`
       : `<a class="a-btn" href="#/rosa/formazione" style="text-decoration:none">${icon('shirt', 'ic sm')}Schiera la formazione</a>`;
   })()}</div>` : ''}
+    ${vociInstalla()}
     ${item('#/gestione', { l: 'impostazioni' }, 'Gestione lega', 'tutte le sezioni')}${item('#/squadra', { l: 'la-mia-squadra' }, 'La mia squadra', 'stemma, maglia e nomi')}
     <div class="d-sec"><span class="chip">Setup</span></div>
     ${item('#/lega', { m: 'leghe' }, 'Profilo lega', S.base.league.inviteCode ? `codice ${esc(S.base.league.inviteCode)}` : '')}${item('#/lega', { m: 'squadre' }, 'Partecipanti', String(S.base.managers.length))}${item('#/regolamento', { m: 'guide' }, 'Regolamento ed opzioni')}${item('#/classifica', { m: 'statistiche' }, 'Competizioni')}
@@ -230,6 +254,7 @@ document.addEventListener('click', (e) => {
   if (e.target.closest('[data-open-drawer]')) { drawerOpen = true; root.querySelector('.a-drawer').classList.add('on'); return; }
   if (e.target.closest('[data-close-drawer]')) { drawerOpen = false; root.querySelector('.a-drawer').classList.remove('on'); return; }
   if (e.target.closest('.a-drawer a')) { drawerOpen = false; }
+  if (e.target.closest('[data-installa]')) { drawerOpen = false; root.querySelector('.a-drawer')?.classList.remove('on'); installa(); return; }
   if (e.target.closest('[data-refresh]')) { toast('Aggiorno…'); S.refresh(); return; }
   if (e.target.closest('[data-logout]')) { S.signOut().then(() => go('login')); return; }
   const sw = e.target.closest('[data-switch]'); if (sw) { drawerOpen = false; S.switchLeague(sw.dataset.switch).then(() => go('')); return; }
@@ -237,6 +262,34 @@ document.addEventListener('click', (e) => {
   const t = e.target.closest('.vr[data-toggle]'); if (t) { const vb = t.nextElementSibling; if (vb?.classList.contains('vb')) vb.classList.toggle('on'); return; }
   if (e.target.id === 'sheet-scrim') sheet(null);
 });
+/**
+ * Dove la richiesta di sistema c'e', si apre quella. Dove non c'e' — iPhone,
+ * e i browser che non la implementano — si spiega a mano, perche' l'unica
+ * alternativa onesta e' dire dove sta il comando invece di fingere di
+ * poterlo premere noi.
+ */
+async function installa() {
+  const p = window.__installPrompt;
+  if (p) {
+    p.prompt();
+    const esito = await p.userChoice.catch(() => null);
+    window.__installPrompt = null;
+    if (esito && esito.outcome === 'accepted') toast('Fatto: la trovi nella schermata Home');
+    return;
+  }
+  const ios = AV.suiOS();
+  sheet(`<h3>Installa Fantatitano</h3>
+    <p class="sheet-sub">Si apre a schermo intero, senza la barra dell'indirizzo, e le notifiche funzionano anche a telefono chiuso.</p>
+    ${ios
+    ? `<ol class="passi"><li>Tocca <b>Condividi</b> ${icon('share', 'ic sm')} nella barra in basso di Safari.</li>
+       <li>Scorri e tocca <b>Aggiungi alla schermata Home</b>.</li>
+       <li>Conferma con <b>Aggiungi</b>.</li></ol>
+       <p class="small muted">Funziona da Safari. Da Chrome o da un'altra app su iPhone quella voce non c'è: apri prima fantatitano.site in Safari.</p>`
+    : `<ol class="passi"><li>Apri il <b>menu del browser</b> (i tre puntini in alto).</li>
+       <li>Tocca <b>Installa app</b>, o <b>Aggiungi a schermata Home</b>.</li></ol>
+       <p class="small muted">Se non trovi la voce, il browser che stai usando non la offre: prova con Chrome.</p>`}`);
+}
+
 window.addEventListener('hashchange', () => { drawerOpen = false; sheet(null); render(); });
 S.subscribe(() => render());
 

@@ -190,6 +190,21 @@ a.mrow.tocca{color:inherit;text-decoration:none;cursor:pointer}
 .sp-conti{display:block;margin-top:3px;font-size:12px;line-height:1.45;color:var(--text)}
 .sp-conti b{font-weight:700}
 .sp-conti .muted,.sp-conti.muted{color:var(--text-muted);font-weight:400}
+/* "Installa l'app" nel menu: e' l'unica voce che non porta in un'altra
+   schermata ma fa una cosa, e finche' l'app non e' sullo Store e' la strada
+   per averla sul telefono. Un filo d'oro a sinistra la distingue senza farne
+   un bottone grosso in mezzo alle altre. */
+.d-installa{width:100%;text-align:left;border:0;background:transparent;cursor:pointer;
+  border-left:3px solid var(--c-oro-400);color:inherit;font:inherit}
+.d-installa .et{font-weight:700}
+.d-installa .ic{color:var(--c-oro-500)}
+
+/* I passi delle istruzioni: numerati, con aria fra uno e l'altro — si
+   leggono col telefono in mano mentre si fanno. */
+.passi{margin:8px 0 0;padding-left:22px;display:flex;flex-direction:column;gap:8px;
+  font-size:14px;line-height:1.5;color:var(--text)}
+.passi .ic{vertical-align:-3px}
+
 /* L'elenco delle leghe aperte quando sta in cima: e' la cosa da fare, non
    una lista fra le liste. Un filo d'oro sul bordo sinistro basta a dire
    "comincia da qui" senza gridare. */

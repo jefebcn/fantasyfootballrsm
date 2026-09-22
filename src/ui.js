@@ -22,6 +22,14 @@ export const logo = (cls = '') => `<i class="logo ${cls}" role="img" aria-label=
  * basta il colore del testo.
  */
 export const marchio = (cls = '') => `<i class="marchio ${cls}" role="img" aria-label="Fantatitano"></i>`;
+/**
+ * "1 crediti" non lo scrive nessuno. L'app conta bene quasi ovunque, ma nei
+ * punti dove il numero puo' valere UNO restava il plurale fisso: si legge
+ * nel mercato ("Servirebbero almeno 1 crediti"), nell'asta e in home.
+ * Dove il numero non puo' mai essere 1 — il budget di lega parte da 50 — il
+ * plurale fisso va bene e resta com'e'.
+ */
+export const plurale = (n, uno, molti) => `${n} ${n === 1 ? uno : molti}`;
 export const ROLE_NAME = { P: 'Portieri', D: 'Difensori', C: 'Centrocampisti', A: 'Attaccanti' };
 export const ROLE_ORDER = ['P', 'D', 'C', 'A'];
 const DAYS = ['dom', 'lun', 'mar', 'mer', 'gio', 'ven', 'sab'];

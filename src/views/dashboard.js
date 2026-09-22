@@ -2,7 +2,7 @@ import * as S from '../state.js';
 import { videoGiornata, giornateConVideo } from '../video.js';
 import * as AV from '../notifiche.js';
 import * as N from '../notizie.js';
-import { esc, fmt, icon, logo, badge, crest, pic, tile, sec, dateIt, timeIt } from '../ui.js';
+import { esc, fmt, icon, logo, badge, crest, pic, tile, sec, dateIt, timeIt, plurale } from '../ui.js';
 import { maglia, kitOf } from '../maglia.js';
 import { personaggio, scelto } from '../personaggio.js';
 
@@ -226,7 +226,7 @@ function invitoNegozio() {
   return `<a class="negozio-cta" href="#/negozio" data-negozio>
     <i>${icon('cart')}</i>
     <span class="txt"><b>Costruisci la tua rosa</b>
-      <span>${n.mancanti === 25 ? 'Scegli i tuoi 25 giocatori' : `Mancano ${n.mancanti} giocatori`} · ${n.crediti} crediti${quando ? ` · fino a ${quando}` : ''}</span></span>
+      <span>${n.mancanti === 25 ? 'Scegli i tuoi 25 giocatori' : `Manca${n.mancanti === 1 ? '' : 'no'} ${plurale(n.mancanti, 'giocatore', 'giocatori')}`} · ${plurale(n.crediti, 'credito', 'crediti')}${quando ? ` · fino a ${quando}` : ''}</span></span>
     <span class="chev">${icon('chev', 'ic sm')}</span></a>`;
 }
 

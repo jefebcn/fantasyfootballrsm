@@ -10,7 +10,7 @@
  * hai, ma quanti puoi spenderne tenendone uno per ogni casella ancora vuota.
  */
 import * as S from '../state.js';
-import { esc, icon, roleChip, faccia } from '../ui.js';
+import { esc, icon, roleChip, faccia, plurale } from '../ui.js';
 
 let ruolo = 'tutti'; let cerca = ''; let compratore = null;
 const RUOLI = [['tutti', 'Tutti'], ['P', 'Portieri'], ['D', 'Difensori'], ['C', 'Centrocampisti'], ['A', 'Attaccanti']];
@@ -91,7 +91,7 @@ export const asta = {
       ? st.rosa.slice(-6).reverse().map((x) => [x.playerId, { managerId: compratore, pricePaid: x.pricePaid }])
       : [...pr.entries()].slice(-6).reverse();
     return `<main class="a-body">
-      ${mia ? `<div class="a-sec"><b>La tua squadra</b><span>${st.crediti} crediti</span></div>
+      ${mia ? `<div class="a-sec"><b>La tua squadra</b><span>${plurale(st.crediti, 'credito', 'crediti')}</span></div>
         <div class="sqs">${squadra(S.me(), true)}</div>
         <p class="small muted" style="margin:-4px 2px 0">Lega pubblica: i giocatori non sono esclusivi, lo stesso può stare nella rosa di tutti. Vale il tetto per ruolo e quello dei crediti.</p>`
     : `<div class="a-sec"><b>Squadre</b><span>tocca chi sta comprando</span></div>
@@ -132,8 +132,8 @@ export const asta = {
       if (an) {
         const pid = an.dataset.annulla; const p = S.playersById.get(pid);
         const v = S.proprietari().get(pid); if (!v) return;
-        if (!confirm(`Annullare l'acquisto di ${p.name} (${v.pricePaid} crediti)?`)) return;
-        try { await S.removeRosterPlayer(v.managerId, pid); ctx.toast(`${p.lastName} tolto · ${v.pricePaid} crediti restituiti`); }
+        if (!confirm(`Annullare l'acquisto di ${p.name} (${plurale(v.pricePaid, 'credito', 'crediti')})?`)) return;
+        try { await S.removeRosterPlayer(v.managerId, pid); ctx.toast(`${p.lastName} tolto · ${plurale(v.pricePaid, 'credito', 'crediti')} restituiti`); }
         catch (err) { ctx.toast(err.message || 'Non è stato possibile annullare'); }
         ctx.render(); return;
       }
@@ -164,7 +164,7 @@ export const asta = {
           btn.disabled = true;
           try {
             await S.addRosterPlayer(compratore, p.id, Number(campo.value));
-            ctx.sheet(null); ctx.toast(`${p.lastName} a ${m.teamName} · ${campo.value} crediti`);
+            ctx.sheet(null); ctx.toast(`${p.lastName} a ${m.teamName} · ${plurale(Number(campo.value), 'credito', 'crediti')}`);
           } catch (err) { motivo.textContent = err.message || 'Non è stato possibile assegnare'; motivo.classList.add('no'); btn.disabled = false; return; }
           ctx.render();
         };

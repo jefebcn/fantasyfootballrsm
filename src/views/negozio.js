@@ -1,5 +1,5 @@
 import * as S from '../state.js';
-import { esc, faccia, icon, ROLE_NAME } from '../ui.js';
+import { esc, faccia, icon, ROLE_NAME, plurale } from '../ui.js';
 
 /**
  * Il negozio della lega aperta: la rosa te la fai da solo, subito.
@@ -98,14 +98,14 @@ export const negozio = {
       const c = e.target.closest('[data-compra]');
       if (c && !c.disabled) {
         inCorso = c.dataset.compra; c.disabled = true;
-        try { const esito = await S.compraGiocatore(inCorso); ctx.toast(`Preso per ${esito?.prezzo ?? '—'} crediti`); }
+        try { const esito = await S.compraGiocatore(inCorso); ctx.toast(`Preso per ${plurale(esito?.prezzo ?? 0, 'credito', 'crediti')}`); }
         catch (err) { ctx.toast(err.message || 'Non è stato possibile comprarlo'); }
         inCorso = null; ctx.render(); return;
       }
       const v = e.target.closest('[data-vendi]');
       if (v) {
         v.disabled = true;
-        try { const esito = await S.vendiGiocatore(v.dataset.vendi); ctx.toast(`Tolto, +${esito?.reso ?? 0} crediti`); }
+        try { const esito = await S.vendiGiocatore(v.dataset.vendi); ctx.toast(`Tolto, +${plurale(esito?.reso ?? 0, 'credito', 'crediti')}`); }
         catch (err) { ctx.toast(err.message || 'Non è stato possibile toglierlo'); }
         ctx.render();
       }

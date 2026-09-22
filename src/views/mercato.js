@@ -1,5 +1,5 @@
 import * as S from '../state.js';
-import { esc, icon, faccia, roleChip, ROLE_NAME, ROLE_ORDER } from '../ui.js';
+import { esc, icon, faccia, roleChip, ROLE_NAME, ROLE_ORDER, plurale } from '../ui.js';
 import { offertaMassima, roleName } from '../engine.js';
 
 /**
@@ -126,7 +126,7 @@ export const mercato = {
       const p = P(id); if (!p) return;
       const max = tetto(p.role);
       if (max < minimo) {
-        ctx.sheet(`<h3>${esc(p.name)}</h3><p class="auth-hint">Servirebbero almeno <b>${minimo}</b> crediti e il massimo che puoi offrire è <b>${max}</b>${S.impegnati() ? `, perché ne hai ${S.impegnati()} già impegnati in altre offerte` : ''}. Un credito per ogni posto ancora vuoto resta da parte: serve a poter completare la rosa.</p>`);
+        ctx.sheet(`<h3>${esc(p.name)}</h3><p class="auth-hint">Servirebbe${minimo === 1 ? '' : 'ro'} almeno <b>${plurale(minimo, 'credito', 'crediti')}</b> e il massimo che puoi offrire è <b>${max}</b>${S.impegnati() ? `, perché ne hai ${S.impegnati()} già impegnati in altre offerte` : ''}. Un credito per ogni posto ancora vuoto resta da parte: serve a poter completare la rosa.</p>`);
         return;
       }
       ctx.sheet(`<h3>Offerta per ${esc(p.name)}</h3>
@@ -137,8 +137,8 @@ export const mercato = {
       const campo = document.getElementById('off');
       document.getElementById('off-ok').onclick = async (ev) => {
         const v = Math.trunc(Number(campo.value) || 0);
-        if (v < minimo) { ctx.toast(`Almeno ${minimo} crediti`); return; }
-        if (v > max) { ctx.toast(`Massimo ${max} crediti`); return; }
+        if (v < minimo) { ctx.toast(`Almeno ${plurale(minimo, 'credito', 'crediti')}`); return; }
+        if (v > max) { ctx.toast(`Massimo ${plurale(max, 'credito', 'crediti')}`); return; }
         ev.target.disabled = true;
         try { await S.offri(id, v); ctx.sheet(null); ctx.toast('Offerta mandata'); ctx.render(); }
         catch (err) { ctx.toast(err.message || 'Non è andata'); ev.target.disabled = false; }

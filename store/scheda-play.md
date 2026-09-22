@@ -9,6 +9,12 @@ Le immagini stanno in questa stessa cartella e le rigenera
 `node scripts/schermate-store.cjs`: otto screenshot 1080×1920 e la grafica
 d'intestazione 1024×500, tutte JPEG — Play non vuole il canale alfa.
 
+L'ordine in cui caricarle, che è la storia che racconta la scheda:
+`la-giornata`, `la-formazione`, `i-voti`, `il-voto-titano`, `lo-scontro`,
+`la-classifica`, `il-negozio`, `gli-highlights`. Otto schermate che mostrano
+otto cose diverse: le prime versioni avevano calendario, rosa e listone, cioè
+tre elenchi che in miniatura sembrano la stessa immagine ripetuta.
+
 ---
 
 ## Nome dell'app

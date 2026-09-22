@@ -1,6 +1,7 @@
 import * as S from '../state.js';
 import { esc, icon, crest, logo, pic, sec } from '../ui.js';
 import { COLORI_SQUADRA } from '../colore.js';
+import * as AV from '../notifiche.js';
 
 
 let form = 'none'; // 'create' | 'join' | 'pubblica'
@@ -141,6 +142,13 @@ export const leghe = {
       ${form === 'pubblica' ? moduloPubblica() : ''}
       ${primaLePubbliche ? '' : elencoPubbliche(false)}
       ${mine.length ? '' : comeFunziona()}
+      ${/* QUI IL MENU NON C'E'. Senza una lega l'appbar e' 'none' — niente
+            hamburger, quindi il pannello laterale, e la voce per installare
+            che ci sta dentro, non si aprono proprio. E chi e' appena
+            arrivato dal sito e' esattamente chi vorrebbe l'icona sulla
+            Home. Stessa azione, stesso data-installa (l'ascoltatore sta sul
+            documento): cambia solo il posto. */
+    mine.length || AV.installata() ? '' : `<button class="rigainstalla" data-installa>${icon('down', 'ic sm')}<span><b>Installa l'app</b><small>${AV.suiOS() ? 'Condividi → Aggiungi alla Home' : 'a schermo intero, con le notifiche'}</small></span></button>`}
     </main>`;
   },
   mount(root, ctx) {

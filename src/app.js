@@ -130,7 +130,7 @@ function nav(path) {
 function vociInstalla() {
   if (AV.installata()) return '';
   const ios = AV.suiOS();
-  const sub = ios ? 'Condividi → Aggiungi alla Home' : 'schermo intero e notifiche';
+  const sub = ios ? 'Aggiungi alla Home' : 'schermo intero';
   return `<div class="d-sec"><span class="chip">App</span></div>
     <button class="d-item d-installa" data-installa><i>${icon('down')}</i><span class="et">Installa l'app</span><small>${sub}</small></button>`;
 }

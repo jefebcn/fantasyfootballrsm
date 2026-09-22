@@ -1001,6 +1001,19 @@ export function rendimento(playerId, fino = currentMatchday()) {
 // ---------------------------------------------------------------- scambi
 export const scambi = () => L.scambi || [];
 export const scambiDisponibili = () => L.scambiDisponibili !== false;
+/**
+ * Se gli scambi hanno senso IN QUESTA LEGA — che non e' la stessa cosa di
+ * "il server li sa fare".
+ *
+ * In una lega aperta lo stesso giocatore puo' stare nella rosa di tutti: non
+ * c'e' niente da scambiare, perche' quello che vuoi te lo compri e basta.
+ * Tenere la voce li' sarebbe una porta che si apre su un muro.
+ *
+ * Restano due funzioni separate perche' dicono due cose diverse: se manca la
+ * migrazione 006 il messaggio giusto e' "manca sul server", non "qui non
+ * servono".
+ */
+export const scambiInQuestaLega = () => scambiDisponibili() && !legaPubblica();
 /** Le proposte che aspettano una risposta da me. */
 export function scambiDaDecidere() {
   const io = me()?.id; if (!io) return [];

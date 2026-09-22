@@ -11,6 +11,11 @@ export const calendario = {
     const real = S.matchesOf(n);
     return `<main class="a-body">
       <div class="gsel" id="gsel">${Array.from({ length: 30 }, (_, i) => `<a href="#/calendario/${i + 1}" class="gs${i + 1 === n ? ' on' : ''}">G${i + 1}${i + 1 === n ? '<i></i>' : ''}</a>`).join('')}</div>
+      ${/* In una lega a punti gli scontri diretti non esistono: il blocco non
+            e' "vuoto", e' assente. Prima apriva la schermata con un riquadro
+            che diceva "qui non ci sono scontri" e spingeva in fondo le
+            partite del campionato, che invece servono a tutti. */
+    S.aPunti() ? `<div class="statusline">${badge(st, st === 'open' ? `lock ${dateIt(md.lockAt)} ${timeIt(md.lockAt)}` : st === 'scheduled' ? dateIt(md.lockAt) : '')}</div>` : `
       ${sec('Scontri di lega', `${fx.length} ${fx.length === 1 ? 'partita' : 'partite'}`)}
       <div class="statusline">${badge(st, st === 'open' ? `lock ${dateIt(md.lockAt)} ${timeIt(md.lockAt)}` : st === 'scheduled' ? dateIt(md.lockAt) : '')}</div>
       ${fx.length ? fx.map((r) => matchCard(r, S.managersById)).join('')
@@ -19,7 +24,7 @@ export const calendario = {
       // giornata e' finita prima che la lega esistesse.
       ? `La lega è nata dalla ${S.primaGiornata()}ª giornata: la ${n}ª si è giocata prima, e non fa parte di questo campionato.`
       : S.aPunti() ? 'In una lega pubblica non ci sono scontri diretti: si sommano i fantapunti di ogni giornata.'
-        : 'Nessuno scontro: servono almeno due squadre nella lega.'}</p></div>`}
+        : 'Nessuno scontro: servono almeno due squadre nella lega.'}</p></div>`}`}
       ${sec('Partite del campionato', `${n}ª giornata`)}
       ${Object.entries(real.reduce((acc, m) => { (acc[dateIt(m.kickoffAt)] ||= []).push(m); return acc; }, {}))
         .map(([giorno, lista]) => `<div class="daygroup"><div class="dayhead">${esc(giorno)}</div>${lista.map((m) => {

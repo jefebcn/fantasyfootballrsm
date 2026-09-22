@@ -88,6 +88,12 @@ export const scambi = {
   render() {
     const me = S.me();
     if (!me) return `<main class="a-body">${empty('Gli scambi si fanno dentro una lega.')}</main>`;
+    // In una lega aperta non e' "non ancora attivo": e' che non servono.
+    if (S.legaPubblica()) {
+      return `<main class="a-body">${empty('In una lega aperta non ci sono scambi.')}
+        <div class="a-card a-rule"><span class="art">Perché</span><p>Qui lo stesso giocatore può stare nella rosa di tutti: non c'è niente da contendersi, e quello che vuoi te lo compri dal <b>negozio</b> finché il mercato è aperto.</p></div>
+        <a class="a-btn" href="#/negozio" style="text-decoration:none">Vai al negozio</a></main>`;
+    }
     if (!S.scambiDisponibili()) {
       return `<main class="a-body">${empty('Gli scambi non sono ancora attivi su questo server.')}
         <div class="a-card a-rule"><span class="art">Da fare</span><p>Manca la migrazione <code>supabase/migrations/006-scambi.sql</code>: va eseguita una volta nell\'SQL Editor. Finché non c\'è, il resto dell\'app funziona normalmente.</p></div></main>`;

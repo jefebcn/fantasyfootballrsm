@@ -215,6 +215,11 @@ export const cancella = {
       ${blocco('Un caso in cui la cancellazione si ferma', [
     'Se <b>amministri una lega dove gioca anche qualcun altro</b>, l\'app non ti cancella e te lo dice: spariresti lasciando una lega senza nessuno che la governa. Passa la lega a un\'altra persona, o eliminala, e poi cancella l\'account.',
   ])}
+      ${blocco('Cancellare solo una parte, senza chiudere l\'account', [
+    '<b>Uscire da una lega</b> (Le mie leghe → l\'icona di uscita accanto alla lega) porta via la tua squadra di quella lega: rosa, formazioni consegnate e contestazioni se ne vanno con lei. L\'account e le altre leghe restano come sono.',
+    `Per qualsiasi altra richiesta — cancellare un dato preciso senza chiudere l'account — scrivi a <b>${esc(CONTATTO)}</b> dall'indirizzo con cui ti sei iscritto. Viene eseguita <b>entro 30 giorni</b>.`,
+    'Se sei l\'unico amministratore di una lega dove gioca anche qualcun altro, prima passa il ruolo a un\'altra persona: se no la lega resterebbe senza nessuno che la governa.',
+  ])}
       ${blocco('I dati, prima di cancellarli', [
     `Cosa tiene l'app e perché sta scritto nell'informativa privacy, su ${esc('fantatitano.site/privacy.html')}.`,
   ])}

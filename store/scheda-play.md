@@ -76,26 +76,55 @@ L'app si usa gratis. Serve un account con e-mail e nome: si cancella da dentro l
 
 ## Data safety: le risposte, e perché
 
-Devono combaciare con `privacy.html`, che è scritto guardando il codice. Se
-le due cose divergono, quella che conta per Google è questa, e la differenza
-è una segnalazione.
+Devono combaciare con `privacy.html`, che è scritto guardando il codice. Se le
+due cose divergono, quella che conta per Google è questa, e la differenza è
+una segnalazione.
 
-**Dati raccolti** (raccolti, non condivisi con terzi):
+**Prima pagina**
 
-| Dato | Perché | Obbligatorio |
-|---|---|---|
-| Indirizzo e-mail | far entrare nell'account e riconoscerti | sì |
-| Nome | il nome del fantallenatore, visibile agli altri della lega | sì |
-| Contenuti creati dall'utente (squadra, rosa, formazioni, contestazioni) | è il gioco | sì |
-| Identificativi del dispositivo per le notifiche | mandare il promemoria della formazione | no, solo se le accendi |
+- *L'app raccoglie o condivide dati?* → **Sì**
+- *Criptati in transito?* → **Sì** (tutto su HTTPS: Vercel e Supabase)
+- *Metodi di creazione account*: **Nome utente e password** + **Nome utente e
+  altra autenticazione** (il link/codice via e-mail, «Entra senza password»).
+  **Non** OAuth: sul server gli unici provider attivi sono quelli e-mail.
+- *URL per eliminare l'account*: `https://fantatitano.site/cancella-account.html`
+- *Modo per eliminare parte dei dati senza chiudere l'account?* → **Sì**
+  (uscire da una lega porta via squadra, rosa, formazioni e contestazioni di
+  quella lega; più la richiesta via e-mail). È scritto nella pagina qui sopra.
 
-- **Condivisi con terze parti**: nessuno. Supabase tratta i dati *per conto*
-  di chi gestisce l'app (responsabile del trattamento), e non li usa per sé:
-  nel modulo di Play non è «condivisione».
-- **Cifrati in transito**: sì, tutto su HTTPS.
-- **Si possono cancellare**: sì, dall'app e dal web (l'indirizzo qui sopra).
-- **Raccolta facoltativa**: le notifiche sono l'unica voce che si accende e
-  si spegne.
+**Tipi di dati: le quattro categorie da aprire, e nient'altro**
+
+| Categoria | Cosa spuntare | Raccolti / Condivisi | Obbl. | Perché |
+|---|---|---|---|---|
+| Informazioni personali | **Nome**, **Indirizzo email**, **ID utente** | raccolti / non condivisi | sì | Gestione dell'account (il nome anche: Funzionalità dell'app — lo vedono gli altri della lega) |
+| Foto e video | **Foto** | raccolti / non condivisi | no | Funzionalità dell'app (lo stemma della squadra) |
+| Attività nell'app | **Altri contenuti generati dagli utenti** | raccolti / non condivisi | sì | Funzionalità dell'app (squadra, rosa, formazioni, contestazioni) |
+| ID dispositivo o altri ID | **ID dispositivo o altri ID** | raccolti / non condivisi | no | Funzionalità dell'app (l'indirizzo a cui mandare le notifiche, solo se le accendi) |
+
+Tutto il resto resta a zero: niente posizione, informazioni finanziarie,
+salute, messaggi, audio, file, calendario, contatti, cronologia di ricerca o
+navigazione, e nessun dato di diagnostica — non c'è un sistema di analisi del
+traffico, e questo va dichiarato non spuntando niente.
+
+**«Condivisi con terze parti» è no, e non è una furbizia**: Supabase tratta i
+dati *per conto* di chi gestisce l'app (responsabile del trattamento) e non li
+usa per sé. Nel modulo di Play questo non è «condivisione».
+
+**L'unico punto che resta da decidere: il video di YouTube.** Gli highlights
+stanno su YouTube e il riquadro si carica **solo quando qualcuno tocca play**,
+da `youtube-nocookie.com`. Da quel momento Google vede l'indirizzo IP e quale
+video si sta guardando. Due letture, tutte e due difendibili:
+
+- l'app non raccoglie né trasmette niente — è l'utente che apre un contenuto
+  di terzi, come toccare un link;
+- oppure, per prudenza, si dichiara sotto *Attività nell'app → Interazioni con
+  l'app*, **condivisa** con terze parti.
+
+La prima è quella coerente con l'informativa dell'app, che quel passaggio lo
+spiega già per intero. La seconda costa una spunta e toglie ogni discussione,
+al prezzo di far comparire «condivide dati con terze parti» nella scheda.
+Se un giorno il video venisse aperto solo con un collegamento esterno, la
+domanda sparirebbe del tutto.
 
 ## Il montepremi, prima di scriverlo nella scheda
 

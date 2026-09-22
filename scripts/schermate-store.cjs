@@ -32,14 +32,17 @@ const LARGO = 360, ALTO = 640, DENSITA = 3;
 // cima. Nella formazione, per dire, sopra c'e' l'avviso della consegna e il
 // campo comincia a meta' pagina — ed e' il campo la ragione per cui uno
 // scarica un'app di fantacalcio.
+// Otto schermate che raccontano OTTO COSE DIVERSE. Le prime versioni avevano
+// calendario, rosa e listone: tre elenchi che, in miniatura nella scheda
+// dello Store, sembrano la stessa immagine ripetuta. Al loro posto tre cose
+// che l'app fa e che si capiscono al volo: lo scontro diretto, gli highlights
+// e il negozio della lega aperta.
 const SCHERMATE = [
   ['', 'la-giornata'],
   ['rosa/formazione', 'la-formazione', '.campo'],
   ['voti', 'i-voti'],
   ['classifica', 'la-classifica'],
-  ['calendario', 'il-calendario'],
-  ['rosa', 'la-rosa'],
-  ['listone', 'il-listone'],
+  ['video', 'gli-highlights'],
 ];
 
 (async () => {
@@ -50,7 +53,12 @@ const SCHERMATE = [
   await ctx.addInitScript(() => {
     window.__SUPABASE_JS__ = '/tests/mock-supabase.js';
     localStorage.setItem('fcs:auth', 'supabase');
-    localStorage.setItem('fcs:prefs', JSON.stringify({ onboarded: true, theme: 'light' }));
+    // Solo la PRIMA volta: dentro fcs:prefs ci sta anche quale lega e' aperta,
+    // e riscriverlo a ogni ricarico riportava l'app alla prima lega — il
+    // negozio usciva "solo delle leghe aperte" mentre la lega aperta c'era.
+    if (!localStorage.getItem('fcs:prefs')) {
+      localStorage.setItem('fcs:prefs', JSON.stringify({ onboarded: true, theme: 'light' }));
+    }
     localStorage.setItem('fcs:supabase', JSON.stringify({ url: 'https://mock.supabase.co', key: 'mock-key-mock-key-mock' }));
   });
   const p = await ctx.newPage(); p.on('dialog', (d) => d.accept());
@@ -166,6 +174,66 @@ const SCHERMATE = [
     await p.screenshot({ path: file, type: 'jpeg', quality: 92 });
     console.log(`${file}  ${Math.round(fs.statSync(file).size / 1024)} kB`);
   }
+  // --- LO SCONTRO DIRETTO. Si arriva dove ci arriva chi gioca: dalla riga
+  // delle due squadre in home, che e' un collegamento.
+  await p.evaluate(() => { location.hash = '#/'; }); await w(1100);
+  const scontro = await p.evaluate(() => {
+    const a = document.querySelector('a.mrow.tocca'); if (!a) return null;
+    a.click(); return a.getAttribute('href') || location.hash;
+  });
+  if (scontro) {
+    await w(1400); await p.evaluate(() => document.fonts && document.fonts.ready);
+    const f = path.join(FUORI, 'lo-scontro.jpg');
+    await p.screenshot({ path: f, type: 'jpeg', quality: 92 });
+    console.log(`${f}  ${Math.round(fs.statSync(f).size / 1024)} kB`);
+  } else { console.log('ATTENZIONE: nessuno scontro in home, immagine saltata'); }
+
+  // --- IL NEGOZIO DELLA LEGA APERTA. Serve una lega pubblica, che la crea
+  // chi amministra l'app: si fa qui alla fine, quando le altre immagini sono
+  // gia' state prese — la lega nuova diventa quella aperta e cambierebbe
+  // tutte le schermate di prima.
+  await p.evaluate(() => {
+    const st = JSON.parse(localStorage.getItem('fcs:mock'));
+    st.tables.profiles.find((x) => x.id === st.userId).is_admin = true;
+    localStorage.setItem('fcs:mock', JSON.stringify(st));
+  });
+  await p.reload({ waitUntil: 'load' }); await w(1800);
+  await p.evaluate(() => { location.hash = '#/leghe'; }); await w(1100);
+  await p.evaluate(() => document.querySelector('[data-form="pubblica"]')?.click()); await w(800);
+  await p.fill('#pname', 'Titano Open'); await p.fill('#pbudget', '300'); await p.fill('#pmax', '50');
+  await p.fill('#team', 'Hasta El Roxy'); await p.click('#go-pubblica'); await w(2200);
+  // Il listino e il calendario dei lock, come in produzione.
+  await p.evaluate(async () => {
+    const S = await import('/src/state.js');
+    const st = JSON.parse(localStorage.getItem('fcs:mock'));
+    st.tables.quotazioni = S.base.players.map((g) => ({ player_id: g.id, ruolo: g.role, quotazione: g.quotation, nome: g.name }));
+    st.tables.matchday_locks = S.base.matchdays.map((md) => ({ matchday: md.number, lock_at: new Date(md.lockAt).toISOString() }));
+    localStorage.setItem('fcs:mock', JSON.stringify(st));
+  });
+  await p.reload({ waitUntil: 'load' }); await w(1800);
+  await p.evaluate(() => { location.hash = '#/negozio'; }); await w(1300);
+  // Qualche acquisto, se no la schermata e' un elenco senza storia. Uno per
+  // ruolo e non i primi cinque della lista: quella e' ordinata per prezzo, e
+  // venivano fuori cinque attaccanti — una rosa che nessuno farebbe, in una
+  // schermata che dovrebbe far capire come si gioca.
+  for (const ruolo of ['P', 'D', 'C', 'A']) {
+    await p.evaluate((r) => document.querySelector(`[data-ruolo="${r}"]`)?.click(), ruolo); await w(600);
+    for (let i = 0; i < 2; i++) {
+      const chi = await p.evaluate(() => document.querySelector('[data-compra]:not([disabled])')?.dataset.compra || null);
+      if (!chi) break;
+      await p.click(`[data-compra="${chi}"]`); await w(900);
+    }
+  }
+  await p.evaluate(() => document.querySelector('[data-ruolo=""]')?.click()); await w(600);
+  await p.evaluate(() => { const e = document.querySelector('.neg-testa'); if (e) e.scrollIntoView({ block: 'start' }); });
+  // Il messaggio di conferma sparisce da solo: si aspetta, se no in una
+  // immagine da Store resta li' a coprire una riga per sempre.
+  await w(3200);
+  await p.evaluate(() => document.fonts && document.fonts.ready);
+  const fn = path.join(FUORI, 'il-negozio.jpg');
+  await p.screenshot({ path: fn, type: 'jpeg', quality: 92 });
+  console.log(`${fn}  ${Math.round(fs.statSync(fn).size / 1024)} kB`);
+
   // ---------------------------------------------------------------- 1024x500
   // La grafica d'intestazione: Play la vuole 1024x500, senza canale alfa, ed
   // e' la prima cosa che si vede della scheda. Non e' uno screenshot: e' una

@@ -144,6 +144,23 @@ const SCHERMATE = [
     await p.screenshot({ path: path.join(FUORI, 'il-voto-titano.jpg'), type: 'jpeg', quality: 92 });
     console.log(`${FUORI}/il-voto-titano.jpg  (${aperta})`); }
 
+  // LA COPERTINA CON UN PERSONAGGIO, non con la maglia: una maglia neutra
+  // dice meno di una figura, e il personaggio e' una cosa che l'app sa fare
+  // (kit.personaggio, i file in media/avatar).
+  //
+  // IL NUMERO NON E' A CASO. Degli undici disponibili, otto sono figure
+  // riconoscibili di altri: calciatori veri con la maglia del loro club e
+  // personaggi dei cartoni. Dentro l'app e' una questione aperta; in una
+  // SCHEDA DELLO STORE, che e' materiale promozionale e viene guardata da chi
+  // fa rispettare i marchi, sarebbe un rischio inutile. Il 6 e' una figura
+  // originale, senza nessuno da riconoscere.
+  await p.evaluate(async () => {
+    const S = await import('/src/state.js');
+    const k = S.me()?.kit || {};
+    await S.updateMyTeam({ kit: { ...k, personaggio: 6 } });
+  });
+  await w(1200);
+
   for (const [rotta, nome, verso] of SCHERMATE) {
     await p.evaluate((h) => { location.hash = '#/' + h; }, rotta); await w(900);
     await p.evaluate(() => document.fonts && document.fonts.ready);

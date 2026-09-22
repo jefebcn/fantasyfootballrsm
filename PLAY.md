@@ -214,6 +214,12 @@ consecutivi**. Chi si iscrive e poi esce non conta, e il conto riparte. Quindi
 il messaggio con cui le inviti deve dire due cose: che ci vuole Android, e che
 non devono togliersi dal test per due settimane.
 
+**I dodici ci sono dal 22/09/2026.** I quattordici giorni si
+compiono il **06/10/2026**: da quel giorno il Console sblocca la
+richiesta per la produzione. Fino ad allora l'unica cosa che puo' rovinare il
+conto e' qualcuno che si toglie dal test o disinstalla: il contatore riparte
+da zero, per tutti.
+
 Il conto degli iscritti si guarda in *Test e release → Test chiusi → Tester*.
 Quando arriva a 12 e sono passati i 14 giorni, il Console sblocca «Richiedi
 l'accesso alla produzione».

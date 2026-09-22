@@ -1,5 +1,5 @@
 import * as S from '../state.js';
-import { esc, icon, crest, roleChip, sec } from '../ui.js';
+import { esc, icon, crest, roleChip, sec, plurale } from '../ui.js';
 import { maglia, kitOf } from '../maglia.js';
 
 export const lega = {
@@ -14,7 +14,7 @@ export const lega = {
       ${sec('Partecipanti', `${ms.length}/12`)}
       <div class="vlist">${ms.map((m) => `<div class="prow">${crest(m, 'sm')}<span class="pmg">${maglia(kitOf(m))}</span>
         <div class="ptxt"><b>${esc(m.teamName)}${m.id === me?.id ? ' <em>tu</em>' : ''}</b><span>${esc(m.owner)}${m.viceName ? ` e ${esc(m.viceName)}` : ''} · ${m.role === 'admin' ? 'admin' : 'fantallenatore'}</span>
-          <span class="pmeta">rosa ${rosterCount(m)}/25 · ${m.credits} crediti</span></div>
+          <span class="pmeta">rosa ${rosterCount(m)}/25 · ${plurale(m.credits, 'credito', 'crediti')}</span></div>
         ${admin && m.id !== me?.id ? `<div class="pact"><button class="chip" data-role="${m.id}:${m.role === 'admin' ? 'fantallenatore' : 'admin'}">${m.role === 'admin' ? 'Togli admin' : 'Fai admin'}</button><button class="chip danger" data-kick="${m.id}" aria-label="Rimuovi">✕</button></div>` : ''}</div>`).join('')}</div>
       ${admin ? `${sec('Rose', 'art. 2')}
       <div class="a-card" style="display:flex;flex-direction:column;gap:10px"><p class="small muted">Il draft assegna 25 giocatori a testa (3P 8D 8C 6A) per quotazione, entro 500 crediti. Poi correggi ogni rosa a mano, o inseriscila tutta a mano dopo l'asta.</p><button class="a-btn${started ? ' sec' : ''}" id="draft">${icon('cart', 'ic sm')}${started ? 'Rigenera le rose' : 'Genera le rose'}</button>${started ? '<p class="small muted" style="text-align:center">Rigenerare sostituisce le rose attuali.</p>' : ''}</div>

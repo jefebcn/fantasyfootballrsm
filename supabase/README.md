@@ -145,6 +145,16 @@ Su un progetto nuovo, nell'SQL Editor, in quest'ordine:
     vengono dalla stessa sorgente dell'app, non da una copia scritta a mano.
     Senza listino il negozio non vende e lo dice.
 
+    **Il budget, e perché resta com'è.** Con i prezzi di questa stagione (da 5
+    a 40) una rosa coi 25 più cari costa 720 crediti e una coi 25 più
+    economici 138. Quindi il budget decide quanto pesa la scelta: con 300
+    crediti puoi mettere il migliore del ruolo in 9 posti su 25, con 500 in
+    17, e da 800 in su non vincola più niente. Misurato, non stimato. Alex ha
+    deciso di **lasciare i budget come sono per questa stagione** (22
+    settembre): cambiarli vale solo per chi entra dopo, perché i crediti si
+    assegnano all'ingresso, e ritoccarli a stagione iniziata sarebbe cambiare
+    le regole in corsa a chi ha già comprato.
+
 21. `promemoria-pianificato.sql` — **facoltativo ma consigliato**, e non è una
     migrazione: si riempie **una riga** (il token del promemoria) e si lancia
     a mano. Sposta l'orologio dell'avviso

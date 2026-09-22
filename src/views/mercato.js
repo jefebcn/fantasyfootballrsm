@@ -63,7 +63,11 @@ function finestra(f) {
 }
 
 export const mercato = {
-  title: 'Mercato', appbar: 'back', sub: () => 'Svincolati · rilancio 24h',
+  // Il sottotitolo segue la schermata: in una lega aperta non ci sono
+  // svincolati, e "Svincolati · rilancio 24h" sopra un riquadro che dice il
+  // contrario e' una barra che smentisce la pagina.
+  title: 'Mercato', appbar: 'back',
+  sub: () => (S.legaPubblica() ? 'Fuori dal campionato' : 'Svincolati · rilancio 24h'),
   render() {
     const me = S.me();
     if (!me) return `<main class="a-body"><div class="empty"><p>Il mercato si apre dentro una lega.</p></div></main>`;
@@ -77,6 +81,20 @@ export const mercato = {
       return `<main class="a-body">
         <div class="a-card a-rule"><span class="art">Da fare</span><p>Il mercato ha bisogno della migrazione <code>supabase/migrations/007-mercato-svincolati.sql</code>, da eseguire una volta nell'SQL Editor. Finché non c'è, qui sotto resta il solo elenco.</p></div>
         <div class="vlist"><div class="vhead">Svincolati <span>${liberi.length}</span></div>${liberi.slice(0, 60).map((p) => `<a class="vr" href="#/giocatore/${esc(p.id)}" style="text-decoration:none">${faccia(p, CB(p.id))}<span class="nm"><b>${esc(p.name)}</b><span>${esc(CB(p.id).name)}</span></span><span class="fv">${p.quotation}</span></a>`).join('')}</div>
+      </main>`;
+    }
+
+    // IN UNA LEGA APERTA NON CI SONO SVINCOLATI. "Svincolato" vuol dire "non
+    // e' di nessuno", ma qui lo stesso giocatore sta nella rosa di tutti
+    // quelli che l'hanno comprato: l'elenco sarebbe il listone intero e la
+    // gara a rilanci non avrebbe posta. Resta la sola cosa che serve anche
+    // qui: chi e' uscito dal campionato, col suo rimborso.
+    if (S.legaPubblica()) {
+      return `<main class="a-body">
+        <div class="a-card a-rule"><span class="art">Qui no</span><p>In una lega aperta non ci sono svincolati: lo stesso giocatore può stare nella rosa di tutti, quindi non c'è nessuno da contendersi. La rosa si cambia dal <b>negozio</b>, finché il mercato è aperto.</p></div>
+        <a class="a-btn" href="#/negozio" style="text-decoration:none">Vai al negozio</a>
+        ${fuori.length ? `<div class="a-sec"><b>Fuori dal campionato</b><span>${fuori.length}</span></div>
+        <div class="vlist">${fuori.map((p) => `<a class="vr" href="#/giocatore/${esc(p.id)}" style="text-decoration:none">${roleChip(p.role)}<span class="nm"><b style="text-decoration:line-through">${esc(p.name)}</b><span>${esc(CB(p.id).name)} · rimosso d'ufficio</span></span><span class="fv sv">—</span></a>`).join('')}</div>` : ''}
       </main>`;
     }
 

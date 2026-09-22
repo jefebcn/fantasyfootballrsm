@@ -153,6 +153,38 @@ const prepara = (ctx, stato) => ctx.addInitScript((stato) => {
   }), primoId);
   et(ancora.presente, 'il giocatore già preso dal primo resta disponibile per il secondo');
 
+  // ---- QUELLO CHE IN UNA LEGA APERTA NON HA SENSO, NON SI VEDE
+  //
+  // Scambi e svincolati sono gare per chi si prende un giocatore che e' di
+  // uno solo. Qui lo stesso giocatore sta nella rosa di tutti: restavano due
+  // voci che si aprivano su un muro, e il calendario si apriva con un
+  // riquadro "qui non ci sono scontri" che spingeva in fondo le partite del
+  // campionato, che invece servono a tutti.
+  await p.evaluate(() => { location.hash = '#/calendario'; }); await w(p, 1100);
+  const cal = await p.evaluate(() => ({
+    scontri: /Scontri di lega/.test(document.body.innerText),
+    campionato: /Partite del campionato/.test(document.body.innerText),
+    primo: document.querySelector('.a-sec b')?.innerText || '',
+  }));
+  et(!cal.scontri && cal.campionato, `il calendario non annuncia scontri che non esistono (scontri: ${cal.scontri}, campionato: ${cal.campionato})`);
+  et(/Partite del campionato/.test(cal.primo), `e comincia dalle partite vere ("${cal.primo}")`);
+
+  await p.evaluate(() => { location.hash = '#/rosa'; }); await w(p, 900);
+  et(!(await p.$('a[href="#/scambi"]')), 'nella rosa non c\'è la pastiglia degli scambi');
+
+  await p.evaluate(() => { location.hash = '#/'; }); await w(p, 700);
+  await p.evaluate(() => document.querySelector('[data-open-drawer]')?.click()); await w(p, 700);
+  const voci = await p.evaluate(() => [...document.querySelectorAll('.a-drawer a')].map((a) => a.innerText.replace(/\n/g, ' ')).join(' | '));
+  et(!/Mercato libero/.test(voci), 'e nel menu non c\'è "Mercato libero"');
+  await p.evaluate(() => document.querySelector('.a-drawer .scrim')?.click()); await w(p, 400);
+
+  // e chi ci arriva per un vecchio collegamento trova la strada, non un muro
+  for (const [rotta, atteso] of [['scambi', /non ci sono scambi/i], ['mercato', /non ci sono svincolati/i]]) {
+    await p.evaluate((h) => { location.hash = '#/' + h; }, rotta); await w(p, 1000);
+    const v = await p.evaluate(() => ({ testo: document.body.innerText, negozio: !!document.querySelector('a[href="#/negozio"]') }));
+    et(atteso.test(v.testo) && v.negozio, `#/${rotta}: dice perché qui non serve e porta al negozio`);
+  }
+
   // ---- la classifica: a punti, coi premi
   await p.evaluate(() => { location.hash = '#/classifica'; }); await w(p, 1100);
   const cls = await p.evaluate(() => ({ testo: document.body.innerText, incontri: !!document.querySelector('[data-vista="giornata"]'), premi: !!document.querySelector('.premi') }));

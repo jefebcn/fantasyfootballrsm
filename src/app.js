@@ -167,7 +167,12 @@ function drawer() {
     <div class="d-sec"><span class="chip">Setup</span></div>
     ${item('#/lega', { m: 'leghe' }, 'Profilo lega', S.base.league.inviteCode ? `codice ${esc(S.base.league.inviteCode)}` : '')}${item('#/lega', { m: 'squadre' }, 'Partecipanti', String(S.base.managers.length))}${item('#/regolamento', { m: 'guide' }, 'Regolamento ed opzioni')}${item('#/classifica', { m: 'statistiche' }, 'Competizioni')}
     <div class="d-sec"><span class="chip">Gioca</span></div>
-    ${S.legaPubblica() ? item('#/negozio', { l: 'rose' }, 'La tua rosa', `${S.rosterIds(S.me()?.id).length}/25`) : ''}${item('#/listone', { m: 'quotazioni' }, 'Listone', String(S.base.players.length))}${item('#/mercato', { m: 'trasferimenti' }, 'Mercato libero', 'rilancio 24h')}${item('#/mercato', 'out', 'Fuori dal campionato', String(S.base.players.filter((p) => !p.isActive).length))}${item('#/scheda', { m: 'fantascore' }, 'Scheda condivisibile')}
+    ${S.legaPubblica() ? item('#/negozio', { l: 'rose' }, 'La tua rosa', `${S.rosterIds(S.me()?.id).length}/25`) : ''}${item('#/listone', { m: 'quotazioni' }, 'Listone', String(S.base.players.length))}${S.legaPubblica()
+    // Il mercato degli svincolati e' una gara per chi e' rimasto libero: in
+    // una lega aperta non e' libero nessuno e non e' preso nessuno, quindi
+    // la voce porterebbe a una gara senza posta. La rosa si cambia dal
+    // negozio, finche' il mercato e' aperto.
+    ? '' : item('#/mercato', { m: 'trasferimenti' }, 'Mercato libero', 'rilancio 24h')}${item('#/mercato', 'out', 'Fuori dal campionato', String(S.base.players.filter((p) => !p.isActive).length))}${item('#/scheda', { m: 'fantascore' }, 'Scheda condivisibile')}
     ${S.isLeagueAdmin() ? `<div class="d-sec"><span class="chip">Gestione</span></div>${S.legaPubblica() ? item('#/classifica', { l: 'premi' }, 'Premi in palio', `${S.premi().length || 'nessuno'}`) : ''}${item('#/lega', { m: 'squadre' }, 'Gestione rose')}${item('#/lega', { m: 'vice-allenatore' }, 'Partecipanti e ruoli')}` : ''}
     ${S.isAdmin() ? `<div class="d-sec admin"><span class="chip">Amministrazione</span></div>
     ${item('#/admin/console', { l: 'strumenti' }, 'Console', 'persone, leghe e numeri')}` : ''}

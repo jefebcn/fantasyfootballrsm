@@ -198,6 +198,26 @@ bubblewrap build          # produce app-release-bundle.aab
 - Installa dalla traccia interna, apri, e guarda **se c'è la barra
   dell'indirizzo**: se c'è, l'impronta del punto 3 non è ancora giusta
 
+## 5b. I 12 tester, che e' la parte lunga
+
+Il link d'iscrizione al test chiuso, quello da mandare alle persone:
+
+```
+https://play.google.com/apps/testing/app.fantatitano.site
+```
+
+Serve **un telefono Android e un account Google**. Chi lo apre tocca «Diventa
+un tester», poi scarica dallo Store come una qualsiasi app.
+
+La regola che fa fallire i tentativi: **12 persone iscritte per 14 giorni
+consecutivi**. Chi si iscrive e poi esce non conta, e il conto riparte. Quindi
+il messaggio con cui le inviti deve dire due cose: che ci vuole Android, e che
+non devono togliersi dal test per due settimane.
+
+Il conto degli iscritti si guarda in *Test e release → Test chiusi → Tester*.
+Quando arriva a 12 e sono passati i 14 giorni, il Console sblocca «Richiedi
+l'accesso alla produzione».
+
 ## 6. Il premio in denaro, prima di dichiararlo
 
 Play ha una policy sui concorsi: un'app che mette in palio denaro deve

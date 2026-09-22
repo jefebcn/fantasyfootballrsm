@@ -190,14 +190,16 @@ a.mrow.tocca{color:inherit;text-decoration:none;cursor:pointer}
 .sp-conti{display:block;margin-top:3px;font-size:12px;line-height:1.45;color:var(--text)}
 .sp-conti b{font-weight:700}
 .sp-conti .muted,.sp-conti.muted{color:var(--text-muted);font-weight:400}
-/* "Installa l'app" nel menu: e' l'unica voce che non porta in un'altra
-   schermata ma fa una cosa, e finche' l'app non e' sullo Store e' la strada
-   per averla sul telefono. Un filo d'oro a sinistra la distingue senza farne
-   un bottone grosso in mezzo alle altre. */
-.d-installa{width:100%;text-align:left;border:0;background:transparent;cursor:pointer;
-  border-left:3px solid var(--c-oro-400);color:inherit;font:inherit}
-.d-installa .et{font-weight:700}
-.d-installa .ic{color:var(--c-oro-500)}
+
+/* La stessa voce sulla schermata d'ingresso, dove il menu non esiste:
+   una riga discreta sotto "Come funziona", non un bottone che compete con
+   "entra in una lega" — quella resta la cosa da fare. */
+.rigainstalla{display:flex;align-items:center;gap:10px;width:100%;margin-top:12px;padding:12px 14px;
+  border:1px dashed var(--border);border-radius:14px;background:transparent;cursor:pointer;
+  color:var(--text-muted);font:inherit;text-align:left}
+.rigainstalla .ic{color:var(--c-oro-500);flex:none}
+.rigainstalla b{display:block;font-size:14px;color:var(--text)}
+.rigainstalla small{font-size:12px;color:var(--text-muted)}
 
 /* I passi delle istruzioni: numerati, con aria fra uno e l'altro — si
    leggono col telefono in mano mentre si fanno. */
@@ -569,6 +571,24 @@ hr.sep{border:0;border-top:1px solid var(--border);margin:4px 0}
 .d-item small{font-size:11px;color:var(--text-muted);font-weight:500;padding-bottom:.125em}
 .d-item.lock{color:var(--text-muted)}
 .d-item.lock i{background:var(--surface-sunk);color:var(--text-muted)}
+/* "Installa l'app" nel menu: e' l'unica voce che non porta in un'altra
+   schermata ma fa una cosa, e finche' l'app non e' sullo Store e' la strada
+   per averla sul telefono.
+
+   RESTA SU UNA RIGA come tutte le altre, e la nota e' corta apposta. Il
+   primo tentativo diceva "Condividi → Aggiungi alla Home": la colonna
+   'auto' della nota si prendeva la sua larghezza e all'etichetta restava
+   "Installa l'a...". Allungarla su due righe risolveva il taglio ma
+   scentrava l'icona rispetto al nome di 10,2px — misurati — perche' li'
+   l'icona sta in mezzo a due righe mentre in tutto il resto del menu sta
+   in mezzo al nome. Piu' semplice accorciare la nota: la strada per intero
+   la dice il foglio che si apre.
+   Le regole stanno DOPO .d-item: prima, a parita' di specificita', vinceva
+   quella. */
+.d-installa{width:100%;text-align:left;border:0;background:transparent;cursor:pointer;
+  color:inherit;font:inherit}
+.d-installa .et{font-weight:700}
+.d-installa i .ic{color:var(--c-oro-500)}
 
 /* chip ruolo */
 /* L'inchiostro del distintivo di ruolo non puo' essere bianco per tutti:

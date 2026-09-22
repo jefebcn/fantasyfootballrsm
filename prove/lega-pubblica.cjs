@@ -118,6 +118,20 @@ const prepara = (ctx, stato) => ctx.addInitScript((stato) => {
     riga: document.querySelector('[data-pubblica]')?.innerText || '',
   }));
   et(elenco.bottone, 'la lega pubblica compare nell\'elenco a chi non c\'è dentro');
+  // E COMPARE PER PRIMA. Chi scarica dallo Store non ha un codice e non e'
+  // l'organizzatore di niente: la lega aperta e' l'unica cosa che puo' fare
+  // da solo, e stava sotto i due riquadri che chiedono l'una o l'altro.
+  const ordine = await p.evaluate(() => {
+    const pub = document.querySelector('[data-pubblica]');
+    const griglia = document.querySelector('.startgrid');
+    if (!pub || !griglia) return null;
+    return { pubblica: Math.round(pub.getBoundingClientRect().top),
+      riquadri: Math.round(griglia.getBoundingClientRect().top),
+      titolo: document.querySelector('.a-sec b')?.innerText || '' };
+  });
+  et(ordine && ordine.pubblica < ordine.riquadri,
+    `e sta PRIMA dei riquadri "crea/entra con codice" (${ordine ? `${ordine.pubblica}pt contro ${ordine.riquadri}pt` : 'non misurabile'})`);
+  et(ordine && /lega aperta/i.test(ordine.titolo), `sotto un titolo che dice cosa fai ("${ordine ? ordine.titolo : ''}")`);
   et(/Titano Open/.test(elenco.testo) && /Una cena offerta/.test(elenco.riga), `e mostra nome, squadre e premio ("${elenco.riga.replace(/\n/g, ' ').slice(0, 80)}")`);
   et(!/codice/i.test(elenco.riga), 'senza chiedere un codice');
 

@@ -74,7 +74,7 @@ function moduloPubblica() {
  * la policy non te le farebbe vedere — e giustamente: di quelle altrui qui
  * escono solo il nome, quanti sono e cosa c'e' in palio.
  */
-function elencoPubbliche() {
+function elencoPubbliche(inCima) {
   if (pubbliche === null) return `<div class="a-sec"><b>Leghe pubbliche</b></div><p class="small muted" style="margin:0 2px">Sto guardando quali ci sono…</p>`;
   if (!pubbliche.length) return '';
   const riga = (l) => {
@@ -88,20 +88,39 @@ function elencoPubbliche() {
         <span class="fv" style="font-size:12px">${l.dentro ? icon('check', 'ic sm') : pieno ? 'al completo' : 'entra'}</span>
       </button></div>`;
   };
-  return `<div class="a-sec"><b>Leghe pubbliche</b><span>${pubbliche.length}</span></div>
-    <div class="vlist">${pubbliche.map(riga).join('')}</div>
+  // In cima l'elenco cambia mestiere: non e' piu' "le altre leghe che
+  // esistono", e' la cosa da fare. Quindi il titolo dice cosa fai e la riga
+  // che spiega sta PRIMA, non sotto — sotto la legge chi ha gia' capito.
+  return `<div class="a-sec"><b>${inCima ? 'Entra in una lega aperta' : 'Leghe pubbliche'}</b><span>${pubbliche.length}</span></div>
+    ${inCima ? '<p class="small muted" style="margin:-4px 2px 6px">Non serve il codice e non serve conoscere nessuno: entri, ti fai la rosa e giochi.</p>' : ''}
+    <div class="vlist${inCima ? ' vlist--primo' : ''}">${pubbliche.map(riga).join('')}</div>
     ${entraIn ? `<div class="a-card" style="display:flex;flex-direction:column;gap:6px">
       <p class="auth-hint" style="margin:0">Stai entrando in <b>${esc(pubbliche.find((l) => l.id === entraIn)?.name || '')}</b>. Ti servono un nome per la squadra e un colore.</p>
       ${teamFields()}<button class="a-btn" id="go-entra" style="margin-top:10px">Entra nella lega</button></div>` : ''}
-    <p class="small muted" style="margin:-4px 2px 0">Nelle leghe pubbliche non serve il codice: si entra e si fa la propria rosa.</p>`;
+    ${inCima ? '' : '<p class="small muted" style="margin:-4px 2px 0">Nelle leghe pubbliche non serve il codice: si entra e si fa la propria rosa.</p>'}`;
 }
 
 export const leghe = {
   title: 'Le mie leghe', appbar: () => (S.hasLeague() ? 'main' : 'none'), sub: () => 'Le mie leghe',
   render() {
     const mine = S.myLeagues(); const cur = S.currentLeagueId();
+    // CHI ARRIVA SENZA AMICI VEDE PER PRIMA L'UNICA COSA CHE PUO' FARE.
+    // Prima i due riquadri grandi erano "Crea una lega" ed "Entra con
+    // codice": uno chiede di essere l'organizzatore, l'altro un codice che
+    // chi scarica dallo Store non ha. La lega aperta — l'unica in cui puo'
+    // entrare da solo — era una riga sotto un titoletto grigio. Quando ce
+    // n'e' una in cui si puo' entrare, va in cima.
+    const primaLePubbliche = !mine.length
+      && Array.isArray(pubbliche)
+      && pubbliche.some((l) => !l.dentro && l.membri < l.max_membri);
     return `<main class="a-body">
-      ${mine.length ? '' : `<div class="auth-hero" style="padding-top:20px">${logo('auth-mark')}<h1 style="font-size:22px">Benvenuto${!S.nomeDaCompletare() && S.profileInfo()?.display_name ? `, ${esc(S.profileInfo().display_name)}` : ''}</h1><p>Per giocare serve una lega: creala tu e invita gli altri con un codice, oppure entra in una che esiste già.</p></div>`}
+      ${mine.length ? '' : `<div class="auth-hero" style="padding-top:20px">${logo('auth-mark')}<h1 style="font-size:22px">Benvenuto${!S.nomeDaCompletare() && S.profileInfo()?.display_name ? `, ${esc(S.profileInfo().display_name)}` : ''}</h1><p>${primaLePubbliche
+    // La frase segue l'ordine di quello che si vede sotto: prima diceva
+    // "creala tu... oppure entra", mentre adesso la prima cosa in pagina e'
+    // la lega aperta. Una frase che racconta un ordine diverso da quello
+    // che hai davanti si legge due volte.
+    ? 'Per giocare serve una lega. Ce n\'è una aperta a tutti: entri e giochi, senza codice e senza aspettare nessuno.'
+    : 'Per giocare serve una lega: creala tu e invita gli altri con un codice, oppure entra in una che esiste già.'}</p></div>`}
       ${mine.length ? `<div class="vlist"><div class="vhead">Leghe <span>${mine.length}</span></div>${mine.map((l) => {
     const mia = S.laHoCreataIo(l);
     return `<div class="lgrow">
@@ -110,6 +129,8 @@ export const leghe = {
     </div>`;
   }).join('')}</div>
   <p class="small muted" style="margin:-4px 2px 0">Tocca una lega per entrarci. Il tasto a destra ${mine.some((l) => S.laHoCreataIo(l)) ? 'elimina quelle che hai creato tu ed esce dalle altre' : 'ti fa uscire dalla lega'}.</p>` : ''}
+      ${primaLePubbliche ? elencoPubbliche(true) : ''}
+      ${primaLePubbliche ? '<div class="a-sec"><b>Oppure</b><span>con gli amici</span></div>' : ''}
       <div class="startgrid">
         <button class="startcard${form === 'create' ? ' on' : ''}" data-form="create">${pic('leghe', 'menu')}<b>Crea una lega</b><span>Ne diventi admin e ricevi il codice da girare agli altri</span></button>
         <button class="startcard${form === 'join' ? ' on' : ''}" data-form="join">${pic('squadre', 'menu')}<b>Entra con codice</b><span>Ti serve il codice a 6 caratteri dell'organizzatore</span></button>
@@ -118,7 +139,7 @@ export const leghe = {
       ${form === 'create' ? `<div class="a-card" style="display:flex;flex-direction:column;gap:6px"><label class="lbl" for="lname">Nome della lega</label><input class="field-input" id="lname" placeholder="es. I Sudati di RSM" maxlength="40">${teamFields()}<button class="a-btn" id="go-create" style="margin-top:10px">Crea e diventa admin</button></div>` : ''}
       ${form === 'join' ? `<div class="a-card" style="display:flex;flex-direction:column;gap:6px"><label class="lbl" for="code">Codice invito</label><input class="field-input" id="code" placeholder="es. A1B2C3" autocapitalize="characters" maxlength="6">${teamFields()}<button class="a-btn" id="go-join" style="margin-top:10px">Entra nella lega</button></div>` : ''}
       ${form === 'pubblica' ? moduloPubblica() : ''}
-      ${elencoPubbliche()}
+      ${primaLePubbliche ? '' : elencoPubbliche(false)}
       ${mine.length ? '' : comeFunziona()}
     </main>`;
   },

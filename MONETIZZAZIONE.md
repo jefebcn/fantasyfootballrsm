@@ -49,6 +49,14 @@ questo che si vende — non il traffico.
 
 ## 3. Le strade, in ordine di resa
 
+**La regola che le ordina tutte.** Con cento o trecento iscritti, quello che
+fai pagare al *giocatore* rende decine di euro; quello che fai pagare a
+un'*azienda* ne rende centinaia. Non perché i giocatori siano tirchi: sono
+pochi, e mille volte pochi fa sempre pochi. Quindi le strade che contano sono
+quelle che aggiungono un cliente aziendale, non un listino per gli utenti.
+Le altre restano qui sotto perché hanno senso lo stesso, ma vanno pesate per
+quello che sono: qualche decina di euro e un po' di affetto.
+
 ### a) Sponsor locale — la principale
 
 Il banner c'è già (quello scuro fra le notizie e la giornata corrente,
@@ -62,13 +70,57 @@ canali. Chi cercare: banche e assicurazioni sammarinesi, concessionarie,
 negozi di sport, bar e ristoranti legati al calcio locale. L'accordo con la
 FSGC, quando c'è, è la leva migliore: vende credibilità, non spazio.
 
-### b) Premi in natura invece che in denaro
+### b) La lega brandizzata — venduta all'azienda, non al giocatore
+
+Un bar, una concessionaria, una banca comprano **la loro lega**: nome, logo,
+premio loro, da girare a clienti o dipendenti. **200–400 € a lega.**
+
+È diversa dal punto (f), dove a pagare è il giocatore per avere funzioni in
+più. Qui il prodotto è lo spazio, come lo sponsor, ma vale di più perché
+l'azienda non compra un logo in mezzo agli altri: compra un posto dove i suoi
+clienti tornano ogni domenica per tre mesi, col suo nome in cima.
+
+Tecnicamente è quasi tutta roba che c'è già: leghe private, stemmi e colori,
+lo slot sponsor con date e conteggi. **Manca una cosa sola:** poter legare uno
+sponsor a una singola lega invece che a tutta l'app (oggi `sponsor` è
+globale). È il pezzo di codice più corto con il ritorno più alto —
+per questo sta come punto 5 in fondo, fra le cose da costruire.
+
+### c) I club e la FSGC come clienti, non come contorno
+
+Fin qui la federazione compare solo come leva per vendere lo sponsor. Ma è
+un cliente: Fantatitano è l'unico posto dove il referto arbitrale diventa
+una cosa che la gente apre la domenica.
+
+- **la lega del club**: ogni società ha la sua, con stemma e colori, da
+  girare ai propri tifosi. **100–150 € l'una.** I club sono 15: anche solo
+  cinque che dicono sì fanno più di uno sponsor principale — e ognuno porta
+  dentro i suoi tifosi, che è la cosa che manca più dei soldi.
+- **il fantacalcio ufficiale del campionato**: la federazione co-finanzia, in
+  cambio del marchio e di un canale suo verso i tifosi.
+
+È la più sottovalutata delle tre, perché paga due volte: in euro e in
+iscritti.
+
+### d) Il motore venduto altrove — non gestito altrove
+
+Al §4 la stagione 3 dice «uscire da San Marino». Attenzione a cosa vuol dire:
+**gestire** quattro campionati significa quadruplicare il lavoro con la stessa
+persona, ed è lì che si rompe tutto.
+
+L'alternativa è **venderlo**. Il Voto Titano non ha niente di sammarinese
+dentro: ogni federazione piccola (Andorra, Gibilterra, Malta) e ogni comitato
+dilettanti ha lo stesso problema e nessuno che glielo risolva. Installazione
+una tantum più canone annuo, il calendario e i tesserati ce li mettono loro.
+Si regge con una persona sola, che qui è il vincolo vero.
+
+### e) Premi in natura invece che in denaro
 
 Una cena per due, un abbonamento, materiale sportivo offerti da un negozio.
 Costo per noi: zero. E cambia il profilo legale del concorso, che con il
 denaro in palio è la parte più delicata (vedi `legale/montepremi-bozza.md`).
 
-### c) Leghe private a pagamento — non l'ingresso, le funzioni
+### f) Leghe private a pagamento — non l'ingresso, le funzioni
 
 5–10 € a lega per stagione, per funzioni in più (regole su misura, più
 partecipanti, statistiche). Trenta leghe fanno 150–300 €.
@@ -77,11 +129,29 @@ partecipanti, statistiche). Trenta leghe fanno 150–300 €.
 lega con un premio in palio. Pagamento + premio = concorso a premi con tutto
 quello che comporta.
 
-### d) «Titano Pro» — abbonamento del giocatore
+### g) «Titano Pro» — abbonamento del giocatore
 
 5 € a stagione per statistiche avanzate, notifiche live, personalizzazioni.
 Su 300 iscritti con una conversione del 5–10% sono 75–150 €: non risolve, ma
 copre la posta e qualche costo minore.
+
+### h) Le piccole, ma vere
+
+Nessuna di queste chiude un bilancio. Messe insieme coprono i costi vivi e
+fanno conoscere l'app, che a questi numeri conta quanto l'incasso.
+
+- **Sindacazione dei contenuti.** La top 11 di giornata e i voti a San Marino
+  RTV, a Titani.TV, ai giornali locali: come rubrica, o come riquadro da
+  incastrare nel loro sito col nostro marchio dentro. Spesso non si paga in
+  denaro ma in visibilità — ed è quella che manca più dei soldi.
+- **Evento di fine stagione.** Premiazione con gli sponsor. In provincia i
+  soldi delle sponsorizzazioni escono più volentieri per una serata con le
+  foto che per un banner.
+- **Donazioni** («offri un caffè»). Con venti euro l'anno di costi vivi,
+  trenta persone che ne danno due chiudono il bilancio. Non è un modello:
+  è una cosa onesta da mettere in fondo alla pagina.
+- **Merch su richiesta** (la maglia col proprio stemma, stampa on demand).
+  Margine ridicolo, magazzino zero. Vale come affetto, non come entrata.
 
 ### Quello che NON conviene fare
 
@@ -100,9 +170,11 @@ il dominio, e avanza. Obiettivo vero: arrivare a fine stagione con i numeri in
 mano.
 
 **Stagione 2 — reggersi.**
-Due o tre sponsor, leghe private a pagamento, montepremi in denaro finanziato
-dagli sponsor e non di tasca. Qui serve il rendiconto: quanti erano, quanto
-sono tornati, quanti hanno toccato il banner.
+Due o tre sponsor, le prime leghe brandizzate (§3b) e leghe di club (§3c),
+montepremi in denaro finanziato dagli sponsor e non di tasca. Qui serve il
+rendiconto: quanti erano, quanto sono tornati, quanti hanno toccato il
+banner. È la stagione in cui si scopre se i club rispondono: quella risposta
+decide la terza.
 
 **Stagione 3 — crescere o restare.**
 L'unica via per numeri più grandi è uscire da San Marino: altri campionati
@@ -110,6 +182,11 @@ piccoli con lo stesso problema (Andorra, Gibilterra, Liechtenstein, Malta) o i
 dilettanti romagnoli. Il motore dei voti non ha niente di sammarinese dentro:
 cambia il calendario e i tesserati. È una decisione da prendere con i dati
 della seconda stagione, non prima.
+
+E quando si arriva lì, la domanda non è «dove andiamo», è **chi tiene su
+l'altro campionato**: gestirlo noi vuol dire raddoppiare il lavoro con la
+stessa persona, venderlo (§3d) no. Con un uomo solo la seconda strada è
+l'unica che regge.
 
 ## 5. Cosa va costruito prima di vendere
 
@@ -139,7 +216,15 @@ In ordine, e sono tutte cose piccole:
    giorno che gli sponsor diventano più di uno, una pagina che li ringrazia
    pubblicamente è la cosa che li fa rinnovare senza chiederlo.
 4. **Leghe private a pagamento**: un link di pagamento (Stripe o simile) e un
-   flag sulla lega. Nessuna carta di credito passa per noi.
+   flag sulla lega. Nessuna carta di credito passa per noi. Prima di
+   muoversi, il vincolo del §6 sulla fatturazione di Google Play.
+5. **Sponsor legato alla singola lega** — il pezzo che manca alla lega
+   brandizzata (§3b), ed è corto: oggi la tabella `sponsor` vale per tutta
+   l'app, serve una colonna `lega_id` (vuota = come adesso, tutti) e il
+   filtro dove il banner si disegna. I conteggi di viste e tocchi sono già
+   per sponsor, quindi il rendiconto per quel cliente esce da solo.
+   **A parità di tempo è questo che rende di più**, perché è la differenza
+   fra vendere un logo (§3a) e vendere un posto intero (§3b).
 
 ## 6. Le cose legali da sistemare prima del primo euro
 
@@ -149,6 +234,15 @@ In ordine, e sono tutte cose piccole:
   firmare, non dopo.
 - **Il concorso a premi**: `legale/montepremi-bozza.md`, da chiudere prima di
   annunciare il montepremi dentro lo Store (policy di Play compresa).
+- **La fatturazione di Google Play.** Ora che l'app passa dallo Store come
+  TWA, quello che si vende *dentro* l'app e vale solo dentro l'app —
+  «Titano Pro», leghe a pagamento comprate dal giocatore — ricade sotto le
+  regole di pagamento di Play, con la sua percentuale. Non tocca gli sponsor
+  né le leghe vendute a un'azienda con fattura nostra, che sono accordi fuori
+  dall'app: un'altra ragione per cui §3b e §3c sono più pulite. Le regole sui
+  link di pagamento esterni sono cambiate più volte e cambiano per paese:
+  **da verificare sulla policy del giorno, non a memoria**, prima di scrivere
+  una riga di codice che incassa.
 - **Vercel Hobby non è ammesso per uso commerciale**: il giorno che entra un
   euro di sponsor, il piano va cambiato. È scritto nelle loro FAQ.
 

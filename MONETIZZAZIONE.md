@@ -80,6 +80,16 @@ più. Qui il prodotto è lo spazio, come lo sponsor, ma vale di più perché
 l'azienda non compra un logo in mezzo agli altri: compra un posto dove i suoi
 clienti tornano ogni domenica per tre mesi, col suo nome in cima.
 
+**Chi promette il premio, però, deve essere l'azienda.** Qui l'azienda paga
+*e* mette in palio qualcosa, e il §3f dice giustamente che pagamento più
+premio fa un concorso a premi. Con la lega brandizzata quel concorso esiste:
+la sola domanda è di chi è. Deve essere dell'azienda — premio suo, regolamento
+suo, nome suo sul regolamento — e noi siamo la piattaforma su cui si gioca,
+scritto nel contratto prima della firma. Se resta implicito, il promotore
+rischiamo di diventarlo noi, con tutto quello che comporta
+(`legale/montepremi-bozza.md`). E i giocatori dentro quella lega non pagano
+nulla: se pagassero, saremmo daccapo.
+
 Tecnicamente è quasi tutta roba che c'è già: leghe private, stemmi e colori,
 lo slot sponsor con date e conteggi. **Manca una cosa sola:** poter legare uno
 sponsor a una singola lega invece che a tutta l'app (oggi `sponsor` è

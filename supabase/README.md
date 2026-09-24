@@ -155,7 +155,23 @@ Su un progetto nuovo, nell'SQL Editor, in quest'ordine:
     assegnano all'ingresso, e ritoccarli a stagione iniziata sarebbe cambiare
     le regole in corsa a chi ha già comprato.
 
-21. `promemoria-pianificato.sql` — **facoltativo ma consigliato**, e non è una
+21. `migrations/020-consegne-per-giornata.sql` — **quante formazioni si
+    consegnano ogni giornata**, non il totale. La console mostrava solo
+    «Formazioni consegnate», un numero che sale e basta: dopo dieci giornate
+    dice 900 sia che stiano giocando in novanta ogni domenica, sia che fossero
+    trecento alla prima e trenta all'ultima. I due casi sono l'opposto l'uno
+    dell'altro, ed è quella differenza che uno sponsor compra
+    (`MONETIZZAZIONE.md` §7). `admin_consegne(quante)` restituisce la serie
+    delle **ultime giornate già chiuse** — quelle col lock passato: finché la
+    finestra è aperta il numero cresce ancora e confrontarlo direbbe un calo
+    che non c'è — con, per ognuna, quante formazioni e **quante squadre
+    esistevano al momento di quella chiusura**. Il denominatore è di allora e
+    non di oggi di proposito: se no chi si iscrive a dicembre fa sembrare
+    deserte le giornate di settembre e la curva racconta la crescita al
+    contrario. Due numeri per giornata, nessun nome: dice se l'app è viva,
+    non chi gioca. Solo `is_admin`, come tutto il resto della console.
+
+22. `promemoria-pianificato.sql` — **facoltativo ma consigliato**, e non è una
     migrazione: si riempie **una riga** (il token del promemoria) e si lancia
     a mano. Sposta l'orologio dell'avviso
     della formazione da GitHub — che accoda e salta le corse pianificate, fino

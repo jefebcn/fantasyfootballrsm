@@ -1122,4 +1122,62 @@ exception when others then
 end $$;
 reset role;
 
+-- ============================================================
+-- 020 — CHI CONSEGNA, GIORNATA PER GIORNATA
+--
+-- Il totale delle formazioni non distingue novanta squadre ogni domenica da
+-- trecento alla prima e trenta all'ultima. Qui si guarda la serie, e le due
+-- proprieta' che la rendono leggibile: solo le giornate gia' chiuse, e il
+-- denominatore preso AL MOMENTO DELLA CHIUSURA.
+-- ============================================================
+update public.profiles set is_admin = true where id = 'user_alex';
+-- le squadre di questa lega esistevano da prima: senza backdate sarebbero
+-- tutte piu' giovani di qualunque lock e il denominatore verrebbe zero
+update public.league_members set created_at = now() - interval '10 days' where league_id = :'lega';
+insert into public.matchday_locks (matchday, lock_at) values (21, now() - interval '5 days')
+  on conflict (matchday) do update set lock_at = excluded.lock_at;
+insert into public.matchday_locks (matchday, lock_at) values (22, now() + interval '5 days')
+  on conflict (matchday) do update set lock_at = excluded.lock_at;
+delete from public.lineups where matchday in (21, 22);
+insert into public.lineups (league_id, member_id, matchday, lineup)
+  values (:'lega', :'m_alex', 21, '{"modulo":"4-4-2"}'::jsonb),
+         (:'lega', :'m_alex', 22, '{"modulo":"4-4-2"}'::jsonb);
+
+select pg_temp.entra('user_alex');
+select public.admin_consegne(10)::text as serie \gset
+select pg_temp.esige('la serie porta la giornata gia'' chiusa',
+  exists (select 1 from jsonb_array_elements(:'serie'::jsonb) e where (e->>'giornata')::int = 21));
+select pg_temp.esige('e conta le formazioni di QUELLA giornata',
+  (select (e->>'consegne')::int from jsonb_array_elements(:'serie'::jsonb) e
+    where (e->>'giornata')::int = 21) = 1);
+select pg_temp.esige('la giornata ancora aperta non compare: li'' si consegna ancora',
+  not exists (select 1 from jsonb_array_elements(:'serie'::jsonb) e where (e->>'giornata')::int = 22));
+
+-- IL DENOMINATORE E' AL LOCK, NON DI OGGI. Una squadra iscritta dopo quella
+-- chiusura non deve entrare nel conto: se entrasse, ogni nuovo iscritto
+-- farebbe sembrare deserte le giornate passate e la curva direbbe il
+-- contrario di quello che e' successo.
+select (e->>'squadre')::int as sq_prima from jsonb_array_elements(:'serie'::jsonb) e
+  where (e->>'giornata')::int = 21 \gset
+insert into public.league_members (league_id, user_id, team_name, color, initials)
+  values (:'lega', 'user_cip', 'Arrivata Dopo FC', '#888888', 'ADF');
+select public.admin_consegne(10)::text as serie2 \gset
+select (e->>'squadre')::int as sq_dopo from jsonb_array_elements(:'serie2'::jsonb) e
+  where (e->>'giornata')::int = 21 \gset
+select pg_temp.esige('chi si iscrive dopo la chiusura non entra nel denominatore di quella giornata',
+  :sq_dopo = :sq_prima);
+select pg_temp.esige('e il denominatore non e'' zero, se no la percentuale non vuol dire niente',
+  :sq_prima > 0);
+
+select pg_temp.entra('user_bea');
+set role authenticated;
+do $$ begin
+  perform public.admin_consegne(10);
+  raise exception 'FALLITA: chi non amministra ha potuto leggere le consegne';
+exception when others then
+  if sqlerrm like 'FALLITA:%' then raise; end if;
+  raise notice 'ok  chi non amministra non legge le consegne (%)', sqlerrm;
+end $$;
+reset role;
+
 select 'tutte le prove sulle funzioni sono passate' as esito;

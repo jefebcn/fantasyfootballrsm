@@ -65,6 +65,15 @@ Il banner c'è già (quello scuro fra le notizie e la giornata corrente,
 - **uno sponsor principale**: 800–1.500 € a stagione
 - oppure **tre sponsor** da 400 € l'uno, a rotazione
 
+**Mai sotto i 400 €, e il pavimento conta più del tetto.** I clienti possibili
+qui sono forse quindici: il primo che accetti a 200 € fissa l'ancora per tutti
+gli altri, e un'ancora in un mercato di quindici aziende non la sposti più.
+Sotto quella cifra si dice di no e si aspetta — o si vende meno spazio, non
+lo stesso spazio a meno. La frase con cui si difende il prezzo è sempre la
+stessa: **costa come mezza pagina sul settimanale locale e dura tre mesi**, e
+a differenza della mezza pagina alla fine ti porto il conto delle viste e dei
+tocchi.
+
 Cosa riceve: logo nel banner, «presented by» sulla lega pubblica, menzione nei
 canali. Chi cercare: banche e assicurazioni sammarinesi, concessionarie,
 negozi di sport, bar e ristoranti legati al calcio locale. L'accordo con la
@@ -198,6 +207,31 @@ l'altro campionato**: gestirlo noi vuol dire raddoppiare il lavoro con la
 stessa persona, venderlo (§3d) no. Con un uomo solo la seconda strada è
 l'unica che regge.
 
+## 4b. Quando si può vendere, e a chi si bussa per primo
+
+**La soglia.** Uno sponsor lo si può andare a prendere domani, con zero
+iscritti, e strappare pure un sì. Sarebbe il modo migliore per bruciare
+l'unica lista di clienti che esiste: se poi la stagione va a cento iscritti
+tiepidi, quel «no» dell'anno dopo te lo porti per anni, e le aziende qui si
+parlano fra loro. Quindi:
+
+> **Non si vende prima di aver visto, per tre giornate di fila, almeno la
+> metà delle squadre consegnare la formazione.**
+
+Non è un numero di iscritti: è la scheda «Chi consegna» della console
+(§7). Sotto quella soglia vendi una promessa; sopra, vendi un numero — e un
+numero non lo devi difendere, lo mostri.
+
+**L'ordine in cui si bussa: FSGC → club → aziende.** La credibilità scende,
+non sale. Con l'accordo della federazione in mano, un club ti riceve; con due
+club dentro, un'azienda del posto non deve chiedersi chi sei. Al contrario —
+partire dalle aziende — ogni porta va aperta da sola, e alla federazione ci
+arrivi dopo aver già venduto lo spazio che avresti potuto offrirle.
+
+**Cosa si porta al tavolo:** quante squadre consegnano ogni giornata,
+l'andamento delle ultime giornate, e quanto è durato il traffico del banner
+la stagione prima (viste e tocchi, §5.2). Tre numeri, non una presentazione.
+
 ## 5. Cosa va costruito prima di vendere
 
 In ordine, e sono tutte cose piccole:
@@ -260,5 +294,15 @@ In ordine, e sono tutte cose piccole:
 
 Non gli iscritti: **quanti consegnano la formazione ogni settimana**. È la
 metrica che dice se l'app è viva, ed è quella che convince uno sponsor a
-rinnovare. La console amministrativa ha già la scheda «Numeri»: da lì si
-ricava, e va guardata ogni lunedì.
+rinnovare.
+
+Fino alla migrazione 020 questa riga chiedeva un numero che la console non
+sapeva dare: «Formazioni consegnate» era un totale che saliva e basta, e dopo
+dieci giornate diceva 900 sia con novanta squadre ogni domenica, sia con
+trecento alla prima e trenta all'ultima. Adesso sotto i riquadri c'è la scheda
+**«Chi consegna»**: una colonna per giornata chiusa, e sotto la lettura a
+parole («alla 7ª hanno consegnato 84 squadre su 120, contro il 71% della 1ª»).
+Il denominatore è quello di allora, non di oggi.
+
+Va guardata **ogni lunedì**, ed è la stessa che decide se si può vendere
+(§4b).

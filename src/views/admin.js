@@ -1,6 +1,6 @@
 import * as S from '../state.js';
 import {} from '../engine.js';
-import { esc, icon, badge, roleChip, evTile, EV_LABEL, voteRow, dateIt, timeIt } from '../ui.js';
+import { esc, icon, badge, roleChip, evTile, EV_LABEL, voteRow, dateIt, timeIt, plurale } from '../ui.js';
 
 const STATUS = [['played', 'Giocata'], ['postponed', 'Rinviata'], ['suspended_before_45', 'Sospesa <45\''], ['suspended_after_45', 'Sospesa >45\''], ['awarded', 'A tavolino']];
 const guard = (ctx, fn) => { try { fn(); } catch (e) { ctx.toast(e.message); } };
@@ -276,10 +276,44 @@ function andamento(persone) {
   const totale = conta.reduce((a, b) => a + b, 0);
   const et = (i) => { const d = new Date(oggi); d.setDate(d.getDate() - (GIORNI - 1 - i)); return `${d.getDate()}/${d.getMonth() + 1}`; };
   return `<div class="a-sec"><b>Iscrizioni</b><span>${totale} in ${GIORNI} giorni</span></div>
-    <div class="a-card adm-graf">${conta.map((v, i) => `<span class="col" title="${et(i)}: ${v}">
+    <div class="a-card adm-graf iscrizioni">${conta.map((v, i) => `<span class="col" title="${et(i)}: ${v}">
       <i style="height:${Math.round(v / max * 100)}%"></i><small>${i === 0 || i === GIORNI - 1 ? et(i) : ''}</small>
       ${v ? `<b>${v}</b>` : ''}</span>`).join('')}</div>
     <p class="small muted" style="margin:-4px 2px 0">Contate sulle persone in elenco (le 100 più recenti). Se una colonna è vuota, quel giorno non si è iscritto nessuno.</p>`;
+}
+
+/**
+ * CHI CONSEGNA, GIORNATA PER GIORNATA — il numero del §7 di MONETIZZAZIONE.md.
+ *
+ * «Formazioni consegnate» qui sopra e' un totale che sale e basta: dopo dieci
+ * giornate dice 900 sia che stiano giocando in novanta ogni domenica, sia che
+ * fossero trecento alla prima e trenta all'ultima. I due casi sono l'opposto
+ * l'uno dell'altro, ed e' quella differenza che uno sponsor compra.
+ *
+ * Il denominatore e' le squadre che esistevano QUANDO quella giornata si e'
+ * chiusa, non quelle di oggi: se no chi si iscrive a dicembre fa sembrare
+ * deserte le giornate di settembre e la curva racconta una crescita al
+ * contrario. Lo calcola la 020, qui si disegna e basta.
+ */
+function consegne(r) {
+  const serie = Array.isArray(r?.consegne) ? r.consegne : [];
+  if (!serie.length) {
+    return `<div class="a-sec"><b>Chi consegna</b><span>niente ancora</span></div>
+      <p class="small muted" style="margin:0 2px">La prima colonna compare quando una giornata chiude: finche' il lock non e' passato si consegna ancora, e contarla direbbe un calo che non c'e'.</p>`;
+  }
+  const quota = (g) => (g.squadre ? Math.round((g.consegne / g.squadre) * 100) : 0);
+  const max = Math.max(1, ...serie.map((g) => g.consegne));
+  const ultima = serie[serie.length - 1]; const prima = serie[0];
+  const passo = serie.length > 1 ? quota(ultima) - quota(prima) : null;
+  return `<div class="a-sec"><b>Chi consegna</b><span>ultime ${plurale(serie.length, 'giornata', 'giornate')}</span></div>
+    <div class="a-card adm-graf consegne">${serie.map((g) => `<span class="col" title="${g.giornata}ª: ${g.consegne} su ${g.squadre}">
+      <i style="height:${Math.round((g.consegne / max) * 100)}%"></i><small>${g.giornata}</small>
+      ${g.consegne ? `<b>${g.consegne}</b>` : ''}</span>`).join('')}</div>
+    <p class="small muted" style="margin:-4px 2px 0">Alla <b>${ultima.giornata}ª</b> ${ultima.consegne === 1
+    ? 'ha consegnato <b>1</b> squadra' : `hanno consegnato <b>${ultima.consegne}</b> squadre`} su ${ultima.squadre} (${quota(ultima)}%)${passo === null ? ''
+    : passo === 0 ? `, come alla ${prima.giornata}ª`
+      : `, contro il ${quota(prima)}% della ${prima.giornata}ª: ${passo > 0 ? '+' : ''}${passo} punti`}.
+    È questo il numero da portare a uno sponsor — non gli iscritti, che non se ne vanno mai dall'elenco.</p>`;
 }
 
 function numeri(r) {
@@ -288,7 +322,7 @@ function numeri(r) {
     ['Iscritti', r.utenti, `${r.iscritti_7_giorni || 0} negli ultimi 7 giorni`],
     ['Leghe', r.leghe, `${r.leghe_pubbliche || 0} pubbliche`],
     ['Squadre', r.squadre, `${r.rose_complete || 0} con la rosa completa`],
-    ['Formazioni consegnate', r.formazioni, ''],
+    ['Formazioni consegnate', r.formazioni, 'in tutto, da sempre'],
     ['Telefoni col push', r.telefoni_push, ''],
     ['Contestazioni aperte', r.contestazioni_aperte, r.contestazioni_aperte ? 'da guardare' : 'nessuna'],
     ['Giornate calcolate', r.giornate_congelate, ''],
@@ -428,7 +462,7 @@ export const adminConsole = {
       <button class="${aTab === 'leghe' ? 'on' : ''}" data-atab="leghe">Leghe</button>
       <button class="${aTab === 'sponsor' ? 'on' : ''}" data-atab="sponsor">Sponsor</button></div></div>`;
     let corpo = '';
-    if (aTab === 'numeri') corpo = numeri(cache.numeri) + andamento(cache.persone);
+    if (aTab === 'numeri') corpo = numeri(cache.numeri) + consegne(cache.numeri) + andamento(cache.persone);
     else if (aTab === 'persone') {
       corpo = `<input class="field-input" id="adm-cerca" placeholder="Cerca per nome o e-mail" value="${esc(cerca)}" autocomplete="off">
         ${persone(cache.persone)}`;

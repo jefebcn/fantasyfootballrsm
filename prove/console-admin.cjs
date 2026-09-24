@@ -76,12 +76,71 @@ const ok = [], ko = []; const et = (c, t) => (c ? ok : ko).push(t);
   et(/iscritti/i.test(num.testo) && /leghe/i.test(num.testo), 'fra cui iscritti e leghe');
   // l'andamento delle iscrizioni: quattordici colonne, e quella di oggi piena
   const graf = await p.evaluate(() => {
-    const col = [...document.querySelectorAll('.adm-graf .col')];
+    const col = [...document.querySelectorAll('.adm-graf.iscrizioni .col')];
     const alte = col.map((c) => parseFloat(getComputedStyle(c.querySelector('i')).height));
     return { quante: col.length, ultima: alte[alte.length - 1] || 0, max: Math.max(0, ...alte) };
   });
   et(graf.quante === 14, `e l'andamento delle iscrizioni a quattordici giorni (${graf.quante} colonne)`);
   et(graf.ultima > 2, `con la colonna di oggi piena (${graf.ultima}px): gli iscritti di prova sono di oggi`);
+
+  // ---- CHI CONSEGNA, GIORNATA PER GIORNATA (020)
+  // «Formazioni consegnate» e' un totale che sale e basta: dopo dieci giornate
+  // dice 900 sia con novanta squadre ogni domenica sia con trecento alla prima
+  // e trenta all'ultima. Qui si guarda che la console mostri la differenza.
+  //
+  // Le giornate NON si inventano: il calendario vero viene riallineato a ogni
+  // apertura, quindi le righe scritte a mano sparirebbero. Si prendono le due
+  // piu' recenti gia' chiuse, e la prima ancora aperta per la prova al
+  // contrario.
+  const gio = await p.evaluate(() => {
+    const s = JSON.parse(localStorage.getItem('fcs:mock'));
+    const ora = Date.now();
+    const chiuse = (s.tables.matchday_locks || []).filter((l) => new Date(l.lock_at) <= ora)
+      .sort((a, b) => a.matchday - b.matchday).map((l) => l.matchday);
+    const aperta = (s.tables.matchday_locks || []).filter((l) => new Date(l.lock_at) > ora)
+      .sort((a, b) => a.matchday - b.matchday)[0]?.matchday || null;
+    return { penultima: chiuse[chiuse.length - 2], ultima: chiuse[chiuse.length - 1], aperta, quante: chiuse.length };
+  });
+  et(gio.ultima && gio.aperta, `il calendario ha giornate chiuse (${gio.quante}) e una ancora aperta (${gio.aperta})`);
+  await p.evaluate((g) => {
+    const s = JSON.parse(localStorage.getItem('fcs:mock'));
+    const fa = (gg) => new Date(Date.now() - gg * 86400000).toISOString();
+    // due squadre iscritte da un mese, una arrivata oggi
+    for (const m of (s.tables.league_members ||= [])) m.created_at = fa(40);
+    s.tables.league_members.push({ id: 'm_vecchia', league_id: 'l_altrui', user_id: 'u_tizio', role: 'fantallenatore',
+      team_name: 'Da Sempre FC', color: '#555', initials: 'DS', credits: 500, created_at: fa(40) });
+    s.tables.league_members.push({ id: 'm_tardi', league_id: 'l_altrui', user_id: 'u_tizio', role: 'fantallenatore',
+      team_name: 'Arrivata Oggi FC', color: '#888', initials: 'AO', credits: 500, created_at: new Date().toISOString() });
+    // alla penultima consegnano in due, all'ultima uno solo: il calo che il
+    // totale nasconde. E una formazione sulla giornata ancora aperta, che non
+    // deve comparire.
+    s.tables.lineups = [
+      { league_id: 'l_altrui', member_id: 'm_tizio', matchday: g.penultima, lineup: {} },
+      { league_id: 'l_altrui', member_id: 'm_vecchia', matchday: g.penultima, lineup: {} },
+      { league_id: 'l_altrui', member_id: 'm_tizio', matchday: g.ultima, lineup: {} },
+      { league_id: 'l_altrui', member_id: 'm_tizio', matchday: g.aperta, lineup: {} },
+    ];
+    localStorage.setItem('fcs:mock', JSON.stringify(s));
+  }, gio);
+  await p.reload({ waitUntil: 'load' }); await w(2000);
+  const cons = await p.evaluate(() => {
+    const g = document.querySelector('.adm-graf.consegne');
+    const col = g ? [...g.querySelectorAll('.col')] : [];
+    return { etichette: col.map((c) => c.querySelector('small')?.textContent.trim()),
+      valori: col.map((c) => c.querySelector('b')?.textContent.trim() || '0'),
+      riga: g?.nextElementSibling?.innerText.replace(/\s+/g, ' ').trim() || '' };
+  });
+  const dove = cons.etichette.indexOf(String(gio.ultima));
+  et(dove >= 0, `la serie mostra l'ultima giornata chiusa, la ${gio.ultima}ª (${cons.etichette.join(',')})`);
+  et(!cons.etichette.includes(String(gio.aperta)), `e non la ${gio.aperta}ª, ancora aperta: li' si consegna ancora`);
+  et(cons.valori[dove] === '1' && cons.valori[dove - 1] === '2',
+    `col calo che il totale nascondeva: 2 alla ${gio.penultima}ª e 1 alla ${gio.ultima}ª (${cons.valori.join(',')})`);
+  et(/consegnato/.test(cons.riga), `sotto c'è la lettura a parole ("${cons.riga.slice(0, 70)}…")`);
+  et(!/\b1 squadre\b/.test(cons.riga), `e al singolare dice "1 squadra", non "1 squadre" ("${cons.riga.slice(0, 55)}…")`);
+  // il denominatore e' quello di allora: la squadra iscritta oggi non gonfia
+  // le giornate gia' chiuse
+  et(/su 2 /.test(cons.riga), `e il denominatore è di allora, non di oggi ("${cons.riga.slice(0, 95)}")`);
+  et(/sponsor/i.test(cons.riga), 'e dice a cosa serve quel numero: è quello che si porta a uno sponsor');
 
   // ---- persone: e-mail, ultimo accesso, e i poteri si danno
   await p.evaluate(() => { const x = [...document.querySelectorAll('[data-atab]')].find((e) => /persone/i.test(e.textContent)); x.click(); }); await w(1200);

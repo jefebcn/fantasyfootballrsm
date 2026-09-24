@@ -182,6 +182,18 @@ export function createClient(_url, _key, opts) {
             contestazioni_aperte: T('contestazioni').filter((c) => c.status === 'open').length,
             giornate_congelate: T('matchday_status').filter((m) => m.status === 'frozen').length,
             iscritti_7_giorni: T('profiles').length,
+            // 020: la serie delle consegne. Stesse due regole del database:
+            // solo le giornate col lock passato, e il denominatore preso al
+            // momento della chiusura, non di oggi.
+            consegne: T('matchday_locks')
+              .filter((l) => new Date(l.lock_at) <= new Date(now()))
+              .sort((x, y) => y.matchday - x.matchday).slice(0, 10)
+              .sort((x, y) => x.matchday - y.matchday)
+              .map((l) => ({
+                giornata: l.matchday,
+                consegne: T('lineups').filter((x) => x.matchday === l.matchday).length,
+                squadre: T('league_members').filter((m) => new Date(m.created_at || 0) <= new Date(l.lock_at)).length,
+              })),
           }, error: null };
         }
         // 015: le persone portano anche "sospeso", le squadre si cercano e si

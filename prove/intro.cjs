@@ -68,7 +68,12 @@ const ok = [], ko = []; const et = (c, t) => (c ? ok : ko).push(t);
   et(r.video, 'il video di sfondo c\'e\'');
   et(r.sorgente === 'media/intro.mp4', `e punta al suo file (${r.sorgente})`);
   et(r.attributi.length === 4, `con muted, autoplay, playsinline e loop — senza, su iPhone non parte da solo (${r.attributi.join(', ')})`);
-  et(risposte.length > 0 && risposte[0].stato === 200, `il file arriva dal server (${risposte.map((x) => x.stato).join(',') || 'nessuna richiesta'})`);
+  // 200 o 206: un video si chiede a pezzi, e un server che risponde alle
+  // richieste Range (http-server, Vercel, qualunque CDN) manda 206 — e' la
+  // risposta giusta, non un errore. Pretendere 200 faceva fallire la prova
+  // in base a CHI stava servendo i file, che non e' quello che si sta
+  // guardando: quello che conta e' che il file arrivi.
+  et(risposte.length > 0 && [200, 206].includes(risposte[0].stato), `il file arriva dal server (${risposte.map((x) => x.stato).join(',') || 'nessuna richiesta'})`);
   et(risposte[0] && /video\/mp4/.test(risposte[0].tipo), `servito come video (${risposte[0]?.tipo})`);
   et(r.canvas && r.canvasSiVede, 'sotto c\'e\' lo sfondo animato di riserva');
   et(r.sfocato, 'il video e\' sfocato, cosi\' il testo sopra si legge');

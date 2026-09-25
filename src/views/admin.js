@@ -418,13 +418,19 @@ function rendiconto(id) {
 }
 function sponsor() {
   const elenco = S.sponsorTutti();
-  const b = spBozza || { nome: '', claim: '', logo: '', link: '', dal: oggiISO(), al: '', attivo: true };
+  const b = spBozza || { nome: '', claim: '', logo: '', link: '', dal: oggiISO(), al: '', attivo: true, lega: '' };
   const oggi = oggiISO();
   const stato = (x) => (!x.attivo ? ['spento', 'sos'] : x.dal > oggi ? ['programmato', ''] : x.al && x.al < oggi ? ['scaduto', 'sos'] : ['in corso', 'ok']);
+  // A CHI APPARTIENE LO SPAZIO (021). Nell'elenco conta piu' di quello che
+  // c'e' scritto sotto il nome: due righe uguali con due prezzi diversi si
+  // distinguono solo da qui.
+  const elencoLeghe = cache.leghe || [];
+  const nomeLega = (id) => elencoLeghe.find((l) => l.id === id)?.nome || 'una lega';
+  const dove = (x) => (x.lega ? `solo in «${nomeLega(x.lega)}»` : 'tutta l\'app') + (x.claim ? ` · ${x.claim}` : '');
   return `<div class="adm-sp">
     ${elenco.length ? elenco.map((x) => { const [testo, cls] = stato(x); return `<div class="adm-u">
       <div class="riga">
-        <div class="nm"><b>${esc(x.nome)}</b><span>${esc(x.claim || '—')} · dal ${esc(x.dal)}${x.al ? ` al ${esc(x.al)}` : ' (senza scadenza)'}</span></div>
+        <div class="nm"><b>${esc(x.nome)}</b><span>${esc(dove(x))} · dal ${esc(x.dal)}${x.al ? ` al ${esc(x.al)}` : ' (senza scadenza)'}</span></div>
         <span class="tag"><i class="${cls}">${testo}</i></span>
       </div>
       ${rendiconto(x.id)}
@@ -442,6 +448,12 @@ function sponsor() {
       <span><label class="lbl" for="sp-dal">Dal</label><input class="field-input" id="sp-dal" type="date" value="${esc(b.dal)}"></span>
       <span><label class="lbl" for="sp-al">Al (vuoto = sempre)</label><input class="field-input" id="sp-al" type="date" value="${esc(b.al || '')}"></span>
     </div>
+    <label class="lbl" for="sp-lega">Dove si vede</label>
+    <select class="field-input" id="sp-lega">
+      <option value=""${b.lega ? '' : ' selected'}>Tutta l'app</option>
+      ${elencoLeghe.map((l) => `<option value="${esc(l.id)}"${b.lega === l.id ? ' selected' : ''}>Solo in ${esc(l.nome)}</option>`).join('')}
+    </select>
+    <p class="small muted" style="margin:4px 2px 0">Legato a una lega, lo vede solo chi ci gioca dentro — è quello che compra chi paga per la propria lega. «Tutta l'app» è il banner di sempre.</p>
     <label class="lbl"><input type="checkbox" id="sp-attivo" ${b.attivo ? 'checked' : ''}> Acceso</label>
     <div class="chips" style="margin-top:10px"><button class="a-btn" id="sp-salva">${b.id ? 'Salva le modifiche' : 'Aggiungi'}</button>
       ${b.id ? '<button class="chip" id="sp-annulla">Annulla</button>' : ''}</div>
@@ -488,7 +500,7 @@ export const adminConsole = {
         // l'andamento si disegna sull'elenco delle persone: la scheda dei
         // numeri lo chiede una volta e poi resta in cache come le altre
         if (aTab === 'numeri' && !cache.persone) { cache.persone = await S.adminPersone(null, 100); ctx.render(); }
-        if (aTab === 'leghe' && !cache.leghe) { cache.leghe = await S.adminLeghe(200); ctx.render(); }
+        if ((aTab === 'leghe' || aTab === 'sponsor') && !cache.leghe) { cache.leghe = await S.adminLeghe(200); ctx.render(); }
         if (aTab === 'persone' && !cache.persone) { cache.persone = await S.adminPersone(cerca, 100); ctx.render(); }
         if (aTab === 'squadre' && !cache.squadre) { cache.squadre = await S.adminSquadre(cerca, 100); ctx.render(); }
         // I conteggi (018): una volta per apertura della console. Se la
@@ -529,7 +541,8 @@ export const adminConsole = {
       if (e.target.closest('#sp-salva')) {
         const v = (id) => root.querySelector(id)?.value.trim() || '';
         const dati = { id: spBozza?.id, nome: v('#sp-nome'), claim: v('#sp-claim'), logo: v('#sp-logo'),
-          link: v('#sp-link'), dal: v('#sp-dal') || oggiISO(), al: v('#sp-al'), attivo: !!root.querySelector('#sp-attivo')?.checked };
+          link: v('#sp-link'), dal: v('#sp-dal') || oggiISO(), al: v('#sp-al'), attivo: !!root.querySelector('#sp-attivo')?.checked,
+          lega: v('#sp-lega') };
         if (!dati.nome) { ctx.toast('Serve almeno il nome'); return; }
         if (dati.al && dati.al < dati.dal) { ctx.toast('La fine viene prima dell\'inizio'); return; }
         try { await S.salvaSponsor(dati); spBozza = null; ctx.toast('Salvato'); ctx.render(); }

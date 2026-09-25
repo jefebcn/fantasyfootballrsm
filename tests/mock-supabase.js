@@ -105,6 +105,12 @@ export function createClient(_url, _key, opts) {
           const oggi = new Date().toISOString().slice(0, 10);
           const sp = T('sponsor').find((x) => x.id === args.p_sponsor);
           if (!sp || sp.attivo === false || sp.dal > oggi || (sp.al && sp.al < oggi)) return { data: null, error: null };
+          // 021: lo sponsor di una lega lo conta solo chi ci gioca dentro. Se
+          // qui fosse piu' largo, una prova direbbe che il rendiconto regge
+          // mentre in produzione il database non conta niente.
+          if (sp.lega_id && !T('league_members').some((m) => m.league_id === sp.lega_id && m.user_id === userId)) {
+            return { data: null, error: null };
+          }
           let riga = T('sponsor_conteggi').find((x) => x.sponsor_id === args.p_sponsor && x.giorno === oggi);
           if (!riga) { riga = { sponsor_id: args.p_sponsor, giorno: oggi, viste: 0, tocchi: 0 }; T('sponsor_conteggi').push(riga); }
           if (args.p_tipo === 'vista') riga.viste++; else riga.tocchi++;

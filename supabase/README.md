@@ -171,7 +171,22 @@ Su un progetto nuovo, nell'SQL Editor, in quest'ordine:
     contrario. Due numeri per giornata, nessun nome: dice se l'app è viva,
     non chi gioca. Solo `is_admin`, come tutto il resto della console.
 
-22. `promemoria-pianificato.sql` — **facoltativo ma consigliato**, e non è una
+22. `migrations/021-sponsor-di-lega.sql` — **lo sponsor di UNA lega**, non
+    per forza di tutta l'app (`MONETIZZAZIONE.md` §3b: la lega brandizzata).
+    Una colonna, `lega_id`: vuota vuol dire «tutta l'app» ed è il
+    comportamento di prima, quindi le righe che ci sono già restano quello
+    che erano. Piena vuol dire «solo dentro quella lega», e la policy di
+    lettura aggiunge una condizione sola: lo vede chi è in quella lega. Non è
+    una cortesia a chi paga, è quello che ha comprato — se comparisse anche
+    altrove non sarebbe un posto, sarebbe un banner; e chi non è iscritto a
+    niente continua a vedere solo quelli di tutta l'app.
+    **Anche il contatore**: `conta_sponsor()` è la sola porta di scrittura dei
+    numeri e gira come il proprietario del database, quindi senza lo stesso
+    controllo chiunque conoscesse l'identificativo potrebbe gonfiare le viste
+    da fuori. Il rendiconto che si porta a chi paga deve reggere il suo
+    controllo: la finestra non basta più, serve anche essere dentro la lega.
+
+23. `promemoria-pianificato.sql` — **facoltativo ma consigliato**, e non è una
     migrazione: si riempie **una riga** (il token del promemoria) e si lancia
     a mano. Sposta l'orologio dell'avviso
     della formazione da GitHub — che accoda e salta le corse pianificate, fino

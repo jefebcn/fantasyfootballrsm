@@ -656,7 +656,17 @@ let sponsor = [];
  */
 export function sponsorInVetrina() {
   const oggi = now().toISOString().slice(0, 10);
-  return sponsor.find((s) => s.attivo && s.dal <= oggi && (!s.al || s.al >= oggi)) || null;
+  const inFinestra = (s) => s.attivo && s.dal <= oggi && (!s.al || s.al >= oggi);
+  // LO SPONSOR DELLA LEGA BATTE QUELLO DI TUTTA L'APP (021). Chi compra una
+  // lega compra quel posto li': se dentro la sua lega comparisse il logo di
+  // un altro perche' e' arrivato prima nell'elenco, avrebbe pagato per uno
+  // spazio che non e' suo.
+  const qui = currentLeagueId();
+  const mio = qui ? sponsor.find((s) => s.lega === qui && inFinestra(s)) : null;
+  if (mio) return mio;
+  // Gli sponsor legati a UN'ALTRA lega non si mostrano mai: a chi amministra
+  // il database li manda comunque, perche' li deve poter gestire.
+  return sponsor.find((s) => !s.lega && inFinestra(s)) || null;
 }
 /** Tutti quelli che il database lascia vedere: per la console. */
 export const sponsorTutti = () => sponsor.slice();

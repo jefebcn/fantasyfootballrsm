@@ -326,10 +326,10 @@ function mostraRitornoFallito(err) {
   if (!usato) { toast(err.testo); return; }
   sheet(`<h3>Quel link era già stato aperto</h3>
     <p class="auth-hint">Vale una volta sola, e certe caselle di posta lo aprono da sole per controllarlo prima di mostrartelo. Non hai sbagliato niente.</p>
-    <ol class="passi">
+    <ul class="passi">
       <li><b>Se ti stavi iscrivendo</b>, l'account è già confermato: entra con la tua e-mail e la tua password.</li>
       <li><b>Se stavi recuperando la password</b>, quel link non serve più: chiedine un altro da «Password dimenticata».</li>
-    </ol>
+    </ul>
     <button class="a-btn" id="ritorno-ok" style="margin-top:12px">Vai all'accesso</button>`);
   const b = document.getElementById('ritorno-ok');
   if (b) b.onclick = () => { sheet(null); go('login'); };

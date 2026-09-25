@@ -293,14 +293,46 @@ async function installa() {
 window.addEventListener('hashchange', () => { drawerOpen = false; sheet(null); render(); });
 S.subscribe(() => render());
 
-/** Messaggio d'errore restituito da Supabase nel ritorno dal link e-mail. */
+/** Cosa dice Supabase nel ritorno dal link e-mail: il codice e il testo. */
 function authCallbackError() {
   const from = (s) => new URLSearchParams(s.replace(/^[#?]/, ''));
   for (const p of [from(location.hash), from(location.search)]) {
     const e = p.get('error_description') || p.get('error');
-    if (e) return decodeURIComponent(e.replace(/\+/g, ' '));
+    if (e) return { codice: p.get('error_code') || '', testo: decodeURIComponent(e.replace(/\+/g, ' ')) };
   }
   return null;
+}
+
+/**
+ * IL LINK GIA' APERTO DA QUALCUN ALTRO.
+ *
+ * Il link dell'e-mail vale UNA VOLTA SOLA, e non e' detto che la prima volta
+ * sia l'utente: i controlli antiphishing delle caselle lo aprono da soli per
+ * vedere dove porta. Misurato sul progetto vero il 24 settembre: iscrizione
+ * alle 08:27:32, account confermato alle 08:27:59 — ventisette secondi dopo,
+ * senza che nessuno avesse toccato niente — e il clic vero, due minuti dopo,
+ * si e' preso "Email link is invalid or has expired".
+ *
+ * Quindi il caso piu' probabile dietro questo errore non e' un link scaduto:
+ * e' un link GIA' USATO da chi gli e' arrivato prima, con l'account ormai
+ * confermato. Dirgli "non valido" in inglese vuol dire mandare via una
+ * persona che e' gia' dentro. Non si puo' sapere da qui se veniva da
+ * un'iscrizione o da un recupero password — l'indirizzo di ritorno non porta
+ * il tipo — quindi il foglio spiega tutti e due i casi, in quest'ordine:
+ * prima quello che si risolve da solo.
+ */
+function mostraRitornoFallito(err) {
+  const usato = /otp_expired|expired|invalid/i.test(`${err.codice} ${err.testo}`);
+  if (!usato) { toast(err.testo); return; }
+  sheet(`<h3>Quel link era già stato aperto</h3>
+    <p class="auth-hint">Vale una volta sola, e certe caselle di posta lo aprono da sole per controllarlo prima di mostrartelo. Non hai sbagliato niente.</p>
+    <ol class="passi">
+      <li><b>Se ti stavi iscrivendo</b>, l'account è già confermato: entra con la tua e-mail e la tua password.</li>
+      <li><b>Se stavi recuperando la password</b>, quel link non serve più: chiedine un altro da «Password dimenticata».</li>
+    </ol>
+    <button class="a-btn" id="ritorno-ok" style="margin-top:12px">Vai all'accesso</button>`);
+  const b = document.getElementById('ritorno-ok');
+  if (b) b.onclick = () => { sheet(null); go('login'); };
 }
 /** Il ritorno dal link e-mail porta i token nel frammento: ripulisce l'URL senza toccare il router. */
 function cleanAuthUrl() {
@@ -421,7 +453,12 @@ async function boot() {
   await S.init();
   cleanAuthUrl();
   render();
-  if (callbackError) toast(callbackError);
+  // IL FOGLIO SI APRE DOPO IL SALTO, NON PRIMA. Chi torna dal link non ha
+  // una sessione, quindi la porta d'ingresso lo manda a #/login: quel
+  // cambio d'indirizzo fa scattare hashchange, che chiude i fogli aperti —
+  // e il foglio aperto qui sparirebbe un istante dopo essere comparso.
+  // Visto succedere, non dedotto.
+  if (callbackError) setTimeout(() => mostraRitornoFallito(callbackError), 300);
   avvisaReferti();
   window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); window.__installPrompt = e; document.dispatchEvent(new Event('installable')); });
 }

@@ -1009,6 +1009,78 @@ reset role;
 select pg_temp.esige('cancellato lo sponsor, spariscono i suoi conteggi',
   (select count(*) from public.sponsor_conteggi) = 0);
 
+-- ------------------------------------------- 021: lo sponsor di UNA lega
+-- La lega brandizzata: un'azienda compra la SUA lega, non un banner per
+-- tutti. Quindi due cose devono valere nel database, non nella schermata:
+-- chi lo vede, e chi puo' muovergli i numeri.
+select pg_temp.entra('user_pub1');
+set role authenticated;
+insert into public.sponsor (nome, dal, al, lega_id) values
+  ('Bar della Lega', current_date - 1, current_date + 5, :'lega');
+insert into public.sponsor (nome, dal, al) values
+  ('Tutta App Spa', current_date - 1, current_date + 5);
+reset role;
+select id from public.sponsor where nome = 'Bar della Lega' \gset dilega_
+select id from public.sponsor where nome = 'Tutta App Spa' \gset ditutti_
+
+-- chi e' nella lega li vede tutti e due
+select pg_temp.entra('user_bea');
+set role authenticated;
+select pg_temp.esige('chi e'' nella lega vede il suo sponsor e quello di tutta l''app',
+  (select count(*) from public.sponsor) = 2);
+reset role;
+
+-- chi non c'e' dentro vede solo quello di tutta l'app: se lo vedesse anche
+-- lui, l'azienda non avrebbe comprato un posto, avrebbe comprato un banner
+select pg_temp.entra('user_pub3');
+set role authenticated;
+select pg_temp.esige('chi non e'' in quella lega NON vede il suo sponsor',
+  (select count(*) from public.sponsor) = 1
+  and (select nome from public.sponsor) = 'Tutta App Spa');
+reset role;
+
+-- e l'anonimo, che la fascia la vede appena apre l'app, resta a quelli di
+-- tutta l'app: qui le pretese si azzerano davvero, claims comprese
+select set_config('request.jwt.claims', '', false);
+set role anon;
+select pg_temp.esige('l''anonimo vede solo lo sponsor di tutta l''app',
+  (select count(*) from public.sponsor) = 1);
+-- e non puo' nemmeno contargli le viste: il numero che si porta a chi paga
+-- non deve poterlo muovere chi non e' nella lega
+select public.conta_sponsor(:'dilega_id', 'vista');
+reset role;
+select pg_temp.esige('l''anonimo non conta le viste dello sponsor di lega',
+  (select count(*) from public.sponsor_conteggi where sponsor_id = :'dilega_id') = 0);
+
+-- da fuori la lega, nemmeno con un account
+select pg_temp.entra('user_pub3');
+set role authenticated;
+select public.conta_sponsor(:'dilega_id', 'tocco');
+reset role;
+select pg_temp.esige('chi non e'' nella lega non gli conta nemmeno i tocchi',
+  (select count(*) from public.sponsor_conteggi where sponsor_id = :'dilega_id') = 0);
+
+-- da dentro si', ed e' il caso vero
+select pg_temp.entra('user_bea');
+set role authenticated;
+select public.conta_sponsor(:'dilega_id', 'vista');
+select public.conta_sponsor(:'ditutti_id', 'vista');
+reset role;
+select pg_temp.esige('chi ci gioca dentro invece conta',
+  (select viste from public.sponsor_conteggi where sponsor_id = :'dilega_id') = 1);
+select pg_temp.esige('e quello di tutta l''app conta come prima',
+  (select viste from public.sponsor_conteggi where sponsor_id = :'ditutti_id') = 1);
+
+-- lo spazio senza lega resta quello di prima: le righe gia' scritte non
+-- cambiano significato quando arriva una colonna nuova
+select pg_temp.esige('una riga senza lega vale per tutta l''app',
+  (select lega_id is null from public.sponsor where id = :'ditutti_id'));
+
+select pg_temp.entra('user_pub1');
+set role authenticated;
+delete from public.sponsor where nome in ('Bar della Lega', 'Tutta App Spa');
+reset role;
+
 -- ------------------------------------------- 019: il negozio della lega aperta
 -- Chi entra in una lega aperta deve potersi fare la squadra da solo. Le
 -- regole che lo rendono un gioco e non un self-service stanno tutte dentro

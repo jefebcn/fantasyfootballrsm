@@ -164,6 +164,88 @@ const giorno = (scarto) => { const d = new Date(); d.setDate(d.getDate() + scart
   et(JSON.stringify(prima) === JSON.stringify(poi),
     `su uno sponsor scaduto il contatore non aggiunge niente (${JSON.stringify(poi)})`);
 
+  // ---------------------------------------------------------------- 021
+  // LO SPONSOR DI UNA LEGA SOLA. È quello che compra chi paga per la propria
+  // lega (MONETIZZAZIONE.md §3b): se comparisse anche altrove non avrebbe
+  // comprato un posto, avrebbe comprato un banner.
+  const mieLeghe = await p.evaluate(() => {
+    const s = JSON.parse(localStorage.getItem('fcs:mock'));
+    return (s.tables.leagues || []).map((l) => ({ id: l.id, nome: l.name }));
+  });
+  et(mieLeghe.length >= 1, `c'è una lega su cui provare (${mieLeghe.map((l) => l.nome).join(', ') || 'nessuna'})`);
+  const altrove = 'l_di_un_altro';
+  await p.evaluate((dati) => {
+    const s = JSON.parse(localStorage.getItem('fcs:mock'));
+    const oggi = new Date().toISOString().slice(0, 10);
+    const ieri = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
+    // una lega che esiste ma non e' mia, con dentro il suo sponsor
+    (s.tables.leagues ||= []).push({ id: dati.altrove, name: 'Lega di un altro', short_name: 'LDA',
+      invite_code: 'ZZZZZZ', rules: {}, created_by: 'u_estraneo', created_at: oggi, started: false, pubblica: false });
+    s.tables.sponsor = [
+      { id: 'sp_mia', nome: 'Bar della Lega', claim: 'solo qui', logo_url: '', link: 'https://esempio.sm',
+        dal: ieri, al: null, attivo: true, lega_id: dati.mia },
+      { id: 'sp_altra', nome: 'Sponsor Altrui', claim: 'di un\'altra lega', logo_url: '', link: 'https://altro.sm',
+        dal: ieri, al: null, attivo: true, lega_id: dati.altrove },
+      { id: 'sp_tutti', nome: 'Tutta App Spa', claim: 'per tutti', logo_url: '', link: 'https://tutti.sm',
+        dal: ieri, al: null, attivo: true, lega_id: null },
+    ];
+    s.tables.sponsor_conteggi = [];
+    localStorage.removeItem('fcs:sponsor-visto');
+    localStorage.setItem('fcs:mock', JSON.stringify(s));
+  }, { mia: mieLeghe[0].id, altrove });
+  await p.evaluate(() => { location.hash = '#/'; });
+  await p.reload({ waitUntil: 'load' }); await w(2000);
+  const fascia = await p.evaluate(() => {
+    const a = document.querySelector('.spon a, a.spon, .spon');
+    return { testo: (document.querySelector('.spon')?.innerText || '').replace(/\n/g, ' · '),
+      id: document.querySelector('[data-sponsor]')?.dataset.sponsor || '' };
+  });
+  et(/Bar della Lega/.test(fascia.testo), `nella mia lega si vede il MIO sponsor ("${fascia.testo.slice(0, 50)}")`);
+  et(!/Sponsor Altrui/.test(fascia.testo), 'e non quello comprato da un\'altra lega');
+  et(!/Tutta App Spa/.test(fascia.testo), 'e batte quello di tutta l\'app: quel posto l\'ha pagato lui');
+  et(fascia.id === 'sp_mia', `ed è lui a prendersi la vista (${fascia.id || 'nessuno'})`);
+
+  // tolto il suo, torna quello di tutta l'app — non quello dell'altra lega
+  await p.evaluate(() => {
+    const s = JSON.parse(localStorage.getItem('fcs:mock'));
+    s.tables.sponsor = s.tables.sponsor.filter((x) => x.id !== 'sp_mia');
+    localStorage.setItem('fcs:mock', JSON.stringify(s));
+  });
+  await p.reload({ waitUntil: 'load' }); await w(1800);
+  const senzaMio = await p.evaluate(() => (document.querySelector('.spon')?.innerText || '').replace(/\n/g, ' · '));
+  et(/Tutta App Spa/.test(senzaMio), `senza uno suo, la lega vede quello di tutta l'app ("${senzaMio.slice(0, 40)}")`);
+  et(!/Sponsor Altrui/.test(senzaMio), 'e mai quello di un\'altra lega, nemmeno quando non c\'è altro');
+
+  // e il contatore non si lascia muovere da fuori
+  await p.evaluate(async () => {
+    const S = await import('/src/state.js');
+    localStorage.removeItem('fcs:sponsor-visto');
+    S.contaSponsor('sp_altra', 'vista');
+    S.contaSponsor('sp_altra', 'tocco');
+  });
+  await w(900);
+  const contiAltrui = await p.evaluate(() => (JSON.parse(localStorage.getItem('fcs:mock')).tables.sponsor_conteggi || [])
+    .filter((r) => r.sponsor_id === 'sp_altra'));
+  et(contiAltrui.length === 0, `da fuori non gli si muovono i numeri (${JSON.stringify(contiAltrui)})`);
+
+  // la console dice a chi appartiene lo spazio, e lo lascia scegliere
+  await p.evaluate(() => { location.hash = '#/admin/console'; });
+  await p.reload({ waitUntil: 'load' }); await w(2000);
+  await p.evaluate(() => { const t = [...document.querySelectorAll('[data-atab]')].find((x) => x.dataset.atab === 'sponsor'); if (t) t.click(); }); await w(1200);
+  const console2 = await p.evaluate(() => ({
+    scelta: !!document.getElementById('sp-lega'),
+    voci: [...(document.getElementById('sp-lega')?.options || [])].map((o) => o.textContent.trim()),
+    elenco: document.querySelector('.adm-sp')?.innerText || '',
+  }));
+  et(console2.scelta, 'nella console si sceglie dove si vede lo spazio');
+  // col NOME della lega dentro: "Solo in" e basta non dice niente, ed e'
+  // esattamente quello che usciva col campo sbagliato (admin_leghe torna
+  // "nome", non "name")
+  et(console2.voci.some((v) => /tutta l'app/i.test(v)) && console2.voci.some((v) => /Solo in Torneo Titano/i.test(v)),
+    `fra tutta l'app e le leghe, ognuna col suo nome (${console2.voci.join(' / ')})`);
+  et(/solo in «Lega di un altro»/i.test(console2.elenco),
+    `e l'elenco dice a chi appartiene, col nome ("${console2.elenco.replace(/\n/g, ' · ').slice(0, 80)}")`);
+
   et(errori.length === 0, `nessun errore JS${errori.length ? ' — ' + errori[0] : ''}`);
   await b.close();
   for (const t of ok) console.log('  ok  ' + t);

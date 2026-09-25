@@ -308,7 +308,7 @@ export async function mercatoAperto(leagueId) {
 }
 
 // ---------------------------------------------------------------- sponsor
-const daRiga = (r) => ({ id: r.id, nome: r.nome, claim: r.claim || '', logo: r.logo_url || '', link: r.link || '', dal: r.dal, al: r.al, attivo: r.attivo !== false });
+const daRiga = (r) => ({ id: r.id, nome: r.nome, claim: r.claim || '', logo: r.logo_url || '', link: r.link || '', dal: r.dal, al: r.al, attivo: r.attivo !== false, lega: r.lega_id || '' });
 /**
  * Gli sponsor che il database lascia vedere.
  *
@@ -320,7 +320,9 @@ const daRiga = (r) => ({ id: r.id, nome: r.nome, claim: r.claim || '', logo: r.l
 export async function caricaSponsor() { return must(await sb.from('sponsor').select('*').order('dal', { ascending: false })).map(daRiga); }
 export async function salvaSponsor(s, userId) {
   const riga = { nome: s.nome, claim: s.claim || null, logo_url: s.logo || null, link: s.link || null,
-    dal: s.dal, al: s.al || null, attivo: s.attivo !== false, creato_da: userId };
+    dal: s.dal, al: s.al || null, attivo: s.attivo !== false, creato_da: userId,
+    // vuoto = tutta l'app: e' il comportamento di prima della 021
+    lega_id: s.lega || null };
   if (s.id) return daRiga(must(await sb.from('sponsor').update(riga).eq('id', s.id).select().single()));
   return daRiga(must(await sb.from('sponsor').insert(riga).select().single()));
 }

@@ -99,11 +99,11 @@ rischiamo di diventarlo noi, con tutto quello che comporta
 (`legale/montepremi-bozza.md`). E i giocatori dentro quella lega non pagano
 nulla: se pagassero, saremmo daccapo.
 
-Tecnicamente è quasi tutta roba che c'è già: leghe private, stemmi e colori,
-lo slot sponsor con date e conteggi. **Manca una cosa sola:** poter legare uno
-sponsor a una singola lega invece che a tutta l'app (oggi `sponsor` è
-globale). È il pezzo di codice più corto con il ritorno più alto —
-per questo sta come punto 5 in fondo, fra le cose da costruire.
+Tecnicamente **c'è tutto**: leghe private, stemmi e colori, lo slot sponsor
+con date e conteggi, e dalla migrazione 021 la colonna `lega_id` che lega uno
+spazio a una lega sola. In console → Sponsor si sceglie «Tutta l'app» oppure
+«Solo in *nome lega*», e il rendiconto di viste e tocchi vale per quello
+spazio lì. Da vendere, non da costruire.
 
 ### c) I club e la FSGC come clienti, non come contorno
 
@@ -262,13 +262,14 @@ In ordine, e sono tutte cose piccole:
 4. **Leghe private a pagamento**: un link di pagamento (Stripe o simile) e un
    flag sulla lega. Nessuna carta di credito passa per noi. Prima di
    muoversi, il vincolo del §6 sulla fatturazione di Google Play.
-5. **Sponsor legato alla singola lega** — il pezzo che manca alla lega
-   brandizzata (§3b), ed è corto: oggi la tabella `sponsor` vale per tutta
-   l'app, serve una colonna `lega_id` (vuota = come adesso, tutti) e il
-   filtro dove il banner si disegna. I conteggi di viste e tocchi sono già
-   per sponsor, quindi il rendiconto per quel cliente esce da solo.
-   **A parità di tempo è questo che rende di più**, perché è la differenza
-   fra vendere un logo (§3a) e vendere un posto intero (§3b).
+5. ~~**Sponsor legato alla singola lega**~~ — **fatto** (migrazione 021).
+   Console → Sponsor: «Tutta l'app» oppure «Solo in *nome lega*». Chi non è
+   in quella lega non lo vede e **non gli può nemmeno muovere i numeri**: il
+   controllo sta nella policy di lettura e dentro il contatore, non nella
+   schermata, perché il rendiconto che si porta a chi paga deve reggere il
+   suo controllo. Una riga senza lega resta quello che era: il banner di
+   tutta l'app. Adesso la lega brandizzata (§3b) è **da vendere**, non da
+   costruire.
 
 ## 6. Le cose legali da sistemare prima del primo euro
 

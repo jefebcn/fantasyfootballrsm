@@ -64,6 +64,21 @@ const ok = [], ko = []; const et = (c, t) => (c ? ok : ko).push(t);
   }));
   et(/Errori sui telefoni/.test(console2.titolo), 'in console c\'è la sezione degli errori');
   et(/PROVA-VOLUTA/.test(console2.riga) && /×1/.test(console2.riga), `con l'errore e quante volte ("${console2.riga.slice(0, 90)}")`);
+  // aperto, si legge tutto: prima il titolo era tagliato coi puntini e
+  // dentro c'era solo ":1", cioe' niente
+  const aperto = await p.evaluate(() => {
+    const d = document.querySelector('.adm-err details'); if (!d) return null;
+    d.open = true;
+    const dentro = d.querySelector('.adm-err-dentro');
+    return { testo: dentro?.innerText || '', pre: dentro?.querySelector('pre')?.innerText || '' };
+  });
+  et(aperto && /PROVA-VOLUTA: scrivendo a \[e-mail\]/.test(aperto.testo), 'aperto, il messaggio si legge intero');
+  et(aperto && /Dove[\s\S]*giocatore\/:id/.test(aperto.testo) && /Telefono/.test(aperto.testo), 'con dove e su che telefono');
+  et(aperto && !/^\s*:?\d*\s*$/.test(aperto.pre || 'x'), `e senza il ":1" che non dice niente (${JSON.stringify(aperto?.pre)})`);
+  // e «Chi consegna», con una lega nata dopo tutte le giornate chiuse, non
+  // scrive "0 squadre su 0 (0%)"
+  const consegne = await p.evaluate(() => document.querySelector('.adm-graf.consegne')?.nextElementSibling?.innerText || '');
+  et(!/su 0 \(0%\)/.test(consegne), `«Chi consegna» non fa percentuali su zero squadre ("${consegne.slice(0, 80)}")`);
   await p.screenshot({ path: `${process.env.USCITA || '/tmp'}/errori-app.png` }).catch(() => {});
 
   et(errori.length === 0, `nessun errore JS oltre a quelli voluti${errori.length ? ' — ' + errori[0] : ''}`);

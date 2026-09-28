@@ -36,6 +36,10 @@ export const login = {
       <div class="contenuto">
         <div class="testata">${marchio()}</div>
         <h1 class="tit">${titolo}</h1>
+        ${/* Chi arriva da un link d'invito deve sapere perche' gli si chiede
+              un account prima della lega, e che il codice non lo deve
+              ricopiare: se no pensa di aver sbagliato link. */
+    !pending && S.invitoInSospeso() ? `<div class="avviso ok invito">${icon('check', 'ic sm')}<span>Ti hanno invitato in una lega (codice <b>${esc(S.invitoInSospeso())}</b>). Entra col tuo account o creane uno: il codice lo tengo io, e dopo ti porto dentro.</span></div>` : ''}
         ${notice ? `<div class="avviso ${notice.kind}">${icon(notice.kind === 'ok' ? 'check' : 'warn', 'ic sm')}<span>${esc(notice.text)}</span></div>` : ''}
         ${pending ? pendingPanel() : tab === 'link' ? linkPanel() : credentialsPanel()}
         ${pending ? '' : socialBlock()}

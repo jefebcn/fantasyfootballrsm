@@ -74,6 +74,9 @@ export function createClient(_url, _key, opts) {
         if (!password || password.length < 6) return { data: null, error: { message: 'Password should be at least 6 characters' } };
         const p = { id: uid(), email, password, display_name: options?.data?.display_name || email.split('@')[0], is_judge: T('profiles').length === 0 };
         T('profiles').push(p); persisti();
+        // l'indirizzo a cui tornera' la conferma e-mail: le prove guardano che
+        // porti il codice d'invito, quando c'e'
+        globalThis.__ULTIMO_RITORNO__ = options?.emailRedirectTo || null;
         if (globalThis.__MOCK_CONFIRM__) return { data: { user: { id: p.id, email }, session: null }, error: null };
         userId = p.id; persisti();
         authListeners.forEach((fn) => fn('SIGNED_IN', { user: { id: userId, email } }));

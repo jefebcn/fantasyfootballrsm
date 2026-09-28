@@ -223,13 +223,29 @@ const ALLOWED = { 'no-league': ['leghe', 'impostazioni', 'admin/console'], anony
 // controlla un'app prima di pubblicarla (le stesse pagine escono statiche in
 // privacy.html e termini.html, vedi scripts/genera-legali.cjs).
 const SEMPRE = ['privacy', 'termini', 'archiviazione', 'licenze', 'cancella-account'];
+let invitoAccompagnato = false;
 function gate(path) {
   if (SEMPRE.includes(path)) return null;
   const st = S.appState();
   let target = STATE_ROUTE[st];
   // Chi apre l'app per la prima volta vede la presentazione; chi si è già registrato no.
   if (st === 'anonymous' && !S.store.get().onboarded && path !== 'login') target = 'benvenuto';
-  if (!target) return ['setup', 'offline', 'login', 'benvenuto'].includes(path) ? '' : null;   // pronta
+  if (!target) {
+    // pronta. CON UN INVITO IN SOSPESO si va alle leghe, dove il modulo
+    // «Entra con codice» e' gia' aperto e compilato — una volta sola per
+    // apertura: se poi uno va altrove, e' una scelta sua.
+    const inv = S.invitoInSospeso();
+    if (inv && !invitoAccompagnato) {
+      invitoAccompagnato = true;
+      const gia = S.myLeagues().find((l) => (l.invite_code || '').toUpperCase() === inv);
+      if (gia) {
+        // ci sei gia': niente modulo, ti porto dentro quella lega
+        S.dimenticaInvito();
+        if (gia.id !== S.currentLeagueId()) S.switchLeague(gia.id);
+      } else if (path !== 'leghe') return 'leghe';
+    }
+    return ['setup', 'offline', 'login', 'benvenuto'].includes(path) ? '' : null;
+  }
   if (path === target || (ALLOWED[st] || []).includes(path)) return null;
   return target;
 }
@@ -337,7 +353,7 @@ function mostraRitornoFallito(err) {
 /** Il ritorno dal link e-mail porta i token nel frammento: ripulisce l'URL senza toccare il router. */
 function cleanAuthUrl() {
   const dirtyHash = location.hash && !location.hash.startsWith('#/');
-  const dirtyQuery = /[?&](code|error|error_description)=/.test(location.search);
+  const dirtyQuery = /[?&](code|error|error_description|invito)=/.test(location.search);
   if (dirtyHash || dirtyQuery) history.replaceState(null, '', location.pathname + (dirtyHash ? '' : location.hash));
 }
 
@@ -448,6 +464,11 @@ async function boot() {
     diagnostica.segna('app', e?.message || e, e?.stack || '');
     if (S.appState() !== 'offline') toast(e?.message || 'Errore di rete');
   });
+  // Il codice d'invito si legge subito, prima che l'indirizzo venga
+  // ripulito: ?invito=ABC123 arriva dal link condiviso, oppure di ritorno
+  // dalla conferma e-mail (lo porta dentro ritornoConInvito, in state.js).
+  const invito = new URLSearchParams(location.search).get('invito');
+  if (invito) S.ricordaInvito(invito);
   const callbackError = authCallbackError();
   root.innerHTML = `<div class="app">${splash()}</div>`;
   await S.init();

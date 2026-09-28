@@ -157,13 +157,52 @@ export async function refresh() { if (!ready) return; try { await loadAll(); } c
 
 // ---------------------------------------------------------------- sessione
 const returnUrl = () => location.origin + location.pathname;
+
+/* ---------------------------------------------------------------- invito
+ * IL CODICE VIAGGIA COL LINK. Prima chi veniva invitato riceveva «entra col
+ * codice ABC123 — fantatitano.site» e doveva: aprire, iscriversi, andare
+ * nella posta a confermare, rientrare, trovare «Entra con codice» e
+ * RICOPIARE il codice a mano. Il codice doveva sopravvivere a un giro fuori
+ * dall'app, ed era li' che l'invito si perdeva.
+ *
+ * Adesso il link e' fantatitano.site/?invito=ABC123. Il codice si ricorda
+ * nella memoria del telefono (non di sessione: la conferma e-mail si apre in
+ * un'altra scheda, e la memoria di sessione li' e' vuota), e in piu' va
+ * DENTRO l'indirizzo di ritorno della conferma: cosi' arriva anche a chi
+ * apre la posta in un altro browser. Supabase lo accetta — provato il 28
+ * settembre con la stessa domanda senza token che si usa per la lista dei
+ * redirect.
+ *
+ * Scade dopo due settimane: un invito vecchio che salta fuori a meta'
+ * stagione porta in una lega che nel frattempo e' andata avanti senza di te.
+ */
+const INVITO_KEY = 'fcs:invito';
+const INVITO_GIORNI = 14;
+export const codiceValido = (c) => /^[A-Z0-9]{6}$/.test(String(c || '').trim().toUpperCase());
+export function ricordaInvito(codice) {
+  const c = String(codice || '').trim().toUpperCase();
+  if (!codiceValido(c)) return false;
+  try { localStorage.setItem(INVITO_KEY, JSON.stringify({ codice: c, fino: Date.now() + INVITO_GIORNI * 86400000 })); } catch { return false; }
+  return true;
+}
+export function invitoInSospeso() {
+  try {
+    const v = JSON.parse(localStorage.getItem(INVITO_KEY) || 'null');
+    if (!v || !codiceValido(v.codice)) return null;
+    if (Date.now() > v.fino) { localStorage.removeItem(INVITO_KEY); return null; }
+    return v.codice;
+  } catch { return null; }
+}
+export function dimenticaInvito() { try { localStorage.removeItem(INVITO_KEY); } catch { /* niente storage: niente da togliere */ } }
+/** L'indirizzo di ritorno delle e-mail: col codice dentro, se c'e' un invito. */
+const ritornoConInvito = () => { const c = invitoInSospeso(); return c ? `${returnUrl()}?invito=${c}` : returnUrl(); };
 async function adopt() { user = authKind() === 'clerk' ? clerk.user() : await remote.currentSessionUser(); if (user && !prefs.onboarded) { prefs.onboarded = true; persistPrefs(); } await loadAll(); notify(); return user; }
 export const currentUser = () => user;
 export const profileInfo = () => prof;
 export async function signInPassword(email, password) { await remote.signInPassword(email, password); return adopt(); }
-export async function signUpPassword(email, password, displayName) { const r = await remote.signUpPassword(email, password, displayName, returnUrl()); if (!r.needsConfirmation) await adopt(); return r; }
-export async function resendConfirmation(email) { await remote.resendConfirmation(email, returnUrl()); }
-export async function signInLink(email) { await remote.signInLink(email, returnUrl()); }
+export async function signUpPassword(email, password, displayName) { const r = await remote.signUpPassword(email, password, displayName, ritornoConInvito()); if (!r.needsConfirmation) await adopt(); return r; }
+export async function resendConfirmation(email) { await remote.resendConfirmation(email, ritornoConInvito()); }
+export async function signInLink(email) { await remote.signInLink(email, ritornoConInvito()); }
 export const oauthProviders = () => { const p = remote.enabledProviders(); return ['google', 'apple'].filter((k) => p[k]); };
 export const clerkMount = (el, kind) => clerk.mount(el, kind);
 export const clerkUnmount = (el) => clerk.unmount(el);

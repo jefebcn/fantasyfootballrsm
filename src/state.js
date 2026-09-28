@@ -735,14 +735,24 @@ export function contaSponsor(id, tipo) {
     const oggi = now().toISOString().slice(0, 10);
     const marchio = `${id}:${oggi}`;
     if (visteDiSessione.has(marchio)) return false;
-    let visto = null;
-    try { visto = localStorage.getItem(VISTO_KEY); } catch { visto = null; }
-    if (visto === marchio) return false;
+    // GLI SPONSOR VISTI OGGI, NON L'ULTIMO. Prima qui c'era un marchio solo,
+    // perche' lo sponsor in vetrina era uno per tutti. Dalla 021 ogni lega
+    // puo' avere il suo: chi gioca in due leghe vede A, poi B, e riaprendo
+    // l'app il telefono ricordava solo B — A si contava di nuovo. La
+    // promessa del rendiconto e' "una vista = un telefono in un giorno".
+    // L'elenco vale per OGGI e si svuota col giorno dopo: resta corto quanto
+    // gli sponsor visti in una giornata, e non cresce per sempre.
+    let visti = { giorno: oggi, ids: [] };
+    try {
+      const grezzo = localStorage.getItem(VISTO_KEY);
+      if (grezzo === marchio) return false;                   // formato di prima: una chiave sola
+      const v = grezzo && grezzo.startsWith('{') ? JSON.parse(grezzo) : null;
+      if (v && v.giorno === oggi && Array.isArray(v.ids)) visti = v;
+    } catch { /* memoria illeggibile: si riparte da oggi */ }
+    if (visti.ids.includes(id)) return false;
     visteDiSessione.add(marchio);
-    // Una chiave sola, non un elenco: lo sponsor in vetrina e' uno, e una
-    // mappa che cresce per sempre nella memoria del telefono e' una perdita
-    // lenta che nessuno va mai a guardare.
-    try { localStorage.setItem(VISTO_KEY, marchio); } catch { /* niente storage: basta l'insieme di sessione */ }
+    visti.ids.push(id);
+    try { localStorage.setItem(VISTO_KEY, JSON.stringify(visti)); } catch { /* niente storage: basta l'insieme di sessione */ }
   }
   remote.segnaSponsor(id, tipo);      // non si aspetta: e' un contatore, non un salvataggio
   return true;

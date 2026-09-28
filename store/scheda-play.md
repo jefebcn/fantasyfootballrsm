@@ -106,11 +106,20 @@ una segnalazione.
 | Foto e video | **Foto** | raccolti / non condivisi | no | Funzionalità dell'app (lo stemma della squadra) |
 | Attività nell'app | **Altri contenuti generati dagli utenti** | raccolti / non condivisi | sì | Funzionalità dell'app (squadra, rosa, formazioni, contestazioni) |
 | ID dispositivo o altri ID | **ID dispositivo o altri ID** | raccolti / non condivisi | no | Funzionalità dell'app (l'indirizzo a cui mandare le notifiche, solo se le accendi) |
+| Informazioni e prestazioni app | **Log degli arresti anomali** e **Diagnostica** | raccolti / non condivisi | sì | Analisi (correggere i difetti). **Dal 28 settembre, migrazione 022**: se l'app va in errore manda messaggio, versione, schermata e tipo di telefono. Niente che identifichi la persona |
+
+**DA AGGIORNARE IN PLAY CONSOLE (28 settembre).** Fino alla migrazione 022
+qui c'era scritto «nessun dato di diagnostica». Adesso l'app manda i rapporti
+d'errore: nella sezione *Sicurezza dei dati* va aperta la categoria
+**Informazioni e prestazioni app**, spuntati **Log degli arresti anomali** e
+**Diagnostica**, raccolti, non condivisi, obbligatori (non si possono
+spegnere), scopo **Analisi**. Senza questo, modulo e informativa dicono due
+cose diverse — ed è la differenza che Google segnala.
 
 Tutto il resto resta a zero: niente posizione, informazioni finanziarie,
 salute, messaggi, audio, file, calendario, contatti, cronologia di ricerca o
-navigazione, e nessun dato di diagnostica — non c'è un sistema di analisi del
-traffico, e questo va dichiarato non spuntando niente.
+navigazione. Non c'è un sistema di analisi del traffico: i rapporti d'errore
+dicono che cosa si è rotto, non chi usa l'app né come.
 
 **«Condivisi con terze parti» è no, e non è una furbizia**: Supabase tratta i
 dati *per conto* di chi gestisce l'app (responsabile del trattamento) e non li

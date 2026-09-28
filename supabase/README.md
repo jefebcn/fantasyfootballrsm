@@ -186,7 +186,21 @@ Su un progetto nuovo, nell'SQL Editor, in quest'ordine:
     da fuori. Il rendiconto che si porta a chi paga deve reggere il suo
     controllo: la finestra non basta più, serve anche essere dentro la lega.
 
-23. `promemoria-pianificato.sql` — **facoltativo ma consigliato**, e non è una
+23. `migrations/022-errori-app.sql` — **gli errori dei telefoni arrivano in
+    console** (Numeri → Errori sui telefoni). Prima restavano sul telefono dove
+    succedevano, per scelta; Alex ha deciso di cambiare il 28 settembre, alle
+    tre condizioni che erano i motivi del no: **nessun fornitore nuovo** (è lo
+    stesso Supabase già dichiarato), **base giuridica già scritta** (legittimo
+    interesse, log tecnici — ora detta per esteso nell'informativa), **niente
+    di chi** (messaggio, versione, schermata senza identificativi, tipo di
+    telefono; le e-mail si cancellano sul telefono e di nuovo qui). Lo stesso
+    errore nello stesso giorno è una riga col suo contatore; al massimo 500
+    righe al giorno, perché la porta `segnala_errore()` è aperta anche a chi
+    non ha fatto l'accesso — ed è dichiarata in `prove/permessi.sh`. Si
+    cancella da solo dopo 30 giorni. **Va aggiornata anche la Sicurezza dei
+    dati su Play Console**: vedi `store/scheda-play.md`.
+
+24. `promemoria-pianificato.sql` — **facoltativo ma consigliato**, e non è una
     migrazione: si riempie **una riga** (il token del promemoria) e si lancia
     a mano. Sposta l'orologio dell'avviso
     della formazione da GitHub — che accoda e salta le corse pianificate, fino

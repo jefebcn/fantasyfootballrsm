@@ -346,6 +346,29 @@ export async function caricaConteggiSponsor() {
     .map((r) => ({ sponsorId: r.sponsor_id, giorno: r.giorno, viste: r.viste || 0, tocchi: r.tocchi || 0 }));
 }
 
+// ---------------------------------------------------------------- errori (022)
+/**
+ * Il rapporto di un errore del telefono. Come il contatore degli sponsor, la
+ * tabella non la scrive nessuno direttamente: si passa da segnala_errore(),
+ * che taglia i testi, cancella le e-mail e ha un tetto al giorno. Se il
+ * server non c'e' ancora (sb nullo) non si prova nemmeno: un rapporto non
+ * deve mai diventare un errore a sua volta.
+ */
+export async function segnalaErrore(r) {
+  if (!sb) return false;
+  const { error } = await sb.rpc('segnala_errore', { p_messaggio: r.messaggio, p_versione: r.versione || '',
+    p_schermata: r.schermata || '', p_dettaglio: r.dettaglio || '', p_dispositivo: r.dispositivo || '' });
+  return !error;
+}
+/** Gli errori degli ultimi giorni, per la console: i piu' frequenti prima. */
+export async function caricaErrori(giorni = 7) {
+  const dal = new Date(Date.now() - giorni * 86400000).toISOString().slice(0, 10);
+  const { data, error } = await sb.from('errori_app').select('*').gte('giorno', dal)
+    .order('quante', { ascending: false }).order('ultimo', { ascending: false }).limit(30);
+  if (error) return null;           // la 022 non c'e' ancora: la console lo dice, non si rompe
+  return data || [];
+}
+
 // ---------------------------------------------------------------- dato globale
 export async function loadGlobal(withLog) {
   const [ov, ev, ap, st, lk, log] = await Promise.all([

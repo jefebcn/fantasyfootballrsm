@@ -303,17 +303,23 @@ function consegne(r) {
   }
   const quota = (g) => (g.squadre ? Math.round((g.consegne / g.squadre) * 100) : 0);
   const max = Math.max(1, ...serie.map((g) => g.consegne));
-  const ultima = serie[serie.length - 1]; const prima = serie[0];
-  const passo = serie.length > 1 ? quota(ultima) - quota(prima) : null;
+  const ultima = serie[serie.length - 1];
+  // il confronto si fa con la prima giornata che aveva gia' qualcuno dentro:
+  // "contro lo 0% della 1a" su una giornata senza squadre sarebbe un +50 falso
+  const prima = serie.find((g) => g.squadre > 0) || serie[0];
+  const passo = prima !== ultima && prima.squadre > 0 ? quota(ultima) - quota(prima) : null;
   return `<div class="a-sec"><b>Chi consegna</b><span>ultime ${plurale(serie.length, 'giornata', 'giornate')}</span></div>
     <div class="a-card adm-graf consegne">${serie.map((g) => `<span class="col" title="${g.giornata}ª: ${g.consegne} su ${g.squadre}">
       <i style="height:${Math.round((g.consegne / max) * 100)}%"></i><small>${g.giornata}</small>
       ${g.consegne ? `<b>${g.consegne}</b>` : ''}</span>`).join('')}</div>
-    <p class="small muted" style="margin:-4px 2px 0">Alla <b>${ultima.giornata}ª</b> ${ultima.consegne === 1
+    <p class="small muted" style="margin:-4px 2px 0">${!ultima.squadre
+    // una percentuale su zero squadre non vuol dire niente: si dice perche'
+    ? `Alla <b>${ultima.giornata}ª</b> non c'era ancora nessuna squadra: la serie comincia a contare dalla prima giornata chiusa con qualcuno dentro.`
+    : `Alla <b>${ultima.giornata}ª</b> ${ultima.consegne === 1
     ? 'ha consegnato <b>1</b> squadra' : `hanno consegnato <b>${ultima.consegne}</b> squadre`} su ${ultima.squadre} (${quota(ultima)}%)${passo === null ? ''
     : passo === 0 ? `, come alla ${prima.giornata}ª`
       : `, contro il ${quota(prima)}% della ${prima.giornata}ª: ${passo > 0 ? '+' : ''}${passo} punti`}.
-    È questo il numero da portare a uno sponsor — non gli iscritti, che non se ne vanno mai dall'elenco.</p>`;
+    È questo il numero da portare a uno sponsor — non gli iscritti, che non se ne vanno mai dall'elenco.`}</p>`;
 }
 
 /**
@@ -333,12 +339,27 @@ function errori(lista) {
   if (!lista.length) return `${titolo('ultimi 7 giorni')}<p class="small muted" style="margin:0 2px">Nessuno. Quando un telefono va in errore, compare qui entro pochi secondi.</p>`;
   const totale = lista.reduce((a, e) => a + (e.quante || 1), 0);
   return `${titolo(`${plurale(totale, 'volta', 'volte')} in 7 giorni`)}
-    <div class="vlist adm-err">${lista.map((e) => `<details class="adm-u">
+    <div class="vlist adm-err">${lista.map((e) => {
+    // Chiuso basta il titolo, tagliato; APERTO si deve poter leggere tutto,
+    // e il messaggio intero e' la prima cosa. Il dettaglio si mostra solo se
+    // dice qualcosa: ":1" (file vuoto, riga 1) e' il browser che non sa dove.
+    const dettaglio = /^\s*:?\d*\s*$/.test(e.dettaglio || '') ? '' : e.dettaglio;
+    return `<details class="adm-u">
       <summary class="riga"><span class="nm"><b>${esc(e.messaggio)}</b>
-        <span>${esc(e.schermata || '—')} · ${esc(e.dispositivo || '—')} · ${esc((e.versione || '').replace('fcs-', '') || '—')} · ultima ${quando(e.ultimo)}</span></span>
+        <span>${esc(e.schermata || '—')} · ${esc(e.dispositivo || '—')}</span></span>
         <span class="tag"><i class="${e.quante > 9 ? 'sos' : ''}">×${e.quante}</i></span></summary>
-      ${e.dettaglio ? `<pre class="sm-link" style="white-space:pre-wrap;margin:6px 0 0">${esc(e.dettaglio)}</pre>` : ''}
-    </details>`).join('')}</div>
+      <div class="adm-err-dentro">
+        <p>${esc(e.messaggio)}</p>
+        <dl>
+          <dt>Dove</dt><dd>${esc(e.schermata || '—')}</dd>
+          <dt>Telefono</dt><dd>${esc(e.dispositivo || '—')}</dd>
+          <dt>Versione</dt><dd>${esc((e.versione || '').replace('fcs-', '') || '—')}</dd>
+          <dt>Quando</dt><dd>${e.quante > 1 ? `${quando(e.primo)} → ${quando(e.ultimo)}` : quando(e.ultimo)}</dd>
+        </dl>
+        ${dettaglio ? `<pre class="sm-link">${esc(dettaglio)}</pre>` : ''}
+      </div>
+    </details>`;
+  }).join('')}</div>
     <p class="small muted" style="margin:-4px 2px 0">Senza nomi né account: messaggio, schermata, tipo di telefono e versione. Si cancellano da soli dopo 30 giorni.</p>`;
 }
 

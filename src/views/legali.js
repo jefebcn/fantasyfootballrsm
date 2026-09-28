@@ -89,7 +89,7 @@ export const privacy = {
     ['La tua squadra:', 'nome, stemma, maglia, rosa, formazioni e punteggi di ogni giornata. Senza questi il gioco non esiste.'],
     ['Quello che fai nella lega:', 'contestazioni aperte e, per il Giudice Dati, il registro delle modifiche ai voti. Servono a poter ricostruire come è venuto fuori un punteggio.'],
     'Non ci sono profilazione, tracciatori di terze parti né cookie di marketing. Nessun dato viene venduto o ceduto.',
-    ['Lo spazio sponsor:', 'in home può comparire uno spazio comprato, dichiarato con la targhetta «Sponsor». <b>Non viene scelto in base a chi sei</b>: è lo stesso per tutti, perché è uno solo. Di quello spazio si contano due numeri al giorno — quante volte è comparso e quante è stato toccato — e basta: nessun identificativo, nessun indirizzo IP, nessuna riga che ti riguardi. Non si può risalire a te perché non c\'è niente da cui risalire.'],
+    ['Lo spazio sponsor:', 'in home può comparire uno spazio comprato, dichiarato con la targhetta «Sponsor». <b>Non viene scelto in base a chi sei</b>: dipende solo dalla lega in cui stai guardando — è quello di tutta l\'app, uguale per tutti, oppure quello che un\'azienda ha comprato per quella lega, uguale per tutti quelli che ci giocano. Di quello spazio si contano due numeri al giorno — quante volte è comparso e quante è stato toccato — e basta: nessun identificativo, nessun indirizzo IP, nessuna riga che ti riguardi. Non si può risalire a te perché non c\'è niente da cui risalire.'],
   ])}
       ${blocco('Su quale base', [
     ['Contratto:', 'account, squadra, rose, formazioni e punteggi. Sono quello che ti serve per giocare: senza, l\'app non può darti il servizio che hai chiesto iscrivendoti.'],

@@ -216,6 +216,30 @@ const giorno = (scarto) => { const d = new Date(); d.setDate(d.getDate() + scart
   et(/Tutta App Spa/.test(senzaMio), `senza uno suo, la lega vede quello di tutta l'app ("${senzaMio.slice(0, 40)}")`);
   et(!/Sponsor Altrui/.test(senzaMio), 'e mai quello di un\'altra lega, nemmeno quando non c\'è altro');
 
+  // DUE LEGHE, DUE SPONSOR, UNA VISTA CIASCUNO AL GIORNO. Il telefono
+  // ricordava solo l'ultimo sponsor visto: chi gioca in due leghe vedeva A,
+  // poi B, e riaprendo l'app A si contava di nuovo.
+  await p.evaluate(() => {
+    const s = JSON.parse(localStorage.getItem('fcs:mock'));
+    s.tables.sponsor_conteggi = [];
+    const ieri = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
+    s.tables.sponsor.push({ id: 'sp_x', nome: 'Secondo Spa', claim: '', logo_url: '', link: '', dal: ieri, al: null, attivo: true, lega_id: null });
+    localStorage.removeItem('fcs:sponsor-visto');
+    localStorage.setItem('fcs:mock', JSON.stringify(s));
+  });
+  await p.reload({ waitUntil: 'load' }); await w(1500);
+  const viste = async () => p.evaluate(() => (JSON.parse(localStorage.getItem('fcs:mock')).tables.sponsor_conteggi || [])
+    .reduce((a, r) => ({ ...a, [r.sponsor_id]: r.viste }), {}));
+  // A (quello di tutta l'app, gia' in vetrina) e poi B, come se si cambiasse lega
+  await p.evaluate(async () => { const S = await import('/src/state.js'); S.contaSponsor('sp_tutti', 'vista'); S.contaSponsor('sp_x', 'vista'); });
+  await w(600);
+  // si chiude e si riapre l'app: la memoria di sessione riparte vuota
+  await p.reload({ waitUntil: 'load' }); await w(1500);
+  await p.evaluate(async () => { const S = await import('/src/state.js'); S.contaSponsor('sp_tutti', 'vista'); S.contaSponsor('sp_x', 'vista'); });
+  await w(600);
+  const vistePoi = await viste();
+  et(vistePoi.sp_tutti === 1, `riaperta l'app, il primo sponsor visto oggi non si conta di nuovo (${JSON.stringify(vistePoi)})`);
+
   // e il contatore non si lascia muovere da fuori
   await p.evaluate(async () => {
     const S = await import('/src/state.js');

@@ -243,7 +243,7 @@ export const adminRegistro = {
  * se la rifa' la persona — che e' anche l'unico modo in cui resta sua.
  */
 let aTab = 'numeri';        // 'numeri' | 'persone' | 'squadre' | 'leghe' | 'sponsor'
-let cache = { numeri: null, persone: null, squadre: null, leghe: null, conteggi: null };
+let cache = { numeri: null, persone: null, squadre: null, leghe: null, conteggi: null, errori: undefined };
 let cerca = '';
 
 const quando = (iso) => (iso ? `${dateIt(iso)} ${timeIt(iso)}` : '—');
@@ -314,6 +314,32 @@ function consegne(r) {
     : passo === 0 ? `, come alla ${prima.giornata}ª`
       : `, contro il ${quota(prima)}% della ${prima.giornata}ª: ${passo > 0 ? '+' : ''}${passo} punti`}.
     È questo il numero da portare a uno sponsor — non gli iscritti, che non se ne vanno mai dall'elenco.</p>`;
+}
+
+/**
+ * GLI ERRORI DEI TELEFONI (022). Prima restavano sul telefono dove
+ * succedevano, e arrivavano qui solo se qualcuno copiava la segnalazione e la
+ * mandava. I piu' frequenti in cima: lo stesso difetto su cento telefoni e'
+ * una riga "×100", ed e' quella da guardare per prima.
+ *
+ * undefined = non ancora chiesti; null = la 022 non c'e' ancora nel database.
+ */
+function errori(lista) {
+  const titolo = (dx) => `<div class="a-sec"><b>Errori sui telefoni</b><span>${dx}</span></div>`;
+  if (lista === undefined) return '';
+  if (lista === null) {
+    return `${titolo('da attivare')}<p class="small muted" style="margin:0 2px">Serve la migrazione <code>supabase/migrations/022-errori-app.sql</code>, da eseguire una volta nell'SQL Editor.</p>`;
+  }
+  if (!lista.length) return `${titolo('ultimi 7 giorni')}<p class="small muted" style="margin:0 2px">Nessuno. Quando un telefono va in errore, compare qui entro pochi secondi.</p>`;
+  const totale = lista.reduce((a, e) => a + (e.quante || 1), 0);
+  return `${titolo(`${plurale(totale, 'volta', 'volte')} in 7 giorni`)}
+    <div class="vlist adm-err">${lista.map((e) => `<details class="adm-u">
+      <summary class="riga"><span class="nm"><b>${esc(e.messaggio)}</b>
+        <span>${esc(e.schermata || '—')} · ${esc(e.dispositivo || '—')} · ${esc((e.versione || '').replace('fcs-', '') || '—')} · ultima ${quando(e.ultimo)}</span></span>
+        <span class="tag"><i class="${e.quante > 9 ? 'sos' : ''}">×${e.quante}</i></span></summary>
+      ${e.dettaglio ? `<pre class="sm-link" style="white-space:pre-wrap;margin:6px 0 0">${esc(e.dettaglio)}</pre>` : ''}
+    </details>`).join('')}</div>
+    <p class="small muted" style="margin:-4px 2px 0">Senza nomi né account: messaggio, schermata, tipo di telefono e versione. Si cancellano da soli dopo 30 giorni.</p>`;
 }
 
 function numeri(r) {
@@ -474,7 +500,7 @@ export const adminConsole = {
       <button class="${aTab === 'leghe' ? 'on' : ''}" data-atab="leghe">Leghe</button>
       <button class="${aTab === 'sponsor' ? 'on' : ''}" data-atab="sponsor">Sponsor</button></div></div>`;
     let corpo = '';
-    if (aTab === 'numeri') corpo = numeri(cache.numeri) + consegne(cache.numeri) + andamento(cache.persone);
+    if (aTab === 'numeri') corpo = numeri(cache.numeri) + consegne(cache.numeri) + errori(cache.errori) + andamento(cache.persone);
     else if (aTab === 'persone') {
       corpo = `<input class="field-input" id="adm-cerca" placeholder="Cerca per nome o e-mail" value="${esc(cerca)}" autocomplete="off">
         ${persone(cache.persone)}`;
@@ -497,6 +523,7 @@ export const adminConsole = {
     const carica = async () => {
       try {
         if (aTab === 'numeri' && !cache.numeri) { cache.numeri = await S.adminRiepilogo(); ctx.render(); }
+        if (aTab === 'numeri' && cache.errori === undefined) { cache.errori = await S.caricaErrori(7); ctx.render(); }
         // l'andamento si disegna sull'elenco delle persone: la scheda dei
         // numeri lo chiede una volta e poi resta in cache come le altre
         if (aTab === 'numeri' && !cache.persone) { cache.persone = await S.adminPersone(null, 100); ctx.render(); }

@@ -472,6 +472,9 @@ async function boot() {
   const callbackError = authCallbackError();
   root.innerHTML = `<div class="app">${splash()}</div>`;
   await S.init();
+  // Da qui gli errori del telefono partono verso la console (022). Quelli
+  // successi durante l'avvio erano in attesa, e partono adesso.
+  diagnostica.impostaInvio((r) => S.segnalaErrore(r));
   cleanAuthUrl();
   render();
   // IL FOGLIO SI APRE DOPO IL SALTO, NON PRIMA. Chi torna dal link non ha

@@ -88,12 +88,13 @@ export const privacy = {
     ['Il tuo account:', 'indirizzo e-mail e nome che scegli, per farti entrare e riconoscerti. La password non la vede nessuno, nemmeno chi amministra: la custodisce Supabase, cifrata.'],
     ['La tua squadra:', 'nome, stemma, maglia, rosa, formazioni e punteggi di ogni giornata. Senza questi il gioco non esiste.'],
     ['Quello che fai nella lega:', 'contestazioni aperte e, per il Giudice Dati, il registro delle modifiche ai voti. Servono a poter ricostruire come è venuto fuori un punteggio.'],
+    ['Gli errori dell\'app:', 'se l\'app va in errore sul tuo telefono, manda un rapporto tecnico: il messaggio d\'errore, la versione dell\'app, la schermata (senza quale giocatore o partita stavi guardando) e il tipo di telefono, per esempio «Android · Chrome». <b>Niente che dica chi sei</b>: nessun account, nessun identificativo del telefono, e un indirizzo e-mail finito per caso dentro un messaggio viene cancellato prima di salvarlo. Sta sugli stessi server di Supabase del resto, lo legge solo chi gestisce l\'app per correggere i difetti, e si cancella da solo dopo 30 giorni.'],
     'Non ci sono profilazione, tracciatori di terze parti né cookie di marketing. Nessun dato viene venduto o ceduto.',
     ['Lo spazio sponsor:', 'in home può comparire uno spazio comprato, dichiarato con la targhetta «Sponsor». <b>Non viene scelto in base a chi sei</b>: dipende solo dalla lega in cui stai guardando — è quello di tutta l\'app, uguale per tutti, oppure quello che un\'azienda ha comprato per quella lega, uguale per tutti quelli che ci giocano. Di quello spazio si contano due numeri al giorno — quante volte è comparso e quante è stato toccato — e basta: nessun identificativo, nessun indirizzo IP, nessuna riga che ti riguardi. Non si può risalire a te perché non c\'è niente da cui risalire.'],
   ])}
       ${blocco('Su quale base', [
     ['Contratto:', 'account, squadra, rose, formazioni e punteggi. Sono quello che ti serve per giocare: senza, l\'app non può darti il servizio che hai chiesto iscrivendoti.'],
-    ['Legittimo interesse:', 'il registro delle modifiche del Giudice Dati e i log tecnici del server, per tenere in piedi il servizio e poter dimostrare come è stato calcolato un voto contestato.'],
+    ['Legittimo interesse:', 'il registro delle modifiche del Giudice Dati, i log tecnici del server e i rapporti d\'errore dell\'app, per tenere in piedi il servizio, correggerne i difetti e poter dimostrare come è stato calcolato un voto contestato.'],
     ['Consenso:', 'solo per quello che scegli tu, come caricare una foto come stemma. Lo puoi togliere quando vuoi rimuovendo la foto.'],
   ])}
       ${blocco('Chi lo vede', [

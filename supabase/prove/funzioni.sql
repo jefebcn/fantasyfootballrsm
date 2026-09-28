@@ -1252,4 +1252,93 @@ exception when others then
 end $$;
 reset role;
 
+-- ============================================================
+-- 022 — GLI ERRORI DEI TELEFONI
+-- La porta e' aperta anche a chi non ha un account, quindi le regole che
+-- contano stanno DENTRO la funzione, e qui si eseguono.
+-- ============================================================
+delete from public.errori_app;
+
+-- da anonimo, che e' il caso vero: l'errore puo' succedere prima dell'accesso
+select set_config('request.jwt.claims', '', false);
+set role anon;
+select public.segnala_errore('Cannot read properties of undefined', 'fcs-v4.2.107', 'rosa', 'app.js:120', 'Android · Chrome · app');
+select public.segnala_errore('Cannot read properties of undefined', 'fcs-v4.2.107', 'rosa', 'app.js:120', 'Android · Chrome · app');
+select public.segnala_errore('Cannot read properties of undefined', 'fcs-v4.2.107', 'rosa', 'app.js:120', 'Android · Chrome · app');
+-- un indirizzo e-mail dentro il messaggio non deve arrivare fin qui
+select public.segnala_errore('Utente mario.rossi@example.com non trovato', 'fcs-v4.2.107', 'login', 'scrive a luca@example.org', '');
+-- un messaggio vuoto e' rumore
+select public.segnala_errore('   ', 'fcs-v4.2.107', 'rosa', '', '');
+reset role;
+
+select pg_temp.esige('lo stesso errore tre volte e'' UNA riga col suo contatore',
+  (select count(*) from public.errori_app where schermata = 'rosa') = 1
+  and (select quante from public.errori_app where schermata = 'rosa') = 3);
+select pg_temp.esige('gli indirizzi e-mail si cancellano nel database, non ci si fida del telefono',
+  not exists (select 1 from public.errori_app where messaggio ~ '@' or dettaglio ~ '@')
+  and exists (select 1 from public.errori_app where messaggio like '%[e-mail]%'));
+select pg_temp.esige('un messaggio vuoto non scrive niente',
+  (select count(*) from public.errori_app) = 2);
+
+-- i testi lunghi si tagliano: la porta aperta non deve riempire il database
+set role anon;
+select public.segnala_errore(repeat('x', 5000), repeat('v', 500), repeat('s', 500), repeat('d', 50000), repeat('t', 500));
+reset role;
+select pg_temp.esige('i testi lunghi si tagliano',
+  (select max(length(messaggio)) <= 300 and max(length(dettaglio)) <= 1200 and max(length(versione)) <= 40
+      and max(length(schermata)) <= 60 and max(length(dispositivo)) <= 60 from public.errori_app));
+
+-- il tetto di 500 righe al giorno: oltre, niente di nuovo...
+insert into public.errori_app (messaggio, versione, schermata)
+  select 'riempitivo ' || g, 'v', 's' from generate_series(1, 500) g;
+set role anon;
+select public.segnala_errore('uno nuovo oltre il tetto', 'v', 's', '', '');
+select public.segnala_errore('riempitivo 7', 'v', 's', '', '');
+reset role;
+select pg_temp.esige('oltre le 500 righe del giorno non se ne aggiungono',
+  not exists (select 1 from public.errori_app where messaggio = 'uno nuovo oltre il tetto'));
+select pg_temp.esige('ma quelle che ci sono continuano a contare',
+  (select quante from public.errori_app where messaggio = 'riempitivo 7') = 2);
+
+-- dopo trenta giorni se ne vanno da soli
+delete from public.errori_app;
+insert into public.errori_app (giorno, messaggio) values (current_date - 31, 'vecchio'), (current_date - 29, 'recente');
+set role anon;
+select public.segnala_errore('oggi', '', '', '', '');
+reset role;
+select pg_temp.esige('gli errori di piu'' di trenta giorni si cancellano da soli',
+  not exists (select 1 from public.errori_app where messaggio = 'vecchio')
+  and exists (select 1 from public.errori_app where messaggio = 'recente'));
+
+-- chi legge: solo chi amministra
+set role anon;
+do $$ begin
+  perform count(*) from public.errori_app;
+  raise exception 'FALLITA: l''anonimo non doveva poter leggere gli errori';
+exception when others then
+  if sqlerrm like 'FALLITA%' then raise; end if;
+  raise notice 'ok  l''anonimo non legge gli errori (%)', sqlerrm;
+end $$;
+reset role;
+select pg_temp.entra('user_bea');
+set role authenticated;
+select pg_temp.esige('chi gioca non li legge',
+  (select count(*) from public.errori_app) = 0);
+-- e nessuno li scrive a mano, nemmeno con un account
+do $$ begin
+  insert into public.errori_app (messaggio) values ('scritto a mano');
+  raise exception 'FALLITA: chi ha un account non doveva poter scrivere gli errori a mano';
+exception when others then
+  if sqlerrm like 'FALLITA%' then raise; end if;
+  raise notice 'ok  gli errori non si scrivono a mano (%)', sqlerrm;
+end $$;
+reset role;
+update public.profiles set is_admin = true where id = 'user_alex';
+select pg_temp.entra('user_alex');
+set role authenticated;
+select pg_temp.esige('chi amministra li legge',
+  (select count(*) from public.errori_app) = 2);
+reset role;
+delete from public.errori_app;
+
 select 'tutte le prove sulle funzioni sono passate' as esito;

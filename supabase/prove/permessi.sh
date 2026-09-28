@@ -63,6 +63,12 @@ APERTE="is_judge is_league_admin is_league_member my_member_id matchday_is_froze
 # leggere. I limiti li provano supabase/prove/funzioni.sql e il controllo
 # qui sotto.
 APERTE="$APERTE conta_sponsor"
+# E segnala_errore (022): gli errori succedono anche prima dell'accesso, e un
+# rapporto che arriva solo dagli iscritti perderebbe proprio quelli dello
+# schermo d'accesso. Stessi limiti del contatore: scrive una tabella sola,
+# taglia i testi, cancella gli indirizzi e-mail, ha un tetto al giorno e non
+# restituisce niente.
+APERTE="$APERTE segnala_errore"
 # Su una riga sola, con uno spazio davanti e dietro: il confronto piu' sotto
 # cerca " nome " e i ritorni a capo dell'elenco lo facevano fallire per gli
 # ultimi di ogni riga. Preso dal guardiano stesso alla prima corsa, che e' il
@@ -85,7 +91,7 @@ while read -r nome firma; do
 done <<< "$LISTA"
 [ "$SFUGGITE" = 0 ] && ok "nessuna, a parte quelle aperte di proposito"
 
-echo "== la sola funzione che l'anonimo puo' scrivere non apre altro =="
+echo "== le funzioni che l'anonimo puo' chiamare non aprono altro =="
 # Aperta si', ma limitata: se un giorno restituisse righe invece di void
 # diventerebbe un modo per leggere il database senza account, e se l'anonimo
 # avesse i permessi sulla tabella il contatore si potrebbe riempire a mano.
@@ -99,6 +105,19 @@ for pr in select insert update delete; do
     ok "l'anonimo non ha $pr sui conteggi"
   else
     ko "l'anonimo ha $pr su sponsor_conteggi: il rendiconto si scrive a mano"
+  fi
+done
+
+if [ "$(V "select pg_get_function_result('public.segnala_errore(text,text,text,text,text)'::regprocedure)")" = void ]; then
+  ok "segnala_errore non restituisce niente"
+else
+  ko "segnala_errore ora restituisce qualcosa: da anonimo diventa una finestra sul database"
+fi
+for pr in select insert update delete; do
+  if [ "$(V "select has_table_privilege('anon','public.errori_app','$pr')")" = f ]; then
+    ok "l'anonimo non ha $pr sugli errori"
+  else
+    ko "l'anonimo ha $pr su errori_app"
   fi
 done
 

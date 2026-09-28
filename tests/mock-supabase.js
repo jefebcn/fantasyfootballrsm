@@ -24,6 +24,7 @@ function builder(table) {
     // TUTTE le righe delle rose: le prove col browser girano da sempre con le
     // rose vuote, e nessuna se n'era accorta perche' le schermate si
     // disegnavano comunque.
+    gte(k, v) { filters.push((r) => r[k] >= v); return b; },
     is(k, v) { filters.push((r) => (v === null ? r[k] === null || r[k] === undefined : r[k] === v)); return b; },
     order(k, o) { orderBy = [k, o?.ascending !== false]; return b; },
     limit(n) { lim = n; return b; },
@@ -103,6 +104,22 @@ export function createClient(_url, _key, opts) {
         // prova che lo chiama sempre da iscritto non proverebbe quel caso.
         // La finestra e' la stessa del database: fuori non si conta e non si
         // sbaglia, si torna indietro e basta.
+        // Gli errori dei telefoni (022): anche questa porta e' aperta a chi
+        // non ha un account. Stesse regole della funzione vera: una riga per
+        // errore al giorno col suo contatore, e le e-mail che si cancellano.
+        if (name === 'segnala_errore') {
+          const posta = /[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/g;
+          const m = String(args.p_messaggio || '').trim().slice(0, 300).replace(posta, '[e-mail]');
+          if (!m) return { data: null, error: null };
+          const giorno = new Date().toISOString().slice(0, 10);
+          const v = String(args.p_versione || '').slice(0, 40); const sc = String(args.p_schermata || '').slice(0, 60);
+          const gia = T('errori_app').find((e) => e.giorno === giorno && e.messaggio === m && e.versione === v && e.schermata === sc);
+          if (gia) { gia.quante++; gia.ultimo = now(); }
+          else T('errori_app').push({ id: uid(), giorno, primo: now(), ultimo: now(), quante: 1, messaggio: m,
+            dettaglio: String(args.p_dettaglio || '').slice(0, 1200).replace(posta, '[e-mail]'), versione: v, schermata: sc,
+            dispositivo: String(args.p_dispositivo || '').slice(0, 60) });
+          persisti(); return { data: null, error: null };
+        }
         if (name === 'conta_sponsor') {
           if (args.p_tipo !== 'vista' && args.p_tipo !== 'tocco') throw new Error('tipo sconosciuto: ' + args.p_tipo);
           const oggi = new Date().toISOString().slice(0, 10);

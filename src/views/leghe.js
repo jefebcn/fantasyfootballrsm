@@ -8,6 +8,7 @@ let form = 'none'; // 'create' | 'join' | 'pubblica'
 let pubbliche = null;   // elenco dal server: null = non ancora chiesto
 let entraIn = null;     // id della lega pubblica in cui si sta entrando
 let apriEntra = null;   // arrivati dal banner: ci si scorre sopra una volta sola
+let invitoAperto = false; // il modulo dell'invito si apre da solo una volta, non a ogni ridisegno
 // Con Apple e «Nascondi la mia e-mail» il nome non arriva: lo chiediamo qui,
 // che è il passaggio obbligato prima di entrare in una lega.
 const nameField = () => S.nomeDaCompletare()
@@ -138,7 +139,11 @@ export const leghe = {
         ${S.isAdmin() ? `<button class="startcard larga${form === 'pubblica' ? ' on' : ''}" data-form="pubblica">${pic('trofei', 'lega')}<b>Crea una lega pubblica</b><span>Aperta a tutti, senza codice: ognuno si fa la sua rosa e vince chi fa più punti</span></button>` : ''}
       </div>
       ${form === 'create' ? `<div class="a-card" style="display:flex;flex-direction:column;gap:6px"><label class="lbl" for="lname">Nome della lega</label><input class="field-input" id="lname" placeholder="es. I Sudati di RSM" maxlength="40">${teamFields()}<button class="a-btn" id="go-create" style="margin-top:10px">Crea e diventa admin</button></div>` : ''}
-      ${form === 'join' ? `<div class="a-card" style="display:flex;flex-direction:column;gap:6px"><label class="lbl" for="code">Codice invito</label><input class="field-input" id="code" placeholder="es. A1B2C3" autocapitalize="characters" maxlength="6">${teamFields()}<button class="a-btn" id="go-join" style="margin-top:10px">Entra nella lega</button></div>` : ''}
+      ${form === 'join' ? (() => {
+    const inv = S.invitoInSospeso();
+    return `<div class="a-card${inv ? ' invitato' : ''}" style="display:flex;flex-direction:column;gap:6px">${inv
+      ? '<p class="auth-hint" style="margin:0 0 4px">Ti hanno invitato: <b>il codice è già qui</b>. Scegli solo il nome della tua squadra.</p>' : ''}<label class="lbl" for="code">Codice invito</label><input class="field-input" id="code" placeholder="es. A1B2C3" autocapitalize="characters" maxlength="6" value="${esc(inv || '')}">${teamFields()}<button class="a-btn" id="go-join" style="margin-top:10px">Entra nella lega</button></div>`;
+  })() : ''}
       ${form === 'pubblica' ? moduloPubblica() : ''}
       ${primaLePubbliche ? '' : elencoPubbliche(false)}
       ${mine.length ? '' : comeFunziona()}
@@ -154,6 +159,16 @@ export const leghe = {
   mount(root, ctx) {
     // Un colore a caso per questa creazione: non si chiede piu' all'utente.
     const color = coloreACaso();
+    // Arrivati da un link d'invito: il modulo si apre da solo, UNA volta. Se
+    // poi uno lo chiude per creare una lega sua, non glielo si riapre a ogni
+    // ridisegno.
+    if (S.invitoInSospeso() && !invitoAperto) {
+      invitoAperto = true;
+      if (form !== 'join') { form = 'join'; ctx.render(); return; }
+    }
+    // niente focus automatico: sul telefono aprirebbe la tastiera sopra la
+    // spiegazione, e il primo campo potrebbe essere il nome e non la squadra
+    if (form === 'join' && S.invitoInSospeso()) root.querySelector('.invitato')?.scrollIntoView({ block: 'center' });
     // Chi arriva dal banner del montepremi vuole entrare in QUELLA lega: il
     // modulo del nome squadra lo trova aperto, e la pagina ci scorre sopra.
     // Senza questo passaggio finiva nell'elenco e la doveva cercare.
@@ -249,7 +264,7 @@ export const leghe = {
       const bj = e.target.closest('#go-join');
       if (bj) { if (bj.disabled) return; const code = root.querySelector('#code').value.trim(); const t = team(); if (code.length < 4) { ctx.toast('Inserisci il codice invito'); return; } if (!t) return; if (!await salvaNome()) return;
         occupa(bj);
-        try { await S.joinLeague(code, t, color, initials(t)); ctx.toast('Sei dentro'); form = 'none'; ctx.go(''); } catch (err) { ctx.toast(err.message); libera(bj); } }
+        try { await S.joinLeague(code, t, color, initials(t)); S.dimenticaInvito(); ctx.toast('Sei dentro'); form = 'none'; ctx.go(''); } catch (err) { ctx.toast(err.message); libera(bj); } }
     });
   },
 };

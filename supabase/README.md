@@ -207,8 +207,9 @@ Su un progetto nuovo, nell'SQL Editor, in quest'ordine:
     a cinque ore e mezza misurate — a `pg_cron`, dentro il database. Vedi
     `functions/promemoria/README.md`, passo 3b.
 
-25. `dati-fsgc-pianificato.sql` — **facoltativo ma consigliato**, e non è una
-    migrazione: come il promemoria, si riempie **una riga** (un token di
+25. `dati-fsgc-pianificato.sql` — **pronto ma non attivo** (Alex ha deciso di
+    rimandarlo il 30 settembre: il token di GitHub era troppo macchinoso per
+    adesso). Non è una migrazione: come il promemoria, si riempie **una riga** (un token di
     GitHub) e si lancia a mano. Fa partire l'import dei dati FSGC
     dall'orologio del database invece che da quello di GitHub, che salta le
     corse: «ogni due ore» era diventato una ogni 5-6. Ogni 30 minuti da venerdì

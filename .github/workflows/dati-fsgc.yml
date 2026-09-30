@@ -21,14 +21,15 @@ name: Dati FSGC
 # pubblicato niente di nuovo il lavoro non committa e finisce in un minuto, e
 # su un repository pubblico i minuti di Actions non si pagano.
 #
-# E NON BASTAVA: "ogni due ore" e' diventato una corsa ogni 5-6 ore (misurato
-# il 29-30 settembre). Dal 30 settembre l'orologio vero sta nel database:
-# supabase/dati-fsgc-pianificato.sql fa partire questo lavoro a comando
-# (workflow_dispatch) ogni 30 minuti da venerdi' a lunedi' e ogni ora gli
-# altri giorni — e le partenze a comando GitHub le serve subito. La corsa
-# pianificata qui sotto resta come riserva, se quell'orologio si ferma. Per
-# questo il tasto workflow_dispatch NON va tolto: senza, l'orologio del
-# database riceve 422 a ogni giro.
+# E NON BASTA: "ogni due ore" e' diventato una corsa ogni 5-6 ore (misurato
+# il 29-30 settembre). Il rimedio e' pronto ma NON E' ATTIVO: il file
+# supabase/dati-fsgc-pianificato.sql farebbe partire questo lavoro a comando
+# dall'orologio del database (ogni 30 minuti da venerdi' a lunedi', ogni ora
+# gli altri giorni), ma serve un token di GitHub e Alex ha deciso di
+# rimandare (30 settembre). Nel frattempo, la domenica sera, il tasto
+# "Run workflow" su GitHub fa partire l'import subito, a mano.
+# Il tasto workflow_dispatch qui sotto quindi NON va tolto: serve a quel
+# tasto, e all'orologio del database il giorno che si accende.
 on:
   schedule:
     - cron: '7 */2 * * *'      # ogni due ore (GitHub la servira' quando puo')

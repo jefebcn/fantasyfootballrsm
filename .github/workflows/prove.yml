@@ -55,6 +55,10 @@ jobs:
 
       - name: L'orologio dei dati FSGC nel database
         run: sudo -E PORTA=5471 ./supabase/prove/fsgc-pianificato.sh
+      - name: L'import dei dati FSGC in giro nei giorni di partita
+        run: ./prove/import-in-giro.sh
+      - name: La sentinella dell'import
+        run: ./prove/sentinella-import.sh
 
   browser:
     runs-on: ubuntu-latest

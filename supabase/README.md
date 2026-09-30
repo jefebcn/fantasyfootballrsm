@@ -217,7 +217,10 @@ Su un progetto nuovo, nell'SQL Editor, in quest'ordine:
     limitato a questo repository e al solo permesso *Actions: read and write*:
     i token classic vengono rifiutati, e come farlo è scritto in cima al file.
     Com'è andata: `select * from interno.fsgc_ultime;` (204 = partito).
-    Provato da `prove/fsgc-pianificato.sh`.
+    Provato da `prove/fsgc-pianificato.sh`. Nel frattempo i buchi li chiude
+    `scripts/importa-in-giro.sh` senza token (nei giorni di partita il lavoro
+    resta acceso e ricontrolla ogni 20 minuti): questo resta utile solo se
+    un giorno servisse partire a un orario preciso.
 
 Le migrazioni dalla 001 in poi si possono rieseguire quante volte si vuole.
 

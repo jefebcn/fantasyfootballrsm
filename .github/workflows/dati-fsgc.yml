@@ -22,14 +22,20 @@ name: Dati FSGC
 # su un repository pubblico i minuti di Actions non si pagano.
 #
 # E NON BASTA: "ogni due ore" e' diventato una corsa ogni 5-6 ore (misurato
-# il 29-30 settembre). Il rimedio e' pronto ma NON E' ATTIVO: il file
-# supabase/dati-fsgc-pianificato.sql farebbe partire questo lavoro a comando
-# dall'orologio del database (ogni 30 minuti da venerdi' a lunedi', ogni ora
-# gli altri giorni), ma serve un token di GitHub e Alex ha deciso di
-# rimandare (30 settembre). Nel frattempo, la domenica sera, il tasto
-# "Run workflow" su GitHub fa partire l'import subito, a mano.
-# Il tasto workflow_dispatch qui sotto quindi NON va tolto: serve a quel
-# tasto, e all'orologio del database il giorno che si accende.
+# il 29-30 settembre). Farlo partire da fuori (supabase/dati-fsgc-pianificato.sql,
+# pronto ma NON attivo) vuole un token di GitHub, e Alex ha deciso di
+# rimandare (30 settembre).
+#
+# Il rimedio senza token: un lavoro di GitHub puo' restare acceso sei ore.
+# Nei giorni di partita (da un'ora prima del primo calcio d'inizio a due giorni
+# dopo l'ultima gara della giornata, scripts/finestra-partite.mjs) l'import non
+# fa un giro e basta: resta acceso 5h20m e ricontrolla la FSGC ogni 20 minuti.
+# Intanto la corsa successiva aspetta in coda (concurrency qui sotto) e parte
+# appena questa finisce, quindi i ritardi di GitHub non lasciano buchi.
+# Gli altri giorni il giro e' uno, come prima.
+#
+# Il tasto workflow_dispatch qui sotto NON va tolto: fa partire l'import
+# subito, a mano, e serve all'orologio del database il giorno che si accende.
 on:
   schedule:
     - cron: '7 */2 * * *'      # ogni due ore (GitHub la servira' quando puo')
@@ -45,6 +51,10 @@ permissions:
 jobs:
   importa:
     runs-on: ubuntu-latest
+    # 5h50m: il turno ne usa 5h20m, poi un ultimo giro e il push. Sotto le sei
+    # ore di GitHub, e sotto le otto della sentinella (controlla-import.sh),
+    # che un turno piantato lo vede come vecchio e suona.
+    timeout-minutes: 350
     steps:
       - uses: actions/checkout@v4
 
@@ -86,57 +96,14 @@ jobs:
           restore-keys: |
             tabellini-
 
-      # Calendario, risultati, stadi, formazioni ed eventi. Se la FSGC non
-      # risponde lo script solleva e il lavoro fallisce: e' voluto, perche' un
+      # Calendario, risultati, referti e highlights, poi service worker nuovo,
+      # calendario dei lock, prove, commit e push se ci sono dati nuovi: tutto
+      # dentro scripts/importa-in-giro.sh, che nei giorni di partita resta
+      # acceso e ricontrolla la FSGC ogni 20 minuti (lo spiega lui, in cima).
+      # Se la FSGC non risponde al primo giro esce con errore: e' voluto, un
       # fallimento visibile e' meglio di dati vecchi spacciati per nuovi.
-      - name: Calendario, risultati e referti
-        run: python3 scripts/importa-fsgc.py
-
-      # I video sono un extra: se il feed di YouTube non risponde si tira avanti
-      # con i dati di gara, che sono quelli che fanno i voti.
-      - name: Highlights dal canale FSGC
-        continue-on-error: true
-        run: python3 scripts/importa-video.py
-
-      - name: Cosa e' cambiato
-        id: diff
-        run: |
-          if git diff --quiet -- src/; then
-            echo "cambiato=no" >> "$GITHUB_OUTPUT"
-            echo "Nessun dato nuovo: niente da committare."
-          else
-            echo "cambiato=si" >> "$GITHUB_OUTPUT"
-            git diff --stat -- src/
-          fi
-
-      # La cache e' stale-while-revalidate: senza una versione nuova chi ha
-      # l'app installata vedrebbe i dati della settimana prima al primo avvio.
-      - name: Versione nuova del service worker
-        if: steps.diff.outputs.cambiato == 'si'
-        run: python3 scripts/bump-sw.py
-
-      # Il calendario dei lock vive nel database come migrazione generata dal
-      # calendario dell'app: se l'import ha spostato una gara, il file cambia e va
-      # ricaricato su Supabase. Qui si rigenera e si avvisa; caricarlo resta
-      # l'unico passo a mano, ed e' raro.
-      - name: Rigenera il calendario dei lock
-        if: steps.diff.outputs.cambiato == 'si'
-        run: |
-          node scripts/genera-lock.mjs
-          if ! git diff --quiet -- supabase/migrations/012-calendario-lock.sql; then
-            echo "::warning::Il calendario dei lock e' cambiato: carica supabase/migrations/012-calendario-lock.sql nell'SQL Editor di Supabase, se no il server chiude le formazioni nel giorno vecchio."
-          fi
-
-      - name: I test passano ancora
-        if: steps.diff.outputs.cambiato == 'si'
-        run: npm test
-
-      - name: Committa
-        if: steps.diff.outputs.cambiato == 'si'
+      - name: Importa, e nei giorni di partita resta di guardia
         run: |
           git config user.name  'importatore FSGC'
           git config user.email 'importatore-fsgc@users.noreply.github.com'
-          git add src/ sw.js supabase/migrations/012-calendario-lock.sql
-          git commit -m "dati: import automatico del $(date -u +'%d/%m/%Y')" \
-                     -m "$(git diff --cached --stat -- src/ | tail -1)"
-          git push
+          bash scripts/importa-in-giro.sh

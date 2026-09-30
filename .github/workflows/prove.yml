@@ -53,6 +53,9 @@ jobs:
       - name: Il promemoria pianificato nel database
         run: sudo -E PORTA=5469 ./supabase/prove/pianificato.sh
 
+      - name: L'orologio dei dati FSGC nel database
+        run: sudo -E PORTA=5471 ./supabase/prove/fsgc-pianificato.sh
+
   browser:
     runs-on: ubuntu-latest
     steps:

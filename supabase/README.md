@@ -207,6 +207,17 @@ Su un progetto nuovo, nell'SQL Editor, in quest'ordine:
     a cinque ore e mezza misurate — a `pg_cron`, dentro il database. Vedi
     `functions/promemoria/README.md`, passo 3b.
 
+25. `dati-fsgc-pianificato.sql` — **facoltativo ma consigliato**, e non è una
+    migrazione: come il promemoria, si riempie **una riga** (un token di
+    GitHub) e si lancia a mano. Fa partire l'import dei dati FSGC
+    dall'orologio del database invece che da quello di GitHub, che salta le
+    corse: «ogni due ore» era diventato una ogni 5-6. Ogni 30 minuti da venerdì
+    a lunedì, ogni ora gli altri giorni. Il token dev'essere **fine-grained**,
+    limitato a questo repository e al solo permesso *Actions: read and write*:
+    i token classic vengono rifiutati, e come farlo è scritto in cima al file.
+    Com'è andata: `select * from interno.fsgc_ultime;` (204 = partito).
+    Provato da `prove/fsgc-pianificato.sh`.
+
 Le migrazioni dalla 001 in poi si possono rieseguire quante volte si vuole.
 
 ### Moderare: rinominare prima, sospendere poi

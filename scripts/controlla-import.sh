@@ -53,5 +53,26 @@ if python3 -c 'import sys; sys.exit(0 if float(sys.argv[1]) <= float(sys.argv[2]
   echo "i dati sono freschi"
   exit 0
 fi
+
+# Nei giorni di partita l'import resta acceso piu' di cinque ore e ricontrolla
+# la FSGC ogni 20 minuti (scripts/importa-in-giro.sh): la corsa risulta
+# "riuscita" solo quando finisce, ma intanto i dati li ha gia' pubblicati.
+# Un turno IN CORSO partito da meno di ORE_MASSIME e' vivo. Se invece si
+# pianta, GitHub lo chiude a timeout e la sentinella dopo suona.
+api="https://api.github.com/repos/$REPO/actions/workflows/$LAVORO/runs?status=in_progress&per_page=1"
+risposta=$(curl -sS --max-time 25 "${intestazioni[@]}" "$api" || true)
+partito=$(printf '%s' "$risposta" | python3 -c 'import json,sys
+try: corse = json.load(sys.stdin).get("workflow_runs") or []
+except Exception: corse = []
+print(corse[0].get("run_started_at") or corse[0]["created_at"] if corse else "")' 2>/dev/null)
+if [ -n "$partito" ]; then
+  da=$(python3 -c 'import datetime,sys
+q = datetime.datetime.fromisoformat(sys.argv[1].replace("Z", "+00:00"))
+print(round((datetime.datetime.now(datetime.timezone.utc) - q).total_seconds() / 3600, 1))' "$partito")
+  if python3 -c 'import sys; sys.exit(0 if float(sys.argv[1]) <= float(sys.argv[2]) else 1)' "$da" "$ORE_MASSIME"; then
+    echo "un turno dell'import e' in corsa da $da ore: i dati li sta portando lui"
+    exit 0
+  fi
+fi
 echo "::error::l'import dei dati FSGC non va a buon fine da $ore ore: nell'app i risultati sono vecchi"
 exit 1

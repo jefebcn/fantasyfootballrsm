@@ -88,7 +88,11 @@ giocate il venerdi' sera, e nell'app niente.
   `src/calendario-dati.js` e `src/eventi-dati.js`. Sono file del repository:
   entrano in produzione con un deploy. Il lavoro si propone **ogni due ore**,
   perche' GitHub le corse pianificate le accoda — il cron delle 05:30 e'
-  partito alle 09:55, alle 10:09, alle 10:06.
+  partito alle 09:55, alle 10:09, alle 10:06. E nei giorni di partita non
+  basta nemmeno quello: li' il lavoro resta acceso 5h20m e ricontrolla la
+  FSGC ogni 20 minuti (`scripts/importa-in-giro.sh`, finestra da un'ora prima
+  del primo calcio d'inizio a 48 ore dopo l'ultimo:
+  `scripts/finestra-partite.mjs`). Nessun token, nessun passo a mano.
 - I voti dei singoli invece nascono dagli **eventi nel database**
   (`match_events`, `match_appearances`): finche' quelli mancano, una gara
   finita in lega non ha voti, e la schermata Voti lo dice ("Voti in arrivo").

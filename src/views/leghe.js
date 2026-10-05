@@ -159,7 +159,7 @@ export const leghe = {
             profilo, ne' leggere l'informativa da dentro l'app. Un account
             appena creato e poi lasciato li' e' proprio quello che prova chi
             controlla l'app prima di pubblicarla. */
-    mine.length ? '' : `<a class="rigainstalla rigaconto" href="#/impostazioni">${icon('gear', 'ic sm')}<span><b>Impostazioni e account</b><small>notifiche, privacy, esci o cancella il profilo</small></span></a>`}
+    mine.length ? '' : `<a class="rigaconto" href="#/impostazioni">${icon('gear', 'ic sm')}<span><b>Impostazioni e account</b><small>notifiche, privacy, esci o cancella il profilo</small></span></a>`}
     </main>`;
   },
   mount(root, ctx) {

@@ -200,8 +200,13 @@ a.mrow.tocca{color:inherit;text-decoration:none;cursor:pointer}
 .rigainstalla .ic{color:var(--c-oro-500);flex:none}
 .rigainstalla b{display:block;font-size:14px;color:var(--text)}
 .rigainstalla small{font-size:12px;color:var(--text-muted)}
-.rigaconto{text-decoration:none;border-style:solid}
-.rigaconto .ic{color:var(--text-muted)}
+/* stessa forma della riga per installare, ma e' un'altra cosa: classe sua,
+   se no chi cerca la riga d'installazione trova anche questa */
+.rigaconto{display:flex;align-items:center;gap:10px;width:100%;margin-top:12px;padding:12px 14px;
+  border:1px solid var(--border);border-radius:14px;text-decoration:none;color:var(--text-muted);text-align:left}
+.rigaconto .ic{color:var(--text-muted);flex:none}
+.rigaconto b{display:block;font-size:14px;color:var(--text)}
+.rigaconto small{font-size:12px;color:var(--text-muted)}
 
 /* I passi delle istruzioni: numerati, con aria fra uno e l'altro — si
    leggono col telefono in mano mentre si fanno. */

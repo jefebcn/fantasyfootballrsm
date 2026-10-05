@@ -224,6 +224,153 @@ Il conto degli iscritti si guarda in *Test e release → Test chiusi → Tester*
 Quando arriva a 12 e sono passati i 14 giorni, il Console sblocca «Richiedi
 l'accesso alla produzione».
 
+## 5c. La richiesta per la produzione: le risposte
+
+Quando il Console sblocca «Richiedi l'accesso alla produzione» apre un
+questionario in tre parti: il test chiuso, l'app, la prontezza. È il punto in
+cui Google respinge più spesso, e quasi sempre per risposte generiche («tutto
+bene, nessun problema»). Qui sotto ci sono le risposte, scritte coi fatti veri
+del test.
+
+**Tre cose prima di incollare.**
+
+1. **Google vede le statistiche del test chiuso**: quanti hanno installato,
+   quanti hanno aperto l'app. Le risposte devono combaciare con quei numeri.
+   I campi tra parentesi quadre `[ … ]` li sai solo tu: riempili coi numeri
+   veri, anche se sono piccoli. Un numero piccolo e onesto passa; un numero
+   gonfiato che non torna con le loro statistiche no.
+2. **Nei 14 giorni del test non si è giocata nessuna giornata.** La 4ª si è
+   chiusa il 20/09, la 5ª si gioca dal 9 all'11/10 (sosta del campionato). I
+   tester hanno potuto iscriversi, entrare in una lega, fare la rosa e
+   guardare i dati delle prime quattro giornate. Non hanno potuto vivere il
+   giro della settimana: formazione, partite, voti, scontro diretto.
+   Quindi due strade:
+   - **chiedere il 6/10**, con le risposte qui sotto così come sono, che
+     dicono la verità sulla sosta;
+   - **chiedere lunedì 12/10**, dopo la 5ª giornata. Il requisito dei 14
+     giorni resta soddisfatto, e in più le risposte possono dire «hanno
+     schierato la formazione e visto i voti di una giornata vera». Il
+     passaggio da aggiungere in quel caso è segnato **[dopo la 5ª]**.
+   La seconda è più solida: il test chiuso serve proprio a mostrare che la
+   gente usa la cosa principale dell'app. Costa sei giorni.
+3. **In inglese**: i revisori leggono anche l'italiano, ma così nessuno passa
+   dal traduttore automatico. Sotto ogni risposta c'è il senso in italiano.
+   Se un campo ha un limite più corto del testo, taglia dalla fine: le frasi
+   sono in ordine d'importanza.
+
+### Parte 1 — Il test chiuso
+
+**Quanto è stato facile trovare i tester?** (scelta multipla) — rispondi come
+è andata davvero. Non c'è una risposta che fa passare e una che fa respingere.
+
+**Descrivi il coinvolgimento dei tester durante il test chiuso**
+
+```
+Our 12 testers have been enrolled since 22 September 2026. They are football fans who follow the San Marino championship (Campionato Sammarinese), [the people the app is built for: friends and members of local fantasy football groups].
+
+During the test [N] testers created an account and [N] joined a league. They used the account flow (sign-up with e-mail confirmation, password-less login link), joined leagues through invite links, built their squads in the open league and the player market, and browsed real data from the first four matchdays: player ratings computed from official match reports, player profiles, head-to-head comparisons, standings and match highlights.
+
+The championship had a scheduled break during the test (no matches between 21 September and 8 October), so the weekly line-up/matchday loop could not be exercised on a live matchday inside the 14 days. [dopo la 5ª: When matchday 5 was played (9–11 October), [N] testers submitted their line-up before the deadline and followed scores and ratings as the match reports arrived.]
+```
+
+*Il senso:* 12 tester dal 22/09, tifosi del campionato. In [N] hanno creato
+l'account e in [N] sono entrati in una lega. Hanno usato iscrizione, invito,
+rosa, mercato, i dati delle prime quattro giornate. La sosta ha impedito di
+provare una giornata dal vivo dentro i 14 giorni.
+
+*Dove trovi i numeri:* gli account e le leghe nella console dell'app (scheda
+admin); le formazioni consegnate nel grafico «Chi consegna», che dopo la 5ª
+avrà la prima barra del test. Le installazioni le vedi in Play Console,
+*Statistiche* della traccia di test.
+
+**Riassumi il feedback ricevuto dai tester, e come l'hai raccolto**
+
+```
+We collected feedback in three ways: directly from testers [in a group chat / in person / by e-mail to support@fantatitano.site], through the in-app error reports (since 28 September the app sends crash and error reports with app version, screen and device type, and no personal data, declared in Data safety), and by watching how testers moved through sign-up and league joining.
+
+The main points were: [1. ...], [2. ...], [3. ...]. Examples of issues we found and fixed during the test: the e-mail confirmation link did not bring users back into the app; opening an already-used confirmation link showed a raw error in English; invited users had to copy a league code by hand; users without a league could not find how to install the app on their home screen.
+```
+
+*Il senso:* come hai raccolto il feedback (chat, di persona, e-mail; i
+rapporti d'errore automatici) e cosa è emerso. **Le righe `[1. 2. 3.]` sono le
+cose che ti hanno detto i tester**: mettile tu. Gli esempi dopo sono problemi
+veri trovati e corretti nel periodo del test. Togli quelli che non vuoi
+attribuire al test.
+
+### Parte 2 — L'app
+
+**Chi è il pubblico dell'app?**
+
+```
+Football fans in San Marino and the surrounding Italian area (Romagna and Montefeltro) who follow the Campionato Sammarinese, the 16-club national league: players' friends and families, club supporters and local fantasy football groups. The app is in Italian and requires users to be at least 14 years old.
+```
+
+*Il senso:* tifosi del campionato sammarinese, a San Marino e nei dintorni.
+App in italiano, dai 14 anni in su (`ETA_MINIMA` in `src/config.js`).
+
+**Come offre valore agli utenti?**
+
+```
+Fantatitano is the only fantasy football game built on the San Marino championship. Mainstream fantasy games cover only the big leagues, so the people who follow this league every week had no way to play a season-long fantasy game on it.
+
+Ratings are not opinions: every player's score starts from 6.0 and is computed from the official match report (goals, assists, clean sheets, cards, penalties, result), and the app shows where each tenth of a point comes from. Users can dispute a wrong event until Tuesday 20:00, then the matchday is frozen for everyone. Friends play in private leagues with an auction, a player market, trades, weekly line-ups and head-to-head matches. The app is free, has no ad tracking and no third-party analytics, and works offline for content already viewed.
+```
+
+*Il senso:* l'unico fantacalcio sul campionato sammarinese. Voti calcolati
+dai referti, in chiaro, con le contestazioni e il congelamento del martedì.
+Leghe private con asta, mercato, scambi, formazioni e scontri diretti. Gratis,
+senza tracciamento, funziona anche offline.
+
+**Quante installazioni prevedi nel primo anno?** (scelta multipla) — **la
+fascia più bassa.** San Marino ha circa 34.000 abitanti e il campionato ha un
+pubblico locale: dichiarare di più non aiuta, e un numero credibile dice che
+sai per chi è l'app.
+
+### Parte 3 — La prontezza per la produzione
+
+**Cosa hai cambiato nell'app in base a quello che hai imparato nel test?**
+
+```
+Changes shipped during the closed test (22 September – 6 October):
+- Sign-up: fixed the e-mail confirmation redirect so the link opens the app, and replaced the raw error for an already-used link with a clear message and next steps.
+- Joining a league: invite links now carry the league code, so invited users join with one tap instead of copying a code.
+- First run: users who arrive without friends see the open league first, the one thing they can do right away; features that make no sense in an open league are hidden there.
+- Install: a menu entry to add the app to the home screen, reachable even before joining a league.
+- Reliability: crash and error reports from devices now reach the admin console; match data from the official reports is refreshed every 20 minutes on matchdays instead of a few times a day.
+- Smaller fixes: link previews when sharing, wording fixes, and security headers.
+```
+
+*Il senso:* l'elenco dei cambiamenti fatti nel periodo del test, tutti veri
+e già online (verifica della mail, invito col codice, primo avvio, tasto per
+installare, rapporti d'errore, import ogni 20 minuti, ritocchi). Se un tester
+ti ha chiesto una cosa precisa, dillo nella frase: «a tester asked for…» vale
+più di un elenco.
+
+**Come hai deciso che l'app è pronta per la produzione?**
+
+```
+The app has been running publicly at fantatitano.site on the real championship data, and the Android app is a Trusted Web Activity of that same web app, so fixes reach users without a new release. During the test we checked that:
+- every change runs automated tests: a deploy is blocked unless the unit tests pass, and browser tests of the main screens and database tests run on every change;
+- the server, the match-data import and the database are monitored around the clock, with alerts on failure, and the database has encrypted nightly backups;
+- crash and error reports reach us within minutes and no open report is left unexplained;
+- account deletion works from inside the app and from fantatitano.site/cancella-account.html, and the privacy policy matches the Data safety form.
+[dopo la 5ª: Matchday 5 (9–11 October) ran end to end with testers: line-ups locked at kick-off, ratings arrived from the match reports and standings updated.]
+```
+
+*Il senso:* l'app è online su fantatitano.site coi dati veri, e quella
+Android è la stessa app, quindi le correzioni arrivano senza ricaricare il
+pacchetto. Le prove senza browser bloccano la pubblicazione; quelle col
+browser e sul database girano a ogni modifica; sorveglianza
+continua di server, import e database (UptimeRobot e la Sentinella); backup
+cifrato ogni notte; rapporti d'errore; cancellazione dell'account che
+funziona; informativa coerente col modulo. **Prima di incollare** la riga sui
+rapporti d'errore, apri la sezione errori della console e controlla che non
+ce ne siano di aperti senza spiegazione.
+
+**Se respingono:** la mail dice cosa manca. Di solito chiedono altro test con
+tester più attivi. Non riscrivere le stesse risposte con altre parole:
+aggiungi quello che è successo dopo (una giornata giocata, i numeri nuovi).
+
 ## 6. Il premio in denaro, prima di dichiararlo
 
 Play ha una policy sui concorsi: un'app che mette in palio denaro deve

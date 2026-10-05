@@ -200,6 +200,8 @@ a.mrow.tocca{color:inherit;text-decoration:none;cursor:pointer}
 .rigainstalla .ic{color:var(--c-oro-500);flex:none}
 .rigainstalla b{display:block;font-size:14px;color:var(--text)}
 .rigainstalla small{font-size:12px;color:var(--text-muted)}
+.rigaconto{text-decoration:none;border-style:solid}
+.rigaconto .ic{color:var(--text-muted)}
 
 /* I passi delle istruzioni: numerati, con aria fra uno e l'altro — si
    leggono col telefono in mano mentre si fanno. */
@@ -1309,6 +1311,14 @@ button,a{-webkit-tap-highlight-color:transparent}
 .ptxt .pmeta{font-variant-numeric:tabular-nums}
 .pact{grid-column:2;display:flex;gap:8px;margin-top:9px}
 .pact .chip.danger{color:var(--negative-ink,var(--negative));border-color:var(--border-strong)}
+/* .prow serve a due righe diverse, e questa regola generica (due colonne)
+   vinceva su tutte e due. Nel profilo lega c'e' anche la maglia, terzo
+   pezzo: finiva nella colonna del testo e il nome scendeva sotto, con la
+   maglietta sola in mezzo alla riga. Nei premi il terzo pezzo e' chi vince:
+   andava a capo e lasciava una riga vuota sotto ogni premio. */
+.prow.conmaglia{grid-template-columns:auto 30px minmax(0,1fr);align-items:center}
+.prow.conmaglia .pact{grid-column:3}
+.premi .prow{grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:10px;padding:10px 0}
 
 /* icone illustrate */
 .pic{display:block;width:100%;height:100%;object-fit:contain;-webkit-user-drag:none}
@@ -1707,6 +1717,8 @@ button,a{-webkit-tap-highlight-color:transparent}
 .auth2 .passa{text-align:center;font:500 13px var(--font-body);color:rgba(255,255,255,.75);margin:6px 0 0}
 .auth2 .passa button{border:0;background:transparent;color:var(--c-oro-400);font:800 13px var(--font-body);cursor:pointer;padding:0 2px}
 .auth2 .nota{font-size:12.5px;color:rgba(255,255,255,.7);line-height:1.5;margin:2px 0}
+.auth2 .nota.legale{font-size:11.5px;color:rgba(255,255,255,.72)}
+.auth2 .nota.legale a{color:#fff;font-weight:600;text-decoration:underline;text-underline-offset:2px}
 .auth2 .avviso{display:flex;gap:9px;align-items:flex-start;padding:11px 13px;border-radius:12px;font-size:13px;
   background:rgba(255,255,255,.14);color:#fff;-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
 .auth2 .avviso.err{background:rgba(206,59,59,.35)}
@@ -1919,7 +1931,11 @@ button,a{-webkit-tap-highlight-color:transparent}
 .a-hero .hero-league{align-self:stretch;justify-content:space-between;background:var(--surface);
   color:var(--text);padding:11px 14px 11px 16px;border-radius:14px;text-transform:none;
   border-left:5px solid var(--accent);box-shadow:0 6px 16px rgba(0,0,0,.18)}
-.a-hero .hero-league b{display:block;font:700 16px var(--font-display);letter-spacing:-.01em}
+/* Il nome intero, coi puntini se non ci sta. Il nome corto lo taglia la
+   creazione alle prime due parole: "Campionato dei Sudati di San Marino"
+   diventava "Campionato dei", che non e' un nome. */
+.a-hero .hero-league>span{min-width:0}
+.a-hero .hero-league b{display:block;font:700 16px var(--font-display);letter-spacing:-.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .a-hero .hero-league small{display:block;font:500 11px var(--font-body);color:var(--text-muted);margin-top:1px}
 .a-hero .hero-league .ic{width:18px;height:18px;color:var(--text-muted)}
 .a-hero h2{margin-top:16px;padding-inline:60px;font-size:21px}

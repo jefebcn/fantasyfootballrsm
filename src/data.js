@@ -160,8 +160,12 @@ export function buildSeason(_seed = 20262027) {
   }
 
   // --- Calendario vero della FSGC -----------------------------------------
-  // Il lock resta il sabato della giornata: è la regola della lega (art. 8.3),
-  // non dipende dall'orario vero della prima partita.
+  // Il lock e' alle 15:00 del giorno della prima partita, ma MAI DOPO il suo
+  // calcio d'inizio. Le prime quattro giornate cominciavano tutte alle 21:15
+  // e le 15:00 bastavano; l'8a comincia sabato 7 novembre alle 14:00, e con
+  // le 15:00 secche si sarebbe schierato a partita gia' cominciata, sapendo
+  // chi segnava. Il regolamento (art. 8) dice "lock all'inizio della prima
+  // gara": le 15:00 sono un anticipo, non un ritardo.
   const matchdays = []; const matches = [];
   let ultimoNoto = null; let ultimoN = 0;   // ultima giornata con un orario vero
   const perGiornata = {};
@@ -180,7 +184,8 @@ export function buildSeason(_seed = 20262027) {
     // al vero che ripartire dall'inizio stagione.
     const primo = orari.length ? new Date(Math.min(...orari))
       : new Date((ultimoNoto ?? SEASON_START.getTime()) + (n - ultimoN) * 7 * 86400000);
-    const sat = oraItaliana(primo, 15);
+    const alle15 = oraItaliana(primo, 15);
+    const sat = orari.length && primo < alle15 ? primo : alle15;
     if (orari.length) { ultimoNoto = +sat; ultimoN = n; }
     const md = { id: `md${n}`, number: n, lockAt: sat.toISOString(), saturday: sat.toISOString() };
     matchdays.push(md);

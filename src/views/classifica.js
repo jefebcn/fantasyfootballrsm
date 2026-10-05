@@ -167,8 +167,8 @@ export const classifica = {
     // E l'etichetta a destra del badge diceva "Record" mentre la scheda
     // "Record" era gia' accesa due centimetri sotto: due volte la stessa
     // parola, e una riga in meno di spazio per il resto. Via.
-    const barra = (dentro) => `<div class="segwrap"><div class="seg seg-cls">${dentro}</div></div>
-      <div class="statoriga">${badge(stato, `giornata ${n}`)}</div>`;
+    const barra = (dentro, conStato = true) => `<div class="segwrap"><div class="seg seg-cls">${dentro}</div></div>
+      ${conStato ? `<div class="statoriga">${badge(stato, `giornata ${n}`)}</div>` : ''}`;
     const seg = barra(`<button class="${vista === 'classifica' ? 'on' : ''}" data-vista="classifica">Classifica</button>
       <button class="${vista === 'giornata' ? 'on' : ''}" data-vista="giornata">Giornata ${n}</button>
       <button class="${vista === 'record' ? 'on' : ''}" data-vista="record">Record</button>`);
@@ -201,8 +201,13 @@ export const classifica = {
         : S.schieramentoBloccato()
           ? `<a class="a-btn sec" href="#/voti/${S.schieramentoBloccato().inGioco}" style="text-decoration:none">Voti della ${S.schieramentoBloccato().inGioco}ª</a>`
           : `<a class="a-btn sec" href="#/rosa/formazione" style="text-decoration:none">Schiera la formazione</a>`;
+      // Niente scheda "Giornata N" ne' badge di stato: in una lega che parte
+      // dalla 5a dicevano "PROVVISORIO · giornata 4", cioe' lo stato di una
+      // giornata che per questa lega non esiste.
+      const vuota = barra(`<button class="${vista !== 'record' ? 'on' : ''}" data-vista="classifica">Classifica</button>
+      <button class="${vista === 'record' ? 'on' : ''}" data-vista="record">Record</button>`, false);
       return `<main class="a-body">
-        ${S.aPunti() ? segPunti : seg}
+        ${vuota}
         ${S.aPunti() ? premiCard({ vincitori: false }) : ''}
         ${vista === 'record' ? record() : empty(testo, azione)}
       </main>`;

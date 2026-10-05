@@ -35,7 +35,7 @@ const SLIDES = [
     title: 'Tre cose<br><em>da sapere</em>',
     points: [
       ['calc', 'Il Voto Titano', 'Si parte da 6,0. Si aggiunge l\'esito della squadra e ogni evento del referto: gol, assist, porta inviolata, cartellini, rigori. Il conto è sempre visibile, riga per riga.'],
-      ['cal', 'Una giornata a settimana', 'Schieri 11 titolari e 7 in panchina ordinati. Le formazioni si chiudono all\'inizio della prima gara. La domenica sera arrivano i punteggi.'],
+      ['cal', 'Una giornata a settimana', 'Schieri 11 titolari e 7 in panchina ordinati. Le formazioni si chiudono alle 15 del giorno della prima gara. La domenica sera arrivano i punteggi.'],
       ['lock', 'Il dato si congela', 'Hai tempo fino al martedì per contestare un evento. Alle 20:00 la giornata diventa definitiva e non si tocca più.'],
     ],
   },

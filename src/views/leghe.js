@@ -38,7 +38,7 @@ const coloreACaso = () => COLORI_SQUADRA[Math.floor(Math.random() * COLORI_SQUAD
 function comeFunziona() {
   const punti = [
     ['voti', 'Niente pagelle', 'Il voto nasce dagli eventi del referto FSGC, non dal giudizio di un giornalista.'],
-    ['probabili', 'Una giornata per settimana', 'Si schiera entro il sabato, i voti escono la domenica, il martedì la giornata si chiude.'],
+    ['probabili', 'Una giornata per settimana', 'Si schiera entro le 15 del giorno della prima partita, di solito il venerdì. Il martedì la giornata si chiude.'],
     ['quotazioni', 'Rosa da 25', 'Listone del campionato sammarinese, 500 crediti all\'asta, mercato libero fra una giornata e l\'altra.'],
   ];
   return sec('Come funziona') + `<div class="a-card howto">${punti.map(([ic, t, d]) => `<div class="how"><i>${pic(ic, 'menu')}</i><span><b>${t}</b><span>${d}</span></span></div>`).join('')}</div>`;
@@ -154,6 +154,12 @@ export const leghe = {
             Home. Stessa azione, stesso data-installa (l'ascoltatore sta sul
             documento): cambia solo il posto. */
     mine.length || AV.installata() ? '' : `<button class="rigainstalla" data-installa>${icon('down', 'ic sm')}<span><b>Installa l'app</b><small>${AV.suiOS() ? 'Condividi → Aggiungi alla Home' : 'a schermo intero, con le notifiche'}</small></span></button>`}
+      ${/* E per lo stesso motivo — niente menu — chi non ha ancora una lega
+            non arrivava alle impostazioni: ne' uscire, ne' cancellare il
+            profilo, ne' leggere l'informativa da dentro l'app. Un account
+            appena creato e poi lasciato li' e' proprio quello che prova chi
+            controlla l'app prima di pubblicarla. */
+    mine.length ? '' : `<a class="rigainstalla rigaconto" href="#/impostazioni">${icon('gear', 'ic sm')}<span><b>Impostazioni e account</b><small>notifiche, privacy, esci o cancella il profilo</small></span></a>`}
     </main>`;
   },
   mount(root, ctx) {

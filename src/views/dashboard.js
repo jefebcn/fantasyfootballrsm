@@ -473,7 +473,7 @@ export const dashboard = {
           ${S.store.get().sfondoFoto ? '<span class="sfondo"><img src="media/sfondo-home.jpg" alt="" fetchpriority="high"><i></i></span>' : ''}
           ${logo('tw')}<i class="conf"></i>
           <a class="hero-league" href="#/leghe">
-            <span><b>${esc(S.base.league.shortName || S.base.league.name)}</b>
+            <span><b>${esc(S.base.league.name)}</b>
             <small>${S.base.managers.length} ${S.base.managers.length === 1 ? 'squadra' : 'squadre'} · ${ph.next}ª giornata</small></span>${icon('chev', 'ic sm')}</a>
           <h2>${esc(me.teamName)}</h2>
           <a class="jersey${scelto(me) ? ' pers' : ''}" href="#/squadra" aria-label="Modifica stemma, maglia e personaggio">

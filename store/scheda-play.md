@@ -38,7 +38,7 @@ IL VOTO LO SCRIVE LA PARTITA
 Niente pagelle e niente opinioni. Il voto di ogni giocatore parte da 6,0 e si muove con quello che c'è nel referto della gara: gol, assist, porta inviolata, cartellini, rigori, l'esito della squadra. Il conto resta in chiaro, riga per riga, e puoi vedere da dove nasce ogni decimo.
 
 UNA GIORNATA A SETTIMANA
-Schieri 11 titolari e 7 in panchina, ordinati: al posto di un titolare senza voto entra il primo panchinaro dello stesso ruolo. Le formazioni si chiudono all'inizio della prima gara della giornata, e chi non consegna perde 0-3 a tavolino. La domenica sera arrivano i punteggi e il risultato dello scontro diretto.
+Schieri 11 titolari e 7 in panchina, ordinati: al posto di un titolare senza voto entra il primo panchinaro dello stesso ruolo. Le formazioni si chiudono alle 15 del giorno della prima gara, e chi non consegna perde 0-3 a tavolino. La domenica sera arrivano i punteggi e il risultato dello scontro diretto.
 
 SE UN DATO È SBAGLIATO, SI CONTESTA
 Hai tempo fino al martedì per segnalare un evento che non torna. Alle 20:00 la giornata si congela e non si tocca più: da quel momento la classifica è definitiva, per tutti.

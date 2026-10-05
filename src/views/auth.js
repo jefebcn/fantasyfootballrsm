@@ -1,5 +1,6 @@
 import * as S from '../state.js';
 import { esc, icon, logo, marchio } from '../ui.js';
+import { ETA_MINIMA } from '../config.js';
 
 let tab = 'in';            // 'in' | 'up' | 'link'
 let pending = null;        // { email, kind: 'confirm' | 'link' }
@@ -14,6 +15,14 @@ const valid = (e) => /.+@.+\..+/.test(e);
 const field = (id, label, attrs = '') => `<label class="lbl" for="${id}">${label}</label><input class="field-input" id="${id}" ${attrs}>`;
 /** Campo della schermata d'accesso: etichetta dentro al campo, come nel modello. */
 const campo = (id, ph, attrs = '', extra = '') => `<div class="campo">${extra}<input id="${id}" placeholder="${ph}" ${attrs}></div>`;
+
+/**
+ * Chi crea l'account deve poter leggere le regole PRIMA, non cercarle dopo:
+ * l'eta' minima stava solo nei termini, e nessuna schermata d'iscrizione li
+ * nominava. Le pagine sono quelle statiche, perche' chi non ha un account non
+ * arriva alle rotte interne dell'app.
+ */
+const legale = () => `<p class="nota legale">Creando l'account confermi di avere almeno ${ETA_MINIMA} anni e accetti i <a href="termini.html" target="_blank" rel="noopener">Termini</a> e l'<a href="privacy.html" target="_blank" rel="noopener">Informativa privacy</a>.</p>`;
 
 const RICORDA = 'fcs:email';
 const emailRicordata = () => { try { return localStorage.getItem(RICORDA) || ''; } catch { return ''; } };
@@ -131,12 +140,13 @@ function credentialsPanel() {
       <button class="sottile" id="${up ? 'vailink' : 'forgot'}">${up ? 'Entra senza password' : 'Password dimenticata?'}</button>
     </div>
     <button class="a-btn oro" id="primary">${up ? 'Crea account' : 'Accedi'}</button>
-    ${up ? '' : '<button class="sottile centro" data-tab="link">Entra senza password, con un link</button>'}`;
+    ${up ? legale() : '<button class="sottile centro" data-tab="link">Entra senza password, con un link</button>'}`;
 }
 function linkPanel() {
   return `${campo('email', 'E-mail', `type="email" autocomplete="email" inputmode="email" value="${esc(emailRicordata())}"`)}
     <button class="a-btn oro" id="primary">Mandami il link</button>
     <p class="nota">Senza password: ricevi un'e-mail, tocchi il link e sei dentro. Se non hai un account, viene creato al primo accesso.</p>
+    ${legale()}
     <button class="sottile centro" data-tab="in">Torna all'accesso con password</button>`;
 }
 function pendingPanel() {

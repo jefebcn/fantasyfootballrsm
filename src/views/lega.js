@@ -12,7 +12,7 @@ export const lega = {
       <div class="a-card" style="display:flex;flex-direction:column;gap:6px"><b style="font:700 18px var(--font-display)">${esc(L.name)}</b><span class="small muted">${ms.length} partecipanti · ${started ? 'rose assegnate' : 'in attesa delle rose'}</span>
         ${L.inviteCode ? `<div style="display:flex;gap:8px;align-items:center;margin-top:6px"><span class="small muted">Codice invito</span><b class="num" style="font-size:20px;letter-spacing:.12em">${esc(L.inviteCode)}</b><button class="chip" id="share-code" style="margin-left:auto">${icon('share', 'ic sm')} Invita</button></div>` : ''}</div>
       ${sec('Partecipanti', `${ms.length}/12`)}
-      <div class="vlist">${ms.map((m) => `<div class="prow">${crest(m, 'sm')}<span class="pmg">${maglia(kitOf(m))}</span>
+      <div class="vlist">${ms.map((m) => `<div class="prow conmaglia">${crest(m, 'sm')}<span class="pmg">${maglia(kitOf(m))}</span>
         <div class="ptxt"><b>${esc(m.teamName)}${m.id === me?.id ? ' <em>tu</em>' : ''}</b><span>${esc(m.owner)}${m.viceName ? ` e ${esc(m.viceName)}` : ''} · ${m.role === 'admin' ? 'admin' : 'fantallenatore'}</span>
           <span class="pmeta">rosa ${rosterCount(m)}/25 · ${plurale(m.credits, 'credito', 'crediti')}</span></div>
         ${admin && m.id !== me?.id ? `<div class="pact"><button class="chip" data-role="${m.id}:${m.role === 'admin' ? 'fantallenatore' : 'admin'}">${m.role === 'admin' ? 'Togli admin' : 'Fai admin'}</button><button class="chip danger" data-kick="${m.id}" aria-label="Rimuovi">✕</button></div>` : ''}</div>`).join('')}</div>

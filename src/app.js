@@ -215,7 +215,7 @@ const STATE_ROUTE = { unconfigured: 'setup', offline: 'offline', anonymous: 'log
 // A chi e' sospeso restano le impostazioni e le pagine che ci stanno dentro:
 // da li' si scaricano i propri dati e si cancella l'account, che sono diritti
 // e non si sospendono insieme al resto.
-const ALLOWED = { 'no-league': ['leghe', 'impostazioni', 'admin/console'], anonymous: ['login', 'benvenuto'],
+const ALLOWED = { 'no-league': ['leghe', 'impostazioni', 'impostazioni/avanzate', 'admin/console'], anonymous: ['login', 'benvenuto'],
   sospeso: ['impostazioni', 'impostazioni/avanzate', 'privacy', 'termini', 'archiviazione', 'licenze', 'cancella-account'] };
 // Le pagine legali si leggono SEMPRE: senza account, senza collegamento,
 // anche prima di configurare il server. Un'informativa raggiungibile solo a
@@ -259,8 +259,12 @@ export function render() {
   current = { view, params, path };
   document.title = `${view.title} · Fantatitano`;
   // senza barra in basso e' il corpo a dover stare sopra la tacca del telefono:
-  // con la barra ci pensa lei, e sommarli lascerebbe un vuoto in fondo
-  root.innerHTML = `<div class="app${view.nav === false ? ' senza-nav' : ''}">${appbar(view, ctx)}${view.render(ctx)}${view.nav === false ? '' : nav(path)}${drawer()}</div>`;
+  // con la barra ci pensa lei, e sommarli lascerebbe un vuoto in fondo.
+  // Senza una lega la barra non c'e': Rosa, Calendario, Classifica e Voti
+  // riportavano tutti alla schermata delle leghe, e Voti aveva pure il pallino
+  // rosso di una novita' che non c'era.
+  const senzaNav = view.nav === false || S.appState() === 'no-league';
+  root.innerHTML = `<div class="app${senzaNav ? ' senza-nav' : ''}">${appbar(view, ctx)}${view.render(ctx)}${senzaNav ? '' : nav(path)}${drawer()}</div>`;
   if (view.mount) view.mount(root, ctx);
   const body = root.querySelector('.a-body');
   if (body && scrollMemo[path] && prevPath === path) body.scrollTop = scrollMemo[path];

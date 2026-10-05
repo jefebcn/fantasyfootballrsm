@@ -337,12 +337,15 @@ Changes shipped during the closed test (22 September – 6 October):
 - First run: users who arrive without friends see the open league first, the one thing they can do right away; features that make no sense in an open league are hidden there.
 - Install: a menu entry to add the app to the home screen, reachable even before joining a league.
 - Reliability: crash and error reports from devices now reach the admin console; match data from the official reports is refreshed every 20 minutes on matchdays instead of a few times a day.
-- Smaller fixes: link previews when sharing, wording fixes, and security headers.
+- Account and rules: sign-up now states the minimum age (14) and links the Terms and the Privacy Policy; users who have not joined a league yet can reach settings, sign out and delete their account; the line-up deadline is explained the same way everywhere and can never fall after the first kick-off.
+- Smaller fixes: link previews when sharing, layout fixes, wording fixes, and security headers.
 ```
 
 *Il senso:* l'elenco dei cambiamenti fatti nel periodo del test, tutti veri
 e già online (verifica della mail, invito col codice, primo avvio, tasto per
-installare, rapporti d'errore, import ogni 20 minuti, ritocchi). Se un tester
+installare, rapporti d'errore, import ogni 20 minuti; e dal 5/10 età e
+termini all'iscrizione, impostazioni raggiungibili anche senza lega, la
+chiusura delle formazioni detta uguale dappertutto; ritocchi). Se un tester
 ti ha chiesto una cosa precisa, dillo nella frase: «a tester asked for…» vale
 più di un elenco.
 

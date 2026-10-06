@@ -66,11 +66,16 @@ export const voti = {
     const evByPlayer = (matchId) => { const m = {}; for (const e of S.eventsOf(matchId)) (m[e.playerId] ||= []).push(e); return m; };
     const blocks = S.matchesOf(n).map((m) => {
       const h = S.clubsById.get(m.homeClubId), a = S.clubsById.get(m.awayClubId); const evs = evByPlayer(m.id);
-      let rows = S.appearancesOf(m.id).map((ap) => ({ ap, p: S.playersById.get(ap.playerId), r: ratings.get(ap.playerId) }));
+      const tutte = S.appearancesOf(m.id).map((ap) => ({ ap, p: S.playersById.get(ap.playerId), r: ratings.get(ap.playerId) }));
+      let rows = tutte;
       if (filter.role) rows = rows.filter((x) => x.p.role === filter.role);
       if (filter.mine) rows = rows.filter((x) => mine.has(x.p.id));
       rows.sort((x, y) => (y.r?.isSV ? -1 : y.r?.fantaVote ?? -1) - (x.r?.isSV ? -1 : x.r?.fantaVote ?? -1));
-      const nota = notaStato(m, rows.length);
+      // La nota parla della PARTITA: si guarda se la gara ha voti, non quanti
+      // ne lascia vedere il filtro. Con "Solo miei" una gara senza giocatori
+      // miei diceva "Voti in arrivo" a referto caricato da due settimane
+      // (schermo di Alex, 6 ottobre). Ora quella gara, col filtro, sparisce.
+      const nota = notaStato(m, tutte.length);
       if (!rows.length && !nota) return '';
       const title = m.status === 'played' ? `${esc(h.name)} ${m.homeGoals} – ${m.awayGoals} ${esc(a.name)}` : `${esc(h.name)} — ${esc(a.name)}`;
       return `<div class="vlist"><div class="vhead">${title} <span>${m.venue ? esc(m.venue) : ''}</span></div>${nota}${rows.map(({ ap, p, r }) => voteRow(p, S.clubsById.get(p.clubId), r ? { ...r, events: evs[p.id] || [] } : null, { minutes: ap.minutesPlayed, extra: st === 'provisional' ? `<a href="#" data-contest="${p.id}" data-match="${m.id}">Segnala un errore</a>` : '' })).join('')}</div>`;

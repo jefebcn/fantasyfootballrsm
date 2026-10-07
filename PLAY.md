@@ -374,6 +374,20 @@ ce ne siano di aperti senza spiegazione.
 tester più attivi. Non riscrivere le stesse risposte con altre parole:
 aggiungi quello che è successo dopo (una giornata giocata, i numeri nuovi).
 
+### Inviata il 07/10/2026
+
+Richiesta di accesso alla produzione mandata da Alex il **7 ottobre 2026**,
+con le risposte qui sopra (senza le righe «dopo la 5ª»). Mentre si aspetta:
+
+- **il test chiuso resta acceso** e nessun tester deve uscire: Google
+  guarda il test anche durante la revisione;
+- l'app si puo' aggiornare normalmente (e' il sito: Vercel pubblica da solo),
+  ma **non si carica un pacchetto nuovo** su Play finche' non rispondono;
+- quando arriva il si': *Produzione → Crea nuova release*, si **promuove la
+  stessa release del test chiuso** (nessun .aab nuovo), si scelgono i paesi
+  (Italia e San Marino bastano per cominciare) e si manda in revisione la
+  release. Quella seconda revisione di solito e' piu' breve.
+
 ## 6. Il premio in denaro, prima di dichiararlo
 
 Play ha una policy sui concorsi: un'app che mette in palio denaro deve

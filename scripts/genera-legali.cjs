@@ -79,7 +79,7 @@ const guscio = (titolo, descrizione, corpo, dove) => `<!doctype html>
     // Senza account e senza server finto: queste pagine si leggono anche da
     // sloggati, ed e' esattamente la condizione di chi le va a controllare.
     await ctx.addInitScript(() => {
-      localStorage.setItem('fcs:prefs', JSON.stringify({ onboarded: true, theme: 'light' }));
+      localStorage.setItem('fcs:prefs', JSON.stringify({ onboarded: true, guidaVista: true, theme: 'light' }));
     });
     const p = await ctx.newPage();
     for (const [rotta, file, titolo, descrizione] of PAGINE) {

@@ -15,6 +15,7 @@ regolamento. In caso di divergenza fra questi documenti e il README di prodotto,
 | [03-architettura-informativa.md](03-architettura-informativa.md) | Mappa di navigazione: bottom bar, drawer, ruoli utente, permessi |
 | [04-schermate.md](04-schermate.md) | Specifica schermata per schermata, con le funzionalità e i dati mostrati |
 | [05-admin-voto-titano.md](05-admin-voto-titano.md) | L'area admin di data entry: la priorità n.1 del prodotto |
+| [06-survivor.md](06-survivor.md) | Il Survivor del Titano: regole, schermate, database. Da costruire per il girone di ritorno |
 | [tokens/tokens.css](tokens/tokens.css) | Token CSS (fonte di verità) — tema chiaro + scuro |
 | [tokens/tokens.json](tokens/tokens.json) | Stessi token in JSON, per tooling |
 | [index.html](index.html) | Prototipo visivo navigabile: design kit + schermate in cornice telefono |

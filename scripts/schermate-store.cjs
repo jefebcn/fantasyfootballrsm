@@ -57,7 +57,7 @@ const SCHERMATE = [
     // e riscriverlo a ogni ricarico riportava l'app alla prima lega — il
     // negozio usciva "solo delle leghe aperte" mentre la lega aperta c'era.
     if (!localStorage.getItem('fcs:prefs')) {
-      localStorage.setItem('fcs:prefs', JSON.stringify({ onboarded: true, theme: 'light' }));
+      localStorage.setItem('fcs:prefs', JSON.stringify({ onboarded: true, guidaVista: true, theme: 'light' }));
     }
     localStorage.setItem('fcs:supabase', JSON.stringify({ url: 'https://mock.supabase.co', key: 'mock-key-mock-key-mock' }));
   });

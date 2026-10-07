@@ -513,7 +513,7 @@ function hashStr(s) { let h = 2166136261; for (const c of String(s)) { h ^= c.ch
 
 export const store = {
   get: () => ({ theme: prefs.theme, installedDismissed: prefs.installedDismissed, onboarded: prefs.onboarded,
-    avvisi: prefs.avvisi, sfondoFoto: prefs.sfondoFoto !== false, avvisatoPer: prefs.avvisatoPer || 0 }),
+    avvisi: prefs.avvisi, sfondoFoto: prefs.sfondoFoto !== false, avvisatoPer: prefs.avvisatoPer || 0, guidaVista: !!prefs.guidaVista }),
   set: (patch) => { Object.assign(prefs, patch); persistPrefs(); notify(); },
 };
 export function resetAll() { localStorage.removeItem(PREFS_KEY); }

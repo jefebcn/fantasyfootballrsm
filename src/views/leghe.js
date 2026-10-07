@@ -5,6 +5,8 @@ import * as AV from '../notifiche.js';
 
 
 let form = 'none'; // 'create' | 'join' | 'pubblica'
+/** Apre un modulo all'arrivo: la guida di TITO finisce su «Crea una lega». */
+export function apriModulo(f) { form = f; }
 let pubbliche = null;   // elenco dal server: null = non ancora chiesto
 let entraIn = null;     // id della lega pubblica in cui si sta entrando
 let apriEntra = null;   // arrivati dal banner: ci si scorre sopra una volta sola

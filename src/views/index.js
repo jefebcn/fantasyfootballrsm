@@ -21,6 +21,7 @@ export { asta } from './asta.js';
 export { adminGiornata, adminPartita, adminContestazioni, adminCongela, adminRegistro, adminConsole } from './admin.js';
 export { login, resetLogin, prepareLogin } from './auth.js';
 export { onboarding } from './onboarding.js';
+export { guida } from './guida.js';
 export { setup, offline } from './setup.js';
 export { sospeso } from './sospeso.js';
 export { leghe } from './leghe.js';

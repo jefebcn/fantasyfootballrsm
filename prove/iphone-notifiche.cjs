@@ -25,7 +25,7 @@ const UA = 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_5 like Mac OS X) AppleWebKit/6
     await ctx.addInitScript((installata) => {
       window.__SUPABASE_JS__ = '/tests/mock-supabase.js';
       localStorage.setItem('fcs:auth', 'supabase');
-      localStorage.setItem('fcs:prefs', JSON.stringify({ onboarded: true, theme: 'system' }));
+      localStorage.setItem('fcs:prefs', JSON.stringify({ onboarded: true, guidaVista: true, theme: 'system' }));
       localStorage.setItem('fcs:supabase', JSON.stringify({ url: 'https://mock.supabase.co', key: 'mock-key-mock-key-mock' }));
       Object.defineProperty(navigator, 'maxTouchPoints', { value: 5 });
       if (installata) {

@@ -40,7 +40,7 @@ const TETTO_CSS = 48 * 1024;   // oggi 35 kB: 16 di corona, 17 di marchio
     await ctx.addInitScript(() => {
       window.__SUPABASE_JS__ = '/tests/mock-supabase.js';
       localStorage.setItem('fcs:auth', 'supabase');
-      localStorage.setItem('fcs:prefs', JSON.stringify({ onboarded: true, theme: 'dark' }));
+      localStorage.setItem('fcs:prefs', JSON.stringify({ onboarded: true, guidaVista: true, theme: 'dark' }));
       localStorage.setItem('fcs:supabase', JSON.stringify({ url: 'https://mock.supabase.co', key: 'mock-key-mock-key-mock' }));
     });
     await ctx.route('**/tests/mock-supabase.js', async (r) => { await new Promise((k) => setTimeout(k, 4000)); await r.continue(); });

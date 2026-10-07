@@ -51,7 +51,7 @@ const GRUPPI = {
     });
     window.__SUPABASE_JS__ = '/tests/mock-supabase.js';
     localStorage.setItem('fcs:auth', 'supabase');
-    localStorage.setItem('fcs:prefs', JSON.stringify({ onboarded: true, theme: 'dark' }));
+    localStorage.setItem('fcs:prefs', JSON.stringify({ onboarded: true, guidaVista: true, theme: 'dark' }));
     localStorage.setItem('fcs:supabase', JSON.stringify({ url: 'https://mock.supabase.co', key: 'mock-key-mock-key-mock' }));
   });
   const p = await ctx.newPage(); p.on('dialog', d => d.accept());

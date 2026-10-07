@@ -35,7 +35,7 @@ const MOMENTI = [
     await ctx.addInitScript(({ iso }) => {
       window.__SUPABASE_JS__ = '/tests/mock-supabase.js';
       localStorage.setItem('fcs:auth', 'supabase');
-      localStorage.setItem('fcs:prefs', JSON.stringify({ onboarded: true, theme: 'system' }));
+      localStorage.setItem('fcs:prefs', JSON.stringify({ onboarded: true, guidaVista: true, theme: 'system' }));
       localStorage.setItem('fcs:supabase', JSON.stringify({ url: 'https://mock.supabase.co', key: 'mock-key-mock-key-mock' }));
       // L'orologio si sposta prima che l'app parta: un Date con uno scarto
       // fisso, cosi' anche i timer e le durate restano coerenti fra loro.

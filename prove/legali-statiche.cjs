@@ -55,7 +55,7 @@ const pulisci = (t) => t.replace(/\s+/g, ' ').replace(/ /g, ' ').trim().toLower
 
     // 2. lo stesso testo dell'app
     const acceso = await b.newContext({ viewport: { width: 420, height: 900 }, serviceWorkers: 'block' });
-    await acceso.addInitScript(() => { localStorage.setItem('fcs:prefs', JSON.stringify({ onboarded: true, theme: 'light' })); });
+    await acceso.addInitScript(() => { localStorage.setItem('fcs:prefs', JSON.stringify({ onboarded: true, guidaVista: true, theme: 'light' })); });
     const pa = await acceso.newPage();
     await pa.goto(`${BASE}/#/${rotta}`, { waitUntil: 'load' });
     await pa.waitForSelector('.a-body .group', { timeout: 15000 });

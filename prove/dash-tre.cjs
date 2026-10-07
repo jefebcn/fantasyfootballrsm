@@ -23,7 +23,7 @@ const ok = [], ko = []; const et = (c, t) => (c ? ok : ko).push(t);
       });
       window.__SUPABASE_JS__ = '/tests/mock-supabase.js';
       localStorage.setItem('fcs:auth', 'supabase');
-      localStorage.setItem('fcs:prefs', JSON.stringify({ onboarded: true, theme: tema, sfondoFoto: conFoto }));
+      localStorage.setItem('fcs:prefs', JSON.stringify({ onboarded: true, guidaVista: true, theme: tema, sfondoFoto: conFoto }));
       localStorage.setItem('fcs:supabase', JSON.stringify({ url: 'https://mock.supabase.co', key: 'mock-key-mock-key-mock' }));
     }, { tema, conFoto });
     const p = await ctx.newPage(); p.on('dialog', d => d.accept());

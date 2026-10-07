@@ -285,7 +285,8 @@ export const licenze = {
     'Gli highlights sono del canale YouTube della <b>FSGC</b> e restano suoi: l\'app non li copia né li ricarica altrove, si limita a mostrarli da dove stanno e a dire a quale partita appartengono.',
   ])}
       ${blocco('Immagini e personaggi', [
-    'I personaggi da mettere in copertina sono illustrazioni senza nomi né marchi. <b>TITO</b>, il draghetto viola, è la mascotte di Fantatitano, disegnato per questo progetto.',
+    `<b>Questa è la parte da sistemare prima di aprire al pubblico.</b> Gli avatar selezionabili raffigurano personaggi e persone riconoscibili, e le fotografie di sfondo non sono state realizzate per questo progetto. In una lega privata fra amici è una cosa; pubblicarli a chiunque è un'altra, e vuole materiale originale o con licenza.`,
+    '<b>TITO</b>, il draghetto viola, è la mascotte di Fantatitano, disegnato per questo progetto.',
     'Stemmi e maglie caricati dai partecipanti restano di chi li ha caricati: l\'app li mostra solo agli altri della sua lega.',
     'Il logo, le icone e il campo di gioco sono disegnati per questo progetto.',
   ])}

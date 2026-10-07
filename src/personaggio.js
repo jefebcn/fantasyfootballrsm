@@ -11,20 +11,16 @@
  * no chi l'aveva scelto si ritroverebbe in copertina qualcun altro. Per questo
  * nell'elenco ci sono dei buchi, ed e' voluto.
  *
- * RITIRATI IL 7 OTTOBRE 2026, prima della produzione su Google Play: 7, 8,
- * 14 e 16 erano calciatori veri riconoscibili (con maglie e sponsor veri), 10,
- * 11 e 20 personaggi di cartoni animati di altri, 21 una figura simile a un
- * attore con un logo sportivo sul cappello. Uso commerciale di immagini e
- * marchi altrui: e' una delle cause di rifiuto piu' comuni di Play, e un
- * rischio anche fuori. Chi li aveva scelti torna alla sua maglia (scelto()
- * qui sotto vale "nessuno" per un numero non piu' in elenco); i file restano
- * in media/avatar per non rompere niente, ma nessuno li mostra.
+ * Il 7 ottobre 2026 7, 8, 14 e 16 (calciatori veri), 10, 11 e 20 (personaggi
+ * di cartoni animati) e 21 sono stati tolti per il rischio commerciale e
+ * rimessi lo stesso giorno, per scelta di Alex: si rivede se l'app si allarga
+ * oltre San Marino.
  *
  * 30 e' TITO, la mascotte di Fantatitano, disegnato da Alex per il progetto
  * (media/tito-sorgenti/braccia.webp, ritagliato alla stessa altezza degli
  * altri).
  */
-const NUMERI = [30, 1, 6];
+const NUMERI = [30, 1, 6, 7, 8, 10, 11, 14, 16, 20, 21];
 const NOMI = { 30: 'TITO' };
 export const QUANTI = NUMERI.length;
 export const elenco = () => [...NUMERI];

@@ -8,7 +8,7 @@
 import * as S from '../state.js';
 import { esc, icon, crest, sec } from '../ui.js';
 import { maglia, COLORI, kitOf } from '../maglia.js';
-import { personaggio, elenco, scelto, QUANTI } from '../personaggio.js';
+import { personaggio, elenco, scelto, nomePersonaggio } from '../personaggio.js';
 
 const LATO = 192;          // lo stemma non serve più grande di così
 const PESO_MAX = 60 * 1024; // oltre questo si stringe ancora la qualità
@@ -54,10 +54,10 @@ export const squadra = {
       <input type="file" id="foto" accept="image/*" hidden>`;
 
     const personaggi = `${sec('Personaggio in copertina', pers ? 'scelto' : 'nessuno: si vede la maglia')}
-      <div class="a-card"><p class="small muted">${QUANTI} personaggi: in una lega da otto ognuno puo' avere il suo. Se non ne scegli nessuno, in copertina resta la tua maglia.</p>
+      <div class="a-card"><p class="small muted">C'è anche TITO, la mascotte di Fantatitano. Se non scegli nessun personaggio, in copertina resta la tua maglia.</p>
         <div class="pgrid">
           <button class="pcell${pers ? '' : ' on'}" data-pers="0"><span class="pno">${icon('shirt')}</span><small>Maglia</small></button>
-          ${elenco().map((n) => `<button class="pcell${pers === n ? ' on' : ''}" data-pers="${n}" aria-label="Personaggio ${n}">${personaggio(n)}</button>`).join('')}
+          ${elenco().map((n) => `<button class="pcell${pers === n ? ' on' : ''}" data-pers="${n}" aria-label="${nomePersonaggio(n)}">${personaggio(n)}</button>`).join('')}
         </div></div>`;
 
     // Il nome del fantallenatore non si scrive piu' qui.

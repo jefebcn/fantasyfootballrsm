@@ -117,6 +117,7 @@ export const impostazioni = {
     </div>`;
 
     const generale = group('Generale', `
+      ${row('book', 'Come si gioca', 'La guida di TITO in tre passi', 'guida')}
       ${row('globe', 'Impostazione lingua', LINGUE.find(([k]) => k === (d.lingua || 'it'))?.[1] || 'Italiano', 'lingua')}
       ${row('bell', 'Preferenze notifiche', avvisiSottotitolo(d), 'avvisi')}
       ${row('chat', 'Contattaci', CONTATTO || 'Indirizzo non ancora impostato', 'contatto')}
@@ -157,6 +158,7 @@ export const impostazioni = {
       const act = a.dataset.act;
       if (act === 'logout') { await S.signOut(); ctx.go('login'); return; }
       if (act === 'avanzate') { ctx.go('impostazioni/avanzate'); return; }
+      if (act === 'guida') { ctx.go('guida'); return; }
       if (act === 'sfondo') { S.store.set({ sfondoFoto: !S.store.get().sfondoFoto }); ctx.render(); return; }
       if (act === 'privacy') { ctx.go('privacy'); return; }
       if (act === 'esporta') {

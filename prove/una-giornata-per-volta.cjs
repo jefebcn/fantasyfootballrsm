@@ -32,7 +32,7 @@ const MOMENTI = [
     await ctx.addInitScript(({ iso }) => {
       window.__SUPABASE_JS__ = '/tests/mock-supabase.js';
       localStorage.setItem('fcs:auth', 'supabase');
-      localStorage.setItem('fcs:prefs', JSON.stringify({ onboarded: true, theme: 'system' }));
+      localStorage.setItem('fcs:prefs', JSON.stringify({ onboarded: true, guidaVista: true, theme: 'system' }));
       localStorage.setItem('fcs:supabase', JSON.stringify({ url: 'https://mock.supabase.co', key: 'mock-key-mock-key-mock' }));
       const Vero = Date; const scarto = new Vero(iso).getTime() - Vero.now();
       class Finto extends Vero {

@@ -26,7 +26,7 @@ const conMock = (ctx, stato, conferma) => ctx.addInitScript(([st, cf]) => {
   if (cf) window.__MOCK_CONFIRM__ = true;
   localStorage.setItem('fcs:auth', 'supabase');
   localStorage.setItem('fcs:supabase', JSON.stringify({ url: 'https://mock.supabase.co', key: 'mock-key-mock-key-mock' }));
-  if (!localStorage.getItem('fcs:prefs')) localStorage.setItem('fcs:prefs', JSON.stringify({ onboarded: true, theme: 'light' }));
+  if (!localStorage.getItem('fcs:prefs')) localStorage.setItem('fcs:prefs', JSON.stringify({ onboarded: true, guidaVista: true, theme: 'light' }));
   // il database finto e' uno per contesto: si passa quello di chi ha creato
   // la lega, cosi' il codice esiste davvero anche per gli altri
   if (st && !sessionStorage.getItem('seminato')) { localStorage.setItem('fcs:mock', JSON.stringify(st)); sessionStorage.setItem('seminato', '1'); }

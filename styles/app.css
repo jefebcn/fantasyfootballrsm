@@ -1227,6 +1227,26 @@ button,a{-webkit-tap-highlight-color:transparent}
 .intro-cta{max-width:420px}
 .intro-cta .ic{width:18px;height:18px}
 .intro-back .ic{width:24px;height:24px}
+/* La guida di TITO: stessa scena della presentazione, con TITO che parla. */
+/* Su un telefono basso (iPhone SE, 667px) il terzo passo e' piu' alto dello
+   schermo: la presentazione ha overflow:hidden e il pulsante finale restava
+   fuori, irraggiungibile. Qui si scorre, lo sfondo resta fermo, e sotto i
+   720px tutto si stringe. */
+.intro.guida{overflow-y:auto;-webkit-overflow-scrolling:touch}
+.guida .intro-bg{position:fixed}
+@media (max-height:720px){
+  .guida .guida-tito img{width:84px}
+  .guida h1{font-size:1.6rem}
+  .guida .intro-points{gap:8px}
+  .guida .intro-points li{padding-block:9px}
+  .guida-body{gap:8px}
+}
+.guida-passo{font:700 12px var(--font-body);letter-spacing:.08em;text-transform:uppercase;opacity:.8}
+.guida-body{gap:12px}
+.guida-tito{display:flex;align-items:flex-end;gap:10px;width:100%;max-width:420px}
+.guida-tito img{width:clamp(96px,30vw,140px);height:auto;flex:none;filter:drop-shadow(0 8px 18px rgba(0,0,0,.35))}
+.guida .guida-fumetto{position:relative;max-width:none;background:#fff;color:var(--c-pietra-900,#14243a);border-radius:16px 16px 16px 4px;padding:10px 14px;font:700 14.5px/1.4 var(--font-body);text-align:left;margin:0 0 18px;opacity:1}
+@media (prefers-reduced-motion:no-preference){.guida-tito img{animation:tito-entra .5s cubic-bezier(.2,.9,.3,1.2) both}@keyframes tito-entra{from{transform:translateY(14px) scale(.94);opacity:0}to{transform:none;opacity:1}}}
 .intro-link{border:0;background:transparent;color:#fff;font:600 13px var(--font-body);opacity:.85;cursor:pointer;padding:8px;text-decoration:underline;text-underline-offset:3px}
 @media (prefers-reduced-motion:reduce){.intro-points li{animation:none}.intro-bg video{transition:none}}
 

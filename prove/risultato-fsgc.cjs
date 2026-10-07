@@ -26,7 +26,7 @@ const ok = [], ko = []; const et = (c, t) => (c ? ok : ko).push(t);
   await ctx.addInitScript(() => {
     window.__SUPABASE_JS__ = '/tests/mock-supabase.js';
     localStorage.setItem('fcs:auth', 'supabase');
-    localStorage.setItem('fcs:prefs', JSON.stringify({ onboarded: true, theme: 'dark' }));
+    localStorage.setItem('fcs:prefs', JSON.stringify({ onboarded: true, guidaVista: true, theme: 'dark' }));
     const Vero = Date; const scarto = new Vero('2026-09-12T10:00:00Z').getTime() - Vero.now();
     class Finto extends Vero {
       constructor(...a) { if (!a.length) super(Vero.now() + scarto); else super(...a); }

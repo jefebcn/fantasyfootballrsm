@@ -20,7 +20,7 @@ const ROUTES = [
   ['video', views.video], ['regolamento', views.regolamento], ['regole', views.regole], ['scheda', views.scheda], ['impostazioni', views.impostazioni], ['impostazioni/avanzate', views.avanzate], ['scambi', views.scambi], ['privacy', views.privacy], ['termini', views.termini], ['archiviazione', views.archiviazione], ['licenze', views.licenze], ['cancella-account', views.cancella],
   ['admin', views.adminGiornata], ['admin/partita/:id', views.adminPartita], ['admin/contestazioni', views.adminContestazioni],
   ['admin/congela', views.adminCongela], ['admin/console', views.adminConsole], ['admin/registro', views.adminRegistro], ['mercato', views.mercato], ['asta', views.asta],
-  ['login', views.login], ['leghe', views.leghe], ['lega', views.lega], ['gestione', views.gestione], ['squadra', views.squadra], ['vice/:code', views.vice], ['setup', views.setup], ['offline', views.offline], ['sospeso', views.sospeso], ['benvenuto', views.onboarding],
+  ['login', views.login], ['leghe', views.leghe], ['lega', views.lega], ['gestione', views.gestione], ['squadra', views.squadra], ['vice/:code', views.vice], ['setup', views.setup], ['offline', views.offline], ['sospeso', views.sospeso], ['benvenuto', views.onboarding], ['guida', views.guida],
 ];
 
 function resolve(hash) {
@@ -215,7 +215,7 @@ const STATE_ROUTE = { unconfigured: 'setup', offline: 'offline', anonymous: 'log
 // A chi e' sospeso restano le impostazioni e le pagine che ci stanno dentro:
 // da li' si scaricano i propri dati e si cancella l'account, che sono diritti
 // e non si sospendono insieme al resto.
-const ALLOWED = { 'no-league': ['leghe', 'impostazioni', 'impostazioni/avanzate', 'admin/console'], anonymous: ['login', 'benvenuto'],
+const ALLOWED = { 'no-league': ['leghe', 'guida', 'impostazioni', 'impostazioni/avanzate', 'admin/console'], anonymous: ['login', 'benvenuto'],
   sospeso: ['impostazioni', 'impostazioni/avanzate', 'privacy', 'termini', 'archiviazione', 'licenze', 'cancella-account'] };
 // Le pagine legali si leggono SEMPRE: senza account, senza collegamento,
 // anche prima di configurare il server. Un'informativa raggiungibile solo a
@@ -246,6 +246,9 @@ function gate(path) {
     }
     return ['setup', 'offline', 'login', 'benvenuto'].includes(path) ? '' : null;
   }
+  // Appena registrato, senza lega: prima la guida di TITO, una volta sola.
+  // Non a chi arriva da un invito: sa gia' dove andare, e il modulo e' pronto.
+  if (st === 'no-league' && !S.store.get().guidaVista && !S.invitoInSospeso() && path !== 'guida') return 'guida';
   if (path === target || (ALLOWED[st] || []).includes(path)) return null;
   return target;
 }

@@ -104,7 +104,7 @@ export const onboarding = {
 };
 
 /** Sfondo di riserva: luci lente in movimento nei colori del Titano. */
-function fx(cv) {
+export function fx(cv) {
   if (!cv) return;
   const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
   const ctx = cv.getContext('2d'); const dpr = Math.min(2, devicePixelRatio || 1);

@@ -1022,7 +1022,6 @@ hr.sep{border:0;border-top:1px solid var(--border);margin:4px 0}
 .a-btn.live{background:var(--c-alloro-400);color:#fff;box-shadow:none;height:44px;font-size:14px;letter-spacing:.02em;text-transform:none;font-family:var(--font-body);font-weight:700}
 .a-match .full{grid-column:1/-1;margin-top:8px}
 .d-foot{margin-top:auto;padding:8px 16px 18px;border-top:1px solid var(--border);font-size:12px;color:var(--text-muted);text-align:center;line-height:1.6}
-.d-plain{padding:10px 16px;font-size:15px;font-weight:600}
 
 
 @media (prefers-reduced-motion:reduce){.pulse::after{animation:none;transform:scale(.85);opacity:.4}*{transition:none!important}}

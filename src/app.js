@@ -188,6 +188,10 @@ function drawer() {
   })()}</div>` : ''}
     ${vociInstalla()}
     ${item('#/gestione', { l: 'impostazioni' }, 'Gestione lega', 'tutte le sezioni')}${item('#/squadra', { l: 'la-mia-squadra' }, 'La mia squadra', 'stemma, maglia e nomi')}
+    ${/* Le impostazioni erano l'ultima riga del menu, senza icona, sotto due
+          schermate di voci: Alex, l'8 ottobre, non le ha trovate. Stanno qui,
+          in cima, con la guida di TITO accanto. */
+    item('#/impostazioni', 'gear', 'Impostazioni', 'account e privacy')}${item('#/guida', 'book', 'Come si gioca', 'la guida di TITO')}
     <div class="d-sec"><span class="chip">Setup</span></div>
     ${item('#/lega', { m: 'leghe' }, 'Profilo lega', S.base.league.inviteCode ? `codice ${esc(S.base.league.inviteCode)}` : '')}${item('#/lega', { m: 'squadre' }, 'Partecipanti', String(S.base.managers.length))}${item('#/regolamento', { m: 'guide' }, 'Regolamento ed opzioni')}${item('#/classifica', { m: 'statistiche' }, 'Competizioni')}
     <div class="d-sec"><span class="chip">Gioca</span></div>
@@ -202,7 +206,6 @@ function drawer() {
     ${item('#/admin/console', { l: 'strumenti' }, 'Console', 'persone, leghe e numeri')}` : ''}
     ${S.isJudge() ? `<div class="d-sec admin"><span class="chip">Giudice Dati</span></div>
     ${item('#/admin', { m: 'voti' }, 'Inserisci eventi', `G${ph.matchday}`)}${item('#/admin/contestazioni', 'flag', 'Contestazioni', `${S.contestazioni().filter((c) => c.status === 'open').length} aperte`)}${item('#/admin/congela', 'calc', 'Calcola giornata', 'la chiude per sempre')}${item('#/admin/registro', 'archive', 'Registro modifiche')}` : ''}
-    <a class="d-plain" href="#/impostazioni" style="display:block;text-decoration:none;color:inherit">Utente, impostazioni e privacy</a>
     <div class="d-foot">Versione 0.5<br>Fantatitano</div>
   </div></div>`;
 }

@@ -206,6 +206,7 @@ function drawer() {
     ${item('#/admin/console', { l: 'strumenti' }, 'Console', 'persone, leghe e numeri')}` : ''}
     ${S.isJudge() ? `<div class="d-sec admin"><span class="chip">Giudice Dati</span></div>
     ${item('#/admin', { m: 'voti' }, 'Inserisci eventi', `G${ph.matchday}`)}${item('#/admin/contestazioni', 'flag', 'Contestazioni', `${S.contestazioni().filter((c) => c.status === 'open').length} aperte`)}${item('#/admin/congela', 'calc', 'Calcola giornata', 'la chiude per sempre')}${item('#/admin/registro', 'archive', 'Registro modifiche')}` : ''}
+    <button class="d-esci-fondo" data-logout>${icon('exit', 'ic sm')}Esci dall'account</button>
     <div class="d-foot">Versione 0.5<br>Fantatitano</div>
   </div></div>`;
 }

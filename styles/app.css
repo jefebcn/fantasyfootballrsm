@@ -2114,3 +2114,17 @@ button,a{-webkit-tap-highlight-color:transparent}
    pubblica: in copertina e nella testa del menu. */
 .a-hero .hero-league b{font:italic 900 18px var(--font-display);text-transform:uppercase;letter-spacing:.01em}
 .d-nl b{font-style:italic;font-weight:900}
+
+/* Il corsivo nero anche nel resto dell'app (Alex, 8 ottobre): titoli delle
+   sezioni, nome della lega in alto, numeri grandi e banner del montepremi.
+   Il testo da leggere — notizie, nomi, regolamento — resta Lato normale:
+   il corsivo nero si legge bene a colpo d'occhio, non in un paragrafo.
+   I titoli delle sezioni restano in maiuscole e minuscole: tutto maiuscolo
+   e in corsivo, uno sotto l'altro per tutta la pagina, urlerebbe. */
+.a-sec b{font-style:italic;font-weight:900;font-size:17px;letter-spacing:0}
+.a-appbar .t b{font-style:italic;font-weight:900}
+.a-stats b{font-style:italic;font-weight:900}
+.mrow.punti .pblocco b{font-style:italic;font-weight:900}
+.invito .txt b{font-style:italic;font-weight:900}
+.negozio-cta .txt b{font-style:italic;font-weight:900}
+.vh-t > span{font:italic 900 15px var(--font-display);color:var(--text);font-variant-numeric:tabular-nums}

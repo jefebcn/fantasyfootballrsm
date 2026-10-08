@@ -7,6 +7,14 @@ import * as AV from '../notifiche.js';
 let form = 'none'; // 'create' | 'join' | 'pubblica'
 /** Apre un modulo all'arrivo: la guida di TITO finisce su «Crea una lega». */
 export function apriModulo(f) { form = f; }
+/**
+ * La guida finisce anche su «Entra nella lega pubblica». Non sa quali ci
+ * sono: lo scopre questa schermata quando l'elenco arriva. Se ce n'e' una
+ * sola in cui si puo' entrare, il modulo del nome squadra e' gia' aperto.
+ * L'elenco si richiede: quello di prima della guida puo' essere vecchio.
+ */
+let versoPubbliche = false;
+export function vaiAllePubbliche() { versoPubbliche = true; pubbliche = null; }
 let pubbliche = null;   // elenco dal server: null = non ancora chiesto
 let entraIn = null;     // id della lega pubblica in cui si sta entrando
 let apriEntra = null;   // arrivati dal banner: ci si scorre sopra una volta sola
@@ -184,6 +192,13 @@ export const leghe = {
       const chiesta = sessionStorage.getItem('fcs:entra-pubblica');
       if (chiesta) { sessionStorage.removeItem('fcs:entra-pubblica'); entraIn = chiesta; apriEntra = chiesta; }
     } catch { /* niente storage: resta l'elenco */ }
+    if (versoPubbliche && pubbliche !== null) {
+      versoPubbliche = false;
+      const libere = pubbliche.filter((l) => !l.dentro && l.membri < l.max_membri);
+      if (libere.length === 1 && entraIn !== libere[0].id) { entraIn = apriEntra = libere[0].id; ctx.render(); return; }
+      if (libere.length > 1) root.querySelector('.vlist--primo')?.scrollIntoView({ block: 'start', behavior: 'smooth' });
+      if (!libere.length) ctx.toast('Per ora non c\'è una lega pubblica aperta: creane una con gli amici');
+    }
     if (apriEntra) {
       const modulo = root.querySelector('#go-entra')?.closest('.a-card');
       if (modulo) { apriEntra = null; modulo.scrollIntoView({ block: 'center', behavior: 'smooth' }); }

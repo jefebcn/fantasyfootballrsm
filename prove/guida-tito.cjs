@@ -74,6 +74,20 @@ const OUT = process.env.USCITA || '/tmp';
       await p.click('[data-fine="leghe"]'); await w(600);
       vero((await p.evaluate(() => location.hash)) === '#/leghe', '«Salta» senza lega non porta alle leghe');
     }
+    // 2a. con una lega: Impostazioni e Come si gioca stanno in cima al menu.
+    // Erano l'ultima riga, sotto due schermate di voci, e non si trovavano.
+    await p.click('[data-form="create"]').catch(() => {}); await w(300);
+    await p.fill('#lname', 'Lega Titano'); await p.fill('#team', 'Hasta El Chapo FC'); await p.click('#go-create'); await w(1500);
+    await p.evaluate(() => { location.hash = '#/'; }); await w(1000);
+    await p.click('[data-open-drawer]'); await w(600);
+    for (const [href, nome] of [['#/impostazioni', 'Impostazioni'], ['#/guida', 'Come si gioca']]) {
+      const bb = await p.evaluate((h) => { const a = document.querySelector(`.a-drawer a.d-item[href="${h}"]`); return a && a.getBoundingClientRect().bottom; }, href);
+      vero(bb && bb <= 844, `menu: «${nome}» ${bb ? `sta a ${Math.round(bb)}px, sotto lo schermo` : 'non c\'e\''}`);
+    }
+    await p.click('.a-drawer a.d-item[href="#/guida"]').catch(() => {}); await w(700);
+    vero((await p.evaluate(() => location.hash)) === '#/guida', '«Come si gioca» dal menu non apre la guida');
+    await p.click('[data-fine="leghe"]').catch(() => {}); await w(600);
+    vero((await p.evaluate(() => location.hash)) === '#/impostazioni', '«Salta» con una lega non torna alle impostazioni');
     if (err.length) ko.push('errori: ' + err.join(' | '));
     await ctx.close();
   }

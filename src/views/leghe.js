@@ -89,25 +89,36 @@ function moduloPubblica() {
 function elencoPubbliche(inCima) {
   if (pubbliche === null) return `<div class="a-sec"><b>Leghe pubbliche</b></div><p class="small muted" style="margin:0 2px">Sto guardando quali ci sono…</p>`;
   if (!pubbliche.length) return '';
+  // LA SCHEDA CON TITO. La lega pubblica e' la porta per chi arriva da
+  // solo: non una riga fra le altre ma un manifesto, scritto grande in
+  // corsivo nero, con la mascotte a destra su un alone blu. L'idea viene
+  // dalle schede delle leghe di SkillBol (Alex, 8 ottobre); i colori, il
+  // carattere e il personaggio sono i nostri. Si tocca tutta per entrare.
   const riga = (l) => {
     const pieno = l.membri >= l.max_membri;
     const primo = (l.premi || []).slice().sort((a, b) => a.posto - b.posto)[0];
-    return `<div class="lgrow">
-      <button class="vr" data-pubblica="${l.id}" ${l.dentro || pieno ? 'disabled' : ''}>
-        ${crest({ color: 'var(--accent)', initials: (l.short_name || l.name).slice(0, 2).toUpperCase() }, 'sm')}
-        <span class="nm"><b>${esc(l.name)}</b><span>${l.membri}${l.max_membri < 1000 ? `/${l.max_membri}` : ''} squadre · ${l.budget} crediti${primo ? ` · in palio: ${esc(primo.premio)}` : ''}</span></span>
-        <span class="ev"></span>
-        <span class="fv" style="font-size:12px">${l.dentro ? icon('check', 'ic sm') : pieno ? 'al completo' : 'entra'}</span>
-      </button></div>`;
+    const stato = l.dentro ? 'Sei dentro' : pieno ? 'Al completo' : 'Entra';
+    return `<button class="pubcard${entraIn === l.id ? ' on' : ''}" data-pubblica="${l.id}" ${l.dentro || pieno ? 'disabled' : ''} aria-label="${esc(l.name)}: ${stato.toLowerCase()}">
+        <span class="pc-txt">
+          <span class="pc-sotto"><i>Campionato sammarinese</i></span>
+          <b class="pc-nome">${esc(l.name)}</b>
+          <span class="pc-pills">
+            <span class="pc-pill">${l.membri}${l.max_membri < 1000 ? `/${l.max_membri}` : ''} squadre · ${l.budget} cr.</span>
+            ${primo ? `<span class="pc-pill oro">In palio: ${esc(primo.premio)}</span>` : ''}
+          </span>
+          <span class="pc-cta${l.dentro || pieno ? ' spento' : ''}">${stato}${l.dentro || pieno ? '' : icon('chev', 'ic sm')}</span>
+        </span>
+        <span class="pc-tito" aria-hidden="true"><img src="media/tito/scheda.webp" alt="" width="260" height="266" decoding="async"></span>
+      </button>`;
   };
   // In cima l'elenco cambia mestiere: non e' piu' "le altre leghe che
   // esistono", e' la cosa da fare. Quindi il titolo dice cosa fai e la riga
   // che spiega sta PRIMA, non sotto — sotto la legge chi ha gia' capito.
   return `<div class="a-sec"><b>${inCima ? 'Entra in una lega aperta' : 'Leghe pubbliche'}</b><span>${pubbliche.length}</span></div>
     ${inCima ? '<p class="small muted" style="margin:-4px 2px 6px">Non serve il codice e non serve conoscere nessuno: entri, ti fai la rosa e giochi.</p>' : ''}
-    <div class="vlist${inCima ? ' vlist--primo' : ''}">${pubbliche.map(riga).join('')}</div>
+    <div class="pubcards${inCima ? ' pubcards--primo' : ''}">${pubbliche.map(riga).join('')}</div>
     ${entraIn ? `<div class="a-card" style="display:flex;flex-direction:column;gap:6px">
-      <p class="auth-hint" style="margin:0">Stai entrando in <b>${esc(pubbliche.find((l) => l.id === entraIn)?.name || '')}</b>. Ti servono un nome per la squadra e un colore.</p>
+      <p class="auth-hint" style="margin:0">Stai entrando in <b>${esc(pubbliche.find((l) => l.id === entraIn)?.name || '')}</b>. Ti serve solo il nome della tua squadra.</p>
       ${teamFields()}<button class="a-btn" id="go-entra" style="margin-top:10px">Entra nella lega</button></div>` : ''}
     ${inCima ? '' : '<p class="small muted" style="margin:-4px 2px 0">Nelle leghe pubbliche non serve il codice: si entra e si fa la propria rosa.</p>'}`;
 }
@@ -196,7 +207,7 @@ export const leghe = {
       versoPubbliche = false;
       const libere = pubbliche.filter((l) => !l.dentro && l.membri < l.max_membri);
       if (libere.length === 1 && entraIn !== libere[0].id) { entraIn = apriEntra = libere[0].id; ctx.render(); return; }
-      if (libere.length > 1) root.querySelector('.vlist--primo')?.scrollIntoView({ block: 'start', behavior: 'smooth' });
+      if (libere.length > 1) root.querySelector('.pubcards--primo')?.scrollIntoView({ block: 'start', behavior: 'smooth' });
       if (!libere.length) ctx.toast('Per ora non c\'è una lega pubblica aperta: creane una con gli amici');
     }
     if (apriEntra) {

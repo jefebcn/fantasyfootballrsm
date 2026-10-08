@@ -126,7 +126,12 @@ const OUT = process.env.USCITA || '/tmp';
     if (conLega) { await p.reload({ waitUntil: 'load' }); await w(1200); }
     await p.click('[data-next]'); await w(300); await p.click('[data-next]'); await w(400);
     await p.click('[data-fine="pubblica"]'); await w(1200);
-    const r = await p.evaluate(() => ({ hash: location.hash, entra: !!document.querySelector('#go-entra'), testo: document.body.textContent }));
+    const r = await p.evaluate(() => {
+      const img = document.querySelector('.pubcard .pc-tito img');
+      return { hash: location.hash, entra: !!document.querySelector('#go-entra'), testo: document.body.textContent,
+        tito: !!(img && img.complete && img.naturalWidth > 0), titolo: getComputedStyle(document.querySelector('.pc-nome') || document.body).fontStyle };
+    });
+    if (conLega) vero(r.tito && r.titolo === 'italic', `la scheda della lega pubblica non ha TITO (${r.tito}) o il titolo in corsivo (${r.titolo})`);
     vero(r.hash === '#/leghe', `«Entra nella lega pubblica» porta su ${r.hash}`);
     if (conLega) vero(r.entra && /Titano Open/.test(r.testo), 'con una sola lega pubblica aperta il modulo per entrarci non e\' aperto');
     else vero(!r.entra && /non c'è una lega pubblica aperta/.test(r.testo), 'senza leghe pubbliche nessuno dice che non ce ne sono');

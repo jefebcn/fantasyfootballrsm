@@ -2058,3 +2058,30 @@ button,a{-webkit-tap-highlight-color:transparent}
 .adm-err-dentro dt{color:var(--text-muted)}
 .adm-err-dentro dd{margin:0;color:var(--text);word-break:break-word}
 .adm-err-dentro pre{margin:0;white-space:pre-wrap;word-break:break-word}
+
+/* La scheda della lega pubblica, con TITO (leghe.js). Un manifesto sempre
+   scuro, anche nel tema chiaro: testo a sinistra in Lato nero corsivo,
+   la mascotte a destra su un alone blu Titano che sfuma nel nero. */
+.pubcards{display:flex;flex-direction:column;gap:12px}
+.pubcard{position:relative;display:flex;align-items:stretch;width:100%;min-height:200px;padding:0;border:0;border-radius:28px;overflow:hidden;
+  text-align:left;cursor:pointer;color:#fff;
+  background:radial-gradient(120% 95% at 100% 40%,var(--c-titano-400) 0%,var(--c-titano-500) 26%,var(--c-titano-800) 52%,#070b16 70%);
+  box-shadow:0 14px 30px -14px rgba(13,23,51,.65);transition:transform .15s ease}
+.pubcard:active:not([disabled]){transform:scale(.985)}
+.pubcard[disabled]{cursor:default}
+.pubcard.on{outline:3px solid var(--c-oro-400);outline-offset:-3px}
+.pc-txt{position:relative;z-index:1;flex:1 1 58%;min-width:0;display:flex;flex-direction:column;align-items:flex-start;gap:7px;padding:20px 0 18px 20px}
+.pc-nome{font:italic 900 clamp(26px,8vw,34px)/.98 var(--font-display);text-transform:uppercase;letter-spacing:.01em;
+  overflow-wrap:anywhere;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;text-shadow:0 2px 12px rgba(0,0,0,.35)}
+.pc-sotto{font:600 12.5px/1.3 var(--font-body);color:rgba(255,255,255,.86)}
+.pc-sotto i{font:italic 900 12.5px var(--font-display);text-transform:uppercase;letter-spacing:.02em;color:var(--c-titano-300)}
+.pc-pills{display:flex;flex-wrap:wrap;gap:6px;margin-top:2px}
+.pc-pill{font:italic 900 10.5px/1 var(--font-display);text-transform:uppercase;letter-spacing:.04em;padding:6px 10px;border-radius:999px;
+  background:var(--c-titano-500);color:#fff;max-width:190px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pc-pill.oro{background:#2a2410;color:var(--c-oro-300);box-shadow:inset 0 0 0 1px rgba(255,201,77,.45)}
+.pc-cta{display:inline-flex;align-items:center;gap:4px;margin-top:4px;font:italic 900 14px/1 var(--font-display);text-transform:uppercase;letter-spacing:.04em;
+  padding:10px 14px 10px 16px;border-radius:999px;background:var(--c-oro-400);color:var(--c-titano-900);box-shadow:0 6px 16px -6px rgba(255,201,77,.7)}
+.pc-cta.spento{background:rgba(255,255,255,.14);color:#fff;box-shadow:none;padding-right:16px}
+.pc-tito{position:relative;flex:0 0 42%;align-self:stretch}
+.pc-tito img{position:absolute;right:-8%;bottom:0;height:100%;width:auto;max-width:none;filter:drop-shadow(0 10px 22px rgba(0,0,0,.45))}
+@media (prefers-reduced-motion:no-preference){.pc-tito img{animation:tito-entra .5s cubic-bezier(.2,.9,.3,1.2) both}}

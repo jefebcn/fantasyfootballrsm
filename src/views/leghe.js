@@ -16,6 +16,7 @@ export function apriModulo(f) { form = f; }
 let versoPubbliche = false;
 export function vaiAllePubbliche() { versoPubbliche = true; pubbliche = null; }
 let pubbliche = null;   // elenco dal server: null = non ancora chiesto
+let vista = null;       // scheda scelta a mano: 'pubbliche' | 'private' | 'admin'; null = la sceglie la schermata
 let entraIn = null;     // id della lega pubblica in cui si sta entrando
 let apriEntra = null;   // arrivati dal banner: ci si scorre sopra una volta sola
 let invitoAperto = false; // il modulo dell'invito si apre da solo una volta, non a ogni ridisegno
@@ -86,9 +87,10 @@ function moduloPubblica() {
  * la policy non te le farebbe vedere — e giustamente: di quelle altrui qui
  * escono solo il nome, quanti sono e cosa c'e' in palio.
  */
-function elencoPubbliche(inCima) {
+function elencoPubbliche(inCima, quanteMie = 0) {
   if (pubbliche === null) return `<div class="a-sec"><b>Leghe pubbliche</b></div><p class="small muted" style="margin:0 2px">Sto guardando quali ci sono…</p>`;
-  if (!pubbliche.length) return '';
+  if (!pubbliche.length) return `<div class="a-card vuoto-admin"><b>Per ora non c'è una lega pubblica aperta.</b><span>Intanto puoi giocare con gli amici: crei una lega e mandi il link d'invito.</span>
+    <button class="a-btn" data-form="create">${icon('users', 'ic sm')}Crea una lega con gli amici</button></div>`;
   // LA SCHEDA CON TITO. La lega pubblica e' la porta per chi arriva da
   // solo: non una riga fra le altre ma un manifesto, scritto grande in
   // corsivo nero, con la mascotte a destra su un alone blu. L'idea viene
@@ -97,8 +99,9 @@ function elencoPubbliche(inCima) {
   const riga = (l) => {
     const pieno = l.membri >= l.max_membri;
     const primo = (l.premi || []).slice().sort((a, b) => a.posto - b.posto)[0];
-    const stato = l.dentro ? 'Sei dentro' : pieno ? 'Al completo' : 'Entra';
-    return `<button class="pubcard${entraIn === l.id ? ' on' : ''}" data-pubblica="${l.id}" ${l.dentro || pieno ? 'disabled' : ''} aria-label="${esc(l.name)}: ${stato.toLowerCase()}">
+    const stato = l.dentro ? 'Gioca' : pieno ? 'Al completo' : 'Entra';
+    // Quella in cui sei gia' non e' spenta: si tocca e ci entri a giocare.
+    return `<button class="pubcard${entraIn === l.id ? ' on' : ''}" ${l.dentro ? `data-league="${l.id}"` : `data-pubblica="${l.id}"`} ${!l.dentro && pieno ? 'disabled' : ''} aria-label="${esc(l.name)}: ${stato.toLowerCase()}">
         <span class="pc-txt">
           <span class="pc-sotto"><i>Campionato sammarinese</i></span>
           <b class="pc-nome">${esc(l.name)}</b>
@@ -106,7 +109,7 @@ function elencoPubbliche(inCima) {
             <span class="pc-pill">${l.membri}${l.max_membri < 1000 ? `/${l.max_membri}` : ''} squadre · ${l.budget} cr.</span>
             ${primo ? `<span class="pc-pill oro">In palio: ${esc(primo.premio)}</span>` : ''}
           </span>
-          <span class="pc-cta${l.dentro || pieno ? ' spento' : ''}">${stato}${l.dentro || pieno ? '' : icon('chev', 'ic sm')}</span>
+          <span class="pc-cta${!l.dentro && pieno ? ' spento' : ''}">${stato}${!l.dentro && pieno ? '' : icon('chev', 'ic sm')}</span>
         </span>
         <span class="pc-tito" aria-hidden="true"><img src="media/tito/scheda.webp" alt="" width="260" height="266" decoding="async"></span>
       </button>`;
@@ -120,7 +123,68 @@ function elencoPubbliche(inCima) {
     ${entraIn ? `<div class="a-card" style="display:flex;flex-direction:column;gap:6px">
       <p class="auth-hint" style="margin:0">Stai entrando in <b>${esc(pubbliche.find((l) => l.id === entraIn)?.name || '')}</b>. Ti serve solo il nome della tua squadra.</p>
       ${teamFields()}<button class="a-btn" id="go-entra" style="margin-top:10px">Entra nella lega</button></div>` : ''}
-    ${inCima ? '' : '<p class="small muted" style="margin:-4px 2px 0">Nelle leghe pubbliche non serve il codice: si entra e si fa la propria rosa.</p>'}`;
+    ${inCima ? '<button class="lglink" data-vista="private">Oppure gioca con gli amici: crea una lega o entra con un codice ' + icon('chev', 'ic sm') + '</button>' : '<p class="small muted" style="margin:-4px 2px 0">Nelle leghe pubbliche non serve il codice: si entra e si fa la propria rosa.</p>'}`;
+}
+
+/**
+ * LE TRE SCHEDE in cima, come in SkillBol (Alex, 8 ottobre): Pubbliche,
+ * Private, Admin. Prima la schermata era una colonna sola — le mie leghe, i
+ * riquadri per crearne o entrarci, l'elenco delle pubbliche — e chi aveva
+ * gia' una lega doveva scorrere per trovare il resto.
+ *
+ * Quale si apre la decide la schermata finche' non ne scegli una tu: un
+ * modulo aperto (creare, entrare col codice, l'invito) porta alla sua, chi
+ * non ha leghe vede per prime le pubbliche se ce n'e' una in cui entrare.
+ */
+function vistaAttuale(mine) {
+  if (form === 'create' || form === 'join') return 'private';
+  if (form === 'pubblica') return 'admin';
+  if (entraIn || versoPubbliche) return 'pubbliche';
+  if (vista) return vista;
+  const pubblica = (id) => Array.isArray(pubbliche) && pubbliche.some((p) => p.id === id);
+  if (!mine.length) return pubbliche === null || pubbliche.some((l) => !l.dentro && l.membri < l.max_membri) ? 'pubbliche' : 'private';
+  return pubblica(S.currentLeagueId()) ? 'pubbliche' : 'private';
+}
+function schede(v) {
+  const t = (k, ic, nome) => `<button class="lgtab${v === k ? ' on' : ''}" data-vista="${k}" role="tab" aria-selected="${v === k}">${icon(ic, 'ic sm')}<span>${nome}</span></button>`;
+  return `<div class="lgtabs" role="tablist">${t('pubbliche', 'globe', 'Pubbliche')}${t('private', 'lock', 'Private')}${t('admin', 'shield', 'Admin')}</div>`;
+}
+/** Le righe delle mie leghe: entrarci, e a destra uscire o eliminarla. */
+function righeMie(lista, cur, titolo) {
+  if (!lista.length) return '';
+  return `<div class="vlist"><div class="vhead">${titolo} <span>${lista.length}</span></div>${lista.map((l) => {
+    const mia = S.laHoCreataIo(l);
+    return `<div class="lgrow">
+      <button class="vr" data-league="${l.id}">${crest({ color: l.id === cur ? 'var(--primary)' : 'var(--c-pietra-400)', initials: (l.short_name || l.name).slice(0, 2).toUpperCase() }, 'sm')}<span class="nm"><b>${esc(l.name)}</b><span>${l.myRole === 'admin' ? 'admin' : 'fantallenatore'} · ${l.started ? 'in corso' : 'in attesa delle rose'} · codice ${esc(l.invite_code)}</span></span><span class="ev"></span><span class="fv" style="font-size:12px">${l.id === cur ? icon('check', 'ic sm') : ''}</span></button>
+      <button class="lgvia" data-via="${mia ? 'elimina' : 'esci'}:${l.id}" aria-label="${mia ? 'Elimina' : 'Esci da'} ${esc(l.name)}" title="${mia ? 'Elimina la lega' : 'Esci dalla lega'}">${icon(mia ? 'trash' : 'exit', 'ic sm')}</button>
+    </div>`;
+  }).join('')}</div>
+  <p class="small muted" style="margin:-4px 2px 0">Tocca una lega per entrarci. Il tasto a destra ${lista.some((l) => S.laHoCreataIo(l)) ? 'elimina quelle che hai creato tu ed esce dalle altre' : 'ti fa uscire dalla lega'}.</p>`;
+}
+const cartaPubblica = () => (S.isAdmin() ? `<button class="startcard larga${form === 'pubblica' ? ' on' : ''}" data-form="pubblica">${pic('trofei', 'lega')}<b>Crea una lega pubblica</b><span>Aperta a tutti, senza codice: ognuno si fa la sua rosa e vince chi fa più punti</span></button>` : '');
+/** Private: le leghe fra amici, e i riquadri per crearne una o entrare col codice. */
+function schedaPrivate(mine, cur) {
+  const pubblica = (id) => Array.isArray(pubbliche) && pubbliche.some((p) => p.id === id);
+  const inv = S.invitoInSospeso();
+  return `${righeMie(mine.filter((l) => !pubblica(l.id)), cur, 'Le mie leghe')}
+      <div class="startgrid">
+        <button class="startcard${form === 'create' ? ' on' : ''}" data-form="create">${pic('leghe', 'menu')}<b>Crea una lega</b><span>Ne diventi admin e ricevi il codice da girare agli altri</span></button>
+        <button class="startcard${form === 'join' ? ' on' : ''}" data-form="join">${pic('squadre', 'menu')}<b>Entra con codice</b><span>Ti serve il codice a 6 caratteri dell'organizzatore</span></button>
+        ${cartaPubblica()}
+      </div>
+      ${form === 'create' ? `<div class="a-card" style="display:flex;flex-direction:column;gap:6px"><label class="lbl" for="lname">Nome della lega</label><input class="field-input" id="lname" placeholder="es. I Sudati di RSM" maxlength="40">${teamFields()}<button class="a-btn" id="go-create" style="margin-top:10px">Crea e diventa admin</button></div>` : ''}
+      ${form === 'join' ? `<div class="a-card${inv ? ' invitato' : ''}" style="display:flex;flex-direction:column;gap:6px">${inv
+    ? '<p class="auth-hint" style="margin:0 0 4px">Ti hanno invitato: <b>il codice è già qui</b>. Scegli solo il nome della tua squadra.</p>' : ''}<label class="lbl" for="code">Codice invito</label><input class="field-input" id="code" placeholder="es. A1B2C3" autocapitalize="characters" maxlength="6" value="${esc(inv || '')}">${teamFields()}<button class="a-btn" id="go-join" style="margin-top:10px">Entra nella lega</button></div>` : ''}
+      ${form === 'pubblica' ? moduloPubblica() : ''}`;
+}
+/** Admin: le leghe che amministri tu, private o pubbliche. */
+function schedaAdmin(mine, cur) {
+  const mie = mine.filter((l) => l.myRole === 'admin');
+  return `${mie.length ? righeMie(mie, cur, 'Leghe che amministri')
+    : `<div class="a-card vuoto-admin"><b>Non amministri nessuna lega.</b><span>Chi crea una lega ne diventa admin: decide le regole, registra l'asta e gestisce le rose.</span>
+        <button class="a-btn" data-form="create">${icon('users', 'ic sm')}Crea una lega con gli amici</button></div>`}
+      ${S.isAdmin() ? `<div class="startgrid">${cartaPubblica()}</div>` : ''}
+      ${form === 'pubblica' ? moduloPubblica() : ''}`;
 }
 
 export const leghe = {
@@ -144,29 +208,10 @@ export const leghe = {
     // che hai davanti si legge due volte.
     ? 'Per giocare serve una lega. Ce n\'è una aperta a tutti: entri e giochi, senza codice e senza aspettare nessuno.'
     : 'Per giocare serve una lega: creala tu e invita gli altri con un codice, oppure entra in una che esiste già.'}</p></div>`}
-      ${mine.length ? `<div class="vlist"><div class="vhead">Leghe <span>${mine.length}</span></div>${mine.map((l) => {
-    const mia = S.laHoCreataIo(l);
-    return `<div class="lgrow">
-      <button class="vr" data-league="${l.id}">${crest({ color: l.id === cur ? 'var(--primary)' : 'var(--c-pietra-400)', initials: (l.short_name || l.name).slice(0, 2).toUpperCase() }, 'sm')}<span class="nm"><b>${esc(l.name)}</b><span>${l.myRole === 'admin' ? 'admin' : 'fantallenatore'} · ${l.started ? 'in corso' : 'in attesa delle rose'} · codice ${esc(l.invite_code)}</span></span><span class="ev"></span><span class="fv" style="font-size:12px">${l.id === cur ? icon('check', 'ic sm') : ''}</span></button>
-      <button class="lgvia" data-via="${mia ? 'elimina' : 'esci'}:${l.id}" aria-label="${mia ? 'Elimina' : 'Esci da'} ${esc(l.name)}" title="${mia ? 'Elimina la lega' : 'Esci dalla lega'}">${icon(mia ? 'trash' : 'exit', 'ic sm')}</button>
-    </div>`;
-  }).join('')}</div>
-  <p class="small muted" style="margin:-4px 2px 0">Tocca una lega per entrarci. Il tasto a destra ${mine.some((l) => S.laHoCreataIo(l)) ? 'elimina quelle che hai creato tu ed esce dalle altre' : 'ti fa uscire dalla lega'}.</p>` : ''}
-      ${primaLePubbliche ? elencoPubbliche(true) : ''}
-      ${primaLePubbliche ? '<div class="a-sec"><b>Oppure</b><span>con gli amici</span></div>' : ''}
-      <div class="startgrid">
-        <button class="startcard${form === 'create' ? ' on' : ''}" data-form="create">${pic('leghe', 'menu')}<b>Crea una lega</b><span>Ne diventi admin e ricevi il codice da girare agli altri</span></button>
-        <button class="startcard${form === 'join' ? ' on' : ''}" data-form="join">${pic('squadre', 'menu')}<b>Entra con codice</b><span>Ti serve il codice a 6 caratteri dell'organizzatore</span></button>
-        ${S.isAdmin() ? `<button class="startcard larga${form === 'pubblica' ? ' on' : ''}" data-form="pubblica">${pic('trofei', 'lega')}<b>Crea una lega pubblica</b><span>Aperta a tutti, senza codice: ognuno si fa la sua rosa e vince chi fa più punti</span></button>` : ''}
-      </div>
-      ${form === 'create' ? `<div class="a-card" style="display:flex;flex-direction:column;gap:6px"><label class="lbl" for="lname">Nome della lega</label><input class="field-input" id="lname" placeholder="es. I Sudati di RSM" maxlength="40">${teamFields()}<button class="a-btn" id="go-create" style="margin-top:10px">Crea e diventa admin</button></div>` : ''}
-      ${form === 'join' ? (() => {
-    const inv = S.invitoInSospeso();
-    return `<div class="a-card${inv ? ' invitato' : ''}" style="display:flex;flex-direction:column;gap:6px">${inv
-      ? '<p class="auth-hint" style="margin:0 0 4px">Ti hanno invitato: <b>il codice è già qui</b>. Scegli solo il nome della tua squadra.</p>' : ''}<label class="lbl" for="code">Codice invito</label><input class="field-input" id="code" placeholder="es. A1B2C3" autocapitalize="characters" maxlength="6" value="${esc(inv || '')}">${teamFields()}<button class="a-btn" id="go-join" style="margin-top:10px">Entra nella lega</button></div>`;
-  })() : ''}
-      ${form === 'pubblica' ? moduloPubblica() : ''}
-      ${primaLePubbliche ? '' : elencoPubbliche(false)}
+      ${schede(vistaAttuale(mine))}
+      ${vistaAttuale(mine) === 'pubbliche' ? elencoPubbliche(!mine.length, mine.length)
+    : vistaAttuale(mine) === 'admin' ? schedaAdmin(mine, cur)
+    : schedaPrivate(mine, cur)}
       ${mine.length ? '' : comeFunziona()}
       ${/* QUI IL MENU NON C'E'. Senza una lega l'appbar e' 'none' — niente
             hamburger, quindi il pannello laterale, e la voce per installare
@@ -222,6 +267,8 @@ export const leghe = {
         .catch(() => { pubbliche = []; ctx.render(); });
     }
     root.querySelector('main').addEventListener('click', async (e) => {
+      const sv = e.target.closest('[data-vista]');
+      if (sv) { vista = sv.dataset.vista; form = 'none'; entraIn = null; ctx.render(); return; }
       const f = e.target.closest('[data-form]'); if (f) { form = form === f.dataset.form ? 'none' : f.dataset.form; ctx.render(); return; }
       const v = e.target.closest('[data-via]');
       if (v) {

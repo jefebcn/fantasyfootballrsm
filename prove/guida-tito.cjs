@@ -74,6 +74,11 @@ const OUT = process.env.USCITA || '/tmp';
       await p.click('[data-fine="leghe"]'); await w(600);
       vero((await p.evaluate(() => location.hash)) === '#/leghe', '«Salta» senza lega non porta alle leghe');
     }
+    const tab = await p.evaluate(() => ({ n: document.querySelectorAll('.lgtab').length, on: document.querySelector('.lgtab.on')?.dataset.vista }));
+    vero(tab.n === 3 && tab.on === 'private', `leghe: schede ${tab.n}, aperta «${tab.on}» (senza leghe pubbliche deve aprirsi Private)`);
+    await p.click('[data-vista="admin"]'); await w(400);
+    vero(await p.$('.vuoto-admin'), 'scheda Admin: a chi non amministra niente non lo dice');
+    await p.click('[data-vista="private"]'); await w(400);
     // 2a. con una lega: Impostazioni e Come si gioca stanno in cima al menu.
     // Erano l'ultima riga, sotto due schermate di voci, e non si trovavano.
     await p.click('[data-form="create"]').catch(() => {}); await w(300);
@@ -84,6 +89,7 @@ const OUT = process.env.USCITA || '/tmp';
       const bb = await p.evaluate((h) => { const a = document.querySelector(`.a-drawer a.d-item[href="${h}"]`); return a && a.getBoundingClientRect().bottom; }, href);
       vero(bb && bb <= 844, `menu: «${nome}» ${bb ? `sta a ${Math.round(bb)}px, sotto lo schermo` : 'non c\'e\''}`);
     }
+    vero(await p.$('.a-drawer .d-esci-fondo[data-logout]'), 'menu: in fondo manca «Esci dall\'account»');
     await p.click('.a-drawer a.d-item[href="#/guida"]').catch(() => {}); await w(700);
     vero((await p.evaluate(() => location.hash)) === '#/guida', '«Come si gioca» dal menu non apre la guida');
     await p.click('[data-fine="leghe"]').catch(() => {}); await w(600);
@@ -131,6 +137,7 @@ const OUT = process.env.USCITA || '/tmp';
       return { hash: location.hash, entra: !!document.querySelector('#go-entra'), testo: document.body.textContent,
         tito: !!(img && img.complete && img.naturalWidth > 0), titolo: getComputedStyle(document.querySelector('.pc-nome') || document.body).fontStyle };
     });
+    if (conLega) vero(await p.$('.lgtab.on[data-vista="pubbliche"]'), 'con una lega pubblica aperta la scheda «Pubbliche» non e\' quella scelta');
     if (conLega) vero(r.tito && r.titolo === 'italic', `la scheda della lega pubblica non ha TITO (${r.tito}) o il titolo in corsivo (${r.titolo})`);
     vero(r.hash === '#/leghe', `«Entra nella lega pubblica» porta su ${r.hash}`);
     if (conLega) vero(r.entra && /Titano Open/.test(r.testo), 'con una sola lega pubblica aperta il modulo per entrarci non e\' aperto');

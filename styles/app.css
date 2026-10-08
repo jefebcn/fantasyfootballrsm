@@ -2085,3 +2085,32 @@ button,a{-webkit-tap-highlight-color:transparent}
 .pc-tito{position:relative;flex:0 0 42%;align-self:stretch}
 .pc-tito img{position:absolute;right:-8%;bottom:0;height:100%;width:auto;max-width:none;filter:drop-shadow(0 10px 22px rgba(0,0,0,.45))}
 @media (prefers-reduced-motion:no-preference){.pc-tito img{animation:tito-entra .5s cubic-bezier(.2,.9,.3,1.2) both}}
+
+/* Le tre schede delle leghe (Pubbliche / Private / Admin): pastiglie grandi
+   con l'icona, quella scelta piena di blu. */
+.lgtabs{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:2px 0 4px}
+.lgtab{display:flex;align-items:center;justify-content:center;gap:6px;min-height:46px;padding:0 8px;border:0;border-radius:14px;cursor:pointer;
+  background:var(--surface);color:var(--text);box-shadow:inset 0 0 0 1px var(--border);font:800 14px var(--font-display);letter-spacing:.02em;transition:background .15s ease}
+.lgtab .ic{flex:none}
+.lgtab span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lgtab.on{background:var(--c-titano-500);color:#fff;box-shadow:0 8px 18px -10px var(--c-titano-500)}
+.lglink{display:flex;align-items:center;justify-content:center;gap:4px;width:100%;margin-top:2px;padding:12px;border:0;background:transparent;cursor:pointer;
+  color:var(--primary);font:700 14px var(--font-body);text-align:center}
+.vuoto-admin{display:flex;flex-direction:column;align-items:flex-start;gap:6px}
+.vuoto-admin span{color:var(--text-muted);font-size:14px}
+.vuoto-admin .a-btn{margin-top:8px;width:100%}
+
+/* Il menu a pastiglie, come in SkillBol (Alex, 8 ottobre): ogni voce e' un
+   pulsante pieno con gli angoli tondi invece di una riga su fondo bianco,
+   e in fondo l'uscita in rosso. */
+.a-drawer .d-item{margin:3px 12px;width:auto;padding:9px 12px;border-radius:14px;background:var(--surface-sunk)}
+.a-drawer .d-item i,.a-drawer .d-item i.illus{background:var(--surface)}
+.a-drawer .d-sec{padding-top:14px}
+.d-esci-fondo{display:flex;align-items:center;justify-content:center;gap:8px;margin:18px 12px 6px;padding:13px 16px;border:0;border-radius:14px;cursor:pointer;
+  background:#8f2323;color:#fff;font:800 15px var(--font-display);letter-spacing:.02em}
+.d-esci-fondo:active{background:#771b1b}
+
+/* Il nome della lega in corsivo nero, come sulla scheda della lega
+   pubblica: in copertina e nella testa del menu. */
+.a-hero .hero-league b{font:italic 900 18px var(--font-display);text-transform:uppercase;letter-spacing:.01em}
+.d-nl b{font-style:italic;font-weight:900}

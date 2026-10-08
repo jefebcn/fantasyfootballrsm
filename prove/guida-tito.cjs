@@ -56,6 +56,9 @@ const OUT = process.env.USCITA || '/tmp';
     vero(/Negozio/.test(testo) && /asta/.test(testo), 'il terzo passo non spiega negozio e asta');
     await p.screenshot({ path: `${OUT}/guida-3.png` });
     vero(await p.$('[data-fine="crea"]') && await p.$('[data-fine="pubblica"]'), "all'ultimo passo mancano i due pulsanti");
+    vero(await p.$('.intro-cta[data-fine="pubblica"]'), 'il pulsante giallo non e\' «Entra nella lega pubblica»');
+    const lungo = await p.evaluate(() => [...document.querySelectorAll('.guida .intro-points li span')].reduce((n, x) => n + x.textContent.length, 0));
+    vero(lungo <= 200, `il terzo passo e' lungo ${lungo} caratteri: su un telefono piccolo non sta`);
     await p.click('[data-fine="crea"]'); await w(700);
     vero((await p.evaluate(() => location.hash)) === '#/leghe', '«Crea una lega» non porta alle leghe');
     vero(await p.$('#lname'), '«Crea una lega» non apre il modulo di creazione');
@@ -83,13 +86,37 @@ const OUT = process.env.USCITA || '/tmp';
     await p.goto(`${BASE}/#/`, { waitUntil: 'load' }); await w(1200);
     await iscriviti(p, w);
     await p.click('[data-next]'); await w(300); await p.click('[data-next]'); await w(400);
-    const cta = await p.$('[data-fine="crea"]');
+    const cta = await p.$('.intro-cta[data-fine="pubblica"]');
     if (cta) {
       await cta.scrollIntoViewIfNeeded(); await w(200);
       const bb = await cta.boundingBox();
-      const dentro = bb && bb.y + bb.height <= 667 && await p.evaluate(({ x, y }) => !!document.elementFromPoint(x, y)?.closest('[data-fine="crea"]'), { x: bb.x + bb.width / 2, y: bb.y + bb.height / 2 });
-      vero(dentro, 'iPhone SE: il pulsante «Crea una lega» resta fuori dallo schermo');
+      const dentro = bb && bb.y + bb.height <= 667 && await p.evaluate(({ x, y }) => !!document.elementFromPoint(x, y)?.closest('[data-fine="pubblica"]'), { x: bb.x + bb.width / 2, y: bb.y + bb.height / 2 });
+      vero(dentro, 'iPhone SE: il pulsante «Entra nella lega pubblica» resta fuori dallo schermo');
     } else ko.push('iPhone SE: manca il pulsante finale');
+    await ctx.close();
+  }
+
+  // 2c. «Entra nella lega pubblica»: se ce n'e' una sola aperta, il modulo
+  // del nome squadra e' gia' aperto; se non ce n'e' nessuna, lo dice
+  for (const conLega of [true, false]) {
+    const { ctx, p, err, w } = await nuovo();
+    await p.goto(`${BASE}/#/`, { waitUntil: 'load' }); await w(1200);
+    await iscriviti(p, w);
+    if (conLega) await p.evaluate(() => {
+      const s = JSON.parse(localStorage.getItem('fcs:mock'));
+      (s.tables.leagues ||= []).push({ id: 'pub1', name: 'Titano Open', short_name: 'TO', pubblica: true, classifica: 'punti', max_membri: 50,
+        rules: { budget: 300 }, premi: [], invite_code: 'PUB001', created_at: new Date().toISOString() });
+      localStorage.setItem('fcs:mock', JSON.stringify(s));
+    });
+    // il finto server legge le tabelle all'avvio
+    if (conLega) { await p.reload({ waitUntil: 'load' }); await w(1200); }
+    await p.click('[data-next]'); await w(300); await p.click('[data-next]'); await w(400);
+    await p.click('[data-fine="pubblica"]'); await w(1200);
+    const r = await p.evaluate(() => ({ hash: location.hash, entra: !!document.querySelector('#go-entra'), testo: document.body.textContent }));
+    vero(r.hash === '#/leghe', `«Entra nella lega pubblica» porta su ${r.hash}`);
+    if (conLega) vero(r.entra && /Titano Open/.test(r.testo), 'con una sola lega pubblica aperta il modulo per entrarci non e\' aperto');
+    else vero(!r.entra && /non c'è una lega pubblica aperta/.test(r.testo), 'senza leghe pubbliche nessuno dice che non ce ne sono');
+    if (err.length) ko.push(`errori (pubblica ${conLega}): ` + err.join(' | '));
     await ctx.close();
   }
 

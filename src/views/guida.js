@@ -1,7 +1,7 @@
 import * as S from '../state.js';
 import { icon } from '../ui.js';
 import { fx } from './onboarding.js';
-import { apriModulo } from './leghe.js';
+import { apriModulo, vaiAllePubbliche } from './leghe.js';
 
 /**
  * La guida di TITO: tre passi dopo la registrazione, prima delle leghe.
@@ -40,11 +40,11 @@ const PASSI = [
   {
     posa: 'braccia',
     titolo: 'I giocatori',
-    frase: 'Infine i giocatori: servono 25, veri, del campionato.',
+    frase: 'Infine i giocatori: 25, veri, del campionato.',
     punti: [
-      ['cart', 'Nella lega pubblica', 'Vai nel Negozio e compri subito i tuoi 25 con i crediti della lega. Lo stesso giocatore può averlo anche un altro.'],
-      ['cup', 'Con gli amici', 'Si fa l\'asta, 500 crediti a testa: l\'admin registra gli acquisti. Poi c\'è il mercato degli svincolati.'],
-      ['cal', 'Ogni settimana', 'Schieri 11 titolari e 7 in panchina entro le 15 del giorno della prima partita. I voti li scrive il referto.'],
+      ['cart', 'Nella lega pubblica', 'Li compri subito nel Negozio, con i crediti della lega.'],
+      ['cup', 'Con gli amici', 'Si fa l\'asta, 500 crediti a testa. Poi il mercato degli svincolati.'],
+      ['cal', 'Ogni settimana', 'Schieri la formazione entro le 15 del giorno della prima partita.'],
     ],
   },
 ];
@@ -72,8 +72,8 @@ export const guida = {
       <div class="intro-foot">
         <div class="intro-dots">${PASSI.map((_, i) => `<i class="${i === passo ? 'on' : ''}"></i>`).join('')}</div>
         ${ultimo
-          ? `<button class="a-btn intro-cta" data-fine="crea">${icon('users', 'ic sm')}Crea una lega con gli amici</button>
-             <button class="intro-link" data-fine="pubblica">Entra nella lega pubblica</button>`
+          ? `<button class="a-btn intro-cta" data-fine="pubblica">${icon('globe', 'ic sm')}Entra nella lega pubblica</button>
+             <button class="intro-link" data-fine="crea">Crea una lega con gli amici</button>`
           : `<button class="a-btn intro-cta" data-next>Avanti ${icon('chev', 'ic sm')}</button>`}
       </div>
     </main>`;
@@ -83,10 +83,13 @@ export const guida = {
     fx(root.querySelector('#intro-fx'));
     const vai = (n) => { passo = Math.max(0, Math.min(PASSI.length - 1, n)); ctx.render(); };
     // Chi ha gia' una lega la stava rivedendo dalle impostazioni: torna li'.
+    // Il pulsante giallo e' la lega pubblica: chi scarica l'app dallo Store
+    // di solito non ha una compagnia con cui giocare, e li' entra da solo.
     const fine = (dove) => {
       S.store.set({ guidaVista: true }); passo = 0;
       if (S.hasLeague() && dove === 'leghe') { ctx.go('impostazioni'); return; }
       apriModulo(dove === 'crea' ? 'create' : 'none');
+      if (dove === 'pubblica') vaiAllePubbliche();
       ctx.go('leghe');
     };
     main.addEventListener('click', (e) => {

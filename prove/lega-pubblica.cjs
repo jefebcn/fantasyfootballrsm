@@ -120,18 +120,15 @@ const prepara = (ctx, stato) => ctx.addInitScript((stato) => {
   et(elenco.bottone, 'la lega pubblica compare nell\'elenco a chi non c\'è dentro');
   // E COMPARE PER PRIMA. Chi scarica dallo Store non ha un codice e non e'
   // l'organizzatore di niente: la lega aperta e' l'unica cosa che puo' fare
-  // da solo, e stava sotto i due riquadri che chiedono l'una o l'altro.
-  const ordine = await p.evaluate(() => {
-    const pub = document.querySelector('[data-pubblica]');
-    const griglia = document.querySelector('.startgrid');
-    if (!pub || !griglia) return null;
-    return { pubblica: Math.round(pub.getBoundingClientRect().top),
-      riquadri: Math.round(griglia.getBoundingClientRect().top),
-      titolo: document.querySelector('.a-sec b')?.innerText || '' };
-  });
-  et(ordine && ordine.pubblica < ordine.riquadri,
-    `e sta PRIMA dei riquadri "crea/entra con codice" (${ordine ? `${ordine.pubblica}pt contro ${ordine.riquadri}pt` : 'non misurabile'})`);
-  et(ordine && /lega aperta/i.test(ordine.titolo), `sotto un titolo che dice cosa fai ("${ordine ? ordine.titolo : ''}")`);
+  // da solo. Le leghe stanno in tre schede (Pubbliche / Private / Admin):
+  // a chi non ne ha si apre «Pubbliche», e «Private» resta a un tocco.
+  const ordine = await p.evaluate(() => ({
+    aperta: document.querySelector('.lgtab.on')?.dataset.vista || '',
+    private: !!document.querySelector('[data-vista="private"]'),
+    titolo: document.querySelector('.a-sec b')?.innerText || '',
+  }));
+  et(ordine.aperta === 'pubbliche' && ordine.private, `si apre la scheda «Pubbliche» e «Private» e' accanto (aperta: ${ordine.aperta})`);
+  et(/lega aperta/i.test(ordine.titolo), `sotto un titolo che dice cosa fai ("${ordine.titolo}")`);
   // la scheda scrive il nome in maiuscolo (CSS): innerText lo restituisce cosi'
   et(/titano open/i.test(elenco.testo) && /una cena offerta/i.test(elenco.riga), `e mostra nome, squadre e premio ("${elenco.riga.replace(/\n/g, ' ').slice(0, 80)}")`);
   et(!/codice/i.test(elenco.riga), 'senza chiedere un codice');

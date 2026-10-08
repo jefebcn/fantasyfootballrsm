@@ -93,6 +93,8 @@ const prepara = (ctx, stato) => ctx.addInitScript((stato) => {
   await p.goto(`${BASE}/#/`, { waitUntil: 'load' }); await w(p, 1300);
   await p.click('[data-tab="up"]'); await w(p, 250);
   await p.fill('#email', 'due@e.it'); await p.fill('#name', 'Due'); await p.fill('#password', 'password123'); await p.click('#primary'); await w(p, 1200);
+  // c'e' una lega pubblica aperta: le leghe si aprono su «Pubbliche»
+  await p.click('[data-vista="private"]'); await w(p, 300);
   await p.click('[data-form="create"]'); await w(p, 300);
   await p.fill('#lname', 'Fra amici'); await p.fill('#team', 'Hasta El Roxy'); await p.click('#go-create'); await w(p, 1600);
   // Un avversario nella lega privata: con una squadra sola la card "Giornata

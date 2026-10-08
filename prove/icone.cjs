@@ -185,7 +185,7 @@ const GRUPPI = {
   // giornata giocata che ne ha
   let e = { quante: 0 };
   for (const g of ['voti/1', 'voti/2', 'voti/3', 'voti']) {
-    await p.goto(`http://localhost:4173/#/${g}`, { waitUntil: 'load' }); await w(1200);
+    await p.goto(`${BASE}/#/${g}`, { waitUntil: 'load' }); await w(1200);
     e = await p.evaluate(() => {
       const evi = [...document.querySelectorAll('.vr .ev .evi')];
       if (!evi.length) return { quante: 0 };

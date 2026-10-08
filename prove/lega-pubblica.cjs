@@ -132,7 +132,8 @@ const prepara = (ctx, stato) => ctx.addInitScript((stato) => {
   et(ordine && ordine.pubblica < ordine.riquadri,
     `e sta PRIMA dei riquadri "crea/entra con codice" (${ordine ? `${ordine.pubblica}pt contro ${ordine.riquadri}pt` : 'non misurabile'})`);
   et(ordine && /lega aperta/i.test(ordine.titolo), `sotto un titolo che dice cosa fai ("${ordine ? ordine.titolo : ''}")`);
-  et(/Titano Open/.test(elenco.testo) && /Una cena offerta/.test(elenco.riga), `e mostra nome, squadre e premio ("${elenco.riga.replace(/\n/g, ' ').slice(0, 80)}")`);
+  // la scheda scrive il nome in maiuscolo (CSS): innerText lo restituisce cosi'
+  et(/titano open/i.test(elenco.testo) && /una cena offerta/i.test(elenco.riga), `e mostra nome, squadre e premio ("${elenco.riga.replace(/\n/g, ' ').slice(0, 80)}")`);
   et(!/codice/i.test(elenco.riga), 'senza chiedere un codice');
 
   await p.click('[data-pubblica]'); await w(p, 500);

@@ -2,3 +2,7 @@
 # servono a chi lavora sul progetto, non all'app. Non vanno online.
 .claude/
 skills-lock.json
+# I lavori video fatti con le skill (regia-hyperframes, HyperFrames):
+# bozzetti, brief e progetti restano nel repository, non sul sito.
+regia/
+videos/

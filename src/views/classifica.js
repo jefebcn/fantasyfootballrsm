@@ -1,16 +1,9 @@
 import * as S from '../state.js';
-import { esc, fmt, badge, crest, empty, icon, dateIt, timeIt } from '../ui.js';
+import { esc, fmt, badge, crest, empty, icon, dateIt, timeIt, freccia } from '../ui.js';
 import { movimenti, conversionParams } from '../engine.js';
 
 let vista = 'classifica';
 let contro = null;
-
-/** ▲2 / ▼1 / = rispetto a prima della giornata in corso. */
-function freccia(d) {
-  if (d === null) return '';
-  if (d === 0) return '<i class="mv pari" aria-label="posizione invariata">=</i>';
-  return `<i class="mv ${d > 0 ? 'su' : 'giu'}" aria-label="${d > 0 ? `sale di ${d}` : `scende di ${-d}`}">${d > 0 ? '▲' : '▼'}${Math.abs(d)}</i>`;
-}
 
 const nomeSq = (id) => S.managersById.get(id)?.teamName || '—';
 

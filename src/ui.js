@@ -6,6 +6,12 @@ import { esc } from './ui-esc.js';
 export { esc };
 export const fmt = (n, min = 1) => (n == null ? 'S.V.' : Number(n).toLocaleString('it-IT', { minimumFractionDigits: min, maximumFractionDigits: 2 }));
 export const signed = (n) => (n > 0 ? '+' : n < 0 ? '−' : '') + fmt(Math.abs(n));
+/** ▲2 / ▼1 / = rispetto a prima della giornata in corso (null: niente freccia). */
+export function freccia(d) {
+  if (d === null || d === undefined) return '';
+  if (d === 0) return '<i class="mv pari" aria-label="posizione invariata">=</i>';
+  return `<i class="mv ${d > 0 ? 'su' : 'giu'}" aria-label="${d > 0 ? `sale di ${d}` : `scende di ${-d}`}">${d > 0 ? '▲' : '▼'}${Math.abs(d)}</i>`;
+}
 export const icon = (name, cls = 'ic') => `<svg class="${cls}"><use href="#i-${name}"/></svg>`;
 /** Il logo originale: una maschera colorata con il colore corrente (styles/logo.css). */
 export const logo = (cls = '') => `<i class="logo ${cls}" role="img" aria-label="Fantatitano"></i>`;

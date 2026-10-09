@@ -1429,16 +1429,31 @@ button,a{-webkit-tap-highlight-color:transparent}
    stava 5px troppo a destra e 1px troppo in basso, su OGNI tile dell'app.
    Si vedeva a occhio nudo appena due tile stavano una sopra l'altra. */
 .a-card.lead{display:block;padding:2px 14px 0;text-decoration:none;color:inherit}
-.lrow{display:flex;align-items:center;gap:10px;padding:9px 0;border-top:1px solid var(--border)}
+/* Le righe dell'anteprima (rifatte il 9/10): medaglia del podio, freccia di
+   chi si e' mosso, barra di quanto manca dal primo, distacco sotto i punti. */
+.lrow{display:flex;align-items:center;gap:10px;padding:10px 0;border-top:1px solid var(--border)}
 .lrow:first-child{border-top:0}
-.lrow.io{background:var(--primary-soft);margin:0 -14px;padding-left:14px;padding-right:14px}
-.lrow .pos{flex:none;width:20px;text-align:center;font:700 13px var(--font-display);color:var(--text-muted);font-style:normal}
+.lrow.io{background:var(--primary-soft);margin:0 -14px;padding-left:14px;padding-right:14px;box-shadow:inset 4px 0 0 var(--accent)}
+.lrow .lpos{flex:none;width:28px;display:flex;flex-direction:column;align-items:center;gap:3px}
+.lrow .pos{width:26px;height:26px;border-radius:50%;display:grid;place-items:center;
+  font:italic 900 14px var(--font-display);color:var(--text-muted);font-variant-numeric:tabular-nums}
+.lrow .pos.m1{background:var(--grad-oro);color:var(--c-titano-900);box-shadow:0 2px 8px rgba(229,161,27,.35)}
+.lrow .pos.m2{background:linear-gradient(180deg,#EEF2F7 0%,#AEB9C6 100%);color:#26313D}
+.lrow .pos.m3{background:linear-gradient(180deg,#EDB98C 0%,#B4703F 100%);color:#3A1F0B}
+.lrow .lpos .mv{min-width:0;padding:1px 4px;font-size:9px;line-height:1.2}
 .lrow .nm{display:flex;flex-direction:column;gap:1px;min-width:0;flex:1}
-.lrow .nm b{font:600 13.5px var(--font-body);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.lrow .nm span{font-size:11px;color:var(--text-muted)}
-.lrow .pt{display:flex;flex-direction:column;align-items:flex-end;flex:none}
-.lrow .pt b{font:800 15px var(--font-display);font-variant-numeric:tabular-nums}
-.lrow .pt span{font-size:10px;color:var(--text-muted)}
+.lrow .nm .lnm{display:flex;align-items:center;gap:6px;min-width:0}
+.lrow .nm b{font:600 14px var(--font-body);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.lrow .nm .tu{flex:none;font:italic 900 9.5px/1 var(--font-display);text-transform:uppercase;letter-spacing:.06em;
+  padding:3px 6px 2px;border-radius:999px;background:var(--accent);color:var(--on-accent)}
+.lrow .nm .own{font-size:11px;color:var(--text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lrow .lbar{display:block;height:4px;margin-top:5px;max-width:170px;border-radius:2px;background:var(--surface-sunk);overflow:hidden}
+.lrow .lbar i{display:block;height:100%;border-radius:2px;background:var(--primary)}
+.lrow.io .lbar i{background:var(--grad-oro)}
+.lrow .pt{display:flex;flex-direction:column;align-items:flex-end;flex:none;gap:2px}
+.lrow .pt b{font:italic 900 19px/1 var(--font-display);font-variant-numeric:tabular-nums}
+.lrow .pt .gap{font:600 10.5px var(--font-body);color:var(--text-muted);font-variant-numeric:tabular-nums;white-space:nowrap}
+.lrow .pt .gap.testa{font:italic 900 10px var(--font-display);text-transform:uppercase;letter-spacing:.05em;color:var(--on-accent-soft)}
 .lcta{display:flex;align-items:center;justify-content:center;gap:4px;padding:11px 0;border-top:1px solid var(--border);
   font:600 13px var(--font-body);color:var(--primary)}
 

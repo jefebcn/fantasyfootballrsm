@@ -26,6 +26,11 @@ Bozzetti: `storyboard.html` (v1), un fotogramma fermo per scena.
 - **Audio:** `musica.wav` 0-20 s; `sfx-fendente.wav` a 0,8 s (colpo a 1,0 s); 11 × `sfx-tick.wav` da 9,0 a 11,5 s ogni 0,25 s; `sfx-conferma.wav` a 12,5 s.
 - **Verita':** le schermate sono l'app vera (catture del 9/10 con dati di prova, tema scuro); i nomi in campo sono giocatori veri del listone del campionato sammarinese; i personaggi in campo sono le illustrazioni dell'app, non foto.
 
+## Changes from v1
+
+- Alex, dopo la prima anteprima: "i personaggi/giocatori risultano senza faccia" → le finestre dei posti partono 120px piu' in alto, i giocatori si vedono interi.
+- Alex: "il fendente deve essere una spada o un altro oggetto per dare maggiore risalto" → una spada (1140px, bagliore oro, contorno scuro) attraversa lo schermo da 0,89 a 1,31 s, punta a meta' schermo a 1,0 s; la scia oro e' la linea di prima; lampo all'impatto.
+
 ## Costruzione
 
 Un solo file (`index.html`), non una sotto-composizione per scena: la corona, la linea oro e il telefono passano da una scena all'altra con passaggi di testimone, e il timeline di una sotto-composizione non puo' muovere gli elementi di un'altra. Tempi costruiti identici al piano; durata finale 20,0 s. GSAP e' nel progetto (`assets/vendor`), niente rete al rendering.
@@ -36,7 +41,7 @@ Bozzetti v1 confermati da Alex il 9/10: impaginazione, gerarchia e testi delle 6
 
 ## Frame 1 — Il taglio
 
-- scene: FANTACALCIO? / SERIE A; un fendente oro spacca SERIE A, sopra diventa NON SOLO
+- scene: FANTACALCIO? / SERIE A; una spada attraversa lo schermo e spacca SERIE A lasciando la scia oro, sopra diventa NON SOLO
 - duration: 3s
 - poster: 2.2
 - transition_in: cut

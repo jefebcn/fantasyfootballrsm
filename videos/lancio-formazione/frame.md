@@ -59,6 +59,10 @@ components:
     src: "assets/brand/corona-bianca.png"
     size: "360px di larghezza"
     description: "La corona grande della scena 6, sopra FANTATITANO."
+  spada:
+    shape: "spada disegnata in SVG, lunga 1140px: lama {colors.oro-luce} con filo {colors.inchiostro}, contorno {colors.fondo}, scanalatura {colors.oro}; guardia e pomo {colors.oro}; impugnatura {colors.alone}"
+    glow: "drop-shadow 0 0 16px oro al 70%"
+    description: "Richiesta di Alex dopo la prima anteprima (9/10): il fendente diventa una spada che attraversa lo schermo in 0,42 s (punta a meta' schermo a 1,0 s) con due copie in ritardo per la scia di velocita' e un lampo all'impatto. La sua scia e' il fendente qui sotto."
   fendente:
     stroke: "{colors.oro} 18px, con filo {colors.oro-luce} 4px al centro, estremi tondi"
     angle: "da sinistra-basso a destra-alto, circa -9°, piu' largo della parola"

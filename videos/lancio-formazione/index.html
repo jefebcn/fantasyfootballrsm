@@ -50,7 +50,7 @@
       .spada { position: absolute; left: 0; top: 0; width: 1140px; height: 180px; transform-origin: 50% 50%; will-change: transform, opacity;
         filter: drop-shadow(0 0 16px rgba(255, 201, 77, 0.7)); }
       .spada svg { width: 100%; height: 100%; display: block; }
-      #lampo { position: absolute; left: 390px; top: 830px; width: 300px; height: 300px; border-radius: 50%;
+      #lampo { position: absolute; left: 390px; top: 767px; width: 300px; height: 300px; border-radius: 50%;
         background: radial-gradient(closest-side, #FFF4D6 0%, rgba(255, 201, 77, 0.6) 40%, rgba(255, 201, 77, 0) 100%); will-change: transform, opacity; }
 
       /* scena 2 — il lancio */
@@ -120,6 +120,11 @@
         </div>
       </section>
 
+      <!-- la linea oro: scia della spada (scena 1) → sottolineatura (scena 2) -->
+      <div data-hf-id="hf-hgd8" id="oro-clip" class="clip" data-start="0.9" data-duration="3.7" data-track-index="2">
+        <div data-hf-id="hf-949e" id="oro" data-layout-allow-overflow=""></div>
+      </div>
+
       <!-- la spada: attraversa lo schermo e taglia SERIE A, la scia oro resta come linea -->
       <div id="spada-clip" class="clip" data-start="0.85" data-duration="0.5" data-track-index="7">
         <div id="lampo"></div>
@@ -130,7 +135,7 @@
             <rect x="150" y="8" width="28" height="104" rx="12" fill="#FFC94D" /><circle cx="164" cy="60" r="8" fill="#0D1733" />
             <path d="M178 42 L690 47 L760 60 L690 73 L178 78 Z" fill="#FFF4D6" stroke="#0D1733" stroke-width="6" stroke-linejoin="round" paint-order="stroke" />
             <path d="M178 42 L690 47 L760 60 L178 60 Z" fill="#FFFFFF" />
-            <path d="M196 60 L652 60" stroke="#FFC94D" stroke-width="7" stroke-linecap="round" />
+            <path d="M196 60 L652 60" stroke="#21397F" stroke-opacity="0.35" stroke-width="4" stroke-linecap="round" />
           </svg></div>
         <div id="spada-g1" class="spada" data-layout-allow-overflow><svg viewBox="-6 -6 772 132" aria-hidden="true">
             <circle cx="30" cy="60" r="19" fill="#FFC94D" /><circle cx="30" cy="60" r="7" fill="#0D1733" />
@@ -139,7 +144,7 @@
             <rect x="150" y="8" width="28" height="104" rx="12" fill="#FFC94D" /><circle cx="164" cy="60" r="8" fill="#0D1733" />
             <path d="M178 42 L690 47 L760 60 L690 73 L178 78 Z" fill="#FFF4D6" stroke="#0D1733" stroke-width="6" stroke-linejoin="round" paint-order="stroke" />
             <path d="M178 42 L690 47 L760 60 L178 60 Z" fill="#FFFFFF" />
-            <path d="M196 60 L652 60" stroke="#FFC94D" stroke-width="7" stroke-linecap="round" />
+            <path d="M196 60 L652 60" stroke="#21397F" stroke-opacity="0.35" stroke-width="4" stroke-linecap="round" />
           </svg></div>
         <div id="spada" class="spada" data-layout-allow-overflow><svg viewBox="-6 -6 772 132" aria-hidden="true">
             <circle cx="30" cy="60" r="19" fill="#FFC94D" /><circle cx="30" cy="60" r="7" fill="#0D1733" />
@@ -148,13 +153,8 @@
             <rect x="150" y="8" width="28" height="104" rx="12" fill="#FFC94D" /><circle cx="164" cy="60" r="8" fill="#0D1733" />
             <path d="M178 42 L690 47 L760 60 L690 73 L178 78 Z" fill="#FFF4D6" stroke="#0D1733" stroke-width="6" stroke-linejoin="round" paint-order="stroke" />
             <path d="M178 42 L690 47 L760 60 L178 60 Z" fill="#FFFFFF" />
-            <path d="M196 60 L652 60" stroke="#FFC94D" stroke-width="7" stroke-linecap="round" />
+            <path d="M196 60 L652 60" stroke="#21397F" stroke-opacity="0.35" stroke-width="4" stroke-linecap="round" />
           </svg></div>
-      </div>
-
-      <!-- la linea oro: scia della spada (scena 1) → sottolineatura (scena 2) -->
-      <div data-hf-id="hf-hgd8" id="oro-clip" class="clip" data-start="0.9" data-duration="3.7" data-track-index="2">
-        <div data-hf-id="hf-949e" id="oro" data-layout-allow-overflow=""></div>
       </div>
 
       <!-- 02 · il lancio -->
@@ -280,15 +280,17 @@
       // ===== 01 · IL TAGLIO (0–3 s)
       tl.fromTo("#s1-k2", { opacity: 0 }, { opacity: 0, duration: 0.01 }, 0);
       // il fendente: 1,0 s, 0,2 s, da sinistra-basso a destra-alto
-      // la spada: centro da (-500, 1090) a (1600, 870) in 0,3 s, lineare; la punta passa a meta' schermo a ~1,0 s.
-      // Due copie in ritardo (0,025 e 0,05 s) fanno la scia di velocita'.
-      const SP = { x0: -700 - 570, y0: 1112 - 90 - 22, x1: 1800 - 570, y1: 846 - 90 - 22 };
+      // la spada corre lungo la linea del taglio (-6,07°), con lo stesso angolo: l'asse della lama
+      // sta sulla linea, la punta passa a meta' schermo a ~1,0 s. Due copie in ritardo fanno la scia.
+      // La spada e' disegnata sopra la linea e la linea finisce 120px dietro la punta, sotto la lama:
+      // l'oro esce sempre da dietro la spada, mai davanti.
+      const SP = { x0: -700 - 570, y0: 1049.1 - 90, x1: 1800 - 570, y1: 783.3 - 90 };
       [["#spada", 0, 1], ["#spada-g1", 0.03, 0.35], ["#spada-g2", 0.06, 0.15]].forEach(([id, ritardo, op]) => {
-        tl.fromTo(id, { x: SP.x0, y: SP.y0, rotation: -12, opacity: op },
-          { x: SP.x1, y: SP.y1, rotation: -2, duration: 0.42, ease: "none" }, 0.887 + ritardo);
+        tl.fromTo(id, { x: SP.x0, y: SP.y0, rotation: -6.07, opacity: op },
+          { x: SP.x1, y: SP.y1, rotation: -6.07, duration: 0.42, ease: "none" }, 0.887 + ritardo);
       });
-      // la scia: si disegna mentre la punta attraversa lo schermo (da x -43 a x 1123)
-      tl.fromTo("#oro", { rotation: -6.07, scaleX: 0, x: 0, y: 0 }, { scaleX: 1, duration: 0.196, ease: "none" }, 0.902);
+      // la scia: cresce alla stessa velocita' della punta (5952 px/s), 120px dietro di lei
+      tl.fromTo("#oro", { rotation: -6.07, scaleX: 0, x: 0, y: 0 }, { scaleX: 1, duration: 0.197, ease: "none" }, 0.93);
       // il lampo dell'impatto
       tl.fromTo("#lampo", { scale: 0, opacity: 1 }, { scale: 1.4, opacity: 0, duration: 0.22, ease: "power2.out" }, 1.0);
       // SERIE A si spacca lungo la linea

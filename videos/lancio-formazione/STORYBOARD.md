@@ -8,7 +8,7 @@ mode: collaborative
 music: assets/audio/musica.wav — elettronica sportiva 120 BPM composta per il video, piena da 0 a 20 s
 ---
 
-# Lancio Fantatitano: la formazione — storyboard v1
+# Lancio Fantatitano: la formazione — storyboard v2
 
 Bozzetti: `storyboard.html` (v1), un fotogramma fermo per scena.
 
@@ -30,6 +30,32 @@ Bozzetti: `storyboard.html` (v1), un fotogramma fermo per scena.
 
 - Alex, dopo la prima anteprima: "i personaggi/giocatori risultano senza faccia" → le finestre dei posti partono 120px piu' in alto, i giocatori si vedono interi.
 - Alex: "il fendente deve essere una spada o un altro oggetto per dare maggiore risalto" → una spada (1140px, bagliore oro, contorno scuro) attraversa lo schermo da 0,89 a 1,31 s, punta a meta' schermo a 1,0 s; la scia oro e' la linea di prima; lampo all'impatto.
+
+## Versione 2 (Alex, 9/10: "troppo tempo morto, deve essere un continuo di animazioni, ganci; troppo spoglio")
+
+Regola nuova: **ogni mezzo secondo succede qualcosa, e niente e' mai fermo del tutto.** Il fondo vive per
+tutti i 20 s (due fasci di luce da stadio che oscillano, 40 granelli d'oro che salgono, il cerchio di centrocampo
+che si allarga); ogni scena ha una spinta lenta di camera; le parole entrano "sbattendo" sul battito o
+ricomponendosi da lettere sparse, con scossa e onda d'urto. Cadono le regole v1 "ogni scritta ferma 1,5 s" e
+"ultimi 3 s fermi".
+
+| Tempo | Cosa succede |
+|---|---|
+| 0–2,0 | FANTACALCIO? / SERIE A con spinta lenta; SERIE A trema sempre di piu' (0,5–0,95); spada a 1,0 (lampo, scossa); NON SOLO sbatte a 1,2 con onda; 1,8 i pezzi volano via, NON SOLO ci viene addosso, lampo a 2,0 |
+| 2,0–4,75 | ARRIVA (2,0) · IL (2,25) · FANTACALCIO si ricompone (2,42) e atterra con scossa e sottolineatura oro (2,78), onda d'oro sulle lettere; 3,2 il titolo sale e resta come testata; DEL CAMPIONATO entra da destra (3,28); la fascia azzurra si apre e SAMMARINESE si ricompone (3,5); le Tre Torri salgono (3,5); due giocatori dell'app entrano dai lati (3,65/3,78); riflesso sulla fascia; 4,4 tutto si chiude al centro |
+| 4,55–6,75 | la pastiglia FANTATITANO spunta con onda e sale (4,82); il telefono entra inclinato (4,82); SCHIERA (5,15) / I TUOI **11** (5,4, l'11 batte con onda); tocco su 4-4-2 (6,0); tuffo nello schermo al 170% (6,42) |
+| 6,75–10,75 | tocco sul + (6,9), l'elenco sale come un foglio (7,15), tocco sul nome (7,42); portiere (7,72) e altri dieci ogni 0,25 s (8,0–10,25) con scintille e contatore TITOLARI n/11; la camera spinge piano; 10,3 11/11 batte e piove oro; 10,55 si esce sul telefono |
+| 10,75–13,0 | tocco su Conferma (10,98), coriandoli dal pulsante (11,05), spunta (11,1) con onda, FORMAZIONE / SALVATA si ricompongono (11,2/11,4) con scossa, onda d'oro; 12,7 il telefono cade |
+| 13,0–15,0 | **nuova:** SFIDA I TUOI AMICI — due pannelli obliqui (blu e azzurro), due giocatori dell'app faccia a faccia, VS che sbatte con lampo e onda (13,25), i due si avvicinano, il VS batte sul tempo; 14,75 la scena ci viene addosso |
+| 15,0–20,0 | lampo; la corona vola al centro; raggi che girano; FANTATITANO si ricompone e atterra (15,58); quattro giocatori salgono dietro la corona e ondeggiano; GIOCA GRATIS SU (16,0); pastiglia del sito (16,25) con onda, riflessi a 16,6/17,6/18,6, pulsa sul battito; freccia che indica il pulsante dell'inserzione (16,7); colpo finale a 19,5 |
+
+Audio v2: la musica ha la pausa che sale 14,0–15,0 e la caduta sul marchio a 15,0, l'accento su "salvata" a 11,1;
+gli effetti nuovi (colpo, soffio, pop, scintille, coriandoli) sono clip separate in `index.html`. Il file
+consegnato e' normalizzato a -14 LUFS (picco -1 dBTP).
+
+Giocatori: le illustrazioni dell'app (`assets/giocatori`, copiate da `media/avatar`), scelte senza marchi sulle maglie.
+
+I fotogrammi qui sotto sono quelli della v1: impaginazioni e testi valgono ancora, i tempi sono quelli della tabella.
 
 ## Costruzione
 

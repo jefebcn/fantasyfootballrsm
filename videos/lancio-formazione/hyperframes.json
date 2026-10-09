@@ -30,6 +30,21 @@
       "name": "strikethrough-replace",
       "type": "hyperframes:component",
       "target": "compositions/components/strikethrough-replace.html"
+    },
+    {
+      "name": "confetti",
+      "type": "hyperframes:component",
+      "target": "compositions/components/confetti.html"
+    },
+    {
+      "name": "shimmer-sweep",
+      "type": "hyperframes:component",
+      "target": "compositions/components/shimmer-sweep.html"
+    },
+    {
+      "name": "char-slam-explode",
+      "type": "hyperframes:component",
+      "target": "compositions/components/char-slam-explode.html"
     }
   ]
 }

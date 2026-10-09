@@ -1,55 +1,338 @@
-<!doctype html>
-<html lang="en">
+<!DOCTYPE html>
+<html lang="it">
   <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=1920, height=1080" />
-    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=1080, height=1920">
+    <title>Lancio Fantatitano · la formazione</title>
+    <script src="assets/vendor/gsap.min.js"></script>
+    <!--
+      Un solo file, non sei sotto-composizioni: la corona dell'angolo, la linea
+      oro e il telefono attraversano piu' scene con passaggi di testimone, e il
+      timeline di una sotto-composizione non puo' muovere elementi dell'altra.
+      Tutto il movimento sta su un timeline in tempo globale (secondi del video).
+      Regia e scene: BRIEF.md, STORYBOARD.md; look: frame.md; bozzetti: storyboard.html.
+    -->
     <style>
-      * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-      }
-      html,
-      body {
-        margin: 0;
-        width: 1920px;
-        height: 1080px;
-        overflow: hidden;
-        background: #0a0a0a;
-      }
-      #root {
-        width: 100%;
-        height: 100%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-family: Inter, ui-sans-serif, system-ui, sans-serif;
-      }
-      #title {
-        color: #f4f4f5;
-        font-size: 72px;
-        font-weight: 600;
-        letter-spacing: -0.03em;
-      }
+      @font-face { font-family: "Lato"; font-weight: 700; font-style: normal; src: url("assets/font/lato-700-latin.woff2") format("woff2"); }
+      @font-face { font-family: "Lato"; font-weight: 900; font-style: normal; src: url("assets/font/lato-900-latin.woff2") format("woff2"); }
+      @font-face { font-family: "Lato"; font-weight: 900; font-style: italic; src: url("assets/font/lato-900i-latin.woff2") format("woff2"); }
+
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      html, body { margin: 0; width: 1080px; height: 1920px; overflow: hidden; background: #0D1733; }
+      #root { position: relative; width: 100%; height: 100%; overflow: hidden; background: #0D1733;
+        font-family: "Lato", sans-serif; color: #FFFFFF; }
+      .clip { position: absolute; inset: 0; }
+      .layer { position: absolute; inset: 0; }
+      .riga { position: absolute; left: 0; right: 0; text-align: center; white-space: nowrap;
+        font-family: "Lato"; font-weight: 900; font-style: italic; text-transform: uppercase; }
+
+      /* fondo: blu notte + alone che respira (frame.md: sfondo) */
+      #glow { position: absolute; left: -260px; top: 160px; width: 1600px; height: 1500px; border-radius: 50%;
+        background: radial-gradient(closest-side, #21397F 0%, rgba(33, 57, 127, 0.55) 45%, rgba(13, 23, 51, 0) 100%);
+        will-change: transform; }
+
+      /* scena 1 — il taglio */
+      #s1-cam { position: absolute; inset: 0; will-change: transform; }
+      #s1-k1, #s1-k2 { top: 734px; font-size: 96px; line-height: 1; }
+      #s1-k1 { color: #4FA5DE; }
+      #s1-k2 { color: #FFC94D; }
+      .s1-meta { position: absolute; left: 0; right: 0; top: 853px; height: 259px; will-change: transform, opacity; }
+      .s1-meta .riga { top: 0; font-size: 260px; line-height: 1; }
+      #s1-su { clip-path: polygon(0 0, 100% 0, 100% 27%, 0 71%); }
+      #s1-giu { clip-path: polygon(0 71%, 100% 27%, 100% 100%, 0 100%); }
+
+      /* la linea oro: fendente in scena 1, sottolineatura in scena 2 */
+      #oro { position: absolute; left: -50px; top: 971px; width: 1180px; height: 18px; border-radius: 9px;
+        background: #FFC94D; transform-origin: 0 50%; will-change: transform; }
+      #oro::after { content: ""; position: absolute; left: 6px; right: 6px; top: 7px; height: 4px; border-radius: 2px; background: #FFF4D6; }
+
+      /* scena 2 — il lancio */
+      #s2-a1, #s2-a2 { font-size: 150px; line-height: 1; }
+      #s2-a1 { top: 720px; }
+      #s2-a2 { top: 862px; }
+      #s2-b1, #s2-b2 { font-size: 112px; line-height: 1; }
+      #s2-b1 { top: 756px; }
+      #s2-b2 { top: 862px; }
+
+      /* pastiglie */
+      .pill { display: inline-block; font-family: "Lato"; font-weight: 900; font-style: italic; font-size: 64px; line-height: 1;
+        border-radius: 999px; letter-spacing: 0.02em; }
+      #pill-ft-box { position: absolute; left: 0; right: 0; top: 1069px; text-align: center; will-change: transform; }
+      #pill-ft { background: #3F6ADD; color: #FFFFFF; padding: 22px 44px; }
+
+      /* scena 3 — la scritta */
+      #s3-r1, #s3-r2 { font-size: 120px; line-height: 1; }
+      #s3-r1 { top: 410px; }
+      #s3-r2 { top: 524px; }
+
+      /* il telefono (frame.md: telefono) — posizione base della scena 3 */
+      #phone { position: absolute; left: 230px; top: 700px; width: 620px; border-radius: 64px; background: #05080F;
+        padding: 14px; box-shadow: 0 40px 80px rgba(0, 0, 0, 0.45); transform-origin: 0 0; will-change: transform, filter; }
+      #screen { position: relative; width: 592px; height: 1281px; border-radius: 50px; overflow: hidden; background: #0D1733; }
+      #screen img.scr { position: absolute; left: 0; top: 0; width: 592px; height: 1281px; display: block; }
+      .slotwin { position: absolute; overflow: hidden; will-change: transform; transform-origin: 50% 45%; }
+      .slotwin img { position: absolute; width: 592px; height: 1281px; display: block; }
+      .tocco { position: absolute; border-radius: 50%; background: rgba(255, 255, 255, 0.3);
+        box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.55); will-change: transform, opacity; }
+      #press { position: absolute; left: 24px; top: 985px; width: 544px; height: 73px; border-radius: 37px; background: #0D1733; }
+
+      /* scena 5 — salvata */
+      #s5-check { position: absolute; left: 470px; top: 821px; width: 140px; height: 140px; border-radius: 50%; background: #FFC94D;
+        display: grid; place-items: center; will-change: transform; }
+      #s5-check svg { width: 88px; height: 88px; }
+      #s5-r1, #s5-r2 { font-size: 120px; line-height: 1; }
+      #s5-r1 { top: 1004px; }
+      #s5-r2 { top: 1118px; }
+
+      /* corona: piccola nell'angolo per tutto il video, grande al centro nella scena 6.
+         Posta nella posizione finale; il punto di partenza (angolo) lo da' il timeline. */
+      #corona { position: absolute; left: 360px; top: 480px; width: 360px; height: auto; transform-origin: 50% 50%; will-change: transform; }
+
+      /* scena 6 — marchio e sito */
+      #s6-nome { top: 864px; font-size: 146px; line-height: 1; }
+      #s6-eti { top: 1080px; font-size: 54px; line-height: 1; letter-spacing: 0.04em; color: #4FA5DE; }
+      #s6-sito-box { position: absolute; left: 0; right: 0; top: 1177px; text-align: center; will-change: transform; }
+      #s6-sito { background: #FFC94D; color: #0D1733; padding: 26px 56px; }
     </style>
   </head>
   <body>
-    <div
-      id="root"
-      data-composition-id="main"
-      data-start="0"
-      data-duration="10"
-      data-width="1920"
-      data-height="1080"
-    >
-      <h1 id="title" class="clip" data-start="0" data-duration="10" data-track-index="0">Title</h1>
+    <div data-hf-id="hf-wtrm" id="root" data-composition-id="main" data-start="0" data-width="1080" data-height="1920" data-duration="20">
+
+      <!-- fondo -->
+      <div data-hf-id="hf-qhl0" id="fondo" class="clip" data-start="0" data-duration="20" data-track-index="0">
+        <div data-hf-id="hf-27c6" id="glow"></div>
+      </div>
+
+      <!-- 01 · il taglio -->
+      <section data-hf-id="hf-e16u" id="scena-01" class="clip" data-start="0" data-duration="3" data-track-index="1">
+        <div data-hf-id="hf-d2kf" id="s1-cam">
+          <div data-hf-id="hf-2512" id="s1-k1" class="riga">FANTACALCIO?</div>
+          <div data-hf-id="hf-a62f" id="s1-k2" class="riga">NON SOLO</div>
+          <div data-hf-id="hf-qo7h" id="s1-su" class="s1-meta"><div data-hf-id="hf-vari" class="riga">SERIE A</div></div>
+          <div data-hf-id="hf-qpgq" id="s1-giu" class="s1-meta"><div data-hf-id="hf-pici" class="riga">SERIE A</div></div>
+        </div>
+      </section>
+
+      <!-- la linea oro: fendente (scena 1) → sottolineatura (scena 2) -->
+      <div data-hf-id="hf-hgd8" id="oro-clip" class="clip" data-start="0.9" data-duration="3.7" data-track-index="2">
+        <div data-hf-id="hf-949e" id="oro" data-layout-allow-overflow=""></div>
+      </div>
+
+      <!-- 02 · il lancio -->
+      <section data-hf-id="hf-puho" id="scena-02" class="clip" data-start="3" data-duration="3" data-track-index="1">
+        <div data-hf-id="hf-eyrz" id="s2-a1" class="riga">ARRIVA IL</div>
+        <div data-hf-id="hf-plvh" id="s2-a2" class="riga">FANTACALCIO</div>
+        <div data-hf-id="hf-g8w2" id="s2-b1" class="riga">DEL CAMPIONATO</div>
+        <div data-hf-id="hf-wm7g" id="s2-b2" class="riga">SAMMARINESE</div>
+      </section>
+
+      <!-- la pastiglia FANTATITANO: nasce in scena 2, sale sopra il telefono in scena 3 -->
+      <div data-hf-id="hf-cu0c" id="pill-clip" class="clip" data-start="5.5" data-duration="2.5" data-track-index="3">
+        <div data-hf-id="hf-4ztb" id="pill-ft-box"><span data-hf-id="hf-pi03" id="pill-ft" class="pill">FANTATITANO</span></div>
+      </div>
+
+      <!-- 03 · la scritta sopra il telefono -->
+      <section data-hf-id="hf-idz3" id="scena-03" class="clip" data-start="6" data-duration="2" data-track-index="1">
+        <div data-hf-id="hf-hf4g" id="s3-r1" class="riga">SCHIERA</div>
+        <div data-hf-id="hf-ebio" id="s3-r2" class="riga">I TUOI 11</div>
+      </section>
+
+      <!-- il telefono: scene 3, 4, 5 -->
+      <div data-hf-id="hf-6y8o" id="phone-clip" class="clip" data-start="6" data-duration="9" data-track-index="4">
+        <div data-hf-id="hf-4w9o" id="phone" data-layout-allow-overflow="">
+          <div data-hf-id="hf-ccvt" id="screen">
+            <img data-hf-id="hf-hgao" id="scr-01" class="scr" src="assets/app/01-campo-vuoto.png" alt="">
+            <img data-hf-id="hf-1sip" id="scr-02" class="scr" src="assets/app/02-elenco-portieri.png" alt="">
+            <img data-hf-id="hf-x4sd" id="scr-03" class="scr" src="assets/app/03-campo-portiere.png" alt="">
+            <div data-hf-id="hf-1eyg" id="slots"></div>
+            <img data-hf-id="hf-3u67" id="scr-05" class="scr" src="assets/app/05-conferma.png" alt="">
+            <div data-hf-id="hf-2hpu" id="press"></div>
+            <div data-hf-id="hf-lmzs" id="tap-modulo" class="tocco"></div>
+            <div data-hf-id="hf-ioc0" id="tap-piu" class="tocco"></div>
+            <div data-hf-id="hf-gtch" id="tap-nome" class="tocco"></div>
+            <div data-hf-id="hf-odyv" id="tap-conferma" class="tocco"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 05 · salvata (sopra il telefono) -->
+      <section data-hf-id="hf-hdvf" id="scena-05" class="clip" data-start="12" data-duration="3" data-track-index="5">
+        <div data-hf-id="hf-ism6" id="s5-check">
+          <svg data-hf-id="hf-ulu9" viewBox="0 0 24 24"><path data-hf-id="hf-t6yg" d="M5 12.5l4.2 4.2L19 7" fill="none" stroke="#0D1733" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round" /></svg>
+        </div>
+        <div data-hf-id="hf-zm8p" id="s5-r1" class="riga">FORMAZIONE</div>
+        <div data-hf-id="hf-ass0" id="s5-r2" class="riga">SALVATA</div>
+      </section>
+
+      <!-- 06 · marchio e sito -->
+      <section data-hf-id="hf-pasn" id="scena-06" class="clip" data-start="15" data-duration="5" data-track-index="1">
+        <div data-hf-id="hf-bdad" id="s6-nome" class="riga">FANTATITANO</div>
+        <div data-hf-id="hf-es7i" id="s6-eti" class="riga">GIOCA GRATIS SU</div>
+        <div data-hf-id="hf-d29w" id="s6-sito-box"><span data-hf-id="hf-ppjr" id="s6-sito" class="pill">fantatitano.site</span></div>
+      </section>
+
+      <!-- la corona: cornice nell'angolo, poi il marchio -->
+      <div data-hf-id="hf-k6vz" id="corona-clip" class="clip" data-start="0" data-duration="20" data-track-index="6">
+        <img data-hf-id="hf-iq68" id="corona" src="assets/brand/corona-bianca.png" alt="">
+      </div>
+
+      <!-- suono -->
+      <audio data-hf-id="hf-pigs" id="musica" src="assets/audio/musica.wav" data-start="0" data-duration="20" data-track-index="10" data-volume="0.85"></audio>
+      <audio data-hf-id="hf-54tz" id="sfx-fendente" src="assets/audio/sfx-fendente.wav" data-start="0.8" data-duration="0.8" data-track-index="11" data-volume="1"></audio>
+      <audio data-hf-id="hf-4be4" id="sfx-tick-01" src="assets/audio/sfx-tick.wav" data-start="9" data-duration="0.03" data-track-index="12" data-volume="1"></audio>
+      <audio data-hf-id="hf-tn6s" id="sfx-tick-02" src="assets/audio/sfx-tick.wav" data-start="9.25" data-duration="0.03" data-track-index="12" data-volume="1"></audio>
+      <audio data-hf-id="hf-sakj" id="sfx-tick-03" src="assets/audio/sfx-tick.wav" data-start="9.5" data-duration="0.03" data-track-index="12" data-volume="1"></audio>
+      <audio data-hf-id="hf-sp7z" id="sfx-tick-04" src="assets/audio/sfx-tick.wav" data-start="9.75" data-duration="0.03" data-track-index="12" data-volume="1"></audio>
+      <audio data-hf-id="hf-866k" id="sfx-tick-05" src="assets/audio/sfx-tick.wav" data-start="10" data-duration="0.03" data-track-index="12" data-volume="1"></audio>
+      <audio data-hf-id="hf-kej0" id="sfx-tick-06" src="assets/audio/sfx-tick.wav" data-start="10.25" data-duration="0.03" data-track-index="12" data-volume="1"></audio>
+      <audio data-hf-id="hf-w41v" id="sfx-tick-07" src="assets/audio/sfx-tick.wav" data-start="10.5" data-duration="0.03" data-track-index="12" data-volume="1"></audio>
+      <audio data-hf-id="hf-7a6f" id="sfx-tick-08" src="assets/audio/sfx-tick.wav" data-start="10.75" data-duration="0.03" data-track-index="12" data-volume="1"></audio>
+      <audio data-hf-id="hf-lm4f" id="sfx-tick-09" src="assets/audio/sfx-tick.wav" data-start="11" data-duration="0.03" data-track-index="12" data-volume="1"></audio>
+      <audio data-hf-id="hf-k1eg" id="sfx-tick-10" src="assets/audio/sfx-tick.wav" data-start="11.25" data-duration="0.03" data-track-index="12" data-volume="1"></audio>
+      <audio data-hf-id="hf-kd7l" id="sfx-tick-11" src="assets/audio/sfx-tick.wav" data-start="11.5" data-duration="0.03" data-track-index="12" data-volume="1"></audio>
+      <audio data-hf-id="hf-9522" id="sfx-conferma" src="assets/audio/sfx-conferma.wav" data-start="12.5" data-duration="0.25" data-track-index="13" data-volume="1"></audio>
     </div>
+
     <script>
+      // ---- misure (in px dello schermo del telefono: 592 di larghezza = 1170 della cattura)
+      const K = 592 / 1170;
+      // i posti della cattura 04 (campo pieno), in px della cattura: x, y, w, h
+      const POSTI = [
+        [92, 1055, 222, 209], [347, 1055, 222, 209], [601, 1055, 222, 209], [856, 1055, 222, 209],
+        [92, 1451, 222, 209], [347, 1451, 222, 209], [601, 1451, 222, 209], [856, 1451, 222, 209],
+        [262, 1846, 222, 209], [686, 1846, 222, 209],
+      ];
+      const slots = document.getElementById("slots");
+      POSTI.forEach(([x, y, w, h], i) => {
+        const win = document.createElement("div");
+        win.className = "slotwin";
+        win.id = "posto-" + (i + 1);
+        const L = (x - 19) * K, T = (y - 10) * K, W = (w + 38) * K, H = (h + 14) * K;
+        Object.assign(win.style, { left: L + "px", top: T + "px", width: W + "px", height: H + "px" });
+        const img = document.createElement("img");
+        img.src = "assets/app/04-campo-pieno.png";
+        img.alt = "";
+        img.setAttribute("data-layout-allow-overflow", "");
+        Object.assign(img.style, { left: -L + "px", top: -T + "px" });
+        win.appendChild(img);
+        slots.appendChild(win);
+      });
+      // i tocchi: centro (cx, cy) in px della cattura, diametro in px dello schermo
+      const TOCCHI = { "tap-modulo": [997, 369, 64], "tap-piu": [585, 760, 46], "tap-nome": [585, 2072, 46], "tap-conferma": [585, 2019, 64] };
+      Object.entries(TOCCHI).forEach(([id, [cx, cy, d]]) => {
+        Object.assign(document.getElementById(id).style, { left: cx * K - d / 2 + "px", top: cy * K - d / 2 + "px", width: d + "px", height: d + "px" });
+      });
+
+      // ---- il timeline
       const tl = gsap.timeline({ paused: true });
-      // Example: tl.fromTo("#title", { opacity: 0, y: 24 }, { opacity: 1, y: 0, duration: 0.6 }, 0);
+      const SORPASSO = "back.out(1.2)"; // arresto netto con ~6% di sorpasso (frame.md, Motion)
+      const IN = 8 / 30; // 8 fotogrammi
+      const hash = (n) => { const v = Math.sin(n * 127.1 + 311.7) * 43758.5453; return v - Math.floor(v); };
+
+      // fondo che respira: 100%→104% su 2 s, avanti e indietro, fino a 16 s; poi fermo
+      tl.fromTo("#glow", { scale: 1 }, { scale: 1.04, duration: 2, ease: "sine.inOut", yoyo: true, repeat: 7 }, 0);
+
+      // corona: nell'angolo (x 48, y 270, 64px, 85%) fino a 14,75 s
+      const CS = 64 / 360;
+      tl.fromTo("#corona", { x: 80 - 540, y: 297.8 - 636, scale: CS, opacity: 0.85 },
+        { x: 80 - 540, y: 297.8 - 636, scale: CS, opacity: 0.85, duration: 0.01 }, 0);
+
+      // ===== 01 · IL TAGLIO (0–3 s)
+      tl.fromTo("#s1-k2", { opacity: 0 }, { opacity: 0, duration: 0.01 }, 0);
+      // il fendente: 1,0 s, 0,2 s, da sinistra-basso a destra-alto
+      tl.fromTo("#oro", { rotation: -6.07, scaleX: 0, x: 0, y: 0 }, { scaleX: 1, duration: 0.2, ease: "power4.out" }, 1.0);
+      // SERIE A si spacca lungo la linea
+      tl.fromTo("#s1-su", { x: 0, y: 0, opacity: 1 }, { x: -6, y: -20, duration: 0.25, ease: "power3.out" }, 1.08);
+      tl.fromTo("#s1-giu", { x: 0, y: 0, opacity: 1 }, { x: 6, y: 20, duration: 0.25, ease: "power3.out" }, 1.08);
+      // scossa: 3 scosse in 0,15 s, ±6px, deterministica
+      [0, 1, 2, 3].forEach((k) => {
+        const t = 1.0 + k / 30;
+        tl.set("#s1-cam", { x: (hash(k * 13) * 2 - 1) * 6, y: (hash(k * 29 + 5) * 2 - 1) * 6 }, t);
+      });
+      tl.set("#s1-cam", { x: 0, y: 0 }, 1.15);
+      // spinta al 108% e ritorno
+      tl.fromTo("#s1-cam", { scale: 1 }, { scale: 1.08, duration: 0.1, ease: "power2.out", immediateRender: false }, 1.0);
+      tl.to("#s1-cam", { scale: 1, duration: 0.4, ease: "power2.inOut" }, 1.1);
+      // 1,5 s: FANTACALCIO? diventa NON SOLO
+      tl.set("#s1-k1", { opacity: 0 }, 1.5);
+      tl.fromTo("#s1-k2", { opacity: 0, scale: 0.7 }, { opacity: 1, scale: 1, duration: IN, ease: SORPASSO, immediateRender: false }, 1.5);
+      // i pezzi si spengono al 40%
+      tl.to(["#s1-su", "#s1-giu"], { opacity: 0.4, duration: 1.0, ease: "power2.out" }, 1.4);
+      // uscita: pezzi via, NON SOLO esce in alto
+      tl.to(["#s1-su", "#s1-giu"], { opacity: 0, duration: 0.3, ease: "power2.in" }, 2.6);
+      tl.to("#s1-k2", { y: -60, opacity: 0, duration: 0.3, ease: "power2.in" }, 2.6);
+
+      // ===== la linea oro diventa la sottolineatura di FANTACALCIO (testimone)
+      // sottolineatura: larga 928px (FANTACALCIO a 150px), centrata, a y 1020
+      tl.to("#oro", { rotation: 0, scaleX: 928 / 1180, x: 126, y: 40, duration: 0.5, ease: "power3.inOut" }, 2.6);
+      tl.to("#oro", { scaleX: 0, x: 590, duration: 0.25, ease: "power2.in" }, 4.3);
+
+      // ===== 02 · IL LANCIO (3–6 s)
+      tl.fromTo("#s2-a1", { y: 70, opacity: 0 }, { y: 0, opacity: 1, duration: IN, ease: SORPASSO }, 3.0);
+      tl.fromTo("#s2-a2", { y: 70, opacity: 0 }, { y: 0, opacity: 1, duration: IN, ease: SORPASSO }, 3.08);
+      tl.set(["#s2-a1", "#s2-a2"], { opacity: 0 }, 4.5);
+      tl.fromTo("#s2-b1", { y: 60, opacity: 0 }, { y: 0, opacity: 1, duration: IN, ease: SORPASSO }, 4.5);
+      tl.fromTo("#s2-b2", { y: 60, opacity: 0 }, { y: 0, opacity: 1, duration: IN, ease: SORPASSO }, 4.56);
+      // il titolo si stringe e va via
+      tl.to(["#s2-b1", "#s2-b2"], { scale: 0.86, opacity: 0, duration: 0.25, ease: "power2.in" }, 5.75);
+      // la pastiglia: pop a 5,5 s, poi sale sopra il telefono (testimone)
+      tl.fromTo("#pill-ft", { scale: 0, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.3, ease: SORPASSO }, 5.5);
+      tl.fromTo("#pill-ft-box", { y: 0 }, { y: 275 - 1069, duration: 0.45, ease: "power3.inOut" }, 5.85);
+
+      // ===== 03 · IL TELEFONO (6–8 s)
+      tl.fromTo("#phone", { x: 0, y: 1100, scale: 1, filter: "brightness(1)" }, { y: 0, duration: 0.35, ease: SORPASSO }, 6.0);
+      tl.fromTo("#s3-r1", { y: 60, opacity: 0 }, { y: 0, opacity: 1, duration: IN, ease: SORPASSO }, 6.5);
+      tl.fromTo("#s3-r2", { y: 60, opacity: 0 }, { y: 0, opacity: 1, duration: IN, ease: SORPASSO }, 6.56);
+      // schermi: 01 visibile, gli altri spenti
+      tl.set(["#scr-02", "#scr-03", "#slots", "#scr-05", "#press"], { opacity: 0 }, 6.0);
+      tl.set(".slotwin", { scale: 0 }, 6.0);
+      tl.set(".tocco", { opacity: 0, scale: 0.6 }, 6.0);
+      const tocca = (id, t) => {
+        tl.fromTo(id, { opacity: 0, scale: 0.6 }, { opacity: 1, scale: 1, duration: 0.08, ease: "power2.out", immediateRender: false }, t);
+        tl.to(id, { scale: 1.35, opacity: 0, duration: 0.3, ease: "power2.out" }, t + 0.12);
+      };
+      tocca("#tap-modulo", 7.0);
+
+      // ===== 04 · IL CAMPO SI RIEMPIE (8–12 s): dentro lo schermo al 170%
+      // con l'origine in alto a sinistra: lo schermo va a x 37, y -292, largo 1006px
+      tl.set("#phone", { x: -216.8, y: -1015.8, scale: 1.7 }, 8.0);
+      tocca("#tap-piu", 8.2);
+      tl.set("#scr-02", { opacity: 1 }, 8.5);
+      tocca("#tap-nome", 8.7);
+      tl.set(["#scr-01", "#scr-02"], { opacity: 0 }, 9.0);
+      tl.set(["#scr-03", "#slots"], { opacity: 1 }, 9.0);
+      // gli altri dieci, uno ogni mezzo battito, con un pop di 6 fotogrammi
+      for (let i = 0; i < 10; i++) {
+        tl.fromTo("#posto-" + (i + 1), { scale: 0 }, { scale: 1, duration: 0.2, ease: SORPASSO, immediateRender: false }, 9.25 + i * 0.25);
+      }
+      // si esce dallo schermo verso il telefono intero (posizione della scena 5)
+      tl.to("#phone", { x: 0, y: 324 - 700, scale: 1, duration: 0.25, ease: "power3.inOut" }, 11.75);
+
+      // ===== 05 · SALVATA (12–15 s)
+      tl.set(["#scr-03", "#slots"], { opacity: 0 }, 12.0);
+      tl.set("#scr-05", { opacity: 1 }, 12.0);
+      tocca("#tap-conferma", 12.5);
+      tl.fromTo("#press", { opacity: 0 }, { opacity: 0.35, duration: 0.06, immediateRender: false }, 12.5);
+      tl.to("#press", { opacity: 0, duration: 0.2, ease: "power2.out" }, 12.6);
+      // spinta al 108% intorno al pulsante e il telefono si scurisce
+      tl.to("#phone", { x: -24.8, y: -459.8, scale: 1.08, duration: 0.12, ease: "power2.out" }, 12.5);
+      tl.to("#phone", { filter: "brightness(0.42)", duration: 0.3, ease: "power2.out" }, 12.6);
+      tl.fromTo("#s5-check", { scale: 0, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.25, ease: SORPASSO }, 12.6);
+      tl.fromTo("#s5-r1", { y: 60, opacity: 0 }, { y: 0, opacity: 1, duration: IN, ease: SORPASSO }, 12.7);
+      tl.fromTo("#s5-r2", { y: 60, opacity: 0 }, { y: 0, opacity: 1, duration: IN, ease: SORPASSO }, 12.76);
+      // uscita: la scritta sale e sparisce, il telefono scende e si rimpicciolisce
+      tl.to(["#s5-check", "#s5-r1", "#s5-r2"], { y: -70, opacity: 0, duration: 0.3, ease: "power2.in" }, 14.5);
+      tl.to("#phone", { x: 100, y: 200, scale: 0.7, opacity: 0, duration: 0.45, ease: "power2.in" }, 14.5);
+
+      // ===== 06 · MARCHIO E SITO (15–20 s)
+      // la corona scende dall'angolo e cresce al centro (lento-veloce-lento)
+      tl.to("#corona", { x: 0, y: 0, scale: 1, opacity: 1, duration: 0.75, ease: "power3.inOut" }, 14.75);
+      tl.fromTo("#s6-nome", { y: 60, opacity: 0 }, { y: 0, opacity: 1, duration: IN, ease: SORPASSO }, 15.5);
+      tl.fromTo("#s6-eti", { y: 40, opacity: 0 }, { y: 0, opacity: 1, duration: IN, ease: SORPASSO }, 16.0);
+      tl.fromTo("#s6-sito", { scale: 0, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.3, ease: SORPASSO }, 16.5);
+      // da 17,0 s tutto fermo: il respiro del fondo e' gia' finito a 16 s
+
       window.__timelines["main"] = tl;
-      tl.seek(0);
     </script>
   </body>
 </html>

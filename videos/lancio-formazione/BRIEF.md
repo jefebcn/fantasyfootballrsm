@@ -70,6 +70,8 @@ Totale: 3 + 3 + 2 + 4 + 3 + 5 = 20 s. Se Instagram divide la storia intorno ai 1
 
 **Modifiche dopo la prima anteprima (Alex, 9/10):** (1) i giocatori della scena 4 si vedono interi, testa compresa (le finestre dei posti erano tagliate sul riquadro del posto); (2) il fendente diventa una **spada** che attraversa lo schermo e taglia SERIE A, con lampo all'impatto e la scia oro che resta.
 
+**Seconda versione (Alex, 9/10, dopo la consegna):** "troppo tempo morto fra 'arriva il fantacalcio' e 'del campionato sammarinese'; deve essere un continuo di animazioni e ganci; e' anche troppo spoglio, ricordati che e' un'inserzione". Rifatti ritmo e ricchezza: una cosa nuova ogni mezzo secondo, fondo sempre vivo, le Tre Torri, i giocatori illustrati dell'app, coriandoli sulla conferma, una scena nuova "Sfida i tuoi amici" (VS) e un finale che non sta mai fermo. Dettagli in STORYBOARD.md (Versione 2).
+
 **Riferimento** (3.3): SkillBol — se ne prendono la tipografia nero corsivo maiuscolo, le schede scure e le pastiglie piene; e' lo stile che l'app Fantatitano ha gia' adottato. Niente loro parole, colori o personaggi.
 
 **Tagli** (fatti veri che restano fuori): Voto Titano e referti, lega pubblica e montepremi, asta e mercato, la guida e la mascotte TITO, il Play Store.

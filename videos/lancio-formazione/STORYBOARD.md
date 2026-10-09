@@ -26,14 +26,22 @@ Bozzetti: `storyboard.html` (v1), un fotogramma fermo per scena.
 - **Audio:** `musica.wav` 0-20 s; `sfx-fendente.wav` a 0,8 s (colpo a 1,0 s); 11 × `sfx-tick.wav` da 9,0 a 11,5 s ogni 0,25 s; `sfx-conferma.wav` a 12,5 s.
 - **Verita':** le schermate sono l'app vera (catture del 9/10 con dati di prova, tema scuro); i nomi in campo sono giocatori veri del listone del campionato sammarinese; i personaggi in campo sono le illustrazioni dell'app, non foto.
 
+## Costruzione
+
+Un solo file (`index.html`), non una sotto-composizione per scena: la corona, la linea oro e il telefono passano da una scena all'altra con passaggi di testimone, e il timeline di una sotto-composizione non puo' muovere gli elementi di un'altra. Tempi costruiti identici al piano; durata finale 20,0 s. GSAP e' nel progetto (`assets/vendor`), niente rete al rendering.
+
+## Locked
+
+Bozzetti v1 confermati da Alex il 9/10: impaginazione, gerarchia e testi delle 6 scene come in `storyboard.html`. La costruzione veste questi fotogrammi, non li ridisegna.
+
 ## Frame 1 — Il taglio
 
 - scene: FANTACALCIO? / SERIE A; un fendente oro spacca SERIE A, sopra diventa NON SOLO
 - duration: 3s
 - poster: 2.2
 - transition_in: cut
-- status: built
-- src: compositions/frames/01-taglio.html
+- status: animated
+- src: index.html
 - type: hook
 - blueprint: kinetic-type-beats (Adapt — la parola cambia stato in posizione; firma: il taglio)
 - rules: chromatic-glitch (forma slice: due bande che si separano e si assestano), headline-slam (registro: scossa di 3 fotogrammi), coordinate-target-zoom (spinta 108%), ambient-glow-bloom + sine-wave-loop (alone che respira)
@@ -52,8 +60,8 @@ Il primo fotogramma e' gia' l'aggancio ed e' l'anteprima della storia: nessuna e
 - duration: 3s
 - poster: 2.6
 - transition_in: testimone (linea oro)
-- status: built
-- src: compositions/frames/02-lancio.html
+- status: animated
+- src: index.html
 - type: product_intro
 - blueprint: kinetic-type-beats (Reproduce — "Introducing…" che si risolve sul nome)
 - rules: waterfall-entry (le righe arrivano dal basso), scale-swap-transition (il titolo cede il centro alla pastiglia), spring-pop-entrance (la pastiglia)
@@ -70,8 +78,8 @@ Il primo fotogramma e' gia' l'aggancio ed e' l'anteprima della storia: nessuna e
 - duration: 2s
 - poster: 1.5
 - transition_in: testimone (pastiglia → sopra il telefono)
-- status: built
-- src: compositions/frames/03-telefono.html
+- status: animated
+- src: index.html
 - type: feature_showcase
 - blueprint: device-surface-showcase (Adapt — cursorless stepwise-flow dentro il telefono tenuto come eroe)
 - registry: device-frame-stage, touch-indicator
@@ -89,8 +97,8 @@ Il primo fotogramma e' gia' l'aggancio ed e' l'anteprima della storia: nessuna e
 - duration: 4s
 - poster: 3.4
 - transition_in: cut
-- status: built
-- src: compositions/frames/04-campo.html
+- status: animated
+- src: index.html
 - type: feature_showcase
 - blueprint: device-surface-showcase (Adapt — schermi che si susseguono nel flusso vero) + grid-card-assemble (Adapt — 11 posti che si riempiono in cascata)
 - registry: touch-indicator
@@ -108,8 +116,8 @@ Il primo fotogramma e' gia' l'aggancio ed e' l'anteprima della storia: nessuna e
 - duration: 3s
 - poster: 2.2
 - transition_in: cut
-- status: built
-- src: compositions/frames/05-salvata.html
+- status: animated
+- src: index.html
 - type: benefit_highlight
 - blueprint: device-surface-showcase (Adapt — il flusso si chiude sul successo)
 - registry: device-frame-stage, touch-indicator
@@ -127,8 +135,8 @@ Il primo fotogramma e' gia' l'aggancio ed e' l'anteprima della storia: nessuna e
 - duration: 5s
 - poster: 4.0
 - transition_in: testimone (la corona dell'angolo scende al centro)
-- status: built
-- src: compositions/frames/06-marchio.html
+- status: animated
+- src: index.html
 - type: cta
 - blueprint: logo-assemble-lockup (Adapt — il marchio gia' esistente si assesta al centro e si estende al sito) + titlecard-reveal (la tenuta finale)
 - rules: nudge-curve (il viaggio della corona), spring-pop-entrance (pastiglia del sito), waterfall-entry (FANTATITANO, GIOCA GRATIS SU)

@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Direzioni di look · Lancio Fantatitano</title>
+<!--
+  Blocco 5 della regia del video "Lancio Fantatitano: la formazione".
+  Tre modi di usare lo stesso brand (colori dei token, Lato): sono le
+  opzioni A, B e C della decisione 5.1. Ogni direzione mostra la palette
+  coi ruoli, i caratteri composti col messaggio vero e l'immagine di
+  apertura (decisione 4.2 A) in 9:16. Le fasce tratteggiate nel
+  fotogramma sono le zone coperte dall'interfaccia delle storie.
+  Contrasti calcolati (WCAG): scritti accanto a ogni coppia testo/fondo.
+-->
+<style>
+@font-face{font-family:'Lato';font-weight:400;font-style:normal;src:url('../../media/font/lato-400-latin.woff2') format('woff2')}
+@font-face{font-family:'Lato';font-weight:700;font-style:normal;src:url('../../media/font/lato-700-latin.woff2') format('woff2')}
+@font-face{font-family:'Lato';font-weight:900;font-style:normal;src:url('../../media/font/lato-900-latin.woff2') format('woff2')}
+@font-face{font-family:'Lato';font-weight:900;font-style:italic;src:url('../../media/font/lato-900i-latin.woff2') format('woff2')}
+:root{--pagina:#ECEFF6;--ink:#0D1733;--muted:#4A5675}
+*{box-sizing:border-box}
+body{margin:0;background:var(--pagina);color:var(--ink);font:400 15px/1.45 'Lato',sans-serif;padding:20px 16px 40px}
+h1{font:italic 900 26px/1.05 'Lato';text-transform:uppercase;margin:0 0 4px}
+.intro{color:var(--muted);margin:0 0 18px;max-width:640px}
+.dir{background:#fff;border-radius:22px;padding:18px;margin:0 0 18px;box-shadow:0 10px 30px -18px rgba(13,23,51,.5)}
+.dir h2{font:italic 900 22px/1 'Lato';text-transform:uppercase;margin:0 0 4px}
+.dir .sotto{color:var(--muted);margin:0 0 14px}
+.riga{display:flex;gap:18px;align-items:flex-start;flex-wrap:wrap}
+/* il fotogramma 1080x1920 in scala 1:3,6 */
+.frame{position:relative;width:300px;height:533px;border-radius:18px;overflow:hidden;flex:none}
+.frame .safe{position:absolute;left:0;right:0;border:1px dashed rgba(127,127,127,.55);pointer-events:none}
+.frame .safe.su{top:0;height:13%;border-top:0}
+.frame .safe.giu{bottom:0;height:17.7%;border-bottom:0}
+.frame .k{position:absolute;left:0;right:0;top:36%;text-align:center}
+.frame .grande{position:absolute;left:0;right:0;top:43%;text-align:center;font-size:76px;line-height:1;text-transform:uppercase;white-space:nowrap}
+.frame svg{position:absolute;left:22px;top:calc(43% + 22px);width:256px;height:50px;overflow:visible}
+.info{flex:1;min-width:260px}
+.pal{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:0 0 14px}
+.sw{display:flex;align-items:center;gap:10px;font-size:13px}
+.sw i{width:38px;height:38px;border-radius:10px;flex:none;box-shadow:inset 0 0 0 1px rgba(0,0,0,.12)}
+.sw b{display:block;font-weight:700}
+.tipo{border-radius:14px;padding:16px;margin:0 0 10px}
+.ruolo{font:700 11px 'Lato';letter-spacing:.08em;text-transform:uppercase;opacity:.7;margin:0 0 4px}
+.contr{font-size:12.5px;color:var(--muted);margin:0}
+.contr b{color:var(--ink)}
+.scelta{display:none}
+.vince .scelta{display:block;margin:10px 0 0;padding:10px 12px;border-radius:12px;background:#FFF4D6;border:1px solid #E5A11B;font-weight:700}
+
+/* A · Notte e oro */
+.A .frame{background:radial-gradient(120% 70% at 50% 45%,#21397F 0%,#0D1733 62%)}
+.A .k{font:italic 900 34px 'Lato';color:#FFC94D;letter-spacing:.02em}
+.A .grande{font-style:italic;font-weight:900;color:#fff}
+.A .tipo{background:#0D1733;color:#fff}
+.A .tipo .msg{font:italic 900 28px/1.02 'Lato';text-transform:uppercase}
+.A .tipo .kick{font:italic 900 15px 'Lato';color:#4FA5DE;text-transform:uppercase;margin:0 0 6px}
+.A .tipo .pill{display:inline-block;margin-top:10px;font:italic 900 13px 'Lato';text-transform:uppercase;padding:8px 14px;border-radius:999px;background:#3F6ADD;color:#fff}
+
+/* B · Blu Titano */
+.B .frame{background:#3457B8}
+.B .k{top:35%}
+.B .k span{display:inline-block;font:900 20px 'Lato';letter-spacing:.14em;color:#0D1733;background:#FFC94D;padding:9px 18px;border-radius:999px}
+.B .grande{font-style:italic;font-weight:900;color:#fff}
+.B .tipo{background:#3457B8;color:#fff}
+.B .tipo .msg{font:italic 900 28px/1.02 'Lato';text-transform:uppercase}
+.B .tipo .kick{display:inline-block;font:900 12px 'Lato';letter-spacing:.14em;text-transform:uppercase;background:#FFC94D;color:#0D1733;padding:6px 12px;border-radius:999px;margin:0 0 10px}
+.B .tipo .corpo{font:700 15px 'Lato';margin-top:8px}
+
+/* C · Ghiaccio */
+.C .frame{background:#F4F7FF}
+.C .k{font:italic 900 34px 'Lato';color:#3457B8}
+.C .grande{font-weight:900;font-style:normal;color:#0D1733;letter-spacing:-.01em}
+.C .tipo{background:#F4F7FF;color:#0D1733;box-shadow:inset 0 0 0 1px #D9E1F2}
+.C .tipo .msg{font:900 27px/1.02 'Lato';text-transform:uppercase;letter-spacing:-.01em}
+.C .tipo .msg em{font-style:italic;color:#3457B8}
+.C .tipo .kick{font:700 12px 'Lato';letter-spacing:.14em;text-transform:uppercase;color:#3457B8;margin:0 0 6px}
+</style>
+</head>
+<body>
+<h1>Tre direzioni di look</h1>
+<p class="intro">Video "Lancio Fantatitano: la formazione" · storie Instagram 9:16 · 20 s. Stesso brand (blu Titano, blu notte, oro, Lato) usato in tre modi. A sinistra l'immagine di apertura come apparirà sul telefono: le fasce tratteggiate sono coperte dall'interfaccia delle storie.</p>
+
+<section class="dir A">
+  <h2>A · Notte e oro</h2>
+  <p class="sotto">Il manifesto scuro della scheda della lega pubblica: tutto in nero corsivo maiuscolo, l'oro solo per l'accento.</p>
+  <div class="riga">
+    <div class="frame"><div class="safe su"></div><div class="safe giu"></div>
+      <div class="k">NON SOLO</div><div class="grande">SERIE A</div>
+      <svg viewBox="0 0 264 70"><path d="M6 40 C 70 28, 150 24, 250 14" stroke="#FFC94D" stroke-width="13" stroke-linecap="round" fill="none"/></svg>
+    </div>
+    <div class="info">
+      <div class="pal">
+        <div class="sw"><i style="background:#0D1733"></i><span><b>#0D1733</b>fondo</span></div>
+        <div class="sw"><i style="background:#FFFFFF"></i><span><b>#FFFFFF</b>inchiostro</span></div>
+        <div class="sw"><i style="background:#FFC94D"></i><span><b>#FFC94D</b>accento (barra, invito)</span></div>
+        <div class="sw"><i style="background:#3F6ADD"></i><span><b>#3F6ADD</b>pastiglie</span></div>
+        <div class="sw"><i style="background:#21397F"></i><span><b>#21397F</b>alone dietro al testo</span></div>
+        <div class="sw"><i style="background:#4FA5DE"></i><span><b>#4FA5DE</b>occhiello</span></div>
+      </div>
+      <div class="tipo">
+        <p class="ruolo">Titolo · Lato 900 corsivo maiuscolo</p>
+        <p class="kick">Novità · San Marino</p>
+        <div class="msg">Arriva il fantacalcio del campionato sammarinese.</div>
+        <span class="pill">fantatitano.site</span>
+      </div>
+      <p class="contr">Contrasti: <b>bianco su #0D1733 17,7:1</b> · <b>oro su #0D1733 11,6:1</b> · <b>#4FA5DE su #0D1733 6,5:1</b> · <b>bianco su #3F6ADD 4,9:1</b></p>
+      <p class="scelta">Scelta</p>
+    </div>
+  </div>
+</section>
+
+<section class="dir B">
+  <h2>B · Blu Titano</h2>
+  <p class="sotto">Il blu del marchio a tutto schermo: più acceso e riconoscibile, l'oro diventa pastiglia con il testo scuro.</p>
+  <div class="riga">
+    <div class="frame"><div class="safe su"></div><div class="safe giu"></div>
+      <div class="k"><span>NON SOLO</span></div><div class="grande">SERIE A</div>
+      <svg viewBox="0 0 264 70"><path d="M6 40 C 70 28, 150 24, 250 14" stroke="#FFC94D" stroke-width="13" stroke-linecap="round" fill="none"/></svg>
+    </div>
+    <div class="info">
+      <div class="pal">
+        <div class="sw"><i style="background:#3457B8"></i><span><b>#3457B8</b>fondo</span></div>
+        <div class="sw"><i style="background:#FFFFFF"></i><span><b>#FFFFFF</b>inchiostro</span></div>
+        <div class="sw"><i style="background:#FFC94D"></i><span><b>#FFC94D</b>accento (pastiglie, barra)</span></div>
+        <div class="sw"><i style="background:#0D1733"></i><span><b>#0D1733</b>testo sulle pastiglie</span></div>
+        <div class="sw"><i style="background:#21397F"></i><span><b>#21397F</b>schede scure</span></div>
+      </div>
+      <div class="tipo">
+        <p class="ruolo">Titolo · Lato 900 corsivo · occhiello Lato 900 spaziato</p>
+        <span class="kick">Novità</span>
+        <div class="msg">Arriva il fantacalcio del campionato sammarinese.</div>
+        <div class="corpo">Gioca gratis su fantatitano.site</div>
+      </div>
+      <p class="contr">Contrasti: <b>bianco su #3457B8 6,6:1</b> · <b>#0D1733 su oro 11,6:1</b> · <b>bianco su #21397F 10,7:1</b>. L'oro non si usa mai come testo sul blu (3,2:1).</p>
+      <p class="scelta">Scelta</p>
+    </div>
+  </div>
+</section>
+
+<section class="dir C">
+  <h2>C · Ghiaccio</h2>
+  <p class="sotto">Chiaro ed editoriale: titoli dritti e pesanti, il corsivo solo sulla parola che conta. Si stacca dalle storie scure intorno.</p>
+  <div class="riga">
+    <div class="frame"><div class="safe su"></div><div class="safe giu"></div>
+      <div class="k">non solo</div><div class="grande">SERIE A</div>
+      <svg viewBox="0 0 264 70"><path d="M6 40 C 70 28, 150 24, 250 14" stroke="#E5A11B" stroke-width="13" stroke-linecap="round" fill="none"/></svg>
+    </div>
+    <div class="info">
+      <div class="pal">
+        <div class="sw"><i style="background:#F4F7FF"></i><span><b>#F4F7FF</b>fondo</span></div>
+        <div class="sw"><i style="background:#0D1733"></i><span><b>#0D1733</b>inchiostro</span></div>
+        <div class="sw"><i style="background:#3457B8"></i><span><b>#3457B8</b>accento di testo</span></div>
+        <div class="sw"><i style="background:#E5A11B"></i><span><b>#E5A11B</b>barra (solo grafica)</span></div>
+      </div>
+      <div class="tipo">
+        <p class="ruolo">Titolo · Lato 900 dritto · accento Lato 900 corsivo</p>
+        <p class="kick">Novità · San Marino</p>
+        <div class="msg">Arriva il fantacalcio del <em>campionato sammarinese</em>.</div>
+      </div>
+      <p class="contr">Contrasti: <b>#0D1733 su #F4F7FF 16,5:1</b> · <b>#3457B8 su #F4F7FF 6,1:1</b>. L'oro qui è solo un tratto, mai testo (2,1:1).</p>
+      <p class="scelta">Scelta</p>
+    </div>
+  </div>
+</section>
+</body>
+</html>

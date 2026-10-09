@@ -2,7 +2,8 @@ import * as S from '../state.js';
 import { videoGiornata, giornateConVideo } from '../video.js';
 import * as AV from '../notifiche.js';
 import * as N from '../notizie.js';
-import { esc, fmt, icon, logo, badge, crest, pic, tile, sec, dateIt, timeIt, plurale } from '../ui.js';
+import { esc, fmt, icon, logo, badge, crest, pic, tile, sec, dateIt, timeIt, plurale, freccia } from '../ui.js';
+import { movimenti, anteprimaClassifica } from '../engine.js';
 import { maglia, kitOf } from '../maglia.js';
 import { personaggio, scelto } from '../personaggio.js';
 
@@ -387,17 +388,38 @@ function prossimePartite(ph) {
   }).join('')}</div>`;
 }
 
-/** Anteprima della classifica di lega, con la propria riga sempre inclusa. */
+/**
+ * Anteprima della classifica di lega, con la propria riga sempre inclusa.
+ *
+ * Rifatta il 9/10 (Alex: "modificami la visualizzazione della classifica"):
+ * il podio ha le medaglie; sotto i punti c'e' il distacco dal primo invece
+ * della parola "punti" ripetuta in ogni riga; una barra sottile dice a colpo
+ * d'occhio quanto manca; le frecce dicono chi si e' mosso nell'ultima
+ * giornata (solo chi si e' mosso: cinque "=" in fila sarebbero rumore); la
+ * propria riga ha "TU" e il filo oro. Le regole (chi prende la medaglia,
+ * quando non si mostra niente) stanno in anteprimaClassifica, nel motore.
+ */
 function classificaBreve(me) {
   const st = S.standings(); if (st.length < 2) return '';
-  const mio = st.findIndex((r) => r.managerId === me.id);
-  const righe = st.slice(0, 5);
-  if (mio >= 5) righe.push(st[mio]);            // se sei fuori dai primi cinque, la tua riga si aggiunge
-  return sec('Classifica', `${st.length} squadre`) + `<a class="a-card lead" href="#/classifica">
-    ${righe.map((r) => { const m = S.managersById.get(r.managerId); const io = r.managerId === me.id;
-      return `<span class="lrow${io ? ' io' : ''}"><i class="pos">${r.position}</i>${crest(m, 'sm')}
-        <span class="nm"><b>${esc(m.teamName)}</b><span>${esc(m.owner)}</span></span>
-        <span class="pt"><b>${S.aPunti() ? fmt(r.punti) : r.points}</b><span>punti</span></span></span>`; }).join('')}
+  const n = S.currentMatchday();
+  return anteprimaClassificaHtml({ st, prima: S.standingsPrima(n), aPunti: S.aPunti(), meId: me.id, squadra: (id) => S.managersById.get(id), n });
+}
+
+/** Il disegno dell'anteprima, dai dati: separato perche' si possa guardare con una classifica qualsiasi. */
+export function anteprimaClassificaHtml({ st, prima, aPunti, meId, squadra, n }) {
+  const scrivi = (v) => (aPunti ? fmt(v) : String(v));
+  const { partita, righe } = anteprimaClassifica(st, (r) => (aPunti ? r.punti : r.points), meId);
+  const mosse = movimenti(prima, st);
+  return sec('Classifica', `${n >= 1 ? `${n}ª giornata · ` : ''}${st.length} squadre`) + `<a class="a-card lead" href="#/classifica">
+    ${righe.map((r) => { const m = squadra(r.managerId); const d = mosse.get(r.managerId);
+      const sotto = !partita ? '<span class="gap">punti</span>'
+        : r.distacco === 0 ? '<span class="gap testa">in testa</span>'
+          : `<span class="gap" aria-label="a ${scrivi(r.distacco)} dal primo">−${scrivi(r.distacco)}</span>`;
+      return `<span class="lrow${r.io ? ' io' : ''}">
+        <span class="lpos"><i class="pos${r.podio ? ` m${r.podio}` : ''}">${r.position}</i>${d ? freccia(d) : ''}</span>${crest(m, 'sm')}
+        <span class="nm"><span class="lnm"><b>${esc(m.teamName)}</b>${r.io ? '<em class="tu">tu</em>' : ''}</span><span class="own">${esc(m.owner)}</span>
+          ${partita ? `<span class="lbar"><i style="width:${Math.round(r.quota * 100)}%"></i></span>` : ''}</span>
+        <span class="pt"><b>${scrivi(r.valore)}</b>${sotto}</span></span>`; }).join('')}
     <span class="lcta">Classifica completa${icon('chev', 'ic sm')}</span></a>`;
 }
 

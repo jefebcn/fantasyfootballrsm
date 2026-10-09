@@ -7,7 +7,7 @@ description: >
   nero corsivo maiuscolo, l'oro solo per l'accento (il taglio, l'invito finale), pastiglie blu.
   E' lo stile dell'app Fantatitano di oggi: chi tocca l'inserzione ritrova lo stesso mondo.
 unit: il fotogramma — 1080×1920 (storie Instagram)
-principle: il brand e' sacro · la composizione e' libera · ogni testo al massimo 3 parole per riga, 2 righe
+principle: il brand e' sacro · la composizione e' libera · ogni testo al massimo 3 parole per riga, 2 righe, ogni riga entro 936px
 
 colors:
   fondo: "#0D1733"          # blu notte, il fondo di ogni scena
@@ -25,8 +25,8 @@ typography:
   # "generici" di HyperFrames lo sconsiglia: qui il brand vince. Incorporato da assets/font
   # con @font-face (HyperFrames ha il Lato solo dritto; il corsivo 900 e' nostro).
   display:   { fontFamily: "Lato", weight: 900, style: italic, px: 260, lineHeight: 0.9, tracking: "-0.01em", upper: true }   # SERIE A
-  titolo:    { fontFamily: "Lato", weight: 900, style: italic, px: 150, lineHeight: 0.95, tracking: "0", upper: true }       # ARRIVA IL / FANTACALCIO
-  marchio:   { fontFamily: "Lato", weight: 900, style: italic, px: 150, lineHeight: 1.0, upper: true }                      # FANTATITANO
+  titolo:    { fontFamily: "Lato", weight: 900, style: italic, px: 150, lineHeight: 0.95, tracking: "0", upper: true }       # ARRIVA IL / FANTACALCIO; "DEL CAMPIONATO / SAMMARINESE" a 112px (misurata: a 150px esce dai 936px utili)
+  marchio:   { fontFamily: "Lato", weight: 900, style: italic, px: 146, lineHeight: 1.0, upper: true }                      # FANTATITANO (146px: la larghezza massima nei 936px utili)
   scritta:   { fontFamily: "Lato", weight: 900, style: italic, px: 120, lineHeight: 0.95, upper: true }                     # SCHIERA / I TUOI 11 · FORMAZIONE / SALVATA
   occhiello: { fontFamily: "Lato", weight: 900, style: italic, px: 96, lineHeight: 1.0, upper: true }                       # FANTACALCIO? · NON SOLO
   etichetta: { fontFamily: "Lato", weight: 900, style: italic, px: 54, tracking: "0.04em", upper: true }                    # GIOCA GRATIS SU

@@ -10,6 +10,8 @@ music: assets/audio/musica.wav — elettronica sportiva 120 BPM composta per il 
 
 # Lancio Fantatitano: la formazione — storyboard v1
 
+Bozzetti: `storyboard.html` (v1), un fotogramma fermo per scena.
+
 ## Decisioni
 
 - **Messaggio:** "Arriva il fantacalcio del campionato sammarinese." — un'affermazione, non un argomento.
@@ -30,7 +32,7 @@ music: assets/audio/musica.wav — elettronica sportiva 120 BPM composta per il 
 - duration: 3s
 - poster: 2.2
 - transition_in: cut
-- status: outline
+- status: built
 - src: compositions/frames/01-taglio.html
 - type: hook
 - blueprint: kinetic-type-beats (Adapt — la parola cambia stato in posizione; firma: il taglio)
@@ -50,7 +52,7 @@ Il primo fotogramma e' gia' l'aggancio ed e' l'anteprima della storia: nessuna e
 - duration: 3s
 - poster: 2.6
 - transition_in: testimone (linea oro)
-- status: outline
+- status: built
 - src: compositions/frames/02-lancio.html
 - type: product_intro
 - blueprint: kinetic-type-beats (Reproduce — "Introducing…" che si risolve sul nome)
@@ -68,7 +70,7 @@ Il primo fotogramma e' gia' l'aggancio ed e' l'anteprima della storia: nessuna e
 - duration: 2s
 - poster: 1.5
 - transition_in: testimone (pastiglia → sopra il telefono)
-- status: outline
+- status: built
 - src: compositions/frames/03-telefono.html
 - type: feature_showcase
 - blueprint: device-surface-showcase (Adapt — cursorless stepwise-flow dentro il telefono tenuto come eroe)
@@ -87,7 +89,7 @@ Il primo fotogramma e' gia' l'aggancio ed e' l'anteprima della storia: nessuna e
 - duration: 4s
 - poster: 3.4
 - transition_in: cut
-- status: outline
+- status: built
 - src: compositions/frames/04-campo.html
 - type: feature_showcase
 - blueprint: device-surface-showcase (Adapt — schermi che si susseguono nel flusso vero) + grid-card-assemble (Adapt — 11 posti che si riempiono in cascata)
@@ -106,7 +108,7 @@ Il primo fotogramma e' gia' l'aggancio ed e' l'anteprima della storia: nessuna e
 - duration: 3s
 - poster: 2.2
 - transition_in: cut
-- status: outline
+- status: built
 - src: compositions/frames/05-salvata.html
 - type: benefit_highlight
 - blueprint: device-surface-showcase (Adapt — il flusso si chiude sul successo)
@@ -125,7 +127,7 @@ Il primo fotogramma e' gia' l'aggancio ed e' l'anteprima della storia: nessuna e
 - duration: 5s
 - poster: 4.0
 - transition_in: testimone (la corona dell'angolo scende al centro)
-- status: outline
+- status: built
 - src: compositions/frames/06-marchio.html
 - type: cta
 - blueprint: logo-assemble-lockup (Adapt — il marchio gia' esistente si assesta al centro e si estende al sito) + titlecard-reveal (la tenuta finale)

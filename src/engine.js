@@ -390,6 +390,44 @@ export function movimenti(prima, dopo) {
 }
 
 /**
+ * Le righe dell'anteprima della classifica in home: le prime `quante`, piu' la
+ * propria se e' piu' in basso, con quello che serve per leggerla a colpo
+ * d'occhio — la medaglia del podio, il distacco dal primo, quanto della barra
+ * riempire.
+ *
+ * Finche' nessuno ha punti (lega appena nata, prima giornata non ancora
+ * giocata) `partita` e' falso: niente medaglie, barre ne' distacchi, che
+ * sarebbero un podio di zeri. E la medaglia va solo a chi ha punti: quattro
+ * squadre pari merito a zero al secondo posto non sono quattro argenti.
+ *
+ * @param {Array<{managerId: string, position: number}>} st  la classifica, gia' ordinata
+ * @param {(r: object) => number} valore  i punti di una riga (fantapunti o punti partita)
+ * @param {string} [meId]  la propria squadra
+ * @param {number} [quante]
+ */
+export function anteprimaClassifica(st, valore, meId, quante = 5) {
+  const testa = st.length ? valore(st[0]) : 0;
+  const partita = testa > 0;
+  const mia = st.findIndex((r) => r.managerId === meId);
+  const scelte = st.slice(0, quante);
+  if (mia >= quante) scelte.push(st[mia]);
+  return {
+    partita,
+    righe: scelte.map((r) => {
+      const v = valore(r);
+      return {
+        ...r,
+        valore: v,
+        io: r.managerId === meId,
+        podio: partita && v > 0 && r.position <= 3 ? r.position : 0,
+        distacco: partita ? Math.max(0, testa - v) : 0,
+        quota: partita ? Math.max(0, Math.min(1, v / testa)) : 0,
+      };
+    }),
+  };
+}
+
+/**
  * La classifica di una lega pubblica: si sommano i fantapunti, chi ne ha piu'
  * sta piu' in alto. Nessun avversario e nessun gol.
  *

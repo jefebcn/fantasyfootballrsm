@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="it"><head><meta charset="utf-8"><title>Il taglio su Serie A</title>
+<!-- Decisione 5.1 bis: tre modi di rendere piu' forte il tratto su "SERIE A".
+     Fotogrammi fermi (prima, durante, dopo) in scala 1:3,6 del 1080x1920. -->
+<style>
+@font-face{font-family:'Lato';font-weight:900;font-style:italic;src:url('../../media/font/lato-900i-latin.woff2') format('woff2')}
+@font-face{font-family:'Lato';font-weight:700;font-style:normal;src:url('../../media/font/lato-700-latin.woff2') format('woff2')}
+body{margin:0;background:#ECEFF6;font:700 14px 'Lato';color:#0D1733;padding:16px}
+h2{font:italic 900 20px 'Lato';text-transform:uppercase;margin:4px 0 6px}
+p{margin:0 0 10px;color:#4A5675;font-weight:700}
+.op{background:#fff;border-radius:18px;padding:14px;margin:0 0 14px}
+.fila{display:flex;gap:10px}
+.f{position:relative;width:200px;height:356px;border-radius:14px;overflow:hidden;background:radial-gradient(120% 70% at 50% 45%,#21397F 0%,#0D1733 62%)}
+.f small{position:absolute;left:8px;bottom:8px;color:#8FB6E8;font:700 11px 'Lato';letter-spacing:.06em;text-transform:uppercase}
+.k{position:absolute;left:0;right:0;top:34%;text-align:center;font:italic 900 24px 'Lato';color:#FFC94D}
+.g{position:absolute;left:0;right:0;top:42%;text-align:center;font:italic 900 52px/1 'Lato';color:#fff;white-space:nowrap}
+svg{position:absolute;left:0;top:0;width:200px;height:356px;overflow:visible}
+.half{position:absolute;left:0;right:0;top:42%;height:52px;overflow:hidden}
+.half .g{top:0}
+.half.su{clip-path:polygon(0 0,100% 0,100% 38%,0 62%)}
+.half.giu{clip-path:polygon(0 62%,100% 38%,100% 100%,0 100%)}
+.dim .g{opacity:.38}
+</style></head><body>
+
+<div class="op"><h2>A · Doppio graffio</h2>
+<p>Due tratti oro da 34 px che si incrociano a X, il secondo 0,12 s dopo il primo; "SERIE A" scende al 40% di luminosità.</p>
+<div class="fila">
+ <div class="f"><div class="k">NON SOLO</div><div class="g">SERIE A</div><small>0,8 s · prima</small></div>
+ <div class="f"><div class="k">NON SOLO</div><div class="g">SERIE A</div><svg><path d="M14 196 C 70 182, 130 172, 186 160" stroke="#FFC94D" stroke-width="10" stroke-linecap="round" fill="none"/></svg><small>1,0 s · primo tratto</small></div>
+ <div class="f dim"><div class="k">NON SOLO</div><div class="g">SERIE A</div><svg><path d="M14 196 C 70 182, 130 172, 186 160" stroke="#FFC94D" stroke-width="10" stroke-linecap="round" fill="none"/><path d="M18 160 C 80 170, 130 182, 184 200" stroke="#FFC94D" stroke-width="10" stroke-linecap="round" fill="none"/></svg><small>1,3 s · dopo</small></div>
+</div></div>
+
+<div class="op"><h2>B · Taglio che spacca</h2>
+<p>Un fendente oro attraversa "SERIE A" in 0,2 s; la parola si spezza lungo il taglio, la metà sopra sale e quella sotto scende di 20 px, lo schermo trema per 0,15 s e i pezzi si spengono.</p>
+<div class="fila">
+ <div class="f"><div class="k">NON SOLO</div><div class="g">SERIE A</div><small>0,8 s · prima</small></div>
+ <div class="f"><div class="k">NON SOLO</div><div class="g">SERIE A</div><svg><path d="M-10 196 L 210 160" stroke="#FFC94D" stroke-width="7" stroke-linecap="round"/><path d="M-10 196 L 210 160" stroke="#FFF4D6" stroke-width="2" stroke-linecap="round"/></svg><small>1,0 s · il fendente</small></div>
+ <div class="f"><div class="k">NON SOLO</div><div class="half su" style="transform:translate(-4px,-7px)"><div class="g">SERIE A</div></div><div class="half giu" style="transform:translate(4px,7px);opacity:.55"><div class="g">SERIE A</div></div><svg><path d="M-10 196 L 210 160" stroke="#FFC94D" stroke-width="3" stroke-linecap="round" opacity=".7"/></svg><small>1,3 s · spaccata</small></div>
+</div></div>
+
+<div class="op"><h2>C · Pennarello e via</h2>
+<p>Il tratto oro a mano libera, ma da 40 px e più lungo della parola; subito dopo "SERIE A" scivola fuori a sinistra e "NON SOLO" scende al centro.</p>
+<div class="fila">
+ <div class="f"><div class="k">NON SOLO</div><div class="g">SERIE A</div><small>0,8 s · prima</small></div>
+ <div class="f"><div class="k">NON SOLO</div><div class="g">SERIE A</div><svg><path d="M2 194 C 60 180, 140 168, 198 158" stroke="#FFC94D" stroke-width="12" stroke-linecap="round" fill="none"/></svg><small>1,0 s · il tratto</small></div>
+ <div class="f"><div class="k" style="top:44%">NON SOLO</div><div class="g" style="transform:translateX(-150px);opacity:.25">SERIE A</div><svg style="transform:translateX(-150px);opacity:.25"><path d="M2 194 C 60 180, 140 168, 198 158" stroke="#FFC94D" stroke-width="12" stroke-linecap="round" fill="none"/></svg><small>1,4 s · esce</small></div>
+</div></div>
+</body></html>

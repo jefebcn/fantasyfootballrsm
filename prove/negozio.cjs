@@ -145,9 +145,15 @@ const ok = [], ko = []; const et = (c, t) => (c ? ok : ko).push(t);
 
   // --- IL MERCATO CHIUDE. Non si tocca il calendario — il Giudice Dati lo
   // riallinea da solo a ogni apertura, e la prova si guarderebbe le mani —
-  // si sposta l'OROLOGIO oltre la chiusura delle formazioni della 5ª, che è
-  // la prima giornata di chi è entrato oggi.
-  await ctx.clock.setFixedTime(new Date('2026-10-10T12:00:00Z'));
+  // si sposta l'OROLOGIO un'ora oltre la chiusura delle formazioni della
+  // prima giornata di chi è entrato oggi. Quale sia lo dice l'app: con una
+  // data scritta qui la prova scadeva da sola (il 9/10 la 5ª si è chiusa e
+  // chi entrava quel giorno partiva dalla 6ª, col mercato ancora aperto).
+  const primoLock = await p.evaluate(async () => {
+    const S = await import('/src/state.js');
+    return S.matchday(S.primaGiornata()).lockAt;
+  });
+  await ctx.clock.setFixedTime(new Date(+new Date(primoLock) + 3600000));
   await p.reload({ waitUntil: 'load' }); await w(1800);
   await p.evaluate(() => { location.hash = '#/negozio'; }); await w(1200);
   const chiuso = await p.evaluate(() => ({

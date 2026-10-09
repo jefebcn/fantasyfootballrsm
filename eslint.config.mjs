@@ -27,7 +27,7 @@ const globals = (nomi) => Object.fromEntries(nomi.map((n) => [n, 'readonly']));
 export default [
   {
     files: ['**/*.js'],
-    ignores: ['design/**', 'media/**', 'node_modules/**', 'vendor/**'],   // vendor/ e' codice altrui, minificato
+    ignores: ['design/**', 'media/**', 'node_modules/**', 'vendor/**', '.claude/**'],   // vendor/ e .claude/skills sono codice altrui
     languageOptions: {
       ecmaVersion: 2023, sourceType: 'module',
       globals: { ...globals(browser), ...globals(worker), ...globals(node) },

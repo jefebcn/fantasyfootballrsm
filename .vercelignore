@@ -1,0 +1,4 @@
+# Gli strumenti di Claude Code (skill installate con "npx skills add"):
+# servono a chi lavora sul progetto, non all'app. Non vanno online.
+.claude/
+skills-lock.json

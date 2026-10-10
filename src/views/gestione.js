@@ -41,7 +41,7 @@ export const gestione = {
   title: 'Gestione', appbar: 'back', sub: () => 'Tutte le sezioni',
   render() {
     const gioca = nota(nota(GIOCA, '#/listone', `${S.base.players.length} atleti`),
-      '#/calendario', `${S.nextMatchday()}ª giornata`);
+      '#/calendario', `${S.giornataInGioco() || S.nextMatchday()}ª giornata`);
     const sq = S.base.managers.length;
     const lega = nota(LEGA, '#/lega', `${sq} squadr${sq === 1 ? 'a' : 'e'}`);
     const giudice = S.isJudge()

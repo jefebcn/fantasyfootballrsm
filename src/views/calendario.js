@@ -6,7 +6,12 @@ const STATUS = { played: null, scheduled: null, postponed: 'Rinviata', suspended
 export const calendario = {
   title: 'Calendario',
   render({ params }) {
-    const n = Math.min(30, Math.max(1, +params.n || S.nextMatchday())); const st = S.matchdayStatus(n); const md = S.matchday(n);
+    // MENTRE SI GIOCA SI APRE SULLA GIORNATA IN CORSO. Si apriva sulla
+    // prossima da schierare: sabato 10/10, con la 5ª a meta', Alex ha aperto
+    // il Calendario, ha trovato la 6ª («ven 23/10», senza risultati) e ha
+    // chiesto perche' i risultati di venerdi' non c'erano. C'erano, una
+    // giornata piu' indietro.
+    const n = Math.min(30, Math.max(1, +params.n || S.giornataInGioco() || S.nextMatchday())); const st = S.matchdayStatus(n); const md = S.matchday(n);
     const fx = S.fixturesOf(n).map((f) => S.fixtureResult(f));
     const real = S.matchesOf(n);
     return `<main class="a-body">

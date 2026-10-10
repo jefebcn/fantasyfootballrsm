@@ -2198,3 +2198,18 @@ button,a{-webkit-tap-highlight-color:transparent}
 .premi-lista li .ic{flex:none;width:16px;height:16px}
 .premi-lista li.si .ic{color:var(--positive)}
 .premi-lista li.no{color:var(--text-muted)}
+
+/* --- Le schede di Rosa e Formazione (Alex, 10/10: le chip non si capivano
+   come schede). Barra piena, stesse icone della barra in basso. */
+.seg-rosa{gap:4px}
+.seg-rosa a{flex:1;display:flex;align-items:center;justify-content:center;gap:8px;min-height:46px;padding:8px 10px;
+  border-radius:10px;text-decoration:none;color:var(--text-muted);font:700 14.5px var(--font-body);
+  transition:background var(--mo-base),color var(--mo-base)}
+.seg-rosa a .mi{width:22px;height:22px;flex:none}
+.seg-rosa a small{font:600 12px var(--font-data);opacity:.75;margin-left:2px}
+.seg-rosa a.on{background:var(--primary);color:var(--on-primary);box-shadow:0 4px 12px rgba(0,0,0,.18)}
+.seg-rosa a.on small{opacity:.9}
+.seg-rosa .segn{display:inline-grid;place-items:center;min-width:18px;height:18px;padding:0 5px;margin-left:4px;
+  border-radius:999px;background:var(--negative);color:#fff;font:700 11px var(--font-body)}
+/* Da dove vengono i voti, sotto la panchina */
+.voti-spiegati .vnota-sub{margin-top:8px;padding-top:6px;border-top:1px dashed var(--border);font-family:var(--font-body);font-size:12px;color:var(--text-muted)}

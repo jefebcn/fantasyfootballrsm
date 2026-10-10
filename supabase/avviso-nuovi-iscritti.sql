@@ -31,49 +31,63 @@
 
 
 -- ===================== LE DUE RIGHE DA RIEMPIRE =====================
+-- Sono le due righe subito sotto «declare»: si cambia solo il testo fra
+-- apici, gli apici restano.
 -- 1. La chiave API di Resend: resend.com -> API Keys -> Create API Key,
 --    permesso «Sending access», dominio fantatitano.site. Comincia con re_.
+--    ATTENZIONE: Resend la mostra UNA volta sola, appena creata. Nella lista
+--    delle chiavi ci sono solo il nome e l'ID, che non funzionano: se non
+--    l'hai copiata in quel momento, creane una nuova.
 -- 2. L'indirizzo a cui arrivano gli avvisi: il tuo.
-select set_config('avviso.chiave', 'LA-CHIAVE-DI-RESEND', false),
-       set_config('avviso.a',      'IL-TUO-INDIRIZZO', false);
+--
+-- Prima le due righe stavano in due set_config separati da questo blocco: se
+-- il SQL Editor esegue i comandi su connessioni diverse, il blocco non le
+-- vedeva e diceva «manca la chiave» anche a chi l'aveva scritta (Alex,
+-- 10/10). Ora valori, controlli e salvataggio stanno nello stesso comando.
+do $$
+declare
+  chiave    text := 'LA-CHIAVE-DI-RESEND';
+  indirizzo text := 'IL-TUO-INDIRIZZO';
+  -- copiando da una pagina si portano dietro spazi, a capo e virgolette
+  k text := btrim(coalesce(chiave, ''), E' \t\r\n"');
+  a text := lower(btrim(coalesce(indirizzo, ''), E' \t\r\n"<>'));
+begin
+  if k = 'LA-CHIAVE-DI-RESEND' or k = '' then
+    raise exception 'Manca la chiave di Resend: nella riga «chiave text := ...», subito sotto declare, al posto di LA-CHIAVE-DI-RESEND va la chiave API (comincia con re_).';
+  end if;
+  if k not like 're\_%' then
+    raise exception 'La chiave scritta non e'' una chiave API di Resend: comincia con «%» invece che con re_ (e'' lunga % caratteri). Forse e'' l''ID della chiave: su Resend il valore si vede solo appena la crei. Creane una nuova e copia quello.', left(k, 3), length(k);
+  end if;
+  if length(k) < 20 or k ~ '\s' then
+    raise exception 'La chiave di Resend sembra incompleta o spezzata: e'' lunga % caratteri%. Ricopiala intera, senza a capo in mezzo.', length(k), case when k ~ '\s' then ' e contiene spazi' else '' end;
+  end if;
+  if a = lower('IL-TUO-INDIRIZZO') or a !~ '^[^@\s]+@[^@\s]+\.[^@\s]+$' then
+    raise exception 'Manca il tuo indirizzo: nella riga «indirizzo text := ...», al posto di IL-TUO-INDIRIZZO, va l''e-mail a cui mandare gli avvisi.';
+  end if;
+
+  create schema if not exists interno;
+  revoke all on schema interno from public;
+
+  -- La configurazione: una riga sola, leggibile solo dal proprietario.
+  create table if not exists interno.avviso_iscritti_config (
+    id       int primary key default 1 check (id = 1),
+    chiave   text not null,
+    a        text not null,
+    da       text not null default 'Fantatitano <no-reply@fantatitano.site>',
+    scritta_at timestamptz not null default now()
+  );
+  alter table interno.avviso_iscritti_config enable row level security;
+  revoke all on table interno.avviso_iscritti_config from public;
+
+  insert into interno.avviso_iscritti_config (id, chiave, a)
+  values (1, k, a)
+  on conflict (id) do update
+    set chiave = excluded.chiave, a = excluded.a, scritta_at = now();
+end $$;
 -- ====================================================================
 
 
-do $$
-declare
-  k text := coalesce(current_setting('avviso.chiave', true), '');
-  a text := coalesce(current_setting('avviso.a', true), '');
-begin
-  if k = 'LA-CHIAVE-DI-RESEND' or k not like 're\_%' or length(k) < 20 then
-    raise exception 'Manca la chiave di Resend: nella riga set_config(''avviso.chiave'') in cima al file, al posto di LA-CHIAVE-DI-RESEND, va la chiave API (comincia con re_).';
-  end if;
-  if a = 'IL-TUO-INDIRIZZO' or a !~ '^[^@\s]+@[^@\s]+\.[^@\s]+$' then
-    raise exception 'Manca il tuo indirizzo: nella riga set_config(''avviso.a'') in cima al file, al posto di IL-TUO-INDIRIZZO, va l''e-mail a cui mandare gli avvisi.';
-  end if;
-end $$;
-
-
 create extension if not exists pg_net;
-
-create schema if not exists interno;
-revoke all on schema interno from public;
-
-
--- La configurazione: una riga sola, leggibile solo dal proprietario.
-create table if not exists interno.avviso_iscritti_config (
-  id       int primary key default 1 check (id = 1),
-  chiave   text not null,
-  a        text not null,
-  da       text not null default 'Fantatitano <no-reply@fantatitano.site>',
-  scritta_at timestamptz not null default now()
-);
-alter table interno.avviso_iscritti_config enable row level security;
-revoke all on table interno.avviso_iscritti_config from public;
-
-insert into interno.avviso_iscritti_config (id, chiave, a)
-values (1, current_setting('avviso.chiave'), current_setting('avviso.a'))
-on conflict (id) do update
-  set chiave = excluded.chiave, a = excluded.a, scritta_at = now();
 
 
 -- Il registro: chi ha fatto partire quale richiesta. La risposta di Resend la

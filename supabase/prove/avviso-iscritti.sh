@@ -91,8 +91,8 @@ USCITA=$("${P[@]}" -f supabase/avviso-nuovi-iscritti.sql 2>&1); ESITO=$?
 [ "$(Q "select count(*) from pg_trigger where tgname = 'avvisa_nuovo_iscritto'")" = 0 ]; et $? "e non ha creato il trigger"
 
 riempi() { # chiave, indirizzo
-  sed -e "/set_config('avviso.chiave'/s|LA-CHIAVE-DI-RESEND|$1|" \
-      -e "/set_config('avviso.a'/s|IL-TUO-INDIRIZZO|$2|" supabase/avviso-nuovi-iscritti.sql
+  sed -e "/chiave    text := /s|LA-CHIAVE-DI-RESEND|$1|" \
+      -e "/indirizzo text := /s|IL-TUO-INDIRIZZO|$2|" supabase/avviso-nuovi-iscritti.sql
 }
 riempi 're_chiave_di_prova_abcdef123456' 'IL-TUO-INDIRIZZO' > /tmp/avv-mezzo.sql
 USCITA=$("${P[@]}" -f /tmp/avv-mezzo.sql 2>&1); ESITO=$?
@@ -100,10 +100,16 @@ USCITA=$("${P[@]}" -f /tmp/avv-mezzo.sql 2>&1); ESITO=$?
 riempi 'chiave-sbagliata-senza-prefisso' 'alex@esempio.it' > /tmp/avv-sbagliata.sql
 USCITA=$("${P[@]}" -f /tmp/avv-sbagliata.sql 2>&1); ESITO=$?
 [ $ESITO -ne 0 ]; et $? "una chiave che non comincia con re_ la rifiuta"
+# Alex, 10/10: su Resend nella lista c'e' l'ID della chiave, non la chiave
+riempi '4f8a2c1e-9b7d-4e3a-8c6f-1a2b3c4d5e6f' 'alex@esempio.it' > /tmp/avv-sbagliata.sql
+USCITA=$("${P[@]}" -f /tmp/avv-sbagliata.sql 2>&1)
+echo "$USCITA" | grep -q "comincia con «4f8»" && echo "$USCITA" | grep -q "ID della chiave"; et $? "con l'ID della chiave al posto del valore dice proprio quello"
+[ "$(Q "select count(*) from pg_trigger where tgname = 'avvisa_nuovo_iscritto'")" = 0 ]; et $? "e non ha creato il trigger"
 
 echo "== col file riempito =="
 CHIAVE='re_chiave_di_prova_abcdef123456'
-riempi "$CHIAVE" 'alex@esempio.it' > /tmp/avv-pieno.sql
+# incollata con uno spazio davanti e uno dietro, come capita copiando
+riempi " $CHIAVE " ' Alex@Esempio.it ' > /tmp/avv-pieno.sql
 USCITA=$("${P[@]}" -f /tmp/avv-pieno.sql 2>&1); ESITO=$?
 [ $ESITO -eq 0 ]; et $? "si esegue senza errori$([ $ESITO -eq 0 ] || echo ": $(echo "$USCITA" | grep -i error | head -1)")"
 

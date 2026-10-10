@@ -1,12 +1,12 @@
 /* Service worker — shell in cache, aggiornamento in background. */
-const VERSION = 'fcs-v4.2.135';
+const VERSION = 'fcs-v4.2.136';
 const SHELL = [
   './', './index.html', './manifest.webmanifest', './styles/app.css', './styles/logo.css', './styles/font.css', './design/tokens/tokens.css',
   // I caratteri stanno in casa: nella cache ci vanno, se no senza rete si vede
   // il ripiego di sistema. Solo le varianti latin, le altre entrano al bisogno.
   './media/font/lato-400-latin.woff2', './media/font/lato-700-latin.woff2',
   './media/font/lato-900-latin.woff2', './media/font/lato-900i-latin.woff2', './media/font/ibm-plex-mono-500-latin.woff2',
-  './src/app.js', './src/state.js', './src/data.js', './src/engine.js', './src/ui.js', './src/ui-esc.js', './src/avatar.js', './src/maglia.js', './src/personaggio.js', './src/sprite.js', './src/config.js', './src/versione.js', './src/backend.js', './src/auth-clerk.js',
+  './src/app.js', './src/state.js', './src/data.js', './src/engine.js', './src/ui.js', './src/ui-esc.js', './src/avatar.js', './src/maglia.js', './src/personaggio.js', './src/reclutatori.js', './src/sprite.js', './src/config.js', './src/versione.js', './src/backend.js', './src/auth-clerk.js',
   './src/views/index.js', './src/views/dashboard.js', './src/views/rosa.js', './src/views/formazione.js', './src/views/calendario.js',
   './src/views/classifica.js', './src/views/voti.js', './src/views/live.js', './src/views/listone.js', './src/views/giocatore.js',
   './src/views/regolamento.js', './src/views/scheda.js', './src/views/impostazioni.js', './src/views/mercato.js', './src/views/admin.js', './src/views/auth.js', './src/views/leghe.js', './src/views/lega.js', './src/views/setup.js', './src/views/onboarding.js', './src/views/guida.js', './src/views/gestione.js', './src/views/squadra.js', './src/views/vice.js', './src/views/legali.js', './src/notifiche.js', './src/schermo.js', './vendor/supabase-js.js', './src/views/asta.js', './src/views/video.js', './src/video.js', './src/video-dati.js', './src/views/regole.js', './src/views/scambi.js', './src/views/confronto.js',

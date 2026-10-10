@@ -8,7 +8,8 @@
 import * as S from '../state.js';
 import { esc, icon, crest, sec } from '../ui.js';
 import { maglia, COLORI, kitOf } from '../maglia.js';
-import { personaggio, elenco, scelto, nomePersonaggio, QUANTI } from '../personaggio.js';
+import { personaggio, elenco, scelto, nomePersonaggio } from '../personaggio.js';
+import { FINITURE, PREMI, sbloccato } from '../reclutatori.js';
 
 const LATO = 192;          // lo stemma non serve più grande di così
 const PESO_MAX = 60 * 1024; // oltre questo si stringe ancora la qualità
@@ -54,10 +55,10 @@ export const squadra = {
       <input type="file" id="foto" accept="image/*" hidden>`;
 
     const personaggi = `${sec('Personaggio in copertina', pers ? 'scelto' : 'nessuno: si vede la maglia')}
-      <div class="a-card"><p class="small muted">${QUANTI} personaggi, fra cui TITO, la mascotte di Fantatitano. Se non ne scegli nessuno, in copertina resta la tua maglia.</p>
+      <div class="a-card"><p class="small muted">${elenco().filter(visibile).length} personaggi, fra cui TITO, la mascotte di Fantatitano. Se non ne scegli nessuno, in copertina resta la tua maglia.</p>
         <div class="pgrid">
           <button class="pcell${pers ? '' : ' on'}" data-pers="0"><span class="pno">${icon('shirt')}</span><small>Maglia</small></button>
-          ${elenco().map((n) => `<button class="pcell${pers === n ? ' on' : ''}" data-pers="${n}" aria-label="${nomePersonaggio(n)}">${personaggio(n)}</button>`).join('')}
+          ${elenco().filter(visibile).map((n) => `<button class="pcell${pers === n ? ' on' : ''}${aperto(n) ? '' : ' chiuso'}" data-pers="${n}" aria-label="${nomePersonaggio(n)}${aperto(n) ? '' : ' (da sbloccare)'}">${personaggio(n)}${aperto(n) ? '' : lucchetto()}</button>`).join('')}
         </div></div>`;
 
     // Il nome del fantallenatore non si scrive piu' qui.
@@ -114,6 +115,7 @@ export const squadra = {
       const pc = e.target.closest('[data-pers]');
       if (pc) {
         const n = Number(pc.dataset.pers);
+        if (n && !aperto(n)) { ctx.toast(`${premioDi(n).nome}: ${premioDi(n).come}`); return; }
         try { await S.updateMyTeam({ kit: { ...kitOf(S.me()), personaggio: n || undefined } }); ctx.toast(n ? 'Personaggio scelto' : 'Torni alla maglia'); }
         catch (err) { ctx.toast(err.message); }
         return;
@@ -149,6 +151,13 @@ export const squadra = {
 const linkVice = (code) => `${location.origin}${location.pathname}#/vice/${code}`;
 
 /** Editor della maglia: ogni tocco ridisegna l'anteprima lì sopra. */
+// I premi dei Reclutatori: chiusi finche' non si sbloccano. Senza la 023 nel
+// database non si vedono proprio (non si promette cosa non si puo' contare).
+const premioDi = (id) => PREMI.find((p) => p.id === id);
+const aperto = (id) => sbloccato(premioDi(id), S.mieiReclutati(), S.sonoInvitato());
+const visibile = (id) => !premioDi(id) || S.reclutatoriAttivi();
+const lucchetto = () => `<span class="lucchetto">${icon('lock', 'ic')}</span>`;
+
 function apriMaglia(ctx) {
   const m = S.me(); bozza = kitOf(m);
   const tinte = (campo) => COLORI.map((c) => `<button class="tinta${bozza[campo] === c ? ' on' : ''}" data-set="${campo}:${c}" style="--t:${c}" aria-label="${c}"></button>`).join('');
@@ -156,6 +165,11 @@ function apriMaglia(ctx) {
     ctx.sheet(`<h3>Maglia</h3>
       <div class="mg-prev" id="mg-prev">${maglia(bozza)}</div>
       <label class="lbl">Colore</label><div class="tinte">${tinte('c1')}</div>
+      ${S.reclutatoriAttivi() ? `<label class="lbl">Esclusive dei Reclutatori</label>
+      <div class="finiture">
+        <button class="fin-btn${!bozza.finitura ? ' on' : ''}" data-fin="">${maglia({ ...bozza, finitura: '' })}<span>Tinta unita</span></button>
+        ${FINITURE.map((f) => `<button class="fin-btn${bozza.finitura === f.id ? ' on' : ''}${aperto(f.id) ? '' : ' chiuso'}" data-fin="${f.id}">${maglia({ ...bozza, finitura: f.id })}<span>${f.nome.replace('Maglia ', '').replace(/^./, (c) => c.toUpperCase())}</span>${aperto(f.id) ? '' : lucchetto()}</button>`).join('')}
+      </div>` : ''}
       <label class="lbl" for="mg-nome">Nome sulla maglia</label>
       <input class="field-input" id="mg-nome" maxlength="12" value="${esc(bozza.nome || '')}" placeholder="lascia vuoto per una maglia pulita">
       </div>
@@ -165,6 +179,14 @@ function apriMaglia(ctx) {
     // perderebbe il pulsante sotto e la tastiera si chiuderebbe a ogni tasto.
     const aggiorna = () => { sh.querySelector('#mg-prev').innerHTML = maglia(bozza); };
     sh.onclick = async (e) => {
+      const fb = e.target.closest('[data-fin]');
+      if (fb) {
+        const id = fb.dataset.fin;
+        if (id && !aperto(id)) { ctx.toast(`${premioDi(id).nome}: ${premioDi(id).come}`); return; }
+        bozza.finitura = id || undefined;
+        sh.querySelectorAll('[data-fin]').forEach((x) => x.classList.toggle('on', x === fb));
+        aggiorna(); return;
+      }
       const t = e.target.closest('[data-set]');
       if (t) {
         const [campo, val] = t.dataset.set.split(':');

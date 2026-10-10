@@ -205,6 +205,11 @@ Su un progetto nuovo, nell'SQL Editor, in quest'ordine:
     accesso dell'amico l'app chiama `registra_invito()`, e quando l'amico
     entra in una lega chi l'ha invitato guadagna un amico (una volta sola).
     Badge accanto alla squadra: 1 amico Reclutatore, 3 d'argento, 5 d'oro.
+    **Premi solo da mostrare** (Alex: niente soldi, niente oggetti, niente
+    vantaggi in classifica): maglia biancazzurra a chi arriva da un invito,
+    maglia d'oro con 1 amico, TITO d'oro con 3, cornice d'oro allo stemma con
+    5. Il trigger `premi_reclutatore` toglie quelli non sbloccati se un
+    client se li scrive a mano.
     Vale solo per account nati da meno di 7 giorni e non per il proprio
     link; il contatore lo scrive solo il database (un trigger tiene fermi i
     tre campi se a scrivere è un client). `reclutatori_settimana()` è aperta

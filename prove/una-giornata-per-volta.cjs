@@ -59,11 +59,20 @@ const MOMENTI = [
         if (dentro) giocate.push(`${casa}|${ospite}`);
         return `[4,"${casa}","${ospite}"${resto},${dentro ? '2,1' : 'null,null'}]`;
       });
+      // E le giornate dopo la 4ª, nel momento che si finge, non si sono ancora
+      // giocate. L'import del 9 ottobre ha portato i risultati veri delle tre
+      // gare del venerdì della 5ª: lasciati lì, il 21 settembre la 5ª aveva
+      // già i voti, risultava "provvisoria" e la card mostrava i voti invece
+      // del tasto per schierare.
+      t = t.replace(/\[(\d+),("[a-z0-9]+","[a-z0-9]+"[^\n]*?),(?:null|\d+),(?:null|\d+)\]/g,
+        (x, n, resto) => (+n > 4 ? `[${n},${resto},null,null]` : x));
       await route.fulfill({ body: t, headers: { 'content-type': 'text/javascript' } });
     });
     await p.route('**/eventi-dati.js', async (route) => {
       const r = await route.fetch();
       const t = (await r.text()).split('\n').filter((riga) => {
+        const dopo = /^\s*\{g:(\d+),/.exec(riga);
+        if (dopo && +dopo[1] > 4) return false;     // non ancora giocate, vedi sopra
         const q = /^\s*\{g:4,casa:"([a-z0-9]+)",ospite:"([a-z0-9]+)"/.exec(riga);
         return !q || giocate.includes(`${q[1]}|${q[2]}`);
       }).join('\n');

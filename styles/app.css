@@ -1244,6 +1244,10 @@ button,a{-webkit-tap-highlight-color:transparent}
 .guida-body{gap:12px}
 .guida-tito{display:flex;align-items:flex-end;gap:10px;width:100%;max-width:420px}
 .guida-tito img{width:clamp(96px,30vw,140px);height:auto;flex:none;filter:drop-shadow(0 8px 18px rgba(0,0,0,.35))}
+/* Il passo della schermata Home: il pulsante di sistema dove c'e', e una nota per iPhone. */
+.guida-installa{display:inline-flex;align-items:center;gap:8px;border:0;border-radius:999px;padding:11px 18px;cursor:pointer;
+  background:rgba(255,255,255,.14);color:#fff;font:italic 900 14px var(--font-display);text-transform:uppercase;letter-spacing:.03em}
+.guida-nota{margin:0;font-size:12.5px;color:#fff;opacity:.75;text-align:center}
 .guida .guida-fumetto{position:relative;max-width:none;background:#fff;color:var(--c-pietra-900,#14243a);border-radius:16px 16px 16px 4px;padding:10px 14px;font:700 14.5px/1.4 var(--font-body);text-align:left;margin:0 0 18px;opacity:1}
 @media (prefers-reduced-motion:no-preference){.guida-tito img{animation:tito-entra .5s cubic-bezier(.2,.9,.3,1.2) both}@keyframes tito-entra{from{transform:translateY(14px) scale(.94);opacity:0}to{transform:none;opacity:1}}}
 .intro-link{border:0;background:transparent;color:#fff;font:600 13px var(--font-body);opacity:.85;cursor:pointer;padding:8px;text-decoration:underline;text-underline-offset:3px}

@@ -38,6 +38,17 @@ const ok = [], ko = []; const et = (c, t) => (c ? ok : ko).push(t);
   await p.fill('#lname', 'Torneo'); await p.fill('#team', 'Hasta El Roxy'); await p.click('#go-create'); await w(1400);
   await p.evaluate(() => { location.hash = '#/'; }); await w(1500);
 
+  // Alex, 10/10: la classifica stava in fondo, sotto highlights e notizie.
+  // Sta sopra gli highlights.
+  const sezioni = await p.evaluate(() => [...document.querySelectorAll('.a-sec b')].map((x) => x.textContent.trim()));
+  const iC = sezioni.indexOf('Classifica'), iH = sezioni.indexOf('Highlights');
+  // (in una lega appena nata la classifica non c'e' ancora: allora si guarda il codice)
+  if (iC >= 0) et(iC < iH, `in home la classifica viene prima degli highlights (${sezioni.join(' · ')})`);
+  else {
+    const src = require('fs').readFileSync(require('path').join(__dirname, '../src/views/dashboard.js'), 'utf8');
+    et(src.indexOf('${classificaBreve(me)}') < src.indexOf('${highlights()}'), 'nella home la classifica e\' messa prima degli highlights');
+  }
+
   const riga = p.locator('.vh[data-apri-video]').first();
   et(await riga.count() === 1, 'in home ci sono gli highlights con la partita da aprire');
   if (await riga.count()) {

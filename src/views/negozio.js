@@ -75,6 +75,7 @@ export const negozio = {
       </div>`).join('')}</div>` : ''}
 
       <div class="a-sec"><b>Chi vuoi</b><span>${n.mancanti ? `mancano ${n.mancanti}` : 'rosa completa'}</span></div>
+      <p class="small muted nota">Il modulo non si sceglie qui: con ${n.quote.P} portieri, ${n.quote.D} difensori, ${n.quote.C} centrocampisti e ${n.quote.A} attaccanti giochi con tutti (${S.rules().modules.join(', ')}), e lo cambi a ogni giornata in Formazione.</p>
       <div class="topbar" style="padding-top:0"><input class="field-input" id="q" placeholder="Cerca un giocatore" value="${esc(q)}" autocomplete="off" style="flex:1"></div>
       <div class="chips sticky"><button class="chip${!ruolo ? ' on' : ''}" data-ruolo="">Tutti</button>${['P', 'D', 'C', 'A'].map((r) => `<button class="chip${ruolo === r ? ' on' : ''}" data-ruolo="${r}">${r}${n.manca[r] ? ` <i>${n.manca[r]}</i>` : ''}</button>`).join('')}</div>
       <div class="vlist">${list.map((p) => {

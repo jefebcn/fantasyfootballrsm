@@ -162,7 +162,13 @@ export const formazione = {
   })() : ''}
       </div>
       <div class="a-sec"><b>${b ? 'In campo' : 'Modulo'}</b><span>${esc(d.formation)} · titolari ${d.starters.filter(Boolean).length}/11</span></div>
-      ${b ? '' : `<div class="moduli" data-modules>${S.rules().modules.map((m) => `<button class="chip mod${m === d.formation ? ' on' : ''}" data-mod="${m}" ${locked ? 'disabled' : ''}>${m}</button>`).join('')}</div>`}
+      ${/* IL MODULO SI CAMBIA A OGNI GIORNATA (Alex, 10/10). Mentre si gioca i
+          tasti sparivano, e sembrava che il modulo non si potesse scegliere:
+          ora restano in vista, spenti, e una riga dice quando si riaprono. */
+    b ? `<p class="small muted nota">Il modulo si cambia a ogni giornata: scegli quello della ${b.giornata}ª quando si apre la sua formazione, a ${b.inGioco}ª finita.</p>
+      <div class="moduli spenti" aria-hidden="true">${S.rules().modules.map((m) => `<span class="chip mod${m === d.formation ? ' on' : ''}">${m}</span>`).join('')}</div>`
+    : `<p class="small muted nota">Si cambia a ogni giornata: ${S.rules().modules.length} moduli, la rosa li copre tutti.</p>
+      <div class="moduli" data-modules>${S.rules().modules.map((m) => `<button class="chip mod${m === d.formation ? ' on' : ''}" data-mod="${m}" ${locked ? 'disabled' : ''}>${m}</button>`).join('')}</div>`}
       <div class="pitch-wrap"><div class="pitch">${CAMPO}${line('P')}${line('D')}${line('C')}${line('A')}</div></div>
       <div class="a-sec"><b>Panchina</b><span>${bench.filter(Boolean).length}/7</span></div>
       <p class="small muted nota">L'ordine conta: al posto di un titolare senza voto entra il <b>primo panchinaro dello stesso ruolo</b> (art. 8.2).</p>

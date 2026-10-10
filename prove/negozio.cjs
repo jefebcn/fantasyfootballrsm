@@ -109,6 +109,9 @@ const ok = [], ko = []; const et = (c, t) => (c ? ok : ko).push(t);
   et(dopo.pagato === atteso, `si paga la quotazione del listino (${dopo.pagato} contro ${atteso})`);
   et(dopo.crediti === 300 - atteso, `e i crediti scendono di quello (${dopo.crediti})`);
 
+  const notaModulo = await p.evaluate(() => [...document.querySelectorAll('.nota')].map((x) => x.innerText).find((t) => /modulo/i.test(t)) || '');
+  et(/ogni giornata/.test(notaModulo) && /3-4-3/.test(notaModulo), `il negozio dice che il modulo si sceglie a ogni giornata, e quali ("${notaModulo.slice(0, 70)}…")`);
+
   // --- IL TOCCO SI VEDE SUBITO (Alex, 10/10: «il tasto risponde con un po'
   // di ritardo»). La rete qui risponde dopo un secondo e mezzo, come su un
   // telefono lento: il giocatore deve risultare preso, e i crediti scesi,

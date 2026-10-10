@@ -599,6 +599,50 @@ export function matchday(n) { return base.matchdays.find((m) => m.number === n);
 const senzaGol = (o) => { if (!o) return null; const { homeGoals: _h, awayGoals: _a, ...resto } = o; return resto; };
 const conFSGC = (m) => ({ ...m, ...(senzaGol(g.matchOverrides[m.id]) || {}), homeGoals: m.realHomeGoals, awayGoals: m.realAwayGoals });
 export function matchesOf(n) { return base.matches.filter((m) => m.matchday === n).map(conFSGC); }
+
+/**
+ * LA CLASSIFICA DEL CAMPIONATO VERO, anche a giornata in corso (Alex, 10/10).
+ *
+ * Dai risultati FSGC: 3 punti la vittoria, 1 il pareggio. Contano le gare
+ * con un risultato — giocate, o assegnate a tavolino se il risultato c'e' —
+ * comprese quelle della giornata che si sta ancora giocando: e' la classifica
+ * «di adesso», e la schermata dice quante gare di quella giornata mancano.
+ * Rinviate e sospese senza risultato non contano finche' non ce l'hanno.
+ *
+ * A parita' di punti: differenza reti, poi gol fatti, poi nome. Il
+ * regolamento FSGC per gli spareggi veri (scontri diretti) vale a fine
+ * stagione; durante si ordina come fanno tutti i siti di risultati.
+ */
+export function classificaCampionato() {
+  return memo('campionato', () => {
+    const righe = new Map(base.clubs.map((c) => [c.id, { club: c, g: 0, v: 0, n: 0, p: 0, gf: 0, gs: 0, pt: 0, forma: [] }]));
+    const gare = base.matches.map(conFSGC)
+      .filter((m) => m.homeGoals != null && m.awayGoals != null && ['played', 'awarded'].includes(m.status))
+      .sort((a, b) => new Date(a.kickoffAt) - new Date(b.kickoffAt));
+    for (const m of gare) {
+      const h = righe.get(m.homeClubId), a = righe.get(m.awayClubId); if (!h || !a) continue;
+      const segna = (r, fatti, subiti) => {
+        r.g++; r.gf += fatti; r.gs += subiti;
+        const esito = fatti > subiti ? 'V' : fatti === subiti ? 'N' : 'P';
+        if (esito === 'V') { r.v++; r.pt += 3; } else if (esito === 'N') { r.n++; r.pt += 1; } else r.p++;
+        r.forma.push(esito);
+      };
+      segna(h, m.homeGoals, m.awayGoals); segna(a, m.awayGoals, m.homeGoals);
+    }
+    const tab = [...righe.values()].map((r) => ({ ...r, dr: r.gf - r.gs, forma: r.forma.slice(-5) }))
+      .sort((x, y) => y.pt - x.pt || y.dr - x.dr || y.gf - x.gf || x.club.name.localeCompare(y.club.name));
+    let pos = 0, prec = null;
+    tab.forEach((r, i) => { if (!prec || r.pt !== prec.pt || r.dr !== prec.dr || r.gf !== prec.gf) pos = i + 1; r.pos = pos; prec = r; });
+    // La giornata in corso: l'ultima con un risultato, se ha ancora gare da
+    // giocare. Non giornataInGioco(), che guarda la lega (una lega nata dopo
+    // non ha giornate in gioco), mentre il campionato e' lo stesso per tutti.
+    const ultima = Math.max(0, ...gare.map((m) => m.matchday));
+    const diUltima = ultima ? matchesOf(ultima) : [];
+    const daGiocare = diUltima.filter((m) => m.status === 'scheduled').length;
+    const inCorso = daGiocare ? { giornata: ultima, fatte: diUltima.length - daGiocare, totali: diUltima.length } : null;
+    return { righe: tab, inCorso, ultima, gare: gare.length };
+  });
+}
 export function match(id) { const m = base.matches.find((x) => x.id === id); return m ? conFSGC(m) : null; }
 export function eventsOf(matchId) { return g.matchEvents[matchId] || []; }
 export function appearancesOf(matchId) { return g.appearanceOverrides[matchId] || []; }
@@ -954,13 +998,56 @@ export function negozio() {
     completa: mancanti === 0, giornata: prima ? prima.number : null, chiude,
     aperto: !!chiude && now() < chiude };
 }
+/*
+ * COMPRARE E VENDERE SI VEDE SUBITO. Alex, 10/10: facendo la rosa «il tasto
+ * risponde con un po' di ritardo». Ogni tocco aspettava il database e poi
+ * ricaricava TUTTO (profilo, leghe, dati globali, lega, scambi, offerte):
+ * sei o sette giri di rete in fila, un secondo o due sul telefono.
+ *
+ * Adesso il giocatore entra in rosa (o esce) e i crediti cambiano nell'istante
+ * del tocco; il database conferma dietro. Se rifiuta, si torna com'era e
+ * l'errore lo dice. Il ricaricamento completo parte da solo poco dopo
+ * l'ultimo tocco (debounced): dieci acquisti di fila fanno un giro solo.
+ * Le regole restano tutte nel database: qui si anticipa solo quello che
+ * il database sta per dire.
+ */
+function ritocca(fn) {
+  const io = me(); if (!io) return null;
+  const prima = { rosa: [...(base.rosters[io.id] || [])], crediti: io.credits };
+  fn(io); notify();
+  return () => { base.rosters[io.id] = prima.rosa; io.credits = prima.crediti; notify(); };
+}
 export async function compraGiocatore(playerId) {
-  const r = await remote.compraGiocatore(base.league.id, playerId);
-  await refresh(); return r;
+  const p = playersById.get(playerId);
+  const annulla = ritocca((io) => {
+    (base.rosters[io.id] ||= []).push({ playerId, pricePaid: p?.quotation ?? 0 });
+    io.credits = (io.credits ?? 0) - (p?.quotation ?? 0);
+  });
+  try {
+    const r = await remote.compraGiocatore(base.league.id, playerId);
+    const io = me();
+    if (io && r) {   // il prezzo e i crediti veri sono quelli del database
+      const riga = (base.rosters[io.id] || []).find((x) => x.playerId === playerId);
+      if (riga && r.prezzo != null) riga.pricePaid = r.prezzo;
+      if (r.crediti != null) io.credits = r.crediti;
+      notify();
+    }
+    debounced(); return r;
+  } catch (e) { annulla?.(); throw e; }
 }
 export async function vendiGiocatore(playerId) {
-  const r = await remote.vendiGiocatore(base.league.id, playerId);
-  await refresh(); return r;
+  const annulla = ritocca((io) => {
+    const rosa = base.rosters[io.id] || [];
+    const riga = rosa.find((x) => x.playerId === playerId);
+    base.rosters[io.id] = rosa.filter((x) => x.playerId !== playerId);
+    io.credits = (io.credits ?? 0) + (riga?.pricePaid ?? 0);
+  });
+  try {
+    const r = await remote.vendiGiocatore(base.league.id, playerId);
+    const io = me();
+    if (io && r && r.crediti != null) { io.credits = r.crediti; notify(); }
+    debounced(); return r;
+  } catch (e) { annulla?.(); throw e; }
 }
 
 export function rosterIds(managerId) { return (base.rosters[managerId] || []).map((r) => r.playerId); }

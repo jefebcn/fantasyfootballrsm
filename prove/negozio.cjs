@@ -109,6 +109,27 @@ const ok = [], ko = []; const et = (c, t) => (c ? ok : ko).push(t);
   et(dopo.pagato === atteso, `si paga la quotazione del listino (${dopo.pagato} contro ${atteso})`);
   et(dopo.crediti === 300 - atteso, `e i crediti scendono di quello (${dopo.crediti})`);
 
+  // --- IL TOCCO SI VEDE SUBITO (Alex, 10/10: «il tasto risponde con un po'
+  // di ritardo»). La rete qui risponde dopo un secondo e mezzo, come su un
+  // telefono lento: il giocatore deve risultare preso, e i crediti scesi,
+  // prima che il database abbia risposto.
+  const veloce = await p.evaluate(() => document.querySelector('[data-compra]:not([disabled])')?.dataset.compra || null);
+  if (veloce) {
+    const creditiPrima = await p.evaluate(async () => (await import('/src/state.js')).negozio().crediti);
+    await p.evaluate(() => { window.__RITARDO_RPC__ = 1500; });
+    const t0 = Date.now();
+    await p.click(`[data-compra="${veloce}"]`);
+    await p.waitForFunction((id) => !document.querySelector(`[data-compra="${id}"]`), veloce, { timeout: 1200 }).catch(() => {});
+    const dopoMs = Date.now() - t0;
+    const subito = await p.evaluate(async (id) => { const S = await import('/src/state.js'); return { preso: S.rosterIds(S.me().id).includes(id), crediti: S.negozio().crediti, scritto: (JSON.parse(localStorage.getItem('fcs:mock')).tables.rosters || []).some((x) => x.player_id === id) }; }, veloce);
+    et(subito.preso && !subito.scritto && dopoMs < 1000, `il giocatore entra in rosa al tocco, prima che risponda il database (${dopoMs} ms)`);
+    et(subito.crediti < creditiPrima, `e i crediti scendono subito (${creditiPrima} → ${subito.crediti})`);
+    await w(2200);
+    const confermato = await p.evaluate((id) => (JSON.parse(localStorage.getItem('fcs:mock')).tables.rosters || []).some((x) => x.player_id === id), veloce);
+    et(confermato, 'poi il database lo conferma');
+    await p.evaluate(() => { window.__RITARDO_RPC__ = 0; });
+  }
+
   // --- la quota per ruolo: tre portieri e il quarto no
   await p.evaluate(() => { const t = document.querySelector('[data-ruolo="P"]'); if (t) t.click(); }); await w(700);
   for (let i = 0; i < 4; i++) {
@@ -171,6 +192,8 @@ const ok = [], ko = []; const et = (c, t) => (c ? ok : ko).push(t);
     catch (e) { return e.message; }
   });
   et(/chiuso/i.test(forzato), `e chi aggira la schermata trova la stessa regola sotto ("${forzato}")`);
+  const dopoRifiuto = await p.evaluate(async () => { const S = await import('/src/state.js'); return { rosa: S.rosterIds(S.me().id).length, db: (JSON.parse(localStorage.getItem('fcs:mock')).tables.rosters || []).filter((r) => !r.released_at).length }; });
+  et(dopoRifiuto.rosa === dopoRifiuto.db, `rifiutato dal database, l'acquisto anticipato sullo schermo torna indietro (${dopoRifiuto.rosa} in rosa, ${dopoRifiuto.db} nel database)`);
 
   et(errori.length === 0, `nessun errore JS${errori.length ? ' — ' + errori[0] : ''}`);
   await b.close();

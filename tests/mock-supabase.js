@@ -155,6 +155,9 @@ export function createClient(_url, _key, opts) {
         // prova direbbe che si puo' fare una cosa che in produzione il
         // database rifiuta.
         if (name === 'mercato_aperto' || name === 'compra_giocatore' || name === 'vendi_giocatore') {
+          // La rete vera non risponde subito: le prove lo simulano per
+          // guardare che lo schermo non la aspetti.
+          if (name !== 'mercato_aperto' && typeof window !== 'undefined' && window.__RITARDO_RPC__) await new Promise((r) => setTimeout(r, window.__RITARDO_RPC__));
           const lega = T('leagues').find((l) => l.id === args.p_league);
           const mio = T('league_members').find((m) => m.league_id === args.p_league && m.user_id === userId);
           const aperto = () => {

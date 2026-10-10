@@ -154,11 +154,12 @@ function pendingPanel() {
   return `<b class="auth-sent">${conferma ? 'Conferma la tua e-mail' : 'Controlla la posta'}</b>
     <p class="auth-hint">Abbiamo scritto a <b>${esc(pending.email)}</b>.
       <b>Apri il link dentro l'e-mail</b>: ${conferma ? "l'account si attiva e rientri da qui." : 'si apre direttamente l\'app.'}</p>
+    <p class="auth-hint">La manda <b>no-reply@fantatitano.site</b>. Non la vedi? Su Gmail guarda nelle schede <b>Aggiornamenti</b> e <b>Promozioni</b>, poi nello <b>spam</b>.</p>
     <div class="auth-links"><button id="resend">Rimanda l'e-mail</button><button id="again">Usa un'altra e-mail</button></div>
     <details class="auth-more">
       <summary>Non è arrivata niente?</summary>
       <ul class="auth-list">
-        <li>Guarda nello <b>spam</b> e, su Gmail, nella scheda <b>Promozioni</b>.</li>
+        <li>Cerca <b>fantatitano</b> nella casella: la trovi anche se è finita in un'altra scheda.</li>
         <li>Le e-mail di servizio sono <b>poche all'ora</b>: se hai già premuto «Rimanda» più volte, aspetta un'ora prima di riprovare.</li>
         <li>Chiedi all'organizzatore della lega di disattivare la conferma via e-mail: si entra subito, senza posta.</li>
       </ul>

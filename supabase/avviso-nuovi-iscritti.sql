@@ -46,14 +46,19 @@
 -- 10/10). Ora valori, controlli e salvataggio stanno nello stesso comando.
 do $$
 declare
-  chiave    text := 'LA-CHIAVE-DI-RESEND';
-  indirizzo text := 'IL-TUO-INDIRIZZO';
+  chiave    text := 'INCOLLA_QUI_LA_CHIAVE_DI_RESEND';
+  indirizzo text := 'INCOLLA_QUI_IL_TUO_INDIRIZZO';
   -- copiando da una pagina si portano dietro spazi, a capo e virgolette
   k text := btrim(coalesce(chiave, ''), E' \t\r\n"');
   a text := lower(btrim(coalesce(indirizzo, ''), E' \t\r\n"<>'));
 begin
-  if k = 'LA-CHIAVE-DI-RESEND' or k = '' then
-    raise exception 'Manca la chiave di Resend: nella riga «chiave text := ...», subito sotto declare, al posto di LA-CHIAVE-DI-RESEND va la chiave API (comincia con re_).';
+  -- I due testi di esempio compaiono UNA volta sola in tutto il file, nelle
+  -- due righe qui sopra. Prima comparivano anche nei controlli: chi usava
+  -- «sostituisci» o «sostituisci tutto» cambiava anche il controllo, che
+  -- confrontava la chiave con se stessa e diceva «manca la chiave» (Alex,
+  -- 10/10, due volte). Per questo qui sotto si guarda solo l'inizio.
+  if k = '' or k like 'INCOLLA\_QUI%' then
+    raise exception 'Manca la chiave di Resend: nella riga «chiave text := ...», subito sotto declare, c''e'' ancora il testo di esempio. Al suo posto, fra gli apici, va la chiave API (comincia con re_).';
   end if;
   if k not like 're\_%' then
     raise exception 'La chiave scritta non e'' una chiave API di Resend: comincia con «%» invece che con re_ (e'' lunga % caratteri). Forse e'' l''ID della chiave: su Resend il valore si vede solo appena la crei. Creane una nuova e copia quello.', left(k, 3), length(k);
@@ -61,8 +66,8 @@ begin
   if length(k) < 20 or k ~ '\s' then
     raise exception 'La chiave di Resend sembra incompleta o spezzata: e'' lunga % caratteri%. Ricopiala intera, senza a capo in mezzo.', length(k), case when k ~ '\s' then ' e contiene spazi' else '' end;
   end if;
-  if a = lower('IL-TUO-INDIRIZZO') or a !~ '^[^@\s]+@[^@\s]+\.[^@\s]+$' then
-    raise exception 'Manca il tuo indirizzo: nella riga «indirizzo text := ...», al posto di IL-TUO-INDIRIZZO, va l''e-mail a cui mandare gli avvisi.';
+  if a !~ '^[^@\s]+@[^@\s]+\.[^@\s]+$' then
+    raise exception 'Manca il tuo indirizzo: nella riga «indirizzo text := ...», subito sotto quella della chiave, al posto del testo di esempio va l''e-mail a cui mandare gli avvisi.';
   end if;
 
   create schema if not exists interno;

@@ -91,10 +91,10 @@ USCITA=$("${P[@]}" -f supabase/avviso-nuovi-iscritti.sql 2>&1); ESITO=$?
 [ "$(Q "select count(*) from pg_trigger where tgname = 'avvisa_nuovo_iscritto'")" = 0 ]; et $? "e non ha creato il trigger"
 
 riempi() { # chiave, indirizzo
-  sed -e "/chiave    text := /s|LA-CHIAVE-DI-RESEND|$1|" \
-      -e "/indirizzo text := /s|IL-TUO-INDIRIZZO|$2|" supabase/avviso-nuovi-iscritti.sql
+  sed -e "/chiave    text := /s|INCOLLA_QUI_LA_CHIAVE_DI_RESEND|$1|" \
+      -e "/indirizzo text := /s|INCOLLA_QUI_IL_TUO_INDIRIZZO|$2|" supabase/avviso-nuovi-iscritti.sql
 }
-riempi 're_chiave_di_prova_abcdef123456' 'IL-TUO-INDIRIZZO' > /tmp/avv-mezzo.sql
+riempi 're_chiave_di_prova_abcdef123456' 'INCOLLA_QUI_IL_TUO_INDIRIZZO' > /tmp/avv-mezzo.sql
 USCITA=$("${P[@]}" -f /tmp/avv-mezzo.sql 2>&1); ESITO=$?
 [ $ESITO -ne 0 ] && echo "$USCITA" | grep -qi "indirizzo"; et $? "senza l'indirizzo si ferma"
 riempi 'chiave-sbagliata-senza-prefisso' 'alex@esempio.it' > /tmp/avv-sbagliata.sql
@@ -105,6 +105,16 @@ riempi '4f8a2c1e-9b7d-4e3a-8c6f-1a2b3c4d5e6f' 'alex@esempio.it' > /tmp/avv-sbagl
 USCITA=$("${P[@]}" -f /tmp/avv-sbagliata.sql 2>&1)
 echo "$USCITA" | grep -q "comincia con «4f8»" && echo "$USCITA" | grep -q "ID della chiave"; et $? "con l'ID della chiave al posto del valore dice proprio quello"
 [ "$(Q "select count(*) from pg_trigger where tgname = 'avvisa_nuovo_iscritto'")" = 0 ]; et $? "e non ha creato il trigger"
+
+# Alex, 10/10: con «sostituisci tutto» il testo di esempio cambiava anche nel
+# controllo, e il file diceva «manca la chiave» a chi l'aveva scritta
+F=supabase/avviso-nuovi-iscritti.sql
+[ "$(grep -c INCOLLA_QUI_LA_CHIAVE_DI_RESEND $F)" = 1 ] && [ "$(grep -c INCOLLA_QUI_IL_TUO_INDIRIZZO $F)" = 1 ]; et $? "i testi di esempio compaiono una volta sola nel file"
+sed -e 's|INCOLLA_QUI_LA_CHIAVE_DI_RESEND|re_chiave_di_prova_abcdef123456|g' -e 's|INCOLLA_QUI_IL_TUO_INDIRIZZO|alex@esempio.it|g' $F > /tmp/avv-tutto.sql
+USCITA=$("${P[@]}" -f /tmp/avv-tutto.sql 2>&1); ESITO=$?
+[ $ESITO -eq 0 ]; et $? "con «sostituisci tutto» funziona$([ $ESITO -eq 0 ] || echo ": $(echo "$USCITA" | grep -i error | head -1)")"
+"${P[@]}" -c "drop trigger if exists avvisa_nuovo_iscritto on auth.users; drop schema interno cascade;" >/dev/null 2>&1
+rm -f /tmp/avv-tutto.sql
 
 echo "== col file riempito =="
 CHIAVE='re_chiave_di_prova_abcdef123456'

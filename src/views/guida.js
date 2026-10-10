@@ -2,6 +2,7 @@ import * as S from '../state.js';
 import { icon } from '../ui.js';
 import { fx } from './onboarding.js';
 import { apriModulo, vaiAllePubbliche } from './leghe.js';
+import { suiOS, installata } from '../notifiche.js';
 
 /**
  * La guida di TITO: tre passi dopo la registrazione, prima delle leghe.
@@ -15,6 +16,12 @@ import { apriModulo, vaiAllePubbliche } from './leghe.js';
  * Si vede una volta per dispositivo (prefs.guidaVista): ci arriva da solo chi
  * non ha ancora una lega (gate in app.js), tranne chi arriva da un invito, che
  * sa gia' dove andare. Si rivede da Impostazioni → «Come si gioca».
+ *
+ * L'ULTIMO PASSO E' LA SCHERMATA HOME (Alex, 10/10): chi apre l'app dal
+ * browser e non la mette sulla Home la perde fra le schede, e su iPhone senza
+ * Home non arrivano nemmeno le notifiche. TITO dice quali tasti toccare,
+ * quelli del telefono che si ha in mano. Chi l'ha gia' installata (dalla Home
+ * o dal Play Store, che apre a schermo intero) quel passo non lo vede.
  */
 let passo = 0;
 
@@ -49,15 +56,47 @@ const PASSI = [
   },
 ];
 
+// I tre puntini del menu di Chrome: nello sprite non c'e', qui serve com'e'.
+const PUNTINI = '<svg class="ic" viewBox="0 0 24 24" fill="currentColor" stroke="none"><circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/></svg>';
+
+const HOME = () => (suiOS()
+  ? {
+    posa: 'indica',
+    titolo: 'Mettimi sulla Home',
+    frase: 'Ultima cosa: mettimi sulla Home. Così mi apri con un tocco e ti avviso io.',
+    punti: [
+      ['share', '1 · Tocca Condividi', 'Il quadrato con la freccia in su, nella barra di Safari.'],
+      ['home', '2 · «Aggiungi alla schermata Home»', 'Scorri l\'elenco che si apre e toccalo.'],
+      ['check', '3 · Tocca «Aggiungi»', 'In alto a destra. Fatto: sono sulla Home.'],
+    ],
+    nota: 'Si fa da Safari: da Chrome su iPhone la voce non c\'è.',
+  }
+  : {
+    posa: 'indica',
+    titolo: 'Mettimi sulla Home',
+    frase: 'Ultima cosa: mettimi sulla Home. Così mi apri con un tocco e ti avviso io.',
+    punti: [
+      [PUNTINI, '1 · Tocca i tre puntini', 'In alto a destra, nella barra di Chrome.'],
+      ['home', '2 · «Aggiungi a schermata Home»', 'Oppure «Installa app»: è la stessa cosa.'],
+      ['check', '3 · Tocca «Installa»', 'Fatto: mi trovi fra le app del telefono.'],
+    ],
+    installa: true,
+  });
+
+/** I passi di oggi: quello della Home solo se l'app gira ancora nel browser. */
+const passi = () => (installata() ? PASSI : [...PASSI, HOME()]);
+const ico = (ic) => (ic.startsWith('<') ? ic : icon(ic));
+
 export const guida = {
   title: 'Come si gioca', appbar: 'none', nav: false,
   render() {
-    const p = PASSI[passo]; const ultimo = passo === PASSI.length - 1;
+    const tutti = passi(); passo = Math.min(passo, tutti.length - 1);
+    const p = tutti[passo]; const ultimo = passo === tutti.length - 1;
     return `<main class="intro guida">
       <div class="intro-bg"><canvas id="intro-fx"></canvas><span class="intro-veil"></span></div>
       <div class="intro-top">
         ${passo ? `<button class="intro-back" data-prev aria-label="Indietro">${icon('chev', 'ic flip')}</button>` : '<span></span>'}
-        <span class="guida-passo">Passo ${passo + 1} di ${PASSI.length}</span>
+        <span class="guida-passo">Passo ${passo + 1} di ${tutti.length}</span>
         <button class="intro-skip" data-fine="leghe">Salta</button>
       </div>
       <div class="intro-body guida-body">
@@ -67,10 +106,12 @@ export const guida = {
         </div>
         <span class="intro-eyebrow">Come si gioca</span>
         <h1>${p.titolo}</h1>
-        <ul class="intro-points">${p.punti.map(([ic, t, d], i) => `<li style="--i:${i}"><i>${icon(ic)}</i><div><b>${t}</b><span>${d}</span></div></li>`).join('')}</ul>
+        <ul class="intro-points">${p.punti.map(([ic, t, d], i) => `<li style="--i:${i}"><i>${ico(ic)}</i><div><b>${t}</b><span>${d}</span></div></li>`).join('')}</ul>
+        ${p.installa && window.__installPrompt ? `<button class="guida-installa" data-installa>${icon('down', 'ic sm')}Installa adesso</button>` : ''}
+        ${p.nota ? `<p class="guida-nota">${p.nota}</p>` : ''}
       </div>
       <div class="intro-foot">
-        <div class="intro-dots">${PASSI.map((_, i) => `<i class="${i === passo ? 'on' : ''}"></i>`).join('')}</div>
+        <div class="intro-dots">${tutti.map((_, i) => `<i class="${i === passo ? 'on' : ''}"></i>`).join('')}</div>
         ${ultimo
           ? `<button class="a-btn intro-cta" data-fine="pubblica">${icon('globe', 'ic sm')}Entra nella lega pubblica</button>
              <button class="intro-link" data-fine="crea">Crea una lega con gli amici</button>`
@@ -81,7 +122,7 @@ export const guida = {
   mount(root, ctx) {
     const main = root.querySelector('.intro');
     fx(root.querySelector('#intro-fx'));
-    const vai = (n) => { passo = Math.max(0, Math.min(PASSI.length - 1, n)); ctx.render(); };
+    const vai = (n) => { passo = Math.max(0, Math.min(passi().length - 1, n)); ctx.render(); };
     // Chi ha gia' una lega la stava rivedendo dalle impostazioni: torna li'.
     // Il pulsante giallo e' la lega pubblica: chi scarica l'app dallo Store
     // di solito non ha una compagnia con cui giocare, e li' entra da solo.

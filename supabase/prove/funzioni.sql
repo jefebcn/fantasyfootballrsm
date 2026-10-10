@@ -1341,4 +1341,79 @@ select pg_temp.esige('chi amministra li legge',
 reset role;
 delete from public.errori_app;
 
+
+-- I Reclutatori (023): chi porta un amico lo vede contato, una volta sola, e
+-- nessuno si scrive il contatore da solo.
+reset role;
+insert into public.profiles (id, display_name) values ('user_dan', 'Dan'), ('user_eva', 'Eva'), ('user_fra', 'Fra')
+on conflict (id) do nothing;
+select pg_temp.entra('user_dan');
+select pg_temp.esige('l''amico arrivato dal link di Bea viene segnato', public.registra_invito('user_bea') = 'ok');
+select pg_temp.esige('ma finche'' non gioca non conta',
+  (select reclutati from public.profiles where id = 'user_bea') = 0);
+select public.join_league((select invite_code from public.leagues where id = :'lega'), 'Dan United', '#e67e22', 'DU');
+select pg_temp.esige('entrato in una lega, Bea ha un amico',
+  (select reclutati from public.profiles where id = 'user_bea') = 1);
+select public.create_league('Lega di Dan','LDD','Dan Due','#e67e22','DD');
+select pg_temp.esige('una seconda lega non lo conta due volte',
+  (select reclutati from public.profiles where id = 'user_bea') = 1);
+select pg_temp.esige('e chi l''ha invitato non si cambia', public.registra_invito('user_alex') = 'gia');
+
+select pg_temp.entra('user_eva');
+select pg_temp.esige('il proprio link non vale', public.registra_invito('user_eva') = 'se-stesso');
+select pg_temp.esige('un link di nessuno non vale', public.registra_invito('user_che_non_esiste') = 'sconosciuto');
+reset role;
+update public.profiles set created_at = now() - interval '8 days' where id = 'user_eva';
+select pg_temp.entra('user_eva');
+select pg_temp.esige('un account vecchio non si fa attribuire', public.registra_invito('user_bea') = 'tardi');
+
+-- chi gioca gia' e poi apre il link: contato subito
+reset role;
+insert into public.league_members (league_id, user_id, team_name) values (:'lega', 'user_fra', 'Fra FC');
+select pg_temp.entra('user_fra');
+select public.registra_invito('user_bea') as esito_fra \gset
+select pg_temp.esige('chi gioca gia'' e arriva dal link conta subito',
+  :'esito_fra' = 'ok' and (select reclutati from public.profiles where id = 'user_bea') = 2);
+
+-- nessuno si scrive il contatore
+select pg_temp.entra('user_eva');
+set role authenticated;
+update public.profiles set reclutati = 99, invitato_da = 'user_bea', display_name = 'Eva Bis' where id = 'user_eva';
+reset role;
+select pg_temp.esige('dal client il contatore e l''invito restano com''erano, il nome cambia',
+  (select reclutati = 0 and invitato_da is null and display_name = 'Eva Bis' from public.profiles where id = 'user_eva'));
+select pg_temp.entra('user_gio');
+set role authenticated;
+insert into public.profiles (id, display_name, reclutati, invitato_da) values ('user_gio', 'Gio', 50, 'user_bea');
+reset role;
+select pg_temp.esige('nemmeno creando il profilo',
+  (select reclutati = 0 and invitato_da is null from public.profiles where id = 'user_gio'));
+
+-- la classifica della settimana: solo squadra e numero, anche senza account
+select team_name as squadra_bea from public.league_members m join public.leagues l on l.id = m.league_id
+ where m.user_id = 'user_bea' order by l.pubblica desc, m.created_at desc limit 1 \gset
+set role anon;
+select pg_temp.esige('la classifica si legge senza account, con la squadra di Bea e i suoi due amici',
+  (select squadra = :'squadra_bea' and amici = 2 from public.reclutatori_settimana() limit 1));
+do $$ begin
+  perform public.registra_invito('user_bea');
+  raise exception 'FALLITA: l''anonimo non doveva poter registrare un invito';
+exception when others then
+  if sqlerrm like 'FALLITA%' then raise; end if;
+  raise notice 'ok  l''anonimo non registra inviti (%)', sqlerrm;
+end $$;
+reset role;
+
+-- chi ha invitato cancella il profilo: gli amici restano, senza il legame
+-- (un profilo nuovo: quello di Bea si porta dietro tutte le prove di sopra)
+insert into public.profiles (id, display_name) values ('user_hal', 'Hal'), ('user_ivo', 'Ivo') on conflict (id) do nothing;
+select pg_temp.entra('user_ivo');
+select public.registra_invito('user_hal');
+select pg_temp.entra('user_hal');
+set role authenticated;
+select public.elimina_profilo();
+reset role;
+select pg_temp.esige('cancellato chi aveva invitato, l''amico resta senza legame',
+  (select invitato_da is null from public.profiles where id = 'user_ivo'));
+
 select 'tutte le prove sulle funzioni sono passate' as esito;

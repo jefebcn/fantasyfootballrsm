@@ -595,7 +595,7 @@ export const dashboard = {
       const opp = S.managersById.get(home ? r.awayManagerId : r.homeManagerId);
       const text = `${me.teamName} ${home ? r.homeGoals : r.awayGoals}–${home ? r.awayGoals : r.homeGoals} ${opp.teamName}`
         + ` · giornata ${r.matchday} · ${fmt(home ? r.homeScore : r.awayScore)} fantapunti (Voto Titano)`
-        + ` — ${location.origin}${location.pathname}`;
+        + ` — ${S.linkInvito()}`;
       if (navigator.share) { try { await navigator.share({ title: 'Fantatitano', text }); } catch { /* annullato */ } }
       else window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank', 'noopener');
     });

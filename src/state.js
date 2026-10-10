@@ -78,6 +78,7 @@ export async function retry() { await init(); notify(); return ready; }
 async function loadAll() {
   if (!user) { prof = null; leagues = []; g = emptyGlobal(); L = emptyLeague(); base.managers = []; base.rosters = {}; base.league = NO_LEAGUE; refreshManagers(); return; }
   prof = (await remote.ensureProfile(user)) || { id: user.id, display_name: user.email, is_judge: false };
+  await consegnaReclutatore();
   leagues = await remote.myLeagues(user.id);
   if (!leagues.some((l) => l.id === prefs.currentLeagueId)) { prefs.currentLeagueId = leagues[0]?.id || null; persistPrefs(); }
   g = await remote.loadGlobal(prof.is_judge);
@@ -85,6 +86,14 @@ async function loadAll() {
     const data = await remote.loadLeague(prefs.currentLeagueId);
     base.managers = data.managers; base.rosters = data.rosters;
     base.league = { ...data.league, rules: { ...DEFAULT_RULES, ...data.league.rulesOverride }, managerCount: data.managers.length };
+    // Il badge dei Reclutatori (023). A parte, e senza far cadere niente: su
+    // un database senza la 023 la colonna non c'e' e i badge non si vedono.
+    if (reclutatoriAttivi()) {
+      try {
+        const n = await remote.reclutatiDi(base.managers.map((m) => m.userId));
+        for (const m of base.managers) m.reclutati = n[m.userId] || 0;
+      } catch { /* niente badge, il resto c'e' */ }
+    }
     L = { lineups: data.lineups, contestazioni: data.contestazioni, scambi: [], offerte: [] };
     // Gli scambi arrivano dalla 006: su un progetto che non l'ha ancora
     // applicata la tabella non c'e', e l'app deve funzionare comunque —
@@ -194,8 +203,57 @@ export function invitoInSospeso() {
   } catch { return null; }
 }
 export function dimenticaInvito() { try { localStorage.removeItem(INVITO_KEY); } catch { /* niente storage: niente da togliere */ } }
-/** L'indirizzo di ritorno delle e-mail: col codice dentro, se c'e' un invito. */
-const ritornoConInvito = () => { const c = invitoInSospeso(); return c ? `${returnUrl()}?invito=${c}` : returnUrl(); };
+/* ---------------------------------------------------------------- reclutatori
+ * CHI HA MANDATO IL LINK. Alex, 10/10: chi porta un amico deve vedersi
+ * riconosciuto (migrazione 023). Ogni link che l'app condivide porta
+ * ?da=<chi lo manda>; chi lo apre se lo tiene come il codice d'invito — nella
+ * memoria del telefono e dentro l'indirizzo di ritorno della conferma — e al
+ * primo accesso l'app lo consegna al database, che decide se vale (account
+ * nuovo, non il proprio). Da li' in poi qui non serve piu'.
+ */
+const DA_KEY = 'fcs:da';
+const daValido = (d) => /^[A-Za-z0-9_-]{6,64}$/.test(String(d || ''));
+export function ricordaReclutatore(da) {
+  const d = String(da || '').trim();
+  if (!daValido(d)) return false;
+  try { localStorage.setItem(DA_KEY, JSON.stringify({ da: d, fino: Date.now() + INVITO_GIORNI * 86400000 })); } catch { return false; }
+  return true;
+}
+export function reclutatoreInSospeso() {
+  try {
+    const v = JSON.parse(localStorage.getItem(DA_KEY) || 'null');
+    if (!v || !daValido(v.da)) return null;
+    if (Date.now() > v.fino) { localStorage.removeItem(DA_KEY); return null; }
+    return v.da;
+  } catch { return null; }
+}
+const dimenticaReclutatore = () => { try { localStorage.removeItem(DA_KEY); } catch { /* niente storage */ } };
+/** Il link da condividere: l'app, col proprio «da» e, se c'e', il codice della lega. */
+export function linkInvito(codice) {
+  const q = new URLSearchParams();
+  if (codice) q.set('invito', codice);
+  if (user?.id && daValido(user.id)) q.set('da', user.id);
+  const s = q.toString();
+  return returnUrl() + (s ? `?${s}` : '');
+}
+/** Il database conosce i Reclutatori? (la 023 e' applicata) */
+export const reclutatoriAttivi = () => !!prof && 'reclutati' in prof;
+export const mieiReclutati = () => (reclutatoriAttivi() ? prof.reclutati || 0 : 0);
+// Al primo accesso dopo il link: una volta, e poi si dimentica — tranne se
+// la rete cade o il database non ha ancora la 023, nel qual caso si riprova
+// alla prossima apertura (il «da» scade comunque dopo due settimane).
+async function consegnaReclutatore() {
+  const da = reclutatoreInSospeso();
+  if (!da || !reclutatoriAttivi()) return;
+  try { await remote.registraInvito(da); dimenticaReclutatore(); } catch { /* si riprova */ }
+}
+
+/** L'indirizzo di ritorno delle e-mail: col codice e col «da» dentro, se ci sono. */
+const ritornoConInvito = () => {
+  const q = new URLSearchParams(); const c = invitoInSospeso(); const d = reclutatoreInSospeso();
+  if (c) q.set('invito', c); if (d) q.set('da', d);
+  const s = q.toString(); return s ? `${returnUrl()}?${s}` : returnUrl();
+};
 async function adopt() { user = authKind() === 'clerk' ? clerk.user() : await remote.currentSessionUser(); if (user && !prefs.onboarded) { prefs.onboarded = true; persistPrefs(); } await loadAll(); notify(); return user; }
 export const currentUser = () => user;
 export const profileInfo = () => prof;

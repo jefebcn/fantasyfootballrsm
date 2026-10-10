@@ -192,7 +192,8 @@ function drawer() {
     ${/* Le impostazioni erano l'ultima riga del menu, senza icona, sotto due
           schermate di voci: Alex, l'8 ottobre, non le ha trovate. Stanno qui,
           in cima, con la guida di TITO accanto. */
-    item('#/impostazioni', 'gear', 'Impostazioni', 'account e privacy')}${item('#/guida', 'book', 'Come si gioca', 'la guida di TITO')}
+    item('#/impostazioni', 'gear', 'Impostazioni', 'account e privacy')}${item('#/guida', 'book', 'Come si gioca', 'la guida di TITO')}${/* I Reclutatori (023): l'invito in vista, non sepolto in Profilo lega */
+    S.reclutatoriAttivi() && S.base.league.id ? item('#/lega', 'userplus', 'Invita amici', S.mieiReclutati() ? `Reclutatore · ${S.mieiReclutati()}` : 'diventa Reclutatore') : ''}
     <div class="d-sec"><span class="chip">Setup</span></div>
     ${item('#/lega', { m: 'leghe' }, 'Profilo lega', S.base.league.inviteCode ? `codice ${esc(S.base.league.inviteCode)}` : '')}${item('#/lega', { m: 'squadre' }, 'Partecipanti', String(S.base.managers.length))}${item('#/regolamento', { m: 'guide' }, 'Regolamento ed opzioni')}${item('#/classifica', { m: 'statistiche' }, 'Competizioni')}
     <div class="d-sec"><span class="chip">Gioca</span></div>
@@ -365,7 +366,7 @@ function mostraRitornoFallito(err) {
 /** Il ritorno dal link e-mail porta i token nel frammento: ripulisce l'URL senza toccare il router. */
 function cleanAuthUrl() {
   const dirtyHash = location.hash && !location.hash.startsWith('#/');
-  const dirtyQuery = /[?&](code|error|error_description|invito)=/.test(location.search);
+  const dirtyQuery = /[?&](code|error|error_description|invito|da)=/.test(location.search);
   if (dirtyHash || dirtyQuery) history.replaceState(null, '', location.pathname + (dirtyHash ? '' : location.hash));
 }
 
@@ -479,8 +480,11 @@ async function boot() {
   // Il codice d'invito si legge subito, prima che l'indirizzo venga
   // ripulito: ?invito=ABC123 arriva dal link condiviso, oppure di ritorno
   // dalla conferma e-mail (lo porta dentro ritornoConInvito, in state.js).
-  const invito = new URLSearchParams(location.search).get('invito');
+  const qs = new URLSearchParams(location.search);
+  const invito = qs.get('invito');
   if (invito) S.ricordaInvito(invito);
+  // e chi l'ha mandato, per i Reclutatori (023)
+  if (qs.get('da')) S.ricordaReclutatore(qs.get('da'));
   const callbackError = authCallbackError();
   root.innerHTML = `<div class="app">${splash()}</div>`;
   await S.init();

@@ -52,6 +52,8 @@ jobs:
         run: sudo -E PORTA=5465 ./supabase/prove/salvataggio.sh
       - name: Il promemoria pianificato nel database
         run: sudo -E PORTA=5469 ./supabase/prove/pianificato.sh
+      - name: L'avviso dei nuovi iscritti
+        run: sudo -E PORTA=5473 ./supabase/prove/avviso-iscritti.sh
 
       - name: L'orologio dei dati FSGC nel database
         run: sudo -E PORTA=5471 ./supabase/prove/fsgc-pianificato.sh

@@ -28,6 +28,30 @@ export const altriVideo = () => VIDEO_CANALE.map(([id, titolo, quando]) => ({ id
 export const urlCanale = `https://www.youtube.com/channel/${CANALE}`;
 /** Pagina del video su YouTube, per chi preferisce aprirlo di la'. */
 export const urlVideo = (id) => `https://www.youtube.com/watch?v=${id}`;
-/** nocookie: fino al play non si carica, e anche dopo Google traccia di meno. */
-export const urlIncorpora = (id) => `https://www.youtube-nocookie.com/embed/${id}?autoplay=1&rel=0&modestbranding=1`;
+/**
+ * nocookie: fino al play non si carica, e anche dopo Google traccia di meno.
+ *
+ * playsinline=1: senza, su iPhone il video vuole il lettore a tutto schermo
+ * di sistema, e dall'app aperta dalla Home quel passaggio non parte: il
+ * riquadro restava nero e l'unica strada era «Apri su YouTube» (Alex, 10/10).
+ * origin: YouTube vuole sapere da quale sito e' incorporato, e senza un
+ * mittente riconoscibile risponde con l'errore 153 invece del video.
+ */
+const origine = () => (typeof location !== 'undefined' && /^https?:/.test(location.origin) ? `&origin=${encodeURIComponent(location.origin)}` : '');
+export const urlIncorpora = (id) => `https://www.youtube-nocookie.com/embed/${id}?autoplay=1&playsinline=1&rel=0&modestbranding=1${origine()}`;
 export const ciSonoVideo = () => PARTITE.length > 0 || VIDEO_CANALE.length > 0;
+
+/**
+ * Il video da far partire appena si apre la pagina Video. Lo segna il tocco
+ * su una partita negli highlights della home (data-apri-video): prima si
+ * finiva sulla lista e bisognava cercare la partita e toccare play una
+ * seconda volta, e sembrava che dall'app non si potesse guardare niente.
+ */
+let daAprire = null;
+export const videoDaAprire = () => { const id = daAprire; daAprire = null; return id; };
+if (typeof document !== 'undefined') {
+  document.addEventListener('click', (e) => {
+    const a = e.target.closest && e.target.closest('[data-apri-video]');
+    if (a) daAprire = a.dataset.apriVideo;
+  }, true);
+}

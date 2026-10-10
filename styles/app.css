@@ -1240,6 +1240,13 @@ button,a{-webkit-tap-highlight-color:transparent}
   .guida .intro-points li{padding-block:9px}
   .guida-body{gap:8px}
 }
+/* I passi che si leggono e basta: righe senza riquadro, che non sembrino
+   bottoni da scegliere o campi da riempire. Il riquadro resta ai passi
+   della Home, dove i tasti da toccare ci sono davvero. */
+.guida .intro-points.info{gap:16px}
+.guida .intro-points.info li{background:none;border:0;border-radius:0;padding:0;backdrop-filter:none}
+.guida .intro-points.info i{width:34px;height:34px;border-radius:50%;background:none;border:1.5px solid rgba(255,201,77,.6)}
+.guida .intro-points.info i .ic{width:17px;height:17px}
 .guida-passo{font:700 12px var(--font-body);letter-spacing:.08em;text-transform:uppercase;opacity:.8}
 .guida-body{gap:12px}
 .guida-tito{display:flex;align-items:flex-end;gap:10px;width:100%;max-width:420px}

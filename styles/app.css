@@ -2154,3 +2154,47 @@ button,a{-webkit-tap-highlight-color:transparent}
 .invito .txt b{font-style:italic;font-weight:900}
 .negozio-cta .txt b{font-style:italic;font-weight:900}
 .vh-t > span{font:italic 900 15px var(--font-display);color:var(--text);font-variant-numeric:tabular-nums}
+
+/* --- I Reclutatori (023): il badge accanto alla squadra e il riquadro in
+   Profilo lega. Bronzo, argento e oro con lo stesso disegno: cambia solo il
+   colore, e il numero resta sempre leggibile. */
+/* .ptxt span (blocco, grigio) vincerebbe su .recl da solo: qui sotto si pareggia */
+.recl,.ptxt span.recl{display:inline-flex;align-items:center;gap:4px;margin-left:6px;padding:2px 8px 2px 6px;border-radius:999px;
+  font:700 11px var(--font-display);letter-spacing:.02em;vertical-align:middle;white-space:nowrap;
+  background:#F3E2CF;color:#6B3E12}
+.recl .ic{width:12px;height:12px}
+.ptxt span.recl{line-height:1.2}
+.recl.argento{background:#E6EAF0;color:#3A4658}
+.recl.oro{background:linear-gradient(135deg,var(--c-oro-300),var(--c-oro-500));color:#1A1302}
+.recl.vuoto{background:var(--surface-2);color:var(--text-muted);margin-left:0}
+:root[data-theme="dark"] .recl.bronzo{background:#4A2E14;color:#F3D2AE}
+:root[data-theme="dark"] .recl.argento{background:#2E3644;color:#DCE3EE}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]) .recl.bronzo{background:#4A2E14;color:#F3D2AE}
+  :root:not([data-theme="light"]) .recl.argento{background:#2E3644;color:#DCE3EE}
+}
+.recl-card{display:flex;flex-direction:column;gap:8px}
+.recl-card p{margin:0;line-height:1.45}
+.recl-card .recl-testa .recl{margin-left:0;font-size:12px;padding:4px 10px 4px 8px}
+
+/* --- Le finiture esclusive dei Reclutatori: al posto della tinta piatta,
+   le righe biancazzurre di San Marino o l'oro. La luce della foto ci passa
+   sopra come sulla tinta normale. */
+.maglia.fin-titano .mg-tinta{background:repeating-linear-gradient(90deg,#FFFFFF 0 12%,#5EB6E4 12% 24%)}
+.maglia.fin-oro .mg-tinta{background:linear-gradient(135deg,#E9B53A 0%,#FFE48A 24%,#FFF8DC 42%,#FFD45C 56%,#E2A82A 78%,#FFF0B8 100%)}
+/* La cornice d'oro allo stemma (5 amici): vince sulle ombre dei contesti */
+.crest.cornice,.d-io .crest.cornice{box-shadow:0 0 0 2px #E0A81C,0 0 0 4px rgba(224,168,28,.35)}
+.pcell.chiuso .pers,.fin-btn.chiuso .maglia{filter:grayscale(.85) opacity(.55)}
+.pcell .lucchetto,.fin-btn .lucchetto{position:absolute;right:4px;top:4px;width:20px;height:20px;border-radius:50%;
+  display:grid;place-items:center;background:var(--surface);box-shadow:var(--sh-card);color:var(--text-muted)}
+.pcell .lucchetto .ic,.fin-btn .lucchetto .ic{width:12px;height:12px}
+.finiture{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.fin-btn{position:relative;display:grid;justify-items:center;gap:4px;padding:8px 4px;border-radius:var(--r-md);
+  border:2px solid var(--border);background:var(--surface);font:600 11px var(--font-body);color:var(--text);cursor:pointer}
+.fin-btn.on{border-color:var(--primary);background:var(--primary-soft)}
+.fin-btn .maglia{width:46px}
+.premi-lista{display:flex;flex-direction:column;gap:6px;margin:2px 0 0;padding:0;list-style:none}
+.premi-lista li{display:flex;align-items:center;gap:8px;font-size:13px}
+.premi-lista li .ic{flex:none;width:16px;height:16px}
+.premi-lista li.si .ic{color:var(--positive)}
+.premi-lista li.no{color:var(--text-muted)}

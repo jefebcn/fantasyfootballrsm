@@ -102,7 +102,7 @@ una segnalazione.
 
 | Categoria | Cosa spuntare | Raccolti / Condivisi | Obbl. | Perché |
 |---|---|---|---|---|
-| Informazioni personali | **Nome**, **Indirizzo email**, **ID utente** | raccolti / non condivisi | sì | Gestione dell'account (il nome anche: Funzionalità dell'app — lo vedono gli altri della lega) |
+| Informazioni personali | **Nome**, **Indirizzo email**, **ID utente** | raccolti / non condivisi | sì | Gestione dell'account (il nome anche: Funzionalità dell'app — lo vedono gli altri della lega; l'ID utente anche: Funzionalità dell'app — chi ha invitato chi, per il badge dei Reclutatori, migrazione 023) |
 | Foto e video | **Foto** | raccolti / non condivisi | no | Funzionalità dell'app (lo stemma della squadra) |
 | Attività nell'app | **Altri contenuti generati dagli utenti** | raccolti / non condivisi | sì | Funzionalità dell'app (squadra, rosa, formazioni, contestazioni) |
 | ID dispositivo o altri ID | **ID dispositivo o altri ID** | raccolti / non condivisi | no | Funzionalità dell'app (l'indirizzo a cui mandare le notifiche, solo se le accendi) |

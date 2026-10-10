@@ -69,6 +69,8 @@ export const avatarGrande = (p, club) =>
  *  l'inchiostro e, se serve, sposta il fondo quanto basta per arrivare a 4,5. */
 export const crest = (m, cls = '') => {
   const { fondo, inchiostro } = tintaLeggibile(m?.color);
+  // La cornice d'oro dei Reclutatori (5 amici portati, src/reclutatori.js)
+  if ((m?.reclutati || 0) >= 5) cls = `${cls} cornice`;
   return m?.crestUrl
     ? `<span class="crest foto ${cls}" style="background:${fondo}"><img src="${esc(m.crestUrl)}" alt=""></span>`
     : `<span class="crest ${cls}" style="background:${fondo};color:${inchiostro}">${esc(m.initials)}</span>`;
@@ -136,4 +138,18 @@ export function matchCard(r, managers, { meta = '', badgeHtml = '' } = {}) {
 }
 
 export const empty = (text, cta = '') => `<div class="empty">${logo()}<p>${text}</p>${cta}</div>`;
+/**
+ * Il badge dei Reclutatori (023): chi ha portato amici che giocano.
+ * 1 amico Reclutatore, 3 d'argento, 5 d'oro. Sotto l'uno, niente.
+ */
+export const LIVELLI_RECLUTATORE = [
+  { da: 5, nome: 'Reclutatore d\'oro', cls: 'oro' },
+  { da: 3, nome: 'Reclutatore d\'argento', cls: 'argento' },
+  { da: 1, nome: 'Reclutatore', cls: 'bronzo' },
+];
+export const livelloReclutatore = (n) => LIVELLI_RECLUTATORE.find((l) => (n || 0) >= l.da) || null;
+export function badgeReclutatore(n, { conNumero = false } = {}) {
+  const l = livelloReclutatore(n); if (!l) return '';
+  return `<span class="recl ${l.cls}" title="${l.nome}: ${n === 1 ? 'un amico portato' : `${n} amici portati`}">${icon('userplus', 'ic sm')}${conNumero ? `${l.nome} · ${n}` : n}</span>`;
+}
 export const sec = (title, right = '') => `<div class="a-sec"><b>${title}</b>${right ? `<span>${right}</span>` : ''}</div>`;

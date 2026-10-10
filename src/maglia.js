@@ -38,7 +38,10 @@ function scritta(testo, x, y, dim, peso, inchiostro, bordo, spazio = '0') {
  */
 export function maglia(kit, cls = '') {
   const k = { ...KIT_DEFAULT, ...kit };
-  const scuro = !chiaro(k.c1);
+  // Le finiture dei Reclutatori (src/reclutatori.js): biancazzurra e d'oro
+  // sono chiare, quindi la scritta e' scura qualunque sia la tinta di base.
+  const fin = ['titano', 'oro'].includes(k.finitura) ? k.finitura : '';
+  const scuro = fin ? false : !chiaro(k.c1);
   const inchiostro = scuro ? '#FFFFFF' : '#16202E';
   const bordo = scuro ? '#0B1220' : '#FFFFFF';
   const nome = String(k.nome || '').toUpperCase().slice(0, 12);
@@ -48,8 +51,8 @@ export function maglia(kit, cls = '') {
     ? `<svg class="mg-scritte" viewBox="0 0 100 123" aria-hidden="true">
         ${scritta(nome, 50, 86, 9, 700, inchiostro, bordo, '.16em')}
       </svg>` : '';
-  return `<div class="maglia ${cls}" style="--c1:${k.c1};--rap:${RAPPORTO}" role="img"
-      aria-label="Maglia${nome ? ` di ${esc(nome)}` : ''}">
+  return `<div class="maglia${fin ? ` fin-${fin}` : ''} ${cls}" style="--c1:${k.c1};--rap:${RAPPORTO}" role="img"
+      aria-label="Maglia${fin === 'oro' ? ' d\'oro' : fin === 'titano' ? ' biancazzurra' : ''}${nome ? ` di ${esc(nome)}` : ''}">
     <span class="mg-tinta"></span><img class="mg-luce" src="${BASE}" alt="" decoding="async">${scritte}
   </div>`;
 }

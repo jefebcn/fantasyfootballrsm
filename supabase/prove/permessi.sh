@@ -69,6 +69,11 @@ APERTE="$APERTE conta_sponsor"
 # taglia i testi, cancella gli indirizzi e-mail, ha un tetto al giorno e non
 # restituisce niente.
 APERTE="$APERTE segnala_errore"
+# E reclutatori_settimana (023): la classifica dei Reclutatori per la storia
+# su Instagram, leggibile senza account. Restituisce righe, a differenza delle
+# due sopra: per questo il controllo qui sotto guarda che siano SOLO nome
+# della squadra e numero, niente identificativi ne' nomi di persona.
+APERTE="$APERTE reclutatori_settimana"
 # Su una riga sola, con uno spazio davanti e dietro: il confronto piu' sotto
 # cerca " nome " e i ritorni a capo dell'elenco lo facevano fallire per gli
 # ultimi di ogni riga. Preso dal guardiano stesso alla prima corsa, che e' il
@@ -120,6 +125,12 @@ for pr in select insert update delete; do
     ko "l'anonimo ha $pr su errori_app"
   fi
 done
+
+if [ "$(V "select pg_get_function_result('public.reclutatori_settimana(integer)'::regprocedure)")" = "TABLE(squadratext,amiciinteger)" ]; then
+  ok "reclutatori_settimana dà solo squadra e numero"
+else
+  ko "reclutatori_settimana ora restituisce altro: da anonimo non deve dare identificativi o nomi"
+fi
 
 echo "== le due del service role sono chiuse anche a chi ha fatto l'accesso =="
 for f in "da_avvisare(int)" "promemoria_da_rifare(int,text[])"; do

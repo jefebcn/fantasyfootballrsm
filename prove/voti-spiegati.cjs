@@ -66,6 +66,8 @@ const num = (s) => Number(String(s).replace('+', '').replace('−', '-').replace
   et(schede.length >= 2 && Math.abs(schede[0].w - schede[1].w) < 4, 'e larghe uguali, a tutta riga');
   await p.click('.seg-rosa a[href="#/rosa/formazione"]'); await w(1000);
   et(/formazione/.test(await p.evaluate(() => location.hash)) && await p.evaluate(() => document.querySelector('.seg-rosa a.on')?.innerText.includes('Formazione')), 'toccando Formazione si passa alla formazione, con la sua scheda accesa');
+  const aperti = await p.evaluate(() => ({ n: document.querySelectorAll('.moduli [data-mod]').length, nota: document.querySelector('.moduli')?.previousElementSibling?.innerText || '' }));
+  et(aperti.n === 7 && /ogni giornata/.test(aperti.nota), `a giornata aperta si sceglie fra 7 moduli, e si dice che si cambia a ogni giornata (${aperti.n})`);
   await p.click('#confirm'); await w(1200);
   const stato = await p.evaluate(() => JSON.parse(localStorage.getItem('fcs:mock')));
   et((stato.tables.lineups || []).length === 1, 'la formazione della 5ª è consegnata');
@@ -75,7 +77,13 @@ const num = (s) => Number(String(s).replace('+', '').replace('−', '-').replace
   ctx = await b.newContext(vp); await conMock(ctx, { iso: '2026-10-10T16:00:00Z', stato });
   p = await ctx.newPage(); p.on('pageerror', (e) => errori.push(e.message));
   await soloFino(p, 5);
-  await p.goto(`${BASE}/#/rosa/formazione`, { waitUntil: 'load' }); await p.waitForTimeout(2200);
+  // Si aspetta che la sezione ci sia, non un tempo fisso: dentro la batteria
+  // completa la macchina e' piu' lenta, e 2,2 secondi a volte non bastavano.
+  await p.goto(`${BASE}/#/rosa/formazione`, { waitUntil: 'load' });
+  await p.waitForSelector('.voti-spiegati .vr', { timeout: 15000 }).catch(() => {});
+  const spenti = await p.evaluate(() => ({ n: document.querySelectorAll('.moduli.spenti .chip').length, cliccabili: document.querySelectorAll('.moduli [data-mod]').length, nota: document.querySelector('.moduli.spenti')?.previousElementSibling?.innerText || '' }));
+  et(spenti.n === 7 && spenti.cliccabili === 0, `mentre si gioca i moduli restano in vista, spenti (${spenti.n})`);
+  et(/si cambia a ogni giornata/.test(spenti.nota) && /6ª/.test(spenti.nota), `e una riga dice quando si sceglie quello della prossima ("${spenti.nota}")`);
   const sezione = await p.evaluate(() => {
     const box = document.querySelector('.voti-spiegati'); if (!box) return null;
     const dopoPanchina = !!document.querySelector('.bench') && (document.querySelector('.bench').compareDocumentPosition(box) & Node.DOCUMENT_POSITION_FOLLOWING) > 0;
@@ -104,7 +112,8 @@ const num = (s) => Number(String(s).replace('+', '').replace('−', '-').replace
     }
   }
   // e il Calendario, a 5ª in corso, si apre sulla 5ª coi risultati di venerdì
-  await p.goto(`${BASE}/#/calendario`, { waitUntil: 'load' }); await p.waitForTimeout(1500);
+  await p.goto(`${BASE}/#/calendario`, { waitUntil: 'load' });
+  await p.waitForSelector('#gsel .on', { timeout: 15000 }).catch(() => {});
   const cal = await p.evaluate(() => ({ g: document.querySelector('#gsel .on')?.innerText.trim(), ris: [...document.querySelectorAll('.rr .sc')].filter((x) => /–/.test(x.innerText)).length }));
   et(/^G5/.test(cal.g || ''), `a 5ª in corso il Calendario si apre sulla 5ª, non sulla 6ª (${cal.g})`);
   et(cal.ris >= 3, `con i risultati già arrivati (${cal.ris})`);

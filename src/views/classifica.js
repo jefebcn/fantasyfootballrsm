@@ -8,6 +8,28 @@ let contro = null;
 const nomeSq = (id) => S.managersById.get(id)?.teamName || '—';
 
 /**
+ * La classifica del Campionato Sammarinese, dai risultati FSGC (Alex, 10/10:
+ * «anche in corso»). Durante una giornata comprende le gare gia' finite, e
+ * lo dice; la forma sono le ultime cinque, dalla piu' vecchia alla piu'
+ * recente.
+ */
+function campionato() {
+  const c = S.classificaCampionato();
+  if (!c.gare) return empty('Il campionato non ha ancora risultati: la classifica compare dopo le prime partite.');
+  const nota = c.inCorso
+    ? `<div class="warn info">${icon('clock', 'ic sm')}<span><b>Classifica di adesso.</b> Comprende la ${c.inCorso.giornata}ª giornata, ancora in corso: ${c.inCorso.fatte} ${c.inCorso.fatte === 1 ? 'partita giocata' : 'partite giocate'} su ${c.inCorso.totali}.</span></div>`
+    : '';
+  const forma = (f) => f.map((e) => `<i class="fm fm-${e.toLowerCase()}" title="${e === 'V' ? 'vittoria' : e === 'N' ? 'pareggio' : 'sconfitta'}">${e}</i>`).join('');
+  return `${nota}
+    <div class="a-sec"><b>Campionato Sammarinese</b><span>${c.inCorso ? `${c.inCorso.giornata}ª in corso` : `dopo la ${c.ultima}ª giornata`}</span></div>
+    <div class="cls camp">${c.righe.map((r) => `<div class="crow">
+      <i class="pos">${r.pos}</i>${crest({ color: r.club.color, initials: r.club.shortName }, 'sm')}
+      <span class="nm"><b>${esc(r.club.name)}</b><span>${r.g} G · ${r.v}V ${r.n}N ${r.p}P · ${r.gf}–${r.gs}</span>${r.forma.length ? `<span class="forma">${forma(r.forma)}</span>` : ''}</span>
+      <span class="pt"><b>${r.pt}</b><span>punti</span></span></div>`).join('')}</div>
+    <p class="tie">Risultati della FSGC · 3 punti la vittoria, 1 il pareggio · a pari punti: differenza reti, poi gol fatti.</p>`;
+}
+
+/**
  * I record della lega. In una lega fra amici e' la parte di cui si discute
  * tutto l'anno — "il mio 82,5 della seconda" vale piu' di mezza classifica —
  * ed erano tutti dati che c'erano gia' e che nessuno metteva insieme.
@@ -162,13 +184,24 @@ export const classifica = {
     // parola, e una riga in meno di spazio per il resto. Via.
     const barra = (dentro, conStato = true) => `<div class="segwrap"><div class="seg seg-cls">${dentro}</div></div>
       ${conStato ? `<div class="statoriga">${badge(stato, `giornata ${n}`)}</div>` : ''}`;
+    // Il campionato vero sta accanto alla classifica della lega (Alex, 10/10):
+    // chi gioca a Fantatitano guarda anche come vanno le squadre dei suoi.
+    const tabCamp = `<button class="${vista === 'campionato' ? 'on' : ''}" data-vista="campionato">Campionato</button>`;
     const seg = barra(`<button class="${vista === 'classifica' ? 'on' : ''}" data-vista="classifica">Classifica</button>
       <button class="${vista === 'giornata' ? 'on' : ''}" data-vista="giornata">Giornata ${n}</button>
-      <button class="${vista === 'record' ? 'on' : ''}" data-vista="record">Record</button>`);
+      <button class="${vista === 'record' ? 'on' : ''}" data-vista="record">Record</button>${tabCamp}`);
     // A punti la scheda "Giornata" non ha incontri da mostrare: si toglie
     // invece di aprire su una schermata vuota.
-    const segPunti = barra(`<button class="${vista !== 'record' ? 'on' : ''}" data-vista="classifica">Classifica</button>
-      <button class="${vista === 'record' ? 'on' : ''}" data-vista="record">Record</button>`);
+    const segPunti = barra(`<button class="${vista !== 'record' && vista !== 'campionato' ? 'on' : ''}" data-vista="classifica">Classifica</button>
+      <button class="${vista === 'record' ? 'on' : ''}" data-vista="record">Record</button>${tabCamp}`);
+
+    if (vista === 'campionato') {
+      const btn = (v, t) => `<button class="${vista === v ? 'on' : ''}" data-vista="${v}">${t}</button>`;
+      return `<main class="a-body">
+        ${barra(`${btn('classifica', 'Classifica')}${giocate && !S.aPunti() ? btn('giornata', `Giornata ${n}`) : ''}${btn('record', 'Record')}${tabCamp}`, false)}
+        ${campionato()}
+      </main>`;
+    }
 
     // LA CLASSIFICA CHE NON C'E' ANCORA.
     //
@@ -198,7 +231,7 @@ export const classifica = {
       // dalla 5a dicevano "PROVVISORIO · giornata 4", cioe' lo stato di una
       // giornata che per questa lega non esiste.
       const vuota = barra(`<button class="${vista !== 'record' ? 'on' : ''}" data-vista="classifica">Classifica</button>
-      <button class="${vista === 'record' ? 'on' : ''}" data-vista="record">Record</button>`, false);
+      <button class="${vista === 'record' ? 'on' : ''}" data-vista="record">Record</button>${tabCamp}`, false);
       return `<main class="a-body">
         ${vuota}
         ${S.aPunti() ? premiCard({ vincitori: false }) : ''}

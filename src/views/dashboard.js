@@ -360,8 +360,8 @@ function highlights() {
   for (const k of giornateConVideo()) {
     const l = videoGiornata(S.matchesOf(k));
     if (!l.length) continue;
-    const riga = ({ m }) => { const h = S.clubsById.get(m.homeClubId), a = S.clubsById.get(m.awayClubId);
-      return `<a class="vh" href="#/video"><span class="vh-p">${icon('play', 'ic sm')}</span>
+    const riga = ({ m, v }) => { const h = S.clubsById.get(m.homeClubId), a = S.clubsById.get(m.awayClubId);
+      return `<a class="vh" href="#/video" data-apri-video="${esc(v.id)}"><span class="vh-p">${icon('play', 'ic sm')}</span>
         <span class="vh-t"><b>${esc(h.name)} — ${esc(a.name)}</b>${m.status === 'played' ? `<span>${m.homeGoals} – ${m.awayGoals}</span>` : ''}</span></a>`; };
     return sec('Highlights', `${k}ª giornata`) + `<div class="a-card vhs">${l.slice(0, 4).map(riga).join('')}
       <a class="vh tutti" href="#/video"><span class="vh-t"><b>Tutti i video${l.length > 4 ? ` (${l.length})` : ''}</b></span>${icon('chev', 'ic sm')}</a></div>`;

@@ -2,7 +2,7 @@
  *  niente finche' non si tocca play. */
 import * as S from '../state.js';
 import { esc, icon, dateIt, crest } from '../ui.js';
-import { videoGiornata, giornateConVideo, altriVideo, urlCanale, urlIncorpora, urlVideo } from '../video.js';
+import { videoGiornata, giornateConVideo, altriVideo, urlCanale, urlIncorpora, urlVideo, videoDaAprire } from '../video.js';
 
 /** Lo stemma di un club, con le sigle e i colori che ha gia' il calendario. */
 const scudo = (c) => crest({ color: c.color, initials: c.shortName }, 'vid-stemma');
@@ -57,14 +57,20 @@ export const video = {
     </main>`;
   },
   mount(root) {
-    root.querySelector('main').addEventListener('click', (e) => {
-      const b = e.target.closest('.vid-play'); if (!b) return;
-      const card = b.closest('[data-vid]'); const id = card.dataset.vid;
-      // da qui in poi si contatta Google: succede perche' l'ha chiesto chi guarda
-      card.querySelector('.vid-cop').outerHTML = `<div class="vid-cop in"><iframe
+    // da qui in poi si contatta Google: succede perche' l'ha chiesto chi guarda
+    const suona = (card) => {
+      const id = card.dataset.vid; const cop = card.querySelector('.vid-cop:not(.in)'); if (!cop) return;
+      cop.outerHTML = `<div class="vid-cop in"><iframe
         src="${urlIncorpora(id)}" title="Highlights" loading="lazy" allowfullscreen
         allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture; fullscreen" playsinline
         referrerpolicy="strict-origin-when-cross-origin"></iframe></div>`;
+    };
+    root.querySelector('main').addEventListener('click', (e) => {
+      const b = e.target.closest('.vid-play'); if (b) suona(b.closest('[data-vid]'));
     });
+    // arrivati dalla home toccando una partita: parte quella, gia' in vista
+    const id = videoDaAprire();
+    const card = id && [...root.querySelectorAll('[data-vid]')].find((c) => c.dataset.vid === id);
+    if (card) { suona(card); card.scrollIntoView({ block: 'center' }); }
   },
 };

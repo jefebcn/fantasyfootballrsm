@@ -103,6 +103,11 @@ const num = (s) => Number(String(s).replace('+', '').replace('−', '-').replace
       et(await p.evaluate(() => document.querySelectorAll('.voti-spiegati .vb')[1].classList.contains('on')), 'toccando il secondo si apre il suo dettaglio');
     }
   }
+  // e il Calendario, a 5ª in corso, si apre sulla 5ª coi risultati di venerdì
+  await p.goto(`${BASE}/#/calendario`, { waitUntil: 'load' }); await p.waitForTimeout(1500);
+  const cal = await p.evaluate(() => ({ g: document.querySelector('#gsel .on')?.innerText.trim(), ris: [...document.querySelectorAll('.rr .sc')].filter((x) => /–/.test(x.innerText)).length }));
+  et(/^G5/.test(cal.g || ''), `a 5ª in corso il Calendario si apre sulla 5ª, non sulla 6ª (${cal.g})`);
+  et(cal.ris >= 3, `con i risultati già arrivati (${cal.ris})`);
   await ctx.close();
   et(errori.length === 0, `nessun errore JS${errori.length ? ' — ' + errori[0] : ''}`);
   await b.close();

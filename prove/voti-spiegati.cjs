@@ -75,7 +75,10 @@ const num = (s) => Number(String(s).replace('+', '').replace('−', '-').replace
   ctx = await b.newContext(vp); await conMock(ctx, { iso: '2026-10-10T16:00:00Z', stato });
   p = await ctx.newPage(); p.on('pageerror', (e) => errori.push(e.message));
   await soloFino(p, 5);
-  await p.goto(`${BASE}/#/rosa/formazione`, { waitUntil: 'load' }); await p.waitForTimeout(2200);
+  // Si aspetta che la sezione ci sia, non un tempo fisso: dentro la batteria
+  // completa la macchina e' piu' lenta, e 2,2 secondi a volte non bastavano.
+  await p.goto(`${BASE}/#/rosa/formazione`, { waitUntil: 'load' });
+  await p.waitForSelector('.voti-spiegati .vr', { timeout: 15000 }).catch(() => {});
   const sezione = await p.evaluate(() => {
     const box = document.querySelector('.voti-spiegati'); if (!box) return null;
     const dopoPanchina = !!document.querySelector('.bench') && (document.querySelector('.bench').compareDocumentPosition(box) & Node.DOCUMENT_POSITION_FOLLOWING) > 0;
@@ -104,7 +107,8 @@ const num = (s) => Number(String(s).replace('+', '').replace('−', '-').replace
     }
   }
   // e il Calendario, a 5ª in corso, si apre sulla 5ª coi risultati di venerdì
-  await p.goto(`${BASE}/#/calendario`, { waitUntil: 'load' }); await p.waitForTimeout(1500);
+  await p.goto(`${BASE}/#/calendario`, { waitUntil: 'load' });
+  await p.waitForSelector('#gsel .on', { timeout: 15000 }).catch(() => {});
   const cal = await p.evaluate(() => ({ g: document.querySelector('#gsel .on')?.innerText.trim(), ris: [...document.querySelectorAll('.rr .sc')].filter((x) => /–/.test(x.innerText)).length }));
   et(/^G5/.test(cal.g || ''), `a 5ª in corso il Calendario si apre sulla 5ª, non sulla 6ª (${cal.g})`);
   et(cal.ris >= 3, `con i risultati già arrivati (${cal.ris})`);

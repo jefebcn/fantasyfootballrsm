@@ -2213,3 +2213,12 @@ button,a{-webkit-tap-highlight-color:transparent}
   border-radius:999px;background:var(--negative);color:#fff;font:700 11px var(--font-body)}
 /* Da dove vengono i voti, sotto la panchina */
 .voti-spiegati .vnota-sub{margin-top:8px;padding-top:6px;border-top:1px dashed var(--border);font-family:var(--font-body);font-size:12px;color:var(--text-muted)}
+
+/* --- La classifica del campionato vero: la forma delle ultime cinque */
+.cls.camp .nm .forma{display:flex;gap:3px;margin-top:4px}
+.cls.camp .fm{display:inline-grid;place-items:center;width:16px;height:16px;border-radius:4px;font:700 9.5px var(--font-body);font-style:normal;color:#fff}
+.cls.camp .fm-v{background:var(--positive)}
+.cls.camp .fm-n{background:var(--c-pietra-400,#8A94A6)}
+.cls.camp .fm-p{background:var(--negative)}
+/* button, link e chip: niente doppio tocco per lo zoom, il tocco parte subito */
+button,a,.chip,[data-compra],[data-vendi]{touch-action:manipulation}

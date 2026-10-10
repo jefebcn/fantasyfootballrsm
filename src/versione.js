@@ -4,4 +4,4 @@
  * worker, quindi le due sono sempre la stessa: prima in fondo c'era scritto
  * «Versione 0.5» a mano, e restava 0.5 a ogni aggiornamento.
  */
-export const VERSIONE = '4.2.135';
+export const VERSIONE = '4.2.136';

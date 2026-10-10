@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="it"><head><meta charset="utf-8">
+<style>
+@font-face{font-family:Lato;font-weight:400;src:url(../../media/font/lato-400-latin.woff2)}
+@font-face{font-family:Lato;font-weight:700;src:url(../../media/font/lato-700-latin.woff2)}
+@font-face{font-family:Lato;font-weight:900;src:url(../../media/font/lato-900-latin.woff2)}
+@font-face{font-family:Lato;font-weight:900;font-style:italic;src:url(../../media/font/lato-900i-latin.woff2)}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:1080px;height:1920px;overflow:hidden}
+body{font-family:Lato,sans-serif;color:#fff;
+  background:radial-gradient(90% 55% at 50% 30%,#2A4AA0 0%,#14245A 45%,#0D1733 80%);position:relative}
+.raggi{position:absolute;inset:0;background:repeating-conic-gradient(from 0deg at 50% 26%,rgba(255,255,255,.035) 0 6deg,transparent 6deg 14deg);}
+.wrap{position:absolute;inset:0;padding:185px 72px 0;display:flex;flex-direction:column;align-items:center}
+.marchio{display:flex;align-items:center;gap:18px}
+.marchio img{width:86px}
+.marchio span{font-weight:900;font-style:italic;font-size:54px;letter-spacing:.02em;text-transform:uppercase}
+.occhiello{margin-top:34px;font-weight:900;font-style:italic;text-transform:uppercase;letter-spacing:.14em;font-size:34px;color:#4FA5DE}
+h1{margin-top:14px;font-weight:900;font-style:italic;text-transform:uppercase;text-align:center;line-height:.9;font-size:134px;letter-spacing:-.01em}
+h1 em{display:block;font-style:italic;color:#FFC94D;font-size:106px;margin-top:8px;text-shadow:0 0 40px rgba(255,201,77,.35)}
+.scheda{margin-top:42px;width:100%;background:rgba(255,255,255,.07);border:2px solid rgba(255,255,255,.12);border-radius:36px;padding:30px 36px 18px}
+.testa{display:flex;justify-content:space-between;align-items:baseline;font-weight:900;font-style:italic;text-transform:uppercase;letter-spacing:.06em;font-size:30px;color:#B7C2E0;margin-bottom:10px}
+.testa b{color:#FFC94D;font-size:40px;letter-spacing:.02em}
+.gara{display:grid;grid-template-columns:1fr 64px 1fr;align-items:center;padding:20px 0;border-top:2px solid rgba(255,255,255,.08)}
+.gara:first-of-type{border-top:0}
+.sq{display:flex;align-items:center;gap:18px;font-weight:900;font-size:40px}
+.sq.dx{flex-direction:row-reverse;text-align:right}
+.st{width:92px;height:92px;border-radius:50%;flex:none;display:grid;place-items:center;background:#fff;box-shadow:0 6px 18px rgba(0,0,0,.35),0 0 0 3px rgba(255,201,77,.55)}
+.st img{width:74%;height:74%;object-fit:contain}
+.vs{text-align:center;font-weight:900;font-style:italic;color:#4FA5DE;font-size:32px}
+.piccola .sq{font-size:32px}
+.piccola .st{width:70px;height:70px}
+.piccola .gara{padding:14px 0}
+.cta{margin-top:40px;display:flex;align-items:center;gap:26px;width:100%}
+.cta img{width:190px;flex:none;margin-left:-20px}
+.cta .t{flex:1}
+.cta .t p{font-weight:900;font-style:italic;text-transform:uppercase;font-size:44px;line-height:1.02}
+.cta .t p span{color:#FFC94D}
+.pill{margin-top:22px;display:inline-block;background:#FFC94D;color:#0D1733;font-weight:900;font-style:italic;font-size:42px;padding:18px 40px;border-radius:999px;box-shadow:0 12px 36px rgba(255,201,77,.35)}
+.nota{margin-top:16px;font-size:28px;font-weight:700;color:#B7C2E0}
+</style></head><body>
+<div class="raggi"></div>
+<div class="wrap">
+  <div class="marchio"><img src="../../videos/lancio-formazione/assets/brand/corona-oro.png" alt=""><span>Fantatitano</span></div>
+  <div class="occhiello">5ª giornata · Campionato Sammarinese</div>
+  <h1>Oggi si gioca<em>e tu fai punti</em></h1>
+
+  <div class="scheda">
+    <div class="testa"><span>Oggi · sabato 10</span><b>ore 15:00</b></div>
+    <div class="gara"><div class="sq"><i class="st"><img src="loghi/san-giovanni.png" alt=""></i>San Giovanni</div><div class="vs">VS</div><div class="sq dx"><i class="st"><img src="loghi/tre-fiori.png" alt=""></i>Tre Fiori</div></div>
+    <div class="gara"><div class="sq"><i class="st"><img src="loghi/faetano.png" alt=""></i>Faetano</div><div class="vs">VS</div><div class="sq dx"><i class="st"><img src="loghi/fiorentino.png" alt=""></i>Fiorentino</div></div>
+  </div>
+
+  <div class="scheda piccola" style="margin-top:22px">
+    <div class="testa"><span>Domani · domenica 11</span><b>ore 15:00</b></div>
+    <div class="gara"><div class="sq"><i class="st"><img src="loghi/virtus.png" alt=""></i>Virtus</div><div class="vs">VS</div><div class="sq dx"><i class="st"><img src="loghi/san-marino-academy.png" alt=""></i>SM Academy</div></div>
+    <div class="gara"><div class="sq"><i class="st"><img src="loghi/domagnano.png" alt=""></i>Domagnano</div><div class="vs">VS</div><div class="sq dx"><i class="st"><img src="loghi/tre-penne.png" alt=""></i>Tre Penne</div></div>
+    <div class="gara"><div class="sq"><i class="st"><img src="loghi/cosmos.png" alt=""></i>Cosmos</div><div class="vs">VS</div><div class="sq dx"><i class="st"><img src="loghi/juvenes-dogana.png" alt=""></i>Juvenes/Dogana</div></div>
+  </div>
+
+  <div class="cta">
+    <img src="../../media/tito/indica.webp" alt="">
+    <div class="t">
+      <p>Ogni gol vale punti<br><span>per la tua squadra</span></p>
+      <div class="pill">fantatitano.site</div>
+      <div class="nota">Non hai una squadra? Iscriviti gratis</div>
+    </div>
+  </div>
+</div>
+</body></html>

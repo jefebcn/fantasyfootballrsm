@@ -7,7 +7,7 @@ description: >
   nero corsivo maiuscolo, l'oro solo per l'accento (il taglio, l'invito finale), pastiglie blu.
   E' lo stile dell'app Fantatitano di oggi: chi tocca l'inserzione ritrova lo stesso mondo.
 unit: il fotogramma — 1080×1920 (storie Instagram)
-principle: il brand e' sacro · la composizione e' libera · ogni testo al massimo 3 parole per riga, 2 righe
+principle: il brand e' sacro · la composizione e' libera · ogni testo al massimo 3 parole per riga, 2 righe, ogni riga entro 936px
 
 colors:
   fondo: "#0D1733"          # blu notte, il fondo di ogni scena
@@ -25,8 +25,8 @@ typography:
   # "generici" di HyperFrames lo sconsiglia: qui il brand vince. Incorporato da assets/font
   # con @font-face (HyperFrames ha il Lato solo dritto; il corsivo 900 e' nostro).
   display:   { fontFamily: "Lato", weight: 900, style: italic, px: 260, lineHeight: 0.9, tracking: "-0.01em", upper: true }   # SERIE A
-  titolo:    { fontFamily: "Lato", weight: 900, style: italic, px: 150, lineHeight: 0.95, tracking: "0", upper: true }       # ARRIVA IL / FANTACALCIO
-  marchio:   { fontFamily: "Lato", weight: 900, style: italic, px: 150, lineHeight: 1.0, upper: true }                      # FANTATITANO
+  titolo:    { fontFamily: "Lato", weight: 900, style: italic, px: 150, lineHeight: 0.95, tracking: "0", upper: true }       # ARRIVA IL / FANTACALCIO; "DEL CAMPIONATO / SAMMARINESE" a 112px (misurata: a 150px esce dai 936px utili)
+  marchio:   { fontFamily: "Lato", weight: 900, style: italic, px: 146, lineHeight: 1.0, upper: true }                      # FANTATITANO (146px: la larghezza massima nei 936px utili)
   scritta:   { fontFamily: "Lato", weight: 900, style: italic, px: 120, lineHeight: 0.95, upper: true }                     # SCHIERA / I TUOI 11 · FORMAZIONE / SALVATA
   occhiello: { fontFamily: "Lato", weight: 900, style: italic, px: 96, lineHeight: 1.0, upper: true }                       # FANTACALCIO? · NON SOLO
   etichetta: { fontFamily: "Lato", weight: 900, style: italic, px: 54, tracking: "0.04em", upper: true }                    # GIOCA GRATIS SU
@@ -59,6 +59,20 @@ components:
     src: "assets/brand/corona-bianca.png"
     size: "360px di larghezza"
     description: "La corona grande della scena 6, sopra FANTATITANO."
+  torri:
+    shape: "le Tre Torri del Monte Titano (Guaita, Cesta, Montale) con le penne, sulla cresta del monte, in SVG; riempimento {colors.alone}→{colors.fondo}, bordo di luce {colors.occhiello}, finestrelle {colors.oro}"
+    description: "v2: salgono dietro SAMMARINESE. Il dettaglio che solo questo campionato ha."
+  giocatori:
+    src: "assets/giocatori (illustrazioni dell'app, da media/avatar), mai ingranditi oltre ~1,5x, senza marchi sulle maglie"
+    description: "v2: due ai lati di SAMMARINESE, due faccia a faccia nella sfida, quattro dietro la corona del marchio."
+  fascia-azzurra:
+    background: "{colors.occhiello}"
+    color: "{colors.testo-su-oro}"
+    description: "v2: SAMMARINESE in blu notte su una fascia azzurra inclinata di -2° (i colori di San Marino)."
+  spada:
+    shape: "spada disegnata in SVG, lunga 1140px: lama {colors.oro-luce} con filo {colors.inchiostro}, contorno {colors.fondo}, scanalatura sottile {colors.alone} al 35% (niente oro sulla lama: la linea oro deve stare solo dietro la spada); guardia e pomo {colors.oro}; impugnatura {colors.alone}"
+    glow: "drop-shadow 0 0 16px oro al 70%"
+    description: "Richiesta di Alex dopo la prima anteprima (9/10): il fendente diventa una spada che attraversa lo schermo in 0,42 s (punta a meta' schermo a 1,0 s) con due copie in ritardo per la scia di velocita' e un lampo all'impatto. La sua scia e' il fendente qui sotto."
   fendente:
     stroke: "{colors.oro} 18px, con filo {colors.oro-luce} 4px al centro, estremi tondi"
     angle: "da sinistra-basso a destra-alto, circa -9°, piu' largo della parola"
@@ -128,10 +142,13 @@ dentro un telefono sobrio, i nomi veri dei giocatori.
 
 - **Griglia:** 120 BPM, un evento per battito (0,5 s); 40 battiti in 20 s. Dentro la scena 4 i
   giocatori entrano ogni mezzo battito (0,25 s).
-- **Entrate:** 8 fotogrammi (0,27 s a 30 fps), arresto netto con sorpasso del 6% (es. back.out
-  leggero), poi fermo. Ogni scritta resta ferma almeno 1,5 s.
-- **Quiete:** mentre si muove il protagonista, il resto e' fermo; solo l'alone del fondo respira
-  (100%→104% su 2 s, avanti e indietro, per tutto il video).
+- **v2 — niente tempo morto:** ogni mezzo secondo succede qualcosa e niente e' mai fermo del tutto
+  (nota di Alex dopo la prima consegna). Le regole sotto marcate "v1" sono superate.
+- **Entrate:** le parole "sbattono" (da 1,8-2,4x e trasparenti a 1x in 0,22 s, back.out forte) o si
+  ricompongono da lettere sparse; all'arrivo scossa di 3-4 fotogrammi e/o onda d'urto oro.
+  (v1: 8 fotogrammi con sorpasso del 6% e scritta ferma almeno 1,5 s.)
+- **Fondo vivo:** alone che respira, due fasci di luce da stadio che oscillano, polvere d'oro che sale,
+  cerchio di centrocampo che si allarga piano; ogni scena ha una spinta lenta di camera.
 - **Passaggi:** passaggio di testimone fra le parti (i pezzi di SERIE A → la linea oro diventa la
   sottolineatura del titolo; il titolo → la pastiglia FANTATITANO sopra il telefono; il telefono →
   la corona del marchio). Dentro la prova (scene 3-4) tagli netti sul battito.
@@ -140,4 +157,6 @@ dentro un telefono sobrio, i nomi veri dei giocatori.
   scena 4 (decisione C.1).
 - **Il taglio (1,0 s):** fendente 0,2 s; spaccatura ±20px; tremolio dello schermo 0,15 s
   (±6px, 3 scosse); pezzi al 40% entro 1,5 s.
-- **Tutto fermo** negli ultimi 3 secondi (17,0-20,0 s).
+- **Il finale** (15-20 s) non e' fermo: raggi che girano, giocatori che ondeggiano, la pastiglia del sito
+  pulsa sul battito con un riflesso ogni secondo, una freccia indica il pulsante dell'inserzione.
+  (v1: tutto fermo negli ultimi 3 s.)

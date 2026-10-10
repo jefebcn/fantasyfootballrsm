@@ -1,0 +1,186 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Storyboard · Lancio Fantatitano v1</title>
+<!--
+  Bozzetti (review-loop § 2): un fotogramma fermo per scena, nel suo momento chiave,
+  con caratteri, colori e parole veri (frame.md) e le catture vere dell'app.
+  Nessun movimento, nessuno script. Le misure sono in cqw della cella: 1cqw = 10,8 px
+  del fotogramma 1080x1920. Le fasce tratteggiate sono coperte dall'interfaccia delle storie.
+-->
+<style>
+@font-face{font-family:'Lato';font-weight:400;font-style:normal;src:url('assets/font/lato-400-latin.woff2') format('woff2')}
+@font-face{font-family:'Lato';font-weight:700;font-style:normal;src:url('assets/font/lato-700-latin.woff2') format('woff2')}
+@font-face{font-family:'Lato';font-weight:900;font-style:normal;src:url('assets/font/lato-900-latin.woff2') format('woff2')}
+@font-face{font-family:'Lato';font-weight:900;font-style:italic;src:url('assets/font/lato-900i-latin.woff2') format('woff2')}
+:root{--fondo:#0D1733;--alone:#21397F;--oro:#FFC94D;--blu:#3F6ADD;--occ:#4FA5DE;--carta:#ECEFF6;--ink:#0D1733;--muted:#4A5675}
+*{box-sizing:border-box}
+body{margin:0;background:var(--carta);color:var(--ink);font:400 15px/1.45 'Lato',sans-serif;padding:28px 24px 48px}
+header{display:flex;flex-wrap:wrap;align-items:baseline;gap:10px 18px;margin:0 0 22px}
+header h1{font:italic 900 30px/1 'Lato';text-transform:uppercase;margin:0}
+header .v{font:900 13px 'Lato';background:var(--ink);color:#fff;border-radius:999px;padding:4px 10px}
+header p{margin:0;color:var(--muted);flex-basis:100%}
+header .tag{font:700 12px 'Lato';letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:22px}
+@media (max-width:820px){.grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.cella{background:#fff;border-radius:18px;padding:10px;box-shadow:0 10px 30px -20px rgba(13,23,51,.6)}
+.f{position:relative;aspect-ratio:9/16;container-type:inline-size;border-radius:12px;overflow:hidden;
+  background:radial-gradient(120% 70% at 50% 45%,var(--alone) 0%,var(--fondo) 62%);color:#fff}
+.f .safe{position:absolute;left:0;right:0;border-color:rgba(255,255,255,.28);border-style:dashed;border-width:0;z-index:9;pointer-events:none}
+.f .safe.su{top:0;height:23.15cqw;border-bottom-width:1px}
+.f .safe.giu{bottom:0;height:31.48cqw;border-top-width:1px}
+.f .corona{position:absolute;left:4.44cqw;top:25cqw;width:5.93cqw;opacity:.85;z-index:8}
+.t{position:absolute;left:0;right:0;text-align:center;font-family:'Lato';font-weight:900;font-style:italic;text-transform:uppercase;white-space:nowrap}
+.lab{display:flex;justify-content:space-between;gap:8px;margin:10px 4px 2px;font:900 12px 'Lato';letter-spacing:.05em;text-transform:uppercase}
+.lab span:last-child{color:var(--muted);font-weight:700}
+.nota{margin:4px 4px 8px;font-size:13.5px;color:#28324d}
+.nota b{color:var(--ink)}
+.chip{display:inline-block;margin:0 4px;font:900 11px 'Lato';letter-spacing:.06em;text-transform:uppercase;background:#E5EAF6;color:#21397F;border-radius:999px;padding:5px 10px}
+/* telefono */
+.tel{position:absolute;left:50%;transform:translateX(-50%);width:57.4cqw;border-radius:5.93cqw;background:#05080F;padding:1.3cqw;box-shadow:0 3.7cqw 7.4cqw rgba(0,0,0,.45)}
+.tel .schermo{border-radius:4.7cqw;overflow:hidden;position:relative}
+.tel img{display:block;width:100%}
+.tocco{position:absolute;width:11.11cqw;height:11.11cqw;margin:-5.55cqw 0 0 -5.55cqw;border-radius:50%;background:rgba(255,255,255,.3);box-shadow:0 0 0 .5cqw rgba(255,255,255,.55);z-index:7}
+.pill{display:inline-block;font:italic 900 5.93cqw/1 'Lato';border-radius:999px;padding:2.04cqw 4.07cqw}
+/* tokens e cuciture */
+.tok h3,.cuc h3{font:italic 900 18px 'Lato';text-transform:uppercase;margin:4px 4px 10px}
+.sw{display:flex;align-items:center;gap:10px;margin:0 4px 8px;font-size:13px}
+.sw i{width:28px;height:28px;border-radius:8px;flex:none;box-shadow:inset 0 0 0 1px rgba(0,0,0,.12)}
+.cuc ol{margin:0 4px;padding-left:20px;font-size:13.5px}
+.cuc li{margin:0 0 8px}
+.tok ul{margin:6px 4px 0;padding-left:18px;font-size:13px;color:#28324d}
+</style>
+</head>
+<body>
+<header>
+  <h1>Lancio Fantatitano · la formazione</h1><span class="v">v1</span>
+  <span class="tag">1080×1920 · 20 s · 6 scene · 120 BPM · senza voce</span>
+  <p>Inserzione per le storie Instagram: "Fantacalcio? Non solo Serie A." → arriva il fantacalcio del campionato sammarinese → la formazione si fa in pochi tocchi → fantatitano.site. Momento chiave di ogni scena, fermo; il movimento arriva nella costruzione.</p>
+</header>
+
+<div class="grid">
+
+<!-- 01 · IL TAGLIO — momento chiave 2,2 s -->
+<div class="cella">
+  <div class="f" id="frame-01">
+    <div class="safe su"></div><div class="safe giu"></div>
+    <img class="corona" src="assets/brand/corona-bianca.png" alt="">
+    <div class="t" style="top:68cqw;font-size:8.89cqw;color:var(--oro)">NON SOLO</div>
+    <!-- SERIE A spezzata lungo il fendente: meta' sopra su, meta' sotto giu', entrambe al 40% -->
+    <div style="position:absolute;left:0;right:0;top:79cqw;height:24cqw;clip-path:polygon(0 0,100% 0,100% 40%,0 64%);transform:translate(-.6cqw,-1.85cqw);opacity:.4">
+      <div class="t" style="top:0;font-size:24.07cqw;line-height:1">SERIE A</div></div>
+    <div style="position:absolute;left:0;right:0;top:79cqw;height:24cqw;clip-path:polygon(0 64%,100% 40%,100% 100%,0 100%);transform:translate(.6cqw,1.85cqw);opacity:.4">
+      <div class="t" style="top:0;font-size:24.07cqw;line-height:1">SERIE A</div></div>
+    <svg viewBox="0 0 100 177.78" style="position:absolute;inset:0;width:100%;height:100%"><line x1="-4" y1="96.5" x2="104" y2="85" stroke="#FFC94D" stroke-width="1.7" stroke-linecap="round"/><line x1="-4" y1="96.5" x2="104" y2="85" stroke="#FFF4D6" stroke-width=".4" stroke-linecap="round"/></svg>
+  </div>
+  <div class="lab"><span>01 · Il taglio</span><span>frame-01 · 0,0–3,0 s</span></div>
+  <p class="nota"><b>Si muove per primo il fendente</b> (1,0 s, da sinistra-basso a destra-alto): SERIE A si spacca, lo schermo trema, sopra "FANTACALCIO?" diventa NON SOLO. La linea oro esce verso l'alto e diventa la sottolineatura della scena 2.</p>
+  <span class="chip">→ testimone · linea oro</span>
+</div>
+
+<!-- 02 · IL LANCIO — momento chiave 5,6 s -->
+<div class="cella">
+  <div class="f" id="frame-02">
+    <div class="safe su"></div><div class="safe giu"></div>
+    <img class="corona" src="assets/brand/corona-bianca.png" alt="">
+    <div class="t" style="top:70cqw;font-size:10.37cqw;line-height:.95">DEL CAMPIONATO<br>SAMMARINESE</div>
+    <div style="position:absolute;left:0;right:0;top:99cqw;text-align:center"><span class="pill" style="background:var(--blu);color:#fff">FANTATITANO</span></div>
+  </div>
+  <div class="lab"><span>02 · Il lancio</span><span>frame-02 · 3,0–6,0 s</span></div>
+  <p class="nota"><b>Prima "ARRIVA IL / FANTACALCIO"</b> (3,0 s, 150px, linea oro sotto), poi cambio netto su "DEL CAMPIONATO / SAMMARINESE" (4,5 s, 112px: è la riga più larga), poi la pastiglia FANTATITANO (5,5 s). Il titolo si stringe e va via; la pastiglia sale sopra il telefono.</p>
+  <span class="chip">→ testimone · pastiglia in alto</span>
+</div>
+
+<!-- 03 · IL TELEFONO — momento chiave 7,5 s -->
+<div class="cella">
+  <div class="f" id="frame-03">
+    <div class="safe su"></div><div class="safe giu"></div>
+    <img class="corona" src="assets/brand/corona-bianca.png" alt="">
+    <div style="position:absolute;left:0;right:0;top:25.5cqw;text-align:center;z-index:3"><span class="pill" style="background:var(--blu);color:#fff">FANTATITANO</span></div>
+    <div class="t" style="top:38cqw;font-size:11.11cqw;line-height:.95;z-index:3">SCHIERA<br>I TUOI 11</div>
+    <div class="tel" style="top:64.8cqw"><div class="schermo"><img src="assets/app/01-campo-vuoto.png" alt="">
+      <div class="tocco" style="left:85%;top:11.5%"></div></div></div>
+  </div>
+  <div class="lab"><span>03 · Il telefono</span><span>frame-03 · 6,0–8,0 s</span></div>
+  <p class="nota"><b>Il telefono sale dal basso</b> (6,0 s) con la pagina formazione vera dal titolo "Modulo" (nessuna data); tocco sul 4-4-2 a 7,0 s. Il telefono esce dal fondo: conta la parte alta dello schermo. Taglio netto dentro lo schermo.</p>
+  <span class="chip">→ taglio · dentro lo schermo</span>
+</div>
+
+<!-- 04 · IL CAMPO SI RIEMPIE — momento chiave 11,4 s -->
+<div class="cella">
+  <div class="f" id="frame-04">
+    <div class="safe su"></div><div class="safe giu"></div>
+    <!-- dentro lo schermo al 170%: la cattura e' larga 93,1cqw (1006px), il campo riempie la fascia sicura -->
+    <div style="position:absolute;left:3.45cqw;width:93.1cqw;top:-27cqw"><img src="assets/app/04-campo-pieno.png" alt="" style="width:100%;display:block"></div>
+    <!-- l'ultimo posto (Rufer) ancora da aprire, a 11,4 s -->
+    <div style="position:absolute;left:56.5cqw;top:110.5cqw;width:21cqw;height:27.5cqw;border-radius:3cqw;background:#2f8f55"></div>
+    <div style="position:absolute;left:60.4cqw;top:113cqw;width:13cqw;height:13cqw;border-radius:50%;border:.45cqw dashed rgba(255,255,255,.75);display:grid;place-items:center;font:900 7cqw/1 Lato;color:#fff">+</div>
+    <img class="corona" src="assets/brand/corona-bianca.png" alt="">
+  </div>
+  <div class="lab"><span>04 · Il campo si riempie</span><span>frame-04 · 8,0–12,0 s</span></div>
+  <p class="nota"><b>Dentro lo schermo al 170%</b>: 8,0–9,0 s tocco sul +, elenco vero dei portieri, Venturini (tagli netti). Poi i posti si aprono uno ogni mezzo battito con un tick: Perazzini … Rufer (qui manca solo Rufer). Nomi leggibili, ~34px. Esce verso il telefono intero.</p>
+  <span class="chip">→ uscita dallo schermo · 170→100%</span>
+</div>
+
+<!-- 05 · SALVATA — momento chiave 13,8 s -->
+<div class="cella">
+  <div class="f" id="frame-05">
+    <div class="safe su"></div><div class="safe giu"></div>
+    <img class="corona" src="assets/brand/corona-bianca.png" alt="">
+    <div class="tel" style="top:30cqw;transform:translateX(-50%) scale(1.08);transform-origin:50% 80%;filter:brightness(.42)"><div class="schermo"><img src="assets/app/05-conferma.png" alt=""></div></div>
+    <div style="position:absolute;left:50%;top:76cqw;transform:translateX(-50%);width:12.96cqw;height:12.96cqw;border-radius:50%;background:var(--oro);display:grid;place-items:center;z-index:3">
+      <svg viewBox="0 0 24 24" style="width:62%;height:62%"><path d="M5 12.5l4.2 4.2L19 7" fill="none" stroke="#0D1733" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+    <div class="t" style="top:93cqw;font-size:11.11cqw;line-height:.95;z-index:3">FORMAZIONE<br>SALVATA</div>
+  </div>
+  <div class="lab"><span>05 · Salvata</span><span>frame-05 · 12,0–15,0 s</span></div>
+  <p class="nota"><b>Tocco sul pulsante vero</b> "CONFERMA FORMAZIONE · 11/11" (12,5 s, spinta al 108%): il telefono si scurisce e sopra entrano la spunta oro e FORMAZIONE / SALVATA. L'avviso dell'app con la giornata non si vede mai. Dal 14,5 s il telefono scende e rimpicciolisce.</p>
+  <span class="chip">→ testimone · la corona scende</span>
+</div>
+
+<!-- 06 · MARCHIO E SITO — momento chiave 18,0 s (fermo) -->
+<div class="cella">
+  <div class="f" id="frame-06">
+    <div class="safe su"></div><div class="safe giu"></div>
+    <img src="assets/brand/corona-bianca.png" alt="" style="position:absolute;left:50%;top:44.4cqw;width:33.3cqw;transform:translateX(-50%)">
+    <div class="t" style="top:80cqw;font-size:13.52cqw;line-height:1">FANTATITANO</div>
+    <div class="t" style="top:100cqw;font-size:5cqw;letter-spacing:.04em;color:var(--occ)">GIOCA GRATIS SU</div>
+    <div style="position:absolute;left:0;right:0;top:109cqw;text-align:center"><span class="pill" style="background:var(--oro);color:var(--ink);text-transform:none">fantatitano.site</span></div>
+  </div>
+  <div class="lab"><span>06 · Marchio e sito</span><span>frame-06 · 15,0–20,0 s</span></div>
+  <p class="nota"><b>La corona scende dall'angolo</b> e cresce al centro (15,0–15,5 s); poi FANTATITANO, GIOCA GRATIS SU e la pastiglia oro. <b>Fermo da 17,0 s</b>: è la locandina finale. Sotto resta libero per il pulsante "Scopri di più".</p>
+  <span class="chip">fine · fotogramma fermo</span>
+</div>
+
+<!-- cuciture -->
+<div class="cella cuc">
+  <h3>Le cuciture</h3>
+  <ol>
+    <li><b>01 → 02</b> testimone: la linea oro del taglio diventa la sottolineatura di FANTACALCIO.</li>
+    <li><b>02 → 03</b> testimone: il titolo va via, la pastiglia FANTATITANO sale e resta sopra il telefono che arriva.</li>
+    <li><b>03 → 04</b> taglio netto dentro lo schermo (170%).</li>
+    <li><b>04 → 05</b> si esce dallo schermo (170→100%) sul pulsante di conferma.</li>
+    <li><b>05 → 06</b> testimone: il telefono scende, la corona dell'angolo scende al centro e diventa il marchio.</li>
+  </ol>
+  <p class="nota">Direzione unica: le cose nuove arrivano dal basso, le vecchie escono in alto. La corona piccola è il filo: c'è dal primo fotogramma e torna come marchio.</p>
+</div>
+
+<!-- tokens -->
+<div class="cella tok">
+  <h3>Token · Notte e oro</h3>
+  <div class="sw"><i style="background:#0D1733"></i><span><b>#0D1733</b> fondo · <b>#21397F</b> alone</span></div>
+  <div class="sw"><i style="background:#FFFFFF"></i><span><b>#FFFFFF</b> testo</span></div>
+  <div class="sw"><i style="background:#FFC94D"></i><span><b>#FFC94D</b> solo accento: fendente, NON SOLO, spunta, sito</span></div>
+  <div class="sw"><i style="background:#3F6ADD"></i><span><b>#3F6ADD</b> pastiglia FANTATITANO</span></div>
+  <div class="sw"><i style="background:#4FA5DE"></i><span><b>#4FA5DE</b> occhielli</span></div>
+  <ul>
+    <li>Lato 900 corsivo maiuscolo: SERIE A 260px · titolo 150/112px · scritte 120px · FANTATITANO 146px · occhielli 96px · etichetta 54px · pastiglie 64px.</li>
+    <li>Massimo 3 parole per riga, 2 righe; ogni riga entro 936px di larghezza.</li>
+    <li>Divieti: niente interfaccia finta, niente foto, nessuna data o giornata, niente TITO; né presentazione né salvaschermo.</li>
+  </ul>
+</div>
+
+</div>
+</body>
+</html>

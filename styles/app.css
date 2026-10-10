@@ -2222,3 +2222,6 @@ button,a{-webkit-tap-highlight-color:transparent}
 .cls.camp .fm-p{background:var(--negative)}
 /* button, link e chip: niente doppio tocco per lo zoom, il tocco parte subito */
 button,a,.chip,[data-compra],[data-vendi]{touch-action:manipulation}
+/* I moduli mentre si gioca: in vista, ma spenti (si sceglie alla prossima) */
+.moduli.spenti .chip{opacity:.55;pointer-events:none}
+.moduli.spenti .chip.on{opacity:1}

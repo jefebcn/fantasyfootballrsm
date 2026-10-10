@@ -4,6 +4,7 @@ import { tintaLeggibile } from '../colore.js';
 import { applyTheme } from '../app.js';
 import { CONTATTO, LINGUE } from '../config.js';
 import * as AV from '../notifiche.js';
+import { VERSIONE } from '../versione.js';
 import * as diagnostica from '../diagnostica.js';
 import { scaricaMieiDati } from '../miei-dati.js';
 import { misure } from '../schermo.js';
@@ -136,7 +137,7 @@ export const impostazioni = {
       ${row('trash', 'Cancella il profilo', 'Via account, squadre, rose e formazioni. Non si torna indietro', 'elimina-profilo', 'danger')}`);
 
     return `<main class="a-body">${testa}${generale}${conto}
-      <p class="auth-foot">Versione 0.5 · motore ${S.rules().engineVersion}</p></main>`;
+      <p class="auth-foot">Versione ${VERSIONE} · motore ${S.rules().engineVersion}</p></main>`;
   },
 
   mount(root, ctx) {
@@ -334,7 +335,7 @@ export const avanzate = {
       ${row('calc', 'Misure dello schermo', 'Quanto occupa davvero l\'app su questo telefono, tacche comprese', 'schermo')}`);
 
     return `<main class="a-body">${look}${league}${judge}${data}
-      <p class="auth-foot">Versione 0.5 · motore ${S.rules().engineVersion}</p></main>`;
+      <p class="auth-foot">Versione ${VERSIONE} · motore ${S.rules().engineVersion}</p></main>`;
   },
   mount: (root, ctx) => impostazioni.mount(root, ctx),
 };

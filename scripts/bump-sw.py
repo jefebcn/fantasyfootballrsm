@@ -14,6 +14,9 @@ proprio nell'elenco di precache.
 import pathlib, re, sys
 
 SW = pathlib.Path(__file__).resolve().parent.parent / 'sw.js'
+# La stessa versione si legge nell'app, in fondo al menu e alle impostazioni.
+VERSIONE = pathlib.Path(__file__).resolve().parent.parent / 'src' / 'versione.js'
+RE_APP = re.compile(r"(export const VERSIONE = ')[0-9.]+(';)")
 RE = re.compile(r"(const VERSION = 'fcs-v)(\d+)\.(\d+)\.(\d+)(';)")
 
 
@@ -30,6 +33,9 @@ def main():
     if '--dry' in sys.argv:
         return 0
     SW.write_text(RE.sub(lambda x: f'{x.group(1)}{nuova}{x.group(5)}', testo, count=1), encoding='utf-8')
+    if VERSIONE.exists():
+        app = VERSIONE.read_text(encoding='utf-8')
+        VERSIONE.write_text(RE_APP.sub(lambda x: f'{x.group(1)}{nuova}{x.group(2)}', app, count=1), encoding='utf-8')
     return 0
 
 

@@ -1389,6 +1389,36 @@ reset role;
 select pg_temp.esige('nemmeno creando il profilo',
   (select reclutati = 0 and invitato_da is null from public.profiles where id = 'user_gio'));
 
+-- i premi: solo a chi li ha sbloccati, anche scrivendoli a mano
+select pg_temp.entra('user_dan');
+set role authenticated;
+update public.league_members set kit = kit || '{"finitura":"titano"}' where user_id = 'user_dan' and league_id = :'lega';
+update public.league_members set kit = kit || '{"finitura":"oro","personaggio":31}' where user_id = 'user_dan' and team_name = 'Dan Due';
+reset role;
+select pg_temp.esige('chi arriva da un invito ha la maglia biancazzurra',
+  (select kit ->> 'finitura' from public.league_members where user_id = 'user_dan' and league_id = :'lega') = 'titano');
+select pg_temp.esige('ma senza amici portati niente maglia d''oro e niente TITO d''oro',
+  (select kit ->> 'finitura' is null and kit ->> 'personaggio' is null from public.league_members where user_id = 'user_dan' and team_name = 'Dan Due'));
+select pg_temp.entra('user_eva');
+select public.join_league((select invite_code from public.leagues where id = :'lega'), 'Eva FC', '#8e44ad', 'EFC');
+set role authenticated;
+update public.league_members set kit = kit || '{"finitura":"titano"}' where user_id = 'user_eva';
+reset role;
+select pg_temp.esige('chi non e'' stato invitato non si mette la biancazzurra',
+  (select kit ->> 'finitura' is null from public.league_members where user_id = 'user_eva'));
+select pg_temp.entra('user_bea');
+set role authenticated;
+update public.league_members set kit = kit || '{"finitura":"oro"}' where user_id = 'user_bea' and league_id = :'lega';
+reset role;
+select pg_temp.esige('Bea, con due amici, si mette la maglia d''oro',
+  (select kit ->> 'finitura' from public.league_members where user_id = 'user_bea' and league_id = :'lega') = 'oro');
+select pg_temp.entra('user_bea');
+set role authenticated;
+update public.league_members set kit = kit || '{"personaggio":31}' where user_id = 'user_bea' and league_id = :'lega';
+reset role;
+select pg_temp.esige('ma TITO d''oro ne vuole tre',
+  (select kit ->> 'personaggio' is null from public.league_members where user_id = 'user_bea' and league_id = :'lega'));
+
 -- la classifica della settimana: solo squadra e numero, anche senza account
 select team_name as squadra_bea from public.league_members m join public.leagues l on l.id = m.league_id
  where m.user_id = 'user_bea' order by l.pubblica desc, m.created_at desc limit 1 \gset

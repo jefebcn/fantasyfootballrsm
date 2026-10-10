@@ -239,6 +239,8 @@ export function linkInvito(codice) {
 /** Il database conosce i Reclutatori? (la 023 e' applicata) */
 export const reclutatoriAttivi = () => !!prof && 'reclutati' in prof;
 export const mieiReclutati = () => (reclutatoriAttivi() ? prof.reclutati || 0 : 0);
+/** Arrivato dal link di un amico: sblocca il regalo di benvenuto. */
+export const sonoInvitato = () => reclutatoriAttivi() && !!prof.invitato_da;
 // Al primo accesso dopo il link: una volta, e poi si dimentica — tranne se
 // la rete cade o il database non ha ancora la 023, nel qual caso si riprova
 // alla prossima apertura (il «da» scade comunque dopo due settimane).

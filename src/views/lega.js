@@ -1,6 +1,7 @@
 import * as S from '../state.js';
-import { esc, icon, crest, roleChip, sec, plurale, badgeReclutatore, livelloReclutatore, LIVELLI_RECLUTATORE } from '../ui.js';
+import { esc, icon, crest, roleChip, sec, plurale, badgeReclutatore, livelloReclutatore } from '../ui.js';
 import { maglia, kitOf } from '../maglia.js';
+import { PREMI, sbloccato } from '../reclutatori.js';
 
 /**
  * Il riquadro dei Reclutatori (023), sotto il codice d'invito: quanti amici
@@ -9,13 +10,14 @@ import { maglia, kitOf } from '../maglia.js';
  */
 function reclutatore() {
   if (!S.reclutatoriAttivi()) return '';
-  const n = S.mieiReclutati(); const l = livelloReclutatore(n);
-  const prossimo = [...LIVELLI_RECLUTATORE].reverse().find((x) => x.da > n);
-  const manca = prossimo ? `${prossimo.da - n === 1 ? 'Ancora un amico' : `Ancora ${prossimo.da - n} amici`} per <b>${prossimo.nome}</b>.` : 'Sei al livello più alto.';
+  const n = S.mieiReclutati(); const inv = S.sonoInvitato(); const l = livelloReclutatore(n);
+  const prossimo = PREMI.find((p) => !sbloccato(p, n, inv));
+  const manca = prossimo ? (prossimo.amici - n === 1 ? 'Ancora un amico' : `Ancora ${prossimo.amici - n} amici`) + ` per <b>${prossimo.nome}</b>.` : 'Hai sbloccato tutto.';
   return `<div class="a-card recl-card">
     <div class="recl-testa">${l ? badgeReclutatore(n, { conNumero: true }) : `<span class="recl vuoto">${icon('userplus', 'ic sm')}Reclutatore</span>`}</div>
-    <p>${n ? `Hai portato <b>${n === 1 ? 'un amico' : `${n} amici`}</b> su Fantatitano.` : 'Porta un amico col tuo link: quando entra in una lega diventi <b>Reclutatore</b>, e il badge compare accanto alla tua squadra.'} ${manca}</p>
-    <p class="small muted">Ogni settimana chi ha portato più amici finisce nella storia di Fantatitano su Instagram, col nome della squadra.</p>
+    <p>${n ? `Hai portato <b>${n === 1 ? 'un amico' : `${n} amici`}</b> su Fantatitano.` : 'Porta un amico col tuo link: conta quando entra in una lega.'} ${manca}</p>
+    <ul class="premi-lista">${PREMI.map((p) => { const si = sbloccato(p, n, inv); return `<li class="${si ? 'si' : 'no'}">${icon(si ? 'check' : 'lock', 'ic')}<span><b>${p.nome}</b> · ${si ? 'sbloccata' : p.come}</span></li>`; }).join('')}</ul>
+    <p class="small muted">Solo da mostrare: nessun premio dà punti o crediti. La maglia e TITO d'oro si scelgono in La mia squadra.</p>
     <button class="a-btn" id="share-recl">${icon('share', 'ic sm')}Manda il tuo link</button>
   </div>`;
 }

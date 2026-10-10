@@ -69,6 +69,8 @@ export const avatarGrande = (p, club) =>
  *  l'inchiostro e, se serve, sposta il fondo quanto basta per arrivare a 4,5. */
 export const crest = (m, cls = '') => {
   const { fondo, inchiostro } = tintaLeggibile(m?.color);
+  // La cornice d'oro dei Reclutatori (5 amici portati, src/reclutatori.js)
+  if ((m?.reclutati || 0) >= 5) cls = `${cls} cornice`;
   return m?.crestUrl
     ? `<span class="crest foto ${cls}" style="background:${fondo}"><img src="${esc(m.crestUrl)}" alt=""></span>`
     : `<span class="crest ${cls}" style="background:${fondo};color:${inchiostro}">${esc(m.initials)}</span>`;

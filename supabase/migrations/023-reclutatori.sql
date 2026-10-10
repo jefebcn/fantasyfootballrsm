@@ -26,7 +26,8 @@
 --    mettersi «reclutati = 99». Lo cambiano solo le funzioni di questo file.
 --
 -- COSA SI VEDE, E A CHI:
---  - nel profilo di ognuno il numero di amici portati, e quindi il badge;
+--  - nel profilo di ognuno il numero di amici portati, e quindi il badge e i
+--    premi (solo estetici, vedi premi_reclutatore più sotto);
 --    chi ha invitato chi resta nel database e NON si mostra a nessuno;
 --  - reclutatori_settimana(): la classifica della settimana per la storia,
 --    leggibile anche senza account. Dà solo il NOME DELLA SQUADRA e il
@@ -99,6 +100,35 @@ revoke all on function public.reclutato_entra() from public, anon, authenticated
 drop trigger if exists reclutato_entra on public.league_members;
 create trigger reclutato_entra after insert on public.league_members
   for each row execute function public.reclutato_entra();
+
+
+-- I PREMI (Alex, 10/10: niente soldi, niente oggetti, niente vantaggi in
+-- classifica): solo cose da mostrare. Le soglie stanno anche in
+-- src/reclutatori.js; qui si fanno rispettare, così chi se le scrive a mano
+-- nella propria iscrizione se le vede togliere.
+--   maglia biancazzurra  (kit.finitura = 'titano')  arrivato da un invito, o 1 amico
+--   maglia d'oro         (kit.finitura = 'oro')     1 amico
+--   TITO d'oro           (kit.personaggio = 31)     3 amici
+--   cornice allo stemma                             5 amici (calcolata, non salvata)
+create or replace function public.premi_reclutatore() returns trigger
+language plpgsql as $$
+declare
+  n integer; invitato boolean;
+begin
+  if current_user not in ('anon', 'authenticated') then return new; end if;
+  select coalesce(p.reclutati, 0), p.invitato_da is not null into n, invitato
+    from public.profiles p where p.id = new.user_id;
+  n := coalesce(n, 0); invitato := coalesce(invitato, false);
+  if new.kit ->> 'finitura' = 'oro' and n < 1 then new.kit := new.kit - 'finitura'; end if;
+  if new.kit ->> 'finitura' = 'titano' and not (invitato or n >= 1) then new.kit := new.kit - 'finitura'; end if;
+  if new.kit ->> 'finitura' is not null and new.kit ->> 'finitura' not in ('oro', 'titano') then new.kit := new.kit - 'finitura'; end if;
+  if new.kit ->> 'personaggio' = '31' and n < 3 then new.kit := new.kit - 'personaggio'; end if;
+  return new;
+end $$;
+
+drop trigger if exists premi_reclutatore on public.league_members;
+create trigger premi_reclutatore before insert or update of kit on public.league_members
+  for each row execute function public.premi_reclutatore();
 
 
 -- La chiama l'app al primo accesso di chi è arrivato da un link con ?da=.

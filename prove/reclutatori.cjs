@@ -98,6 +98,11 @@ const conMock = (ctx, stato, { conferma = false, con023 = true } = {}) => ctx.ad
   await p.fill('#team', 'Borgo FC'); await p.click('#go-join'); await w(p, 1800);
   const dopo = (await db(p)).tables.profiles.find((x) => x.id === alex.id).reclutati;
   et(dopo === 1, `Bea entra nella lega: Alex ha un amico (${dopo})`);
+  // il regalo di benvenuto: a Bea la maglia biancazzurra
+  await p.evaluate(() => { location.hash = '#/lega'; }); await w(p, 900);
+  const benvenuto = await p.evaluate(() => [...document.querySelectorAll('.premi-lista li')].map((li) => `${li.className}:${li.innerText}`).join(' | '));
+  et(/si:Maglia biancazzurra/.test(benvenuto), `Bea, arrivata da un invito, ha la maglia biancazzurra (${benvenuto.slice(0, 60)}…)`);
+  et(/no:Maglia d'oro/.test(benvenuto), 'ma non quella d\'oro');
   const dbDopo = await db(p);
   await ctx.close();
 
@@ -125,6 +130,24 @@ const conMock = (ctx, stato, { conferma = false, con023 = true } = {}) => ctx.ad
     return (Math.max(a, c) + 0.05) / (Math.min(a, c) + 0.05);
   });
   et(contrasto >= 4.5, `il badge si legge (contrasto ${contrasto.toFixed(1)}:1)`);
+
+  // ---- 4b. i premi in La mia squadra: la maglia d'oro si sceglie, TITO d'oro no
+  await p.evaluate(() => { location.hash = '#/squadra'; }); await w(p, 1000);
+  const tito = await p.evaluate(() => document.querySelector('[data-pers="31"]')?.className || '');
+  et(/chiuso/.test(tito), `TITO d'oro c'è, col lucchetto (${tito || 'non c\'è'})`);
+  await p.click('[data-pers="31"]'); await w(p, 400);
+  const scelto31 = (await db(p)).tables.league_members.find((m) => m.user_id === alex.id).kit?.personaggio;
+  et(scelto31 !== 31, 'e toccarlo non lo mette in copertina');
+  await p.click('[data-act="maglia"]'); await w(p, 600);
+  const fin = await p.evaluate(() => [...document.querySelectorAll('[data-fin]')].map((b) => `${b.dataset.fin || 'unita'}:${b.classList.contains('chiuso') ? 'chiusa' : 'aperta'}`).join(' '));
+  et(/oro:aperta/.test(fin) && /titano:aperta/.test(fin), `con un amico la maglia d'oro e la biancazzurra sono aperte (${fin})`);
+  await p.click('[data-fin="oro"]'); await w(p, 300);
+  await p.screenshot({ path: `${USCITA}/reclutatori-maglia.png` }).catch(() => {});
+  await p.click('#mg-ok'); await w(p, 900);
+  const kit = (await db(p)).tables.league_members.find((m) => m.user_id === alex.id).kit || {};
+  et(kit.finitura === 'oro', `la maglia d'oro si salva (${JSON.stringify(kit)})`);
+  const inCopertina = await p.evaluate(() => !!document.querySelector('.sm-img .maglia.fin-oro'));
+  et(inCopertina, 'e si vede in copertina');
 
   // ---- 5. il proprio link non conta
   await p.goto(`${BASE}/?invito=${CODICE}&da=${alex.id}`, { waitUntil: 'load' }); await w(p, 2000);

@@ -21,7 +21,7 @@ export const scheda = {
   mount(root, ctx) {
     root.querySelector('#share')?.addEventListener('click', async () => {
       const me = S.me(); const n = S.currentMatchday(); const r = S.fixtureResult(S.myFixture(n, me.id)); const home = r.homeManagerId === me.id;
-      const text = `${me.teamName} ${home ? r.homeGoals : r.awayGoals}–${home ? r.awayGoals : r.homeGoals} ${S.managersById.get(home ? r.awayManagerId : r.homeManagerId).teamName} · giornata ${n} · ${fmt(home ? r.homeScore : r.awayScore)} fantapunti (Voto Titano) — ${location.origin}${location.pathname}`;
+      const text = `${me.teamName} ${home ? r.homeGoals : r.awayGoals}–${home ? r.awayGoals : r.homeGoals} ${S.managersById.get(home ? r.awayManagerId : r.homeManagerId).teamName} · giornata ${n} · ${fmt(home ? r.homeScore : r.awayScore)} fantapunti (Voto Titano) — ${S.linkInvito()}`;
       if (navigator.share) { try { await navigator.share({ title: 'Fantatitano', text }); } catch { /* annullato */ } }
       else window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank', 'noopener');
     });

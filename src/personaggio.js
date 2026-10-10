@@ -20,8 +20,11 @@
  * (media/tito-sorgenti/braccia.webp, ritagliato alla stessa altezza degli
  * altri).
  */
-const NUMERI = [30, 1, 6, 7, 8, 10, 11, 14, 16, 20, 21];
-const NOMI = { 30: 'TITO' };
+// 31 e' TITO d'oro: lo stesso TITO in oro (media/avatar/31.webp, fatto dal
+// 30), premio dei Reclutatori per chi porta 3 amici. Sta in elenco come gli
+// altri; chi non l'ha sbloccato lo vede col lucchetto.
+const NUMERI = [30, 31, 1, 6, 7, 8, 10, 11, 14, 16, 20, 21];
+const NOMI = { 30: 'TITO', 31: 'TITO d\'oro' };
 export const QUANTI = NUMERI.length;
 export const elenco = () => [...NUMERI];
 /** Il nome da leggere a voce (lettori di schermo): TITO ha un nome, gli altri no. */

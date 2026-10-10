@@ -163,6 +163,15 @@ export async function ensureProfile(user) {
   return must(await sb.from('profiles').upsert({ id: user.id, display_name: name }).select().single());
 }
 
+// ---------------------------------------------------------------- reclutatori (023)
+export async function registraInvito(da) { return must(await sb.rpc('registra_invito', { p_da: da })); }
+/** Quanti amici ha portato ognuno: { userId: n } */
+export async function reclutatiDi(userIds) {
+  if (!userIds.length) return {};
+  const righe = must(await sb.from('profiles').select('id, reclutati').in('id', userIds));
+  return Object.fromEntries(righe.map((r) => [r.id, r.reclutati || 0]));
+}
+
 // ---------------------------------------------------------------- leghe
 export async function myLeagues(userId) {
   const rows = must(await sb.from('league_members').select('role, league:leagues!league_members_league_id_fkey(id, name, short_name, invite_code, started, rules, created_at, created_by)').eq('user_id', userId));

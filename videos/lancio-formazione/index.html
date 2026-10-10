@@ -1,55 +1,838 @@
-<!doctype html>
-<html lang="en">
+<!DOCTYPE html>
+<html lang="it">
   <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=1920, height=1080" />
-    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=1080, height=1920">
+    <title>Lancio Fantatitano · la formazione</title>
+    <script src="assets/vendor/gsap.min.js"></script>
+    <!--
+      Versione 2 (nota di Alex dopo la prima consegna: "troppo tempo morto, deve essere un
+      continuo di animazioni, ganci; e' anche troppo spoglio, e' un'inserzione per Instagram").
+      Regola della v2: ogni mezzo secondo succede qualcosa, e niente sta mai fermo del tutto
+      (fondo con raggi e polvere oro, spinte lente della camera, giocatori che ondeggiano).
+
+      Un solo file, non sotto-composizioni: la corona dell'angolo, la linea oro, la pastiglia e
+      il telefono attraversano piu' scene con passaggi di testimone, e il timeline di una
+      sotto-composizione non puo' muovere elementi dell'altra. Tutto il movimento sta su un
+      timeline in tempo globale (secondi del video). Regia: BRIEF.md, STORYBOARD.md; look: frame.md.
+    -->
     <style>
-      * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-      }
-      html,
-      body {
-        margin: 0;
-        width: 1920px;
-        height: 1080px;
-        overflow: hidden;
-        background: #0a0a0a;
-      }
-      #root {
-        width: 100%;
-        height: 100%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-family: Inter, ui-sans-serif, system-ui, sans-serif;
-      }
-      #title {
-        color: #f4f4f5;
-        font-size: 72px;
-        font-weight: 600;
-        letter-spacing: -0.03em;
-      }
+      @font-face { font-family: "Lato"; font-weight: 700; font-style: normal; src: url("assets/font/lato-700-latin.woff2") format("woff2"); }
+      @font-face { font-family: "Lato"; font-weight: 900; font-style: normal; src: url("assets/font/lato-900-latin.woff2") format("woff2"); }
+      @font-face { font-family: "Lato"; font-weight: 900; font-style: italic; src: url("assets/font/lato-900i-latin.woff2") format("woff2"); }
+
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      html, body { margin: 0; width: 1080px; height: 1920px; overflow: hidden; background: #0D1733; }
+      #root { position: relative; width: 100%; height: 100%; overflow: hidden; background: #0D1733;
+        font-family: "Lato", sans-serif; color: #FFFFFF; }
+      .clip { position: absolute; inset: 0; }
+      .layer { position: absolute; inset: 0; }
+      .riga { position: absolute; left: 0; right: 0; text-align: center; white-space: nowrap;
+        font-family: "Lato"; font-weight: 900; font-style: italic; text-transform: uppercase; }
+      .lettera, .parola { display: inline-block; will-change: transform, opacity; }
+      .oro { color: #FFC94D; }
+      /* l'onda d'urto: un anello che si allarga dal punto dell'impatto */
+      .onda { position: absolute; width: 200px; height: 200px; margin: -100px 0 0 -100px; border-radius: 50%;
+        border: 8px solid #FFC94D; opacity: 0; will-change: transform, opacity; }
+      .onda.bianca { border-color: #FFFFFF; }
+      /* il riflesso che attraversa una pastiglia o una fascia */
+      .luce { position: absolute; top: -20%; bottom: -20%; left: 0; width: 45%;
+        background: linear-gradient(105deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.75) 50%, rgba(255, 255, 255, 0) 100%);
+        transform: translateX(-120%); will-change: transform; }
+
+      /* ---- fondo: blu notte, alone che respira, due fasci di luce da stadio, polvere d'oro */
+      #glow { position: absolute; left: -260px; top: 160px; width: 1600px; height: 1500px; border-radius: 50%;
+        background: radial-gradient(closest-side, #21397F 0%, rgba(33, 57, 127, 0.55) 45%, rgba(13, 23, 51, 0) 100%);
+        will-change: transform; }
+      .fascio { position: absolute; top: -200px; width: 420px; height: 2600px; transform-origin: 50% 0;
+        background: linear-gradient(180deg, rgba(255, 244, 214, 0.20) 0%, rgba(255, 244, 214, 0.06) 45%, rgba(255, 244, 214, 0) 75%);
+        filter: blur(18px); will-change: transform; }
+      #fascio-sx { left: -210px; }
+      #fascio-dx { left: 870px; }
+      #cerchio { position: absolute; left: 140px; top: 560px; width: 800px; height: 800px; border-radius: 50%;
+        border: 4px solid rgba(255, 255, 255, 0.05); will-change: transform; }
+      #cerchio::after { content: ""; position: absolute; left: -400px; right: -400px; top: 398px; height: 4px; background: rgba(255, 255, 255, 0.05); }
+      .granello { position: absolute; border-radius: 50%; will-change: transform; }
+
+      /* ---- 01 · il taglio */
+      #s1-cam { position: absolute; inset: 0; will-change: transform; }
+      #s1-k1, #s1-k2 { top: 734px; font-size: 96px; line-height: 1; }
+      #s1-k1 { color: #4FA5DE; }
+      #s1-k2 { color: #FFC94D; font-size: 110px; top: 726px; }
+      #s1-serie { position: absolute; inset: 0; will-change: transform; }
+      .s1-meta { position: absolute; left: 0; right: 0; top: 853px; height: 259px; will-change: transform, opacity; }
+      .s1-meta .riga { top: 0; font-size: 260px; line-height: 1; }
+      #s1-su { clip-path: polygon(0 0, 100% 0, 100% 27%, 0 71%); }
+      #s1-giu { clip-path: polygon(0 71%, 100% 27%, 100% 100%, 0 100%); }
+
+      /* la linea oro: la scia della spada */
+      #oro { position: absolute; left: -50px; top: 971px; width: 1180px; height: 18px; border-radius: 9px;
+        background: #FFC94D; transform-origin: 0 50%; will-change: transform, opacity; }
+      #oro::after { content: ""; position: absolute; left: 6px; right: 6px; top: 7px; height: 4px; border-radius: 2px; background: #FFF4D6; }
+
+      /* la spada che taglia SERIE A */
+      .spada { position: absolute; left: 0; top: 0; width: 1140px; height: 180px; transform-origin: 50% 50%; will-change: transform, opacity;
+        filter: drop-shadow(0 0 16px rgba(255, 201, 77, 0.7)); }
+      .spada svg { width: 100%; height: 100%; display: block; }
+      #lampo { position: absolute; left: 390px; top: 767px; width: 300px; height: 300px; border-radius: 50%;
+        background: radial-gradient(closest-side, #FFF4D6 0%, rgba(255, 201, 77, 0.6) 40%, rgba(255, 201, 77, 0) 100%); will-change: transform, opacity; }
+
+      /* ---- 02 · il lancio */
+      #s2-cam { position: absolute; inset: 0; transform-origin: 540px 900px; will-change: transform, opacity; }
+      #s2-testa { position: absolute; inset: 0; transform-origin: 540px 880px; will-change: transform; }
+      #s2-a1, #s2-a2 { font-size: 150px; line-height: 1; }
+      #s2-a1 { top: 720px; }
+      #s2-a2 { top: 862px; }
+      #s2-sotto { position: absolute; left: 76px; top: 1022px; width: 928px; height: 18px; border-radius: 9px; background: #FFC94D;
+        transform-origin: 0 50%; will-change: transform; }
+      #s2-b1 { top: 640px; font-size: 112px; line-height: 1; will-change: transform, opacity; }
+      #s2-banda { position: absolute; left: 62px; top: 774px; width: 956px; height: 150px; border-radius: 20px; background: #4FA5DE;
+        transform: rotate(-2deg); transform-origin: 0 50%; overflow: hidden; will-change: transform;
+        box-shadow: 0 18px 50px rgba(79, 165, 222, 0.35); }
+      #s2-b2 { top: 19px; font-size: 112px; line-height: 1; color: #0D1733; }
+      #s2-torri { position: absolute; left: 0; top: 1060px; width: 1080px; height: 580px; will-change: transform;
+        filter: drop-shadow(0 -2px 0 rgba(79, 165, 222, 0.75)) drop-shadow(0 0 22px rgba(79, 165, 222, 0.35)); }
+      #s2-torri svg { width: 100%; height: 100%; display: block; }
+      .gioc { position: absolute; will-change: transform, opacity; filter: drop-shadow(0 18px 30px rgba(0, 0, 0, 0.45)); }
+      .gioc img { display: block; width: 100%; height: 100%; }
+      .specchio img { transform: scaleX(-1); }
+      #s2-gsx { left: -24px; top: 1090px; width: 366px; height: 420px; }
+      #s2-gdx { left: 742px; top: 1078px; width: 358px; height: 440px; }
+
+      /* pastiglie */
+      .pill { position: relative; display: inline-block; overflow: hidden; font-family: "Lato"; font-weight: 900; font-style: italic;
+        font-size: 64px; line-height: 1; border-radius: 999px; letter-spacing: 0.02em; }
+      #pill-ft-box { position: absolute; left: 0; right: 0; top: 905px; text-align: center; will-change: transform; }
+      #pill-ft { background: #3F6ADD; color: #FFFFFF; padding: 22px 44px; box-shadow: 0 14px 40px rgba(63, 106, 221, 0.45); }
+
+      /* ---- 03 · la scritta sopra il telefono */
+      #s3-r1, #s3-r2 { font-size: 120px; line-height: 1; }
+      #s3-r1 { top: 410px; }
+      #s3-r2 { top: 524px; }
+      #s3-11 { display: inline-block; font-size: 150px; line-height: 0.8; will-change: transform; }
+
+      /* il telefono: #phone-mov lo porta dentro e lo fa ondeggiare, #phone fa gli ingressi nello schermo */
+      #phone-mov { position: absolute; inset: 0; will-change: transform; }
+      #phone { position: absolute; left: 230px; top: 700px; width: 620px; border-radius: 64px; background: #05080F;
+        padding: 14px; box-shadow: 0 40px 80px rgba(0, 0, 0, 0.45); transform-origin: 0 0; will-change: transform, filter; }
+      #screen { position: relative; width: 592px; height: 1281px; border-radius: 50px; overflow: hidden; background: #0D1733; }
+      #screen img.scr { position: absolute; left: 0; top: 0; width: 592px; height: 1281px; display: block; will-change: transform, opacity; }
+      .slotwin { position: absolute; overflow: hidden; will-change: transform; transform-origin: 50% 45%; }
+      .slotwin img { position: absolute; width: 592px; height: 1281px; display: block; }
+      .tocco { position: absolute; border-radius: 50%; background: rgba(255, 255, 255, 0.3);
+        box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.55); will-change: transform, opacity; }
+      #press { position: absolute; left: 24px; top: 985px; width: 544px; height: 73px; border-radius: 37px; background: #0D1733; }
+      /* le scintille quando un giocatore entra in campo (coordinate dello schermo del telefono) */
+      .stella { position: absolute; width: 16px; height: 16px; margin: -8px 0 0 -8px; background: #FFC94D;
+        clip-path: polygon(50% 0, 62% 38%, 100% 50%, 62% 62%, 50% 100%, 38% 62%, 0 50%, 38% 38%); will-change: transform, opacity; }
+      .stella.bianca { background: #FFF4D6; }
+
+      /* ---- 04 · il contatore dei titolari e la pioggia d'oro a campo pieno */
+      #conta { position: absolute; left: 0; right: 0; top: 1492px; text-align: center; will-change: transform, opacity; }
+      #conta-box { display: inline-flex; align-items: center; gap: 18px; padding: 8px 32px 8px 28px; border-radius: 999px;
+        background: rgba(13, 23, 51, 0.94); border: 4px solid #FFC94D; box-shadow: 0 16px 40px rgba(0, 0, 0, 0.45);
+        font-family: "Lato"; font-weight: 900; font-style: italic; }
+      #conta-eti { font-size: 32px; letter-spacing: 0.06em; color: #4FA5DE; }
+      #conta-num { position: relative; display: inline-block; width: 62px; height: 56px; font-size: 56px; line-height: 56px; text-align: right;
+        font-variant-numeric: tabular-nums; }
+      #conta-num span { position: absolute; right: 0; top: 0; opacity: 0; }
+      #conta-tot { font-size: 56px; line-height: 56px; color: #FFC94D; }
+      #pioggia { position: absolute; inset: 0; }
+
+      /* ---- 05 · salvata (sopra il telefono) */
+      #s5-cam { position: absolute; inset: 0; transform-origin: 540px 1000px; will-change: transform; }
+      #s5-check { position: absolute; left: 470px; top: 821px; width: 140px; height: 140px; border-radius: 50%; background: #FFC94D;
+        display: grid; place-items: center; will-change: transform; box-shadow: 0 0 40px rgba(255, 201, 77, 0.55); }
+      #s5-check svg { width: 88px; height: 88px; }
+      #s5-r1, #s5-r2 { font-size: 120px; line-height: 1; }
+      #s5-r1 { top: 1004px; }
+      #s5-r2 { top: 1118px; }
+      #coriandoli { position: absolute; inset: 0; }
+      .carta { position: absolute; left: 540px; top: 1359px; width: 14px; height: 22px; margin: -11px 0 0 -7px; border-radius: 3px;
+        will-change: transform, opacity; }
+
+      /* ---- la sfida: due giocatori faccia a faccia */
+      #vs-cam { position: absolute; inset: 0; transform-origin: 540px 1000px; will-change: transform, opacity; }
+      .vs-pannello { position: absolute; top: 620px; width: 760px; height: 1000px; transform: skewX(-12deg); will-change: transform; }
+      #vs-p1 { left: -240px; background: linear-gradient(90deg, rgba(63, 106, 221, 0) 0%, rgba(63, 106, 221, 0.55) 100%); }
+      #vs-p2 { left: 560px; background: linear-gradient(270deg, rgba(79, 165, 222, 0) 0%, rgba(79, 165, 222, 0.5) 100%); }
+      #vs-crepa { position: absolute; left: 536px; top: 600px; width: 8px; height: 1040px; background: #FFF4D6; transform: skewX(-12deg);
+        box-shadow: 0 0 30px rgba(255, 244, 214, 0.9); transform-origin: 50% 50%; will-change: transform, opacity; }
+      #vs-g1 { left: 36px; top: 800px; width: 308px; height: 560px; }
+      #vs-g2 { left: 772px; top: 760px; width: 271px; height: 600px; }
+      #vs-badge { position: absolute; left: 425px; top: 945px; width: 230px; height: 230px; border-radius: 50%; background: #FFC94D;
+        display: grid; place-items: center; box-shadow: 0 0 0 10px #0D1733, 0 0 60px rgba(255, 201, 77, 0.65); will-change: transform; }
+      #vs-badge span { font-family: "Lato"; font-weight: 900; font-style: italic; font-size: 120px; line-height: 1; color: #0D1733; margin-left: -6px; }
+      #vs-r1, #vs-r2 { font-size: 120px; line-height: 1; }
+      #vs-r1 { top: 340px; }
+      #vs-r2 { top: 456px; }
+
+      /* ---- 06 · marchio e sito */
+      #s6-cam { position: absolute; inset: 0; transform-origin: 540px 960px; will-change: transform; }
+      #s6-raggi { position: absolute; left: -260px; top: -164px; width: 1600px; height: 1600px; border-radius: 50%;
+        background: repeating-conic-gradient(from 0deg, rgba(255, 201, 77, 0.16) 0deg 7deg, rgba(255, 201, 77, 0) 7deg 18deg, rgba(79, 165, 222, 0.12) 18deg 24deg, rgba(79, 165, 222, 0) 24deg 36deg);
+        -webkit-mask-image: radial-gradient(closest-side, #000 0%, rgba(0, 0, 0, 0.6) 40%, rgba(0, 0, 0, 0) 100%);
+        mask-image: radial-gradient(closest-side, #000 0%, rgba(0, 0, 0, 0.6) 40%, rgba(0, 0, 0, 0) 100%);
+        will-change: transform, opacity; }
+      #s6-g1 { left: -10px; top: 440px; width: 271px; height: 330px; }
+      #s6-g2 { left: 150px; top: 520px; width: 306px; height: 330px; }
+      #s6-g3 { left: 628px; top: 515px; width: 307px; height: 340px; }
+      #s6-g4 { left: 790px; top: 400px; width: 306px; height: 420px; }
+      #s6-nome { top: 864px; font-size: 146px; line-height: 1; }
+      #s6-eti { top: 1080px; font-size: 54px; line-height: 1; letter-spacing: 0.04em; color: #4FA5DE; }
+      #s6-sito-box { position: absolute; left: 0; right: 0; top: 1177px; text-align: center; will-change: transform; }
+      #s6-sito { background: #FFC94D; color: #0D1733; padding: 26px 56px; box-shadow: 0 16px 50px rgba(255, 201, 77, 0.4); }
+      #s6-freccia { position: absolute; left: 495px; top: 1336px; width: 90px; height: 120px; will-change: transform, opacity; }
+
+      /* corona: piccola nell'angolo, grande al centro nella scena 6 (posta nella posizione finale) */
+      #corona { position: absolute; left: 360px; top: 480px; width: 360px; height: auto; transform-origin: 50% 50%; will-change: transform;
+        filter: drop-shadow(0 0 24px rgba(255, 255, 255, 0.25)); }
+
+      /* il lampo bianco dei passaggi */
+      #flash { position: absolute; inset: 0; background: #FFF4D6; opacity: 0; will-change: opacity; }
     </style>
   </head>
   <body>
-    <div
-      id="root"
-      data-composition-id="main"
-      data-start="0"
-      data-duration="10"
-      data-width="1920"
-      data-height="1080"
-    >
-      <h1 id="title" class="clip" data-start="0" data-duration="10" data-track-index="0">Title</h1>
+    <div data-hf-id="hf-wtrm" id="root" data-composition-id="main" data-start="0" data-width="1080" data-height="1920" data-duration="20">
+
+      <!-- fondo: vivo per tutto il video -->
+      <div data-hf-id="hf-qhl0" id="fondo" class="clip" data-start="0" data-duration="20" data-track-index="0">
+        <div data-hf-id="hf-27c6" id="glow"></div>
+        <div id="cerchio"></div>
+        <div id="fascio-sx" class="fascio" data-layout-allow-overflow></div>
+        <div id="fascio-dx" class="fascio" data-layout-allow-overflow></div>
+        <div id="polvere" class="layer"></div>
+      </div>
+
+      <!-- 01 · il taglio -->
+      <section data-hf-id="hf-e16u" id="scena-01" class="clip" data-start="0" data-duration="2.15" data-track-index="1">
+        <div data-hf-id="hf-d2kf" id="s1-cam">
+          <div data-hf-id="hf-2512" id="s1-k1" class="riga">FANTACALCIO?</div>
+          <div id="s1-serie">
+            <div data-hf-id="hf-qo7h" id="s1-su" class="s1-meta"><div data-hf-id="hf-vari" class="riga">SERIE A</div></div>
+            <div data-hf-id="hf-qpgq" id="s1-giu" class="s1-meta"><div data-hf-id="hf-pici" class="riga">SERIE A</div></div>
+          </div>
+          <div data-hf-id="hf-a62f" id="s1-k2" class="riga">NON SOLO</div>
+          <div id="s1-onda" class="onda" style="left: 540px; top: 781px;"></div>
+        </div>
+      </section>
+
+      <!-- la linea oro: la scia della spada -->
+      <div data-hf-id="hf-hgd8" id="oro-clip" class="clip" data-start="0.9" data-duration="1.25" data-track-index="2">
+        <div data-hf-id="hf-949e" id="oro" data-layout-allow-overflow=""></div>
+      </div>
+
+      <!-- la spada: attraversa lo schermo e taglia SERIE A -->
+      <div id="spada-clip" class="clip" data-start="0.85" data-duration="0.5" data-track-index="7">
+        <div id="lampo"></div>
+        <div id="spada-g2" class="spada" data-layout-allow-overflow><svg viewBox="-6 -6 772 132" aria-hidden="true">
+            <circle cx="30" cy="60" r="19" fill="#FFC94D" /><circle cx="30" cy="60" r="7" fill="#0D1733" />
+            <rect x="44" y="47" width="108" height="26" rx="11" fill="#21397F" />
+            <path d="M62 47 L74 73 M84 47 L96 73 M106 47 L118 73 M128 47 L140 73" stroke="#0D1733" stroke-width="5" />
+            <rect x="150" y="8" width="28" height="104" rx="12" fill="#FFC94D" /><circle cx="164" cy="60" r="8" fill="#0D1733" />
+            <path d="M178 42 L690 47 L760 60 L690 73 L178 78 Z" fill="#FFF4D6" stroke="#0D1733" stroke-width="6" stroke-linejoin="round" paint-order="stroke" />
+            <path d="M178 42 L690 47 L760 60 L178 60 Z" fill="#FFFFFF" />
+            <path d="M196 60 L652 60" stroke="#21397F" stroke-opacity="0.35" stroke-width="4" stroke-linecap="round" />
+          </svg></div>
+        <div id="spada-g1" class="spada" data-layout-allow-overflow><svg viewBox="-6 -6 772 132" aria-hidden="true">
+            <circle cx="30" cy="60" r="19" fill="#FFC94D" /><circle cx="30" cy="60" r="7" fill="#0D1733" />
+            <rect x="44" y="47" width="108" height="26" rx="11" fill="#21397F" />
+            <path d="M62 47 L74 73 M84 47 L96 73 M106 47 L118 73 M128 47 L140 73" stroke="#0D1733" stroke-width="5" />
+            <rect x="150" y="8" width="28" height="104" rx="12" fill="#FFC94D" /><circle cx="164" cy="60" r="8" fill="#0D1733" />
+            <path d="M178 42 L690 47 L760 60 L690 73 L178 78 Z" fill="#FFF4D6" stroke="#0D1733" stroke-width="6" stroke-linejoin="round" paint-order="stroke" />
+            <path d="M178 42 L690 47 L760 60 L178 60 Z" fill="#FFFFFF" />
+            <path d="M196 60 L652 60" stroke="#21397F" stroke-opacity="0.35" stroke-width="4" stroke-linecap="round" />
+          </svg></div>
+        <div id="spada" class="spada" data-layout-allow-overflow><svg viewBox="-6 -6 772 132" aria-hidden="true">
+            <circle cx="30" cy="60" r="19" fill="#FFC94D" /><circle cx="30" cy="60" r="7" fill="#0D1733" />
+            <rect x="44" y="47" width="108" height="26" rx="11" fill="#21397F" />
+            <path d="M62 47 L74 73 M84 47 L96 73 M106 47 L118 73 M128 47 L140 73" stroke="#0D1733" stroke-width="5" />
+            <rect x="150" y="8" width="28" height="104" rx="12" fill="#FFC94D" /><circle cx="164" cy="60" r="8" fill="#0D1733" />
+            <path d="M178 42 L690 47 L760 60 L690 73 L178 78 Z" fill="#FFF4D6" stroke="#0D1733" stroke-width="6" stroke-linejoin="round" paint-order="stroke" />
+            <path d="M178 42 L690 47 L760 60 L178 60 Z" fill="#FFFFFF" />
+            <path d="M196 60 L652 60" stroke="#21397F" stroke-opacity="0.35" stroke-width="4" stroke-linecap="round" />
+          </svg></div>
+      </div>
+
+      <!-- 02 · il lancio: parole che sbattono sul battito, le Tre Torri, due giocatori -->
+      <section data-hf-id="hf-puho" id="scena-02" class="clip" data-start="1.95" data-duration="2.85" data-track-index="1">
+        <div id="s2-cam">
+          <div id="s2-torri" data-layout-allow-overflow><svg id="torri-svg" viewBox="0 -60 1080 580" aria-hidden="true">
+          <defs>
+            <linearGradient id="torri-g" gradientUnits="userSpaceOnUse" x1="0" y1="-60" x2="0" y2="520">
+              <stop offset="0" stop-color="#3558B8"/><stop offset="0.5" stop-color="#21397F"/><stop offset="1" stop-color="#0D1733"/>
+            </linearGradient>
+          </defs>
+          <g fill="url(#torri-g)">
+            <path d="M0 520 L0 410 C80 392 160 330 205 266 L292 252 C335 264 372 292 410 298 C452 290 498 232 526 206 L606 200 C642 224 682 262 722 268 C760 266 790 262 800 258 L862 256 C922 300 1002 370 1080 410 L1080 520 Z"/><rect x="219.0" y="158" width="62" height="144"/><rect x="219.0" y="146" width="9" height="13"/><rect x="236.7" y="146" width="9" height="13"/><rect x="254.3" y="146" width="9" height="13"/><rect x="272.0" y="146" width="9" height="13"/><rect x="237.0" y="114" width="26" height="46"/><rect x="237.0" y="104" width="7" height="11"/><rect x="256.0" y="104" width="7" height="11"/><rect x="248.5" y="70" width="3" height="34"/><path d="M251.5 70 C 272 68 276 82 251.5 90 Z"/><rect x="533.0" y="90" width="70" height="158"/><rect x="533.0" y="78" width="9" height="13"/><rect x="553.3" y="78" width="9" height="13"/><rect x="573.7" y="78" width="9" height="13"/><rect x="594.0" y="78" width="9" height="13"/><rect x="553.0" y="44" width="30" height="48"/><rect x="553.0" y="34" width="7" height="11"/><rect x="576.0" y="34" width="7" height="11"/><rect x="566.5" y="0" width="3" height="34"/><path d="M569.5 0 C 590 -2 594 12 569.5 20 Z"/><rect x="810.0" y="182" width="44" height="120"/><rect x="810.0" y="170" width="9" height="13"/><rect x="827.5" y="170" width="9" height="13"/><rect x="845.0" y="170" width="9" height="13"/><rect x="822.0" y="150" width="20" height="34"/><rect x="822.0" y="140" width="7" height="11"/><rect x="835.0" y="140" width="7" height="11"/><rect x="830.5" y="106" width="3" height="34"/><path d="M833.5 106 C 854 104 858 118 833.5 126 Z"/>
+          </g>
+          <g fill="#FFC94D" opacity="0.9"><rect x="240" y="200" width="6" height="10" rx="2"/><rect x="256" y="226" width="6" height="10" rx="2"/><rect x="560" y="140" width="6" height="10" rx="2"/><rect x="576" y="170" width="6" height="10" rx="2"/><rect x="828" y="214" width="6" height="10" rx="2"/></g>
+        </svg></div>
+          <div id="s2-gsx" class="gioc" data-layout-allow-overflow><img src="assets/giocatori/146.webp" alt=""></div>
+          <div id="s2-gdx" class="gioc" data-layout-allow-overflow><img src="assets/giocatori/139.webp" alt=""></div>
+          <div id="s2-testa">
+            <div data-hf-id="hf-eyrz" id="s2-a1" class="riga"><span id="s2-w1" class="parola">ARRIVA</span> <span id="s2-w2" class="parola">IL</span></div>
+            <div data-hf-id="hf-plvh" id="s2-a2" class="riga" data-lettere>FANTACALCIO</div>
+            <div id="s2-sotto"></div>
+          </div>
+          <div data-hf-id="hf-g8w2" id="s2-b1" class="riga">DEL CAMPIONATO</div>
+          <div id="s2-banda"><div data-hf-id="hf-wm7g" id="s2-b2" class="riga" data-lettere>SAMMARINESE</div><div id="s2-luce" class="luce"></div></div>
+        </div>
+      </section>
+
+      <!-- la pastiglia FANTATITANO: nasce dove il titolo si chiude, sale sopra il telefono -->
+      <div data-hf-id="hf-cu0c" id="pill-clip" class="clip" data-start="4.45" data-duration="2.3" data-track-index="3">
+        <div id="pill-onda" class="onda bianca" style="left: 540px; top: 960px;"></div>
+        <div data-hf-id="hf-4ztb" id="pill-ft-box"><span data-hf-id="hf-pi03" id="pill-ft" class="pill">FANTATITANO<span id="pill-luce" class="luce"></span></span></div>
+      </div>
+
+      <!-- 03 · la scritta sopra il telefono -->
+      <section data-hf-id="hf-idz3" id="scena-03" class="clip" data-start="5.0" data-duration="1.75" data-track-index="1">
+        <div data-hf-id="hf-hf4g" id="s3-r1" class="riga">SCHIERA</div>
+        <div data-hf-id="hf-ebio" id="s3-r2" class="riga">I TUOI <span id="s3-11" class="oro">11</span></div>
+        <div id="s3-onda" class="onda" style="left: 700px; top: 584px;"></div>
+      </section>
+
+      <!-- il telefono: scene 3, 4, 5 -->
+      <div data-hf-id="hf-6y8o" id="phone-clip" class="clip" data-start="4.75" data-duration="8.35" data-track-index="4">
+        <div id="phone-mov">
+          <div data-hf-id="hf-4w9o" id="phone" data-layout-allow-overflow="">
+            <div data-hf-id="hf-ccvt" id="screen">
+              <img data-hf-id="hf-hgao" id="scr-01" class="scr" src="assets/app/01-campo-vuoto.png" alt="">
+              <img data-hf-id="hf-1sip" id="scr-02" class="scr" src="assets/app/02-elenco-portieri.png" alt="">
+              <img data-hf-id="hf-x4sd" id="scr-03" class="scr" src="assets/app/03-campo-portiere.png" alt="">
+              <div data-hf-id="hf-1eyg" id="slots"></div>
+              <div id="stelle"></div>
+              <img data-hf-id="hf-3u67" id="scr-05" class="scr" src="assets/app/05-conferma.png" alt="">
+              <div data-hf-id="hf-2hpu" id="press"></div>
+              <div data-hf-id="hf-lmzs" id="tap-modulo" class="tocco"></div>
+              <div data-hf-id="hf-ioc0" id="tap-piu" class="tocco"></div>
+              <div data-hf-id="hf-gtch" id="tap-nome" class="tocco"></div>
+              <div data-hf-id="hf-odyv" id="tap-conferma" class="tocco"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 04 · il contatore dei titolari, e la pioggia d'oro a campo pieno -->
+      <div id="conta-clip" class="clip" data-start="7.7" data-duration="3.2" data-track-index="8">
+        <div id="pioggia"></div>
+        <div id="conta"><span id="conta-box"><span id="conta-eti">TITOLARI</span><span id="conta-num"></span><span id="conta-tot">/11</span></span></div>
+      </div>
+
+      <!-- 05 · salvata (sopra il telefono) -->
+      <section data-hf-id="hf-hdvf" id="scena-05" class="clip" data-start="10.95" data-duration="2.15" data-track-index="5">
+        <div id="coriandoli"></div>
+        <div id="s5-cam">
+          <div data-hf-id="hf-ism6" id="s5-check">
+            <svg data-hf-id="hf-ulu9" viewBox="0 0 24 24"><path data-hf-id="hf-t6yg" d="M5 12.5l4.2 4.2L19 7" fill="none" stroke="#0D1733" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round" /></svg>
+          </div>
+          <div id="s5-onda" class="onda" style="left: 540px; top: 891px;"></div>
+          <div data-hf-id="hf-zm8p" id="s5-r1" class="riga" data-lettere>FORMAZIONE</div>
+          <div data-hf-id="hf-ass0" id="s5-r2" class="riga" data-lettere>SALVATA</div>
+        </div>
+      </section>
+
+      <!-- la sfida -->
+      <section id="scena-vs" class="clip" data-start="12.95" data-duration="2.15" data-track-index="9">
+        <div id="vs-cam">
+          <div id="vs-p1" class="vs-pannello" data-layout-allow-overflow></div>
+          <div id="vs-p2" class="vs-pannello" data-layout-allow-overflow></div>
+          <div id="vs-crepa"></div>
+          <div id="vs-g1" class="gioc" data-layout-allow-overflow><img src="assets/giocatori/111.webp" alt=""></div>
+          <div id="vs-g2" class="gioc" data-layout-allow-overflow><img src="assets/giocatori/202.webp" alt=""></div>
+          <div id="vs-badge"><span>VS</span></div>
+          <div id="vs-onda" class="onda" style="left: 540px; top: 1060px;"></div>
+          <div id="vs-r1" class="riga">SFIDA</div>
+          <div id="vs-r2" class="riga">I TUOI <span class="oro">AMICI</span></div>
+        </div>
+      </section>
+
+      <!-- 06 · marchio e sito -->
+      <section data-hf-id="hf-pasn" id="scena-06" class="clip" data-start="14.95" data-duration="5.05" data-track-index="1">
+        <div id="s6-cam">
+          <div id="s6-raggi" data-layout-allow-overflow></div>
+          <div id="s6-g1" class="gioc" data-layout-allow-overflow><img src="assets/giocatori/153.webp" alt=""></div>
+          <div id="s6-g2" class="gioc" data-layout-allow-overflow><img src="assets/giocatori/132.webp" alt=""></div>
+          <div id="s6-g3" class="gioc specchio" data-layout-allow-overflow><img src="assets/giocatori/181.webp" alt=""></div>
+          <div id="s6-g4" class="gioc specchio" data-layout-allow-overflow><img src="assets/giocatori/104.webp" alt=""></div>
+          <div data-hf-id="hf-bdad" id="s6-nome" class="riga" data-lettere>FANTATITANO</div>
+          <div data-hf-id="hf-es7i" id="s6-eti" class="riga">GIOCA GRATIS SU</div>
+          <div id="s6-onda" class="onda" style="left: 540px; top: 1235px;"></div>
+          <div data-hf-id="hf-d29w" id="s6-sito-box"><span data-hf-id="hf-ppjr" id="s6-sito" class="pill">fantatitano.site<span id="s6-luce" class="luce"></span></span></div>
+          <svg id="s6-freccia" viewBox="0 0 90 120" aria-hidden="true">
+            <path d="M12 18 L45 50 L78 18" fill="none" stroke="#FFC94D" stroke-width="13" stroke-linecap="round" stroke-linejoin="round" />
+            <path d="M12 64 L45 96 L78 64" fill="none" stroke="#FFC94D" stroke-width="13" stroke-linecap="round" stroke-linejoin="round" opacity="0.55" />
+          </svg>
+        </div>
+      </section>
+
+      <!-- la corona: cornice nell'angolo, poi il marchio -->
+      <div data-hf-id="hf-k6vz" id="corona-clip" class="clip" data-start="0" data-duration="20" data-track-index="6">
+        <img data-hf-id="hf-iq68" id="corona" src="assets/brand/corona-bianca.png" alt="">
+      </div>
+
+      <!-- il lampo dei passaggi -->
+      <div id="flash-clip" class="clip" data-start="0" data-duration="20" data-track-index="14">
+        <div id="flash"></div>
+      </div>
+
+      <!-- suono -->
+<audio id="musica" src="assets/audio/musica.wav" data-start="0" data-duration="20" data-track-index="10" data-volume="0.8"></audio>
+      <audio id="sfx-fendente-01" src="assets/audio/sfx-fendente.wav" data-start="0.8" data-duration="0.8" data-track-index="11" data-volume="1"></audio>
+      <audio id="sfx-colpo-01" src="assets/audio/sfx-colpo.wav" data-start="1.2" data-duration="0.45" data-track-index="12" data-volume="1"></audio>
+      <audio id="sfx-soffio-01" src="assets/audio/sfx-soffio.wav" data-start="1.55" data-duration="0.4" data-track-index="13" data-volume="0.9"></audio>
+      <audio id="sfx-colpo-02" src="assets/audio/sfx-colpo.wav" data-start="2" data-duration="0.45" data-track-index="11" data-volume="0.55"></audio>
+      <audio id="sfx-pop-01" src="assets/audio/sfx-pop.wav" data-start="2.25" data-duration="0.1" data-track-index="12" data-volume="0.7"></audio>
+      <audio id="sfx-colpo-03" src="assets/audio/sfx-colpo.wav" data-start="2.76" data-duration="0.45" data-track-index="11" data-volume="1"></audio>
+      <audio id="sfx-soffio-02" src="assets/audio/sfx-soffio.wav" data-start="2.98" data-duration="0.4" data-track-index="12" data-volume="0.8"></audio>
+      <audio id="sfx-colpo-04" src="assets/audio/sfx-colpo.wav" data-start="3.8" data-duration="0.45" data-track-index="11" data-volume="0.9"></audio>
+      <audio id="sfx-soffio-03" src="assets/audio/sfx-soffio.wav" data-start="4.1" data-duration="0.4" data-track-index="12" data-volume="0.8"></audio>
+      <audio id="sfx-soffio-04" src="assets/audio/sfx-soffio.wav" data-start="4.52" data-duration="0.4" data-track-index="11" data-volume="0.7"></audio>
+      <audio id="sfx-pop-02" src="assets/audio/sfx-pop.wav" data-start="4.55" data-duration="0.1" data-track-index="12" data-volume="0.8"></audio>
+      <audio id="sfx-colpo-05" src="assets/audio/sfx-colpo.wav" data-start="5.15" data-duration="0.45" data-track-index="11" data-volume="0.6"></audio>
+      <audio id="sfx-colpo-06" src="assets/audio/sfx-colpo.wav" data-start="5.4" data-duration="0.45" data-track-index="12" data-volume="0.6"></audio>
+      <audio id="sfx-tick-01" src="assets/audio/sfx-tick.wav" data-start="6" data-duration="0.03" data-track-index="11" data-volume="1"></audio>
+      <audio id="sfx-soffio-05" src="assets/audio/sfx-soffio.wav" data-start="6.12" data-duration="0.4" data-track-index="11" data-volume="0.8"></audio>
+      <audio id="sfx-tick-02" src="assets/audio/sfx-tick.wav" data-start="6.9" data-duration="0.03" data-track-index="11" data-volume="1"></audio>
+      <audio id="sfx-pop-03" src="assets/audio/sfx-pop.wav" data-start="7.15" data-duration="0.1" data-track-index="11" data-volume="0.6"></audio>
+      <audio id="sfx-tick-03" src="assets/audio/sfx-tick.wav" data-start="7.42" data-duration="0.03" data-track-index="11" data-volume="1"></audio>
+      <audio id="sfx-pop-04" src="assets/audio/sfx-pop.wav" data-start="7.72" data-duration="0.1" data-track-index="11" data-volume="0.5"></audio>
+      <audio id="sfx-pop-05" src="assets/audio/sfx-pop.wav" data-start="8" data-duration="0.1" data-track-index="11" data-volume="0.5"></audio>
+      <audio id="sfx-pop-06" src="assets/audio/sfx-pop.wav" data-start="8.25" data-duration="0.1" data-track-index="11" data-volume="0.5"></audio>
+      <audio id="sfx-pop-07" src="assets/audio/sfx-pop.wav" data-start="8.5" data-duration="0.1" data-track-index="11" data-volume="0.5"></audio>
+      <audio id="sfx-pop-08" src="assets/audio/sfx-pop.wav" data-start="8.75" data-duration="0.1" data-track-index="11" data-volume="0.5"></audio>
+      <audio id="sfx-pop-09" src="assets/audio/sfx-pop.wav" data-start="9" data-duration="0.1" data-track-index="11" data-volume="0.5"></audio>
+      <audio id="sfx-pop-10" src="assets/audio/sfx-pop.wav" data-start="9.25" data-duration="0.1" data-track-index="11" data-volume="0.5"></audio>
+      <audio id="sfx-pop-11" src="assets/audio/sfx-pop.wav" data-start="9.5" data-duration="0.1" data-track-index="11" data-volume="0.5"></audio>
+      <audio id="sfx-pop-12" src="assets/audio/sfx-pop.wav" data-start="9.75" data-duration="0.1" data-track-index="11" data-volume="0.5"></audio>
+      <audio id="sfx-pop-13" src="assets/audio/sfx-pop.wav" data-start="10" data-duration="0.1" data-track-index="11" data-volume="0.5"></audio>
+      <audio id="sfx-soffio-06" src="assets/audio/sfx-soffio.wav" data-start="10.25" data-duration="0.4" data-track-index="11" data-volume="0.7"></audio>
+      <audio id="sfx-pop-14" src="assets/audio/sfx-pop.wav" data-start="10.25" data-duration="0.1" data-track-index="12" data-volume="0.5"></audio>
+      <audio id="sfx-scintille-01" src="assets/audio/sfx-scintille.wav" data-start="10.3" data-duration="0.7" data-track-index="13" data-volume="0.8"></audio>
+      <audio id="sfx-conferma-01" src="assets/audio/sfx-conferma.wav" data-start="10.98" data-duration="0.25" data-track-index="11" data-volume="1"></audio>
+      <audio id="sfx-coriandoli-01" src="assets/audio/sfx-coriandoli.wav" data-start="11.05" data-duration="0.8" data-track-index="12" data-volume="0.9"></audio>
+      <audio id="sfx-colpo-07" src="assets/audio/sfx-colpo.wav" data-start="11.1" data-duration="0.45" data-track-index="13" data-volume="0.8"></audio>
+      <audio id="sfx-colpo-08" src="assets/audio/sfx-colpo.wav" data-start="11.64" data-duration="0.45" data-track-index="11" data-volume="0.7"></audio>
+      <audio id="sfx-soffio-07" src="assets/audio/sfx-soffio.wav" data-start="12.4" data-duration="0.4" data-track-index="11" data-volume="0.8"></audio>
+      <audio id="sfx-colpo-09" src="assets/audio/sfx-colpo.wav" data-start="13.25" data-duration="0.45" data-track-index="11" data-volume="1"></audio>
+      <audio id="sfx-colpo-10" src="assets/audio/sfx-colpo.wav" data-start="13.45" data-duration="0.45" data-track-index="12" data-volume="0.5"></audio>
+      <audio id="sfx-colpo-11" src="assets/audio/sfx-colpo.wav" data-start="13.7" data-duration="0.45" data-track-index="13" data-volume="0.5"></audio>
+      <audio id="sfx-soffio-08" src="assets/audio/sfx-soffio.wav" data-start="14.45" data-duration="0.4" data-track-index="11" data-volume="0.6"></audio>
+      <audio id="sfx-colpo-12" src="assets/audio/sfx-colpo.wav" data-start="15.56" data-duration="0.45" data-track-index="11" data-volume="1"></audio>
+      <audio id="sfx-pop-15" src="assets/audio/sfx-pop.wav" data-start="16.25" data-duration="0.1" data-track-index="11" data-volume="0.8"></audio>
+      <audio id="sfx-pop-16" src="assets/audio/sfx-pop.wav" data-start="16.7" data-duration="0.1" data-track-index="11" data-volume="0.4"></audio>
     </div>
+
     <script>
+      // ---- utilita' deterministiche
+      const hash = (n) => { const v = Math.sin(n * 127.1 + 311.7) * 43758.5453; return v - Math.floor(v); };
+      const tra = (n, a, b) => a + hash(n) * (b - a);
+
+      // ---- le parole che si spezzano in lettere (per gli ingressi "esplosi" e l'onda d'oro)
+      document.querySelectorAll("[data-lettere]").forEach((el) => {
+        const testo = el.textContent;
+        el.textContent = "";
+        [...testo].forEach((c) => {
+          const s = document.createElement("span");
+          s.className = "lettera";
+          s.textContent = c === " " ? " " : c;
+          el.appendChild(s);
+        });
+      });
+
+      // ---- polvere d'oro nel fondo: 40 granelli che salgono piano, sempre
+      const polvere = document.getElementById("polvere");
+      const GRANI = [];
+      for (let i = 0; i < 40; i++) {
+        const g = document.createElement("div");
+        g.className = "granello";
+        const d = tra(i * 3 + 1, 3, 9);
+        Object.assign(g.style, {
+          left: tra(i * 7 + 2, 20, 1060) + "px", top: "0px", width: d + "px", height: d + "px",
+          background: hash(i * 11 + 3) < 0.65 ? "#FFC94D" : "#FFF4D6",
+          opacity: tra(i * 13 + 4, 0.18, 0.6).toFixed(2),
+          boxShadow: d > 6 ? "0 0 10px rgba(255, 201, 77, 0.6)" : "none",
+        });
+        polvere.appendChild(g);
+        GRANI.push(g);
+      }
+
+      // ---- misure del telefono (px dello schermo: 592 di larghezza = 1170 della cattura)
+      const K = 592 / 1170;
+      const POSTI = [
+        [92, 1055, 222, 209], [347, 1055, 222, 209], [601, 1055, 222, 209], [856, 1055, 222, 209],
+        [92, 1451, 222, 209], [347, 1451, 222, 209], [601, 1451, 222, 209], [856, 1451, 222, 209],
+        [262, 1846, 222, 209], [686, 1846, 222, 209],
+      ];
+      const PORTIERE = [474, 660, 222, 209]; // il portiere della cattura 03, per le sue scintille
+      const slots = document.getElementById("slots");
+      const stelle = document.getElementById("stelle");
+      const CENTRI = [];
+      POSTI.forEach(([x, y, w, h], i) => {
+        const win = document.createElement("div");
+        win.className = "slotwin";
+        win.id = "posto-" + (i + 1);
+        // i personaggi sporgono sopra il riquadro del posto con la testa: la finestra parte 120px piu' in alto
+        const L = (x - 19) * K, T = (y - 120) * K, W = (w + 38) * K, H = (h + 150) * K;
+        Object.assign(win.style, { left: L + "px", top: T + "px", width: W + "px", height: H + "px" });
+        const img = document.createElement("img");
+        img.src = "assets/app/04-campo-pieno.png";
+        img.alt = "";
+        img.setAttribute("data-layout-allow-overflow", "");
+        Object.assign(img.style, { left: -L + "px", top: -T + "px" });
+        win.appendChild(img);
+        slots.appendChild(win);
+        CENTRI.push([(x + w / 2) * K, (y + h * 0.35) * K]);
+      });
+      CENTRI.unshift([(PORTIERE[0] + PORTIERE[2] / 2) * K, (PORTIERE[1] + PORTIERE[3] * 0.35) * K]);
+      // quattro stelle per ogni posto (11 posti: il portiere e' il primo)
+      CENTRI.forEach(([cx, cy], i) => {
+        for (let k = 0; k < 4; k++) {
+          const s = document.createElement("div");
+          s.className = "stella" + (k % 2 ? " bianca" : "");
+          s.id = `stella-${i}-${k}`;
+          Object.assign(s.style, { left: cx + "px", top: cy + "px" });
+          stelle.appendChild(s);
+        }
+      });
+      const TOCCHI = { "tap-modulo": [997, 369, 64], "tap-piu": [585, 760, 46], "tap-nome": [585, 2072, 46], "tap-conferma": [585, 2019, 64] };
+      Object.entries(TOCCHI).forEach(([id, [cx, cy, d]]) => {
+        Object.assign(document.getElementById(id).style, { left: cx * K - d / 2 + "px", top: cy * K - d / 2 + "px", width: d + "px", height: d + "px" });
+      });
+
+      // ---- il contatore: un numero per ogni titolare, uno solo acceso alla volta
+      const contaNum = document.getElementById("conta-num");
+      for (let n = 1; n <= 11; n++) {
+        const s = document.createElement("span");
+        s.id = "conta-" + n;
+        s.textContent = n;
+        contaNum.appendChild(s);
+      }
+
+      // ---- la pioggia d'oro a campo pieno: 30 stelle
+      const pioggia = document.getElementById("pioggia");
+      for (let i = 0; i < 30; i++) {
+        const s = document.createElement("div");
+        s.className = "stella" + (i % 3 === 0 ? " bianca" : "");
+        s.id = "goccia-" + i;
+        const d = tra(i * 5 + 9, 18, 34);
+        Object.assign(s.style, { left: tra(i * 17 + 5, 60, 1020) + "px", top: "-60px", width: d + "px", height: d + "px", margin: `-${d / 2}px 0 0 -${d / 2}px` });
+        pioggia.appendChild(s);
+      }
+
+      // ---- i coriandoli della conferma: 56 pezzi
+      const COLORI = ["#FFC94D", "#4FA5DE", "#FFFFFF", "#3F6ADD", "#FFC94D", "#FFF4D6"];
+      const coriandoli = document.getElementById("coriandoli");
+      for (let i = 0; i < 56; i++) {
+        const c = document.createElement("div");
+        c.className = "carta";
+        c.id = "carta-" + i;
+        c.style.background = COLORI[i % COLORI.length];
+        if (i % 4 === 0) Object.assign(c.style, { width: "14px", height: "14px", borderRadius: "50%" });
+        coriandoli.appendChild(c);
+      }
+
+      // =====================================================================================
+      // ---- il timeline
+      window.__timelines = window.__timelines || {};
       const tl = gsap.timeline({ paused: true });
-      // Example: tl.fromTo("#title", { opacity: 0, y: 24 }, { opacity: 1, y: 0, duration: 0.6 }, 0);
+      const SORPASSO = "back.out(1.2)";
+      const SBATTE = "back.out(1.8)";
+      const IN = 8 / 30;
+
+      // un anello che si allarga
+      const onda = (id, t, scala = 2.6) =>
+        tl.fromTo(id, { scale: 0.2, opacity: 1 }, { scale: scala, opacity: 0, duration: 0.45, ease: "power2.out", immediateRender: false }, t);
+      // il lampo bianco
+      const lampo = (t, picco = 0.35, dur = 0.25) => {
+        tl.fromTo("#flash", { opacity: 0 }, { opacity: picco, duration: 0.04, ease: "none", immediateRender: false }, t - 0.04);
+        tl.to("#flash", { opacity: 0, duration: dur, ease: "power2.out" }, t);
+      };
+      // scossa deterministica di una "camera"
+      const scossa = (id, t, amp = 8, colpi = 4) => {
+        for (let k = 0; k < colpi; k++) {
+          const a = amp * (1 - k / colpi);
+          tl.set(id, { x: (hash(t * 31 + k * 13) * 2 - 1) * a, y: (hash(t * 17 + k * 29 + 5) * 2 - 1) * a }, t + k / 30);
+        }
+        tl.set(id, { x: 0, y: 0 }, t + colpi / 30);
+      };
+      // una parola che sbatte: arriva grande e trasparente, si ferma con un rimbalzo
+      const sbatte = (id, t, da = 1.9) =>
+        tl.fromTo(id, { scale: da, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.22, ease: SBATTE, immediateRender: false }, t);
+      // lettere sparse che si ricompongono
+      const ricomponi = (sel, t, seme, dur = 0.32) => {
+        const lettere = gsap.utils.toArray(sel + " .lettera");
+        lettere.forEach((l, i) => {
+          tl.fromTo(l, {
+            x: tra(seme + i * 3, -320, 320), y: tra(seme + i * 7 + 1, -260, 260), rotation: tra(seme + i * 11 + 2, -70, 70),
+            scale: tra(seme + i * 5 + 3, 0.3, 1.8), opacity: 0,
+          }, { x: 0, y: 0, rotation: 0, scale: 1, opacity: 1, duration: dur, ease: "back.out(1.6)", immediateRender: false },
+          t + Math.abs(i - (lettere.length - 1) / 2) * 0.018);
+        });
+      };
+      // l'onda d'oro che attraversa una parola, lettera per lettera
+      const ondaOro = (sel, t, colore = "#FFC94D", base = "#FFFFFF") => {
+        gsap.utils.toArray(sel + " .lettera").forEach((l, i) => {
+          tl.to(l, { color: colore, y: -14, duration: 0.09, ease: "power2.out" }, t + i * 0.035);
+          tl.to(l, { color: base, y: 0, duration: 0.16, ease: "power2.in" }, t + i * 0.035 + 0.09);
+        });
+      };
+      // il riflesso su una pastiglia o una fascia
+      const riflesso = (id, t, dur = 0.55) =>
+        tl.fromTo(id, { xPercent: -120 }, { xPercent: 320, duration: dur, ease: "power2.inOut", immediateRender: false }, t);
+
+      // ===== il fondo, per tutti i 20 secondi
+      tl.fromTo("#glow", { scale: 1 }, { scale: 1.06, duration: 2, ease: "sine.inOut", yoyo: true, repeat: 9 }, 0);
+      tl.fromTo("#fascio-sx", { rotation: 16 }, { rotation: 30, duration: 2.5, ease: "sine.inOut", yoyo: true, repeat: 7 }, 0);
+      tl.fromTo("#fascio-dx", { rotation: -16 }, { rotation: -30, duration: 3, ease: "sine.inOut", yoyo: true, repeat: 6 }, 0);
+      tl.fromTo("#cerchio", { scale: 1, rotation: 0 }, { scale: 1.12, rotation: 0, duration: 20, ease: "none" }, 0);
+      GRANI.forEach((g, i) => {
+        const y0 = tra(i * 19 + 7, 0, 1920);
+        const vel = tra(i * 23 + 8, 50, 140);           // px al secondo, verso l'alto
+        const deriva = tra(i * 29 + 9, -60, 60);
+        tl.fromTo(g, { y: y0, x: 0 }, {
+          y: y0 - vel * 20, x: deriva, duration: 20, ease: "none",
+          modifiers: { y: (y) => (((parseFloat(y) % 2000) + 2000) % 2000 - 40) + "px" },
+        }, 0);
+      });
+
+      // ===== la corona nell'angolo (x 48, y 270, 64px) fino alla scena 6
+      const CS = 64 / 360;
+      tl.fromTo("#corona", { x: 80 - 540, y: 297.8 - 636, scale: CS, opacity: 0.85 },
+        { x: 80 - 540, y: 297.8 - 636, scale: CS, opacity: 0.85, duration: 0.01 }, 0);
+
+      // ===== 01 · IL TAGLIO (0–2 s)
+      tl.set("#s1-k2", { opacity: 0 }, 0);
+      // gia' dal primo fotogramma la camera spinge piano (l'anteprima della storia non e' mai ferma)
+      tl.fromTo("#s1-cam", { scale: 1 }, { scale: 1.05, duration: 0.95, ease: "none" }, 0);
+      // SERIE A trema sempre di piu' mentre arriva la spada
+      for (let f = 0; f < 14; f++) {
+        const t = 0.5 + f / 30, a = 0.6 + 5 * (f / 13);
+        tl.set("#s1-serie", { x: (hash(f * 7 + 1) * 2 - 1) * a, y: (hash(f * 5 + 2) * 2 - 1) * a }, t);
+      }
+      tl.set("#s1-serie", { x: 0, y: 0 }, 0.97);
+      // la spada corre lungo la linea del taglio (-6,07°): l'asse della lama sta sulla linea, la punta
+      // passa a meta' schermo a ~1,0 s; la spada e' sopra la linea e la linea finisce 120px dietro la punta.
+      const SP = { x0: -700 - 570, y0: 1049.1 - 90, x1: 1800 - 570, y1: 783.3 - 90 };
+      [["#spada", 0, 1], ["#spada-g1", 0.03, 0.35], ["#spada-g2", 0.06, 0.15]].forEach(([id, ritardo, op]) => {
+        tl.fromTo(id, { x: SP.x0, y: SP.y0, rotation: -6.07, opacity: op },
+          { x: SP.x1, y: SP.y1, rotation: -6.07, duration: 0.42, ease: "none" }, 0.887 + ritardo);
+      });
+      tl.fromTo("#oro", { rotation: -6.07, scaleX: 0, x: 0, y: 0, opacity: 1 }, { scaleX: 1, duration: 0.197, ease: "none" }, 0.93);
+      tl.fromTo("#lampo", { scale: 0, opacity: 1 }, { scale: 1.4, opacity: 0, duration: 0.22, ease: "power2.out" }, 1.0);
+      lampo(1.02, 0.25, 0.2);
+      tl.fromTo("#s1-su", { x: 0, y: 0, rotation: 0, opacity: 1 }, { x: -6, y: -20, duration: 0.25, ease: "power3.out" }, 1.05);
+      tl.fromTo("#s1-giu", { x: 0, y: 0, rotation: 0, opacity: 1 }, { x: 6, y: 20, duration: 0.25, ease: "power3.out" }, 1.05);
+      scossa("#s1-cam", 1.0, 7, 4);
+      tl.to("#s1-cam", { scale: 1.13, duration: 0.08, ease: "power2.out" }, 1.0);
+      tl.to("#s1-cam", { scale: 1.0, duration: 0.3, ease: "power2.inOut" }, 1.08);
+      tl.to("#s1-cam", { scale: 1.05, duration: 0.5, ease: "none" }, 1.38);
+      // FANTACALCIO? vola via, NON SOLO sbatte al suo posto
+      tl.to("#s1-k1", { y: -50, opacity: 0, duration: 0.12, ease: "power2.in" }, 1.1);
+      sbatte("#s1-k2", 1.2, 2.4);
+      onda("#s1-onda", 1.3, 3.2);
+      tl.to(["#s1-su", "#s1-giu"], { opacity: 0.5, duration: 0.4, ease: "power2.out" }, 1.35);
+      // passaggio: i pezzi volano fuori, NON SOLO ci viene addosso, lampo
+      tl.to("#s1-su", { y: -520, x: -60, rotation: -9, opacity: 0, duration: 0.3, ease: "power2.in" }, 1.8);
+      tl.to("#s1-giu", { y: 560, x: 60, rotation: 7, opacity: 0, duration: 0.3, ease: "power2.in" }, 1.8);
+      tl.to("#oro", { opacity: 0, duration: 0.15, ease: "power2.in" }, 1.8);
+      tl.to("#s1-k2", { scale: 4, opacity: 0, duration: 0.25, ease: "power2.in" }, 1.85);
+      lampo(2.02, 0.35, 0.25);
+
+      // ===== 02 · IL LANCIO (2,0–4,75 s): una parola per battito, senza pause
+      tl.set(["#s2-w1", "#s2-w2", "#s2-a2 .lettera", "#s2-b2 .lettera", "#s2-gsx", "#s2-gdx"], { opacity: 0 }, 1.95);
+      tl.set(["#s2-sotto", "#s2-banda"], { scaleX: 0 }, 1.95);
+      tl.set("#s2-b1", { x: 1150 }, 1.95);
+      tl.set("#s2-torri", { y: 900 }, 1.95);
+      tl.set("#s2-testa", { scale: 1, y: 0, x: 0 }, 1.95);
+      tl.fromTo("#s2-cam", { scale: 1, opacity: 1 }, { scale: 1.07, duration: 2.5, ease: "none" }, 2.0);
+      tl.fromTo("#s2-w1", { y: -260, opacity: 0 }, { y: 0, opacity: 1, duration: 0.2, ease: SBATTE, immediateRender: false }, 2.0);
+      tl.fromTo("#s2-w2", { scale: 0, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.18, ease: "back.out(2.5)", immediateRender: false }, 2.25);
+      ricomponi("#s2-a2", 2.42, 100);
+      scossa("#s2-testa", 2.78, 9, 4);
+      tl.fromTo("#s2-sotto", { scaleX: 0 }, { scaleX: 1, duration: 0.18, ease: "power4.out", immediateRender: false }, 2.78);
+      ondaOro("#s2-a2", 2.95);
+      // il titolo sale e si stringe: resta in alto come testata, e sotto arriva il resto
+      tl.to("#s2-testa", { scale: 0.6, y: -430, duration: 0.3, ease: "power3.inOut" }, 3.2);
+      tl.fromTo("#s2-b1", { x: 1150, opacity: 1 }, { x: 0, duration: 0.25, ease: "power4.out", immediateRender: false }, 3.28);
+      tl.fromTo("#s2-banda", { scaleX: 0 }, { scaleX: 1, duration: 0.22, ease: "power4.out", immediateRender: false }, 3.5);
+      ricomponi("#s2-b2", 3.52, 300, 0.28);
+      scossa("#s2-cam", 3.82, 7, 3);
+      tl.fromTo("#s2-torri", { y: 900 }, { y: 0, duration: 0.6, ease: "power3.out", immediateRender: false }, 3.5);
+      tl.fromTo("#s2-gsx", { x: -520, rotation: -18, opacity: 0 }, { x: 0, rotation: 0, opacity: 1, duration: 0.35, ease: SBATTE, immediateRender: false }, 3.65);
+      tl.fromTo("#s2-gdx", { x: 520, rotation: 18, opacity: 0 }, { x: 0, rotation: 0, opacity: 1, duration: 0.35, ease: SBATTE, immediateRender: false }, 3.78);
+      tl.to("#s2-gsx", { y: -14, duration: 0.5, ease: "sine.inOut", yoyo: true, repeat: 1 }, 4.0);
+      tl.to("#s2-gdx", { y: -12, duration: 0.45, ease: "sine.inOut", yoyo: true, repeat: 1 }, 4.12);
+      riflesso("#s2-luce", 3.95);
+      ondaOro("#s2-b1", 4.05, "#4FA5DE");
+      // tutto si chiude nel centro e diventa la pastiglia FANTATITANO
+      tl.to("#s2-cam", { scale: 0.15, opacity: 0, duration: 0.22, ease: "power3.in" }, 4.4);
+
+      // la pastiglia: spunta al centro (4,55 s), sale sopra il telefono (4,8 s)
+      tl.set("#pill-ft", { scale: 0, opacity: 0 }, 4.45);
+      tl.set("#pill-ft-box", { y: 0, opacity: 1 }, 4.45);
+      tl.fromTo("#pill-ft", { scale: 0, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.25, ease: "back.out(2)" }, 4.55);
+      onda("#pill-onda", 4.58, 3);
+      tl.fromTo("#pill-ft-box", { y: 0 }, { y: 275 - 905, duration: 0.35, ease: "power3.inOut" }, 4.82);
+      riflesso("#pill-luce", 5.3);
+
+      // ===== 03 · IL TELEFONO (4,8–6,75 s)
+      tl.set(["#s3-r1", "#s3-r2"], { opacity: 0, y: 0 }, 5.0);
+      tl.set("#phone-mov", { y: 1250, rotation: 9 }, 4.75);
+      tl.fromTo("#phone-mov", { y: 1250, rotation: 9 }, { y: 0, rotation: 0, duration: 0.42, ease: "back.out(1.3)" }, 4.82);
+      tl.fromTo("#phone", { x: 0, y: 0, scale: 1, filter: "brightness(1)" }, { x: 0, duration: 0.01 }, 4.75);
+      tl.to("#phone-mov", { y: -12, duration: 0.5, ease: "sine.inOut", yoyo: true, repeat: 1 }, 5.3);
+      sbatte("#s3-r1", 5.15, 1.8);
+      sbatte("#s3-r2", 5.4, 1.8);
+      tl.fromTo("#s3-11", { scale: 1 }, { scale: 1.35, duration: 0.1, ease: "power2.out", yoyo: true, repeat: 1, immediateRender: false }, 5.62);
+      onda("#s3-onda", 5.62, 2.4);
+      tl.set(["#scr-02", "#scr-03", "#slots", "#scr-05", "#press"], { opacity: 0 }, 4.75);
+      tl.set(".slotwin", { scale: 0 }, 4.75);
+      tl.set(".stella", { scale: 0, opacity: 0 }, 4.75);
+      tl.set(".tocco", { opacity: 0, scale: 0.6 }, 4.75);
+      const tocca = (id, t) => {
+        tl.fromTo(id, { opacity: 0, scale: 0.6 }, { opacity: 1, scale: 1, duration: 0.08, ease: "power2.out", immediateRender: false }, t);
+        tl.to(id, { scale: 1.35, opacity: 0, duration: 0.3, ease: "power2.out" }, t + 0.12);
+      };
+      tocca("#tap-modulo", 6.0);
+      // via le scritte, e la camera si tuffa nello schermo (170%)
+      tl.to(["#s3-r1", "#s3-r2"], { y: -90, opacity: 0, duration: 0.2, ease: "power2.in" }, 6.35);
+      tl.to("#pill-ft-box", { y: 275 - 905 - 120, opacity: 0, duration: 0.2, ease: "power2.in" }, 6.35);
+      tl.to("#phone", { x: -216.8, y: -1015.8, scale: 1.7, duration: 0.32, ease: "power3.inOut" }, 6.42);
+
+      // ===== 04 · IL CAMPO SI RIEMPIE (6,75–10,75 s)
+      tocca("#tap-piu", 6.9);
+      tl.fromTo("#scr-02", { opacity: 1, y: 1281 }, { opacity: 1, y: 0, duration: 0.18, ease: "power3.out", immediateRender: false }, 7.15);
+      tocca("#tap-nome", 7.42);
+      tl.set(["#scr-01", "#scr-02"], { opacity: 0 }, 7.7);
+      tl.set(["#scr-03", "#slots"], { opacity: 1 }, 7.7);
+      // la camera continua a spingere piano verso il centro del campo
+      tl.to("#phone", { x: -229.2, y: -1045.9, scale: 1.74, duration: 2.6, ease: "none" }, 7.75);
+      // le scintille di un posto
+      const scintille = (i, t) => {
+        for (let k = 0; k < 4; k++) {
+          const a = (k / 4) * Math.PI * 2 + 0.6 + i;
+          tl.fromTo(`#stella-${i}-${k}`, { x: 0, y: 0, scale: 0.2, opacity: 1, rotation: 0 },
+            { x: Math.cos(a) * 46, y: Math.sin(a) * 46, scale: 1.4, opacity: 0, rotation: 90, duration: 0.38, ease: "power2.out", immediateRender: false }, t);
+        }
+      };
+      // il contatore
+      tl.set("#conta", { opacity: 0 }, 7.7);
+      tl.fromTo("#conta", { y: 60, opacity: 0 }, { y: 0, opacity: 1, duration: 0.2, ease: SORPASSO }, 7.72);
+      const contaA = (n, t) => {
+        if (n > 1) tl.set("#conta-" + (n - 1), { opacity: 0 }, t);
+        tl.fromTo("#conta-" + n, { opacity: 1, scale: 1.6, y: -6 }, { scale: 1, y: 0, duration: 0.16, ease: "back.out(2)", immediateRender: false }, t);
+      };
+      // il portiere (dalla cattura 03), poi gli altri dieci ogni mezzo battito
+      scintille(0, 7.72);
+      contaA(1, 7.72);
+      for (let i = 0; i < 10; i++) {
+        const t = 8.0 + i * 0.25;
+        tl.fromTo("#posto-" + (i + 1), { scale: 0, rotation: -8 }, { scale: 1, rotation: 0, duration: 0.2, ease: "back.out(2)", immediateRender: false }, t);
+        scintille(i + 1, t + 0.04);
+        contaA(i + 2, t);
+      }
+      // campo pieno: 11/11 batte, piove oro
+      tl.to("#conta-box", { scale: 1.22, duration: 0.1, ease: "power2.out", yoyo: true, repeat: 1 }, 10.3);
+      for (let i = 0; i < 30; i++) {
+        tl.fromTo("#goccia-" + i, { y: 0, rotation: 0, opacity: 1 },
+          { y: tra(i * 37 + 3, 1100, 1800), rotation: tra(i * 41 + 4, 180, 540), opacity: 0.2, duration: tra(i * 43 + 5, 0.7, 1.0), ease: "power1.in", immediateRender: false },
+          10.3 + tra(i * 47 + 6, 0, 0.3));
+      }
+      tl.to("#conta", { y: 80, opacity: 0, duration: 0.2, ease: "power2.in" }, 10.62);
+      // si esce dallo schermo verso il telefono intero, gia' sulla conferma
+      tl.to("#phone", { x: 0, y: 324 - 700, scale: 1, duration: 0.28, ease: "power3.inOut" }, 10.55);
+      tl.set(["#scr-03", "#slots", "#stelle"], { opacity: 0 }, 10.7);
+      tl.set("#scr-05", { opacity: 1 }, 10.7);
+
+      // ===== 05 · SALVATA (10,75–13 s)
+      tl.set(["#s5-check", "#s5-r1 .lettera", "#s5-r2 .lettera", ".carta"], { opacity: 0 }, 10.95);
+      tl.set("#s5-cam", { y: 0, opacity: 1, scale: 1 }, 10.95);
+      tocca("#tap-conferma", 10.98);
+      tl.fromTo("#press", { opacity: 0 }, { opacity: 0.35, duration: 0.06, immediateRender: false }, 10.98);
+      tl.to("#press", { opacity: 0, duration: 0.2, ease: "power2.out" }, 11.08);
+      tl.to("#phone", { x: -24.8, y: -459.8, scale: 1.08, duration: 0.12, ease: "power2.out" }, 11.0);
+      tl.to("#phone", { filter: "brightness(0.42)", duration: 0.3, ease: "power2.out" }, 11.08);
+      // i coriandoli: scoppio dal pulsante (540, 1359), poi cadono
+      for (let i = 0; i < 56; i++) {
+        const a = tra(i * 53 + 1, -168, -12) * Math.PI / 180;
+        const R = tra(i * 59 + 2, 280, 820);
+        const x1 = Math.cos(a) * R, y1 = Math.sin(a) * R;
+        const r1 = tra(i * 61 + 3, -360, 360);
+        tl.fromTo("#carta-" + i, { x: 0, y: 0, rotation: 0, opacity: 1, scale: tra(i * 67 + 4, 0.8, 1.4) },
+          { x: x1, y: y1, rotation: r1, duration: 0.55, ease: "power3.out", immediateRender: false }, 11.05);
+        tl.to("#carta-" + i, { x: x1 + tra(i * 71 + 5, -90, 90), y: y1 + tra(i * 73 + 6, 700, 1150), rotation: r1 + tra(i * 79 + 7, 360, 900),
+          duration: 1.5, ease: "power1.in" }, 11.6);
+        tl.to("#carta-" + i, { opacity: 0, duration: 0.3, ease: "none" }, 12.75);
+      }
+      tl.fromTo("#s5-check", { scale: 2.6, rotation: -30, opacity: 0 }, { scale: 1, rotation: 0, opacity: 1, duration: 0.25, ease: "back.out(2)", immediateRender: false }, 11.1);
+      onda("#s5-onda", 11.2, 3);
+      ricomponi("#s5-r1", 11.2, 500, 0.26);
+      ricomponi("#s5-r2", 11.4, 700, 0.26);
+      scossa("#s5-cam", 11.66, 9, 4);
+      tl.fromTo("#s5-cam", { scale: 1 }, { scale: 1.06, duration: 1.0, ease: "none", immediateRender: false }, 11.75);
+      ondaOro("#s5-r2", 11.9);
+      // uscita: il telefono cade, le scritte volano su
+      tl.to("#s5-cam", { y: -260, opacity: 0, duration: 0.25, ease: "power2.in" }, 12.75);
+      tl.to("#phone-mov", { y: 1300, rotation: 12, duration: 0.35, ease: "power2.in" }, 12.7);
+
+      // ===== LA SFIDA (13–15 s)
+      tl.set("#vs-p1", { x: -900 }, 12.95); tl.set("#vs-p2", { x: 900 }, 12.95);
+      tl.set("#vs-g1", { x: -700 }, 12.95); tl.set("#vs-g2", { x: 700 }, 12.95);
+      tl.set("#vs-crepa", { scaleY: 0 }, 12.95);
+      tl.set(["#vs-badge", "#vs-r1", "#vs-r2"], { opacity: 0 }, 12.95);
+      tl.set("#vs-cam", { scale: 1, opacity: 1 }, 12.95);
+      tl.fromTo("#vs-p1", { x: -900 }, { x: 0, duration: 0.3, ease: "power4.out", immediateRender: false }, 12.98);
+      tl.fromTo("#vs-p2", { x: 900 }, { x: 0, duration: 0.3, ease: "power4.out", immediateRender: false }, 12.98);
+      tl.fromTo("#vs-g1", { x: -700, opacity: 1 }, { x: 0, duration: 0.3, ease: "power4.out", immediateRender: false }, 13.0);
+      tl.fromTo("#vs-g2", { x: 700, opacity: 1 }, { x: 0, duration: 0.3, ease: "power4.out", immediateRender: false }, 13.0);
+      tl.fromTo("#vs-crepa", { scaleY: 0, opacity: 1 }, { scaleY: 1, duration: 0.12, ease: "power4.out", immediateRender: false }, 13.22);
+      tl.fromTo("#vs-badge", { scale: 3.2, rotation: -25, opacity: 0 }, { scale: 1, rotation: 0, opacity: 1, duration: 0.22, ease: "back.out(1.8)", immediateRender: false }, 13.25);
+      lampo(13.3, 0.3, 0.2);
+      onda("#vs-onda", 13.32, 3.4);
+      scossa("#vs-cam", 13.3, 10, 4);
+      sbatte("#vs-r1", 13.45, 1.9);
+      sbatte("#vs-r2", 13.7, 1.9);
+      // i due si avvicinano, il VS batte sul tempo
+      tl.to("#vs-g1", { x: 34, duration: 1.4, ease: "none" }, 13.3);
+      tl.to("#vs-g2", { x: -34, duration: 1.4, ease: "none" }, 13.3);
+      tl.to("#vs-badge", { scale: 1.08, duration: 0.25, ease: "sine.inOut", yoyo: true, repeat: 3 }, 13.75);
+      tl.to("#vs-crepa", { opacity: 0.35, duration: 0.6, ease: "power2.out" }, 13.4);
+      // passaggio al marchio: la scena ci viene addosso, lampo pieno a 15,0
+      tl.to("#vs-cam", { scale: 1.9, opacity: 0, duration: 0.25, ease: "power2.in" }, 14.75);
+
+      // ===== 06 · MARCHIO E SITO (15–20 s): mai fermo, l'invito batte sul tempo
+      tl.set(["#s6-raggi", "#s6-nome .lettera", "#s6-g1", "#s6-g2", "#s6-g3", "#s6-g4", "#s6-eti", "#s6-sito", "#s6-freccia"], { opacity: 0 }, 14.95);
+      lampo(15.0, 0.55, 0.22);
+      tl.to("#corona", { x: 0, y: 0, scale: 1, opacity: 1, duration: 0.5, ease: "back.out(1.4)" }, 14.85);
+      tl.to("#corona", { scale: 1.04, duration: 1, ease: "sine.inOut", yoyo: true, repeat: 3 }, 15.6);
+      tl.fromTo("#s6-raggi", { scale: 0.5, opacity: 0, rotation: 0 }, { scale: 1, opacity: 1, duration: 0.45, ease: "power3.out", immediateRender: false }, 15.0);
+      tl.to("#s6-raggi", { rotation: 40, duration: 5, ease: "none" }, 15.0);
+      ricomponi("#s6-nome", 15.22, 900, 0.34);
+      scossa("#s6-cam", 15.58, 9, 4);
+      [["#s6-g1", 15.45], ["#s6-g2", 15.55], ["#s6-g3", 15.6], ["#s6-g4", 15.5]].forEach(([id, t], k) => {
+        tl.fromTo(id, { y: 320, opacity: 0 }, { y: 0, opacity: 1, duration: 0.35, ease: SBATTE, immediateRender: false }, t);
+        tl.to(id, { y: -12, duration: 0.6 + k * 0.08, ease: "sine.inOut", yoyo: true, repeat: 5 }, t + 0.4);
+      });
+      tl.fromTo("#s6-eti", { y: 50, opacity: 0 }, { y: 0, opacity: 1, duration: IN, ease: SORPASSO }, 16.0);
+      tl.fromTo("#s6-sito", { scale: 0, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.28, ease: "back.out(2.2)" }, 16.25);
+      onda("#s6-onda", 16.3, 3.2);
+      riflesso("#s6-luce", 16.6);
+      riflesso("#s6-luce", 17.6);
+      riflesso("#s6-luce", 18.6);
+      ondaOro("#s6-nome", 16.9);
+      ondaOro("#s6-nome", 18.4);
+      // la pastiglia pulsa sul battito, la freccia indica il pulsante dell'inserzione
+      tl.to("#s6-sito-box", { scale: 1.05, duration: 0.25, ease: "sine.inOut", yoyo: true, repeat: 9 }, 17.0);
+      tl.fromTo("#s6-freccia", { y: -30, opacity: 0 }, { y: 0, opacity: 1, duration: 0.25, ease: SORPASSO }, 16.7);
+      tl.to("#s6-freccia", { y: 22, duration: 0.25, ease: "sine.inOut", yoyo: true, repeat: 11 }, 17.0);
+      // 19,5 s: il colpo finale
+      tl.to("#s6-cam", { scale: 1.04, duration: 0.06, ease: "power2.out" }, 19.5);
+      tl.to("#s6-cam", { scale: 1, duration: 0.35, ease: "power2.out" }, 19.56);
+      lampo(19.52, 0.22, 0.3);
+
       window.__timelines["main"] = tl;
-      tl.seek(0);
     </script>
   </body>
 </html>

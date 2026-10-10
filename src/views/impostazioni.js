@@ -31,7 +31,7 @@ function apriAvvisi(ctx) {
         <span class="sw${on ? ' on' : ''}"></span></button>
       ${on && perm === 'default' ? `<button class="a-btn" data-avvisi="permesso" style="margin-top:10px">Consenti le notifiche</button>` : ''}
       ${perm === 'denied' ? `<p class="auth-hint">Le notifiche sono bloccate dalle impostazioni del telefono per questo sito: vanno riattivate da lì.</p>` : ''}
-      ${motivo === 'ios-nel-browser' ? `<p class="auth-hint avvisi-ios"><b>Su iPhone le notifiche funzionano solo con l'app installata.</b> Tocca <b>Condividi</b> (il quadrato con la freccia in basso a Safari), poi <b>Aggiungi alla schermata Home</b>, e apri l'app da lì: qui comparirà il bottone per consentirle.</p>` : ''}
+      ${motivo === 'ios-nel-browser' ? `<p class="auth-hint avvisi-ios"><b>Su iPhone le notifiche funzionano solo con l'app installata.</b> Tocca <b>Condividi</b> (${esc(AV.doveCondividi().replace(/^Il quadrato/, 'il quadrato').replace(/\.$/, ''))}), poi <b>Aggiungi alla schermata Home</b>, e apri l'app da lì: qui comparirà il bottone per consentirle.</p>` : ''}
       ${motivo === 'browser-senza' ? `<p class="auth-hint">Questo browser non supporta le notifiche: da qui l'avviso arriva solo ad app aperta.</p>` : ''}
       ${on && perm === 'granted' ? `<button class="a-btn sec" data-avvisi="prova" style="margin-top:10px">Mandami un avviso di prova</button>` : ''}
       <p class="auth-hint"><b>Ad app aperta</b> l'avviso arriva${perm === 'granted' ? '' : ' appena dai il permesso'}: si controlla ogni volta che apri la dashboard, e ne arriva uno solo per giornata.</p>

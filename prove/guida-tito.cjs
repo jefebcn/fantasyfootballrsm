@@ -58,7 +58,7 @@ const OUT = process.env.USCITA || '/tmp';
       }
       if (i < 3) { await p.click('[data-next]'); await w(400); }
     }
-    vero(titoli.join('|') === 'Dove giocare|La tua squadra|I giocatori|Mettimi sulla Home', `i passi sono: ${titoli.join(', ')}`);
+    vero(titoli.join('|') === 'Dove si gioca|La tua squadra|I giocatori|Mettimi sulla Home', `i passi sono: ${titoli.join(', ')}`);
     vero(/Negozio/.test(terzo) && /asta/.test(terzo), 'il terzo passo non spiega negozio e asta');
     // il quarto: i tasti da toccare (qui il telefono e' un Android: i tre puntini e «Installa»)
     const quarto = await p.evaluate(() => document.querySelector('.guida').textContent);
@@ -165,10 +165,14 @@ const OUT = process.env.USCITA || '/tmp';
   }
 
   // 4. il passo della Home su iPhone: Condividi e «Aggiungi alla schermata
-  // Home», da Safari; e chi ha gia' l'app sulla Home quel passo non lo vede
-  for (const sullaHome of [false, true]) {
+  // Home», da Safari e da Chrome (che da iOS 16.4 la voce ce l'ha, col tasto
+  // Condividi nella barra dell'indirizzo); e chi ha gia' l'app sulla Home
+  // quel passo non lo vede
+  const SAFARI = 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Mobile/15E148 Safari/604.1';
+  const CHROME = 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) CriOS/129.0.6668.69 Mobile/15E148 Safari/604.1';
+  for (const [sullaHome, chrome] of [[false, false], [true, false], [false, true]]) {
     const ctx = await b.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, serviceWorkers: 'block',
-      userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Mobile/15E148 Safari/604.1' });
+      userAgent: chrome ? CHROME : SAFARI });
     await ctx.addInitScript((home) => {
       window.__SUPABASE_JS__ = '/tests/mock-supabase.js';
       localStorage.setItem('fcs:auth', 'supabase');
@@ -186,8 +190,10 @@ const OUT = process.env.USCITA || '/tmp';
       vero(quanti === 'Passo 1 di 4', `iPhone nel browser: la guida dice "${quanti}"`);
       for (let i = 0; i < 3; i++) { await p.click('[data-next]'); await w(350); }
       const t = await p.evaluate(() => document.querySelector('.guida').textContent);
-      vero(/Condividi/.test(t) && /Aggiungi alla schermata Home/.test(t) && /Safari/.test(t), 'iPhone: il passo della Home non dice Condividi → «Aggiungi alla schermata Home»');
-      await p.screenshot({ path: `${OUT}/guida-4-iphone.png` });
+      vero(/Condividi/.test(t) && /Aggiungi alla schermata Home/.test(t), 'iPhone: il passo della Home non dice Condividi → «Aggiungi alla schermata Home»');
+      if (chrome) vero(/barra dell'indirizzo/.test(t) && !/Safari/.test(t), 'Chrome su iPhone: il passo della Home non dice dove sta Condividi in Chrome, o rimanda a Safari');
+      else vero(/barra di Safari/.test(t), 'Safari: il passo della Home non dice dove sta Condividi');
+      await p.screenshot({ path: `${OUT}/guida-4-${chrome ? 'chrome-' : ''}iphone.png` });
     }
     if (err.length) ko.push('errori (iPhone): ' + err.join(' | '));
     await ctx.close();

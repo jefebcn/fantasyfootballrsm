@@ -308,10 +308,10 @@ async function installa() {
   sheet(`<h3>Installa Fantatitano</h3>
     <p class="sheet-sub">Si apre a schermo intero, senza la barra dell'indirizzo, e le notifiche funzionano anche a telefono chiuso.</p>
     ${ios
-    ? `<ol class="passi"><li>Tocca <b>Condividi</b> ${icon('share', 'ic sm')} nella barra in basso di Safari.</li>
+    ? `<ol class="passi"><li>Tocca <b>Condividi</b> ${icon('share', 'ic sm')}: ${esc(AV.doveCondividi().replace(/^Il quadrato/, 'il quadrato'))}</li>
        <li>Scorri e tocca <b>Aggiungi alla schermata Home</b>.</li>
        <li>Conferma con <b>Aggiungi</b>.</li></ol>
-       <p class="small muted">Funziona da Safari. Da Chrome o da un'altra app su iPhone quella voce non c'è: apri prima fantatitano.site in Safari.</p>`
+       <p class="small muted">${AV.browserIOS() === 'app' ? 'Sei dentro un\'altra app (Instagram, Facebook…): lì la voce non c\'è. Apri prima fantatitano.site in Safari o in Chrome.' : 'Funziona da Safari e da Chrome. Se la voce non c\'è, aggiorna l\'iPhone oppure apri fantatitano.site in Safari.'}</p>`
     : `<ol class="passi"><li>Apri il <b>menu del browser</b> (i tre puntini in alto).</li>
        <li>Tocca <b>Installa app</b>, o <b>Aggiungi a schermata Home</b>.</li></ol>
        <p class="small muted">Se non trovi la voce, il browser che stai usando non la offre: prova con Chrome.</p>`}`);

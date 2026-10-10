@@ -63,7 +63,7 @@ export const video = {
       // da qui in poi si contatta Google: succede perche' l'ha chiesto chi guarda
       card.querySelector('.vid-cop').outerHTML = `<div class="vid-cop in"><iframe
         src="${urlIncorpora(id)}" title="Highlights" loading="lazy" allowfullscreen
-        allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture"
+        allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture; fullscreen" playsinline
         referrerpolicy="strict-origin-when-cross-origin"></iframe></div>`;
     });
   },

@@ -1,5 +1,25 @@
 import * as S from '../state.js';
-import { esc, fmt, faccia, ROLE_NAME, ROLE_ORDER } from '../ui.js';
+import { esc, fmt, faccia, ROLE_NAME, ROLE_ORDER, mask } from '../ui.js';
+
+/**
+ * Le schede in cima a Rosa e Formazione. Erano due chip piccole, uguali a
+ * tutti gli altri filtri dell'app: Alex (10/10) non le vedeva come il modo
+ * di passare da una all'altra. Adesso sono una barra a tutta larghezza con
+ * le stesse icone della barra in basso, e quella attiva e' piena.
+ */
+export function schedeRosa(attiva) {
+  const me = S.me(); const quanti = me ? S.rosterOf(me.id).length : 0;
+  const voci = [
+    ['rosa', '#/rosa', mask('maglia-10'), `Rosa <small>${quanti}</small>`],
+    ['formazione', '#/rosa/formazione', mask('campo'), 'Formazione'],
+  ];
+  if (S.scambiInQuestaLega() && S.base.managers.length > 1) {
+    const da = S.scambiDaDecidere().length;
+    voci.push(['scambi', '#/scambi', '', `Scambi${da ? ` <b class="segn">${da}</b>` : ''}`]);
+  }
+  return `<nav class="segwrap"><div class="seg seg-cls seg-rosa">${voci.map(([k, h, ic, t]) =>
+    `<a href="${h}"${k === attiva ? ' class="on" aria-current="page"' : ''}>${ic}<span>${t}</span></a>`).join('')}</div></nav>`;
+}
 
 export const rosa = {
   title: 'Rosa', sub: () => 'Rosa · 25 giocatori',
@@ -13,7 +33,7 @@ export const rosa = {
       }).join('')}</div>`;
     }).join('');
     return `<main class="a-body">
-      <div class="chips"><a class="chip on" href="#/rosa" style="text-decoration:none">Rosa 25</a><a class="chip" href="#/rosa/formazione" style="text-decoration:none">Formazione</a>${S.scambiInQuestaLega() && S.base.managers.length > 1 ? `<a class="chip" href="#/scambi" style="text-decoration:none">Scambi${S.scambiDaDecidere().length ? ` <b>${S.scambiDaDecidere().length}</b>` : ''}</a>` : ''}</div>
+      ${schedeRosa('rosa')}
       <div class="a-card a-fase"><div class="r"><p><b>${esc(me.teamName)}</b> · ${esc(me.owner)}</p><span class="small muted">crediti <b class="num" style="color:var(--text)">${me.credits}</b></span></div><p class="small muted">Ultimo fantavoto: giornata ${n}. Tocca un giocatore per lo storico.</p></div>
       ${groups}
     </main>`;

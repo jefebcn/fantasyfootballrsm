@@ -1,6 +1,7 @@
 import * as S from '../state.js';
 import { validateLineup, parseModule } from '../engine.js';
-import { esc, roleChip, faccia, ROLE_NAME, badge, icon, avatar, dateIt, timeIt, fmt } from '../ui.js';
+import { esc, roleChip, faccia, ROLE_NAME, badge, icon, avatar, dateIt, timeIt, fmt, voteRow, sec } from '../ui.js';
+import { schedeRosa } from './rosa.js';
 
 let draft = null; let draftFor = null;
 function ensureDraft() {
@@ -66,6 +67,32 @@ function autofill(d, rosterIds) {
   d.starters = [...s.P, ...s.D, ...s.C, ...s.A];
 }
 
+/**
+ * DA DOVE VENGONO I VOTI. Alex, 10/10: «un 18,5 in campo, e non si sa
+ * perche'». Sotto la panchina, chi ha gia' il voto, dal piu' alto: voto base,
+ * ogni bonus e malus con la sua regola, e il capitano col suo raddoppio — lo
+ * stesso dettaglio della pagina Voti, senza doverci andare. Il primo e'
+ * gia' aperto, gli altri si aprono col tocco. Chi vale 5,5 d'ufficio non ha
+ * niente da spiegare e resta fuori.
+ */
+function daDoveVengono(esito, voti) {
+  const giocato = esito.rows.filter((r) => !r.official && !r.isSV);
+  if (!giocato.length) return '';
+  giocato.sort((a, b) => b.fantaVote - a.fantaVote);
+  const righe = giocato.map((r, i) => {
+    const pl = P(r.playerId); const vero = voti?.get(r.playerId);
+    const voci = [...(r.breakdown || [])];
+    const grezzo = r1(r.fantaVote - r.baseVote) - r1((vero?.fantaVote ?? r.fantaVote) - r.baseVote);
+    if (r.isCaptain && grezzo) voci.push({ label: 'Capitano', note: 'bonus e malus raddoppiati · art. 6', value: grezzo });
+    const sub = r.subFor ? `<div class="vnota-sub">Entrato dalla panchina al posto di <b>${esc(P(r.subFor).name)}</b>, senza voto (art. 8.2)</div>` : '';
+    return voteRow(pl, S.clubsById.get(pl.clubId), { ...vero, fantaVote: r.fantaVote, breakdown: voci, isSV: false },
+      { expanded: i === 0, captain: r.isCaptain, extra: sub });
+  }).join('');
+  return `${sec('Da dove vengono i voti', 'tocca un giocatore')}
+      <div class="vlist voti-spiegati">${righe}</div>`;
+}
+const r1 = (x) => Math.round(x * 10) / 10;
+
 export const formazione = {
   title: 'Formazione', sub: () => 'Rosa · Formazione',
   render() {
@@ -111,7 +138,7 @@ export const formazione = {
     const line = (role) => `<div class="line" data-line="${role.toLowerCase()}">${s[role].map((id, i) => slot(id, role, i)).join('')}</div>`;
     const bench = Array.from({ length: 7 }, (_, i) => d.bench[i] || null);
     return `<main class="a-body">
-      <div class="chips"><a class="chip" href="#/rosa" style="text-decoration:none">Rosa 25</a><a class="chip on" href="#/rosa/formazione" style="text-decoration:none">Formazione</a></div>
+      ${schedeRosa('formazione')}
       <div class="a-card a-fase">
         <div class="r"><p><b>Giornata ${n}</b>${opp ? ` · ${esc(me.teamName)} – ${esc(opp.teamName)}` : ''}</p>
           ${locked ? badge('live') : badge('open')}</div>
@@ -140,6 +167,7 @@ export const formazione = {
       <div class="a-sec"><b>Panchina</b><span>${bench.filter(Boolean).length}/7</span></div>
       <p class="small muted nota">L'ordine conta: al posto di un titolare senza voto entra il <b>primo panchinaro dello stesso ruolo</b> (art. 8.2).</p>
       <div class="bench">${bench.map((id, i) => benchRow(id, i, bench, locked, grezzo(id))).join('')}</div>
+      ${esito ? daDoveVengono(esito, voti) : ''}
       ${errors.length ? `<div class="warn block">${icon('warn', 'ic sm')}<span>${errors.map(esc).join(' · ')}</span></div>` : ''}
       ${b
     ? `<a class="a-btn" href="#/voti/${n}" style="text-decoration:none">${icon('votes', 'ic sm')}Voti della ${n}ª</a>`

@@ -89,17 +89,19 @@ export const privacy = {
     ['La tua squadra:', 'nome, stemma, maglia, rosa, formazioni e punteggi di ogni giornata. Senza questi il gioco non esiste.'],
     ['Quello che fai nella lega:', 'contestazioni aperte e, per il Giudice Dati, il registro delle modifiche ai voti. Servono a poter ricostruire come è venuto fuori un punteggio.'],
     ['Gli errori dell\'app:', 'se l\'app va in errore sul tuo telefono, manda un rapporto tecnico: il messaggio d\'errore, la versione dell\'app, la schermata (senza quale giocatore o partita stavi guardando) e il tipo di telefono, per esempio «Android · Chrome». <b>Niente che dica chi sei</b>: nessun account, nessun identificativo del telefono, e un indirizzo e-mail finito per caso dentro un messaggio viene cancellato prima di salvarlo. Sta sugli stessi server di Supabase del resto, lo legge solo chi gestisce l\'app per correggere i difetti, e si cancella da solo dopo 30 giorni.'],
+    ['Chi ti ha invitato:', 'se ti iscrivi dal link di un altro giocatore, il tuo profilo si segna chi te l\'ha mandato. Serve solo a contare gli amici che ha portato (il badge «Reclutatore»): <b>agli altri si vede il numero, mai chi sono gli amici</b>. Vale solo per un account nuovo e non si cambia.'],
     'Non ci sono profilazione, tracciatori di terze parti né cookie di marketing. Nessun dato viene venduto o ceduto.',
     ['Lo spazio sponsor:', 'in home può comparire uno spazio comprato, dichiarato con la targhetta «Sponsor». <b>Non viene scelto in base a chi sei</b>: dipende solo dalla lega in cui stai guardando — è quello di tutta l\'app, uguale per tutti, oppure quello che un\'azienda ha comprato per quella lega, uguale per tutti quelli che ci giocano. Di quello spazio si contano due numeri al giorno — quante volte è comparso e quante è stato toccato — e basta: nessun identificativo, nessun indirizzo IP, nessuna riga che ti riguardi. Non si può risalire a te perché non c\'è niente da cui risalire.'],
   ])}
       ${blocco('Su quale base', [
     ['Contratto:', 'account, squadra, rose, formazioni e punteggi. Sono quello che ti serve per giocare: senza, l\'app non può darti il servizio che hai chiesto iscrivendoti.'],
-    ['Legittimo interesse:', 'il registro delle modifiche del Giudice Dati, i log tecnici del server e i rapporti d\'errore dell\'app, per tenere in piedi il servizio, correggerne i difetti e poter dimostrare come è stato calcolato un voto contestato.'],
+    ['Legittimo interesse:', 'il registro delle modifiche del Giudice Dati, i log tecnici del server e i rapporti d\'errore dell\'app, per tenere in piedi il servizio, correggerne i difetti e poter dimostrare come è stato calcolato un voto contestato. E chi ti ha invitato, per riconoscere a chi porta amici il badge «Reclutatore».'],
     ['Consenso:', 'solo per quello che scegli tu, come caricare una foto come stemma. Lo puoi togliere quando vuoi rimuovendo la foto.'],
   ])}
       ${blocco('Chi lo vede', [
     'Gli altri partecipanti della tua lega vedono nome squadra, nome fantallenatore, stemma, maglia, rosa e formazioni una volta chiuse le giornate. È il gioco.',
     'La tua e-mail non è visibile agli altri partecipanti.',
+    ['Reclutatori:', 'accanto alla tua squadra gli altri vedono il badge «Reclutatore» e quanti amici hai portato. Ogni settimana chi ne ha portati di più può comparire nelle storie di Fantatitano su Instagram <b>col nome della squadra</b>, mai col tuo nome o la tua e-mail.'],
     ['Fornitori:', 'Supabase (banca dati e accessi) tratta i dati per conto di chi gestisce l\'app, come responsabile del trattamento, e non li usa per sé.'],
     ['YouTube:', 'gli highlights stanno sul canale della FSGC. Nessuna richiesta parte verso Google finché non tocchi play su un video; da quel momento Google vede il tuo indirizzo IP e cosa stai guardando, secondo le sue regole, non le nostre. Il dettaglio è in <a href="#/archiviazione">Cookie e memoria locale</a>.'],
   ])}
@@ -237,6 +239,7 @@ export const archiviazione = {
       ['fcs:supabase', 'indirizzo del server, se l\'hai impostato a mano'],
       ['fcs:email', 'l\'e-mail ricordata nella schermata di accesso, se l\'hai chiesto'],
       ['sb-…-auth-token', 'la sessione di accesso, tenuta da Supabase per non farti rifare l\'accesso a ogni apertura. Se ne va quando esci dall\'account'],
+      ['fcs:invito, fcs:da', 'se sei arrivato da un link d\'invito: il codice della lega e chi te l\'ha mandato, finché non entri (al massimo due settimane)'],
       ['fcs:sponsor-visto', 'quale spazio sponsor è già stato contato oggi su questo telefono, così non viene contato due volte. È un nome e una data, niente di tuo'],
     ];
     return `<main class="a-body">

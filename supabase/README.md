@@ -200,14 +200,26 @@ Su un progetto nuovo, nell'SQL Editor, in quest'ordine:
     cancella da solo dopo 30 giorni. **Va aggiornata anche la Sicurezza dei
     dati su Play Console**: vedi `store/scheda-play.md`.
 
-24. `promemoria-pianificato.sql` — **facoltativo ma consigliato**, e non è una
+24. `migrations/023-reclutatori.sql` — **i Reclutatori**: chi porta un amico
+    si vede. Il link che l'app condivide porta `?da=<chi lo manda>`; al primo
+    accesso dell'amico l'app chiama `registra_invito()`, e quando l'amico
+    entra in una lega chi l'ha invitato guadagna un amico (una volta sola).
+    Badge accanto alla squadra: 1 amico Reclutatore, 3 d'argento, 5 d'oro.
+    Vale solo per account nati da meno di 7 giorni e non per il proprio
+    link; il contatore lo scrive solo il database (un trigger tiene fermi i
+    tre campi se a scrivere è un client). `reclutatori_settimana()` è aperta
+    anche senza account e dà **solo nome della squadra e numero**: serve alla
+    storia settimanale su Instagram. Finché non è applicata l'app non mostra
+    né badge né riquadro, e il link funziona come prima.
+
+25. `promemoria-pianificato.sql` — **facoltativo ma consigliato**, e non è una
     migrazione: si riempie **una riga** (il token del promemoria) e si lancia
     a mano. Sposta l'orologio dell'avviso
     della formazione da GitHub — che accoda e salta le corse pianificate, fino
     a cinque ore e mezza misurate — a `pg_cron`, dentro il database. Vedi
     `functions/promemoria/README.md`, passo 3b.
 
-25. `dati-fsgc-pianificato.sql` — **pronto ma non attivo** (Alex ha deciso di
+26. `dati-fsgc-pianificato.sql` — **pronto ma non attivo** (Alex ha deciso di
     rimandarlo il 30 settembre: il token di GitHub era troppo macchinoso per
     adesso). Non è una migrazione: come il promemoria, si riempie **una riga** (un token di
     GitHub) e si lancia a mano. Fa partire l'import dei dati FSGC
@@ -359,7 +371,7 @@ e le policy applicavano quella del server. Quindi:
 1. la formazione restava scrivibile per otto giorni **dopo** che la partita era
    finita. L'app la bloccava, ma la protezione che conta è quella del database:
    chi sa usare le API poteva rifare la formazione sapendo i risultati;
-2. `lineups_read` non lasciava leggere le formazioni degli avversari fino a otto
+3. `lineups_read` non lasciava leggere le formazioni degli avversari fino a otto
    giorni dopo la partita, quindi nella sfida l'avversario compariva con l'undici
    d'ufficio invece del suo.
 

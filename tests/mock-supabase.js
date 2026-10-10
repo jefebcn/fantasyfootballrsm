@@ -12,6 +12,18 @@ let userId = salvato.userId || null; const authListeners = [];
 const persisti = () => { try { localStorage.setItem(CHIAVE, JSON.stringify({ tables, userId })); } catch { /* quota */ } };
 const uid = () => 'u' + Math.random().toString(36).slice(2, 10);
 const now = () => new Date().toISOString();
+// I Reclutatori (023) esistono solo se la prova lo chiede: le altre prove
+// girano come un database senza la 023, e cosi' provano anche quel caso.
+const con023 = () => typeof window !== 'undefined' && !!window.__MOCK_023__;
+const campi023 = () => (con023() ? { reclutati: 0, invitato_da: null, invito_contato_at: null, created_at: now() } : {});
+// Come conta_reclutato() del database: una volta sola, e solo se gioca.
+function contaReclutato(id) {
+  if (!con023()) return;
+  const p = T('profiles').find((x) => x.id === id);
+  if (!p || !p.invitato_da || p.invito_contato_at || !T('league_members').some((m) => m.user_id === id)) return;
+  p.invito_contato_at = now();
+  const chi = T('profiles').find((x) => x.id === p.invitato_da); if (chi) chi.reclutati = (chi.reclutati || 0) + 1;
+}
 
 function builder(table) {
   const filters = []; let op = 'select'; let payload = null; let single = false; let maybe = false; let orderBy = null; let lim = null; 
@@ -26,6 +38,7 @@ function builder(table) {
     // disegnavano comunque.
     gte(k, v) { filters.push((r) => r[k] >= v); return b; },
     is(k, v) { filters.push((r) => (v === null ? r[k] === null || r[k] === undefined : r[k] === v)); return b; },
+    in(k, vs) { filters.push((r) => vs.includes(r[k])); return b; },
     order(k, o) { orderBy = [k, o?.ascending !== false]; return b; },
     limit(n) { lim = n; return b; },
     single() { single = true; return b; }, maybeSingle() { maybe = true; return b; },
@@ -73,7 +86,7 @@ export function createClient(_url, _key, opts) {
       async signUp({ email, password, options }) {
         if (T('profiles').some((x) => x.email === email)) return { data: null, error: { message: 'User already registered' } };
         if (!password || password.length < 6) return { data: null, error: { message: 'Password should be at least 6 characters' } };
-        const p = { id: uid(), email, password, display_name: options?.data?.display_name || email.split('@')[0], is_judge: T('profiles').length === 0 };
+        const p = { id: uid(), email, password, display_name: options?.data?.display_name || email.split('@')[0], is_judge: T('profiles').length === 0, ...campi023() };
         T('profiles').push(p); persisti();
         // l'indirizzo a cui tornera' la conferma e-mail: le prove guardano che
         // porti il codice d'invito, quando c'e'
@@ -92,7 +105,7 @@ export function createClient(_url, _key, opts) {
       async signInWithOAuth({ provider }) { globalThis.__lastOAuth = provider; return { data: { url: 'about:blank' }, error: null }; },
       async resetPasswordForEmail(email) { globalThis.__lastResetEmail = email; return { data: {}, error: null }; },
       async updateUser({ password }) { const p = T('profiles').find((x) => x.id === userId); if (p) p.password = password; persisti(); return { data: { user: { id: userId } }, error: null }; },
-      async verifyOtp({ email, token }) { if (token !== '123456') return { data: null, error: { message: 'Codice errato' } }; let p = T('profiles').find((x) => x.email === email); if (!p) { p = { id: uid(), email, display_name: email.split('@')[0], is_judge: T('profiles').length === 0 }; T('profiles').push(p); } userId = p.id; persisti(); authListeners.forEach((fn) => fn('SIGNED_IN', { user: { id: userId, email } })); return { data: { user: { id: userId } }, error: null }; },
+      async verifyOtp({ email, token }) { if (token !== '123456') return { data: null, error: { message: 'Codice errato' } }; let p = T('profiles').find((x) => x.email === email); if (!p) { p = { id: uid(), email, display_name: email.split('@')[0], is_judge: T('profiles').length === 0, ...campi023() }; T('profiles').push(p); } userId = p.id; persisti(); authListeners.forEach((fn) => fn('SIGNED_IN', { user: { id: userId, email } })); return { data: { user: { id: userId } }, error: null }; },
       async signOut() { userId = null; persisti(); authListeners.forEach((fn) => fn('SIGNED_OUT', null)); },
       onAuthStateChange(fn) { authListeners.push(fn); },
     },
@@ -176,7 +189,19 @@ export function createClient(_url, _key, opts) {
           return { data: { player_id: args.p_player, prezzo: q.quotazione, crediti: mio.credits }, error: null };
         }
         const prof = T('profiles').find((p) => p.id === userId);
-        if (name === 'create_league') { const l = { id: uid(), name: args.p_name, short_name: args.p_short, invite_code: Math.random().toString(36).slice(2, 8).toUpperCase(), rules: {}, started: false, created_by: userId, created_at: now() }; T('leagues').push(l); T('league_members').push({ id: uid(), league_id: l.id, user_id: userId, role: 'admin', team_name: args.p_team, owner_name: prof.display_name, color: args.p_color, initials: args.p_initials, credits: 500, created_at: now() }); persisti(); return { data: l.id, error: null }; }
+        if (name === 'registra_invito') {
+          if (!con023()) throw new Error('function public.registra_invito(p_da => text) does not exist');
+          const io = T('profiles').find((x) => x.id === userId); const da = String(args.p_da || '').trim();
+          let esito;
+          if (!da || !T('profiles').some((x) => x.id === da)) esito = 'sconosciuto';
+          else if (da === userId) esito = 'se-stesso';
+          else if (io.invitato_da) esito = 'gia';
+          else if (Date.now() - new Date(io.created_at || 0).getTime() > 7 * 86400000) esito = 'tardi';
+          else { io.invitato_da = da; contaReclutato(userId); esito = 'ok'; }
+          globalThis.__ULTIMO_INVITO__ = esito;
+          persisti(); return { data: esito, error: null };
+        }
+        if (name === 'create_league') { const l = { id: uid(), name: args.p_name, short_name: args.p_short, invite_code: Math.random().toString(36).slice(2, 8).toUpperCase(), rules: {}, started: false, created_by: userId, created_at: now() }; T('leagues').push(l); T('league_members').push({ id: uid(), league_id: l.id, user_id: userId, role: 'admin', team_name: args.p_team, owner_name: prof.display_name, color: args.p_color, initials: args.p_initials, credits: 500, created_at: now() }); contaReclutato(userId); persisti(); return { data: l.id, error: null }; }
         // Chiudere la giornata (008): il finto database applica le stesse tre
         // condizioni del vero, se no la prova passa dove il server direbbe di
         // no. Qui mancava del tutto, e il pezzo di prova che ci contava non
@@ -325,7 +350,7 @@ export function createClient(_url, _key, opts) {
               owner_name: prof.display_name, color: args.p_color, initials: args.p_initials,
               credits: l.rules?.budget ?? 500, created_at: now() });
           }
-          persisti(); return { data: l.id, error: null };
+          contaReclutato(userId); persisti(); return { data: l.id, error: null };
         }
         if (name === 'leghe_pubbliche') {
           return { data: T('leagues').filter((l) => l.pubblica).map((l) => ({
@@ -348,7 +373,7 @@ export function createClient(_url, _key, opts) {
           });
           l.premi = pr; persisti(); return { data: pr, error: null };
         }
-        if (name === 'join_league') { const l = T('leagues').find((x) => x.invite_code === args.p_code.toUpperCase()); if (!l) throw new Error('Codice invito non valido'); if (!T('league_members').some((m) => m.league_id === l.id && m.user_id === userId)) T('league_members').push({ id: uid(), league_id: l.id, user_id: userId, role: 'fantallenatore', team_name: args.p_team, owner_name: prof.display_name, color: args.p_color, initials: args.p_initials, credits: 500, created_at: now() }); persisti(); return { data: l.id, error: null }; }
+        if (name === 'join_league') { const l = T('leagues').find((x) => x.invite_code === args.p_code.toUpperCase()); if (!l) throw new Error('Codice invito non valido'); if (!T('league_members').some((m) => m.league_id === l.id && m.user_id === userId)) T('league_members').push({ id: uid(), league_id: l.id, user_id: userId, role: 'fantallenatore', team_name: args.p_team, owner_name: prof.display_name, color: args.p_color, initials: args.p_initials, credits: 500, created_at: now() }); contaReclutato(userId); persisti(); return { data: l.id, error: null }; }
         if (name === 'sync_matchday_locks') {
           // Interruttore per provare il caso in cui la sincronizzazione fallisce
           // e deve essere riprovata al giro dopo. Solo nel mock.

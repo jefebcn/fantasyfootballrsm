@@ -136,4 +136,18 @@ export function matchCard(r, managers, { meta = '', badgeHtml = '' } = {}) {
 }
 
 export const empty = (text, cta = '') => `<div class="empty">${logo()}<p>${text}</p>${cta}</div>`;
+/**
+ * Il badge dei Reclutatori (023): chi ha portato amici che giocano.
+ * 1 amico Reclutatore, 3 d'argento, 5 d'oro. Sotto l'uno, niente.
+ */
+export const LIVELLI_RECLUTATORE = [
+  { da: 5, nome: 'Reclutatore d\'oro', cls: 'oro' },
+  { da: 3, nome: 'Reclutatore d\'argento', cls: 'argento' },
+  { da: 1, nome: 'Reclutatore', cls: 'bronzo' },
+];
+export const livelloReclutatore = (n) => LIVELLI_RECLUTATORE.find((l) => (n || 0) >= l.da) || null;
+export function badgeReclutatore(n, { conNumero = false } = {}) {
+  const l = livelloReclutatore(n); if (!l) return '';
+  return `<span class="recl ${l.cls}" title="${l.nome}: ${n === 1 ? 'un amico portato' : `${n} amici portati`}">${icon('userplus', 'ic sm')}${conNumero ? `${l.nome} · ${n}` : n}</span>`;
+}
 export const sec = (title, right = '') => `<div class="a-sec"><b>${title}</b>${right ? `<span>${right}</span>` : ''}</div>`;

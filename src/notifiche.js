@@ -24,6 +24,28 @@ export const pushConfigurato = () => !!VAPID_PUBBLICA;
 export const suiOS = () => /iPhone|iPad|iPod/.test(navigator.userAgent)
   || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
 
+/**
+ * Quale browser su iPhone. Da iOS 16.4 «Aggiungi alla schermata Home» c'e'
+ * anche in Chrome, Edge e Firefox, non solo in Safari (Alex l'ha fatto da
+ * Chrome il 10/10): cambia solo DOVE sta il tasto Condividi. Dentro le app
+ * (Instagram, Facebook, l'app Google) invece la voce non c'e'.
+ */
+export function browserIOS() {
+  const ua = navigator.userAgent;
+  if (/Instagram|FBAN|FBAV|GSA\//.test(ua)) return 'app';
+  if (/CriOS/.test(ua)) return 'chrome';
+  if (/FxiOS|EdgiOS/.test(ua)) return 'altro';
+  return 'safari';
+}
+
+/** Dove si tocca Condividi, con le parole del browser che si ha in mano. */
+export function doveCondividi() {
+  const b = browserIOS();
+  if (b === 'chrome') return 'Il quadrato con la freccia in su, a destra nella barra dell\'indirizzo.';
+  if (b === 'altro') return 'Il quadrato con la freccia in su: se non lo vedi nella barra, è nel menu del browser.';
+  return 'Il quadrato con la freccia in su, nella barra di Safari.';
+}
+
 /** Aperta dalla schermata Home, non dentro un browser. */
 export const installata = () => navigator.standalone === true
   || (typeof matchMedia === 'function' && matchMedia('(display-mode: standalone)').matches);

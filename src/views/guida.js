@@ -2,7 +2,7 @@ import * as S from '../state.js';
 import { icon } from '../ui.js';
 import { fx } from './onboarding.js';
 import { apriModulo, vaiAllePubbliche } from './leghe.js';
-import { suiOS, installata } from '../notifiche.js';
+import { suiOS, installata, browserIOS, doveCondividi } from '../notifiche.js';
 
 /**
  * La guida di TITO: tre passi dopo la registrazione, prima delle leghe.
@@ -22,26 +22,31 @@ import { suiOS, installata } from '../notifiche.js';
  * Home non arrivano nemmeno le notifiche. TITO dice quali tasti toccare,
  * quelli del telefono che si ha in mano. Chi l'ha gia' installata (dalla Home
  * o dal Play Store, che apre a schermo intero) quel passo non lo vede.
+ *
+ * I PRIMI TRE PASSI SI LEGGONO E BASTA (Alex, 10/10): disegnati come schede
+ * coi bordi sembravano bottoni da scegliere o campi da riempire, e chi li
+ * guardava cercava cosa toccare. Adesso sono righe di testo senza riquadro,
+ * e TITO lo dice subito: per ora non si sceglie niente.
  */
 let passo = 0;
 
 const PASSI = [
   {
     posa: 'saluta',
-    titolo: 'Dove giocare',
-    frase: 'Ciao, sono TITO! Prima scegli dove giocare.',
+    titolo: 'Dove si gioca',
+    frase: 'Ciao, sono TITO! Ti racconto come funziona. Per ora leggi e basta: si sceglie alla fine.',
     punti: [
-      ['users', 'Con gli amici', 'Crei una lega e diventi admin. Mandi il link d\'invito: chi lo apre entra col codice già pronto.'],
-      ['globe', 'Nella lega pubblica', 'Se non hai una compagnia, entri nella lega aperta a tutti e sfidi chi c\'è.'],
+      ['users', 'Con gli amici', 'Una lega tutta vostra: chi la crea fa l\'admin e manda il link d\'invito agli altri.'],
+      ['globe', 'Nella lega pubblica', 'Aperta a tutti: si entra senza codice e si gioca contro chi c\'è.'],
     ],
   },
   {
     posa: 'indica',
     titolo: 'La tua squadra',
-    frase: 'Poi la tua squadra: falla tua.',
+    frase: 'Poi c\'è la tua squadra. La sistemi quando vuoi, anche dopo.',
     punti: [
-      ['shirt', 'Il nome', 'Lo scegli quando entri in una lega. Una lega, una squadra.'],
-      ['edit', 'Stemma, maglia e copertina', 'Da «La mia squadra» carichi lo stemma, disegni la maglia e scegli il personaggio in copertina. C\'è anche il mio!'],
+      ['shirt', 'Il nome', 'Si sceglie quando entri in una lega: una lega, una squadra.'],
+      ['edit', 'Stemma, maglia e copertina', 'Si cambiano quando vuoi da «La mia squadra». C\'è anche il mio personaggio!'],
     ],
   },
   {
@@ -65,11 +70,14 @@ const HOME = () => (suiOS()
     titolo: 'Mettimi sulla Home',
     frase: 'Ultima cosa: mettimi sulla Home. Così mi apri con un tocco e ti avviso io.',
     punti: [
-      ['share', '1 · Tocca Condividi', 'Il quadrato con la freccia in su, nella barra di Safari.'],
+      ['share', '1 · Tocca Condividi', doveCondividi()],
       ['home', '2 · «Aggiungi alla schermata Home»', 'Scorri l\'elenco che si apre e toccalo.'],
       ['check', '3 · Tocca «Aggiungi»', 'In alto a destra. Fatto: sono sulla Home.'],
     ],
-    nota: 'Si fa da Safari: da Chrome su iPhone la voce non c\'è.',
+    azione: true,
+    nota: browserIOS() === 'app'
+      ? 'Sei dentro un\'altra app: apri fantatitano.site in Safari o in Chrome, lì trovi la voce.'
+      : browserIOS() === 'altro' ? 'Se la voce non c\'è, apri fantatitano.site in Safari o in Chrome.' : '',
   }
   : {
     posa: 'indica',
@@ -81,6 +89,7 @@ const HOME = () => (suiOS()
       ['check', '3 · Tocca «Installa»', 'Fatto: mi trovi fra le app del telefono.'],
     ],
     installa: true,
+    azione: true,
   });
 
 /** I passi di oggi: quello della Home solo se l'app gira ancora nel browser. */
@@ -106,7 +115,7 @@ export const guida = {
         </div>
         <span class="intro-eyebrow">Come si gioca</span>
         <h1>${p.titolo}</h1>
-        <ul class="intro-points">${p.punti.map(([ic, t, d], i) => `<li style="--i:${i}"><i>${ico(ic)}</i><div><b>${t}</b><span>${d}</span></div></li>`).join('')}</ul>
+        <ul class="intro-points${p.azione ? '' : ' info'}">${p.punti.map(([ic, t, d], i) => `<li style="--i:${i}"><i>${ico(ic)}</i><div><b>${t}</b><span>${d}</span></div></li>`).join('')}</ul>
         ${p.installa && window.__installPrompt ? `<button class="guida-installa" data-installa>${icon('down', 'ic sm')}Installa adesso</button>` : ''}
         ${p.nota ? `<p class="guida-nota">${p.nota}</p>` : ''}
       </div>

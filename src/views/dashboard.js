@@ -538,9 +538,9 @@ export const dashboard = {
       ${lockDaSistemare()}
       ${scambiDaDecidere()}
       ${daConsegnare()}
+      ${classificaBreve(me)}
       ${highlights()}
       ${notizie()}
-      ${classificaBreve(me)}
       ${sec('Dal regolamento')}
       <div class="rule"><span class="art">${art}</span><p><b>${titolo}.</b> ${testo}</p></div>
     </main>`;

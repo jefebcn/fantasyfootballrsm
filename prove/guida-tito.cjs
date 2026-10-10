@@ -28,14 +28,16 @@ const OUT = process.env.USCITA || '/tmp';
     await p.fill('#email', 'a@e.it'); await p.fill('#name', 'Alex'); await p.fill('#password', 'password123'); await p.click('#primary'); await w(1200);
   };
 
-  // 1. dopo la registrazione: la guida, tre passi, TITO che parla
+  // 1. dopo la registrazione: la guida, quattro passi nel browser (il quarto
+  // e' la schermata Home), TITO che parla
   {
     const { ctx, p, err, w } = await nuovo();
     await p.goto(`${BASE}/#/`, { waitUntil: 'load' }); await w(1200);
     await iscriviti(p, w);
     vero((await p.evaluate(() => location.hash)) === '#/guida', `dopo l'iscrizione si arriva su ${await p.evaluate(() => location.hash)}, non sulla guida`);
     const titoli = [];
-    for (let i = 0; i < 3; i++) {
+    let terzo = '', lungo = 0;
+    for (let i = 0; i < 4; i++) {
       await p.evaluate(() => document.fonts && document.fonts.ready);
       const s = await p.evaluate(() => {
         const img = document.querySelector('.guida-tito img');
@@ -44,20 +46,26 @@ const OUT = process.env.USCITA || '/tmp';
           tito: !!(img && img.complete && img.naturalWidth > 0), fumetto: f ? f.getBoundingClientRect().width : 0, punti: document.querySelectorAll('.guida .intro-points li').length };
       });
       titoli.push(s.titolo);
-      vero(s.passo === `Passo ${i + 1} di 3`, `passo ${i + 1}: l'indicatore dice "${s.passo}"`);
+      vero(s.passo === `Passo ${i + 1} di 4`, `passo ${i + 1}: l'indicatore dice "${s.passo}"`);
       vero(s.tito, `passo ${i + 1}: l'immagine di TITO non si carica`);
       vero(s.fumetto > 150, `passo ${i + 1}: il fumetto di TITO e' largo ${Math.round(s.fumetto)}px`);
       vero(s.punti >= 2, `passo ${i + 1}: ${s.punti} punti spiegati`);
       if (i === 0) await p.screenshot({ path: `${OUT}/guida-1.png` });
-      if (i < 2) { await p.click('[data-next]'); await w(400); }
+      if (i === 2) {
+        terzo = await p.evaluate(() => document.querySelector('.guida').textContent);
+        lungo = await p.evaluate(() => [...document.querySelectorAll('.guida .intro-points li span')].reduce((n, x) => n + x.textContent.length, 0));
+        await p.screenshot({ path: `${OUT}/guida-3.png` });
+      }
+      if (i < 3) { await p.click('[data-next]'); await w(400); }
     }
-    vero(titoli.join('|') === 'Dove giocare|La tua squadra|I giocatori', `i tre passi sono: ${titoli.join(', ')}`);
-    const testo = await p.evaluate(() => document.querySelector('.guida').textContent);
-    vero(/Negozio/.test(testo) && /asta/.test(testo), 'il terzo passo non spiega negozio e asta');
-    await p.screenshot({ path: `${OUT}/guida-3.png` });
+    vero(titoli.join('|') === 'Dove giocare|La tua squadra|I giocatori|Mettimi sulla Home', `i passi sono: ${titoli.join(', ')}`);
+    vero(/Negozio/.test(terzo) && /asta/.test(terzo), 'il terzo passo non spiega negozio e asta');
+    // il quarto: i tasti da toccare (qui il telefono e' un Android: i tre puntini e «Installa»)
+    const quarto = await p.evaluate(() => document.querySelector('.guida').textContent);
+    vero(/tre puntini/.test(quarto) && /schermata Home/.test(quarto) && /Installa/.test(quarto), 'il passo della Home non dice quali tasti toccare');
+    await p.screenshot({ path: `${OUT}/guida-4.png` });
     vero(await p.$('[data-fine="crea"]') && await p.$('[data-fine="pubblica"]'), "all'ultimo passo mancano i due pulsanti");
     vero(await p.$('.intro-cta[data-fine="pubblica"]'), 'il pulsante giallo non e\' «Entra nella lega pubblica»');
-    const lungo = await p.evaluate(() => [...document.querySelectorAll('.guida .intro-points li span')].reduce((n, x) => n + x.textContent.length, 0));
     vero(lungo <= 200, `il terzo passo e' lungo ${lungo} caratteri: su un telefono piccolo non sta`);
     await p.click('[data-fine="crea"]'); await w(700);
     vero((await p.evaluate(() => location.hash)) === '#/leghe', '«Crea una lega» non porta alle leghe');
@@ -105,7 +113,7 @@ const OUT = process.env.USCITA || '/tmp';
     await p.setViewportSize({ width: 375, height: 667 });
     await p.goto(`${BASE}/#/`, { waitUntil: 'load' }); await w(1200);
     await iscriviti(p, w);
-    await p.click('[data-next]'); await w(300); await p.click('[data-next]'); await w(400);
+    await p.click('[data-next]'); await w(300); await p.click('[data-next]'); await w(300); await p.click('[data-next]'); await w(400);
     const cta = await p.$('.intro-cta[data-fine="pubblica"]');
     if (cta) {
       await cta.scrollIntoViewIfNeeded(); await w(200);
@@ -130,7 +138,7 @@ const OUT = process.env.USCITA || '/tmp';
     });
     // il finto server legge le tabelle all'avvio
     if (conLega) { await p.reload({ waitUntil: 'load' }); await w(1200); }
-    await p.click('[data-next]'); await w(300); await p.click('[data-next]'); await w(400);
+    await p.click('[data-next]'); await w(300); await p.click('[data-next]'); await w(300); await p.click('[data-next]'); await w(400);
     await p.click('[data-fine="pubblica"]'); await w(1200);
     const r = await p.evaluate(() => {
       const img = document.querySelector('.pubcard .pc-tito img');
@@ -153,6 +161,35 @@ const OUT = process.env.USCITA || '/tmp';
     await iscriviti(p, w);
     vero((await p.evaluate(() => location.hash)) === '#/leghe', `con un invito si arriva su ${await p.evaluate(() => location.hash)}, non sulle leghe`);
     if (err.length) ko.push('errori (invito): ' + err.join(' | '));
+    await ctx.close();
+  }
+
+  // 4. il passo della Home su iPhone: Condividi e «Aggiungi alla schermata
+  // Home», da Safari; e chi ha gia' l'app sulla Home quel passo non lo vede
+  for (const sullaHome of [false, true]) {
+    const ctx = await b.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, serviceWorkers: 'block',
+      userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Mobile/15E148 Safari/604.1' });
+    await ctx.addInitScript((home) => {
+      window.__SUPABASE_JS__ = '/tests/mock-supabase.js';
+      localStorage.setItem('fcs:auth', 'supabase');
+      if (!localStorage.getItem('fcs:prefs')) localStorage.setItem('fcs:prefs', JSON.stringify({ onboarded: true, theme: 'system' }));
+      localStorage.setItem('fcs:supabase', JSON.stringify({ url: 'https://mock.supabase.co', key: 'mock-key-mock-key-mock' }));
+      if (home) Object.defineProperty(navigator, 'standalone', { get: () => true });
+    }, sullaHome);
+    const p = await ctx.newPage(); const err = []; p.on('pageerror', (e) => err.push(e.message));
+    const w = (ms = 500) => p.waitForTimeout(ms);
+    await p.goto(`${BASE}/#/`, { waitUntil: 'load' }); await w(1200);
+    await iscriviti(p, w);
+    const quanti = await p.evaluate(() => document.querySelector('.guida-passo')?.textContent);
+    if (sullaHome) vero(quanti === 'Passo 1 di 3', `app gia' sulla Home: la guida dice "${quanti}", il passo della Home doveva sparire`);
+    else {
+      vero(quanti === 'Passo 1 di 4', `iPhone nel browser: la guida dice "${quanti}"`);
+      for (let i = 0; i < 3; i++) { await p.click('[data-next]'); await w(350); }
+      const t = await p.evaluate(() => document.querySelector('.guida').textContent);
+      vero(/Condividi/.test(t) && /Aggiungi alla schermata Home/.test(t) && /Safari/.test(t), 'iPhone: il passo della Home non dice Condividi → «Aggiungi alla schermata Home»');
+      await p.screenshot({ path: `${OUT}/guida-4-iphone.png` });
+    }
+    if (err.length) ko.push('errori (iPhone): ' + err.join(' | '));
     await ctx.close();
   }
 

@@ -40,3 +40,18 @@ export const urlVideo = (id) => `https://www.youtube.com/watch?v=${id}`;
 const origine = () => (typeof location !== 'undefined' && /^https?:/.test(location.origin) ? `&origin=${encodeURIComponent(location.origin)}` : '');
 export const urlIncorpora = (id) => `https://www.youtube-nocookie.com/embed/${id}?autoplay=1&playsinline=1&rel=0&modestbranding=1${origine()}`;
 export const ciSonoVideo = () => PARTITE.length > 0 || VIDEO_CANALE.length > 0;
+
+/**
+ * Il video da far partire appena si apre la pagina Video. Lo segna il tocco
+ * su una partita negli highlights della home (data-apri-video): prima si
+ * finiva sulla lista e bisognava cercare la partita e toccare play una
+ * seconda volta, e sembrava che dall'app non si potesse guardare niente.
+ */
+let daAprire = null;
+export const videoDaAprire = () => { const id = daAprire; daAprire = null; return id; };
+if (typeof document !== 'undefined') {
+  document.addEventListener('click', (e) => {
+    const a = e.target.closest && e.target.closest('[data-apri-video]');
+    if (a) daAprire = a.dataset.apriVideo;
+  }, true);
+}

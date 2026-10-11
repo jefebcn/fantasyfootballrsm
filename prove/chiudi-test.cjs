@@ -108,7 +108,7 @@ const ok = [], ko = []; const et = (c, t) => (c ? ok : ko).push(t);
   const due = await p.evaluate(() => {
     const t = document.body.innerText;
     const q = (r) => (t.match(r) || [])[1];
-    return { calcolare: q(/Da calcolare\s*(\d+)ª/), corrente: q(/Giornata corrente\s*(\d+)ª/),
+    return { calcolare: q(/Da calcolare\s*(\d+)ª/i), corrente: q(/Giornata corrente\s*(\d+)ª/i),
       unTasto: document.querySelectorAll('#chiudi-giornata').length };
   });
   et(due.calcolare && due.corrente && +due.corrente > +due.calcolare,

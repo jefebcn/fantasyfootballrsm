@@ -70,7 +70,7 @@ const ok = [], ko = []; const et = (c, t) => (c ? ok : ko).push(t);
   // Cinque da quando c'e' lo spazio dello sponsor (017): il numero e' qui
   // perche' una scheda che sparisce senza che nessuno se ne accorga e' un
   // pezzo di console che smette di esistere.
-  et(num.tab.length === 5 && /Sponsor/.test(num.tab.join(' ')), `con cinque schede (${num.tab.join(', ')})`);
+  et(num.tab.length === 5 && /Sponsor/i.test(num.tab.join(' ')), `con cinque schede (${num.tab.join(', ')})`);
   // Le etichette escono in maiuscolo: il CSS ha text-transform e innerText
   // restituisce il testo RESO. Confronto senza distinguere le maiuscole.
   et(/iscritti/i.test(num.testo) && /leghe/i.test(num.testo), 'fra cui iscritti e leghe');

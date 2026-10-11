@@ -48,6 +48,15 @@ function builder(table) {
     update(patch) { op = 'update'; payload = patch; return b; },
     delete() { op = 'delete'; return b; },
     then(res, rej) {
+      // la rete vera ha una latenza per richiesta: con __RITARDO_QUERY__ la
+      // si simula, per misurare quante richieste l'app fa una dopo l'altra
+      const ritardo = typeof window !== 'undefined' ? window.__RITARDO_QUERY__ : 0;
+      if (ritardo) { setTimeout(() => esegui(res, rej), ritardo); return; }
+      esegui(res, rej);
+    },
+  };
+  function esegui(res) {
+    {
       try {
         let data = null; const rows = T(table);
         const pk = { lineups: ['league_id', 'member_id', 'matchday'], match_overrides: ['match_id'], match_appearances: ['match_id', 'player_id'], matchday_status: ['matchday'], matchday_locks: ['matchday'], profiles: ['id'] }[table] || ['id'];
@@ -67,8 +76,8 @@ function builder(table) {
         if (op !== 'select') persisti();
         res({ data, error: null });
       } catch (e) { res({ data: null, error: { message: e.message } }); }
-    },
-  };
+    }
+  }
   return b;
 }
 function guardFrozen(table, list) {

@@ -143,10 +143,11 @@ const OUT = process.env.USCITA || '/tmp';
     const r = await p.evaluate(() => {
       const img = document.querySelector('.pubcard .pc-tito img');
       return { hash: location.hash, entra: !!document.querySelector('#go-entra'), testo: document.body.textContent,
-        tito: !!(img && img.complete && img.naturalWidth > 0), titolo: getComputedStyle(document.querySelector('.pc-nome') || document.body).fontStyle };
+        tito: !!(img && img.complete && img.naturalWidth > 0), titolo: getComputedStyle(document.querySelector('.pc-nome') || document.body).fontFamily };
     });
     if (conLega) vero(await p.$('.lgtab.on[data-vista="pubbliche"]'), 'con una lega pubblica aperta la scheda «Pubbliche» non e\' quella scelta');
-    if (conLega) vero(r.tito && r.titolo === 'italic', `la scheda della lega pubblica non ha TITO (${r.tito}) o il titolo in corsivo (${r.titolo})`);
+    // dall'11/10 il titolo e' in Anton, come i titoli dei post (prima: corsivo nero)
+    if (conLega) vero(r.tito && /Anton/.test(r.titolo), `la scheda della lega pubblica non ha TITO (${r.tito}) o il titolo in Anton (${r.titolo})`);
     vero(r.hash === '#/leghe', `«Entra nella lega pubblica» porta su ${r.hash}`);
     if (conLega) vero(r.entra && /Titano Open/.test(r.testo), 'con una sola lega pubblica aperta il modulo per entrarci non e\' aperto');
     else vero(!r.entra && /non c'è una lega pubblica aperta/.test(r.testo), 'senza leghe pubbliche nessuno dice che non ce ne sono');

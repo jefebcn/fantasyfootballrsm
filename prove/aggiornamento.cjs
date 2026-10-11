@@ -43,7 +43,7 @@ const ok = [], ko = []; const et = (c, t) => (c ? ok : ko).push(t);
   await p.evaluate(() => navigator.serviceWorker.dispatchEvent(new Event('controllerchange'))); await w(200);
   const testo = await barra();
   et(/Nuova versione pronta/.test(testo), `il secondo e\' un aggiornamento: compare la barra ("${testo.split('\n')[0]}")`);
-  et(/Aggiorna/.test(testo), 'con il bottone "Aggiorna"');
+  et(/Aggiorna/i.test(testo), 'con il bottone "Aggiorna"');
 
   await p.evaluate(() => navigator.serviceWorker.dispatchEvent(new Event('controllerchange'))); await w(200);
   et((await p.evaluate(() => document.querySelectorAll('#aggiorna').length)) === 1, 'un altro passaggio non ne aggiunge una seconda');

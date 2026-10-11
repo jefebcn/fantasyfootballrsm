@@ -186,6 +186,25 @@ function corrente(f, n, me, riposo, bloccato = null) {
  * inganna chi legge e, il giorno che ci si accorge, costa piu' di quanto abbia
  * reso.
  */
+/**
+ * «Vuoi un promemoria prima della scadenza?» — la richiesta gentile delle
+ * push (regole in AV.daChiedere). Sta subito sotto la formazione: chi l'ha
+ * appena consegnata e' chi capisce a cosa serve. Il permesso del telefono si
+ * chiede solo dal «Sì».
+ */
+function richiestaPromemoria() {
+  const d = S.store.get();
+  if (!AV.daChiedere({ avvisi: d.avvisi, chiesto: d.pushChiesto, consegnato: S.haConsegnato(),
+    permesso: AV.permesso(), supportate: AV.supportate(), configurato: AV.pushConfigurato() })) return '';
+  return `<div class="a-card chiedi-push">
+    <i class="cp-ico">${icon('bell')}</i>
+    <div class="cp-txt"><b>Vuoi un promemoria prima della scadenza?</b>
+      <span>Una notifica sul telefono quando manca poco al lock e non hai ancora schierato. Solo quella.</span>
+      <div class="cp-btn"><button class="a-btn" data-push="si">Sì, attiva</button><button class="a-btn sec" data-push="no">Non ora</button></div>
+    </div>
+  </div>`;
+}
+
 const INDIRIZZO_OK = /^(https?:\/\/|\/)/i;
 function fasciaSponsor() {
   const sp = S.sponsorInVetrina(); if (!sp) return '';
@@ -533,6 +552,7 @@ export const dashboard = {
       ${noRoster && !S.legaPubblica() ? tile({ href: S.isLeagueAdmin() ? '#/lega' : '#/leghe', lead: icon('warn'), leadKind: 'warn',
           title: 'Rose non ancora assegnate',
           sub: S.isLeagueAdmin() ? "Generale o inserirle dalla gestione lega" : "Le assegna l'admin della lega dopo l'asta" }) : azione(ph, bloccato)}
+      ${richiestaPromemoria()}
       ${ultimiCinque(last, me)}
       ${prossimePartite(ph)}
       ${lockDaSistemare()}
@@ -574,6 +594,26 @@ export const dashboard = {
       slot.querySelector('#inst-no').onclick = () => { S.store.set({ installedDismissed: true }); slot.innerHTML = ''; };
     };
     show(); document.addEventListener('installable', show, { once: true });
+    root.querySelector('.chiedi-push')?.addEventListener('click', async (e) => {
+      const b = e.target.closest('[data-push]'); if (!b) return;
+      const unNo = () => { const c = S.store.get().pushChiesto; S.store.set({ pushChiesto: { volte: (c?.volte || 0) + 1, ultima: Date.now() } }); };
+      if (b.dataset.push === 'no') { unNo(); ctx.toast('Va bene. Se cambi idea: Impostazioni → Preferenze notifiche'); return; }
+      b.disabled = true;
+      const esito = await AV.chiediPermesso();
+      if (esito === 'granted') {
+        S.store.set({ avvisi: true });   // ridisegna: col permesso dato il riquadro sparisce
+        // l'iscrizione aspetta il service worker: se tarda, l'avviso non resta appeso
+        const iscritto = await Promise.race([S.iscriviAvvisi().catch(() => false),
+          new Promise((r) => { setTimeout(() => r(false), 8000); })]);
+        ctx.toast(iscritto ? 'Promemoria attivo su questo telefono' : 'Notifiche consentite: il promemoria arriva ad app aperta');
+      } else if (esito === 'denied') {
+        ctx.toast('Va bene, niente notifiche. Si riattivano dalle impostazioni del telefono');
+      } else {
+        // finestra chiusa senza scegliere: vale come un «non ora», non si richiede subito
+        unNo();
+      }
+      ctx.render();
+    });
     // Chiudere la giornata e' definitivo (art. 9.2), quindi si chiede conferma
     // e si aspetta il server prima di dire che e' fatta: se il database
     // rifiuta — giornata gia' chiusa, nessun evento — il messaggio e' il suo.

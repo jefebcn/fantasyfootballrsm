@@ -30,9 +30,10 @@ export const lega = {
     const started = ms.some((m) => rosterCount(m) > 0);
     return `<main class="a-body">
       <div class="a-card" style="display:flex;flex-direction:column;gap:6px"><b style="font:700 18px var(--font-display)">${esc(L.name)}</b><span class="small muted">${ms.length} partecipanti · ${started ? 'rose assegnate' : 'in attesa delle rose'}</span>
-        ${L.inviteCode ? `<div style="display:flex;gap:8px;align-items:center;margin-top:6px"><span class="small muted">Codice invito</span><b class="num" style="font-size:20px;letter-spacing:.12em">${esc(L.inviteCode)}</b><button class="chip" id="share-code" style="margin-left:auto">${icon('share', 'ic sm')} Invita</button></div>` : ''}</div>
+        ${L.inviteCode && !S.legaPubblica() ? `<div style="display:flex;gap:8px;align-items:center;margin-top:6px"><span class="small muted">Codice invito</span><b class="num" style="font-size:20px;letter-spacing:.12em">${esc(L.inviteCode)}</b><button class="chip" id="share-code" style="margin-left:auto">${icon('share', 'ic sm')} Invita</button></div>` : ''}
+        ${S.legaPubblica() ? `<div style="display:flex;gap:8px;align-items:center;margin-top:6px"><span class="small muted">Aperta a tutti, senza codice</span><button class="chip" id="share-code" style="margin-left:auto">${icon('share', 'ic sm')} Invita</button></div>` : ''}</div>
       ${reclutatore()}
-      ${sec('Partecipanti', `${ms.length}/12`)}
+      ${sec('Partecipanti', `${ms.length}/${S.maxMembri()}`)}
       <div class="vlist">${ms.map((m) => `<div class="prow conmaglia">${crest(m, 'sm')}<span class="pmg">${maglia(kitOf(m))}</span>
         <div class="ptxt"><b>${esc(m.teamName)}${m.id === me?.id ? ' <em>tu</em>' : ''}${badgeReclutatore(m.reclutati)}</b><span>${esc(m.owner)}${m.viceName ? ` e ${esc(m.viceName)}` : ''} · ${m.role === 'admin' ? 'admin' : 'fantallenatore'}</span>
           <span class="pmeta">rosa ${rosterCount(m)}/25 · ${plurale(m.credits, 'credito', 'crediti')}</span></div>
@@ -51,7 +52,13 @@ export const lega = {
       // modulo gia' compilato, anche dopo il giro della conferma e-mail. Il
       // codice resta scritto anche nel testo, per chi lo vuole dettare.
       // E porta anche chi lo manda (?da=), per i Reclutatori.
-      if (e.target.closest('#share-code, #share-recl')) { const c = S.base.league.inviteCode; const text = c ? `Entra nella lega "${S.base.league.name}" di Fantatitano con il codice ${c} — ${S.linkInvito(c)}` : `Gioca con me a Fantatitano, il fantacalcio del campionato sammarinese — ${S.linkInvito()}`; if (navigator.share) { try { await navigator.share({ text }); } catch { /* annullato */ } } else { await navigator.clipboard?.writeText(text); ctx.toast('Invito copiato'); } return; }
+      // LA LEGA PUBBLICA NON SI PASSA COL CODICE (Alex, 11/10: due amici
+      // invitati trovavano «lega piena»). Il codice portava in «Entra con
+      // codice», cioe' nelle regole delle leghe fra amici: massimo 12, e la
+      // pubblica ne ha venti. Il link della pubblica porta solo l'app e chi
+      // lo manda: chi lo apre senza leghe trova per prima la pubblica, col
+      // suo tasto «Entra». (Per i link gia' mandati col codice c'e' la 029.)
+      if (e.target.closest('#share-code, #share-recl')) { const L = S.base.league; const c = L.pubblica ? null : L.inviteCode; const text = L.pubblica ? `Entra con me nella lega pubblica "${L.name}" di Fantatitano, il fantacalcio del campionato sammarinese: è aperta a tutti, ti basta iscriverti — ${S.linkInvito()}` : c ? `Entra nella lega "${L.name}" di Fantatitano con il codice ${c} — ${S.linkInvito(c)}` : `Gioca con me a Fantatitano, il fantacalcio del campionato sammarinese — ${S.linkInvito()}`; if (navigator.share) { try { await navigator.share({ text }); } catch { /* annullato */ } } else { await navigator.clipboard?.writeText(text); ctx.toast('Invito copiato'); } return; }
       const r = e.target.closest('[data-role]'); if (r) { const [id, role] = r.dataset.role.split(':'); try { await S.setMemberRole(id, role); ctx.toast('Ruolo aggiornato'); } catch (err) { ctx.toast(err.message); } return; }
       const k = e.target.closest('[data-kick]'); if (k && confirm('Rimuovere questo partecipante dalla lega?')) { try { await S.removeMember(k.dataset.kick); } catch (err) { ctx.toast(err.message); } return; }
       if (e.target.closest('#elimina')) {

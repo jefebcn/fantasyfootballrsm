@@ -2234,3 +2234,20 @@ button,a,.chip,[data-compra],[data-vendi]{touch-action:manipulation}
 .chiedi-push .cp-txt>span{font-size:13px;color:var(--text-muted)}
 .chiedi-push .cp-btn{display:flex;gap:8px;margin-top:8px}
 .chiedi-push .cp-btn .a-btn{height:40px;font-size:12px;flex:1}
+/* Classifica a punti: la riga si tocca e porta alla formazione (#/formazione/:id) */
+a.crow{color:inherit;text-decoration:none}
+a.crow .cls-chev{flex:none;color:var(--text-muted);margin-left:-4px}
+/* La formazione di un altro partecipante */
+.fd-testa{display:flex;align-items:center;gap:12px}
+.fd-testa .nm{flex:1;min-width:0;display:flex;flex-direction:column}
+.fd-testa .nm b{font-family:var(--font-display);font-size:17px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.fd-testa .nm span{font-size:13px;color:var(--text-muted)}
+.fd-giornata{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.fd-giornata>span{display:flex;align-items:center;gap:8px;font-family:var(--font-display)}
+.fd-giornata .ib{width:40px;height:40px;display:grid;place-items:center;border-radius:50%;color:var(--text)}
+.fd-giornata .ib.spento{visibility:hidden}
+.fd-vuota{display:flex;flex-direction:column;gap:4px}
+.fd-vuota span{font-size:13px;color:var(--text-muted)}
+.fd-tot{display:flex;align-items:center;justify-content:space-between}
+.fd-tot b{font-family:var(--font-display);font-size:22px}
+.fd-nota{margin:0 2px}

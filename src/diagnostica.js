@@ -31,6 +31,11 @@ const ultimi = [];
 
 /** Aggiunge un errore alla lista, tenendo solo gli ultimi. */
 export function segna(tipo, messaggio, dettaglio = '') {
+  annota(tipo, messaggio, dettaglio);
+  manda(tipo, messaggio, dettaglio);
+}
+/** Solo nella lista di questo telefono, per la segnalazione a mano. */
+function annota(tipo, messaggio, dettaglio) {
   ultimi.push({
     quando: new Date().toISOString(),
     tipo,
@@ -38,7 +43,6 @@ export function segna(tipo, messaggio, dettaglio = '') {
     dettaglio: String(dettaglio || '').slice(0, 300),
   });
   while (ultimi.length > QUANTI) ultimi.shift();
-  manda(tipo, messaggio, dettaglio);
 }
 
 /* ------------------------------------------------------------ il rapporto
@@ -104,13 +108,37 @@ export function impostaInvio(fn) {
 
 export const quantiErrori = () => ultimi.length;
 
+/**
+ * Se un errore viene dai file dell'app: uno script .js servito dallo stesso
+ * indirizzo dell'app.
+ *
+ * In Console finivano anche errori che l'app non ha scritto (Alex, 11/10:
+ * tre in una settimana, tutti sulla schermata delle leghe):
+ *  - «Script error.» di Safari, senza file: e' come il browser chiama un
+ *    errore di uno script di un altro sito, e l'app non ne carica nessuno.
+ *    Sono le estensioni, i blocchi pubblicita', il browser dentro Instagram.
+ *  - un «Maximum call stack size exceeded» su Chrome per iPhone, che come file
+ *    dava la pagina stessa alla riga 196. La pagina e' lunga 59 righe e non
+ *    ha codice dentro: era uno script che Chrome aggiunge da se'.
+ * Un errore dell'app porta sempre il suo file (src/qualcosa.js).
+ */
+export function dalNostroCodice(file, origine = (typeof location !== 'undefined' ? location.origin : '')) {
+  const f = String(file || '');
+  if (!f || !origine || !f.startsWith(`${origine}/`)) return false;
+  return /\.m?js$/i.test(f.split(/[?#]/)[0]);
+}
+
 /** Si aggancia a quello che il browser sa e l'app non vedeva. */
 export function ascolta(finestra = window) {
   finestra.addEventListener('error', (e) => {
     // Le immagini che non arrivano fanno un evento senza messaggio: sono
     // rumore, non guasti dell'app.
     if (e?.target && e.target !== finestra) return;
-    segna('errore', e?.message, `${e?.filename || ''}:${e?.lineno || ''}`);
+    const dove = `${e?.filename || ''}:${e?.lineno || ''}`;
+    // Quello che non nasce dai file dell'app resta su questo telefono e non
+    // parte: non lo puo' correggere nessuno (vedi dalNostroCodice).
+    if (!dalNostroCodice(e?.filename, finestra.location?.origin)) { annota('esterno', e?.message, dove); return; }
+    segna('errore', e?.message, dove);
   });
   finestra.addEventListener('unhandledrejection', (e) => {
     segna('promessa', e?.reason?.message || e?.reason, e?.reason?.stack || '');

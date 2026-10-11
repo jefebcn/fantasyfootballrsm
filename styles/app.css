@@ -2251,3 +2251,63 @@ a.crow .cls-chev{flex:none;color:var(--text-muted);margin-left:-4px}
 .fd-tot{display:flex;align-items:center;justify-content:space-between}
 .fd-tot b{font-family:var(--font-display);font-size:22px}
 .fd-nota{margin:0 2px}
+
+/* ==========================================================================
+   I TASTI DELLA HOME NELLO STILE DEI POST DI TITO (Alex, 11/10)
+   Lime pieno per quello che c'e' da fare, viola per le etichette, Anton per
+   le scritte, l'ombra piena e un filo di inclinazione come le fasce delle
+   storie. Solo in home (.a-body.home): il resto dell'app resta com'era.
+   ========================================================================== */
+.home .a-btn.tito{display:flex;align-items:center;gap:10px;height:54px;padding:0 8px 0 18px;border-radius:14px;
+  background:var(--c-lime);color:var(--c-inchiostro);text-decoration:none;
+  font:400 21px/1 var(--font-tito);letter-spacing:.03em;text-transform:uppercase;
+  box-shadow:4px 4px 0 var(--c-viola);transform:rotate(-1deg);transition:transform .12s,box-shadow .12s}
+.home .a-btn.tito > span{flex:1;min-width:0;text-align:center;padding-left:38px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.home .a-btn.tito .vai{flex:none;width:38px;height:38px;border-radius:50%;display:grid;place-items:center;
+  background:var(--c-inchiostro);color:var(--c-lime)}
+.home .a-btn.tito .vai .ic{width:18px;height:18px;stroke-width:2.8}
+.home .a-btn.tito:active{transform:rotate(-1deg) translate(3px,3px);box-shadow:1px 1px 0 var(--c-viola)}
+.home .mcard .mact{padding-bottom:16px}
+
+/* «Classifica e premi», «Probabili e altro»: erano link sottolineati */
+.home .mcard .mcta{text-decoration:none;color:var(--tito-ink);font:400 15px/1 var(--font-tito);letter-spacing:.05em;
+  text-transform:uppercase;padding:13px 11px}
+.home .mcard .mcta .ic{stroke-width:2.8}
+
+/* «Voto Titano»: l'adesivo lime delle storie */
+.home .a-hero .hero-marchio{background:var(--c-lime);color:var(--c-inchiostro);border:0;padding:6px 14px 6px 9px;
+  transform:rotate(-3deg);box-shadow:3px 3px 0 var(--c-viola)}
+.home .a-hero .hero-marchio:active{background:var(--c-lime-600)}
+.home .a-hero .hero-marchio > span{font:400 15px/1 var(--font-tito);letter-spacing:.06em;opacity:1}
+
+/* «Costruisci la tua rosa»: l'azione da fare, quindi lime come il tasto */
+.home .negozio-cta{background:var(--c-lime);color:var(--c-inchiostro);box-shadow:4px 4px 0 var(--c-viola);border-radius:14px}
+.home .negozio-cta > i{background:var(--c-inchiostro);border-radius:12px}
+.home .negozio-cta .ic{color:var(--c-lime)}
+.home .negozio-cta .txt b{font:400 20px/1.1 var(--font-tito);letter-spacing:.03em;text-transform:uppercase}
+.home .negozio-cta .txt > span{opacity:.85;margin-top:3px}
+.home .negozio-cta .chev,.home .invito .chev,.home .tile > .chev{width:30px;height:30px;border-radius:50%;opacity:1}
+.home .negozio-cta .chev{background:var(--c-inchiostro);color:var(--c-lime)}
+
+/* Il montepremi: fondo viola come le fasce dei post, titolo lime */
+.home .invito{background:linear-gradient(112deg,#160640 0%,#2A0A8E 60%,var(--c-viola-700) 100%);
+  border:0;border-radius:14px;box-shadow:4px 4px 0 var(--c-lime)}
+.home .invito::before{background:repeating-linear-gradient(101deg, rgba(255,255,255,.05) 0 2px, rgba(255,255,255,0) 2px 30px)}
+.home .invito > i{background:rgba(217,245,31,.12);border-color:rgba(217,245,31,.55)}
+.home .invito .txt b{font:400 20px/1.1 var(--font-tito);letter-spacing:.03em;color:var(--c-lime)}
+.home .invito .txt > span{color:#F1ECFF}
+.home .invito .txt > span.sot{color:#D6CCFF}
+.home .invito .chev{background:var(--c-lime);color:var(--c-inchiostro)}
+
+/* Le schede che si toccano: simbolo viola, freccia in un tondo, stato come adesivo */
+.home .tile{border-radius:14px}
+.home .tile > .lead:not(.warn):not(.live){background:var(--c-viola);color:var(--c-lime)}
+.home .tile .txt b{font:400 18px/1.15 var(--font-tito);letter-spacing:.03em;text-transform:uppercase}
+.home .tile > .chev{display:grid;place-items:center;background:var(--surface-sunk);color:var(--tito-ink)}
+.home .tile .txt .badge{transform:rotate(-2deg);font:400 12.5px/1 var(--font-tito);letter-spacing:.06em;padding:5px 9px 4px 7px}
+
+/* Le icone in alto: un tondo ciascuna, cosi' si vede che sono tasti */
+.a-appbar .ib:not([data-open-drawer]):not([data-back]){border-radius:12px;
+  background:rgba(255,255,255,.14);box-shadow:inset 0 0 0 1px rgba(255,255,255,.22)}
+.a-appbar .ib:not([data-open-drawer]):not([data-back]):active{background:rgba(255,255,255,.26)}
+.a-appbar .ib .dot{top:-3px;right:-3px}

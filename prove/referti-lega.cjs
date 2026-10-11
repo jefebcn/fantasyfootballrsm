@@ -67,6 +67,18 @@ const conta = (p) => p.evaluate(() => {
   et(secondo.totale === primo.totale && secondo.presenze === primo.presenze,
     `riaprire l'app non duplica niente (${secondo.totale} eventi, ${secondo.presenze} presenze)`);
 
+  // OLTRE LE MILLE RIGHE. Il finto server, come Supabase, non ne da' piu' di
+  // mille per richiesta; le presenze di cinque giornate sono gia' di piu'.
+  // L'app deve vederle tutte: una presenza che resta fuori e' un giocatore
+  // senza voto, e una squadra che perde punti senza che niente lo dica.
+  const viste = await p.evaluate(async () => {
+    const S = await import('/src/state.js');
+    let n = 0; for (let g = 1; g <= 30; g++) for (const m of S.matchesOf(g)) n += S.appearancesOf(m.id).length;
+    return n;
+  });
+  et(secondo.presenze > 1000, `le presenze nel database sono più di mille (${secondo.presenze})`);
+  et(viste === secondo.presenze, `e l'app le vede tutte, non le prime mille (${viste} su ${secondo.presenze})`);
+
   // UNA PARTITA TOCCATA A MANO NON SI TOCCA, LE ALTRE DELLA SUA GIORNATA SI'.
   //
   // Qui stava il guasto vero: la regola guardava la GIORNATA intera — "se in

@@ -26,7 +26,7 @@ function contaReclutato(id) {
 }
 
 function builder(table) {
-  const filters = []; let op = 'select'; let payload = null; let single = false; let maybe = false; let orderBy = null; let lim = null; 
+  const filters = []; let op = 'select'; let payload = null; let single = false; let maybe = false; let orderBy = []; let lim = null; let da = null; let a = null; 
   const apply = (rows) => rows.filter((r) => filters.every((f) => f(r)));
   const b = {
     select() { return b; },   // il finto server torna sempre le righe
@@ -39,8 +39,9 @@ function builder(table) {
     gte(k, v) { filters.push((r) => r[k] >= v); return b; },
     is(k, v) { filters.push((r) => (v === null ? r[k] === null || r[k] === undefined : r[k] === v)); return b; },
     in(k, vs) { filters.push((r) => vs.includes(r[k])); return b; },
-    order(k, o) { orderBy = [k, o?.ascending !== false]; return b; },
+    order(k, o) { orderBy.push([k, o?.ascending !== false]); return b; },
     limit(n) { lim = n; return b; },
+    range(x, y) { da = x; a = y; return b; },
     single() { single = true; return b; }, maybeSingle() { maybe = true; return b; },
     insert(rows) { op = 'insert'; payload = rows; return b; },
     upsert(rows) { op = 'upsert'; payload = rows; return b; },
@@ -51,7 +52,12 @@ function builder(table) {
         let data = null; const rows = T(table);
         const pk = { lineups: ['league_id', 'member_id', 'matchday'], match_overrides: ['match_id'], match_appearances: ['match_id', 'player_id'], matchday_status: ['matchday'], matchday_locks: ['matchday'], profiles: ['id'] }[table] || ['id'];
         const withDefaults = (r) => ({ id: uid(), created_at: now(), ...r });
-        if (op === 'select') { data = apply(rows).map(expand); if (orderBy) data.sort((a, b) => (a[orderBy[0]] > b[orderBy[0]] ? 1 : -1) * (orderBy[1] ? 1 : -1)); if (lim) data = data.slice(0, lim); }
+        if (op === 'select') { data = apply(rows).map(expand); if (orderBy.length) data.sort((x, y) => { for (const [k, su] of orderBy) { if (x[k] !== y[k]) return (x[k] > y[k] ? 1 : -1) * (su ? 1 : -1); } return 0; });
+          if (da !== null) data = data.slice(da, a + 1);
+          if (lim) data = data.slice(0, lim);
+          // come Supabase: al massimo max_rows righe per richiesta (1000), il
+          // resto non arriva e nessuno lo dice. Le prove possono abbassarlo.
+          data = data.slice(0, globalThis.__MAX_RIGHE__ ?? 1000); }
         if (op === 'insert') { const list = (Array.isArray(payload) ? payload : [payload]).map(withDefaults); guardFrozen(table, list); rows.push(...list); data = list.map(expand); }
         if (op === 'upsert') { const list = (Array.isArray(payload) ? payload : [payload]); guardFrozen(table, list); for (const r of list) { const i = rows.findIndex((x) => pk.every((k) => x[k] === r[k])); if (i >= 0) rows[i] = { ...rows[i], ...r }; else rows.push(withDefaults(r)); } data = list; }
         if (op === 'update') { data = []; for (const r of rows) if (filters.every((f) => f(r))) { Object.assign(r, payload); data.push(expand(r)); } }

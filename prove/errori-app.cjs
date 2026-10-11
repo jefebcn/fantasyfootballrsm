@@ -23,7 +23,7 @@ const ok = [], ko = []; const et = (c, t) => (c ? ok : ko).push(t);
     localStorage.setItem('fcs:supabase', JSON.stringify({ url: 'https://mock.supabase.co', key: 'mock-key-mock-key-mock' }));
   });
   const p = await ctx.newPage(); p.on('dialog', (d) => d.accept());
-  const errori = []; p.on('pageerror', (e) => { if (!/PROVA-VOLUTA|Failed to fetch/.test(e.message)) errori.push(e.message); });
+  const errori = []; p.on('pageerror', (e) => { if (!/PROVA-VOLUTA|ESTERNO-VOLUTO|Failed to fetch/.test(e.message)) errori.push(e.message); });
   const w = (ms = 700) => p.waitForTimeout(ms);
   await p.goto(`${BASE}/#/`, { waitUntil: 'load' }); await w(1300);
   await p.click('[data-tab="up"]'); await p.fill('#email', 'a@e.it'); await p.fill('#name', 'Alex');
@@ -33,10 +33,18 @@ const ok = [], ko = []; const et = (c, t) => (c ? ok : ko).push(t);
 
   // su una scheda con un identificativo nell'indirizzo, per vedere che non passi
   await p.evaluate(() => { location.hash = '#/giocatore/p_12345678abcd'; }); await w(900);
-  const lancia = (msg) => p.evaluate((m) => { setTimeout(() => { throw new Error(m); }, 0); }, msg);
+  // L'errore deve nascere da un file .js dell'app, come quelli veri: quelli
+  // senza file o con la pagina come file sono del browser e non partono.
+  // Il messaggio non va nell'indirizzo del file: finirebbe nel dettaglio.
+  const daLanciare = [];
+  await p.route('**/prova-errore.js*', (r) => r.fulfill({ contentType: 'application/javascript',
+    body: `throw new Error(${JSON.stringify(daLanciare[+new URL(r.request().url()).searchParams.get('n')])});` }));
+  const lancia = (msg) => p.addScriptTag({ url: `${BASE}/prova-errore.js?n=${daLanciare.push(msg) - 1}` });
+  const lanciaDaFuori = (msg) => p.evaluate((m) => { setTimeout(() => { throw new Error(m); }, 0); }, msg);
   await lancia('PROVA-VOLUTA: scrivendo a mario.rossi@example.com');
   await lancia('PROVA-VOLUTA: scrivendo a mario.rossi@example.com');   // la stessa, di nuovo
   await lancia('Failed to fetch');                                       // la rete che manca
+  await lanciaDaFuori('ESTERNO-VOLUTO: codice aggiunto dal browser');    // non dai file dell'app
   await w(1500);
 
   const righe = await p.evaluate(() => JSON.parse(localStorage.getItem('fcs:mock')).tables.errori_app || []);
@@ -49,6 +57,7 @@ const ok = [], ko = []; const et = (c, t) => (c ? ok : ko).push(t);
   et(mia && /· (Chrome|Safari|altro) ·/.test(mia.dispositivo), `il tipo di telefono, non il telefono (${mia?.dispositivo})`);
   et(mia && /^fcs-v/.test(mia.versione || '') || mia?.versione === 'sconosciuta', `con la versione (${mia?.versione})`);
   et(!righe.some((r) => /Failed to fetch/.test(r.messaggio)), 'la rete che manca non è un difetto dell\'app: non parte');
+  et(!righe.some((r) => /ESTERNO-VOLUTO/.test(r.messaggio)), 'un errore che non nasce dai file dell\'app non parte');
 
   // chi amministra lo trova in console
   await p.evaluate(() => {

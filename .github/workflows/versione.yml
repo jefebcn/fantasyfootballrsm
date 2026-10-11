@@ -1,0 +1,38 @@
+# Una versione nuova a ogni app nuova (scripts/versione-unica.py).
+#
+# L'import automatico e chi pubblica alzano la versione partendo dalla stessa:
+# se si incrociano escono col numero uguale, e i telefoni che hanno gia' quel
+# numero non scaricano la novita'. L'11/10 e' successo due volte in un'ora.
+# Qui, dopo ogni push su main, se l'app e' cambiata e la versione no la si
+# alza. Il push fatto da qui non fa ripartire questo lavoro (GitHub non lo
+# fa per i push col suo token), Vercel invece lo pubblica come tutti.
+name: Versione
+
+on:
+  push:
+    branches: [main]
+
+concurrency:
+  group: versione
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  controlla:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Alza la versione se serve
+        env:
+          PRIMA: ${{ github.event.before }}
+        run: |
+          git config user.name  'versione automatica'
+          git config user.email 'versione-automatica@users.noreply.github.com'
+          # un push forzato o il primo push: il commit di prima puo' non esserci
+          git cat-file -e "$PRIMA^{commit}" 2>/dev/null || PRIMA=$(git rev-parse HEAD^1)
+          bash scripts/versione-dopo-merge.sh "$PRIMA"

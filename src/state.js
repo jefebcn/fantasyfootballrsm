@@ -77,13 +77,27 @@ export async function retry() { await init(); notify(); return ready; }
 
 async function loadAll() {
   if (!user) { prof = null; leagues = []; g = emptyGlobal(); L = emptyLeague(); base.managers = []; base.rosters = {}; base.league = NO_LEAGUE; refreshManagers(); return; }
+  // le leghe e lo sponsor non aspettano nemmeno il profilo
+  const legheP = remote.myLeagues(user.id);
+  legheP.catch(() => {});   // se il profilo fallisce prima, l'errore e' quello, non questo
+  const sponsorP = remote.caricaSponsor().catch(() => []);
   prof = (await remote.ensureProfile(user)) || { id: user.id, display_name: user.email, is_judge: false };
   await consegnaReclutatore();
-  leagues = await remote.myLeagues(user.id);
+  // INSIEME, NON IN FILA. Le leghe, i voti di tutti, lo sponsor e — per il
+  // Giudice — le contestazioni non dipendono l'uno dall'altro: si chiedono
+  // tutti adesso. Prima partivano uno alla volta, una quindicina di richieste
+  // in fila all'apertura (prove/avvio-veloce.cjs). Ognuna tiene il suo
+  // ripiego: uno sponsor che non risponde non deve fermare la lega.
+  const contestP = prof.is_judge ? remote.allContestazioni().catch((e) => { onError(e); return null; }) : null;
+  [leagues, g] = await Promise.all([legheP, remote.loadGlobal(prof.is_judge)]);
   if (!leagues.some((l) => l.id === prefs.currentLeagueId)) { prefs.currentLeagueId = leagues[0]?.id || null; persistPrefs(); }
-  g = await remote.loadGlobal(prof.is_judge);
   if (prefs.currentLeagueId) {
-    const data = await remote.loadLeague(prefs.currentLeagueId);
+    const id = prefs.currentLeagueId;
+    // Gli scambi arrivano dalla 006 e il mercato dalla 007: su un progetto che
+    // non le ha ancora applicate le tabelle non ci sono, e l'app deve
+    // funzionare comunque — senza quelle schede, non con un errore.
+    const esito = (pr) => pr.then((v) => ({ ok: true, v }), () => ({ ok: false }));
+    const [data, scambi, offerte] = await Promise.all([remote.loadLeague(id), esito(remote.loadScambi(id)), esito(remote.loadOfferte(id))]);
     base.managers = data.managers; base.rosters = data.rosters;
     base.league = { ...data.league, rules: { ...DEFAULT_RULES, ...data.league.rulesOverride }, managerCount: data.managers.length };
     // Il badge dei Reclutatori (023). A parte, e senza far cadere niente: su
@@ -95,34 +109,31 @@ async function loadAll() {
       } catch { /* niente badge, il resto c'e' */ }
     }
     L = { lineups: data.lineups, contestazioni: data.contestazioni, scambi: [], offerte: [] };
-    // Gli scambi arrivano dalla 006: su un progetto che non l'ha ancora
-    // applicata la tabella non c'e', e l'app deve funzionare comunque —
-    // senza la scheda Scambi, non con una schermata di errore.
-    try { L.scambi = await remote.loadScambi(prefs.currentLeagueId); L.scambiDisponibili = true; }
-    catch { L.scambi = []; L.scambiDisponibili = false; }
+    L.scambi = scambi.ok ? scambi.v : []; L.scambiDisponibili = scambi.ok;
     // Le finestre del mercato le chiude chi apre l'app: nessuno ha un server
     // che gira di notte. La funzione e' ripetibile e a finestre non scadute
     // non fa niente, quindi chiamarla a ogni caricamento non costa.
     try {
-      L.offerte = await remote.loadOfferte(prefs.currentLeagueId);
+      if (!offerte.ok) throw new Error('mercato assente');
+      L.offerte = offerte.v;
       L.mercatoDisponibile = true;
       if (L.offerte.some((o) => o.stato === 'aperta' && new Date(o.scadeAt) <= now())) {
-        const quanti = await remote.risolviOfferte(prefs.currentLeagueId);
+        const quanti = await remote.risolviOfferte(id);
         if (quanti) {
-          const d = await remote.loadLeague(prefs.currentLeagueId);
+          const d = await remote.loadLeague(id);
           base.managers = d.managers; base.rosters = d.rosters;
           base.league = { ...base.league, managerCount: d.managers.length };
-          L.offerte = await remote.loadOfferte(prefs.currentLeagueId);
+          L.offerte = await remote.loadOfferte(id);
         }
       }
     } catch { L.offerte = []; L.mercatoDisponibile = false; }
   } else { base.managers = []; base.rosters = {}; base.league = NO_LEAGUE; L = emptyLeague(); }
-  if (prof.is_judge) { try { L.contestazioni = await remote.allContestazioni(); } catch (e) { onError(e); } }
+  if (contestP) { const c = await contestP; if (c) L.contestazioni = c; }
   refreshManagers();
   // Lo sponsor arriva dalla 017: su un progetto che non l'ha ancora applicata
   // la tabella non c'e', e l'app deve funzionare comunque — senza banner, non
   // con una schermata di errore. Stessa scelta fatta per gli scambi.
-  try { sponsor = await remote.caricaSponsor(); } catch { sponsor = []; }
+  sponsor = await sponsorP;
   remote.subscribe(prefs.currentLeagueId, debounced);
   // Il Giudice Dati allinea il calendario dei lock senza doverselo ricordare:
   // e' un dato derivato dal calendario, identico a ogni giro, e l'RPC riscrive

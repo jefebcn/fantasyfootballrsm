@@ -6,7 +6,7 @@ let tab = 'campo';
 const P = (id) => S.playersById.get(id);
 const club = (id) => S.clubsById.get(P(id).clubId);
 
-function fieldTeam(res, ratings, evs, mirrored) {
+export function fieldTeam(res, ratings, evs, mirrored) {
   const byRole = { P: [], D: [], C: [], A: [] };
   for (const row of res.rows) byRole[row.role].push(row);
   const order = mirrored ? ['A', 'C', 'D', 'P'] : ['P', 'D', 'C', 'A'];
@@ -22,7 +22,7 @@ function fieldTeam(res, ratings, evs, mirrored) {
     return `<div class="ps" style="--tc:${club(shown).color}"><span class="av faccia">${cap}${avatar(p, club(shown))}${roleChip(row.role)}</span><span class="ind">${ind.join('')}</span>${pill}<b>${esc(p.lastName)}${row.subFor ? ` <small>(x ${esc(P(row.subFor).lastName)})</small>` : ''}</b></div>`;
   }).join('')}</div>`).join('');
 }
-function benchCol(res, ratings) {
+export function benchCol(res, ratings) {
   const inUse = new Set(res.rows.map((r) => r.playerId));
   return res.lineup.bench.map((id) => { const r = ratings.get(id); const p = P(id);
     const v = inUse.has(id) ? `<span class="vpill"><span>${fmt(r.baseVote)}</span><span>${fmt(r.fantaVote)}</span></span>` : !r || r.isSV ? (r?.svReason?.includes('rinviata') ? '<span class="vpill sv"><span>S.V.</span><span>rinv.</span></span>' : '<span class="no">⊘</span>') : `<span class="vpill"><span>${fmt(r.baseVote)}</span><span>${fmt(r.fantaVote)}</span></span>`;
@@ -35,7 +35,7 @@ function benchCol(res, ratings) {
  * non esistono. Quella ospite e' capovolta (attaccanti verso il centro) come
  * su un campo vero.
  */
-function campoProbabile(l, mirrored) {
+export function campoProbabile(l, mirrored) {
   const byRole = { P: [], D: [], C: [], A: [] };
   for (const id of l.starters) byRole[P(id).role].push(id);
   const order = mirrored ? ['A', 'C', 'D', 'P'] : ['P', 'D', 'C', 'A'];

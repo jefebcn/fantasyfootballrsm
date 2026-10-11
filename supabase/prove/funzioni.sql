@@ -14,6 +14,29 @@ on conflict (id) do nothing;
 create or replace function pg_temp.entra(p text) returns void language plpgsql as $$
 begin perform set_config('request.jwt.claims', json_build_object('sub', p)::text, false); end $$;
 
+-- Una formazione VERA per una squadra: dalla 028 il database rifiuta quelle
+-- con giocatori che la squadra non ha, o coi ruoli che non tornano. Prende
+-- dal listino i giocatori che servono al modulo, liberi in quella lega, e li
+-- mette nella rosa della squadra.
+create or replace function pg_temp.formazione(m uuid, modulo text) returns jsonb language plpgsql as $$
+declare lid uuid; ids text[] := '{}'; r text; n int;
+begin
+  select league_id into lid from public.league_members where id = m;
+  foreach r in array array['P', 'D', 'C', 'A'] loop
+    n := case r when 'P' then 1 when 'D' then split_part(modulo, '-', 1)::int
+                when 'C' then split_part(modulo, '-', 2)::int else split_part(modulo, '-', 3)::int end;
+    ids := ids || array(select q.player_id from public.quotazioni q
+                         where q.ruolo = r
+                           and not exists (select 1 from public.rosters x where x.league_id = lid and x.player_id = q.player_id
+                                             and x.released_at is null and x.member_id <> m)
+                         order by q.player_id limit n);
+  end loop;
+  insert into public.rosters (league_id, member_id, player_id, price_paid)
+    select lid, m, x, 1 from unnest(ids) x
+     where not exists (select 1 from public.rosters y where y.member_id = m and y.player_id = x and y.released_at is null);
+  return jsonb_build_object('formation', modulo, 'modulo', modulo, 'starters', to_jsonb(ids), 'bench', '[]'::jsonb);
+end $$;
+
 create or replace function pg_temp.esige(descrizione text, condizione boolean) returns void language plpgsql as $$
 begin
   if condizione then raise notice 'ok  %', descrizione;
@@ -732,10 +755,12 @@ select set_config('prova.lega', :'lega', false),
        set_config('prova.membro', :'m_bea_id', false),
        set_config('prova.giornata', :aperta_matchday::text, false);
 
+select pg_temp.formazione(:'m_bea_id', '4-4-2')::text as form442 \gset
+select pg_temp.formazione(:'m_bea_id', '3-5-2')::text as form352 \gset
 select pg_temp.entra('user_bea');
 set role authenticated;
 insert into public.lineups (league_id, member_id, matchday, lineup)
-  values (:'lega', :'m_bea_id', :aperta_matchday, '{"modulo":"4-4-2"}'::jsonb);
+  values (:'lega', :'m_bea_id', :aperta_matchday, :'form442'::jsonb);
 insert into public.contestazioni (league_id, member_id, match_id, text)
   values (:'lega', :'m_bea_id', 'md1_prova', 'il gol non era suo');
 reset role;
@@ -849,7 +874,7 @@ select public.admin_sospendi('user_bea', false);
 select pg_temp.esige('l''amministratore riattiva', not (select sospeso from public.profiles where id = 'user_bea'));
 select pg_temp.entra('user_bea');
 set role authenticated;
-update public.lineups set lineup = '{"modulo":"3-5-2"}'::jsonb
+update public.lineups set lineup = :'form352'::jsonb
  where member_id = :'m_bea_id' and matchday = :aperta_matchday;
 reset role;
 select pg_temp.esige('e riattivato torna a schierare',
@@ -1588,5 +1613,76 @@ do $$ begin
 exception when insufficient_privilege then raise notice 'ok  l''anonimo non legge i profili';
 end $$;
 reset role;
+
+-- ------------------------------------------------ 027: i crediti non se li scrive nessuno
+-- Prima della 027 un fantallenatore qualunque si scriveva i crediti che
+-- voleva sulla propria riga: la policy proteggeva solo il ruolo.
+insert into public.profiles (id, display_name) values ('user_ugo', 'Ugo'), ('user_ada', 'Ada') on conflict (id) do nothing;
+select pg_temp.entra('user_ada');
+select public.create_league('Lega di Ada', 'LDA', 'Ada FC', '#123456', 'AF') as lega_ada \gset
+select pg_temp.entra('user_ugo');
+select public.join_league((select invite_code from public.leagues where id = :'lega_ada'), 'Ugo FC', '#654321', 'UF');
+select id as m_ugo, credits as crediti_ugo from public.league_members where league_id = :'lega_ada' and user_id = 'user_ugo' \gset
+set role authenticated;
+update public.league_members set credits = 99999, role = 'admin', team_name = 'Ugo United' where id = :'m_ugo';
+reset role;
+select pg_temp.esige('un fantallenatore non si scrive i crediti, ne'' il ruolo',
+  (select credits = :crediti_ugo and role <> 'admin' from public.league_members where id = :'m_ugo'));
+select pg_temp.esige('ma il nome della squadra lo cambia',
+  (select team_name = 'Ugo United' from public.league_members where id = :'m_ugo'));
+set role authenticated;
+update public.league_members set league_id = (select id from public.leagues where id <> :'lega_ada' limit 1), user_id = 'user_ada' where id = :'m_ugo';
+reset role;
+select pg_temp.esige('e non sposta la sua squadra in un''altra lega o a un altro utente',
+  (select league_id = :'lega_ada' and user_id = 'user_ugo' from public.league_members where id = :'m_ugo'));
+select pg_temp.entra('user_ada');
+set role authenticated;
+update public.league_members set credits = 321 where id = :'m_ugo';
+reset role;
+select pg_temp.esige('l''amministratore della lega i crediti li cambia ancora (asta, gestione rose)',
+  (select credits = 321 from public.league_members where id = :'m_ugo'));
+
+-- ------------------------------------------------ 028: si schiera con i giocatori che hai
+-- Prima della 028 il database accettava qualunque undici: anche giocatori mai
+-- comprati, e i punteggi li calcolano i telefoni dalla formazione salvata.
+select pg_temp.formazione(:'m_ugo', '4-4-2')::text as f_ugo \gset
+select q.player_id as estraneo from public.quotazioni q
+ where q.ruolo = 'A' and not exists (select 1 from public.rosters r where r.member_id = :'m_ugo' and r.player_id = q.player_id)
+ order by q.player_id desc limit 1 \gset
+select set_config('prova.f_ugo', :'f_ugo', false), set_config('prova.m_ugo', :'m_ugo', false),
+       set_config('prova.lega_ada', :'lega_ada', false), set_config('prova.estraneo', :'estraneo', false),
+       set_config('prova.aperta', :aperta_matchday::text, false);
+select pg_temp.entra('user_ugo');
+set role authenticated;
+insert into public.lineups (league_id, member_id, matchday, lineup) values (:'lega_ada', :'m_ugo', :aperta_matchday, :'f_ugo'::jsonb);
+reset role;
+select pg_temp.esige('una formazione vera si consegna', exists (select 1 from public.lineups where member_id = :'m_ugo'));
+create or replace function pg_temp.rifiutata(descrizione text, lineup jsonb) returns void language plpgsql as $$
+begin
+  begin
+    update public.lineups set lineup = rifiutata.lineup
+     where member_id = current_setting('prova.m_ugo')::uuid and matchday = current_setting('prova.aperta')::int;
+    raise exception 'FALLITA: %', descrizione;
+  exception when others then
+    if sqlerrm like 'FALLITA:%' then raise; end if;
+    raise notice 'ok  % (%)', descrizione, sqlerrm;
+  end;
+end $$;
+set role authenticated;
+select pg_temp.rifiutata('un giocatore che non hai non si schiera',
+  jsonb_set(current_setting('prova.f_ugo')::jsonb, '{starters,10}', to_jsonb(current_setting('prova.estraneo'))));
+select pg_temp.rifiutata('lo stesso giocatore due volte no',
+  jsonb_set(current_setting('prova.f_ugo')::jsonb, '{starters,10}', (current_setting('prova.f_ugo')::jsonb -> 'starters' -> 9)));
+select pg_temp.rifiutata('10 titolari no',
+  jsonb_set(current_setting('prova.f_ugo')::jsonb, '{starters}', (current_setting('prova.f_ugo')::jsonb -> 'starters') - 10));
+select pg_temp.rifiutata('i ruoli devono tornare col modulo',
+  jsonb_set(jsonb_set(current_setting('prova.f_ugo')::jsonb, '{formation}', '"3-4-3"'), '{modulo}', '"3-4-3"'));
+select pg_temp.rifiutata('un modulo che non esiste no',
+  jsonb_set(current_setting('prova.f_ugo')::jsonb, '{formation}', '"1-1-8"'));
+select pg_temp.rifiutata('il capitano deve essere titolare',
+  jsonb_set(current_setting('prova.f_ugo')::jsonb, '{captainId}', to_jsonb(current_setting('prova.estraneo'))));
+reset role;
+select pg_temp.esige('e la formazione buona resta com''era',
+  (select lineup -> 'starters' = (:'f_ugo'::jsonb -> 'starters') from public.lineups where member_id = :'m_ugo'));
 
 select 'tutte le prove sulle funzioni sono passate' as esito;

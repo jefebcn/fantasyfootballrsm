@@ -217,6 +217,15 @@ Su un progetto nuovo, nell'SQL Editor, in quest'ordine:
     storia settimanale su Instagram. Finché non è applicata l'app non mostra
     né badge né riquadro, e il link funziona come prima.
 
+24b. `migrations/024-cancellazione-senza-intoppi.sql` — **cancellare
+    l'account funziona per tutti**. Prima bastava aver deciso uno scambio (o
+    creato una lega, messo uno sponsor, scritto voti da Giudice) perché
+    «Cancella il mio account» rispondesse con un errore: otto colonne
+    puntavano al profilo senza dire cosa fare quando sparisce. Ora il dato
+    resta e il nome si toglie. I voti di una giornata congelata restano
+    intoccabili: l'unica modifica lasciata passare è togliere la firma di chi
+    non c'è più. Si esegue così com'è, si può rieseguire.
+
 25. `promemoria-pianificato.sql` — **facoltativo ma consigliato**, e non è una
     migrazione: si riempie **una riga** (il token del promemoria) e si lancia
     a mano. Sposta l'orologio dell'avviso

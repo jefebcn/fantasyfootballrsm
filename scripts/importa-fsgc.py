@@ -101,10 +101,49 @@ def calendario():
     return fuori
 
 
+def stato_partita(html):
+    """
+    Lo stato che la FSGC scrive sopra il risultato: 'finished' (Concluso),
+    'live', 'scheduled' (In programma)... None se la pagina non lo dice.
+
+    Serve perché la pagina del campionato, durante la partita, mostra il
+    punteggio di quel momento come se fosse il finale: niente lo distingue.
+    """
+    for classi in re.findall(r'<small\b[^>]*\bclass="([^"]*\btext-uppercase\b[^"]*)"', html):
+        stato = next((c[5:] for c in classi.split() if c.startswith('text-') and c != 'text-uppercase'), None)
+        if stato:
+            return stato
+    return None
+
+
+FINE_SICURA = 3 * 3600        # stato illeggibile: dal calcio d'inizio, a partita finita di sicuro
+FSGC_DIMENTICA = 24 * 3600    # «Live» ancora dopo un giorno: la FSGC non l'ha chiusa
+
+
+def finita(quando, stato, ora):
+    """
+    Se il risultato di una partita si può prendere per buono.
+
+    L'11 ottobre il giro delle 15:00 ha salvato le tre partite della domenica
+    0-0, 0-0, 0-0 al calcio d'inizio, e quello delle 15:20 1-0: per l'app erano
+    risultati finali, la 5ª giornata risultava giocata per intero mentre si
+    giocava. Il punteggio vale solo quando la FSGC scrive «Concluso»; se la
+    pagina non lo dice si aspetta che la partita sia finita di sicuro.
+    """
+    if stato == 'finished':
+        return True
+    if not quando:
+        return stato != 'live'
+    from datetime import datetime
+    passate = ora - datetime.fromisoformat(quando).timestamp()
+    return passate >= (FSGC_DIMENTICA if stato == 'live' else FINE_SICURA)
+
+
 def tabellino(url, indice, squadre):
     """Formazioni ed eventi di una partita. indice: chiave nome → nostro id giocatore."""
     from bs4 import BeautifulSoup
-    s = BeautifulSoup(prendi(url), 'lxml')
+    html = prendi(url)
+    s = BeautifulSoup(html, 'lxml')
     tab = s.select('.tab-pane')
     mancanti = {}; etichette_ignote = {}
 
@@ -197,7 +236,7 @@ def tabellino(url, indice, squadre):
         succ = riga.find_next_sibling('tr') if riga else None
         if succ:
             arbitro = re.sub(r'\s+', ' ', succ.get_text(' ', strip=True)) or None
-    return {'titolari': titolari, 'eventi': eventi, 'cambi': cambi,
+    return {'stato': stato_partita(html), 'titolari': titolari, 'eventi': eventi, 'cambi': cambi,
             'arbitro': arbitro, 'mancanti': mancanti, 'ignote': etichette_ignote}
 
 
@@ -248,14 +287,23 @@ def main():
     f = RADICE / 'data' / 'tabellini.json'
     fatti = json.loads(f.read_text(encoding='utf-8')) if f.exists() else {}
     tutti_mancanti = {}
+    ora = time.time()
     for i, p in enumerate(giocate, 1):
         k = f"{p['g']}:{p['casa']}:{p['ospite']}"
+        # in fatti ci sono solo partite concluse: quelle in corso non si salvano
         if k in fatti:
             continue
         try:
             t = tabellino(p['url'], idx, (p['casa'], p['ospite']))
         except Exception as e:
             print(f"  [{i}/{len(giocate)}] {k}: ERRORE {e}", file=sys.stderr)
+            if not finita(p['quando'], None, ora):
+                p['gc'] = p['go'] = None
+            continue
+        if not finita(p['quando'], t['stato'], ora):
+            print(f"  [{i}/{len(giocate)}] {k}: in corso ({t['stato'] or 'stato ignoto'}), "
+                  f"il {p['gc']}-{p['go']} aspetta il fischio finale")
+            p['gc'] = p['go'] = None
             continue
         fatti[k] = t
         f.write_text(json.dumps(fatti, ensure_ascii=False), encoding='utf-8')

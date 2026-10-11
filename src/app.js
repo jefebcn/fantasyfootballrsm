@@ -16,7 +16,7 @@ const ROUTES = [
   ['', views.dashboard], ['rosa', views.rosa], ['rosa/formazione', views.formazione],
   ['calendario', views.calendario], ['calendario/:n', views.calendario],
   ['classifica', views.classifica], ['voti', views.voti], ['voti/:n', views.voti],
-  ['live/:id', views.live], ['listone', views.listone], ['negozio', views.negozio], ['giocatore/:id', views.giocatore],
+  ['live/:id', views.live], ['formazione/:id', views.formazioneDi], ['formazione/:id/:n', views.formazioneDi], ['listone', views.listone], ['negozio', views.negozio], ['giocatore/:id', views.giocatore],
   ['confronto/:a', views.confronto], ['confronto/:a/:b', views.confronto],
   ['video', views.video], ['regolamento', views.regolamento], ['regole', views.regole], ['scheda', views.scheda], ['impostazioni', views.impostazioni], ['impostazioni/avanzate', views.avanzate], ['scambi', views.scambi], ['privacy', views.privacy], ['termini', views.termini], ['archiviazione', views.archiviazione], ['licenze', views.licenze], ['cancella-account', views.cancella],
   ['admin', views.adminGiornata], ['admin/partita/:id', views.adminPartita], ['admin/contestazioni', views.adminContestazioni],

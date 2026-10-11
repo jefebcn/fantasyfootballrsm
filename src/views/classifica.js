@@ -147,10 +147,13 @@ function premiCard({ vincitori = true } = {}) {
 function tabellaPunti(st, me, inCorso, mosse) {
   return `<div class="cls">${st.map((r) => { const m = S.managersById.get(r.managerId);
     const io = r.managerId === me?.id;
-    return `<div class="crow${io ? ' io' : ''}">
+    // si tocca per vedere la sua formazione: in una lega a punti non ci sono
+    // partite, e questo e' l'unico posto dove guardarla (#/formazione/:id)
+    return `<a class="crow${io ? ' io' : ''}" href="#/formazione/${r.managerId}" aria-label="Formazione di ${esc(m.teamName)}">
       <i class="pos">${r.position}</i>${inCorso ? freccia(mosse.get(r.managerId)) : ''}${crest(m, 'sm')}
       <span class="nm"><b>${esc(m.teamName)}</b><span>${esc(m.owner)} · ${r.played} ${r.played === 1 ? 'giornata' : 'giornate'}</span></span>
-      <span class="pt"><b>${fmt(r.punti)}</b><span>punti</span></span></div>`; }).join('')}</div>
+      <span class="pt"><b>${fmt(r.punti)}</b><span>punti</span></span>${icon('chev', 'ic sm cls-chev')}</a>`; }).join('')}</div>
+    <p class="small muted" style="margin:-4px 2px 0">Tocca una squadra per vedere la sua formazione: si vede dal lock della giornata.</p>
     <div class="a-card dett"><div class="dhead"><b>Dettaglio</b><span>giornate · media · migliore</span></div>
       ${st.map((r) => { const m = S.managersById.get(r.managerId);
     return `<div class="drow${r.managerId === me?.id ? ' io' : ''}"><span class="nm">${r.position}. ${esc(m.teamName)}</span>

@@ -247,6 +247,14 @@ Su un progetto nuovo, nell'SQL Editor, in quest'ordine:
     doppioni, giocatori non in rosa, capitano in panchina, moduli e ruoli
     che non tornano.
 
+24c-quater. `migrations/029-invito-lega-pubblica.sql` — **subito**. Il link
+    d'invito della lega pubblica portava il suo codice in «Entra con codice»,
+    che applicava le regole delle leghe fra amici (massimo 12 squadre): con
+    venti squadre dentro, chi arrivava da un link trovava «Lega al
+    completo». Ora un codice di lega pubblica entra con le regole della
+    pubblica (il suo tetto, i suoi crediti). Vale anche per i link già
+    mandati.
+
 24d. `migrations/026-profili-riservati.sql` — **dopo qualche giorno dalla
     versione 4.2.149 dell'app**. Dei profili altrui si leggono solo nome e
     amici portati: chi ha invitato chi, la sospensione, i ruoli e la data

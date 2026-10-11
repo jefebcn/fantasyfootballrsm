@@ -60,6 +60,22 @@ const prepara = (ctx, stato) => ctx.addInitScript((stato) => {
   et(dopoCrea.lega?.rules?.budget === 300 && dopoCrea.lega?.max_membri === 50, `crediti 300 e massimo 50 (${dopoCrea.lega?.rules?.budget}/${dopoCrea.lega?.max_membri})`);
   et((dopoCrea.lega?.premi || []).length === 1 && dopoCrea.lega.premi[0].premio === 'Una cena offerta', 'il premio del primo posto è salvato');
 
+  // L'INVITO DELLA PUBBLICA NON PORTA IL CODICE (Alex, 11/10: due amici
+  // invitati trovavano «lega piena»). Col codice si finiva in «Entra con
+  // codice», le regole delle leghe fra amici: massimo 12.
+  await p.evaluate(() => {
+    window.__condiviso = [];
+    Object.defineProperty(navigator, 'share', { value: undefined, configurable: true });
+    Object.defineProperty(navigator, 'clipboard', { value: { writeText: async (t) => { window.__condiviso.push(t); } }, configurable: true });
+    location.hash = '#/lega';
+  }); await w(p, 900);
+  const inv = await p.evaluate(() => ({ testo: document.querySelector('main')?.innerText || '', tasto: !!document.querySelector('#share-code') }));
+  et(!/Codice invito/i.test(inv.testo), 'nella pubblica non si mostra un codice invito');
+  et(/\/50/.test(inv.testo), 'e i partecipanti si contano sul suo massimo, non su 12');
+  if (inv.tasto) { await p.click('#share-code'); await w(p, 300); }
+  const condiviso = await p.evaluate(() => window.__condiviso[0] || '');
+  et(inv.tasto && condiviso && !/invito=/.test(condiviso) && /pubblica/i.test(condiviso), `«Invita» manda il link senza codice («${condiviso.slice(0, 70)}…»)`);
+
   // il menu dice che è pubblica e porta alla propria rosa
   await p.evaluate(() => { location.hash = '#/'; }); await w(p, 800);
   await p.click('[data-open-drawer]'); await w(p, 600);

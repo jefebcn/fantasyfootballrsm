@@ -79,6 +79,15 @@ function azione(ph, bloccato = null) {
     badgeHtml: badge(st, st === 'provisional' ? 'fino a mar 18:00' : '') });
 }
 
+/**
+ * Il tasto principale della giornata, nello stile dei post di Tito (Alex,
+ * 11/10: «migliorare la home dal punto di vista grafico dei tasti»): lime
+ * pieno, scritta Anton, la freccia in un tondo nero come lo «SWIPE →» delle
+ * storie. Era un <a> senza text-decoration:none, quindi sottolineato come un
+ * link qualunque.
+ */
+const tasto = (href, testo) => `<a class="a-btn big tito" href="${href}"><span>${testo}</span><i class="vai">${icon('chev', 'ic sm')}</i></a>`;
+
 /** Conto alla rovescia compatto: "3g 12h", come sulla pastiglia centrale. */
 function manca(lockAt) {
   const left = Math.max(0, new Date(lockAt) - S.now());
@@ -135,8 +144,8 @@ function corrente(f, n, me, riposo, bloccato = null) {
   // #chiudi-giornata invece di tre id uguali con un gestore che ne agganciava
   // uno.
   const cta = aperta
-    ? `<a class="a-btn big" href="#/rosa/formazione">${saved ? 'Modifica la formazione' : 'Inserisci formazione'}</a>`
-    : `<a class="a-btn big" href="#/voti/${n}">Voti della giornata</a>`;
+    ? tasto('#/rosa/formazione', saved ? 'Modifica la formazione' : 'Inserisci formazione')
+    : tasto(`#/voti/${n}`, 'Voti della giornata');
   const nota = aperta
     ? (saved ? `Formazione salvata ${dateIt(saved.submittedAt)} · si chiude ${dateIt(md.lockAt)} alle ${timeIt(md.lockAt)}`
       : `Si chiude ${dateIt(md.lockAt)} alle ${timeIt(md.lockAt)}`)
@@ -334,8 +343,8 @@ function correntePunti(n, me, bloccato = null) {
   const cls = S.standings(); const mio = cls.find((r) => r.managerId === me.id);
   const punti = aperta ? null : S.puntiGiornata(n, me.id);
   const cta = aperta
-    ? `<a class="a-btn big" href="#/rosa/formazione">${saved ? 'Modifica la formazione' : 'Inserisci formazione'}</a>`
-    : `<a class="a-btn big" href="#/voti/${n}">Voti della giornata</a>`;
+    ? tasto('#/rosa/formazione', saved ? 'Modifica la formazione' : 'Inserisci formazione')
+    : tasto(`#/voti/${n}`, 'Voti della giornata');
   const nota = aperta
     ? (saved
       ? `Formazione salvata ${dateIt(saved.submittedAt)} · si chiude ${dateIt(md.lockAt)} alle ${timeIt(md.lockAt)}`
@@ -507,7 +516,7 @@ export const dashboard = {
     const riposo = !cur && nCur <= 30 && S.base.managers.length > 1;
     const [art, titolo, testo] = RULES[Math.floor(Date.now() / 86400000) % RULES.length];
 
-    return `<main class="a-body">
+    return `<main class="a-body home">
       <div id="install-slot"></div>
       <div class="a-herowrap">
         <div class="a-hero${S.store.get().sfondoFoto ? ' foto' : ''}">

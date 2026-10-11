@@ -26,6 +26,14 @@
   --c-oro-600: #B87C0C;
   --c-oro-700: #8F5F08;   /* testo su --accent-soft chiaro: 4.9:1 */
 
+  /* I colori dei post di Tito (Instagram): lime per l'azione da fare,
+     viola per le etichette. In app solo sui tasti della home (11/10). */
+  --c-lime:       #D9F51F;
+  --c-lime-600:   #B9D30A;
+  --c-viola:      #4B06FC;
+  --c-viola-700:  #3A0AC4;
+  --c-inchiostro: #0A0A0C;
+
   /* Verde dell'alloro: stati "live", bonus */
   --c-alloro-400: #35B37E;
   --c-alloro-500: #1E9E6A;
@@ -71,6 +79,7 @@
   --accent:        var(--c-oro-500);
   --accent-soft:   #FDF1D8;
   --on-accent:     var(--c-titano-900);
+  --tito-ink:      var(--c-viola-700);   /* scritte nello stile dei post: viola sul chiaro */
   --on-accent-soft: var(--c-oro-700);
 
   --positive:      var(--c-alloro-500);
@@ -109,6 +118,8 @@
   --font-display: 'Lato', 'Helvetica Neue', Arial, sans-serif;
   --font-body:    'Lato', 'Segoe UI', system-ui, sans-serif;
   --font-data:    'IBM Plex Mono', ui-monospace, 'SF Mono', monospace;
+  /* Il carattere dei titoli dei post: stretto, alto, tutto maiuscolo */
+  --font-tito:    'Anton', Impact, 'Arial Narrow Bold', sans-serif;
 
   --fs-display:  clamp(2rem, 1.4rem + 2.6vw, 3.25rem);
   --fs-h1:       1.625rem;   /* 26 */
@@ -170,6 +181,7 @@
     --accent-soft:   #3A2C08;
     --on-accent:     #1A1302;
     --on-accent-soft: var(--c-oro-400);
+    --tito-ink: var(--c-lime);   /* ...e lime sullo scuro, dove il viola non si legge */
 
     --positive:      var(--c-alloro-400);
     --positive-soft: #0B3627;
@@ -216,6 +228,7 @@
   --accent-soft:   #3A2C08;
   --on-accent:     #1A1302;
   --on-accent-soft: var(--c-oro-400);
+  --tito-ink: var(--c-lime);   /* ...e lime sullo scuro, dove il viola non si legge */
   --positive:      var(--c-alloro-400);
   --positive-soft: #0B3627;
   --on-negative:   #16202E;

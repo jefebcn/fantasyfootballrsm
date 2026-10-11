@@ -1,7 +1,7 @@
 /** Shell applicativa: router hash, app bar, drawer, bottom nav, toast, sheet. */
 import { SPRITE } from './sprite.js';
 import { AVATAR_SPRITE } from './avatar.js';
-import { esc, icon, logo, marchio, pic, mask, crest } from './ui.js';
+import { esc, icon, marchio, pic, mask, crest } from './ui.js';
 import * as S from './state.js';
 import * as diagnostica from './diagnostica.js';
 import * as views from './views/index.js';

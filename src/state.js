@@ -573,7 +573,8 @@ function hashStr(s) { let h = 2166136261; for (const c of String(s)) { h ^= c.ch
 
 export const store = {
   get: () => ({ theme: prefs.theme, installedDismissed: prefs.installedDismissed, onboarded: prefs.onboarded,
-    avvisi: prefs.avvisi, sfondoFoto: prefs.sfondoFoto !== false, avvisatoPer: prefs.avvisatoPer || 0, guidaVista: !!prefs.guidaVista }),
+    avvisi: prefs.avvisi, sfondoFoto: prefs.sfondoFoto !== false, avvisatoPer: prefs.avvisatoPer || 0, guidaVista: !!prefs.guidaVista,
+    pushChiesto: prefs.pushChiesto || null }),
   set: (patch) => { Object.assign(prefs, patch); persistPrefs(); notify(); },
 };
 export function resetAll() { localStorage.removeItem(PREFS_KEY); }
@@ -1052,6 +1053,11 @@ export async function vendiGiocatore(playerId) {
 
 export function rosterIds(managerId) { return (base.rosters[managerId] || []).map((r) => r.playerId); }
 export function rosterOf(managerId) { return (base.rosters[managerId] || []).map((r) => ({ ...r, player: playersById.get(r.playerId), club: clubsById.get(playersById.get(r.playerId).clubId) })); }
+/** Ha mai consegnato una formazione in questa lega? (la richiesta delle push aspetta questo) */
+export function haConsegnato() {
+  const io = me(); if (!io) return false;
+  return Object.keys(L.lineups).some((k) => k.endsWith(`:${io.id}`));
+}
 export function savedLineup(n, managerId) { return L.lineups[`${n}:${managerId}`] || null; }
 export function lineupFor(n, managerId) {
   const saved = savedLineup(n, managerId); if (saved) return { ...saved, source: 'saved' };

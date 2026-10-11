@@ -68,6 +68,31 @@ export function motivoNonSupportate() {
   return 'browser-senza';
 }
 
+/**
+ * LA RICHIESTA GENTILE (Alex, 11/10: «che arrivi la richiesta, senza essere
+ * invasivo»). Fino a qui le push si attivavano solo dalle impostazioni, e su
+ * 26 iscritti c'era UN telefono iscritto: il promemoria della formazione non
+ * arrivava a nessuno.
+ *
+ * Quando la dashboard puo' chiederlo:
+ *  - mai alla prima apertura: solo dopo la prima formazione salvata, che e' il
+ *    momento in cui un promemoria serve davvero;
+ *  - solo dove funziona: notifiche supportate, push configurate, permesso
+ *    ancora da chiedere (chi ha detto no al telefono non si riassilla);
+ *  - non a chi il promemoria l'ha spento lui dalle impostazioni;
+ *  - «Non ora» lo fa sparire per due settimane, e dopo il secondo no non
+ *    torna piu'. L'interruttore nelle impostazioni resta sempre.
+ * La finestra di sistema si apre solo se si tocca «Sì»: e' il riquadro
+ * dell'app a chiedere, non il telefono a sorpresa.
+ */
+export const PAUSA_RICHIESTA_MS = 14 * 24 * 3600 * 1000;
+export function daChiedere({ avvisi, chiesto, consegnato, permesso: perm, supportate: sup, configurato, ora = Date.now() }) {
+  if (!consegnato || !sup || !configurato || perm !== 'default' || avvisi === false) return false;
+  const volte = chiesto?.volte || 0;
+  if (volte >= 2) return false;
+  return volte === 0 || ora - (chiesto?.ultima || 0) >= PAUSA_RICHIESTA_MS;
+}
+
 export async function chiediPermesso() {
   if (!supportate()) return 'unsupported';
   try { return await Notification.requestPermission(); } catch { return permesso(); }

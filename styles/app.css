@@ -2355,3 +2355,40 @@ a.crow .cls-chev{flex:none;color:var(--text-muted);margin-left:-4px}
   text-transform:uppercase;box-shadow:4px 4px 0 var(--c-viola)}
 .auth2 .a-btn.oro:active{background:var(--c-lime-600)}
 .intro-dots i.on{background:var(--c-lime)}
+
+/* ==========================================================================
+   IL RESTO DELL'APP (Alex, 11/10 sera: «continuare col nuovo stile dei
+   bottoni, nei punti dove pensi sia da fare»). Stesse regole: lime per
+   l'azione e per dove sei, viola per le etichette, Anton per titoli e tasti.
+   L'oro resta dove vuol dire qualcosa: capitano, primo posto, premi.
+   ========================================================================== */
+/* La barra in basso: la pastiglia della schermata in cui sei */
+.a-nav a.on .np,.a-nav button.on .np{background:var(--c-lime)}
+.a-nav a.on .np .mi,.a-nav button.on .np .mi{background-color:var(--c-inchiostro)}
+.a-nav button.on,.a-nav a.on{color:var(--tito-ink)}
+
+/* Le leghe: Pubbliche · Private · Admin, e la scheda della lega aperta */
+.lgtab{font:400 16px/1 var(--font-tito);letter-spacing:.05em;text-transform:uppercase}
+.lgtab.on{background:var(--c-lime);color:var(--c-inchiostro);box-shadow:3px 3px 0 var(--c-viola)}
+.pc-nome{font:400 clamp(32px,9.5vw,42px)/.95 var(--font-tito);font-style:normal;letter-spacing:.01em}
+.pc-cta{font:400 17px/1 var(--font-tito);font-style:normal;letter-spacing:.05em}
+.pc-cta:not(.spento){background:var(--c-lime);color:var(--c-inchiostro);box-shadow:3px 3px 0 var(--c-viola)}
+.pubcard.on{outline-color:var(--c-lime)}
+.startcard b{font:400 17px/1.1 var(--font-tito);letter-spacing:.03em;text-transform:uppercase}
+
+/* Il menu: le etichette delle sezioni */
+.d-sec .chip{background:var(--c-viola);color:#fff;font:400 13px/1 var(--font-tito);letter-spacing:.07em;text-transform:uppercase;padding:5px 10px}
+
+/* Le azioni tonde: il carrello sulla maglia, i video, il «+» del negozio */
+.a-hero .acts button.gold{background:var(--c-lime);color:var(--c-inchiostro);box-shadow:3px 3px 0 var(--c-viola)}
+.vh-p,.vid-play{background:var(--c-lime);color:var(--c-inchiostro)}
+.vid-play{box-shadow:3px 3px 0 var(--c-viola)}
+.neg-piu:not([disabled]){border-color:var(--tito-ink);color:var(--tito-ink);font:400 21px/1 var(--font-tito)}
+
+/* I due avvisi in cima: installa l'app, c'e' una versione nuova */
+.install .ok,.aggiorna button{background:var(--c-lime);color:var(--c-inchiostro);font:400 14px/1 var(--font-tito);letter-spacing:.05em;text-transform:uppercase}
+
+/* Il riquadro-azione oro (tile.cta) diventa lime come il tasto principale */
+.tile.cta{background:var(--c-lime);box-shadow:4px 4px 0 var(--c-viola)}
+.tile.cta .txt b,.tile.cta .txt span,.tile.cta > .chev{color:var(--c-inchiostro)}
+.tile.cta .txt b{font:400 18px/1.15 var(--font-tito);letter-spacing:.03em;text-transform:uppercase}

@@ -1685,4 +1685,55 @@ reset role;
 select pg_temp.esige('e la formazione buona resta com''era',
   (select lineup -> 'starters' = (:'f_ugo'::jsonb -> 'starters') from public.lineups where member_id = :'m_ugo'));
 
+-- 029: il codice d'invito di una lega pubblica porta nella lega pubblica.
+-- Prima join_league la trattava come una lega fra amici: «Lega al completo
+-- (max 12)» per chiunque arrivasse da un link, con venti squadre dentro.
+reset role;
+update public.profiles set is_admin = true where id = 'user_pub1';
+select pg_temp.entra('user_pub1');
+select public.crea_lega_pubblica('Open dei Link','LINK','Squadra Link','#1B84C6','SL', 400, 40, '[]'::jsonb) as lpl \gset
+reset role;
+insert into public.profiles (id, display_name)
+  select 'user_link' || g, 'Link ' || g from generate_series(1, 13) g on conflict (id) do nothing;
+insert into public.league_members (league_id, user_id, team_name, owner_name, credits)
+  select :'lpl', 'user_link' || g, 'Squadra ' || g, 'Link ' || g, 400 from generate_series(1, 12) g;
+select pg_temp.esige('la pubblica ha gia'' 13 squadre, piu'' delle 12 di una lega fra amici',
+  (select count(*) from public.league_members where league_id = :'lpl') = 13);
+insert into public.profiles (id, display_name) values ('user_dallink', 'Dal Link') on conflict (id) do nothing;
+-- il codice arriva col link: chi lo apre non lo legge dal database
+select invite_code as codice_link from public.leagues where id = :'lpl' \gset
+select pg_temp.entra('user_dallink');
+set role authenticated;
+select public.join_league(:'codice_link', 'Arrivato dal link', '#123456', 'AL') = :'lpl'::uuid as entrato \gset
+reset role;
+select pg_temp.esige('col codice della pubblica si entra anche oltre le 12 squadre', :'entrato');
+select pg_temp.esige('e con i crediti della lega, non con quelli d''ufficio',
+  (select credits = 400 from public.league_members where league_id = :'lpl' and user_id = 'user_dallink'));
+select pg_temp.entra('user_dallink');
+set role authenticated;
+select public.join_league(:'codice_link', 'Arrivato dal link', '#123456', 'AL');
+reset role;
+select pg_temp.esige('riaprire il link non fa un doppione',
+  (select count(*) from public.league_members where league_id = :'lpl' and user_id = 'user_dallink') = 1);
+-- e una lega fra amici resta a 12
+insert into public.profiles (id, display_name)
+  select 'user_amico' || g, 'Amico ' || g from generate_series(1, 13) g on conflict (id) do nothing;
+select pg_temp.entra('user_amico1');
+select public.create_league('Dodici Amici', 'DA', 'Amici 1', '#111111', 'A1') as ldodici \gset
+reset role;
+select invite_code as codice_amici from public.leagues where id = :'ldodici' \gset
+select set_config('prova.codice_amici', :'codice_amici', false);
+insert into public.league_members (league_id, user_id, team_name, owner_name)
+  select :'ldodici', 'user_amico' || g, 'Amici ' || g, 'Amico ' || g from generate_series(2, 12) g;
+select pg_temp.entra('user_amico13');
+set role authenticated;
+do $$ begin
+  perform public.join_league(current_setting('prova.codice_amici'), 'Tredicesimo', '#222222', 'TR');
+  raise exception 'FALLITA: in una lega fra amici da 12 il tredicesimo non doveva entrare';
+exception when others then
+  if sqlerrm like 'FALLITA%' then raise; end if;
+  raise notice 'ok  la lega fra amici resta a 12 (%)', sqlerrm;
+end $$;
+reset role;
+
 select 'tutte le prove sulle funzioni sono passate' as esito;

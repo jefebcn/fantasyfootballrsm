@@ -234,6 +234,19 @@ Su un progetto nuovo, nell'SQL Editor, in quest'ordine:
     quando a scrivere è un client; li danno solo le funzioni della console.
     Dopo, controllare chi ha un ruolo (query in testa al file).
 
+24c-bis. `migrations/027-crediti-non-si-scrivono.sql` — **urgente**. Un
+    fantallenatore qualunque poteva scriversi i crediti che voleva sulla
+    propria squadra con una richiesta all'API (la policy proteggeva solo il
+    ruolo). Ora un trigger tiene fermi crediti, ruolo e vice per chi non
+    amministra la lega, e lega e proprietario per tutti.
+
+24c-ter. `migrations/028-formazioni-valide.sql` — **urgente**. Il controllo
+    della formazione stava solo nell'app: dall'API passava qualunque undici,
+    anche con giocatori mai comprati, e i punteggi si calcolano dalla
+    formazione salvata. Ora il database rifiuta titolari che non sono 11,
+    doppioni, giocatori non in rosa, capitano in panchina, moduli e ruoli
+    che non tornano.
+
 24d. `migrations/026-profili-riservati.sql` — **dopo qualche giorno dalla
     versione 4.2.149 dell'app**. Dei profili altrui si leggono solo nome e
     amici portati: chi ha invitato chi, la sospensione, i ruoli e la data

@@ -281,7 +281,7 @@ export const licenze = {
   ])}
       ${blocco('Software di terze parti', [
     ['supabase-js', 'libreria per la banca dati e gli accessi, licenza MIT. Il file sta nell\'app (<code>vendor/supabase-js.js</code>), a versione fissa: non viene chiesto a nessuna rete esterna.'],
-    ['Lato e IBM Plex Mono', 'i caratteri, licenza SIL Open Font License 1.1, che permette di ridistribuirli: infatti i file stanno nell\'app invece di essere chiesti a Google a ogni apertura.'],
+    ['Lato, IBM Plex Mono e Anton', 'i caratteri, licenza SIL Open Font License 1.1, che permette di ridistribuirli: infatti i file stanno nell\'app invece di essere chiesti a Google a ogni apertura.'],
     'Il resto dell\'app è scritto senza framework né librerie: niente altro codice di terzi gira su questa pagina.',
   ])}
       ${blocco('I video', [

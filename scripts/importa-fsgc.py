@@ -290,8 +290,12 @@ def main():
     ora = time.time()
     for i, p in enumerate(giocate, 1):
         k = f"{p['g']}:{p['casa']}:{p['ospite']}"
-        # in fatti ci sono solo partite concluse: quelle in corso non si salvano
-        if k in fatti:
+        # Si salta solo un tabellino gia' preso a partita finita. Il file resta
+        # fra un giro e l'altro dello stesso lavoro (non e' nel repository, il
+        # reset non lo tocca): l'11/10 il giro delle 15:00 aveva messo da parte
+        # le partite appena cominciate, e quelli dopo le saltavano — risultato
+        # e tabellino del calcio d'inizio fino alla fine del turno.
+        if fatti.get(k, {}).get('finita'):
             continue
         try:
             t = tabellino(p['url'], idx, (p['casa'], p['ospite']))
@@ -299,12 +303,15 @@ def main():
             print(f"  [{i}/{len(giocate)}] {k}: ERRORE {e}", file=sys.stderr)
             if not finita(p['quando'], None, ora):
                 p['gc'] = p['go'] = None
+                fatti.pop(k, None)
             continue
         if not finita(p['quando'], t['stato'], ora):
             print(f"  [{i}/{len(giocate)}] {k}: in corso ({t['stato'] or 'stato ignoto'}), "
                   f"il {p['gc']}-{p['go']} aspetta il fischio finale")
             p['gc'] = p['go'] = None
+            fatti.pop(k, None)
             continue
+        t['finita'] = True
         fatti[k] = t
         f.write_text(json.dumps(fatti, ensure_ascii=False), encoding='utf-8')
         for nome, info in t['mancanti'].items():
@@ -317,6 +324,8 @@ def main():
               f"{len(t['eventi'])} eventi ({gol} gol, attesi {p['gc'] + p['go']}), "
               f"titolari {len(t['titolari'][0])}+{len(t['titolari'][1])}")
         time.sleep(PAUSA)
+    # le partite tolte perché in corso escono anche dal file, non solo da qui
+    f.write_text(json.dumps(fatti, ensure_ascii=False), encoding='utf-8')
 
     if tutti_mancanti:
         print(f'\ngiocatori del referto non presenti nel listone: {len(tutti_mancanti)}')

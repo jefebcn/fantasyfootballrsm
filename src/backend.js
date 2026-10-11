@@ -249,12 +249,14 @@ export async function loadScambi(leagueId) {
 const toManager = (m) => ({ id: m.id, userId: m.user_id, teamName: m.team_name, owner: m.profile?.display_name || m.owner_name || '—', color: m.color, initials: m.initials || m.team_name.slice(0, 2).toUpperCase(), credits: m.credits, role: m.role, entrato: m.created_at, crestUrl: m.crest_url || null, kit: m.kit || {}, viceUserId: m.vice_user_id || null, viceCode: m.vice_code || null, viceName: m.vice?.display_name || null });
 
 export async function loadLeague(id) {
+  // Insieme, non in fila: un `await` dentro l'elenco di Promise.all aspetta
+  // ogni richiesta prima di far partire la successiva (vedi insieme()).
   const [league, members, rosters, lineups, contest] = await Promise.all([
-    must(await sb.from('leagues').select('*').eq('id', id).single()),
-    must(await sb.from('league_members').select('*, profile:profiles!league_members_user_id_fkey(display_name), vice:profiles!league_members_vice_user_id_fkey(display_name)').eq('league_id', id).order('created_at')),
+    insieme(sb.from('leagues').select('*').eq('id', id).single()),
+    insieme(sb.from('league_members').select('*, profile:profiles!league_members_user_id_fkey(display_name), vice:profiles!league_members_vice_user_id_fkey(display_name)').eq('league_id', id).order('created_at')),
     tutte(() => sb.from('rosters').select('member_id, player_id, price_paid').eq('league_id', id).is('released_at', null).order('member_id').order('player_id')),
     tutte(() => sb.from('lineups').select('member_id, matchday, lineup, submitted_at').eq('league_id', id).order('matchday').order('member_id')),
-    must(await sb.from('contestazioni').select('*').eq('league_id', id).order('created_at', { ascending: false })),
+    insieme(sb.from('contestazioni').select('*').eq('league_id', id).order('created_at', { ascending: false })),
   ]);
   const managers = members.map(toManager);
   const rosterMap = Object.fromEntries(managers.map((m) => [m.id, []]));
@@ -392,6 +394,15 @@ export async function caricaErrori(giorni = 7) {
  * ordine fisso, altrimenti due pagine possono ripetere o saltare righe.
  * `richiesta` e' una funzione perche' ogni pagina vuole una query nuova.
  */
+/**
+ * Una richiesta che parte SUBITO e restituisce la sua promessa.
+ *
+ * `Promise.all([must(await a), must(await b)])` sembra parallelo ma non lo e':
+ * l'elenco si costruisce da sinistra a destra e ogni `await` ferma tutto
+ * finche' la sua richiesta non torna. All'avvio erano una quindicina di
+ * richieste in fila: su un telefono in 4G, due o tre secondi di attesa.
+ */
+export const insieme = async (richiesta) => must(await richiesta);
 export const PAGINA = 1000;
 export async function tutte(richiesta) {
   const out = [];
@@ -408,9 +419,9 @@ export async function loadGlobal(withLog) {
     tutte(() => sb.from('match_overrides').select('*').order('match_id')),
     tutte(() => sb.from('match_events').select('*').order('minute').order('id')),
     tutte(() => sb.from('match_appearances').select('*').order('match_id').order('player_id')),
-    must(await sb.from('matchday_status').select('*')),
-    must(await sb.from('matchday_locks').select('*')),
-    withLog ? must(await sb.from('change_log').select('*').order('at', { ascending: false }).limit(300)) : [],
+    insieme(sb.from('matchday_status').select('*')),
+    insieme(sb.from('matchday_locks').select('*')),
+    withLog ? insieme(sb.from('change_log').select('*').order('at', { ascending: false }).limit(300)) : [],
   ]);
   const matchOverrides = {}; for (const o of ov) matchOverrides[o.match_id] = { status: o.status, homeGoals: o.home_goals, awayGoals: o.away_goals, ...(o.video_url ? { videoUrl: o.video_url } : {}) };
   const matchEvents = {}; for (const e of ev) (matchEvents[e.match_id] ||= []).push({ id: e.id, matchId: e.match_id, playerId: e.player_id, clubId: e.club_id, minute: e.minute, type: e.type });

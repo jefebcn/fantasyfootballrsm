@@ -252,8 +252,8 @@ export async function loadLeague(id) {
   const [league, members, rosters, lineups, contest] = await Promise.all([
     must(await sb.from('leagues').select('*').eq('id', id).single()),
     must(await sb.from('league_members').select('*, profile:profiles!league_members_user_id_fkey(display_name), vice:profiles!league_members_vice_user_id_fkey(display_name)').eq('league_id', id).order('created_at')),
-    must(await sb.from('rosters').select('member_id, player_id, price_paid').eq('league_id', id).is('released_at', null)),
-    must(await sb.from('lineups').select('member_id, matchday, lineup, submitted_at').eq('league_id', id)),
+    tutte(() => sb.from('rosters').select('member_id, player_id, price_paid').eq('league_id', id).is('released_at', null).order('member_id').order('player_id')),
+    tutte(() => sb.from('lineups').select('member_id, matchday, lineup, submitted_at').eq('league_id', id).order('matchday').order('member_id')),
     must(await sb.from('contestazioni').select('*').eq('league_id', id).order('created_at', { ascending: false })),
   ]);
   const managers = members.map(toManager);
@@ -378,12 +378,36 @@ export async function caricaErrori(giorni = 7) {
   return data || [];
 }
 
+/**
+ * TUTTE LE RIGHE, NON LE PRIME MILLE.
+ *
+ * Supabase restituisce al massimo 1000 righe per richiesta (max_rows del
+ * progetto), e oltre quelle le altre SPARISCONO SENZA ERRORE. L'11 ottobre i
+ * tabellini delle prime cinque giornate erano gia' 1023 presenze: un
+ * giocatore la cui presenza restava fuori risultava senza voto, e la squadra
+ * che lo schierava perdeva punti senza che niente lo dicesse. Con le rose
+ * succede a 40 squadre complete, con le formazioni a meta' stagione.
+ *
+ * Quindi a pagine da mille, finche' una pagina non torna incompleta. Serve un
+ * ordine fisso, altrimenti due pagine possono ripetere o saltare righe.
+ * `richiesta` e' una funzione perche' ogni pagina vuole una query nuova.
+ */
+export const PAGINA = 1000;
+export async function tutte(richiesta) {
+  const out = [];
+  for (let da = 0; ; da += PAGINA) {
+    const pagina = must(await richiesta().range(da, da + PAGINA - 1)) || [];
+    out.push(...pagina);
+    if (pagina.length < PAGINA) return out;
+  }
+}
+
 // ---------------------------------------------------------------- dato globale
 export async function loadGlobal(withLog) {
   const [ov, ev, ap, st, lk, log] = await Promise.all([
-    must(await sb.from('match_overrides').select('*')),
-    must(await sb.from('match_events').select('*').order('minute')),
-    must(await sb.from('match_appearances').select('*')),
+    tutte(() => sb.from('match_overrides').select('*').order('match_id')),
+    tutte(() => sb.from('match_events').select('*').order('minute').order('id')),
+    tutte(() => sb.from('match_appearances').select('*').order('match_id').order('player_id')),
     must(await sb.from('matchday_status').select('*')),
     must(await sb.from('matchday_locks').select('*')),
     withLog ? must(await sb.from('change_log').select('*').order('at', { ascending: false }).limit(300)) : [],

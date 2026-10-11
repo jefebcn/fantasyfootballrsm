@@ -5,7 +5,7 @@ const SHELL = [
   // I caratteri stanno in casa: nella cache ci vanno, se no senza rete si vede
   // il ripiego di sistema. Solo le varianti latin, le altre entrano al bisogno.
   './media/font/lato-400-latin.woff2', './media/font/lato-700-latin.woff2',
-  './media/font/lato-900-latin.woff2', './media/font/lato-900i-latin.woff2', './media/font/ibm-plex-mono-500-latin.woff2',
+  './media/font/lato-900-latin.woff2', './media/font/lato-900i-latin.woff2', './media/font/ibm-plex-mono-500-latin.woff2', './media/font/anton-400-latin.woff2',
   './src/app.js', './src/state.js', './src/data.js', './src/engine.js', './src/ui.js', './src/ui-esc.js', './src/avatar.js', './src/maglia.js', './src/personaggio.js', './src/reclutatori.js', './src/sprite.js', './src/config.js', './src/versione.js', './src/backend.js', './src/auth-clerk.js',
   './src/views/index.js', './src/views/dashboard.js', './src/views/rosa.js', './src/views/formazione.js', './src/views/calendario.js',
   './src/views/classifica.js', './src/views/voti.js', './src/views/live.js', './src/views/formazione-di.js', './src/views/listone.js', './src/views/giocatore.js',

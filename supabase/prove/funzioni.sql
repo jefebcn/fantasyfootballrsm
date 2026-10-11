@@ -1517,4 +1517,76 @@ delete from public.match_events where match_id = 'md29_m1';
 delete from public.match_overrides where match_id = 'md29_m1';
 delete from public.sponsor where nome = 'Bar di Lia';
 
+-- ------------------------------------------------ 025: nessuno si da' un ruolo da solo
+-- Prima della 025 un utente appena iscritto poteva creare il suo profilo gia'
+-- amministratore e Giudice Dati: la policy guardava solo che fosse il suo.
+select pg_temp.entra('user_furbo');
+set role authenticated;
+insert into public.profiles (id, display_name, is_admin, is_judge, sospeso) values ('user_furbo', 'Furbo', true, true, false);
+reset role;
+select pg_temp.esige('un profilo nuovo nasce senza ruoli, anche se li chiede',
+  (select not is_admin and not is_judge from public.profiles where id = 'user_furbo'));
+set role authenticated;
+update public.profiles set is_admin = true, is_judge = true, display_name = 'Furbo 2' where id = 'user_furbo';
+reset role;
+select pg_temp.esige('e non se li da'' dopo: il nome cambia, i ruoli no',
+  (select display_name = 'Furbo 2' and not is_admin and not is_judge from public.profiles where id = 'user_furbo'));
+update public.profiles set sospeso = true where id = 'user_furbo';
+set role authenticated;
+update public.profiles set sospeso = false where id = 'user_furbo';
+reset role;
+select pg_temp.esige('e un sospeso non si toglie la sospensione',
+  (select sospeso from public.profiles where id = 'user_furbo'));
+update public.profiles set sospeso = false where id = 'user_furbo';
+-- la console invece i ruoli li da' ancora (funzione del proprietario)
+select pg_temp.entra('user_pub1');
+select public.admin_imposta_ruolo('user_furbo', 'is_judge', true);
+select pg_temp.esige('la console i ruoli li da'' ancora',
+  (select is_judge from public.profiles where id = 'user_furbo'));
+select public.admin_imposta_ruolo('user_furbo', 'is_judge', false);
+
+-- ------------------------------------------------ 026: dei profili altrui solo il necessario
+select pg_temp.entra('user_furbo');
+set role authenticated;
+do $$ begin
+  perform invitato_da from public.profiles limit 1;
+  raise exception 'FALLITA: chi ha invitato chi si legge ancora dall''API';
+exception when insufficient_privilege then raise notice 'ok  chi ha invitato chi non si legge dall''API';
+end $$;
+do $$ begin
+  perform sospeso from public.profiles limit 1;
+  raise exception 'FALLITA: chi e'' sospeso si legge ancora dall''API';
+exception when insufficient_privilege then raise notice 'ok  chi e'' sospeso non si legge dall''API';
+end $$;
+do $$ begin
+  perform * from public.profiles limit 1;
+  raise exception 'FALLITA: select * sui profili passa ancora';
+exception when insufficient_privilege then raise notice 'ok  e nemmeno select * sui profili';
+end $$;
+select pg_temp.esige('nome e amici portati degli altri si leggono',
+  (select count(*) > 1 from (select id, display_name, reclutati from public.profiles) q));
+reset role;
+select pg_temp.entra('user_alex');
+set role authenticated;
+select pg_temp.esige('anche nella lega, accanto alla squadra',
+  (select count(*) > 0 from public.league_members m join public.profiles p on p.id = m.user_id where p.display_name is not null));
+reset role;
+select pg_temp.entra('user_furbo');
+set role authenticated;
+select pg_temp.esige('il proprio profilo intero arriva da mio_profilo()',
+  (select (public.mio_profilo() ->> 'id') = 'user_furbo' and (public.mio_profilo() ? 'sospeso') and (public.mio_profilo() ? 'is_admin')));
+update public.profiles set display_name = 'Furbo 3' where id = 'user_furbo';
+-- l'upsert che fa l'app al primo accesso (ensureProfile), senza leggere niente indietro
+insert into public.profiles (id, display_name) values ('user_furbo', 'Furbo 3') on conflict (id) do update set display_name = excluded.display_name;
+reset role;
+select pg_temp.esige('e il nome si cambia ancora',
+  (select display_name = 'Furbo 3' from public.profiles where id = 'user_furbo'));
+set role anon;
+do $$ begin
+  perform display_name from public.profiles limit 1;
+  raise exception 'FALLITA: l''anonimo legge i profili';
+exception when insufficient_privilege then raise notice 'ok  l''anonimo non legge i profili';
+end $$;
+reset role;
+
 select 'tutte le prove sulle funzioni sono passate' as esito;

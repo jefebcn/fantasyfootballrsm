@@ -226,6 +226,21 @@ Su un progetto nuovo, nell'SQL Editor, in quest'ordine:
     intoccabili: l'unica modifica lasciata passare è togliere la firma di chi
     non c'è più. Si esegue così com'è, si può rieseguire.
 
+24c. `migrations/025-ruoli-non-si-autoassegnano.sql` — **urgente, da
+    eseguire subito**. Chiunque si iscrivesse poteva creare il proprio
+    profilo già amministratore dell'app e Giudice Dati con una richiesta
+    all'API: la policy d'inserimento guardava solo che il profilo fosse il
+    suo. Ora la policy lo rifiuta e un trigger rimette i ruoli a falso
+    quando a scrivere è un client; li danno solo le funzioni della console.
+    Dopo, controllare chi ha un ruolo (query in testa al file).
+
+24d. `migrations/026-profili-riservati.sql` — **dopo qualche giorno dalla
+    versione 4.2.149 dell'app**. Dei profili altrui si leggono solo nome e
+    amici portati: chi ha invitato chi, la sospensione, i ruoli e la data
+    d'iscrizione non escono più dall'API. Il proprio profilo intero arriva
+    da `mio_profilo()`. Una versione vecchia dell'app rimasta in cache non
+    leggerebbe più il proprio profilo: per questo si aspetta.
+
 25. `promemoria-pianificato.sql` — **facoltativo ma consigliato**, e non è una
     migrazione: si riempie **una riga** (il token del promemoria) e si lancia
     a mano. Sposta l'orologio dell'avviso

@@ -12,7 +12,7 @@
  *    montepremi abbiano il nuovo stile, senza sottolineature;
  *  - le icone in alto abbiano il loro riquadro e il nome della lega resti
  *    intero, in chiaro e in scuro;
- *  - fuori dalla home i tasti restino quelli di prima.
+ *  - fuori dalla home lo stesso stile: schede, titoli, moduli, tasti.
  */
 const { chromium } = require('playwright');
 const BASE = process.env.BASE || 'http://localhost:4173';
@@ -73,10 +73,25 @@ const LIME = 'rgb(217, 245, 31)';
     await p.evaluate(() => document.querySelector('.home .mcard')?.scrollIntoView({ block: 'center' }));
     await p.screenshot({ path: `${USCITA}/tasti-home-${tema}.png` }).catch(() => {});
 
-    // fuori dalla home i tasti restano quelli di prima
-    await p.evaluate(() => { location.hash = '#/rosa/formazione'; }); await w(1200);
-    const fuori = await p.evaluate(() => { const e = document.querySelector('.a-btn'); return e ? getComputedStyle(e).fontFamily : null; });
-    et(!fuori || !/Anton/.test(fuori), `[${tema}] fuori dalla home i tasti restano in Lato (${fuori})`);
+    // Fuori dalla home lo stesso stile (Alex, 11/10: «portalo anche su rosa e
+    // formazione e in altre schermate»): scheda scelta lime, titoli in Anton,
+    // tasto principale lime, tasto secondario no.
+    await p.evaluate(() => { location.hash = '#/rosa/formazione'; });
+    await p.waitForSelector('.seg-rosa a.on', { timeout: 15000 }).catch(() => {});
+    const fuori = await p.evaluate(() => {
+      const c = (q) => { const e = document.querySelector(q); return e ? getComputedStyle(e) : null; };
+      return { scheda: c('.seg-rosa a.on')?.backgroundColor, titolo: c('.a-sec b')?.fontFamily,
+        modulo: c('.moduli .chip.on')?.backgroundColor };
+    });
+    et(fuori.scheda === LIME, `[${tema}] in Formazione la scheda scelta è lime (${fuori.scheda})`);
+    et(/Anton/.test(fuori.titolo || ''), `[${tema}] e i titoli di sezione sono in Anton`);
+    et(fuori.modulo === 'rgb(75, 6, 252)', `[${tema}] il modulo scelto è viola (${fuori.modulo})`);
+    await p.evaluate(() => { location.hash = '#/classifica'; }); await w(1200);
+    const tasti = await p.evaluate(() => [...document.querySelectorAll('.a-btn')].filter((e) => e.offsetParent)
+      .map((e) => ({ sec: e.classList.contains('sec'), bg: getComputedStyle(e).backgroundColor, font: getComputedStyle(e).fontFamily })));
+    const pieni = tasti.filter((t) => !t.sec);
+    et(pieni.length > 0 && pieni.every((t) => t.bg === LIME && /Anton/.test(t.font)), `[${tema}] in Classifica il tasto principale è lime in Anton (${pieni.length})`);
+    et(tasti.filter((t) => t.sec).every((t) => t.bg !== LIME), `[${tema}] i tasti secondari restano col bordo`);
     await ctx.close();
   }
   et(!errori.length, `nessun errore JS${errori.length ? `: ${errori[0]}` : ''}`);

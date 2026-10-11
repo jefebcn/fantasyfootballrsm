@@ -2311,3 +2311,47 @@ a.crow .cls-chev{flex:none;color:var(--text-muted);margin-left:-4px}
   background:rgba(255,255,255,.14);box-shadow:inset 0 0 0 1px rgba(255,255,255,.22)}
 .a-appbar .ib:not([data-open-drawer]):not([data-back]):active{background:rgba(255,255,255,.26)}
 .a-appbar .ib .dot{top:-3px;right:-3px}
+
+/* ==========================================================================
+   L'IDENTITA' DEI POST IN TUTTA L'APP (Alex, 11/10: «portalo anche su rosa e
+   formazione e in altre schermate»). Le stesse regole della home, per tutti:
+   - il tasto principale e' lime con la scritta Anton e l'ombra viola;
+   - la scheda o il filtro scelto e' lime (schede) o viola (filtri);
+   - i titoli di sezione sono in Anton, come i titoli dei post.
+   Restano come prima i tasti secondari (.sec), quelli rossi (.danger) e
+   quelli tenui (.ghost, .live). Anche «Accedi» e «Avanti» dell'ingresso
+   sono lime: e' la prima cosa che si vede, deve somigliare ai post.
+   ========================================================================== */
+.a-btn:not(.sec):not(.danger):not(.ghost):not(.live){background:var(--c-lime);color:var(--c-inchiostro);
+  font:400 18px/1 var(--font-tito);letter-spacing:.05em;border-radius:14px;text-decoration:none;
+  box-shadow:4px 4px 0 var(--c-viola);transition:transform .12s,box-shadow .12s}
+.a-btn:not(.sec):not(.danger):not(.ghost):not(.live):active:not([disabled]){transform:translate(3px,3px);box-shadow:1px 1px 0 var(--c-viola)}
+.a-btn:not(.sec):not(.danger):not(.ghost):not(.live)[disabled]{box-shadow:none}
+.a-btn.sec{font:400 17px/1 var(--font-tito);letter-spacing:.05em;border-radius:14px;color:var(--tito-ink);border-color:var(--tito-ink);text-decoration:none}
+.a-btn.danger{font:400 17px/1 var(--font-tito);letter-spacing:.05em;border-radius:14px}
+.a-btn .ic{stroke-width:2.6}
+
+/* Le schede in cima (Rosa · Formazione · Scambi, Classifica · Record ·
+   Campionato): quella scelta e' lime, come il tasto da toccare */
+.seg-cls button,.seg-rosa a{font:400 16px/1 var(--font-tito);letter-spacing:.05em;text-transform:uppercase}
+.seg-cls button.on,.seg-rosa a.on{background:var(--c-lime);color:var(--c-inchiostro);box-shadow:3px 3px 0 var(--c-viola)}
+.seg-rosa a.on .mi{background-color:var(--c-inchiostro)}
+
+/* I filtri e i moduli: quello scelto e' viola */
+.chip.on{background:var(--c-viola);border-color:var(--c-viola);color:#fff}
+.chip.mod,.moduli .chip{font:400 17px/1 var(--font-tito);letter-spacing:.06em}
+.moduli.spenti .chip.on{background:var(--c-viola);color:#fff;opacity:.75}
+
+/* Le giornate del calendario e dei voti */
+.gsel button,.gsel .gs{font:400 16px/1 var(--font-tito);letter-spacing:.04em}
+.gsel button.on,.gsel .gs.on{color:var(--tito-ink)}
+.gsel button.on::after,.gsel .gs i{background:var(--tito-ink)}
+
+/* I titoli di sezione, come i titoli dei post */
+.a-sec b{font:400 20px/1.1 var(--font-tito);font-style:normal;letter-spacing:.03em;text-transform:uppercase}
+
+/* L'ingresso: «Accedi» / «Crea account» sulla foto, e il puntino della guida */
+.auth2 .a-btn.oro{background:var(--c-lime);color:var(--c-inchiostro);font:400 20px/1 var(--font-tito);letter-spacing:.05em;
+  text-transform:uppercase;box-shadow:4px 4px 0 var(--c-viola)}
+.auth2 .a-btn.oro:active{background:var(--c-lime-600)}
+.intro-dots i.on{background:var(--c-lime)}

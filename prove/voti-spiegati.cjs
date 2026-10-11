@@ -32,13 +32,25 @@ const conMock = (ctx, { iso, stato = null }) => ctx.addInitScript(({ iso, stato 
   class F extends V { constructor(...a) { if (!a.length) super(V.now() + sc); else super(...a); } static now() { return V.now() + sc; } }
   window.Date = F;
 }, { iso, stato });
-// Le giornate dopo `fino` non si sono ancora giocate: risultati ed eventi via.
-const soloFino = async (p, fino) => {
+// Le giornate dopo `fino`, e le partite che il `quando` della prova non ha
+// ancora visto cominciare, non si sono giocate: risultati ed eventi via. Il
+// secondo serve dall'11 ottobre: l'import di main aveva registrato le partite
+// della domenica, e la 5ª "vista il 10" risultava gia' finita.
+const daTogliere = (fino, quando) => {
+  const cal = require('fs').readFileSync(require('path').join(__dirname, '..', 'src', 'calendario-dati.js'), 'utf8');
+  const via = new Set();
+  for (const [, n, casa, osp, iso] of cal.matchAll(/\[(\d+),"([a-z0-9]+)","([a-z0-9]+)",(null|"[^"]*")/g)) {
+    if (+n > fino || (quando && iso !== 'null' && new Date(JSON.parse(iso)) > new Date(quando))) via.add(`${n}:${casa}:${osp}`);
+  }
+  return via;
+};
+const soloFino = async (p, fino, quando) => {
+  const via = daTogliere(fino, quando);
   await p.route('**/calendario-dati.js', async (route) => { const r = await route.fetch(); let t = await r.text();
-    t = t.replace(/\[(\d+),("[a-z0-9]+","[a-z0-9]+"[^\n]*?),(?:null|\d+),(?:null|\d+)\]/g, (x, n, resto) => (+n > fino ? `[${n},${resto},null,null]` : x));
+    t = t.replace(/\[(\d+),"([a-z0-9]+)","([a-z0-9]+)"([^\n]*?),(?:null|\d+),(?:null|\d+)\]/g, (x, n, casa, osp, resto) => (via.has(`${n}:${casa}:${osp}`) ? `[${n},"${casa}","${osp}"${resto},null,null]` : x));
     await route.fulfill({ body: t, headers: { 'content-type': 'text/javascript' } }); });
   await p.route('**/eventi-dati.js', async (route) => { const r = await route.fetch();
-    const t = (await r.text()).split('\n').filter((riga) => { const d = /^\s*\{g:(\d+),/.exec(riga); return !(d && +d[1] > fino); }).join('\n');
+    const t = (await r.text()).split('\n').filter((riga) => { const d = /^\s*\{g:(\d+),casa:"([a-z0-9]+)",ospite:"([a-z0-9]+)"/.exec(riga); return !(d && via.has(`${d[1]}:${d[2]}:${d[3]}`)); }).join('\n');
     await route.fulfill({ body: t, headers: { 'content-type': 'text/javascript' } }); });
 };
 const num = (s) => Number(String(s).replace('+', '').replace('−', '-').replace(',', '.'));
@@ -76,7 +88,7 @@ const num = (s) => Number(String(s).replace('+', '').replace('−', '-').replace
   // ---- il 10 ottobre, a 5ª in corso coi referti veri
   ctx = await b.newContext(vp); await conMock(ctx, { iso: '2026-10-10T16:00:00Z', stato });
   p = await ctx.newPage(); p.on('pageerror', (e) => errori.push(e.message));
-  await soloFino(p, 5);
+  await soloFino(p, 5, '2026-10-10T16:00:00Z');
   // Si aspetta che la sezione ci sia, non un tempo fisso: dentro la batteria
   // completa la macchina e' piu' lenta, e 2,2 secondi a volte non bastavano.
   await p.goto(`${BASE}/#/rosa/formazione`, { waitUntil: 'load' });

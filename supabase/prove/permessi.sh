@@ -53,7 +53,8 @@ ok "applicati"
 # di chi interroga, non tirano fuori niente e restano aperte di proposito.
 # Se ne aggiungi una al database, aggiungila qui: e' una scelta, e va scritta.
 APERTE="is_judge is_league_admin is_league_member my_member_id matchday_is_frozen
-        matchday_lock_at matchday_of current_user_id log_change guard_frozen trade_conta"
+        matchday_lock_at matchday_of current_user_id log_change guard_frozen trade_conta
+        solo_autore_cancellato"
 # E una che scrive, aperta all'anonimo di proposito: conta_sponsor (018). La
 # fascia dello sponsor la vede chiunque apra l'app, anche prima di avere un
 # account, e un contatore che conta solo gli iscritti non e' il numero che si

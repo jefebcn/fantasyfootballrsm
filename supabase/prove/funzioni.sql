@@ -1446,4 +1446,75 @@ reset role;
 select pg_temp.esige('cancellato chi aveva invitato, l''amico resta senza legame',
   (select invitato_da is null from public.profiles where id = 'user_ivo'));
 
+-- ------------------------------------------- 024: cancellarsi dopo aver fatto qualcosa
+-- Prima della 024 bastava aver deciso UNO scambio per non potersi più
+-- cancellare: trades.deciso_da puntava al profilo senza dire cosa fare quando
+-- sparisce. Lia ha fatto un po' di tutto: ha deciso uno scambio, creato una
+-- lega poi passata ad altri, messo uno sponsor, e da Giudice ha scritto un
+-- evento e congelato la giornata. Deve potersene andare lo stesso, e i dati
+-- restano senza il suo nome.
+insert into public.profiles (id, display_name, is_judge) values ('user_lia', 'Lia', true)
+on conflict (id) do nothing;
+select id as scambio_lia from public.trades where stato = 'accettata' limit 1 \gset
+update public.trades set deciso_da = 'user_lia' where id = :'scambio_lia';
+update public.leagues set created_by = 'user_lia' where id = :'lega';
+insert into public.sponsor (nome, dal, creato_da) values ('Bar di Lia', current_date, 'user_lia');
+select pg_temp.entra('user_lia');
+insert into public.match_events (match_id, player_id, club_id, minute, type, created_by)
+  values ('md29_m1', 'tale_10', 'tale', 12, 'goal', 'user_lia');
+select pg_temp.entra('user_alex');
+insert into public.match_events (match_id, player_id, club_id, minute, type, created_by)
+  values ('md29_m1', 'tale_10', 'tale', 80, 'yellow', 'user_alex');
+insert into public.match_overrides (match_id, updated_by) values ('md29_m1', 'user_lia')
+on conflict (match_id) do update set updated_by = 'user_lia';
+insert into public.matchday_status (matchday, status, changed_by) values (29, 'frozen', 'user_lia')
+on conflict (matchday) do update set status = 'frozen', changed_by = 'user_lia';
+update public.matchday_locks set updated_by = 'user_lia' where matchday = 29;
+select count(*) as righe_registro from public.change_log \gset
+
+select pg_temp.entra('user_lia');
+set role authenticated;
+select public.elimina_profilo();
+reset role;
+select pg_temp.esige('chi ha deciso uno scambio e scritto voti si cancella',
+  not exists (select 1 from public.profiles where id = 'user_lia'));
+select pg_temp.esige('lo scambio resta, senza chi l''ha deciso',
+  (select stato = 'accettata' and deciso_da is null from public.trades where id = :'scambio_lia'));
+select pg_temp.esige('la lega che aveva creato resta in piedi',
+  (select created_by is null from public.leagues where id = :'lega'));
+select pg_temp.esige('lo sponsor resta',
+  (select creato_da is null from public.sponsor where nome = 'Bar di Lia'));
+select pg_temp.esige('l''evento nella giornata congelata resta, senza firma',
+  (select created_by is null from public.match_events where match_id = 'md29_m1' and minute = 12));
+select pg_temp.esige('la correzione del voto resta, senza firma',
+  (select updated_by is null from public.match_overrides where match_id = 'md29_m1'));
+select pg_temp.esige('e la giornata resta congelata',
+  (select status = 'frozen' and changed_by is null from public.matchday_status where matchday = 29));
+select pg_temp.esige('il registro non si riempie di righe finte',
+  (select count(*) from public.change_log) = :righe_registro);
+select pg_temp.esige('e le sue righe nel registro restano, anonime',
+  not exists (select 1 from public.change_log where by_user = 'user_lia'));
+
+-- l'eccezione vale solo per chi se n'è andato: un Giudice vivo non può
+-- togliersi la firma da una giornata congelata, né cambiarci altro
+select pg_temp.entra('user_alex');
+do $$ begin
+  update public.match_events set created_by = null where match_id = 'md29_m1' and minute = 80;
+  raise exception 'FALLITA: un Giudice vivo si è tolto la firma da una giornata congelata';
+exception when others then
+  if sqlerrm like 'FALLITA:%' then raise; end if;
+  raise notice 'ok  un Giudice vivo non si toglie la firma da una giornata congelata (%)', sqlerrm;
+end $$;
+do $$ begin
+  update public.match_events set minute = 81 where match_id = 'md29_m1' and minute = 12;
+  raise exception 'FALLITA: un evento senza firma si è potuto modificare a giornata congelata';
+exception when others then
+  if sqlerrm like 'FALLITA:%' then raise; end if;
+  raise notice 'ok  e l''evento rimasto senza firma non si ritocca (%)', sqlerrm;
+end $$;
+delete from public.matchday_status where matchday = 29;
+delete from public.match_events where match_id = 'md29_m1';
+delete from public.match_overrides where match_id = 'md29_m1';
+delete from public.sponsor where nome = 'Bar di Lia';
+
 select 'tutte le prove sulle funzioni sono passate' as esito;

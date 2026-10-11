@@ -72,12 +72,12 @@ const num = (s) => Number(String(s).replace('+', '').replace('−', '-').replace
   await p.click('#draft'); await w(1500);
   await p.evaluate(() => { location.hash = '#/rosa'; }); await w(1000);
   const schede = await p.evaluate(() => [...document.querySelectorAll('.seg-rosa a')].map((a) => ({ t: a.innerText.replace(/\s+/g, ' ').trim(), on: a.classList.contains('on'), h: a.getBoundingClientRect().height, w: a.getBoundingClientRect().width })));
-  et(schede.length >= 2 && /Rosa/.test(schede[0].t) && /Formazione/.test(schede[1].t), `in Rosa ci sono le schede Rosa e Formazione (${schede.map((s) => s.t).join(' | ')})`);
+  et(schede.length >= 2 && /Rosa/i.test(schede[0].t) && /Formazione/i.test(schede[1].t), `in Rosa ci sono le schede Rosa e Formazione (${schede.map((s) => s.t).join(' | ')})`);
   et(schede[0]?.on && !schede[1]?.on, 'e quella attiva è Rosa');
   et(schede.every((s) => s.h >= 44), `alte abbastanza per il pollice (${schede.map((s) => Math.round(s.h)).join(', ')} px)`);
   et(schede.length >= 2 && Math.abs(schede[0].w - schede[1].w) < 4, 'e larghe uguali, a tutta riga');
   await p.click('.seg-rosa a[href="#/rosa/formazione"]'); await w(1000);
-  et(/formazione/.test(await p.evaluate(() => location.hash)) && await p.evaluate(() => document.querySelector('.seg-rosa a.on')?.innerText.includes('Formazione')), 'toccando Formazione si passa alla formazione, con la sua scheda accesa');
+  et(/formazione/.test(await p.evaluate(() => location.hash)) && await p.evaluate(() => /Formazione/i.test(document.querySelector('.seg-rosa a.on')?.innerText || '')), 'toccando Formazione si passa alla formazione, con la sua scheda accesa');
   const aperti = await p.evaluate(() => ({ n: document.querySelectorAll('.moduli [data-mod]').length, nota: document.querySelector('.moduli')?.previousElementSibling?.innerText || '' }));
   et(aperti.n === 7 && /ogni giornata/.test(aperti.nota), `a giornata aperta si sceglie fra 7 moduli, e si dice che si cambia a ogni giornata (${aperti.n})`);
   await p.click('#confirm'); await w(1200);

@@ -160,12 +160,12 @@ const prepara = (ctx, stato) => ctx.addInitScript((stato) => {
   // campionato, che invece servono a tutti.
   await p.evaluate(() => { location.hash = '#/calendario'; }); await w(p, 1100);
   const cal = await p.evaluate(() => ({
-    scontri: /Scontri di lega/.test(document.body.innerText),
-    campionato: /Partite del campionato/.test(document.body.innerText),
+    scontri: /Scontri di lega/i.test(document.body.innerText),
+    campionato: /Partite del campionato/i.test(document.body.innerText),
     primo: document.querySelector('.a-sec b')?.innerText || '',
   }));
   et(!cal.scontri && cal.campionato, `il calendario non annuncia scontri che non esistono (scontri: ${cal.scontri}, campionato: ${cal.campionato})`);
-  et(/Partite del campionato/.test(cal.primo), `e comincia dalle partite vere ("${cal.primo}")`);
+  et(/Partite del campionato/i.test(cal.primo), `e comincia dalle partite vere ("${cal.primo}")`);
 
   await p.evaluate(() => { location.hash = '#/rosa'; }); await w(p, 900);
   et(!(await p.$('a[href="#/scambi"]')), 'nella rosa non c\'è la pastiglia degli scambi');

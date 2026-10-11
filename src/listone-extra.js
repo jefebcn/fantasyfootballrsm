@@ -18,7 +18,6 @@ export const LISTONE_EXTRA = [
   ["cosmos","Richard Ulloa","Brito","C"],
   ["sangiovanni","Thomas","Caverzan","C"],
   ["trefiori","Tjakko Van","Nek","C"],
-  ["juvenes","Bakalyar","Yuriy","D"],
   ["trefiori","Bernardi Tommaso","Leon","A"],
   ["sangiovanni","Caverzan","Thomas","C"],
   ["lafiorita","Cicarelli De Morais","Daniel","C"],

@@ -391,6 +391,8 @@ export function createClient(_url, _key, opts) {
           });
           l.premi = pr; persisti(); return { data: pr, error: null };
         }
+        // 026: il proprio profilo intero (gli altri ne leggono solo nome e amici)
+        if (name === 'mio_profilo') { return { data: T('profiles').find((x) => x.id === userId) || null, error: null }; }
         if (name === 'join_league') { const l = T('leagues').find((x) => x.invite_code === args.p_code.toUpperCase()); if (!l) throw new Error('Codice invito non valido'); if (!T('league_members').some((m) => m.league_id === l.id && m.user_id === userId)) T('league_members').push({ id: uid(), league_id: l.id, user_id: userId, role: 'fantallenatore', team_name: args.p_team, owner_name: prof.display_name, color: args.p_color, initials: args.p_initials, credits: 500, created_at: now() }); contaReclutato(userId); persisti(); return { data: l.id, error: null }; }
         if (name === 'sync_matchday_locks') {
           // Interruttore per provare il caso in cui la sincronizzazione fallisce

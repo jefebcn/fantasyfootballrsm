@@ -134,8 +134,20 @@ export async function resetPassword(email, redirectTo) { return authCall(sb.auth
 export async function updatePassword(password) { return authCall(sb.auth.updateUser({ password })); }
 export async function signOut() { await sb.auth.signOut(); }
 export function onAuth(fn) { sb.auth.onAuthStateChange((_e, session) => fn(session?.user || null)); }
-export async function profile(userId) { return must(await sb.from('profiles').select('*').eq('id', userId).maybeSingle()); }
-export async function updateProfile(userId, patch) { return must(await sb.from('profiles').update(patch).eq('id', userId).select().single()); }
+/**
+ * Il proprio profilo intero. Dalla 026 gli altri leggono solo nome e amici
+ * portati, e le colonne riservate (ruoli, sospensione, chi ti ha invitato)
+ * arrivano solo da mio_profilo(), che restituisce la riga di chi chiama.
+ * Su un database senza la 026 la funzione non c'e': si legge come prima.
+ */
+export async function profile(userId) {
+  const { data, error } = await sb.rpc('mio_profilo');
+  if (!error && data && data.id === userId) return data;
+  return must(await sb.from('profiles').select('*').eq('id', userId).maybeSingle());
+}
+// Senza .select() dopo la scrittura: restituirebbe tutte le colonne, che
+// dalla 026 non si leggono. Il profilo aggiornato si rilegge da profile().
+export async function updateProfile(userId, patch) { must(await sb.from('profiles').update(patch).eq('id', userId)); return profile(userId); }
 /**
  * Riallinea la copia del nome nelle proprie iscrizioni (owner_name).
  *
@@ -160,7 +172,8 @@ export async function ensureProfile(user) {
   const name = m.display_name || m.full_name || m.name
     || [m.given_name, m.family_name].filter(Boolean).join(' ')
     || (user.email || '').split('@')[0];
-  return must(await sb.from('profiles').upsert({ id: user.id, display_name: name }).select().single());
+  must(await sb.from('profiles').upsert({ id: user.id, display_name: name }));
+  return profile(user.id);
 }
 
 // ---------------------------------------------------------------- reclutatori (023)

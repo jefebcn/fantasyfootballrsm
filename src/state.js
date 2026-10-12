@@ -271,7 +271,7 @@ async function adopt() { user = authKind() === 'clerk' ? clerk.user() : await re
 export const currentUser = () => user;
 export const profileInfo = () => prof;
 export async function signInPassword(email, password) { await remote.signInPassword(email, password); return adopt(); }
-export async function signUpPassword(email, password, displayName) { const r = await remote.signUpPassword(email, password, displayName, ritornoConInvito()); if (!r.needsConfirmation) await adopt(); return r; }
+export async function signUpPassword(email, password, displayName) { const r = await remote.signUpPassword(email, password, displayName, ritornoConInvito()); if (!r.needsConfirmation && !r.giaIscritto) await adopt(); return r; }
 export async function resendConfirmation(email) { await remote.resendConfirmation(email, ritornoConInvito()); }
 export async function signInLink(email) { await remote.signInLink(email, ritornoConInvito()); }
 export const oauthProviders = () => { const p = remote.enabledProviders(); return ['google', 'apple'].filter((k) => p[k]); };
@@ -402,6 +402,8 @@ export const leghePubbliche = () => remote.leghePubbliche();
 // --- console amministrativa (014)
 export const adminRiepilogo = () => remote.adminRiepilogo();
 export const adminPersone = (cerca, limite) => remote.adminPersone(cerca, limite);
+export const adminDaConfermare = () => remote.adminDaConfermare();
+export const adminConfermaEmail = (id) => remote.adminConfermaEmail(id);
 export const adminLeghe = (limite) => remote.adminLeghe(limite);
 // --- moderazione (015)
 export const adminSquadre = (cerca, limite) => remote.adminSquadre(cerca, limite);

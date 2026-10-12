@@ -99,7 +99,13 @@ export function createClient(_url, _key, opts) {
       async getUser() { return { data: { user: { id: userId, email: T('profiles').find((p) => p.id === userId)?.email } } }; },
       async signInWithOtp({ email }) { globalThis.__lastOtpEmail = email; return { data: {}, error: null }; },
       async signUp({ email, password, options }) {
-        if (T('profiles').some((x) => x.email === email)) return { data: null, error: { message: 'User already registered' } };
+        // Come il vero Supabase: con la conferma e-mail accesa un indirizzo gia'
+        // iscritto NON da' errore (non si rivela chi e' iscritto): torna un
+        // utente senza «identities», senza sessione, e nessuna mail parte.
+        if (T('profiles').some((x) => x.email === email)) {
+          if (globalThis.__MOCK_CONFIRM__) { return { data: { user: { id: uid(), email, identities: [] }, session: null }, error: null }; }
+          return { data: null, error: { message: 'User already registered' } };
+        }
         if (!password || password.length < 6) return { data: null, error: { message: 'Password should be at least 6 characters' } };
         const p = { id: uid(), email, password, display_name: options?.data?.display_name || email.split('@')[0], is_judge: T('profiles').length === 0, ...campi023() };
         T('profiles').push(p); persisti();
@@ -279,6 +285,19 @@ export function createClient(_url, _key, opts) {
               ultimo_accesso: p2.created_at || now(), email_confermata: p2.created_at || now(),
               leghe: T('league_members').filter((m) => m.user_id === p2.id).length,
               squadre: T('league_members').filter((m) => m.user_id === p2.id).length })), error: null };
+        }
+        // 030: chi non ha confermato l'e-mail (sul vero database: auth.users
+        // senza email_confirmed_at). Le prove lo mettono in «da_confermare».
+        if (name === 'admin_da_confermare') {
+          if (!amministro()) throw new Error("Serve essere amministratore dell'app");
+          return { data: T('da_confermare').filter((u) => !u.confermata), error: null };
+        }
+        if (name === 'admin_conferma_email') {
+          if (!amministro()) throw new Error("Serve essere amministratore dell'app");
+          const u = T('da_confermare').find((x) => x.id === args.p_user);
+          if (!u) throw new Error('Account non trovato');
+          const gia = !!u.confermata; u.confermata = now(); persisti();
+          return { data: { email: u.email, gia, avvisato: !gia }, error: null };
         }
         if (name === 'admin_squadre') {
           if (!amministro()) throw new Error("Serve essere amministratore dell'app");

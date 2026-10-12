@@ -6,6 +6,7 @@ let tab = 'in';            // 'in' | 'up' | 'link'
 let pending = null;        // { email, kind: 'confirm' | 'link' }
 let busy = false;
 let notice = null;         // { kind: 'ok' | 'err', text }
+let emailGia = null;        // l'e-mail che ha gia' un account: la si rimette in «Accedi»
 
 let pendingTab = null;
 /** Consente a un'altra vista di aprire l'accesso già sulla scheda giusta. */
@@ -114,6 +115,12 @@ export const login = {
       setBusy(true, 'Creo l\'account…');
       try {
         const r = await S.signUpPassword(email, password, name);
+        if (r.giaIscritto) {
+          tab = 'in'; emailGia = email; busy = false;
+          notice = { kind: 'ok', text: `Con ${email} c'è già un account Fantatitano: non serve crearne un altro. Accedi qui con la tua password; se non la ricordi tocca «Password dimenticata?».` };
+          ctx.render();
+          return;
+        }
         if (r.needsConfirmation) { pending = { email, kind: 'confirm' }; notice = { kind: 'ok', text: 'Account creato: manca solo la conferma.' }; ctx.render(); }
       } catch (err) { setBusy(false); fail(err); }
     });
@@ -130,7 +137,7 @@ function socialBlock() {
 }
 function credentialsPanel() {
   const up = tab === 'up';
-  return `${campo('email', 'E-mail', `type="email" autocomplete="email" inputmode="email" value="${esc(up ? '' : emailRicordata())}"`)}
+  return `${campo('email', 'E-mail', `type="email" autocomplete="email" inputmode="email" value="${esc(up ? '' : (emailGia || emailRicordata()))}"`)}
     ${up ? campo('name', 'Come ti chiami', 'autocomplete="name" maxlength="24"') : ''}
     ${campo('password', up ? 'Password, almeno 6 caratteri' : 'Password',
       `type="password" autocomplete="${up ? 'new-password' : 'current-password'}"`,

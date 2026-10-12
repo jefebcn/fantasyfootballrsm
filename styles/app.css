@@ -2392,3 +2392,9 @@ a.crow .cls-chev{flex:none;color:var(--text-muted);margin-left:-4px}
 .tile.cta{background:var(--c-lime);box-shadow:4px 4px 0 var(--c-viola)}
 .tile.cta .txt b,.tile.cta .txt span,.tile.cta > .chev{color:var(--c-inchiostro)}
 .tile.cta .txt b{font:400 18px/1.15 var(--font-tito);letter-spacing:.03em;text-transform:uppercase}
+
+/* Quattro schede in una riga (Classifica · Giornata 5 · Record · Campionato):
+   in Anton a 16px «GIORNATA 5» andava a capo. Una riga sola, un filo piu'
+   piccole quando sono quattro. */
+.seg-cls button{white-space:nowrap;min-width:0;overflow:hidden;text-overflow:ellipsis}
+.seg-cls button:first-child:nth-last-child(n+4),.seg-cls button:first-child:nth-last-child(n+4) ~ button{font-size:14.5px;letter-spacing:.03em;padding-left:2px;padding-right:2px}

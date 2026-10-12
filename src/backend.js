@@ -125,7 +125,14 @@ export async function signInPassword(email, password) { return authCall(sb.auth.
 export async function signUpPassword(email, password, displayName, redirectTo) {
   const data = await authCall(sb.auth.signUp({ email, password, options: { data: { display_name: displayName }, emailRedirectTo: redirectTo } }));
   // Con la conferma e-mail attiva la sessione non c'è: serve aprire il link ricevuto.
-  return { user: data.user, needsConfirmation: !data.session };
+  // MA se l'e-mail ha GIA' un account Supabase non lo dice (per non rivelare
+  // chi e' iscritto): risponde come a un'iscrizione riuscita, con l'utente
+  // senza «identities», e NON manda nessuna mail. Prima l'app diceva «manca
+  // solo la conferma» e lasciava la persona ad aspettare una mail che non
+  // sarebbe mai arrivata (Alex, 12/10: Matteo, iscritto e confermato dal 10/10,
+  // che si registrava di nuovo).
+  const giaIscritto = !data.session && Array.isArray(data.user?.identities) && data.user.identities.length === 0;
+  return { user: data.user, needsConfirmation: !data.session && !giaIscritto, giaIscritto };
 }
 export async function signInLink(email, redirectTo) { return authCall(sb.auth.signInWithOtp({ email, options: { emailRedirectTo: redirectTo, shouldCreateUser: true } })); }
 export async function verifyOtp(email, token) { return authCall(sb.auth.verifyOtp({ email, token: token.trim(), type: 'email' })); }
@@ -211,6 +218,9 @@ export async function adminRiepilogo() { return must(await sb.rpc('admin_riepilo
 // all'elenco, e un tipo di ritorno non si cambia con create or replace —
 // spiegato per esteso nella migrazione.
 export async function adminPersone(cerca, limite = 50) { return must(await sb.rpc('admin_persone', { p_cerca: cerca || null, p_limite: limite })) || []; }
+// Chi si e' iscritto e non ha confermato l'e-mail, e la conferma a mano (030).
+export async function adminDaConfermare() { return must(await sb.rpc('admin_da_confermare')) || []; }
+export async function adminConfermaEmail(id) { return must(await sb.rpc('admin_conferma_email', { p_user: id })); }
 export async function adminSospendi(userId, on) { return must(await sb.rpc('admin_sospendi', { p_user: userId, p_on: on })); }
 export async function adminSquadre(cerca, limite = 50) { return must(await sb.rpc('admin_squadre', { p_cerca: cerca || null, p_limite: limite })) || []; }
 export async function adminRinomina(memberId, squadra, fantallenatore) { return must(await sb.rpc('admin_rinomina', { p_member: memberId, p_squadra: squadra, p_fantallenatore: fantallenatore || null })); }

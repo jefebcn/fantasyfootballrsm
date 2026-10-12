@@ -243,7 +243,7 @@ export const adminRegistro = {
  * se la rifa' la persona — che e' anche l'unico modo in cui resta sua.
  */
 let aTab = 'numeri';        // 'numeri' | 'persone' | 'squadre' | 'leghe' | 'sponsor'
-let cache = { numeri: null, persone: null, squadre: null, leghe: null, conteggi: null, errori: undefined };
+let cache = { numeri: null, persone: null, squadre: null, leghe: null, conteggi: null, errori: undefined, daConfermare: undefined };
 let cerca = '';
 
 const quando = (iso) => (iso ? `${dateIt(iso)} ${timeIt(iso)}` : '—');
@@ -377,6 +377,31 @@ function numeri(r) {
   ];
   return `<div class="adm-numeri">${q.map(([et, v, sotto]) => `<div class="adm-n">
     <span class="et">${et}</span><b>${v ?? '—'}</b>${sotto ? `<span class="sotto">${esc(sotto)}</span>` : ''}</div>`).join('')}</div>`;
+}
+
+/**
+ * CHI NON RIESCE A ENTRARE (Alex, 12/10: «il miglior giocatore del
+ * campionato non riceve la mail di conferma»). Chi non conferma non ha
+ * ancora un profilo, quindi nell'elenco qui sotto non c'era: l'unico rimedio
+ * era l'SQL Editor. Qui lo si vede, e con «Conferma io» entra: il database
+ * gli manda una mail che gli dice che l'account e' attivo e che non serve
+ * crearne un altro (030).
+ */
+function daConfermare(list) {
+  if (list === undefined || list === null) return '';
+  if (list === 'assente') {
+    return `<div class="a-card avviso-console"><b>Iscritti da confermare</b><span>Per vederli e confermarli da qui esegui nell'SQL Editor <code>supabase/migrations/030-conferma-a-mano.sql</code>.</span></div>`;
+  }
+  if (!list.length) return '';
+  return `<div class="a-sec"><b>Da confermare</b><span>${list.length} ${list.length === 1 ? 'iscritto' : 'iscritti'} senza conferma</span></div>
+    <div class="vlist">${list.map((u) => `<div class="adm-u">
+      <div class="riga"><span class="nm"><b>${esc(u.nome || '—')}</b><span>${esc(u.email || '')}</span></span>
+        <span class="tag"><i class="sos">da confermare</i></span></div>
+      <div class="dati"><span>iscritto ${quando(u.iscritto)}</span><span>ultima mail ${quando(u.mail_inviata)}</span></div>
+      <div class="azioni"><button class="chip" data-conferma="${esc(u.id)}" data-mail="${esc(u.email || '')}">Conferma io</button></div>
+    </div>`).join('')}</div>
+    <p class="small muted">«Conferma io» attiva l'account senza la mail di conferma e gli scrive che può entrare con la sua e-mail e la sua password, senza crearne un altro.</p>
+    <div class="a-sec"><b>Tutti</b><span></span></div>`;
 }
 
 function persone(list) {
@@ -523,7 +548,7 @@ export const adminConsole = {
     let corpo = '';
     if (aTab === 'numeri') corpo = numeri(cache.numeri) + consegne(cache.numeri) + errori(cache.errori) + andamento(cache.persone);
     else if (aTab === 'persone') {
-      corpo = `<input class="field-input" id="adm-cerca" placeholder="Cerca per nome o e-mail" value="${esc(cerca)}" autocomplete="off">
+      corpo = `${daConfermare(cache.daConfermare)}<input class="field-input" id="adm-cerca" placeholder="Cerca per nome o e-mail" value="${esc(cerca)}" autocomplete="off">
         ${persone(cache.persone)}`;
     } else if (aTab === 'squadre') {
       corpo = `<input class="field-input" id="adm-cerca" placeholder="Cerca per squadra, fantallenatore o lega" value="${esc(cerca)}" autocomplete="off">
@@ -550,6 +575,11 @@ export const adminConsole = {
         if (aTab === 'numeri' && !cache.persone) { cache.persone = await S.adminPersone(null, 100); ctx.render(); }
         if ((aTab === 'leghe' || aTab === 'sponsor') && !cache.leghe) { cache.leghe = await S.adminLeghe(200); ctx.render(); }
         if (aTab === 'persone' && !cache.persone) { cache.persone = await S.adminPersone(cerca, 100); ctx.render(); }
+        if (aTab === 'persone' && cache.daConfermare === undefined) {
+          // senza la 030 la funzione non c'e': lo si dice, non e' un errore
+          try { cache.daConfermare = await S.adminDaConfermare(); } catch (e) { cache.daConfermare = /admin_da_confermare|function|schema cache/i.test(e.message || '') ? 'assente' : null; }
+          ctx.render();
+        }
         if (aTab === 'squadre' && !cache.squadre) { cache.squadre = await S.adminSquadre(cerca, 100); ctx.render(); }
         // I conteggi (018): una volta per apertura della console. Se la
         // migrazione non c'e' ancora tornano vuoti e la scheda funziona lo
@@ -646,6 +676,18 @@ export const adminConsole = {
           cache.squadre = await S.adminSquadre(cerca, 100);
           ctx.toast('Rinominata'); ctx.render();
         } catch (err) { ctx.toast(err.message || 'Non è stato possibile'); rn.disabled = false; }
+        return;
+      }
+      const cf = e.target.closest('[data-conferma]');
+      if (cf) {
+        const mail = cf.dataset.mail;
+        if (!confirm(`Confermare l'account di ${mail}? Potrà entrare subito con la sua password, e gli arriva una mail che glielo dice.`)) return;
+        cf.disabled = true;
+        try {
+          const r = await S.adminConfermaEmail(cf.dataset.conferma);
+          ctx.toast(r?.gia ? 'Era già confermato' : r?.avvisato ? 'Confermato: gli è partita la mail' : 'Confermato (la mail non è partita: scrivigli tu che può entrare)');
+          cache.daConfermare = undefined; cache.persone = null; ctx.render();
+        } catch (err) { ctx.toast(err.message || 'Non è stato possibile'); cf.disabled = false; }
         return;
       }
       const rs = e.target.closest('[data-reset]');

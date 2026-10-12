@@ -55,3 +55,18 @@ test('il service worker continua a non restare in cache', () => {
   const sw = conf.headers.find((h) => h.source === '/sw.js');
   assert.equal(sw?.headers.find((h) => h.key === 'Cache-Control')?.value, 'no-cache');
 });
+
+/*
+ * NIENTE ANTEPRIME DEI RAMI DI LAVORO. Vercel faceva un'anteprima a ogni
+ * push sui rami claude/..., scaricando ogni volta il repository da GitHub.
+ * Il 12/10 GitHub ha risposto due volte «secondary rate limit» e ad Alex e'
+ * arrivata la mail «preview deployment failed», che sembra un guasto del
+ * sito e non lo e': la produzione (main) era online e a posto. Le anteprime
+ * non le guarda nessuno — prima di pubblicare girano le prove qui e in CI —
+ * quindi su quei rami Vercel non parte proprio. main resta com'e'.
+ */
+test('i rami di lavoro non fanno anteprime su Vercel, main si pubblica', () => {
+  const abilitati = conf.git?.deploymentEnabled || {};
+  assert.equal(abilitati['claude/**'], false);
+  assert.notEqual(abilitati.main, false);
+});

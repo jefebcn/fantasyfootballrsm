@@ -33,7 +33,10 @@ export const LISTONE_EXTRA = [
   ["murata","Raimondi","Andrea","C"],
   ["trepenne","Rinaldi Danilo","Ezequiel","C"],
   ["cosmos","Ulloa Brito","Richard","C"],
+  ["murata","Gianmarco","Ceccaroni","C"],
   ["academy","Loris","Mattei","C"],
-  ["virtus","Nathan","Borioni","C"],
+  ["academy","Marco","Zavoli","C"],
+  ["virtus","Natan Jhaison","Borioni","C"],
   ["juvenes","Bakalyar","Yuriy","D"],
+  ["folgore","Sahud Scutella","Mathias","C"],
 ];

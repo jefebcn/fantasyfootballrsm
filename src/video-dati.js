@@ -29,11 +29,12 @@ export const PARTITE = [
   [4, "trepenne", "juvenes", "bH4FpWAHP2o", "2026-09-21"],
 ];
 export const VIDEO_CANALE = [
+  ["Mm97eyX3kzA", "Campionato Sammarinese 2026-27 | HL Virtus - San Marino Academy 5-0", "2026-10-12"],
+  ["jz7Q8xyppiY", "Campionato Sammarinese 2026-27 | HL Faetano - Fiorentino 0-6", "2026-10-12"],
   ["qRAFyEaloCI", "Campionato Sammarinese 2026-27 | HL San Giovanni - Tre Fiori 0-1", "2026-10-12"],
   ["l0Hnz9buZHI", "Campionato Sammarinese 2026-27 | HL La Fiorita - Murata 3-0", "2026-10-12"],
   ["eK9sCdaGEac", "Campionato Sammarinese 2026-27 | HL Cailungo - Libertas 1-2", "2026-10-12"],
   ["8gCDlriA534", "Campionato Sammarinese 2026-27 | HL Pennarossa - Folgore 1-5", "2026-10-12"],
   ["zsomoTLWsfU", "Campionato Sammarinese 2026-27, 4. giornata - VOTA LA PARATA PIÙ BELLA!", "2026-09-21"],
   ["ZElMKq4bydc", "Campionato Sammarinese 2026-27, 4. giornata - VOTA IL GOL PIÙ BELLO!", "2026-09-21"],
-  ["UUMa2xfdLMI", "U15, San Marino - Liechtenstein | Highlights", "2026-09-20"],
 ];

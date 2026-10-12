@@ -5,7 +5,7 @@ import * as N from '../notizie.js';
 import { esc, fmt, icon, logo, badge, crest, pic, tile, sec, dateIt, timeIt, plurale, freccia } from '../ui.js';
 import { movimenti, anteprimaClassifica } from '../engine.js';
 import { maglia, kitOf } from '../maglia.js';
-import { personaggio, scelto } from '../personaggio.js';
+import { personaggio, scelto, figura } from '../personaggio.js';
 
 const RULES = [
   ['Art. 7.4', 'Rigore parato', 'Vale +3,0 al portiere e −3,0 al tiratore. Sul palo o fuori: −3,0 al tiratore e nessun bonus al portiere.'],
@@ -96,7 +96,7 @@ function manca(lockAt) {
   return g ? `${g}g ${h}h` : `${h}h ${Math.floor((left % 3600000) / 60000)}m`;
 }
 
-const lato = (m) => `<div class="side">${crest(m)}<b>${esc(m.teamName)}</b><span class="own">${esc(m.owner)}</span></div>`;
+const lato = (m) => `<div class="side">${figura(m, 'fig-sfida') || crest(m)}<b>${esc(m.teamName)}</b><span class="own">${esc(m.owner)}</span></div>`;
 
 /**
  * La giornata appena conclusa. È la prima cosa che si cerca riaprendo l'app,

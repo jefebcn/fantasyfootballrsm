@@ -1,6 +1,13 @@
 import * as S from '../state.js';
 import { esc, fmt, icon, crest, roleChip, avatar, evTiles, pic, voteRow, dateIt, timeIt, logo } from '../ui.js';
 import { videoDi } from '../video.js';
+import { figura } from '../personaggio.js';
+
+/** Nella testata dello scontro il personaggio di chi l'ha scelto; se ce l'ha
+ *  solo l'altro, qui lo stemma alla stessa altezza, se no i nomi non stanno
+ *  in fila. Se non ce l'ha nessuno, la testata resta com'era. */
+const testaTm = (m, altro) => figura(m, 'fig-tm')
+  || (figura(altro) ? `<span class="fig-tm fig-stemma">${crest(m, 'sm')}</span>` : '');
 
 let tab = 'campo';
 const P = (id) => S.playersById.get(id);
@@ -109,7 +116,7 @@ export const live = {
     const played = r.played;
     const inserted = S.matchesOf(n).filter((m) => m.status !== 'scheduled').length;
     const head = `<div class="l-bar"><div class="row"><button class="ib flip" data-back aria-label="Indietro">${icon('chev')}</button><div class="lg">${crest({ color: 'var(--c-titano-800)', initials: 'SR' })}<div style="min-width:0"><b>${esc(S.base.league.name)}</b><span>Giornata ${n}</span></div></div><a class="ib" href="#/calendario/${n}" aria-label="Calendario">${icon('cal')}</a><a class="ib" href="#/scheda" aria-label="Scheda">${icon('share')}</a></div>
-      <div class="l-head"><div class="tm"><b>${esc(h.teamName)}</b><span>${played ? (r.home.lineup?.formation || 'non consegnata') : ''}</span></div><div class="sc">${played ? `${r.homeGoals} – ${r.awayGoals}` : 'VS'}<small>${played ? `${fmt(r.homeScore)} – ${fmt(r.awayScore)}` : dateIt(S.matchday(n).lockAt)}</small></div><div class="tm"><b>${esc(a.teamName)}</b><span>${played ? (r.away.lineup?.formation || 'non consegnata') : ''}</span></div></div>
+      <div class="l-head"><div class="tm">${testaTm(h, a)}<b>${esc(h.teamName)}</b><span>${played ? (r.home.lineup?.formation || 'non consegnata') : ''}</span></div><div class="sc">${played ? `${r.homeGoals} – ${r.awayGoals}` : 'VS'}<small>${played ? `${fmt(r.homeScore)} – ${fmt(r.awayScore)}` : dateIt(S.matchday(n).lockAt)}</small></div><div class="tm">${testaTm(a, h)}<b>${esc(a.teamName)}</b><span>${played ? (r.away.lineup?.formation || 'non consegnata') : ''}</span></div></div>
       <div class="l-sub"><span class="badge badge--prov" style="background:rgba(255,255,255,.18);color:#fff">${st === 'frozen' ? icon('lock') + 'Congelato' : st === 'live' ? icon('clock') + `Parziale <small>· ${inserted}/8 partite inserite</small>` : st === 'provisional' ? icon('clock') + 'Provvisorio' : icon('clock') + 'Da giocare'}</span>${played ? `<button class="a-btn" id="formula">${icon('calc', 'ic sm')}Conversione in gol</button>` : ''}</div></div>`;
     // Prima del fischio d'inizio la pagina mostrava solo un vuoto. Le probabili
     // ci sono gia': lineupFor() ripiega sulla formazione salvata, poi su quella

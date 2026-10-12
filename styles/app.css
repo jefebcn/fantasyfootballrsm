@@ -715,55 +715,57 @@ hr.sep{border:0;border-top:1px solid var(--border);margin:4px 0}
    1,9 di contrasto — quindi si mescolano al navy al 40%. La dose e' misurata
    su tutti e sedici i club: il caso peggiore resta la Folgore, e li' il bianco
    arriva a 7,4 e l'oro del punteggio a 4,8. */
-.vid-cop{position:relative;min-height:96px;display:grid;place-items:center;padding:12px;color:#fff;
+.vid-cop{position:relative;display:grid;place-items:center;color:#fff;
   --fa:color-mix(in srgb, var(--ca,#2B4C7E) 40%, var(--c-titano-900));
   --fb:color-mix(in srgb, var(--cb,#2B4C7E) 40%, var(--c-titano-900));
   /* Taglio NETTO, non sfumato: fra il verde della Virtus e il bordeaux della
      Libertas una sfumatura passa per colori che non sono di nessuna delle due,
      e in mezzo alla copertina compariva un arcobaleno. Due campi pieni e una
      riga chiara sulla diagonale, come la linea di meta' campo. */
+  /* Sotto, lo stadio dello sfondo della home (Alex, 12/10: «piu' iconico»):
+     un file dell'app, gia' in cache, quindi nessuna richiesta a nessuno
+     prima del play. I due colori ci stanno sopra all'82%, e la riga di meta'
+     campo e' lime come i post di Tito. */
+  min-height:150px;padding:10px 12px;
   background:
     linear-gradient(103deg,
-      var(--fa) 0 calc(50% - 1px),
-      rgba(255,255,255,.38) calc(50% - 1px) calc(50% + 1px),
-      var(--fb) calc(50% + 1px) 100%)}
-/* Le righe del campo, appena accennate: danno consistenza al fondo piatto
-   senza chiedere un'immagine — e un'immagine qui vorrebbe dire una richiesta
-   a qualcuno, che e' esattamente quello che questa schermata promette di non
-   fare finche' non tocchi play. */
+      color-mix(in srgb, var(--fa) 82%, transparent) 0 calc(50% - 2px),
+      var(--c-lime) calc(50% - 2px) calc(50% + 2px),
+      color-mix(in srgb, var(--fb) 82%, transparent) calc(50% + 2px) 100%),
+    url(/media/sfondo-home.jpg) center 70% / cover, var(--c-titano-900)}
+/* Un po' di buio ai bordi, come sotto i riflettori */
 .vid-cop::before{content:'';position:absolute;inset:0;pointer-events:none;
-  background:repeating-linear-gradient(90deg,rgba(255,255,255,.05) 0 26px,transparent 26px 52px)}
+  background:radial-gradient(ellipse at 50% 120%,rgba(0,0,0,0),rgba(0,0,0,.35))}
 .vid-cop.in{aspect-ratio:16 / 9;min-height:0;padding:0;background:#000}
 .vid-cop.in::before{display:none}
 .vid-cop iframe{width:100%;height:100%;border:0;display:block}
 .vid-sq{position:relative;display:flex;align-items:center;justify-content:center;gap:8px;
   font-family:var(--font-display);font-size:13.5px;line-height:1.2;max-width:100%;width:100%}
-/* Ogni squadra e' una colonna: stemma sopra, nome sotto. Su 390px i nomi
+/* Ogni squadra e' una colonna: maglia sopra, nome sotto. Su 390px i nomi
    stanno su due righe invece di essere tagliati a meta' — "Juvenes/Dogana"
    con i puntini di sospensione non dice piu' chi e'. */
-.vid-lato{flex:1;min-width:0;display:flex;flex-direction:column;align-items:center;gap:5px;text-align:center}
+.vid-lato{flex:1;min-width:0;display:flex;flex-direction:column;align-items:center;gap:2px;text-align:center}
 /* Lo spazio per il tasto play si toglie DENTRO la colonna ospite, non dalla
    riga: le due colonne restano larghe uguali, quindi il punteggio resta al
    centro — cioe' esattamente sulla diagonale che divide i due colori. Con il
    margine sulla riga, invece, tutto scivolava a sinistra e il punteggio
    finiva in campo alla squadra di casa. */
 .vid-lato:last-child{padding-right:40px}
-.vid-lato b{font-weight:700;text-shadow:0 1px 3px rgba(0,0,0,.45)}
-/* Il bordo di .crest e' del colore della superficie, che qui sotto non c'e':
-   sopra ai due colori della copertina ci vuole un anello chiaro, uguale nei
-   due temi. */
-.vid-stemma{width:34px;height:34px;font-size:11px;border:2px solid rgba(255,255,255,.75);
-  box-shadow:0 2px 6px rgba(0,0,0,.35)}
-/* Una pastiglia sotto il punteggio: sta a cavallo della diagonale, e senza
-   fondo la riga chiara gli passava in mezzo alle cifre. Scurendo il fondo
-   alza anche il contrasto dell'oro, che sul giallo della Folgore era il caso
-   piu' tirato. */
-.vid-ris{font-family:var(--font-data);font-size:23px;font-weight:700;color:var(--c-oro-400);flex:none;
-  display:flex;align-items:baseline;gap:3px;padding:3px 11px;border-radius:999px;
-  background:rgba(8,15,34,.55);box-shadow:inset 0 0 0 1px rgba(255,255,255,.12)}
-.vid-ris i{font-style:normal;font-size:17px;opacity:.75}
-.vid-vs{flex:none;font-family:var(--font-display);font-size:13px;font-weight:700;opacity:.75;
-  text-transform:uppercase;letter-spacing:.06em}
+.vid-lato b{font:400 17px/1.05 var(--font-tito);letter-spacing:.04em;text-transform:uppercase;
+  text-shadow:0 2px 6px rgba(0,0,0,.6)}
+/* Le maglie una verso l'altra, come in un poster prepartita (.maglia, piu'
+   avanti nel file, le vorrebbe larghe quanto la colonna) */
+.vid-lato .maglia.vid-maglia{width:78px;flex:none;filter:drop-shadow(0 8px 10px rgba(0,0,0,.5))}
+.vid-lato:first-child .vid-maglia{transform:rotate(-8deg)}
+.vid-lato:last-child .vid-maglia{transform:rotate(8deg)}
+/* Il risultato e' un adesivo lime, come i post di Tito: sta a cavallo della
+   diagonale e la copre, e il nero sul lime si legge su qualunque club. */
+.vid-ris{font:400 26px/1 var(--font-tito);color:var(--c-inchiostro);flex:none;
+  display:flex;align-items:baseline;gap:3px;padding:6px 10px 4px;border-radius:10px;
+  background:var(--c-lime);box-shadow:3px 3px 0 var(--c-viola);transform:rotate(-3deg)}
+.vid-ris i{font-style:normal;font-size:18px;opacity:.6}
+.vid-vs{flex:none;font:400 24px/1 var(--font-tito);color:var(--c-lime);
+  text-transform:uppercase;letter-spacing:.04em;text-shadow:2px 2px 0 var(--c-viola)}
 .vid-play{position:absolute;top:50%;right:14px;transform:translateY(-50%);width:46px;height:46px;border-radius:50%;border:0;
   background:var(--c-oro-400);color:var(--c-titano-900);display:grid;place-items:center;cursor:pointer;
   box-shadow:0 4px 14px rgba(0,0,0,.35)}

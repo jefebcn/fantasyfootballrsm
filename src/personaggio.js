@@ -1,3 +1,5 @@
+import { crest } from './ui.js';
+
 /**
  * Personaggi scontornati per la copertina (media/avatar/N.webp).
  *
@@ -46,8 +48,12 @@ export const personaggio = (n, cls = '') =>
  * per far vedere cosa hanno i nostri amici»): la sfida in home, la testata
  * dello scontro, la formazione di un altro. null se non l'ha scelto: li'
  * resta lo stemma.
+ *
+ * Lo stemma non sparisce: chi ha caricato il logo della sua squadra lo vuole
+ * vedere (Alex, 12/10: «cosi' va a coprire il logo se un utente carica la
+ * foto del logo»). Sta ai piedi del personaggio, piccolo, come un adesivo.
  */
 export const figura = (m, cls = '') => {
   const n = scelto(m);
-  return n ? `<span class="fig ${cls}">${personaggio(n)}</span>` : null;
+  return n ? `<span class="fig ${cls}">${personaggio(n)}<span class="fig-logo">${crest(m, 'sm')}</span></span>` : null;
 };

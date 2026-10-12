@@ -118,6 +118,31 @@ def stato_partita(html):
 
 FINE_SICURA = 3 * 3600        # stato illeggibile: dal calcio d'inizio, a partita finita di sicuro
 FSGC_DIMENTICA = 24 * 3600    # «Live» ancora dopo un giorno: la FSGC non l'ha chiusa
+RICONTROLLO = 48 * 3600       # una partita finita si riscarica per due giorni dal calcio d'inizio
+
+
+def da_riscaricare(fatto, quando, ora):
+    """
+    Se un tabellino gia' in archivio va scaricato di nuovo.
+
+    La FSGC il referto lo completa DOPO il fischio finale: l'11 ottobre le tre
+    partite della domenica erano «Concluso» alle 16:50 con gol e titolari ma
+    senza un cambio, e i cambi sono arrivati dopo. L'archivio (data/tabellini.json,
+    conservato fra un lavoro e l'altro dalla cache di GitHub) non le
+    riscaricava piu': chi era entrato dalla panchina restava senza voto. E un
+    giocatore nuovo, aggiunto al listino al giro dopo, non entrava mai nei
+    titolari gia' letti.
+
+    Quindi: si riscarica cio' che non e' finito, e per due giorni dal calcio
+    d'inizio anche cio' che lo e'. Due giorni bastano (domenica 15:00 →
+    martedi' 15:00) e finiscono prima della chiusura della giornata.
+    """
+    if not (fatto or {}).get('finita'):
+        return True
+    if not quando:
+        return False
+    from datetime import datetime
+    return ora - datetime.fromisoformat(quando).timestamp() < RICONTROLLO
 
 
 def finita(quando, stato, ora):
@@ -290,12 +315,13 @@ def main():
     ora = time.time()
     for i, p in enumerate(giocate, 1):
         k = f"{p['g']}:{p['casa']}:{p['ospite']}"
-        # Si salta solo un tabellino gia' preso a partita finita. Il file resta
+        # Si salta solo un tabellino gia' preso a partita finita (e non di
+        # recente: vedi da_riscaricare). Il file resta
         # fra un giro e l'altro dello stesso lavoro (non e' nel repository, il
         # reset non lo tocca): l'11/10 il giro delle 15:00 aveva messo da parte
         # le partite appena cominciate, e quelli dopo le saltavano — risultato
         # e tabellino del calcio d'inizio fino alla fine del turno.
-        if fatti.get(k, {}).get('finita'):
+        if not da_riscaricare(fatti.get(k), p['quando'], ora):
             continue
         try:
             t = tabellino(p['url'], idx, (p['casa'], p['ospite']))
@@ -381,11 +407,16 @@ def scrivi(cal, fatti, mancanti=None):
     # parziale. Senza questi, un gol vero resterebbe senza chi lo ha segnato.
     f_extra = RADICE / 'data' / 'extra.json'
     noti = {e['slug']: e for e in (json.loads(f_extra.read_text(encoding='utf-8')) if f_extra.exists() else [])}
-    for nome, v in (mancanti or {}).items():
+    # I NUOVI IN CODA, NON IN ORDINE ALFABETICO. L'id di un extra e' la sua
+    # posizione nella societa' (data.js li numera dopo i tesserati
+    # Transfermarkt): infilarne uno nuovo in mezzo spostava di uno quelli
+    # dopo, e i tabellini gia' in archivio avrebbero dato il voto a un altro.
+    for nome in sorted(mancanti or {}):
+        v = mancanti[nome]
         if v.get('club') and nome not in noti:
             noti[nome] = {'slug': nome, 'club': v['club'], 'ruolo': v.get('ruolo') or 'C'}
     extra = []; elenco_extra = []
-    for nome, v in sorted(noti.items()):
+    for nome, v in noti.items():
         if not v.get('club'):
             continue
         parole = [w.capitalize() for w in re.split(r'[-_\s]+', v['slug']) if w]

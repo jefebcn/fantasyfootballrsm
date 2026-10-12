@@ -144,6 +144,30 @@ Q "insert into auth.users (email, email_confirmed_at) values ('subito@esempio.it
 [ "$(Q "select count(*) from interno.avvisi_iscritti where request_id is not null")" = 2 ]; et $? "le richieste sono segnate nel registro"
 Q "select stato from interno.avvisi_iscritti_ultimi limit 1" | grep -q "200"; et $? "e la vista ne mostra la risposta"
 
+echo "== conferma a mano (030): la mail «il tuo account e' attivo» =="
+# Alex, 12/10: «se lo confermo io, gli arriva una mail che gli dica che non
+# serve rifare l'account?». La 030 usa la chiave salvata qui sopra.
+"${P[@]}" -c "create or replace function public.is_admin() returns boolean language sql as \$\$ select coalesce(current_setting('prova.admin', true), '') = 'si' \$\$;
+              create or replace function public.current_user_id() returns text language sql as \$\$ select 'user_alex' \$\$;" >/dev/null
+USCITA=$("${P[@]}" -f supabase/migrations/030-conferma-a-mano.sql 2>&1); ESITO=$?
+[ $ESITO -eq 0 ]; et $? "la 030 si esegue$([ $ESITO -eq 0 ] || echo ": $(echo "$USCITA" | grep -i error | head -1)")"
+Q "insert into auth.users (id, email, raw_user_meta_data) values ('22222222-2222-2222-2222-222222222222', 'matty@esempio.it', '{\"display_name\":\"Matty\"}')" >/dev/null
+NEG=$(Q "select public.admin_conferma_email('22222222-2222-2222-2222-222222222222')" 2>&1)
+echo "$NEG" | grep -q "amministratore"; et $? "chi non e' amministratore non conferma"
+N1=$(Q "select count(*) from net.chiamate")
+ESITO=$(Q "set prova.admin = 'si'; select public.admin_conferma_email('22222222-2222-2222-2222-222222222222') ->> 'avvisato'" | tail -1)
+[ "$ESITO" = "true" ]; et $? "l'amministratore conferma e la funzione dice che la mail e' partita ($ESITO)"
+[ "$(Q "select email_confirmed_at is not null from auth.users where email = 'matty@esempio.it'")" = "t" ]; et $? "l'account e' confermato"
+B="select %s from net.chiamate where body->'to'->>0 = 'matty@esempio.it' order by id desc limit 1"
+M() { Q "$(printf "$B" "$1")"; }
+[ "$(M "count(*) over ()")" = 1 ]; et $? "a lui parte una mail"
+M "body->>'subject'" | grep -q "account Fantatitano è attivo"; et $? "con l'oggetto «$(M "body->>'subject'")»"
+M "body->>'html'" | grep -q "Non serve crearne un altro"; et $? "che dice che non serve rifare l'account"
+M "body->>'html'" | grep -q "matty@esempio.it"; et $? "e con quale e-mail entrare"
+[ "$(M "headers->>'Authorization'")" = "Bearer $CHIAVE" ]; et $? "con la chiave gia' salvata"
+[ "$(Q "select count(*) from net.chiamate where id > $N1 and body->'to'->>0 = 'alex@esempio.it'")" = 1 ]; et $? "e a te arriva il solito avviso del nuovo iscritto"
+[ "$(Q "select count(*) from interno.conferme_a_mano where request_id is not null and da_chi = 'user_alex'")" = 1 ]; et $? "la conferma a mano resta scritta"
+
 echo "== un avviso rotto non blocca un'iscrizione =="
 cat > /tmp/avv-rotto.sql <<'SQL'
 create or replace function net.http_post(url text, body jsonb default '{}', params jsonb default '{}',

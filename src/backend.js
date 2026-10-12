@@ -211,6 +211,9 @@ export async function adminRiepilogo() { return must(await sb.rpc('admin_riepilo
 // all'elenco, e un tipo di ritorno non si cambia con create or replace —
 // spiegato per esteso nella migrazione.
 export async function adminPersone(cerca, limite = 50) { return must(await sb.rpc('admin_persone', { p_cerca: cerca || null, p_limite: limite })) || []; }
+// Chi si e' iscritto e non ha confermato l'e-mail, e la conferma a mano (030).
+export async function adminDaConfermare() { return must(await sb.rpc('admin_da_confermare')) || []; }
+export async function adminConfermaEmail(id) { return must(await sb.rpc('admin_conferma_email', { p_user: id })); }
 export async function adminSospendi(userId, on) { return must(await sb.rpc('admin_sospendi', { p_user: userId, p_on: on })); }
 export async function adminSquadre(cerca, limite = 50) { return must(await sb.rpc('admin_squadre', { p_cerca: cerca || null, p_limite: limite })) || []; }
 export async function adminRinomina(memberId, squadra, fantallenatore) { return must(await sb.rpc('admin_rinomina', { p_member: memberId, p_squadra: squadra, p_fantallenatore: fantallenatore || null })); }

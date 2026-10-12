@@ -1353,7 +1353,7 @@ button,a{-webkit-tap-highlight-color:transparent}
    pezzo: finiva nella colonna del testo e il nome scendeva sotto, con la
    maglietta sola in mezzo alla riga. Nei premi il terzo pezzo e' chi vince:
    andava a capo e lasciava una riga vuota sotto ogni premio. */
-.prow.conmaglia{grid-template-columns:auto 30px minmax(0,1fr);align-items:center}
+.prow.conmaglia{grid-template-columns:auto 40px minmax(0,1fr);align-items:center}
 .prow.conmaglia .pact{grid-column:3}
 .premi .prow{grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:10px;padding:10px 0}
 
@@ -1946,7 +1946,9 @@ button,a{-webkit-tap-highlight-color:transparent}
 .tinte .tinta{width:32px;height:32px;border-radius:50%;background:var(--t);cursor:pointer;
   border:2px solid var(--border-strong);padding:0}
 .tinte .tinta.on{outline:3px solid var(--primary);outline-offset:2px;border-color:var(--surface)}
-.prow .pmg{width:30px;flex:none;display:block}
+.prow .pmg{width:30px;flex:none;display:block;justify-self:center}
+/* il personaggio e' alto e stretto: piu' alto della maglia, nella stessa colonna */
+.prow .pmg.pers-sq{width:40px;height:58px}
 .a-card.pericolo{border-left:3px solid var(--negative);display:flex;flex-direction:column;gap:10px}
 
 /* Profilo: intestazione con i dati dell'account. */

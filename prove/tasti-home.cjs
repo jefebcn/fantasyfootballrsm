@@ -10,8 +10,9 @@
  *    carattere e nessuno se ne accorge);
  *  - «Classifica e premi», «Voto Titano», «Costruisci la tua rosa» e il
  *    montepremi abbiano il nuovo stile, senza sottolineature;
- *  - le icone in alto abbiano il loro riquadro e il nome della lega resti
- *    intero, in chiaro e in scuro;
+ *  - le icone in alto siano adesivi lime con i simboli da campo (pallone,
+ *    fischietto, bandierina: Alex, 12/10) e il nome della lega resti intero,
+ *    in chiaro e in scuro;
  *  - fuori dalla home lo stesso stile: schede, titoli, moduli, tasti.
  */
 const { chromium } = require('playwright');
@@ -56,6 +57,9 @@ const LIME = 'rgb(217, 245, 31)';
         invito: st('.home .invito'), invitoTitolo: st('.home .invito .txt b'),
         anton: document.fonts.check('21px Anton'),
         icone: [...document.querySelectorAll('.a-appbar .ib:not([data-open-drawer])')].map((e) => getComputedStyle(e).backgroundColor),
+        simboli: [...document.querySelectorAll('.a-appbar .ib:not([data-open-drawer])')].map((e) => {
+          const m = e.querySelector('.mi'); const u = e.querySelector('use');
+          return m ? (m.getAttribute('style') || '').replace(/.*\/(.+)\.png.*/, '$1') : u?.getAttribute('href'); }),
         titoloIntero: titolo ? titolo.scrollWidth <= titolo.clientWidth : false,
       };
     });
@@ -68,7 +72,8 @@ const LIME = 'rgb(217, 245, 31)';
     et(m.marchio && m.marchio.bg === LIME && /Anton/.test(m.marchioTesto?.font || ''), `[${tema}] «Voto Titano» è l'adesivo lime`);
     et(!m.negozio || (m.negozio.bg === LIME && /Anton/.test(m.negozioTitolo.font)), `[${tema}] «Costruisci la tua rosa» lime in Anton`);
     et(m.invito && /Anton/.test(m.invitoTitolo.font), `[${tema}] il montepremi ha il titolo in Anton`);
-    et(m.icone.length === 3 && m.icone.every((c) => c !== 'rgba(0, 0, 0, 0)'), `[${tema}] le tre icone in alto hanno il loro riquadro`);
+    et(m.icone.length === 3 && m.icone.every((c) => c === LIME), `[${tema}] le tre icone in alto sono adesivi lime (${m.icone.join(' / ')})`);
+    et(m.simboli.join(',') === 'pallone-scambio,fischietto,#i-bandierina', `[${tema}] con pallone, fischietto e bandierina (${m.simboli.join(', ')})`);
     et(m.titoloIntero, `[${tema}] e il nome della lega resta intero`);
     await p.evaluate(() => document.querySelector('.home .mcard')?.scrollIntoView({ block: 'center' }));
     await p.screenshot({ path: `${USCITA}/tasti-home-${tema}.png` }).catch(() => {});

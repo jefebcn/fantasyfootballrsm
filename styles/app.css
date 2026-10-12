@@ -2434,6 +2434,11 @@ a.crow .cls-chev{flex:none;color:var(--text-muted);margin-left:-4px}
 .fig-tm{height:70px;width:52px;margin-bottom:6px;isolation:isolate}
 .l-head .tm:last-child .fig-tm{margin-left:auto}
 .fig-fd{height:68px;width:52px;isolation:isolate}
+/* lo stemma (anche la foto del logo) ai piedi del personaggio, come un adesivo */
+.fig .fig-logo{position:absolute;right:-12px;bottom:-4px;z-index:1}
+.fig .fig-logo .crest{width:28px;height:28px;font-size:9.5px;border-width:2px;box-shadow:0 2px 6px rgba(0,0,0,.35)}
+.fig-sfida .fig-logo .crest{width:32px;height:32px;font-size:10.5px}
+.l-head .tm:last-child .fig-tm .fig-logo{right:auto;left:-12px}
 /* in home, se uno dei due ha il personaggio, lo stemma dell'altro scende alla
    stessa altezza: i nomi delle due squadre restano in fila */
 .mcard .mrow:has(.fig-sfida) .side > .crest{margin-top:28px}

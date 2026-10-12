@@ -4,7 +4,8 @@
  * Alex, 12/10: «dare leggermente piu' importanza a questi avatar in certi
  * punti per far vedere cosa hanno i nostri amici». Dove una squadra si
  * mostra da sola, chi ha scelto un personaggio lo mostra al posto dello
- * stemma; chi non l'ha scelto tiene lo stemma. Qui si guardano i tre punti:
+ * stemma, con lo stemma (o il logo caricato) piccolo ai suoi piedi; chi non
+ * l'ha scelto tiene lo stemma. Qui si guardano i tre punti:
  *   - la sfida della giornata in home;
  *   - la testata dello scontro;
  *   - la formazione di un altro.
@@ -36,7 +37,7 @@ const ok = [], ko = []; const et = (c, t) => (c ? ok : ko).push(t);
     const io = s.tables.league_members[0];
     s.tables.profiles.push({ id: 'u_rivale', display_name: 'Enea', is_judge: false });
     s.tables.league_members.push({ ...io, id: 'm_rivale', user_id: 'u_rivale', role: 'fantallenatore', team_name: 'Ac Haramball',
-      owner_name: 'Enea', color: '#1B84C6', initials: 'AH', kit: { personaggio: 30 } });
+      owner_name: 'Enea', color: '#1B84C6', initials: 'AH', crest_url: 'icons/icon-192.png', kit: { personaggio: 30 } });
     localStorage.setItem('fcs:mock', JSON.stringify(s));
   });
   await p.evaluate(() => { location.hash = '#/'; });
@@ -49,6 +50,12 @@ const ok = [], ko = []; const et = (c, t) => (c ? ok : ko).push(t);
   const io = sfida.find((x) => /Chirinquito/.test(x.nome || '')) || {};
   et(/avatar\/30\.webp/.test(lui.pers || ''), `in home la sfida mostra il personaggio dell'avversario (${lui.pers})`);
   et(lui.h >= 70, `e in grande (${Math.round(lui.h)} px)`);
+  // Alex, 12/10: il personaggio non deve coprire il logo caricato
+  const logo = await p.evaluate(() => { const s = [...document.querySelectorAll('.mcard .side')].find((x) => /Haramball/.test(x.textContent));
+    const i = s?.querySelector('.fig .fig-logo .crest.foto img'); if (!i) return null;
+    const r = i.getBoundingClientRect(); const e = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2);
+    return { visibile: r.width > 20, sopra: i === e || i.parentElement.contains(e) }; });
+  et(logo && logo.visibile && logo.sopra, `e il logo caricato resta in vista, ai piedi del personaggio (${JSON.stringify(logo)})`);
   et(io.crest && !io.pers, 'chi non l\'ha scelto tiene lo stemma');
   await p.evaluate(() => document.querySelector('.mcard')?.scrollIntoView({ block: 'center' })); await w(300);
   await p.screenshot({ path: `${USCITA}/amici-home.png` }).catch(() => {});

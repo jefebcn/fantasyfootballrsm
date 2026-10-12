@@ -78,7 +78,10 @@ un_giro() {
     echo "::error::le prove non passano coi dati nuovi: non committo niente"
     return 1
   fi
-  git add src/ sw.js supabase/migrations/012-calendario-lock.sql
+  # data/extra.json: i tesserati del referto che il listone non ha. Senza
+  # salvarlo, al giro dopo il reset lo riportava indietro e il giocatore
+  # (Bakalyar della Juvenes, 11/10) non entrava mai nei titolari letti.
+  git add src/ sw.js data/extra.json supabase/migrations/012-calendario-lock.sql
   git commit -q -m "dati: import automatico del $(date -u +'%d/%m/%Y')" \
                 -m "$(git diff --cached --stat -- src/ | tail -1)"
   if git push -q origin "HEAD:$RAMO"; then

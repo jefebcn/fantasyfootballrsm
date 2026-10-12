@@ -357,10 +357,11 @@ function errori(lista) {
           <dt>Quando</dt><dd>${e.quante > 1 ? `${quando(e.primo)} → ${quando(e.ultimo)}` : quando(e.ultimo)}</dd>
         </dl>
         ${dettaglio ? `<pre class="sm-link">${esc(dettaglio)}</pre>` : ''}
+        <div class="azioni"><button class="chip" data-risolto="${esc(String(e.id))}">Risolto: togli dalla lista</button></div>
       </div>
     </details>`;
   }).join('')}</div>
-    <p class="small muted" style="margin:-4px 2px 0">Senza nomi né account: messaggio, schermata, tipo di telefono e versione. Si cancellano da soli dopo 30 giorni.</p>`;
+    <p class="small muted" style="margin:-4px 2px 0">Senza nomi né account: messaggio, schermata, tipo di telefono e versione. Si cancellano da soli dopo 30 giorni; quelli corretti li togli tu con «Risolto». Se un errore torna, ricompare.</p>`;
 }
 
 function numeri(r) {
@@ -676,6 +677,20 @@ export const adminConsole = {
           cache.squadre = await S.adminSquadre(cerca, 100);
           ctx.toast('Rinominata'); ctx.render();
         } catch (err) { ctx.toast(err.message || 'Non è stato possibile'); rn.disabled = false; }
+        return;
+      }
+      // Alex, 12/10: «quando verranno risolti eliminali da questa dashboard» (031)
+      const rv = e.target.closest('[data-risolto]');
+      if (rv) {
+        if (!confirm('Togliere questo errore dalla lista? Se si ripresenta, ricompare da solo.')) return;
+        rv.disabled = true;
+        try {
+          await S.adminRisolviErrore(rv.dataset.risolto);
+          cache.errori = await S.caricaErrori(7); ctx.toast('Tolto dalla lista'); ctx.render();
+        } catch (err) {
+          ctx.toast(/admin_risolvi_errore|function|schema cache/i.test(err.message || '') ? 'Prima va eseguita la 031 nell\'SQL Editor' : (err.message || 'Non è stato possibile'));
+          rv.disabled = false;
+        }
         return;
       }
       const cf = e.target.closest('[data-conferma]');

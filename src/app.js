@@ -273,8 +273,17 @@ export function render() {
   // riportavano tutti alla schermata delle leghe, e Voti aveva pure il pallino
   // rosso di una novita' che non c'era.
   const senzaNav = view.nav === false || S.appState() === 'no-league';
-  root.innerHTML = `<div class="app${senzaNav ? ' senza-nav' : ''}">${appbar(view, ctx)}${view.render(ctx)}${senzaNav ? '' : nav(path)}${drawer()}</div>`;
-  if (view.mount) view.mount(root, ctx);
+  // Rosa, Formazione, Scheda e La mia squadra leggono la TUA squadra: in una
+  // lega dove non ce l'hai (appena uscito, tolto dall'amministratore, i dati
+  // della lega ancora in arrivo) si rompevano su me.id (Console, 12/10:
+  // «null is not an object (evaluating 'me.id')» su Rosa). Qui una volta per
+  // tutte, invece che in ogni schermata.
+  const fuori = view.serveSquadra && !S.me();
+  const corpo = fuori
+    ? `<main class="a-body"><div class="empty"><p>Non fai parte di questa lega.</p><a class="a-btn" href="#/leghe" style="text-decoration:none">Le mie leghe</a></div></main>`
+    : view.render(ctx);
+  root.innerHTML = `<div class="app${senzaNav ? ' senza-nav' : ''}">${appbar(view, ctx)}${corpo}${senzaNav ? '' : nav(path)}${drawer()}</div>`;
+  if (view.mount && !fuori) view.mount(root, ctx);
   const body = root.querySelector('.a-body');
   if (body && scrollMemo[path] && prevPath === path) body.scrollTop = scrollMemo[path];
 }

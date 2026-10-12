@@ -1774,4 +1774,33 @@ select pg_temp.esige('confermarlo di nuovo non fa niente', :'seconda' = 'true');
 select pg_temp.esige('la conferma a mano resta scritta, con chi l''ha fatta',
   (select count(*) = 1 and bool_and(da_chi = 'user_pub1') from interno.conferme_a_mano));
 
+-- 031: gli errori risolti si tolgono dalla Console
+reset role;
+delete from public.errori_app;
+insert into public.errori_app (giorno, messaggio, versione, schermata) values
+  (current_date, 'null is not an object (evaluating ''me.id'')', 'fcs-v4.2.160', 'rosa'),
+  (current_date - 1, 'null is not an object (evaluating ''me.id'')', 'fcs-v4.2.158', 'rosa'),
+  (current_date, 'Script error.', 'fcs-v4.2.160', 'leghe');
+select id as id_errore from public.errori_app where versione = 'fcs-v4.2.160' and schermata = 'rosa' \gset
+select set_config('prova.id_errore', :'id_errore', false);
+select pg_temp.entra('user_bea');
+set role authenticated;
+do $$ begin
+  perform public.admin_risolvi_errore(current_setting('prova.id_errore')::bigint);
+  raise exception 'FALLITA: un giocatore qualunque non doveva poter togliere errori';
+exception when others then
+  if sqlerrm like 'FALLITA%' then raise; end if;
+  raise notice 'ok  un giocatore qualunque non toglie errori (%)', sqlerrm;
+end $$;
+reset role;
+select pg_temp.entra('user_pub1');
+set role authenticated;
+select public.admin_risolvi_errore(:'id_errore') as tolti \gset
+select public.admin_risolvi_errore(:'id_errore') as tolti_ancora \gset
+reset role;
+select pg_temp.esige('l''amministratore toglie l''errore risolto, in tutti i giorni e versioni',
+  :'tolti'::int = 2 and not exists (select 1 from public.errori_app where messaggio like 'null is not an object%'));
+select pg_temp.esige('e gli altri errori restano', (select count(*) from public.errori_app) = 1);
+select pg_temp.esige('toglierlo due volte non fa niente', :'tolti_ancora'::int = 0);
+
 select 'tutte le prove sulle funzioni sono passate' as esito;

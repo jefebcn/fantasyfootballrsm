@@ -125,7 +125,14 @@ export async function signInPassword(email, password) { return authCall(sb.auth.
 export async function signUpPassword(email, password, displayName, redirectTo) {
   const data = await authCall(sb.auth.signUp({ email, password, options: { data: { display_name: displayName }, emailRedirectTo: redirectTo } }));
   // Con la conferma e-mail attiva la sessione non c'è: serve aprire il link ricevuto.
-  return { user: data.user, needsConfirmation: !data.session };
+  // MA se l'e-mail ha GIA' un account Supabase non lo dice (per non rivelare
+  // chi e' iscritto): risponde come a un'iscrizione riuscita, con l'utente
+  // senza «identities», e NON manda nessuna mail. Prima l'app diceva «manca
+  // solo la conferma» e lasciava la persona ad aspettare una mail che non
+  // sarebbe mai arrivata (Alex, 12/10: Matteo, iscritto e confermato dal 10/10,
+  // che si registrava di nuovo).
+  const giaIscritto = !data.session && Array.isArray(data.user?.identities) && data.user.identities.length === 0;
+  return { user: data.user, needsConfirmation: !data.session && !giaIscritto, giaIscritto };
 }
 export async function signInLink(email, redirectTo) { return authCall(sb.auth.signInWithOtp({ email, options: { emailRedirectTo: redirectTo, shouldCreateUser: true } })); }
 export async function verifyOtp(email, token) { return authCall(sb.auth.verifyOtp({ email, token: token.trim(), type: 'email' })); }

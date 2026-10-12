@@ -99,7 +99,13 @@ export function createClient(_url, _key, opts) {
       async getUser() { return { data: { user: { id: userId, email: T('profiles').find((p) => p.id === userId)?.email } } }; },
       async signInWithOtp({ email }) { globalThis.__lastOtpEmail = email; return { data: {}, error: null }; },
       async signUp({ email, password, options }) {
-        if (T('profiles').some((x) => x.email === email)) return { data: null, error: { message: 'User already registered' } };
+        // Come il vero Supabase: con la conferma e-mail accesa un indirizzo gia'
+        // iscritto NON da' errore (non si rivela chi e' iscritto): torna un
+        // utente senza «identities», senza sessione, e nessuna mail parte.
+        if (T('profiles').some((x) => x.email === email)) {
+          if (globalThis.__MOCK_CONFIRM__) { return { data: { user: { id: uid(), email, identities: [] }, session: null }, error: null }; }
+          return { data: null, error: { message: 'User already registered' } };
+        }
         if (!password || password.length < 6) return { data: null, error: { message: 'Password should be at least 6 characters' } };
         const p = { id: uid(), email, password, display_name: options?.data?.display_name || email.split('@')[0], is_judge: T('profiles').length === 0, ...campi023() };
         T('profiles').push(p); persisti();

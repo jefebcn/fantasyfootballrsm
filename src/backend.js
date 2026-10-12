@@ -394,6 +394,8 @@ export async function segnalaErrore(r) {
     p_schermata: r.schermata || '', p_dettaglio: r.dettaglio || '', p_dispositivo: r.dispositivo || '' });
   return !error;
 }
+/** Un errore corretto si toglie dalla console, con tutte le sue righe (031). */
+export async function adminRisolviErrore(id) { return must(await sb.rpc('admin_risolvi_errore', { p_id: id })); }
 /** Gli errori degli ultimi giorni, per la console: i piu' frequenti prima. */
 export async function caricaErrori(giorni = 7) {
   const dal = new Date(Date.now() - giorni * 86400000).toISOString().slice(0, 10);

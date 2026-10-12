@@ -292,6 +292,15 @@ export function createClient(_url, _key, opts) {
           if (!amministro()) throw new Error("Serve essere amministratore dell'app");
           return { data: T('da_confermare').filter((u) => !u.confermata), error: null };
         }
+        if (name === 'admin_risolvi_errore') {
+          if (!amministro()) throw new Error("Serve essere amministratore dell'app");
+          const r = T('errori_app').find((e) => String(e.id) === String(args.p_id));
+          if (!r) return { data: 0, error: null };
+          const prima = T('errori_app').length;
+          const resto = T('errori_app').filter((e) => e.messaggio !== r.messaggio);
+          T('errori_app').length = 0; T('errori_app').push(...resto); persisti();
+          return { data: prima - resto.length, error: null };
+        }
         if (name === 'admin_conferma_email') {
           if (!amministro()) throw new Error("Serve essere amministratore dell'app");
           const u = T('da_confermare').find((x) => x.id === args.p_user);

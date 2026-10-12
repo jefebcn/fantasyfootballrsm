@@ -95,6 +95,7 @@ const r1 = (x) => Math.round(x * 10) / 10;
 
 export const formazione = {
   title: 'Formazione', sub: () => 'Rosa · Formazione',
+  serveSquadra: true,   // senza una squadra in questa lega: app.js mostra «Non fai parte di questa lega»
   render() {
     // MENTRE SI GIOCA QUESTA SCHERMATA NON E' PIU' L'EDITOR: e' la squadra in
     // campo. Si guarda la formazione consegnata per la giornata in corso, coi

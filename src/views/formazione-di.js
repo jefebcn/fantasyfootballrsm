@@ -1,6 +1,7 @@
 import * as S from '../state.js';
 import { esc, fmt, icon, crest, badge, dateIt, timeIt } from '../ui.js';
 import { fieldTeam, benchCol, campoProbabile } from './live.js';
+import { figura } from '../personaggio.js';
 
 /**
  * LA FORMAZIONE DI UN ALTRO (Alex, 11/10: «che i partecipanti alla lega
@@ -41,7 +42,7 @@ export const formazioneDi = {
     const chiuse = giornateChiuse();
     const n = chiuse.includes(+params.n) ? +params.n : chiuse[0];
     const prossima = S.matchday(S.giornataAperta());
-    const testa = `<div class="a-card fd-testa">${crest(m)}<span class="nm"><b>${esc(m.teamName)}</b><span>${esc(m.owner || '')}</span></span>${io ? '<span class="chip">la tua</span>' : ''}</div>`;
+    const testa = `<div class="a-card fd-testa">${figura(m, 'fig-fd') || crest(m)}<span class="nm"><b>${esc(m.teamName)}</b><span>${esc(m.owner || '')}</span></span>${io ? '<span class="chip">la tua</span>' : ''}</div>`;
     // quando si vedra' la prossima: la domanda che si fa chi apre di martedi'
     const quandoProssima = prossima && S.now() < new Date(prossima.lockAt)
       ? `<p class="small muted fd-nota">${io ? `La tua formazione della ${prossima.number}ª la vedono gli altri` : `Quella della ${prossima.number}ª si vede`} da ${dateIt(prossima.lockAt)} alle ${timeIt(prossima.lockAt)}, quando si chiude la consegna: prima resta segreta, così nessuno copia.</p>`

@@ -1,7 +1,19 @@
 import * as S from '../state.js';
 import { esc, icon, crest, roleChip, sec, plurale, badgeReclutatore, livelloReclutatore } from '../ui.js';
 import { maglia, kitOf } from '../maglia.js';
+import { personaggio, scelto } from '../personaggio.js';
 import { PREMI, sbloccato } from '../reclutatori.js';
+
+/**
+ * Accanto allo stemma, il personaggio che la squadra ha scelto (Alex, 12/10:
+ * «ogni persona si veda in questa schermata il personaggio che hanno
+ * scelto»), come nella copertina della home; chi non l'ha scelto tiene la
+ * maglia.
+ */
+const figura = (m) => {
+  const n = scelto(m);
+  return n ? `<span class="pmg pers-sq">${personaggio(n)}</span>` : `<span class="pmg">${maglia(kitOf(m))}</span>`;
+};
 
 /**
  * Il riquadro dei Reclutatori (023), sotto il codice d'invito: quanti amici
@@ -34,7 +46,7 @@ export const lega = {
         ${S.legaPubblica() ? `<div style="display:flex;gap:8px;align-items:center;margin-top:6px"><span class="small muted">Aperta a tutti, senza codice</span><button class="chip" id="share-code" style="margin-left:auto">${icon('share', 'ic sm')} Invita</button></div>` : ''}</div>
       ${reclutatore()}
       ${sec('Partecipanti', `${ms.length}/${S.maxMembri()}`)}
-      <div class="vlist">${ms.map((m) => `<div class="prow conmaglia">${crest(m, 'sm')}<span class="pmg">${maglia(kitOf(m))}</span>
+      <div class="vlist">${ms.map((m) => `<div class="prow conmaglia">${crest(m, 'sm')}${figura(m)}
         <div class="ptxt"><b>${esc(m.teamName)}${m.id === me?.id ? ' <em>tu</em>' : ''}${badgeReclutatore(m.reclutati)}</b><span>${esc(m.owner)}${m.viceName ? ` e ${esc(m.viceName)}` : ''} · ${m.role === 'admin' ? 'admin' : 'fantallenatore'}</span>
           <span class="pmeta">rosa ${rosterCount(m)}/25 · ${plurale(m.credits, 'credito', 'crediti')}</span></div>
         ${admin && m.id !== me?.id ? `<div class="pact"><button class="chip" data-role="${m.id}:${m.role === 'admin' ? 'fantallenatore' : 'admin'}">${m.role === 'admin' ? 'Togli admin' : 'Fai admin'}</button><button class="chip danger" data-kick="${m.id}" aria-label="Rimuovi">✕</button></div>` : ''}</div>`).join('')}</div>

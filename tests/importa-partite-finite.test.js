@@ -40,3 +40,22 @@ test('il risultato vale solo a partita conclusa', () => {
     .replace(/null/g, 'None')}]))`);
   assert.deepEqual(esiti, casi.map((c) => c[3]));
 });
+
+// Il referto la FSGC lo completa dopo il fischio: l'11/10 i cambi delle tre
+// partite della domenica sono arrivati dopo il «Concluso», e l'archivio non
+// li riscaricava piu'. Per due giorni dal calcio d'inizio si riscarica.
+test('un tabellino finito si riscarica per due giorni, poi resta quello', () => {
+  const k = '2026-10-11T15:00:00+02:00';
+  const t0 = Date.parse(k) / 1000;
+  const casi = [
+    [null, k, t0 + 3600, true],                         // mai scaricato
+    [{ finita: false }, k, t0 + 3600, true],            // preso a partita in corso
+    [{ finita: true }, k, t0 + 2 * 3600, true],         // appena finito: i cambi arrivano dopo
+    [{ finita: true }, k, t0 + 47 * 3600, true],        // lunedi': ancora
+    [{ finita: true }, k, t0 + 49 * 3600, false],       // martedi' pomeriggio: basta
+    [{ finita: true }, null, t0, false],                // senza orario: come prima
+  ];
+  const esiti = py(`print(json.dumps([m.da_riscaricare(f, q, o) for f, q, o in ${JSON.stringify(casi.map(([f, q, o]) => [f, q, o]))
+    .replace(/null/g, 'None').replace(/false/g, 'False').replace(/true/g, 'True')}]))`);
+  assert.deepEqual(esiti, casi.map((c) => c[3]));
+});

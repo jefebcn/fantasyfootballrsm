@@ -3,6 +3,7 @@ import { esc, fmt, icon, roleChip, logo } from '../ui.js';
 
 export const scheda = {
   title: 'Scheda', appbar: 'back', sub: () => 'Scheda condivisibile',
+  serveSquadra: true,   // senza una squadra in questa lega: app.js mostra «Non fai parte di questa lega»
   render() {
     const me = S.me(); const n = S.currentMatchday(); const f = S.myFixture(n, me.id); const r = f ? S.fixtureResult(f) : null;
     if (!r || !r.played) return `<main class="a-body"><div class="empty">${logo()}<p>Nessuna partita giocata da condividere.</p></div></main>`;

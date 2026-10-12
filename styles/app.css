@@ -2306,11 +2306,22 @@ a.crow .cls-chev{flex:none;color:var(--text-muted);margin-left:-4px}
 .home .tile > .chev{display:grid;place-items:center;background:var(--surface-sunk);color:var(--tito-ink)}
 .home .tile .txt .badge{transform:rotate(-2deg);font:400 12.5px/1 var(--font-tito);letter-spacing:.06em;padding:5px 9px 4px 7px}
 
-/* Le icone in alto: un tondo ciascuna, cosi' si vede che sono tasti */
-.a-appbar .ib:not([data-open-drawer]):not([data-back]){border-radius:12px;
-  background:rgba(255,255,255,.14);box-shadow:inset 0 0 0 1px rgba(255,255,255,.22)}
-.a-appbar .ib:not([data-open-drawer]):not([data-back]):active{background:rgba(255,255,255,.26)}
-.a-appbar .ib .dot{top:-3px;right:-3px}
+/* Le icone in alto come adesivi lime (Alex, 12/10: «piu' di carattere, stile
+   come tutto il sito»): riquadro lime, simbolo nero, ombra netta, ognuno un
+   po' storto come gli adesivi dei post. Simboli da campo: pallone con le
+   frecce (aggiorna: l'ingranaggio di prima sembrava Impostazioni), fischietto
+   (regolamento), bandierina del guardalinee (contestazioni). */
+.a-appbar .ib:not([data-open-drawer]):not([data-back]){width:36px;height:36px;border-radius:10px;
+  background:var(--c-lime);color:var(--c-inchiostro);box-shadow:3px 3px 0 var(--c-inchiostro);
+  transition:transform .12s,box-shadow .12s}
+.a-appbar .ib[data-refresh]{transform:rotate(-3deg)}
+.a-appbar .ib[href="#/regolamento"]{transform:rotate(2deg)}
+.a-appbar .ib[href="#/admin/contestazioni"]{transform:rotate(-2deg)}
+.a-appbar .ib:not([data-open-drawer]):not([data-back]):active{transform:translate(2px,2px);box-shadow:1px 1px 0 var(--c-inchiostro)}
+.a-appbar .ib:not([data-open-drawer]):not([data-back]) .ib-mi{width:23px;height:23px}
+.a-appbar .ib + .ib{margin-left:-2px}
+.a-appbar .ib:not([data-open-drawer]):not([data-back]) .ic{width:22px;height:22px}
+.a-appbar .ib .dot{top:-4px;right:-4px;border-color:var(--c-inchiostro)}
 
 /* ==========================================================================
    L'IDENTITA' DEI POST IN TUTTA L'APP (Alex, 11/10: «portalo anche su rosa e

@@ -71,7 +71,13 @@ export async function init() {
     ready = true;
     if (user && !prefs.onboarded) { prefs.onboarded = true; persistPrefs(); }
     await loadAll();
-  } catch (e) { connError = e; onError(e); }
+  } catch (e) {
+    // Se l'avvio si ferma a meta' (profilo o leghe non arrivati), l'app NON
+    // e' pronta: prima restava «pronta» senza leghe e a un iscritto mostrava
+    // «Benvenuto, per giocare serve una lega» come se avesse perso la
+    // squadra (prove/sessione-persa.cjs). Meglio la schermata con «Riprova».
+    connError = e; ready = false; onError(e);
+  }
 }
 export async function retry() { await init(); notify(); return ready; }
 
@@ -830,6 +836,7 @@ export const sponsorTutti = () => sponsor.slice();
 /** Gli errori dei telefoni (022): li manda diagnostica.js, li legge la console. */
 export const segnalaErrore = (r) => (authKind() === 'supabase' ? remote.segnalaErrore(r) : Promise.resolve(false));
 export const caricaErrori = (giorni) => remote.caricaErrori(giorni);
+export const adminRisolviErrore = (id) => remote.adminRisolviErrore(id);
 export async function salvaSponsor(s) { const r = await remote.salvaSponsor(s, user.id); await refresh(); return r; }
 export async function eliminaSponsor(id) { await remote.eliminaSponsor(id); await refresh(); }
 

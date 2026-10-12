@@ -7,7 +7,8 @@
  *   - senza l'indirizzo e-mail che per caso c'era dentro;
  *   - con la schermata senza identificativi ("giocatore/:id");
  *   - e che la rete che manca NON arrivi: non e' un difetto dell'app.
- * Poi chi amministra lo trova in console, sotto «Chi consegna».
+ * Poi chi amministra lo trova in console, sotto «Chi consegna», e quando e'
+ * corretto lo toglie col tasto «Risolto».
  */
 const { chromium } = require('playwright');
 const BASE = process.env.BASE || 'http://localhost:4173';
@@ -89,6 +90,18 @@ const ok = [], ko = []; const et = (c, t) => (c ? ok : ko).push(t);
   const consegne = await p.evaluate(() => document.querySelector('.adm-graf.consegne')?.nextElementSibling?.innerText || '');
   et(!/su 0 \(0%\)/.test(consegne), `«Chi consegna» non fa percentuali su zero squadre ("${consegne.slice(0, 80)}")`);
   await p.screenshot({ path: `${process.env.USCITA || '/tmp'}/errori-app.png` }).catch(() => {});
+
+  // Alex, 12/10: «quando verranno risolti eliminali da questa dashboard» (031)
+  const prima = await p.locator('.adm-err details').count();
+  const tasto = p.locator('.adm-err details [data-risolto]').first();
+  et(await tasto.count() === 1, 'aperto, c\'è il tasto «Risolto»');
+  if (await tasto.count()) {
+    await tasto.click(); await w(900);
+    const dopo = await p.evaluate(() => ({ righe: document.querySelectorAll('.adm-err details').length,
+      prova: /PROVA-VOLUTA/.test(document.querySelector('.adm-err')?.innerText || ''),
+      vuoto: /Nessuno\./.test(document.body.innerText) }));
+    et(!dopo.prova && (dopo.righe === prima - 1 || dopo.vuoto), `e l'errore risolto sparisce dalla lista (${prima} → ${dopo.righe})`);
+  }
 
   et(errori.length === 0, `nessun errore JS oltre a quelli voluti${errori.length ? ' — ' + errori[0] : ''}`);
   await b.close();

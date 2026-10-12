@@ -23,6 +23,7 @@ export function schedeRosa(attiva) {
 
 export const rosa = {
   title: 'Rosa', sub: () => 'Rosa · 25 giocatori',
+  serveSquadra: true,   // senza una squadra in questa lega: app.js mostra «Non fai parte di questa lega»
   render() {
     const me = S.me(); const r = S.rosterOf(me.id); const n = S.currentMatchday(); const ratings = S.ratingsOf(n);
     const groups = ROLE_ORDER.map((role) => {

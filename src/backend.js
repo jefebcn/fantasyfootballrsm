@@ -171,15 +171,33 @@ export async function rinominaNelleLeghe(userId, nuovo) {
   for (const r of righe) must(await sb.from('league_members').update({ owner_name: nuovo }).eq('id', r.id));
   return righe.length;
 }
-/** Il profilo nasce da un trigger su auth.users: se manca (trigger assente) lo crea il client. */
+/**
+ * Il profilo lo crea il client al primo accesso (001).
+ *
+ * Un profilo «che non c'e'» puo' essere solo INVISIBILE. Console, 12/10: «new
+ * row violates row-level security policy for table "profiles"» da un iPhone
+ * sulla schermata offline. Con la rete che va e viene il token scade e non si
+ * rinnova, le richieste partono come anonimo: il profilo non si vede, l'app
+ * provava a crearlo e la RLS — giustamente — rifiutava. Chi era gia' iscritto
+ * restava fuori con un errore che non diceva niente.
+ * Quindi: prima di crearlo si guarda che la sessione ci sia ancora, e un
+ * rifiuto della RLS qui vuol dire sessione persa, cioe' rete. Se il profilo
+ * c'e' gia', non si tocca (ignoreDuplicates: niente nome sovrascritto).
+ */
+const SESSIONE_PERSA = 'Nessuna connessione al server: la sessione non si è rinnovata. Riprova.';
 export async function ensureProfile(user) {
   const p = await profile(user.id);
   if (p) return p;
+  if (!external) {
+    const { data } = await sb.auth.getSession();
+    if (!data?.session) throw new Error(SESSIONE_PERSA);
+  }
   const m = user.user_metadata || {};
   const name = m.display_name || m.full_name || m.name
     || [m.given_name, m.family_name].filter(Boolean).join(' ')
     || (user.email || '').split('@')[0];
-  must(await sb.from('profiles').upsert({ id: user.id, display_name: name }));
+  const { error } = await sb.from('profiles').upsert({ id: user.id, display_name: name }, { onConflict: 'id', ignoreDuplicates: true });
+  if (error) throw new Error(error.code === '42501' ? SESSIONE_PERSA : translate(error));
   return profile(user.id);
 }
 
@@ -394,6 +412,8 @@ export async function segnalaErrore(r) {
     p_schermata: r.schermata || '', p_dettaglio: r.dettaglio || '', p_dispositivo: r.dispositivo || '' });
   return !error;
 }
+/** Un errore corretto si toglie dalla console, con tutte le sue righe (031). */
+export async function adminRisolviErrore(id) { return must(await sb.rpc('admin_risolvi_errore', { p_id: id })); }
 /** Gli errori degli ultimi giorni, per la console: i piu' frequenti prima. */
 export async function caricaErrori(giorni = 7) {
   const dal = new Date(Date.now() - giorni * 86400000).toISOString().slice(0, 10);

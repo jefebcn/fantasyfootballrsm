@@ -33,6 +33,7 @@ let bozza = null;   // maglia in modifica: si vede cambiare mentre si tocca
 
 export const squadra = {
   title: 'La mia squadra', appbar: 'back', sub: () => 'Stemma, maglia e nomi',
+  serveSquadra: true,   // senza una squadra in questa lega: app.js mostra «Non fai parte di questa lega»
   render() {
     const m = S.me();
     if (!m) return `<main class="a-body"><div class="empty"><p>Non fai parte di questa lega.</p></div></main>`;

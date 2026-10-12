@@ -2417,3 +2417,26 @@ a.crow .cls-chev{flex:none;color:var(--text-muted);margin-left:-4px}
 /* Console: il riquadro che dice di eseguire una migrazione */
 .avviso-console{display:flex;flex-direction:column;gap:4px;padding:12px 14px}
 .avviso-console span{font-size:12.5px;color:var(--text-muted)}
+
+/* ==========================================================================
+   I PERSONAGGI DEGLI AMICI IN GRANDE (Alex, 12/10: «dare leggermente piu'
+   importanza a questi avatar in certi punti per far vedere cosa hanno i
+   nostri amici»). Dove una squadra si mostra da sola — la sfida in home, la
+   testata dello scontro, la formazione di un altro — chi ha scelto un
+   personaggio lo mostra al posto dello stemma, con un'ombra sotto i piedi
+   come in copertina. Chi non l'ha scelto tiene lo stemma.
+   ========================================================================== */
+.fig{position:relative;display:block;flex:none}
+.fig::after{content:'';position:absolute;left:18%;right:18%;bottom:-2px;height:8px;border-radius:50%;
+  background:radial-gradient(closest-side,rgba(0,0,0,.35),transparent);z-index:-1}
+.fig .pers{filter:drop-shadow(0 4px 8px rgba(0,0,0,.28))}
+.fig-sfida{height:84px;width:64px;isolation:isolate}
+.fig-tm{height:70px;width:52px;margin-bottom:6px;isolation:isolate}
+.l-head .tm:last-child .fig-tm{margin-left:auto}
+.fig-fd{height:68px;width:52px;isolation:isolate}
+/* in home, se uno dei due ha il personaggio, lo stemma dell'altro scende alla
+   stessa altezza: i nomi delle due squadre restano in fila */
+.mcard .mrow:has(.fig-sfida) .side > .crest{margin-top:28px}
+.fig-stemma{display:flex;align-items:flex-end;width:auto}
+.fig-stemma::after{display:none}
+.l-head .tm:last-child .fig-stemma{justify-content:flex-end}

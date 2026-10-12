@@ -39,3 +39,15 @@ export const scelto = (m) => {
 
 export const personaggio = (n, cls = '') =>
   `<img class="pers ${cls}" src="media/avatar/${n}.webp" alt="" decoding="async">`;
+
+/**
+ * Il personaggio di una squadra dove la squadra si mostra in grande (Alex,
+ * 12/10: «dare leggermente piu' importanza a questi avatar in certi punti
+ * per far vedere cosa hanno i nostri amici»): la sfida in home, la testata
+ * dello scontro, la formazione di un altro. null se non l'ha scelto: li'
+ * resta lo stemma.
+ */
+export const figura = (m, cls = '') => {
+  const n = scelto(m);
+  return n ? `<span class="fig ${cls}">${personaggio(n)}</span>` : null;
+};

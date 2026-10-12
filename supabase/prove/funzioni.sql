@@ -1736,4 +1736,42 @@ exception when others then
 end $$;
 reset role;
 
+-- 030: chi non riceve la mail di conferma lo conferma l'amministratore
+reset role;
+insert into auth.users (email, raw_user_meta_data, confirmation_sent_at)
+  values ('senzamail@esempio.it', '{"display_name":"Matty"}', now() - interval '1 hour')
+  returning id::text as id_senzamail \gset
+select pg_temp.entra('user_bea');
+set role authenticated;
+do $$ begin
+  perform public.admin_conferma_email((select id::text from auth.users where email = 'senzamail@esempio.it'));
+  raise exception 'FALLITA: un giocatore qualunque non doveva poter confermare un account';
+exception when others then
+  if sqlerrm like 'FALLITA%' then raise; end if;
+  raise notice 'ok  un giocatore qualunque non conferma account (%)', sqlerrm;
+end $$;
+do $$ begin
+  perform * from public.admin_da_confermare();
+  raise exception 'FALLITA: un giocatore qualunque non doveva vedere chi non ha confermato';
+exception when others then
+  if sqlerrm like 'FALLITA%' then raise; end if;
+  raise notice 'ok  e non vede chi deve ancora confermare (%)', sqlerrm;
+end $$;
+reset role;
+update public.profiles set is_admin = true where id = 'user_pub1';
+select pg_temp.entra('user_pub1');
+set role authenticated;
+select count(*) = 1 as in_lista from public.admin_da_confermare() where email = 'senzamail@esempio.it' and nome = 'Matty' and mail_inviata is not null \gset
+select public.admin_conferma_email(:'id_senzamail') as esito \gset
+select public.admin_conferma_email(:'id_senzamail') ->> 'gia' as seconda \gset
+reset role;
+select pg_temp.esige('l''amministratore vede chi non ha confermato, col nome e la mail partita', :'in_lista');
+select pg_temp.esige('e lo conferma a mano',
+  (select email_confirmed_at is not null from auth.users where email = 'senzamail@esempio.it'));
+select pg_temp.esige('la risposta dice l''e-mail e che la mail di benvenuto qui non e'' partita (manca Resend)',
+  (:'esito'::jsonb ->> 'email') = 'senzamail@esempio.it' and (:'esito'::jsonb ->> 'avvisato') = 'false');
+select pg_temp.esige('confermarlo di nuovo non fa niente', :'seconda' = 'true');
+select pg_temp.esige('la conferma a mano resta scritta, con chi l''ha fatta',
+  (select count(*) = 1 and bool_and(da_chi = 'user_pub1') from interno.conferme_a_mano));
+
 select 'tutte le prove sulle funzioni sono passate' as esito;

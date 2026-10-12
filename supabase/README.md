@@ -255,6 +255,14 @@ Su un progetto nuovo, nell'SQL Editor, in quest'ordine:
     pubblica (il suo tetto, i suoi crediti). Vale anche per i link già
     mandati.
 
+24c-quinquies. `migrations/030-conferma-a-mano.sql` — **subito**. Chi non
+    riceve la mail di conferma restava fuori senza rimedio: non avendo ancora
+    un profilo, nella Console non compariva. Ora in Console → Persone c'è
+    «Da confermare» con il tasto «Conferma io», che attiva l'account e gli
+    manda una mail «il tuo account è attivo, entra con la tua e-mail e la tua
+    password, non crearne un altro» (usa la chiave Resend già salvata da
+    `avviso-nuovi-iscritti.sql`).
+
 24d. `migrations/026-profili-riservati.sql` — **dopo qualche giorno dalla
     versione 4.2.149 dell'app**. Dei profili altrui si leggono solo nome e
     amici portati: chi ha invitato chi, la sospensione, i ruoli e la data

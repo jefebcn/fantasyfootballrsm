@@ -280,6 +280,19 @@ export function createClient(_url, _key, opts) {
               leghe: T('league_members').filter((m) => m.user_id === p2.id).length,
               squadre: T('league_members').filter((m) => m.user_id === p2.id).length })), error: null };
         }
+        // 030: chi non ha confermato l'e-mail (sul vero database: auth.users
+        // senza email_confirmed_at). Le prove lo mettono in «da_confermare».
+        if (name === 'admin_da_confermare') {
+          if (!amministro()) throw new Error("Serve essere amministratore dell'app");
+          return { data: T('da_confermare').filter((u) => !u.confermata), error: null };
+        }
+        if (name === 'admin_conferma_email') {
+          if (!amministro()) throw new Error("Serve essere amministratore dell'app");
+          const u = T('da_confermare').find((x) => x.id === args.p_user);
+          if (!u) throw new Error('Account non trovato');
+          const gia = !!u.confermata; u.confermata = now(); persisti();
+          return { data: { email: u.email, gia, avvisato: !gia }, error: null };
+        }
         if (name === 'admin_squadre') {
           if (!amministro()) throw new Error("Serve essere amministratore dell'app");
           const q = (args.p_cerca || '').trim().toLowerCase();

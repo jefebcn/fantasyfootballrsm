@@ -402,6 +402,8 @@ export const leghePubbliche = () => remote.leghePubbliche();
 // --- console amministrativa (014)
 export const adminRiepilogo = () => remote.adminRiepilogo();
 export const adminPersone = (cerca, limite) => remote.adminPersone(cerca, limite);
+export const adminDaConfermare = () => remote.adminDaConfermare();
+export const adminConfermaEmail = (id) => remote.adminConfermaEmail(id);
 export const adminLeghe = (limite) => remote.adminLeghe(limite);
 // --- moderazione (015)
 export const adminSquadre = (cerca, limite) => remote.adminSquadre(cerca, limite);

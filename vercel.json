@@ -1,5 +1,10 @@
 {
   "ignoreCommand": "bash scripts/vercel-controlla.sh",
+  "git": {
+    "deploymentEnabled": {
+      "claude/**": false
+    }
+  },
   "headers": [
     {
       "source": "/(.*)",

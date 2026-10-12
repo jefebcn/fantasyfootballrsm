@@ -1,21 +1,24 @@
 /** Highlights della FSGC. La copertina e' disegnata qui: Google non riceve
  *  niente finche' non si tocca play. */
 import * as S from '../state.js';
-import { esc, icon, dateIt, crest } from '../ui.js';
+import { esc, icon, dateIt } from '../ui.js';
+import { maglia } from '../maglia.js';
 import { videoGiornata, giornateConVideo, altriVideo, urlCanale, urlIncorpora, urlVideo, videoDaAprire } from '../video.js';
 
-/** Lo stemma di un club, con le sigle e i colori che ha gia' il calendario. */
-const scudo = (c) => crest({ color: c.color, initials: c.shortName }, 'vid-stemma');
+/** La maglia di un club, nel suo colore e con la sigla in petto: e' il
+ *  disegno delle maglie fanta (src/maglia.js), nessuna maglia vera. */
+const divisa = (c) => maglia({ c1: c.color, nome: c.shortName }, 'vid-maglia');
 
 /**
  * Scheda di una partita.
  *
- * La copertina la disegna l'app, quindi non e' un fotogramma: e' un tabellone.
- * Il fondo prende i colori delle due squadre, tagliati in diagonale a meta',
- * cosi' una partita si riconosce prima di leggerla. I colori non ci vanno
- * puri: il giallo della Folgore col bianco sopra starebbe a 1,9 di contrasto.
- * Si mescolano al navy al 40%, dose misurata sui sedici club — il caso
- * peggiore resta la Folgore, e li' il bianco sta a 7,4 e l'oro a 4,8.
+ * La copertina la disegna l'app, quindi non e' un fotogramma: e' un poster
+ * prepartita (Alex, 12/10: «qualcosa di piu' bello e iconico»). Le due maglie
+ * nei colori dei club, una contro l'altra, sullo stadio dello sfondo della
+ * home tinto per meta' con i colori delle squadre e tagliato da una riga
+ * lime; risultato come adesivo lime, nomi in Anton. Foto di giocatori veri
+ * no: non sono nostre, e qui non parte nessuna richiesta finche' non si
+ * tocca play — stadio e maglia sono file dell'app.
  */
 function scheda(m, v) {
   const h = S.clubsById.get(m.homeClubId), a = S.clubsById.get(m.awayClubId);
@@ -24,9 +27,9 @@ function scheda(m, v) {
   return `<div class="vid" data-vid="${esc(v.id)}">
     <div class="vid-cop" style="--ca:${esc(h.color)};--cb:${esc(a.color)}">
       <div class="vid-sq">
-        <span class="vid-lato">${scudo(h)}<b>${esc(h.name)}</b></span>
+        <span class="vid-lato">${divisa(h)}<b>${esc(h.name)}</b></span>
         <span class="${giocata ? 'vid-ris' : 'vid-vs'}">${giocata ? `${m.homeGoals}<i>–</i>${m.awayGoals}` : 'vs'}</span>
-        <span class="vid-lato">${scudo(a)}<b>${esc(a.name)}</b></span>
+        <span class="vid-lato">${divisa(a)}<b>${esc(a.name)}</b></span>
       </div>
       <button class="vid-play" aria-label="Guarda gli highlights di ${esc(h.name)} contro ${esc(a.name)}">${icon('play', 'ic')}</button>
     </div>

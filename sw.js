@@ -1,5 +1,5 @@
 /* Service worker — shell in cache, aggiornamento in background. */
-const VERSION = 'fcs-v4.2.165';
+const VERSION = 'fcs-v4.2.166';
 const SHELL = [
   './', './index.html', './manifest.webmanifest', './styles/app.css', './styles/logo.css', './styles/font.css', './design/tokens/tokens.css',
   // I caratteri stanno in casa: nella cache ci vanno, se no senza rete si vede
@@ -19,6 +19,8 @@ const SHELL = [
   // Le sagome della barra in basso stanno su ogni schermata: vanno precaricate.
   './media/icone/nav/campo.png', './media/icone/nav/maglia-10.png', './media/icone/nav/calendario.png',
   './media/icone/nav/coppa.png', './media/icone/nav/grafico.png',
+  // ...e quelle in alto: pallone (aggiorna) e fischietto (regolamento).
+  './media/icone/nav/pallone-scambio.png', './media/icone/nav/fischietto.png',
   // Sfondo della schermata d'accesso: è la prima cosa che si vede.
   './media/sfondo-accesso.jpg',
   // La maglia sta in copertina: e' la prima immagine della dashboard.

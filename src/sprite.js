@@ -42,6 +42,8 @@ export const SPRITE = `<svg width="0" height="0" style="position:absolute" aria-
   <symbol id="i-edit" viewBox="0 0 24 24"><path d="M4 20h4l11-11-4-4L4 16zM13 7l4 4"/></symbol>
   <symbol id="i-calc" viewBox="0 0 24 24"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M8 7h8M8 12h2M12 12h2M16 12h.01M8 16h2M12 16h2M16 16h.01"/></symbol>
   <symbol id="i-flag" viewBox="0 0 24 24"><path d="M5.5 3.5v17M5.5 5.2c3.5-2 6.5 2 10 0v7.5c-3.5 2-6.5-2-10 0z"/></symbol>
+  <!-- La bandierina a scacchi del guardalinee: le Contestazioni, in alto -->
+  <symbol id="i-bandierina" viewBox="0 0 24 24"><path d="M5 2.5v19" stroke-width="2.6"/><path d="M5.6 3.6h14.2v9.6H5.6z" stroke-width="2"/><path d="M5.6 3.6h7.1v4.8H5.6zM12.7 8.4h7.1v4.8h-7.1z" fill="currentColor" stroke="none"/></symbol>
   <symbol id="i-archive" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="5"/><path d="M5 9v11h14V9M10 13h4"/></symbol>
   <symbol id="i-undo" viewBox="0 0 24 24"><path d="M9 14L4 9l5-5M4 9h10a6 6 0 0 1 0 12h-3"/></symbol>
   <symbol id="i-warn" viewBox="0 0 24 24"><path d="M12 3l10 18H2zM12 10v5M12 18h.01"/></symbol>

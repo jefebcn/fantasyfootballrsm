@@ -61,6 +61,13 @@ function builder(table) {
         let data = null; const rows = T(table);
         const pk = { lineups: ['league_id', 'member_id', 'matchday'], match_overrides: ['match_id'], match_appearances: ['match_id', 'player_id'], matchday_status: ['matchday'], matchday_locks: ['matchday'], profiles: ['id'] }[table] || ['id'];
         const withDefaults = (r) => ({ id: uid(), created_at: now(), ...r });
+        // __MOCK_SESSIONE_PERSA__: il token e' scaduto e la rete non l'ha
+        // rinnovato, le richieste partono come anonimo. Come Supabase vero: i
+        // profili non si vedono e scriverne uno lo rifiuta la RLS.
+        if (globalThis.__MOCK_SESSIONE_PERSA__ && table === 'profiles') {
+          if (op === 'select') { res({ data: (single || maybe) ? null : [], error: null }); return; }
+          if (op === 'upsert' || op === 'insert') { res({ data: null, error: { code: '42501', message: 'new row violates row-level security policy for table "profiles"' } }); return; }
+        }
         if (op === 'select') { data = apply(rows).map(expand); if (orderBy.length) data.sort((x, y) => { for (const [k, su] of orderBy) { if (x[k] !== y[k]) return (x[k] > y[k] ? 1 : -1) * (su ? 1 : -1); } return 0; });
           if (da !== null) data = data.slice(da, a + 1);
           if (lim) data = data.slice(0, lim);
@@ -95,7 +102,12 @@ export function createClient(_url, _key, opts) {
   if (opts && opts.accessToken) { Promise.resolve(opts.accessToken()).then((t) => { globalThis.__lastAccessToken = t; }); }
   return {
     auth: {
-      async getSession() { return { data: { session: userId ? { user: { id: userId, email: T('profiles').find((p) => p.id === userId)?.email } } : null } }; },
+      async getSession() {
+        // con la sessione persa, la prima lettura (quella dell'avvio) trova
+        // ancora la sessione in memoria; dopo, il rinnovo fallisce
+        if (globalThis.__MOCK_SESSIONE_PERSA__ && (globalThis.__mockLettureSessione = (globalThis.__mockLettureSessione || 0) + 1) > 1) return { data: { session: null } };
+        return { data: { session: userId ? { user: { id: userId, email: T('profiles').find((p) => p.id === userId)?.email } } : null } };
+      },
       async getUser() { return { data: { user: { id: userId, email: T('profiles').find((p) => p.id === userId)?.email } } }; },
       async signInWithOtp({ email }) { globalThis.__lastOtpEmail = email; return { data: {}, error: null }; },
       async signUp({ email, password, options }) {
@@ -420,6 +432,7 @@ export function createClient(_url, _key, opts) {
           l.premi = pr; persisti(); return { data: pr, error: null };
         }
         // 026: il proprio profilo intero (gli altri ne leggono solo nome e amici)
+        if (name === 'mio_profilo' && globalThis.__MOCK_SESSIONE_PERSA__) return { data: null, error: null };
         if (name === 'mio_profilo') { return { data: T('profiles').find((x) => x.id === userId) || null, error: null }; }
         if (name === 'join_league') { const l = T('leagues').find((x) => x.invite_code === args.p_code.toUpperCase()); if (!l) throw new Error('Codice invito non valido'); if (!T('league_members').some((m) => m.league_id === l.id && m.user_id === userId)) T('league_members').push({ id: uid(), league_id: l.id, user_id: userId, role: 'fantallenatore', team_name: args.p_team, owner_name: prof.display_name, color: args.p_color, initials: args.p_initials, credits: 500, created_at: now() }); contaReclutato(userId); persisti(); return { data: l.id, error: null }; }
         if (name === 'sync_matchday_locks') {

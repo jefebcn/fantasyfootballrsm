@@ -71,7 +71,13 @@ export async function init() {
     ready = true;
     if (user && !prefs.onboarded) { prefs.onboarded = true; persistPrefs(); }
     await loadAll();
-  } catch (e) { connError = e; onError(e); }
+  } catch (e) {
+    // Se l'avvio si ferma a meta' (profilo o leghe non arrivati), l'app NON
+    // e' pronta: prima restava «pronta» senza leghe e a un iscritto mostrava
+    // «Benvenuto, per giocare serve una lega» come se avesse perso la
+    // squadra (prove/sessione-persa.cjs). Meglio la schermata con «Riprova».
+    connError = e; ready = false; onError(e);
+  }
 }
 export async function retry() { await init(); notify(); return ready; }
 

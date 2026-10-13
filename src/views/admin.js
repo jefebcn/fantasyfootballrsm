@@ -334,7 +334,7 @@ function errori(lista) {
   const titolo = (dx) => `<div class="a-sec"><b>Errori sui telefoni</b><span>${dx}</span></div>`;
   if (lista === undefined) return '';
   if (lista === null) {
-    return `${titolo('da attivare')}<p class="small muted" style="margin:0 2px">Serve la migrazione <code>supabase/migrations/022-errori-app.sql</code>, da eseguire una volta nell'SQL Editor.</p>`;
+    return `${titolo('da attivare')}<p class="small muted" style="margin:0 2px">Serve la SQL <b>022</b>, da eseguire una volta nell'SQL Editor.</p>`;
   }
   if (!lista.length) return `${titolo('ultimi 7 giorni')}<p class="small muted" style="margin:0 2px">Nessuno. Quando un telefono va in errore, compare qui entro pochi secondi.</p>`;
   const totale = lista.reduce((a, e) => a + (e.quante || 1), 0);
@@ -407,7 +407,7 @@ function numeri(r) {
 function daConfermare(list) {
   if (list === undefined || list === null) return '';
   if (list === 'assente') {
-    return `<div class="a-card avviso-console"><b>Iscritti da confermare</b><span>Per vederli e confermarli da qui esegui nell'SQL Editor <code>supabase/migrations/030-conferma-a-mano.sql</code>.</span></div>`;
+    return `<div class="a-card avviso-console"><b>Iscritti da confermare</b><span>Per vederli e confermarli da qui esegui nell'SQL Editor la SQL <b>030</b>.</span></div>`;
   }
   if (!list.length) return '';
   return `<div class="a-sec"><b>Da confermare</b><span>${list.length} ${list.length === 1 ? 'iscritto' : 'iscritti'} senza conferma</span></div>

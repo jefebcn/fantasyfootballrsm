@@ -2,8 +2,8 @@
 import { avatar } from './avatar.js';
 import { tintaLeggibile } from './colore.js';
 export { avatar } from './avatar.js';
-import { esc } from './ui-esc.js';
-export { esc };
+import { esc, premioHtml } from './ui-esc.js';
+export { esc, premioHtml };
 export const fmt = (n, min = 1) => (n == null ? 'S.V.' : Number(n).toLocaleString('it-IT', { minimumFractionDigits: min, maximumFractionDigits: 2 }));
 export const signed = (n) => (n > 0 ? '+' : n < 0 ? '−' : '') + fmt(Math.abs(n));
 /** ▲2 / ▼1 / = rispetto a prima della giornata in corso (null: niente freccia). */

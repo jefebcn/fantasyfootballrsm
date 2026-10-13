@@ -86,12 +86,30 @@ export function motivoNonSupportate() {
  * dell'app a chiedere, non il telefono a sorpresa.
  */
 export const PAUSA_RICHIESTA_MS = 14 * 24 * 3600 * 1000;
-export function daChiedere({ avvisi, chiesto, consegnato, permesso: perm, supportate: sup, configurato, ora = Date.now() }) {
-  if (!consegnato || !sup || !configurato || perm !== 'default' || avvisi === false) return false;
+/**
+ * E SU IPHONE DAL BROWSER (13/10: 2 telefoni iscritti al promemoria). Li'
+ * le notifiche non esistono finche' l'app non sta sulla schermata Home, e la
+ * richiesta qui sopra non compariva mai: c'era solo il banner «Installa»,
+ * una riga che si chiude per sempre con la ✕. Ora anche loro, alle stesse
+ * condizioni (dopo la prima formazione, «Non ora» per due settimane, al
+ * secondo no basta), vedono come si fa: prima la Home, poi il «Sì».
+ *
+ * Restituisce cosa chiedere, o null:
+ *   'permesso'     le notifiche ci sono: il «Sì» apre la finestra del telefono
+ *   'installa'     iPhone nel browser: i passi per la schermata Home
+ *   'apri-browser' iPhone dentro Instagram o Facebook: la Home li' non c'e',
+ *                  prima si apre il sito in Safari
+ */
+export function comeChiedere({ avvisi, chiesto, consegnato, permesso: perm, supportate: sup, configurato,
+  ios = false, installata: inst = false, browser = 'safari', ora = Date.now() }) {
+  if (!consegnato || !configurato || avvisi === false) return null;
   const volte = chiesto?.volte || 0;
-  if (volte >= 2) return false;
-  return volte === 0 || ora - (chiesto?.ultima || 0) >= PAUSA_RICHIESTA_MS;
+  if (volte >= 2 || (volte > 0 && ora - (chiesto?.ultima || 0) < PAUSA_RICHIESTA_MS)) return null;
+  if (sup) return perm === 'default' ? 'permesso' : null;
+  if (ios && !inst) return browser === 'app' ? 'apri-browser' : 'installa';
+  return null;
 }
+export const daChiedere = (o) => comeChiedere(o) === 'permesso';
 
 export async function chiediPermesso() {
   if (!supportate()) return 'unsupported';

@@ -203,8 +203,27 @@ function corrente(f, n, me, riposo, bloccato = null) {
  */
 function richiestaPromemoria() {
   const d = S.store.get();
-  if (!AV.daChiedere({ avvisi: d.avvisi, chiesto: d.pushChiesto, consegnato: S.haConsegnato(),
-    permesso: AV.permesso(), supportate: AV.supportate(), configurato: AV.pushConfigurato() })) return '';
+  const come = AV.comeChiedere({ avvisi: d.avvisi, chiesto: d.pushChiesto, consegnato: S.haConsegnato(),
+    permesso: AV.permesso(), supportate: AV.supportate(), configurato: AV.pushConfigurato(),
+    ios: AV.suiOS(), installata: AV.installata(), browser: AV.browserIOS() });
+  if (!come) return '';
+  // iPhone nel browser: prima la schermata Home, se no il «Sì» non c'e'
+  if (come === 'installa' || come === 'apri-browser') {
+    const passi = come === 'apri-browser'
+      ? ['Sei dentro un\'altra app (Instagram, Facebook): tocca <b>⋯</b> in alto e <b>Apri nel browser</b>.',
+        `Lì tocca <b>Condividi</b>: ${esc(AV.doveCondividi().replace(/^./, (c) => c.toLowerCase()))}`, 'Scegli <b>Aggiungi alla schermata Home</b>.',
+        'Apri Fantatitano dall\'icona sulla Home: qui ti chiedo il permesso.']
+      : [`Tocca <b>Condividi</b>: ${esc(AV.doveCondividi().replace(/^./, (c) => c.toLowerCase()))}`, 'Scegli <b>Aggiungi alla schermata Home</b>.',
+        'Apri Fantatitano dall\'icona sulla Home: qui ti chiedo il permesso.'];
+    return `<div class="a-card chiedi-push ios" data-come="${come}">
+    <i class="cp-ico">${icon('bell')}</i>
+    <div class="cp-txt"><b>Vuoi un promemoria prima della scadenza?</b>
+      <span>Su iPhone le notifiche arrivano solo con Fantatitano sulla <b>schermata Home</b>. Ci vogliono dieci secondi:</span>
+      <ol class="cp-passi">${passi.map((x) => `<li>${x}</li>`).join('')}</ol>
+      <div class="cp-btn"><button class="a-btn sec" data-push="no">Non ora</button></div>
+    </div>
+  </div>`;
+  }
   return `<div class="a-card chiedi-push">
     <i class="cp-ico">${icon('bell')}</i>
     <div class="cp-txt"><b>Vuoi un promemoria prima della scadenza?</b>
@@ -594,6 +613,8 @@ export const dashboard = {
       // esistono SOLO con l'app installata, quindi senza questo passo la voce
       // "Preferenze notifiche" resta un interruttore senza bottone.
       if (!window.__installPrompt && AV.motivoNonSupportate() !== 'ios-nel-browser') return;
+      // la scheda del promemoria dice gia' gli stessi passi, e meglio
+      if (!window.__installPrompt && root.querySelector('.chiedi-push.ios')) return;
       const ios = !window.__installPrompt;
       slot.innerHTML = `<div class="install">${logo()}<div style="flex:1"><b>Installa l'app</b>${ios
         ? 'Tocca <b>Condividi</b> in basso, poi <b>Aggiungi alla schermata Home</b>: si apre a tutto schermo e arrivano le notifiche.'

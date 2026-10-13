@@ -1,5 +1,5 @@
 import * as S from '../state.js';
-import { esc, icon, crest, logo, pic, sec } from '../ui.js';
+import { esc, premioHtml, icon, crest, logo, pic, sec } from '../ui.js';
 import { COLORI_SQUADRA } from '../colore.js';
 import * as AV from '../notifiche.js';
 
@@ -107,7 +107,7 @@ function elencoPubbliche(inCima, quanteMie = 0) {
           <b class="pc-nome">${esc(l.name)}</b>
           <span class="pc-pills">
             <span class="pc-pill">${l.membri}${l.max_membri < 1000 ? `/${l.max_membri}` : ''} squadre · ${l.budget} cr.</span>
-            ${primo ? `<span class="pc-pill oro">In palio: ${esc(primo.premio)}</span>` : ''}
+            ${primo ? `<span class="pc-pill oro">In palio: ${premioHtml(primo.premio)}</span>` : ''}
           </span>
           <span class="pc-cta${!l.dentro && pieno ? ' spento' : ''}">${stato}${!l.dentro && pieno ? '' : icon('chev', 'ic sm')}</span>
         </span>

@@ -44,7 +44,7 @@ const giorno = (scarto) => { const d = new Date(); d.setDate(d.getDate() + scart
   // La console: il primo iscritto del mock non amministra, glielo diamo.
   await p.evaluate(() => {
     const s = JSON.parse(localStorage.getItem('fcs:mock'));
-    s.tables.profiles.find((x) => x.id === s.userId).is_admin = true;
+    Object.assign(s.tables.profiles.find((x) => x.id === s.userId), { is_admin: true, is_owner: true }); // il proprietario dell'app (033)
     localStorage.setItem('fcs:mock', JSON.stringify(s));
     location.hash = '#/admin/console';
   });

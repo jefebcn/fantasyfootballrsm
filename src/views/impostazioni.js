@@ -37,7 +37,7 @@ function apriAvvisi(ctx) {
       ${on && perm === 'granted' ? `<button class="a-btn sec" data-avvisi="prova" style="margin-top:10px">Mandami un avviso di prova</button>` : ''}
       <p class="auth-hint"><b>Ad app aperta</b> l'avviso arriva${perm === 'granted' ? '' : ' appena dai il permesso'}: si controlla ogni volta che apri la dashboard, e ne arriva uno solo per giornata.</p>
       <p class="auth-hint"><b>A telefono chiuso</b> ${!AV.pushConfigurato()
-    ? 'servono le notifiche push, e la chiave non è ancora configurata. Il codice c\'è tutto — i passi che restano stanno in <code>supabase/functions/promemoria/README.md</code> — ma finché la chiave manca questa parte è spenta, e preferiamo dirlo che lasciartelo scoprire.'
+    ? 'servono le notifiche push, e la chiave non è ancora configurata. Il codice c\'è tutto — i passi che restano sono nelle istruzioni del promemoria — ma finché la chiave manca questa parte è spenta, e preferiamo dirlo che lasciartelo scoprire.'
     : iscritto ? 'questo dispositivo è iscritto alle notifiche push.'
       : perm === 'granted' ? 'le push sono configurate ma questo dispositivo non risulta iscritto: spegni e riaccendi il promemoria qui sopra.'
         : perm === 'denied' ? 'le push sono configurate, ma le notifiche per questo sito sono bloccate dal telefono: finché non le riattivi da lì non arriva niente.'

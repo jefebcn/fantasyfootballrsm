@@ -50,7 +50,7 @@ function candidati(ruolo, escludi) {
   const avuti = new Set();
   for (const m of S.base.managers) for (const r of (S.base.rosters[m.id] || [])) avuti.add(r.playerId);
   const altri = S.base.players
-    .filter((p) => p.role === ruolo && p.isActive && p.id !== escludi && !miei.some((x) => x.playerId === p.id))
+    .filter((p) => p.role === ruolo && p.isActive && !p.doppioneDi && p.id !== escludi && !miei.some((x) => x.playerId === p.id))
     .sort((a, b) => b.quotation - a.quotation).slice(0, 40);
   return { miei, altri, avuti };
 }

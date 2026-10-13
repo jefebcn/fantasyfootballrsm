@@ -47,7 +47,7 @@ const ok = [], ko = []; const et = (c, t) => (c ? ok : ko).push(t);
   // ---- si diventa amministratori come si fa per davvero: dal database
   await p.evaluate(() => {
     const s = JSON.parse(localStorage.getItem('fcs:mock'));
-    s.tables.profiles.find((x) => x.id === s.userId).is_admin = true;
+    Object.assign(s.tables.profiles.find((x) => x.id === s.userId), { is_admin: true, is_owner: true }); // il proprietario dell'app (033)
     s.tables.profiles.push({ id: 'u_tizio', display_name: 'Tizio', email: 'tizio@example.org', is_judge: false, is_admin: false, created_at: new Date().toISOString() });
     // una lega altrui: chi amministra deve vederla anche non facendone parte
     // le tabelle esistono solo se qualcuno le ha toccate: questo utente non ha

@@ -96,7 +96,7 @@ export const scambi = {
     }
     if (!S.scambiDisponibili()) {
       return `<main class="a-body">${empty('Gli scambi non sono ancora attivi su questo server.')}
-        <div class="a-card a-rule"><span class="art">Da fare</span><p>${S.isAdmin() ? 'Manca la migrazione <code>supabase/migrations/006-scambi.sql</code>: va eseguita una volta nell\'SQL Editor.' : 'Gli scambi non sono ancora attivi.'} Finché non c\'è, il resto dell\'app funziona normalmente.</p></div></main>`;
+        <div class="a-card a-rule"><span class="art">Da fare</span><p>${S.isAdmin() ? 'Manca la SQL <b>006</b>: va eseguita una volta nell\'SQL Editor.' : 'Gli scambi non sono ancora attivi.'} Finché non c\'è, il resto dell\'app funziona normalmente.</p></div></main>`;
     }
     const altri = S.base.managers.filter((m) => m.id !== me.id);
     const tutti = S.scambi();

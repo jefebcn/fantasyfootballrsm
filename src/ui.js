@@ -1,9 +1,9 @@
 /** Componenti UI condivisi: stringhe HTML, nessun framework. */
 import { avatar } from './avatar.js';
-import { tintaLeggibile } from './colore.js';
+import { tintaLeggibile, coloreSicuro } from './colore.js';
 export { avatar } from './avatar.js';
-import { esc } from './ui-esc.js';
-export { esc };
+import { esc, premioHtml } from './ui-esc.js';
+export { esc, premioHtml };
 export const fmt = (n, min = 1) => (n == null ? 'S.V.' : Number(n).toLocaleString('it-IT', { minimumFractionDigits: min, maximumFractionDigits: 2 }));
 export const signed = (n) => (n > 0 ? '+' : n < 0 ? '−' : '') + fmt(Math.abs(n));
 /** ▲2 / ▼1 / = rispetto a prima della giornata in corso (null: niente freccia). */
@@ -63,15 +63,20 @@ export const faccia = (p, club, cls = '') =>
   `<span class="av-w ${cls}">${avatar(p, club)}${roleChip(p.role)}</span>`;
 /** Avatar grande per la scheda del giocatore, su un tondo col colore del club. */
 export const avatarGrande = (p, club) =>
-  `<span class="av-big" style="--c:${club?.color || '#2B4C7E'}">${avatar(p, club)}</span>`;
+  `<span class="av-big" style="--c:${coloreSicuro(club?.color, '#2B4C7E')}">${avatar(p, club)}</span>`;
 /** Le iniziali erano bianche fisse su un colore scelto da chi gioca: su oro o
  *  su verde medio stavano sotto 3 di contrasto. tintaLeggibile() sceglie
  *  l'inchiostro e, se serve, sposta il fondo quanto basta per arrivare a 4,5. */
+export const fotoStemma = (u) => /^data:image\/(jpeg|png|webp);base64,[a-z0-9+/=]+$/i.test(String(u || ''));
 export const crest = (m, cls = '') => {
   const { fondo, inchiostro } = tintaLeggibile(m?.color);
   // La cornice d'oro dei Reclutatori (5 amici portati, src/reclutatori.js)
   if ((m?.reclutati || 0) >= 5) cls = `${cls} cornice`;
-  return m?.crestUrl
+  // La foto dello stemma e' sempre un'immagine dentro l'app (data:image/…,
+  // squadra.js). Un indirizzo esterno farebbe partire, dal telefono di tutta
+  // la lega, una richiesta verso un sito scelto da chi l'ha scritto: non si
+  // carica.
+  return fotoStemma(m?.crestUrl)
     ? `<span class="crest foto ${cls}" style="background:${fondo}"><img src="${esc(m.crestUrl)}" alt=""></span>`
     : `<span class="crest ${cls}" style="background:${fondo};color:${inchiostro}">${esc(m.initials)}</span>`;
 };

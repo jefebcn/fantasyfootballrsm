@@ -2451,3 +2451,6 @@ a.crow .cls-chev{flex:none;color:var(--text-muted);margin-left:-4px}
 .a-card.prudente{display:flex;flex-direction:column;gap:6px;margin-bottom:12px;border-left:3px solid var(--line, transparent)}
 .a-card.prudente.on{border-left-color:var(--c-oro-400)}
 .a-card.prudente .azioni{display:flex;gap:6px;margin-top:4px}
+/* Il premio: cifra in evidenza, il resto («coupon») piu' piccolo ma leggibile */
+.premio-c{font-size:1.18em;font-weight:900;white-space:nowrap}
+.premio-t{font-size:.7em;font-weight:700;letter-spacing:.03em;opacity:.92}

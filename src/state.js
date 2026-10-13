@@ -350,6 +350,9 @@ export const isLeagueAdmin = () => me()?.role === 'admin' || isJudge();
  * potesse dall'app, il primo che passa si darebbe i poteri da solo.
  */
 export const isAdmin = () => !!prof?.is_admin;
+/** Il proprietario dell'app (033): uno solo, sopra gli amministratori. Si nomina solo da SQL. */
+export const isOwner = () => !!prof?.is_owner;
+export const proprietarioApp = () => remote.proprietarioApp();
 /** Lega aperta a tutti: rose non esclusive, classifica a punti (013). */
 export const legaPubblica = () => !!base.league.pubblica;
 /** La classifica si fa sommando i fantapunti invece che con gli scontri. */
@@ -1332,7 +1335,7 @@ export function svincolati() {
   return memo('svincolati', () => {
     const presi = new Set();
     for (const m of base.managers) for (const r of (base.rosters[m.id] || [])) presi.add(r.playerId);
-    return base.players.filter((p) => p.isActive && !presi.has(p.id));
+    return base.players.filter((p) => p.isActive && !p.doppioneDi && !presi.has(p.id));
   });
 }
 /** Le offerte aperte su un giocatore, dalla piu' alta. */

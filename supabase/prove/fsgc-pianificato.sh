@@ -100,6 +100,12 @@ riempi 'github_pat_corto' > /tmp/corto.sql
 USCITA=$("${P[@]}" -f /tmp/corto.sql 2>&1); ESITO=$?
 [ $ESITO -ne 0 ]; et $? "un token troncato (copiato a meta') lo rifiuta"
 
+# il segnaposto una volta sola: anche il «sostituisci tutto» dell'editor va (13/10)
+[ "$(grep -c 'IL-TOKEN-DI-GITHUB' supabase/dati-fsgc-pianificato.sql)" = 1 ]; et $? "il segnaposto compare una volta sola nel file"
+sed -e "s|IL-TOKEN-DI-GITHUB|github_pat_11ABCDEFG0123456789_abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWX0123456789ab|g" supabase/dati-fsgc-pianificato.sql > /tmp/tutto.sql
+USCITA=$("${P[@]}" -f /tmp/tutto.sql 2>&1); ESITO=$?
+[ $ESITO -eq 0 ]; et $? "anche col «sostituisci tutto» il token giusto passa$([ $ESITO -eq 0 ] || echo ": $(echo "$USCITA" | grep -i error | head -1)")"
+
 echo "== col file riempito =="
 TOKEN='github_pat_11ABCDEFG0123456789_abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWX0123456789ab'
 riempi "$TOKEN" > /tmp/pieno.sql

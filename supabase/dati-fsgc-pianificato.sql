@@ -66,8 +66,9 @@ do $$
 declare
   t text := coalesce(current_setting('fsgc.token', true), '');
 begin
-  if t = 'IL-TOKEN-DI-GITHUB' or t = '' then
-    raise exception 'Manca il token: nella riga set_config(''fsgc.token'') in cima al file, al posto di IL-TOKEN-DI-GITHUB, va un token fine-grained di GitHub (comincia con github_pat_). E'' l''unica riga da riempire; come si fa e'' scritto sopra.';
+  -- il segnaposto sta UNA volta sola nel file (vedi promemoria-pianificato.sql)
+  if t like 'IL-TOKEN%' or t = '' then
+    raise exception 'Manca il token: nella riga set_config(''fsgc.token'') in cima al file, al posto della scritta in maiuscolo, va un token fine-grained di GitHub (comincia con github_pat_). E'' l''unica riga da riempire; come si fa e'' scritto sopra.';
   end if;
   if t like 'ghp\_%' or t like 'gho\_%' then
     raise exception 'Questo e'' un token "classic" di GitHub (comincia con ghp_): vale per tutti i tuoi repository. Serve uno fine-grained (github_pat_...) limitato a fantasyfootballrsm con il solo permesso Actions: read and write.';

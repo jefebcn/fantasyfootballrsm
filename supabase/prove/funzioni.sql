@@ -1953,4 +1953,36 @@ end $$;
 reset role;
 select pg_temp.esige('ne'' si declassa', (select role from public.league_members where league_id = :'lega_cip' and user_id = 'user_cip') = 'admin');
 
+-- 034: i doppioni dei giocatori (Tordella, 13/10)
+reset role;
+delete from public.matchday_status where matchday = 26;
+insert into public.match_appearances (match_id, player_id, club_id, started, minutes_played)
+  values ('md26_m1', 'cailungo_29', 'cailungo', true, 90);
+insert into public.match_events (match_id, player_id, club_id, minute, type) values ('md26_m1', 'cailungo_29', 'cailungo', 50, 'yellow');
+insert into public.matchday_status (matchday, status) values (26, 'frozen');
+select id as m_dop from public.league_members where user_id = 'user_bea' limit 1 \gset
+insert into public.rosters (league_id, member_id, player_id, price_paid)
+  select league_id, id, 'cailungo_29', 6 from public.league_members where id = :'m_dop';
+insert into public.lineups (league_id, member_id, matchday, lineup)
+  select league_id, id, 26, '{"starters":["cailungo_29"],"bench":[],"captainId":"cailungo_29"}'::jsonb
+    from public.league_members where id = :'m_dop'
+on conflict (league_id, member_id, matchday) do update set lineup = excluded.lineup;
+\i supabase/migrations/034-doppioni-dei-giocatori.sql
+select pg_temp.esige('la presenza del doppione passa al giocatore del listone',
+  exists (select 1 from public.match_appearances where match_id = 'md26_m1' and player_id = 'cailungo_1')
+  and not exists (select 1 from public.match_appearances where player_id = 'cailungo_29'));
+select pg_temp.esige('anche il cartellino', exists (select 1 from public.match_events where match_id = 'md26_m1' and player_id = 'cailungo_1'));
+select pg_temp.esige('nella rosa il doppione diventa il giocatore vero',
+  exists (select 1 from public.rosters where member_id = :'m_dop' and player_id = 'cailungo_1' and released_at is null)
+  and not exists (select 1 from public.rosters where player_id = 'cailungo_29' and released_at is null));
+select pg_temp.esige('e nella formazione, capitano compreso',
+  (select lineup->>'captainId' from public.lineups where member_id = :'m_dop' and matchday = 26) = 'cailungo_1');
+select pg_temp.esige('la giornata chiusa torna chiusa', exists (select 1 from public.matchday_status where matchday = 26 and status = 'frozen'));
+\i supabase/migrations/034-doppioni-dei-giocatori.sql
+select pg_temp.esige('rieseguita non cambia niente', (select count(*) from public.rosters where member_id = :'m_dop' and player_id = 'cailungo_1' and released_at is null) = 1);
+delete from public.matchday_status where matchday = 26;
+delete from public.match_events where match_id = 'md26_m1';
+delete from public.match_appearances where match_id = 'md26_m1';
+delete from public.lineups where matchday = 26;
+
 select 'tutte le prove sulle funzioni sono passate' as esito;

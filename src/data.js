@@ -137,10 +137,14 @@ export function buildSeason(_seed = 20262027) {
   // Chi gioca davvero ma su Transfermarkt non c'è: quotazione minima di ruolo,
   // non avendo un valore di mercato su cui basarla.
   const QUOT_MIN = { P: 6, D: 5, C: 5, A: 6 };
-  for (const [clubId, firstName, lastName, role] of LISTONE_EXTRA) {
+  // Un extra col quinto campo e' un DOPPIONE: lo stesso giocatore del listone
+  // scritto diverso dalla FSGC (Tordella, 13/10). Resta al suo posto perche'
+  // gli id sono posizioni, ma non si compra ne' si schiera: i voti vanno a lui.
+  for (const [clubId, firstName, lastName, role, doppioneDi] of LISTONE_EXTRA) {
     const idx = (perClub[clubId] = (perClub[clubId] || 0) + 1);
     players.push({ id: `${clubId}_${idx}`, firstName, lastName, name: `${lastName} ${firstName[0]}.`,
-      clubId, role, quotation: QUOT_MIN[role] ?? 5, age: null, isActive: true, daFsgc: true });
+      clubId, role, quotation: QUOT_MIN[role] ?? 5, age: null, isActive: true, daFsgc: true,
+      ...(doppioneDi ? { doppioneDi } : {}) });
   }
 
   // Omonimi veri: la Folgore ha due Garcia Rufer, Azael e Augusto, che

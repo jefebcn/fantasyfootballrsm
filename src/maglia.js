@@ -7,7 +7,7 @@
  */
 import { esc } from './ui-esc.js';
 export { chiaro } from './colore.js';
-import { chiaro } from './colore.js';
+import { chiaro, coloreSicuro } from './colore.js';
 
 // Le fantasie disegnate sono sparite con la sagoma: il motivo ora è quello
 // della foto, uguale per tutti, e a cambiare è la tinta.
@@ -18,7 +18,11 @@ export const COLORI = [
 
 export const KIT_DEFAULT = { c1: '#1B84C6', nome: '' };
 /** Riempie i buchi: una maglia salvata a metà non deve rompere il disegno. */
-export const kitOf = (m) => ({ ...KIT_DEFAULT, c1: m?.color || KIT_DEFAULT.c1, ...(m?.kit || {}) });
+export const kitOf = (m) => {
+  const k = { ...KIT_DEFAULT, c1: m?.color || KIT_DEFAULT.c1, ...(m?.kit || {}) };
+  // il colore lo scrive chi gioca e va dentro style="…": solo esadecimali (vedi colore.js)
+  return { ...k, c1: coloreSicuro(k.c1, KIT_DEFAULT.c1) };
+};
 
 // La maglia è la foto in media/magliahome.jfif ridotta da scripts/make-maglia.py
 // a forma + luce: il colore non è nel file, lo mette il browser fondendo la

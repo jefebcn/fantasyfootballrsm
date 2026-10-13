@@ -31,7 +31,7 @@ const ok = [], ko = []; const et = (c, t) => (c ? ok : ko).push(t);
   // chi amministra, e uno sponsor in corso
   await p.evaluate(() => {
     const s = JSON.parse(localStorage.getItem('fcs:mock'));
-    s.tables.profiles.find((x) => x.id === s.userId).is_admin = true;
+    Object.assign(s.tables.profiles.find((x) => x.id === s.userId), { is_admin: true, is_owner: true }); // il proprietario dell'app (033)
     (s.tables.sponsor ||= []).push({ id: 'sp1', nome: 'Bar Titano', claim: 'Dal 1972', link: 'https://esempio.sm', dal: new Date().toISOString().slice(0, 10), al: null, attivo: true });
     localStorage.setItem('fcs:mock', JSON.stringify(s));
     location.hash = '#/';

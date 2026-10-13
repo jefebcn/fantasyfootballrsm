@@ -243,6 +243,8 @@ export async function adminSospendi(userId, on) { return must(await sb.rpc('admi
 export async function adminSquadre(cerca, limite = 50) { return must(await sb.rpc('admin_squadre', { p_cerca: cerca || null, p_limite: limite })) || []; }
 export async function adminRinomina(memberId, squadra, fantallenatore) { return must(await sb.rpc('admin_rinomina', { p_member: memberId, p_squadra: squadra, p_fantallenatore: fantallenatore || null })); }
 export async function adminLeghe(limite = 50) { return must(await sb.rpc('admin_leghe', { p_limite: limite })) || []; }
+/** Chi e' il proprietario dell'app (033). Senza la 033 la funzione non c'e': nessuno. */
+export async function proprietarioApp() { const { data, error } = await sb.rpc('proprietario_app'); return error ? null : data || null; }
 export async function adminImpostaRuolo(userId, ruolo, on) { return must(await sb.rpc('admin_imposta_ruolo', { p_user: userId, p_ruolo: ruolo, p_on: on })); }
 
 export async function updateLeague(id, patch) { return must(await sb.from('leagues').update(patch).eq('id', id).select().single()); }

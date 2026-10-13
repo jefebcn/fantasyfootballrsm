@@ -373,11 +373,20 @@ export function createClient(_url, _key, opts) {
             started: !!l.started, creata: l.created_at,
             creatore: T('profiles').find((x) => x.id === l.created_by)?.display_name || null })), error: null };
         }
+        // 033: il proprietario, come nel vero database
+        if (name === 'proprietario_app') {
+          if (!amministro()) throw new Error("Serve essere amministratore dell'app");
+          return { data: T('profiles').find((x) => x.is_owner)?.id || null, error: null };
+        }
         if (name === 'admin_imposta_ruolo') {
           if (!amministro()) throw new Error("Serve essere amministratore dell'app");
           if (!['is_judge', 'is_admin'].includes(args.p_ruolo)) throw new Error(`Ruolo sconosciuto: ${args.p_ruolo}`);
           const u = T('profiles').find((x) => x.id === args.p_user);
           if (!u) throw new Error('Utente non trovato');
+          if (u.is_owner) throw new Error("È il proprietario dell'app: i suoi poteri non si toccano");
+          if (args.p_ruolo === 'is_admin' && !T('profiles').find((x) => x.id === userId)?.is_owner) {
+            throw new Error("Solo il proprietario dell'app nomina o toglie gli amministratori");
+          }
           if (args.p_user === userId && args.p_ruolo === 'is_admin' && !args.p_on) {
             throw new Error('Non puoi togliere a te stesso l\'amministrazione: fallo fare a un altro amministratore');
           }

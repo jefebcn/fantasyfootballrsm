@@ -8,7 +8,12 @@ palio del denaro. Finché non è stata letta da un professionista **non va
 pubblicata nell'app** e il montepremi non va annunciato pubblicamente: una
 promessa scritta male vincola chi la fa più di quanto protegga chi la riceve.
 
-Aggiornata al 17 settembre 2026 · fa riferimento al codice di quella data.
+Aggiornata al 13 ottobre 2026 · fa riferimento al codice di quella data.
+
+> **Novità del 13/10: il premio diventa un coupon da 300 €, non denaro.**
+> Alex vuole mettere in palio un buono (coupon) del valore di 300 €, non una
+> somma in contanti. È la sezione 6 qui sotto: cambia la risposta ad alcune
+> domande della sezione 3, e va letta per prima.
 
 ---
 
@@ -122,3 +127,35 @@ lega pubblica senza montepremi in denaro** (o con un premio non monetario e di
 valore modesto, se il legale conferma che cambia il quadro). Il banner del
 montepremi nell'app mostra soltanto quello che è scritto nel database: se il
 premio non c'è, dice «Montepremi da definire» e non promette nulla.
+
+## 6. Il premio come coupon da 300 € (13/10)
+
+Cosa cambia rispetto al denaro, per come la capisco io; il legale confermi o
+corregga.
+
+- **La partecipazione resta gratuita.** È la condizione che regge tutto: con
+  una quota d'iscrizione, coupon o denaro non farebbe differenza, sarebbe gioco
+  con posta e servirebbe una licenza. Oggi l'app non ha pagamenti.
+- **Un buono invece del denaro.** In Italia i concorsi a premio promozionali
+  (DPR 430/2001) non ammettono premi in denaro, ma ammettono beni, servizi e
+  buoni. Con un coupon il gioco dovrebbe ricadere in quella disciplina, con i
+  suoi adempimenti: regolamento, comunicazione al Ministero (MIMIT) prima
+  dell'inizio, cauzione pari al valore del premio, assegnazione davanti a un
+  notaio o a un funzionario della Camera di Commercio. *Domanda: si applica, e
+  in che forma, a un organizzatore maltese con partecipanti in gran parte
+  sammarinesi?*
+- **San Marino.** Ha regole sue sulle manifestazioni a premio: *domanda: quali
+  adempimenti, e presso quale ufficio?*
+- **Chi offre il coupon.** Se è il buono di uno sponsor (spendibile da lui),
+  può essere lo sponsor a organizzare il concorso come promozione propria, e
+  Fantatitano fornisce solo la classifica. *Domanda: è la strada più semplice?
+  Cosa va scritto nel contratto con lo sponsor?*
+- **Come si mostra nell'app.** Alex vuole la cifra in evidenza e la parola
+  «coupon» più piccola. L'app la mostra così, ma sempre accanto alla cifra e
+  leggibile: «300 €» da solo farebbe pensare a un premio in denaro.
+  *Domanda: serve indicare anche chi offre il buono e dove si spende?*
+- **Minori (punto 5).** Con un buono il problema del premio in denaro a un
+  minore si attenua, ma resta da decidere se il montepremi è dai 18 anni.
+- **Tasse (punto 4).** Il trattamento fiscale di un buono può essere diverso
+  da quello del denaro: *domanda per il commercialista.*
+

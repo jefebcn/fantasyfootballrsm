@@ -42,7 +42,7 @@ export const negozio = {
       return ['libero', ''];
     };
 
-    let list = S.base.players.filter((p) => p.isActive !== false
+    let list = S.base.players.filter((p) => p.isActive !== false && !p.doppioneDi
       && (!ruolo || p.role === ruolo)
       && (!q || p.name.toLowerCase().includes(q) || p.firstName.toLowerCase().includes(q)));
     list = list.sort((a, b) => b.quotation - a.quotation).slice(0, 80);

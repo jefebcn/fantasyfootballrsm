@@ -2,7 +2,7 @@ import * as S from '../state.js';
 import { videoGiornata, giornateConVideo } from '../video.js';
 import * as AV from '../notifiche.js';
 import * as N from '../notizie.js';
-import { esc, fmt, icon, logo, badge, crest, pic, tile, sec, dateIt, timeIt, plurale, freccia } from '../ui.js';
+import { esc, premioHtml, fmt, icon, logo, badge, crest, pic, tile, sec, dateIt, timeIt, plurale, freccia } from '../ui.js';
 import { movimenti, anteprimaClassifica } from '../engine.js';
 import { maglia, kitOf } from '../maglia.js';
 import { personaggio, scelto, figura } from '../personaggio.js';
@@ -289,7 +289,7 @@ function invitoPubblica() {
     const premio = primo(S.premi());
     const squadre = S.base.managers.length;
     if (premio) {
-      return fascia('#/classifica', `Montepremi: ${esc(premio.premio)}`,
+      return fascia('#/classifica', `Montepremi: ${premioHtml(premio.premio)}`,
         'Sei in gara per il montepremi finale',
         `${squadre} ${squadre === 1 ? 'squadra' : 'squadre'} · vince chi fa più punti`);
     }
@@ -307,13 +307,13 @@ function invitoPubblica() {
   // dove sei già, ti ci porta. data-vai lo raccoglie il mount qui sotto e
   // cambia lega.
   if (l.dentro) {
-    return fascia('#/leghe', premio ? `Montepremi: ${esc(premio.premio)}` : 'La tua lega pubblica',
+    return fascia('#/leghe', premio ? `Montepremi: ${premioHtml(premio.premio)}` : 'La tua lega pubblica',
       premio ? 'Sei in gara per il montepremi finale' : 'Ci sei dentro: vai a giocare',
       `${esc(l.name)} · ${squadre} · tocca per andarci`, ` data-vai="${esc(l.id)}"`);
   }
   // data-entra: chi tocca il banner vuole entrare in questa lega, non vedere
   // l'elenco delle leghe.
-  return fascia('#/leghe', premio ? `In palio: ${esc(premio.premio)}` : 'Lega pubblica aperta a tutti',
+  return fascia('#/leghe', premio ? `In palio: ${premioHtml(premio.premio)}` : 'Lega pubblica aperta a tutti',
     premio ? 'Entra e competi per il montepremi finale' : 'Entra: ognuno si fa la sua rosa',
     `${esc(l.name)} · ${squadre} · senza codice`,
     ` data-entra="${esc(l.id)}"`);

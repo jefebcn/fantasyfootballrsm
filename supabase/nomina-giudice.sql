@@ -16,12 +16,12 @@
 -- 1. Controlla di avere scritto l'indirizzo giusto: deve tornare una riga.
 select id, display_name, is_judge
 from public.profiles
-where id = (select id::text from auth.users where lower(email) = lower('contiale2001@gmail.com'));
+where id = (select id::text from auth.users where lower(email) = lower('LA-SUA-EMAIL'));
 
 -- 2. Nomina.
 update public.profiles
 set is_judge = true
-where id = (select id::text from auth.users where lower(email) = lower('contiale2001@gmail.com'));
+where id = (select id::text from auth.users where lower(email) = lower('LA-SUA-EMAIL'));
 
 -- 3. Verifica: is_judge deve essere true.
 select p.display_name, u.email, p.is_judge
@@ -31,4 +31,4 @@ where p.is_judge;
 
 -- Per revocare:
 -- update public.profiles set is_judge = false
--- where id = (select id::text from auth.users where lower(email) = lower('contiale2001@gmail.com'));
+-- where id = (select id::text from auth.users where lower(email) = lower('LA-SUA-EMAIL'));

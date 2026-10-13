@@ -1,4 +1,6 @@
 {
+  "buildCommand": "node scripts/costruisci.mjs",
+  "outputDirectory": "pubblico",
   "ignoreCommand": "bash scripts/vercel-controlla.sh",
   "git": {
     "deploymentEnabled": {
@@ -47,6 +49,17 @@
     }
   ],
   "redirects": [
+    {
+      "source": "/:path*",
+      "has": [
+        {
+          "type": "host",
+          "value": "fantasyfootballrsm.vercel.app"
+        }
+      ],
+      "destination": "https://fantatitano.site/:path*",
+      "permanent": true
+    },
     {
       "source": "/:dir(supabase|scripts|tests|prove|data|legale|regia|videos|social|store|strumenti|node_modules|\\.claude|\\.github)/:path*",
       "destination": "/",

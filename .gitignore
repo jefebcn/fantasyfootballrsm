@@ -14,3 +14,6 @@ node_modules/
 package-lock.json
 # lo scarto di supabase/prove/prova.sh quando una migrazione fallisce
 .err
+
+# la cartella che Vercel pubblica, la prepara scripts/costruisci.mjs
+pubblico/

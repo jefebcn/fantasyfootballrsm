@@ -73,7 +73,7 @@ export const asta = {
     // Nella pubblica si toglie dall'elenco solo chi e' GIA' NELLA MIA rosa:
     // che un altro l'abbia preso non mi riguarda.
     const miei = new Set(st.rosa.map((x) => x.playerId));
-    const tuttiLiberi = S.base.players.filter((p) => p.isActive
+    const tuttiLiberi = S.base.players.filter((p) => p.isActive && !p.doppioneDi
       && (mia ? !miei.has(p.id) : !pr.has(p.id))
       && (!q || p.name.toLowerCase().includes(q) || S.clubsById.get(p.clubId).name.toLowerCase().includes(q)));
     const liberi = tuttiLiberi.filter((p) => ruolo === 'tutti' || p.role === ruolo)

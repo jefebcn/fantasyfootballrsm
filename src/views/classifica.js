@@ -1,5 +1,5 @@
 import * as S from '../state.js';
-import { esc, fmt, badge, crest, empty, icon, dateIt, timeIt, freccia } from '../ui.js';
+import { esc, premioHtml, fmt, badge, crest, empty, icon, dateIt, timeIt, freccia } from '../ui.js';
 import { movimenti, conversionParams } from '../engine.js';
 
 let vista = 'classifica';
@@ -134,7 +134,7 @@ function premiCard({ vincitori = true } = {}) {
   const riga = (p) => {
     const chi = p.squadre.map((id) => S.managersById.get(id)).filter(Boolean);
     return `<div class="prow"><span class="pposto">${p.posto}º</span>
-      <span class="ppre">${esc(p.premio)}</span>
+      <span class="ppre">${premioHtml(p.premio)}</span>
       ${vincitori ? `<span class="pchi">${chi.length ? chi.map((m) => esc(m.teamName)).join(', ') : '<i>nessuno a questo posto</i>'}</span>` : '<span class="pchi"></span>'}</div>`;
   };
   return `<div class="a-card premi"><div class="ph"><b>Premi in palio</b><span>${vincitori ? 'chi li vince se finisse adesso' : 'la classifica non è ancora partita'}</span></div>

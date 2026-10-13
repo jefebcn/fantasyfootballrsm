@@ -86,7 +86,9 @@ const pulisci = (t) => t.replace(/\s+/g, ' ').replace(/ /g, ' ').trim().toLower
   const ctx = await b.newContext({ viewport: { width: 420, height: 900 }, serviceWorkers: 'block' });
   const p = await ctx.newPage();
   await p.goto(`${BASE}/#/privacy`, { waitUntil: 'load' });
-  await p.waitForTimeout(1200);
+  // si aspetta la pagina, non un tempo fisso: con la suite intera la
+  // macchina e' carica e 1,2 secondi a volte non bastavano
+  await p.waitForFunction(() => document.querySelectorAll('.a-body .group').length >= 3, null, { timeout: 10000 }).catch(() => {});
   const dove = await p.evaluate(() => ({ hash: location.hash, sezioni: document.querySelectorAll('.a-body .group').length }));
   et(/privacy/.test(dove.hash) && dove.sezioni >= 3,
     `l'informativa si apre anche senza account e senza server configurato (${dove.hash}, ${dove.sezioni} sezioni)`);

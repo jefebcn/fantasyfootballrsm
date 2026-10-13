@@ -30,6 +30,14 @@ const ok = [], ko = []; const et = (c, t) => (c ? ok : ko).push(t);
     await p.fill('#email', 'a@e.it'); await p.fill('#name', 'Alessandro'); await p.fill('#password', 'password123'); await p.click('#primary'); await w(1000);
     await p.click('[data-form="create"]'); await w(250);
     await p.fill('#lname', 'Prova'); await p.fill('#team', 'Prova FC'); await p.click('#go-create'); await w(1200);
+    // le righe tecniche (server, misure) le vede solo chi amministra l'app:
+    // qui servono, quindi questo iscritto amministra (dati-riservati.cjs prova il contrario)
+    await p.evaluate(() => {
+      const s = JSON.parse(localStorage.getItem('fcs:mock'));
+      s.tables.profiles.find((x) => x.id === s.userId).is_admin = true;
+      localStorage.setItem('fcs:mock', JSON.stringify(s));
+    });
+    await p.reload({ waitUntil: 'load' }); await w(1500);
 
     // 1. una riga che naviga
     await p.evaluate(() => { location.hash = '#/impostazioni'; }); await w(800);

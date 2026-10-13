@@ -70,3 +70,21 @@ test('i rami di lavoro non fanno anteprime su Vercel, main si pubblica', () => {
   assert.equal(abilitati['claude/**'], false);
   assert.notEqual(abilitati.main, false);
 });
+
+// IL SITO SERVE L'APP, NON IL REPOSITORY. Alex, 13/10: «non mi piace far
+// sapere che server usiamo e altri dati privati miei». Vercel pubblicava
+// tutto il repository: schema del database, SQL, script d'import, prove, la
+// bozza del montepremi in legale/ con nome e sede, i .md di lavoro. Le
+// cartelle che all'app non servono rimandano alla home. (Il repository su
+// GitHub e' un'altra cosa: quello lo rende privato Alex dalle impostazioni.)
+test('le cartelle di lavoro non si scaricano dal sito', () => {
+  const regole = (conf.redirects || []).map((r) => r.source);
+  for (const dir of ['supabase', 'scripts', 'tests', 'prove', 'data', 'legale']) {
+    assert.ok(regole.some((s) => s.includes(`${dir}|`) || s.includes(`|${dir}`)), `${dir}/ resta scaricabile dal sito`);
+  }
+  assert.ok(regole.includes('/(.*)\\.md'), 'i file .md restano scaricabili dal sito');
+  // e quello che serve all'app non ci finisce dentro
+  for (const serve of ['src', 'styles', 'media', 'icons', 'vendor', 'design', 'api']) {
+    assert.ok(!regole.some((s) => new RegExp(`[(|]${serve}[|)]`).test(s)), `${serve}/ serve all'app e non va bloccato`);
+  }
+});

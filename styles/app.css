@@ -2235,6 +2235,8 @@ button,a,.chip,[data-compra],[data-vendi]{touch-action:manipulation}
 .chiedi-push .cp-ico .ic{width:18px;height:18px}
 .chiedi-push .cp-txt{flex:1;min-width:0;display:flex;flex-direction:column;gap:4px}
 .chiedi-push .cp-txt b{font-family:var(--font-display);font-size:15px}
+.chiedi-push .cp-passi{margin:4px 0 2px;padding-left:20px;display:flex;flex-direction:column;gap:5px;font-size:13.5px;line-height:1.4}
+.chiedi-push .cp-passi b,.chiedi-push .cp-txt span b{font-family:inherit;font-size:inherit;font-weight:700}
 .chiedi-push .cp-txt>span{font-size:13px;color:var(--text-muted)}
 .chiedi-push .cp-btn{display:flex;gap:8px;margin-top:8px}
 .chiedi-push .cp-btn .a-btn{height:40px;font-size:12px;flex:1}

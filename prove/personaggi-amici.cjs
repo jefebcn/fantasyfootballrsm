@@ -37,7 +37,7 @@ const ok = [], ko = []; const et = (c, t) => (c ? ok : ko).push(t);
     const io = s.tables.league_members[0];
     s.tables.profiles.push({ id: 'u_rivale', display_name: 'Enea', is_judge: false });
     s.tables.league_members.push({ ...io, id: 'm_rivale', user_id: 'u_rivale', role: 'fantallenatore', team_name: 'Ac Haramball',
-      owner_name: 'Enea', color: '#1B84C6', initials: 'AH', crest_url: 'icons/icon-192.png', kit: { personaggio: 30 } });
+      owner_name: 'Enea', color: '#1B84C6', initials: 'AH', crest_url: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAGUlEQVR4nGOQbjn2nxLMMGrAqAGjBgwXAwD1x2QfRINqfgAAAABJRU5ErkJggg==', kit: { personaggio: 30 } });
     localStorage.setItem('fcs:mock', JSON.stringify(s));
   });
   await p.evaluate(() => { location.hash = '#/'; });

@@ -88,12 +88,29 @@ end $$;
 
 
 -- 1. Le due estensioni. pg_cron e' l'orologio, pg_net fa la chiamata HTTP.
-create extension if not exists pg_cron;
-create extension if not exists pg_net;
--- i due grant sono quelli della documentazione di Supabase: senza, il
--- proprietario del progetto non vede nemmeno l'elenco dei lavori pianificati
-grant usage on schema cron to postgres;
-grant all privileges on all tables in schema cron to postgres;
+--
+-- SOLO SE MANCANO, e i permessi SOLO SE SERVONO. Alex, 13/10: con pg_cron
+-- gia' acceso il file si fermava con «dependent privileges exist», dentro la
+-- funzione con cui Supabase sistema i permessi di cron quando l'estensione
+-- viene toccata. Su un progetto dove pg_cron e' gia' attivo non c'e' niente
+-- da accendere ne' da concedere: si salta.
+do $$
+begin
+  if not exists (select 1 from pg_extension where extname = 'pg_cron') then
+    create extension pg_cron;
+  end if;
+  if not exists (select 1 from pg_extension where extname = 'pg_net') then
+    create extension pg_net;
+  end if;
+  -- quelli della documentazione di Supabase: senza, il proprietario del
+  -- progetto non vede nemmeno l'elenco dei lavori pianificati
+  if not has_schema_privilege('postgres', 'cron', 'USAGE') then
+    grant usage on schema cron to postgres;
+  end if;
+  if not has_table_privilege('postgres', 'cron.job', 'SELECT') then
+    grant all privileges on all tables in schema cron to postgres;
+  end if;
+end $$;
 
 
 -- 2. Uno schema che l'API non espone.

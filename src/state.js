@@ -166,6 +166,13 @@ async function loadAll() {
       finally { refertiInCorso = false; }
     }
   }
+  // I referti gia' in lega e poi completati dalla FSGC non si toccano da
+  // soli (vedi refertiDaAggiornare): al Giudice lo si dice, una volta.
+  if (prof?.is_judge && !cambiatiDetti && !refertiInCorso) {
+    cambiatiDetti = true;
+    const n = refertiDaAggiornare().length;
+    if (n) avvisoCambiati = n;
+  }
   if (prof?.is_judge && !lockGiaSincronizzati && !lockInCorso && lockDisallineati().length) {
     // Il segno di "fatto" va messo DOPO che e' riuscita, non prima: segnandolo
     // prima, un errore di rete lasciava il calendario disallineato per tutta la
@@ -576,6 +583,38 @@ export function gareDaCaricare() {
     && !(g.matchEvents[m.id] || []).length && !(g.appearanceOverrides[m.id] || []).length)
     .map((m) => m.id);
 }
+/*
+ * UN REFERTO GIA' IN LEGA PUO' ESSERE ARRIVATO A META'. La FSGC lo completa
+ * dopo il fischio (cambi, cartellini, giocatori nuovi nel listone), l'import
+ * lo riscarica, ma in lega restava la prima versione: gareDaCaricare guarda
+ * solo le partite vuote. Il 13/10 la Folgore della 5ª giocava in dieci nei
+ * voti, con due titolari che il referto aveva e la lega no.
+ *
+ * Qui si trovano le partite, di giornate non congelate, in cui la lega ha
+ * qualcosa di diverso dal referto. Non si aggiornano da sole: la differenza
+ * puo' essere una correzione del Giudice, e quella non va cancellata senza
+ * che lui lo decida.
+ */
+const firmaPresenze = (l) => l.map((a) => `${a.playerId}|${a.started ? 1 : 0}|${a.minutesPlayed}|${a.enteredAt ?? 0}`).sort().join(',');
+const firmaEventi = (l) => l.map((e) => `${e.playerId}|${e.minute}|${e.type}`).sort().join(',');
+export function refertiDaAggiornare() {
+  const presenze = new Map(); for (const a of base.appearances) (presenze.get(a.matchId) || presenze.set(a.matchId, []).get(a.matchId)).push(a);
+  const eventi = new Map(); for (const e of base.events) (eventi.get(e.matchId) || eventi.set(e.matchId, []).get(e.matchId)).push(e);
+  const congelate = new Set(base.matchdays.filter((md) => matchdayStatus(md.number) === 'frozen').map((md) => md.number));
+  return base.matches.filter((m) => (presenze.has(m.id) || eventi.has(m.id)) && !congelate.has(m.matchday)
+    && (eventsOf(m.id).length || appearancesOf(m.id).length)
+    && (firmaPresenze(presenze.get(m.id) || []) !== firmaPresenze(appearancesOf(m.id))
+      || firmaEventi(eventi.get(m.id) || []) !== firmaEventi(eventsOf(m.id))))
+    .map((m) => m.id);
+}
+/** Riscrive in lega le partite cambiate col referto della FSGC. Le modifiche a mano su quelle partite si perdono. */
+export async function aggiornaReferti() {
+  const gare = refertiDaAggiornare();
+  if (!gare.length) return { gare: [], giornate: [], presenze: 0, eventi: 0 };
+  const esito = await remote.aggiornaReferti(base, user.id, gare);
+  await refresh();
+  return esito;
+}
 /** Le giornate toccate da un elenco di partite: serve solo a scriverlo in italiano. */
 export const giornateDi = (gare) => [...new Set(gare.map((id) => +((id.match(/^md(\d+)/) || [])[1])))].filter(Boolean).sort((a, b) => a - b);
 /** Porta in lega i referti che mancano. Ripetibile: a giornate gia' dentro non fa niente. */
@@ -588,6 +627,8 @@ export async function caricaRefertiMancanti() {
 }
 /** L'avviso da mostrare una volta, quando il caricamento e' avvenuto da solo. */
 export function prendiAvvisoReferti() { const a = avvisoReferti; avvisoReferti = null; return a; }
+/** Quante partite in lega hanno meno del referto FSGC, da dire una volta al Giudice. */
+export function prendiAvvisoCambiati() { const n = avvisoCambiati; avvisoCambiati = 0; return n; }
 function hashStr(s) { let h = 2166136261; for (const c of String(s)) { h ^= c.charCodeAt(0); h = Math.imul(h, 16777619); } return h >>> 0; }
 
 export const store = {
@@ -910,6 +951,7 @@ export function rendicontoSponsor(id) {
     ctr: viste ? somma(righe, 'tocchi') / viste : null };
 }
 let refertiGiaCaricati = false; let refertiInCorso = false; let avvisoReferti = null;
+let cambiatiDetti = false; let avvisoCambiati = 0;
 export async function sincronizzaLock({ forza = false } = {}) {
   if (!isJudge()) throw new Error('Solo il Giudice Dati può aggiornare il calendario dei lock');
   const da = forza ? calendarioLock() : lockDisallineati();

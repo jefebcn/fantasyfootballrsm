@@ -536,6 +536,19 @@ export async function caricaReferti(base, userId, gare) {
   return { gare: fatte, giornate, presenze, eventi };
 }
 
+/**
+ * Come caricaReferti, ma su partite che in lega hanno gia' qualcosa: prima si
+ * svuotano, poi si riempiono col referto. Se il caricamento si rompe la
+ * partita resta vuota, e il giro dopo la ricarica gareDaCaricare.
+ */
+export async function aggiornaReferti(base, userId, gare) {
+  for (const id of [...new Set(gare)]) {
+    must(await sb.from('match_events').delete().eq('match_id', id));
+    must(await sb.from('match_appearances').delete().eq('match_id', id));
+  }
+  return caricaReferti(base, userId, gare);
+}
+
 // ---------------------------------------------------------------- realtime
 let channel = null;
 export function subscribe(leagueId, onChange) {

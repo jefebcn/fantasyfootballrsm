@@ -106,7 +106,10 @@ const prepara = (ctx, stato) => ctx.addInitScript((stato) => {
     localStorage.setItem('fcs:mock', JSON.stringify(s));
   });
   await p.reload({ waitUntil: 'load' }); await w(p, 1600);
-  await p.evaluate(() => { location.hash = '#/negozio'; }); await w(p, 1200);
+  await p.evaluate(() => { location.hash = '#/negozio'; });
+  // si aspetta il negozio, non un tempo fisso: con la suite intera la
+  // macchina e' carica e 1,2 secondi a volte non bastavano
+  await p.waitForSelector('[data-compra]:not([disabled])', { timeout: 15000 }).catch(() => {});
   const primoId = await p.evaluate(() => document.querySelector('[data-compra]:not([disabled])')?.dataset.compra || null);
   et(!!primoId, 'nel negozio ci sono giocatori da comprare');
   await p.click(`[data-compra="${primoId}"]`); await w(p, 1400);

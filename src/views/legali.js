@@ -141,6 +141,10 @@ export const termini = {
     'Fantatitano è un gioco fra amici sul campionato di San Marino. È gratuito, non ci sono acquisti, abbonamenti né premi in denaro.',
     'Non è affiliato alla FSGC né alle società del campionato, e non ne rappresenta le posizioni.',
   ])}
+      ${blocco('Di chi è l\'app', [
+    'Il codice, la grafica, le illustrazioni, i testi, il nome e il marchio Fantatitano appartengono a chi gestisce l\'app: tutti i diritti sono riservati. Non si possono copiare, ripubblicare o riusare, in tutto o in parte, senza un permesso scritto.',
+    'I nomi dei giocatori e delle società e i risultati delle partite restano di chi ne ha i diritti: l\'app li usa solo per far funzionare il gioco.',
+  ])}
       ${blocco('Chi può iscriversi', [
     `Serve aver compiuto ${ETA_MINIMA} anni e un account a testa. Un profilo per più persone, o più profili per la stessa persona nella stessa lega, falsano il gioco per tutti.`,
     'Le credenziali sono tue: se ti accorgi che qualcun altro entra nel tuo profilo, cambia la password e avvisa chi amministra la lega.',

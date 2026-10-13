@@ -2447,3 +2447,7 @@ a.crow .cls-chev{flex:none;color:var(--text-muted);margin-left:-4px}
 .fig-stemma{display:flex;align-items:flex-end;width:auto}
 .fig-stemma::after{display:none}
 .l-head .tm:last-child .fig-stemma{justify-content:flex-end}
+/* Modalita' prudente (032): in cima alla console, e quando e' accesa si vede */
+.a-card.prudente{display:flex;flex-direction:column;gap:6px;margin-bottom:12px;border-left:3px solid var(--line, transparent)}
+.a-card.prudente.on{border-left-color:var(--c-oro-400)}
+.a-card.prudente .azioni{display:flex;gap:6px;margin-top:4px}

@@ -31,7 +31,9 @@ function scheda(m, v) {
         <span class="${giocata ? 'vid-ris' : 'vid-vs'}">${giocata ? `${m.homeGoals}<i>–</i>${m.awayGoals}` : 'vs'}</span>
         <span class="vid-lato">${divisa(a)}<b>${esc(a.name)}</b></span>
       </div>
-      <button class="vid-play" aria-label="Guarda gli highlights di ${esc(h.name)} contro ${esc(a.name)}">${icon('play', 'ic')}</button>
+      ${S.prudente()
+    ? `<a class="vid-play" href="${urlVideo(v.id)}" target="_blank" rel="noopener" aria-label="Guarda su YouTube gli highlights di ${esc(h.name)} contro ${esc(a.name)}">${icon('play', 'ic')}</a>`
+    : `<button class="vid-play" aria-label="Guarda gli highlights di ${esc(h.name)} contro ${esc(a.name)}">${icon('play', 'ic')}</button>`}
     </div>
     <div class="vid-pie"><span>${esc(sotto)}</span><a href="${urlVideo(v.id)}" target="_blank" rel="noopener">Apri su YouTube</a></div>
   </div>`;
@@ -49,7 +51,7 @@ export const video = {
         <a class="a-btn sec" href="${urlCanale}" target="_blank" rel="noopener" style="text-decoration:none">Vai al canale</a></div></main>`;
     }
     return `<main class="a-body">
-      <div class="warn info">${icon('eye', 'ic sm')}<span>I video stanno su YouTube. Finché non tocchi play non parte nessuna richiesta verso Google: la copertina la disegna l'app.</span></div>
+      <div class="warn info">${icon('eye', 'ic sm')}<span>${S.prudente() ? 'I video si guardano su YouTube: il play apre il canale della FSGC.' : 'I video stanno su YouTube. Finché non tocchi play non parte nessuna richiesta verso Google: la copertina la disegna l\'app.'}</span></div>
       ${giornate.map(([k, lista]) => `<div class="a-sec"><b>${k}ª giornata</b><span>${lista.length} ${lista.length === 1 ? 'partita' : 'partite'}</span></div>
         ${lista.map(({ m, v }) => scheda(m, v)).join('')}`).join('')}
       ${altri.length ? `<div class="a-sec"><b>Dal canale</b><span>coppa e sondaggi</span></div>
@@ -62,6 +64,8 @@ export const video = {
   mount(root) {
     // da qui in poi si contatta Google: succede perche' l'ha chiesto chi guarda
     const suona = (card) => {
+      // in modalita' prudente i video si guardano solo su YouTube
+      if (S.prudente()) return;
       const id = card.dataset.vid; const cop = card.querySelector('.vid-cop:not(.in)'); if (!cop) return;
       cop.outerHTML = `<div class="vid-cop in"><iframe
         src="${urlIncorpora(id)}" title="Highlights" loading="lazy" allowfullscreen
@@ -69,7 +73,7 @@ export const video = {
         referrerpolicy="strict-origin-when-cross-origin"></iframe></div>`;
     };
     root.querySelector('main').addEventListener('click', (e) => {
-      const b = e.target.closest('.vid-play'); if (b) suona(b.closest('[data-vid]'));
+      const b = e.target.closest('button.vid-play'); if (b) suona(b.closest('[data-vid]'));
     });
     // arrivati dalla home toccando una partita: parte quella, gia' in vista
     const id = videoDaAprire();

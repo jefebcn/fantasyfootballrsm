@@ -81,3 +81,16 @@ test('un tabellino con giocatori mancanti si riscarica fino alla chiusura', () =
     '2026-10-11T15:00:00+02:00', '2026-10-13T20:45:00+02:00', '2026-10-13T18:00:00+02:00'])}]))`);
   assert.deepEqual(giorni, [chiude, Date.parse('2026-10-20T20:00:00+02:00') / 1000, chiude]);
 });
+
+// Modalita' prudente (032): con l'interruttore acceso l'import non scarica niente.
+test("l'interruttore della modalità prudente si legge dalla risposta del database", () => {
+  const casi = [
+    ['[{"chiave":"prudente","acceso":true}]', true],
+    ['[{"chiave":"prudente","acceso":false}]', false],
+    ['[]', false],                                       // la 032 c'e' ma la riga no
+    ['{"message":"relation does not exist"}', false],   // la 032 non c'e' ancora
+    ['non json', false],
+  ];
+  const esiti = py(`print(json.dumps([m.prudente_da(t) for t in ${JSON.stringify(casi.map((c) => c[0]))}]))`);
+  assert.deepEqual(esiti, casi.map((c) => c[1]));
+});

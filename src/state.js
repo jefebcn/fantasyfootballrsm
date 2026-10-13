@@ -87,6 +87,7 @@ async function loadAll() {
   const legheP = remote.myLeagues(user.id);
   legheP.catch(() => {});   // se il profilo fallisce prima, l'errore e' quello, non questo
   const sponsorP = remote.caricaSponsor().catch(() => []);
+  const interruttoriP = remote.caricaInterruttori().catch(() => ({}));
   prof = (await remote.ensureProfile(user)) || { id: user.id, display_name: user.email, is_judge: false };
   await consegnaReclutatore();
   // INSIEME, NON IN FILA. Le leghe, i voti di tutti, lo sponsor e — per il
@@ -140,6 +141,7 @@ async function loadAll() {
   // la tabella non c'e', e l'app deve funzionare comunque — senza banner, non
   // con una schermata di errore. Stessa scelta fatta per gli scambi.
   sponsor = await sponsorP;
+  interruttori = await interruttoriP;
   remote.subscribe(prefs.currentLeagueId, debounced);
   // Il Giudice Dati allinea il calendario dei lock senza doverselo ricordare:
   // e' un dato derivato dal calendario, identico a ogni giro, e l'RPC riscrive
@@ -849,6 +851,18 @@ export const lockDaSistemare = () => lockDisallineati().length;
  */
 let lockGiaSincronizzati = false; let lockInCorso = false;
 let sponsor = [];
+/*
+ * MODALITA' PRUDENTE (032). Un interruttore in console admin per mettersi in
+ * regola in un minuto se la FSGC o i calciatori chiedessero di togliere
+ * qualcosa: niente video dentro l'app, niente sponsor, e l'import dal sito
+ * FSGC si ferma (lo legge scripts/importa-fsgc.py). Leghe e punti restano.
+ */
+let interruttori = {};
+export const prudente = () => !!interruttori.prudente;
+export async function impostaPrudente(acceso) {
+  await remote.impostaInterruttore('prudente', acceso, user.id);
+  interruttori = { ...interruttori, prudente: acceso }; notify();
+}
 /**
  * Lo sponsor da mostrare adesso, se c'e'.
  *
@@ -859,6 +873,7 @@ let sponsor = [];
  * sponsor che comincia il mese prossimo.
  */
 export function sponsorInVetrina() {
+  if (prudente()) return null;
   const oggi = now().toISOString().slice(0, 10);
   const inFinestra = (s) => s.attivo && s.dal <= oggi && (!s.al || s.al >= oggi);
   // LO SPONSOR DELLA LEGA BATTE QUELLO DI TUTTA L'APP (021). Chi compra una

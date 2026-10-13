@@ -364,6 +364,22 @@ function errori(lista) {
     <p class="small muted" style="margin:-4px 2px 0">Senza nomi né account: messaggio, schermata, tipo di telefono e versione. Si cancellano da soli dopo 30 giorni; quelli corretti li togli tu con «Risolto». Se un errore torna, ricompare.</p>`;
 }
 
+/**
+ * L'interruttore della modalita' prudente (032). Sta in cima ai numeri perche'
+ * se serve, serve in fretta: una richiesta della FSGC o dei calciatori si
+ * soddisfa da qui, dal telefono, senza un rilascio.
+ */
+function prudenza() {
+  const on = S.prudente();
+  return `<div class="a-card prudente${on ? ' on' : ''}">
+    <b>Modalità prudente: ${on ? 'accesa' : 'spenta'}</b>
+    <span class="small muted">${on
+    ? 'Import dal sito FSGC fermo (i dati li inserisce il Giudice), highlights solo su YouTube, sponsor nascosto. Leghe, squadre e punti restano.'
+    : 'Se la FSGC o i calciatori chiedono di togliere qualcosa: ferma l\'import dal sito FSGC, apre gli highlights solo su YouTube e nasconde lo sponsor. Leghe, squadre e punti restano.'}</span>
+    <div class="azioni"><button class="chip" data-prudente="${on ? 'off' : 'on'}">${on ? 'Spegni' : 'Accendi'}</button></div>
+  </div>`;
+}
+
 function numeri(r) {
   if (!r) return `<p class="small muted">Sto contando…</p>`;
   const q = [
@@ -547,7 +563,7 @@ export const adminConsole = {
       <button class="${aTab === 'leghe' ? 'on' : ''}" data-atab="leghe">Leghe</button>
       <button class="${aTab === 'sponsor' ? 'on' : ''}" data-atab="sponsor">Sponsor</button></div></div>`;
     let corpo = '';
-    if (aTab === 'numeri') corpo = numeri(cache.numeri) + consegne(cache.numeri) + errori(cache.errori) + andamento(cache.persone);
+    if (aTab === 'numeri') corpo = prudenza() + numeri(cache.numeri) + consegne(cache.numeri) + errori(cache.errori) + andamento(cache.persone);
     else if (aTab === 'persone') {
       corpo = `${daConfermare(cache.daConfermare)}<input class="field-input" id="adm-cerca" placeholder="Cerca per nome o e-mail" value="${esc(cerca)}" autocomplete="off">
         ${persone(cache.persone)}`;
@@ -677,6 +693,20 @@ export const adminConsole = {
           cache.squadre = await S.adminSquadre(cerca, 100);
           ctx.toast('Rinominata'); ctx.render();
         } catch (err) { ctx.toast(err.message || 'Non è stato possibile'); rn.disabled = false; }
+        return;
+      }
+      const pr = e.target.closest('[data-prudente]');
+      if (pr) {
+        const acceso = pr.dataset.prudente === 'on';
+        if (!confirm(acceso
+          ? 'Accendere la modalità prudente? L\'import dal sito FSGC si ferma (i dati li inserisce il Giudice), gli highlights si aprono solo su YouTube e lo sponsor sparisce. Si spegne da qui quando vuoi.'
+          : 'Spegnere la modalità prudente? L\'import dal sito FSGC riparte al prossimo giro, tornano gli highlights nell\'app e lo sponsor.')) return;
+        pr.disabled = true;
+        try { await S.impostaPrudente(acceso); ctx.toast(acceso ? 'Modalità prudente accesa' : 'Modalità prudente spenta'); ctx.render(); }
+        catch (err) {
+          ctx.toast(/app_interruttori|relation|schema cache/i.test(err.message || '') ? 'Prima va eseguita la 032 nell\'SQL Editor' : (err.message || 'Non è stato possibile'));
+          pr.disabled = false;
+        }
         return;
       }
       // Alex, 12/10: «quando verranno risolti eliminali da questa dashboard» (031)

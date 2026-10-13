@@ -456,5 +456,42 @@ def scrivi(cal, fatti, mancanti=None):
     print(f'scritto src/listone-extra.js — {len(extra)} tesserati recuperati dalla FSGC')
 
 
+def prudente_da(risposta):
+    """La risposta del database (elenco JSON delle righe) dice che l'interruttore e' acceso?"""
+    try:
+        righe = json.loads(risposta)
+    except ValueError:
+        return False
+    return isinstance(righe, list) and any(r.get('chiave') == 'prudente' and r.get('acceso') is True for r in righe)
+
+
+def in_modalita_prudente():
+    """
+    La modalita' prudente (supabase/migrations/032) ferma l'import: se la FSGC
+    o i calciatori chiedessero di non prendere piu' i dati dal sito, Alex la
+    accende dalla console admin e da quel giro qui non si scarica niente.
+
+    Si legge con la chiave pubblica dell'app, la stessa che sta in
+    src/config.js. Se il database non risponde si va avanti come prima: un
+    guasto di rete non deve fermare i voti di tutti.
+    """
+    cfg = (RADICE / 'src' / 'config.js').read_text(encoding='utf-8')
+    url = re.search(r"SUPABASE_URL = '([^']+)'", cfg)
+    chiave = re.search(r"SUPABASE_ANON_KEY = '([^']+)'", cfg)
+    if not (url and chiave):
+        return False
+    r = subprocess.run(['curl', '-sS', '--fail', '-m', '20',
+                        '-H', f'apikey: {chiave.group(1)}', '-H', f'Authorization: Bearer {chiave.group(1)}',
+                        f'{url.group(1)}/rest/v1/app_interruttori?select=chiave,acceso&chiave=eq.prudente'],
+                       capture_output=True)
+    if r.returncode != 0:
+        print('modalità prudente: interruttore non leggibile (032 non eseguita o rete giù), si importa come sempre', file=sys.stderr)
+        return False
+    return prudente_da(r.stdout.decode('utf-8', 'replace'))
+
+
 if __name__ == '__main__':
+    if in_modalita_prudente():
+        print('modalità prudente accesa (console admin): import dal sito FSGC fermo, nessun dato toccato')
+        sys.exit(0)
     main()

@@ -133,6 +133,22 @@ else
   ko "reclutatori_settimana ora restituisce altro: da anonimo non deve dare identificativi o nomi"
 fi
 
+echo "== la modalita' prudente (032): la legge chiunque, la cambia solo chi amministra =="
+# L'import su GitHub la legge con la chiave pubblica: se l'anonimo non la
+# vedesse, l'interruttore non fermerebbe niente. Se la potesse scrivere,
+# chiunque spegnerebbe gli sponsor o fermerebbe i voti.
+# VR: come V, ma con un ruolo (il -q toglie il «SET» davanti al risultato)
+VR() { psql -h /tmp -p "$PORTA" -U postgres -d prova -q -t -A -c "set role $1; $2" | tr -d '[:space:]'; }
+[ "$(VR anon "select count(*) from public.app_interruttori where chiave = 'prudente'")" = 1 ] \
+  && ok "l'anonimo legge l'interruttore" \
+  || ko "l'anonimo non legge l'interruttore: l'import non si fermerebbe"
+[ "$(VR anon "with x as (update public.app_interruttori set acceso = true returning 1) select count(*) from x")" = 0 ] \
+  && ok "l'anonimo non lo accende" \
+  || ko "l'anonimo accende la modalita' prudente"
+[ "$(VR authenticated "with x as (update public.app_interruttori set acceso = true returning 1) select count(*) from x")" = 0 ] \
+  && ok "chi ha fatto l'accesso senza essere admin non lo accende" \
+  || ko "chiunque abbia un account accende la modalita' prudente"
+
 echo "== le due del service role sono chiuse anche a chi ha fatto l'accesso =="
 for f in "da_avvisare(int)" "promemoria_da_rifare(int,text[])"; do
   for ruolo in anon authenticated; do

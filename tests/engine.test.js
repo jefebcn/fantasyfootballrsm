@@ -526,3 +526,14 @@ test('senza giornata la regola e\' quella di oggi: 0', () => {
   assert.equal(votoUfficio(DEFAULT_RULES, 6), 0);
   assert.equal(votoUfficio({ ...DEFAULT_RULES, noSubVotePrima: null }, 3), 0);
 });
+
+// La panchina d'ufficio copre tutti i ruoli: con 7 posti riempiti per ruolo
+// gli attaccanti restavano fuori, e dalla 6ª un titolare senza sostituto e'
+// un buco (art. 8.6).
+test('la formazione proposta ha in panchina almeno uno per ruolo', () => {
+  const d = defaultLineup([...players.keys()], players);
+  const ruoli = new Set(d.bench.map((id) => players.get(id).role));
+  assert.deepEqual([...ruoli].sort(), ['A', 'C', 'D', 'P']);
+  assert.equal(players.get(d.bench[0]).role, 'P');
+  assert.equal(d.bench.length, 7);
+});

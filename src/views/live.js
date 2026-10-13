@@ -159,7 +159,7 @@ export const live = {
       if (x.captainNote.startsWith('nessun raddoppio')) parts.push('capitano e vice S.V. → nessun raddoppio (art. 6.3)');
       else if (x.captainNote.startsWith('vice')) parts.push(`capitano S.V. → raddoppia il vice ${esc(P(x.captainId).lastName)} (art. 6.3)`);
       for (const s of x.subsApplied) parts.push(`${esc(P(s.out).lastName)} S.V. → entra ${esc(P(s.in).lastName)} (panchina ${s.benchIndex})`);
-      const off = x.rows.filter((row) => row.official); if (off.length) parts.push(`${off.map((row) => esc(P(row.playerId).lastName)).join(', ')} senza sostituto: 5,5 d'ufficio (art. 8.6)`);
+      const off = x.rows.filter((row) => row.official); if (off.length) parts.push(`${off.map((row) => esc(P(row.playerId).lastName)).join(', ')} senza sostituto: ${off[0].fantaVote ? `${fmt(off[0].fantaVote)} d'ufficio` : 'nessun voto, contano 0'} (art. 8.6)`);
       return parts.length ? `<div class="warn info">${icon('warn', 'ic sm')}<span><b>${esc(m.teamName)}:</b> ${parts.join(' · ')}</span></div>` : ''; }).join('');
     let body = '';
     if (tab === 'campo') body = `<div class="field"><span class="box top"></span>${fieldTeam(r.home, ratings, evs, false)}<div class="half"></div>${fieldTeam(r.away, ratings, evs, true)}<span class="box bot"></span></div>${notes}

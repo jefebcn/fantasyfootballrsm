@@ -33,7 +33,12 @@ export const DEFAULT_RULES = {
   maxSubs: 3,
   subMode: 'role',          // 'role' = solo stesso ruolo · 'free' = qualsiasi ruolo (art. 8.5)
   homeBonus: 0,             // fattore campo sul fantapunteggio (art. 11.3), 0 = spento
-  noSubVote: 5.5,
+  // Titolare senza voto e senza sostituto (art. 8.6). Alex, 13/10: «se non
+  // c'e' il sostituto devi avere il buco: un giocatore che non ha giocato non
+  // ha il voto». Dalla 6ª vale 0; le giornate fino alla 5ª, schierate e
+  // congelate con la regola di prima, restano col 5,5 d'ufficio.
+  noSubVote: 0,
+  noSubVotePrima: { finoAllaGiornata: 5, voto: 5.5 },
   conversion: [
     { min: 6, max: 8, threshold: 70.0, step: 6.0 },
     { min: 9, max: 10, threshold: 69.0, step: 6.0 },
@@ -195,7 +200,14 @@ export function parseModule(mod) {
  * lineup: { formation, starters: [playerId x11], bench: [playerId x7 ordinati], captainId, viceCaptainId }
  * ratings: Map playerId → PlayerRating (o undefined = S.V. non entrato)
  */
-export function computeLineupResult({ lineup, ratings, players, managerCount, isHome = false, rules = DEFAULT_RULES }) {
+/** Quanto vale un titolare senza voto e senza sostituto nella giornata n (art. 8.6). */
+export function votoUfficio(rules = DEFAULT_RULES, n = null) {
+  const prima = rules.noSubVotePrima;
+  return prima && n != null && n <= prima.finoAllaGiornata ? prima.voto : rules.noSubVote;
+}
+
+export function computeLineupResult({ lineup, ratings, players, managerCount, isHome = false, rules = DEFAULT_RULES, matchday = null }) {
+  const ufficio = votoUfficio(rules, matchday);
   const get = (id) => ratings.get(id) || { isSV: true, svReason: 'non entrato', baseVote: null, bonus: 0, fantaVote: null, breakdown: [] };
   const roleOf = (id) => players.get(id).role;
   const used = new Set();
@@ -231,7 +243,8 @@ export function computeLineupResult({ lineup, ratings, players, managerCount, is
       rows.push({ ...makeRow(sub, get(sub), roleOf(sub), false, rules), subFor: sid });
     } else {
       rows.push({ playerId: sid, role: roleOf(sid), isSV: true, svReason: r.svReason, official: true,
-        baseVote: rules.noSubVote, bonus: 0, fantaVote: rules.noSubVote, isCaptain: false, breakdown: [{ label: 'Voto d\'ufficio (art. 8.6)', value: rules.noSubVote }] });
+        baseVote: ufficio, bonus: 0, fantaVote: ufficio, isCaptain: false,
+        breakdown: [{ label: ufficio ? 'Voto d\'ufficio (art. 8.6)' : 'Senza sostituto: nessun voto (art. 8.6)', value: ufficio }] });
     }
   }
   const somma = r1(rows.reduce((s, x) => s + x.fantaVote, 0));

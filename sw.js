@@ -1,5 +1,5 @@
 /* Service worker — shell in cache, aggiornamento in background. */
-const VERSION = 'fcs-v4.2.186';
+const VERSION = 'fcs-v4.2.187';
 const SHELL = [
   './', './index.html', './manifest.webmanifest', './styles/app.css', './styles/logo.css', './styles/font.css', './design/tokens/tokens.css',
   // I caratteri stanno in casa: nella cache ci vanno, se no senza rete si vede
@@ -10,6 +10,10 @@ const SHELL = [
   './src/views/index.js', './src/views/dashboard.js', './src/views/rosa.js', './src/views/formazione.js', './src/views/calendario.js',
   './src/views/classifica.js', './src/views/voti.js', './src/views/live.js', './src/views/formazione-di.js', './src/views/listone.js', './src/views/giocatore.js',
   './src/views/regolamento.js', './src/views/scheda.js', './src/views/impostazioni.js', './src/views/mercato.js', './src/views/admin.js', './src/views/auth.js', './src/views/leghe.js', './src/views/lega.js', './src/views/setup.js', './src/views/onboarding.js', './src/views/guida.js', './src/views/gestione.js', './src/views/squadra.js', './src/views/vice.js', './src/views/legali.js', './src/notifiche.js', './src/schermo.js', './vendor/supabase-js.js', './src/views/asta.js', './src/views/video.js', './src/video.js', './src/video-dati.js', './src/views/regole.js', './src/views/scambi.js', './src/views/confronto.js',
+  // Tutti i moduli, nessuno escluso: un file preso dalla rete accanto agli altri
+  // presi dalla cache puo' essere di un'altra versione (tests/sw-guscio.test.js).
+  './src/colore.js', './src/diagnostica.js', './src/miei-dati.js', './src/notizie.js', './src/views/negozio.js', './src/views/sospeso.js',
+  './src/calendario-dati.js', './src/eventi-dati.js', './src/listone-dati.js', './src/listone-extra.js',
   './icons/icon-192.png', './icons/icon-512.png', './icons/maskable-512.png', './icons/apple-touch-icon.png',
   // icone evento: compaiono su Voti, Live e Giudice Dati, quindi valgono il precache.
   // Le altre (menu, eventi di secondo livello) entrano in cache al primo uso.
@@ -99,10 +103,25 @@ self.addEventListener('fetch', (e) => {
     e.respondWith(caches.open(VERSION + '-ext').then(async (c) => { try { const r = await fetch(e.request); if (r.status === 200) await c.put(e.request, r.clone()).catch(() => null); return r; } catch { return (await c.match(e.request)) || Response.error(); } }));
     return;
   }
-  // shell: stale-while-revalidate
+  // Guscio: dalla cache di QUESTA versione, e basta.
+  //
+  // Prima era stale-while-revalidate: si serviva la copia in cache e intanto si
+  // riscaricava il file dalla rete, rimettendolo nella stessa cache. Quando
+  // usciva una versione nuova la cache si riempiva un file alla volta, e
+  // all'apertura dopo l'app partiva con dashboard.js nuovo e ui.js vecchio:
+  // "does not provide an export named", schermo bianco, e l'unico rimedio era
+  // disinstallarla (ottobre). La versione nuova entra tutta insieme col
+  // service worker nuovo, che si riscarica il guscio intero all'installazione:
+  // ogni file cambiato cambia anche VERSION (scripts/bump-sw.py).
   e.respondWith(caches.open(VERSION).then(async (c) => {
     const cached = await c.match(e.request, { ignoreSearch: true });
-    const net = fetch(e.request).then(async (r) => { if (r.status === 200) await c.put(e.request, r.clone()).catch(() => null); return r; }).catch(() => null);
-    return cached || (await net) || (e.request.mode === 'navigate' ? c.match('./index.html') : Response.error());
+    if (cached) return cached;
+    try {
+      const r = await fetch(e.request);
+      if (r.status === 200) await c.put(e.request, r.clone()).catch(() => null);
+      return r;
+    } catch {
+      return (e.request.mode === 'navigate' && (await c.match('./index.html'))) || Response.error();
+    }
   }));
 });

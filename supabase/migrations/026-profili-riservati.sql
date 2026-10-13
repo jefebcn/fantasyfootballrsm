@@ -69,9 +69,12 @@ begin
   return new;
 end $$;
 
+-- Solo lettura: dalla 033 gli sponsor li gestisce il proprietario dell'app
+-- (policy sponsor_proprietario). Questa riga, eseguita dopo la 033, non deve
+-- ridare la scrittura a tutti gli amministratori.
 drop policy if exists sponsor_admin on public.sponsor;
-create policy sponsor_admin on public.sponsor for all to authenticated
-  using (public.is_admin()) with check (public.is_admin());
+create policy sponsor_admin on public.sponsor for select to authenticated
+  using (public.is_admin());
 drop policy if exists sponsor_conteggi_admin on public.sponsor_conteggi;
 create policy sponsor_conteggi_admin on public.sponsor_conteggi for select to authenticated
   using (public.is_admin());

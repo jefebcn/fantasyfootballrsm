@@ -32,6 +32,7 @@ export const ELENCO = [
   '.well-known', 'src', 'styles', 'media', 'icons', 'vendor', 'design/tokens',
 ];
 // i sorgenti delle immagini (decine di MB) e le note di lavoro non servono all'app
+const DATI = /^src\/((calendario|eventi|listone|video)-dati|listone-extra)\.js$/;
 const SALTA = (rel) => /(^|\/)[^/]*-sorgenti(\/|$)/.test(rel) || /\.md$/i.test(rel);
 
 async function* file(dir) {
@@ -48,6 +49,13 @@ async function copia(rel) {
   if (SALTA(rel)) return 0;
   await mkdir(dirname(a), { recursive: true });
   if (rel.startsWith('vendor/')) { await cp(da, a); return 1; }
+  // I file di dati generati dagli import si tolgono solo dell'intestazione
+  // (che nomina gli script): compressi non pesano meno di tanto, e le prove
+  // col browser li riscrivono al volo cercando il loro testo.
+  if (DATI.test(rel)) {
+    await writeFile(a, (await readFile(da, 'utf8')).replace(/^\s*\/\*[\s\S]*?\*\/\s*/, ''));
+    return 1;
+  }
   if (rel.endsWith('.js') || rel.endsWith('.css')) {
     const codice = await readFile(da, 'utf8');
     const { code } = await transform(codice, {

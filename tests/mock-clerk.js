@@ -1,7 +1,7 @@
 /* Finto clerk-js: serve a verificare il cablaggio dell'app, non Clerk. */
 (function () {
   const listeners = [];
-  const user = { id: 'user_2mock', fullName: 'Alex Conti', firstName: 'Alex', primaryEmailAddress: { emailAddress: 'contiale2001@gmail.com' } };
+  const user = { id: 'user_2mock', fullName: 'Alex Conti', firstName: 'Alex', primaryEmailAddress: { emailAddress: 'alex@esempio.it' } };
   window.Clerk = {
     user: null,
     session: { getToken: async () => 'clerk.jwt.mock' },

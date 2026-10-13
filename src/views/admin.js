@@ -370,6 +370,8 @@ function errori(lista) {
  * soddisfa da qui, dal telefono, senza un rilascio.
  */
 function prudenza() {
+  // la accende e la spegne solo il proprietario (033)
+  if (!S.isOwner()) return '';
   const on = S.prudente();
   return `<div class="a-card prudente${on ? ' on' : ''}">
     <b>Modalità prudente: ${on ? 'accesa' : 'spenta'}</b>
@@ -421,13 +423,22 @@ function daConfermare(list) {
     <div class="a-sec"><b>Tutti</b><span></span></div>`;
 }
 
+/*
+ * IL PROPRIETARIO (033). Sopra gli amministratori c'e' una persona sola, che
+ * si nomina da SQL e mai da qui. Solo lui nomina o toglie gli amministratori,
+ * vede le e-mail intere (agli altri arrivano mascherate), manda il link per
+ * la password, sospende un amministratore. Sulla sua riga non c'e' nessun
+ * tasto: il database li rifiuterebbe tutti. Qui si nascondono soltanto i
+ * tasti che non servono: a decidere resta il database.
+ */
 function persone(list) {
   if (!list) return `<p class="small muted">Sto cercando…</p>`;
-  if (!list.length) return `<p class="small muted">Nessuno con questo nome o indirizzo.</p>`;
+  if (!list.length) return `<p class="small muted">Nessuno con questo nome${S.isOwner() ? ' o indirizzo' : ''}.</p>`;
+  const io = S.isOwner(), prop = cache.proprietario;
   return `<div class="vlist">${list.map((u) => `<div class="adm-u">
     <div class="riga">
       <span class="nm"><b>${esc(u.nome || '—')}</b><span>${esc(u.email || 'e-mail non disponibile')}</span></span>
-      <span class="tag">${u.is_admin ? '<i class="adm">admin</i>' : ''}${u.is_judge ? '<i class="giu">giudice</i>' : ''}${u.sospeso ? '<i class="sos">sospeso</i>' : ''}</span>
+      <span class="tag">${u.id === prop ? '<i class="adm">proprietario</i>' : ''}${u.is_admin && u.id !== prop ? '<i class="adm">admin</i>' : ''}${u.is_judge ? '<i class="giu">giudice</i>' : ''}${u.sospeso ? '<i class="sos">sospeso</i>' : ''}</span>
     </div>
     <div class="dati">
       <span>iscritto ${quando(u.iscritto)}</span>
@@ -435,12 +446,13 @@ function persone(list) {
       <span>${u.email_confermata ? 'e-mail confermata' : '<b>e-mail NON confermata</b>'}</span>
       <span>${u.leghe} ${u.leghe === 1 ? 'lega' : 'leghe'}</span>
     </div>
-    <div class="azioni">
+    ${u.id === prop ? '' : `<div class="azioni">
       <button class="chip" data-ruolo="is_judge:${esc(u.id)}:${u.is_judge ? 'off' : 'on'}">${u.is_judge ? 'Togli giudice' : 'Fai giudice'}</button>
-      <button class="chip" data-ruolo="is_admin:${esc(u.id)}:${u.is_admin ? 'off' : 'on'}">${u.is_admin ? 'Togli admin' : 'Fai admin'}</button>
-      ${u.email ? `<button class="chip" data-reset="${esc(u.email)}">Link password</button>` : ''}
-      <button class="chip" data-sosp="${esc(u.id)}:${u.sospeso ? 'off' : 'on'}">${u.sospeso ? 'Riattiva' : 'Sospendi'}</button>
-    </div></div>`).join('')}</div>`;
+      ${io ? `<button class="chip" data-ruolo="is_admin:${esc(u.id)}:${u.is_admin ? 'off' : 'on'}">${u.is_admin ? 'Togli admin' : 'Fai admin'}</button>` : ''}
+      ${io && u.email ? `<button class="chip" data-reset="${esc(u.email)}">Link password</button>` : ''}
+      ${io || !u.is_admin ? `<button class="chip" data-sosp="${esc(u.id)}:${u.sospeso ? 'off' : 'on'}">${u.sospeso ? 'Riattiva' : 'Sospendi'}</button>` : ''}
+    </div>`}</div>`).join('')}</div>
+    ${io ? '' : '<p class="small muted">Le e-mail si vedono intere, e gli amministratori si nominano, solo dal proprietario dell\'app.</p>'}`;
 }
 
 /**
@@ -523,12 +535,12 @@ function sponsor() {
         <span class="tag"><i class="${cls}">${testo}</i></span>
       </div>
       ${rendiconto(x.id)}
-      <div class="azioni">
+      ${S.isOwner() ? `<div class="azioni">
         <button class="chip" data-sp-mod="${esc(x.id)}">Modifica</button>
         <button class="chip" data-sp-del="${esc(x.id)}">Elimina</button>
-      </div>
+      </div>` : ''}
     </div>`; }).join('') : '<p class="small muted">Nessuno spazio venduto, per ora.</p>'}
-    <div class="a-sec"><b>${b.id ? 'Modifica' : 'Nuovo'}</b><span>${b.id ? esc(b.nome) : 'spazio sponsor'}</span></div>
+    ${S.isOwner() ? `<div class="a-sec"><b>${b.id ? 'Modifica' : 'Nuovo'}</b><span>${b.id ? esc(b.nome) : 'spazio sponsor'}</span></div>
     <label class="lbl" for="sp-nome">Nome</label><input class="field-input" id="sp-nome" value="${esc(b.nome)}" maxlength="40" placeholder="Come si chiama">
     <label class="lbl" for="sp-claim">Una riga sotto</label><input class="field-input" id="sp-claim" value="${esc(b.claim)}" maxlength="60" placeholder="es. Dal 1972 a Borgo Maggiore">
     <label class="lbl" for="sp-logo">Logo (indirizzo)</label><input class="field-input" id="sp-logo" value="${esc(b.logo)}" placeholder="/media/sponsor/nome.png">
@@ -545,7 +557,8 @@ function sponsor() {
     <p class="small muted" style="margin:4px 2px 0">Legato a una lega, lo vede solo chi ci gioca dentro — è quello che compra chi paga per la propria lega. «Tutta l'app» è il banner di sempre.</p>
     <label class="lbl"><input type="checkbox" id="sp-attivo" ${b.attivo ? 'checked' : ''}> Acceso</label>
     <div class="chips" style="margin-top:10px"><button class="a-btn" id="sp-salva">${b.id ? 'Salva le modifiche' : 'Aggiungi'}</button>
-      ${b.id ? '<button class="chip" id="sp-annulla">Annulla</button>' : ''}</div>
+      ${b.id ? '<button class="chip" id="sp-annulla">Annulla</button>' : ''}</div>`
+    : '<p class="small muted">Gli sponsor li aggiunge e li modifica il proprietario dell\'app: qui si vedono e basta.</p>'}
   </div>`;
 }
 
@@ -591,6 +604,7 @@ export const adminConsole = {
         // numeri lo chiede una volta e poi resta in cache come le altre
         if (aTab === 'numeri' && !cache.persone) { cache.persone = await S.adminPersone(null, 100); ctx.render(); }
         if ((aTab === 'leghe' || aTab === 'sponsor') && !cache.leghe) { cache.leghe = await S.adminLeghe(200); ctx.render(); }
+        if (aTab === 'persone' && cache.proprietario === undefined) { cache.proprietario = await S.proprietarioApp(); ctx.render(); }
         if (aTab === 'persone' && !cache.persone) { cache.persone = await S.adminPersone(cerca, 100); ctx.render(); }
         if (aTab === 'persone' && cache.daConfermare === undefined) {
           // senza la 030 la funzione non c'e': lo si dice, non e' un errore

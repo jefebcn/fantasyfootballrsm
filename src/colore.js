@@ -49,10 +49,25 @@ const misura = (v, k) => ESA(CANALI(v).map((c) => c * k));
 /** Solo i colori in esadecimale si possono misurare. */
 const esadecimale = (v) => /^#?([0-9a-f]{3}|[0-9a-f]{6})$/i.test(String(v || '').trim());
 
+/*
+ * IL COLORE DI UNA SQUADRA LO SCRIVE CHI GIOCA, e finisce dentro style="…"
+ * nelle schermate di tutti quelli della lega. Il controllo di sicurezza del
+ * 13/10 ha trovato che un valore come  red"><img onerror=…>  passava com'era:
+ * codice che girava sul telefono di chi apriva la classifica, admin compreso.
+ * Da qui esce solo un esadecimale o una variabile CSS dell'app; tutto il resto
+ * diventa il colore di ripiego. Il database (033) rifiuta gli stessi valori.
+ */
+const VARIABILE = /^var\(--[a-z0-9-]+\)$/i;
+export const coloreSicuro = (v, ripiego = '#1B84C6') => {
+  const s = String(v ?? '').trim();
+  return esadecimale(s) ? (s.startsWith('#') ? s : `#${s}`) : ripiego;
+};
+
 export function tintaLeggibile(hex, soglia = 4.5) {
   // Un colore scritto come var(--qualcosa) lo risolve il browser, non noi: qui
-  // non si puo' misurare, e provandoci usciva nero. Si lascia com'e'.
-  if (!esadecimale(hex)) return { fondo: hex || 'var(--primary)', inchiostro: '#fff' };
+  // non si puo' misurare, e provandoci usciva nero. Si lascia com'e' — ma solo
+  // se e' davvero una variabile: qualunque altro testo diventa var(--primary).
+  if (!esadecimale(hex)) return { fondo: VARIABILE.test(String(hex ?? '').trim()) ? String(hex).trim() : 'var(--primary)', inchiostro: '#fff' };
   const base = ESA(CANALI(hex));
   const scuroMeglio = contrasto(base, SCURO) >= contrasto(base, CHIARO);
   const inchiostro = scuroMeglio ? SCURO : CHIARO;

@@ -520,7 +520,9 @@ exception when others then
   if sqlerrm like 'FALLITA%' then raise; end if;
   raise notice 'ok  senza poteri non si apre una lega pubblica (%)', sqlerrm;
 end $$;
-update public.profiles set is_admin = true where id = 'user_pub1';
+-- user_pub1 e' anche il proprietario dell'app (033): da qui in poi nomina
+-- e toglie gli amministratori. Si nomina come si fa davvero, da SQL.
+update public.profiles set is_admin = true, is_owner = true where id = 'user_pub1';
 select public.crea_lega_pubblica('Titano Open','OPEN','Squadra Uno','#1B84C6','SU', 300, 3,
   '[{"posto":1,"premio":"Una cena"},{"posto":2,"premio":"Un caffe"}]'::jsonb) as lp \gset
 select pg_temp.esige('si crea una lega pubblica', :'lp' is not null);
@@ -1802,5 +1804,153 @@ select pg_temp.esige('l''amministratore toglie l''errore risolto, in tutti i gio
   :'tolti'::int = 2 and not exists (select 1 from public.errori_app where messaggio like 'null is not an object%'));
 select pg_temp.esige('e gli altri errori restano', (select count(*) from public.errori_app) = 1);
 select pg_temp.esige('toglierlo due volte non fa niente', :'tolti_ancora'::int = 0);
+
+-- 033: il proprietario sopra gli amministratori
+\echo '--- proprietario e controlli del 13/10 ---'
+reset role;
+insert into public.profiles (id, display_name) values ('user_adm2', 'Secondo admin'), ('user_nuovo', 'Nuovo')
+on conflict (id) do nothing;
+update public.profiles set is_admin = true where id = 'user_adm2';
+select pg_temp.esige('c''e'' un solo proprietario', (select count(*) from public.profiles where is_owner) = 1);
+do $$ begin
+  update public.profiles set is_owner = true where id = 'user_adm2';
+  raise exception 'FALLITA: due proprietari';
+exception when unique_violation then raise notice 'ok  un secondo proprietario non si crea';
+end $$;
+select pg_temp.entra('user_adm2');
+do $$ begin
+  perform public.admin_imposta_ruolo('user_nuovo', 'is_admin', true);
+  raise exception 'FALLITA: un amministratore qualunque ha nominato un amministratore';
+exception when others then
+  if sqlerrm like 'FALLITA%' then raise; end if;
+  raise notice 'ok  un amministratore non nomina amministratori (%)', sqlerrm;
+end $$;
+do $$ begin
+  perform public.admin_imposta_ruolo('user_pub1', 'is_admin', false);
+  raise exception 'FALLITA: ha tolto l''amministrazione al proprietario';
+exception when others then
+  if sqlerrm like 'FALLITA%' then raise; end if;
+  raise notice 'ok  al proprietario non si toglie niente (%)', sqlerrm;
+end $$;
+do $$ begin
+  perform public.admin_imposta_ruolo('user_pub1', 'is_judge', false);
+  raise exception 'FALLITA: ha toccato i ruoli del proprietario';
+exception when others then
+  if sqlerrm like 'FALLITA%' then raise; end if;
+  raise notice 'ok  nemmeno il ruolo di Giudice (%)', sqlerrm;
+end $$;
+do $$ begin
+  perform public.admin_sospendi('user_pub1', true);
+  raise exception 'FALLITA: ha sospeso il proprietario';
+exception when others then
+  if sqlerrm like 'FALLITA%' then raise; end if;
+  raise notice 'ok  il proprietario non si sospende (%)', sqlerrm;
+end $$;
+do $$ begin
+  perform public.admin_rinomina((select id from public.league_members where user_id = 'user_pub1' limit 1), 'Rubata FC');
+  raise exception 'FALLITA: ha rinominato la squadra del proprietario';
+exception when others then
+  if sqlerrm like 'FALLITA%' then raise; end if;
+  raise notice 'ok  la squadra del proprietario non si rinomina (%)', sqlerrm;
+end $$;
+select public.admin_imposta_ruolo('user_nuovo', 'is_judge', true);
+select pg_temp.esige('i Giudici li nomina anche un amministratore', (select is_judge from public.profiles where id = 'user_nuovo'));
+select pg_temp.esige('il proprietario lo vede chi amministra', public.proprietario_app() = 'user_pub1');
+select pg_temp.esige('le e-mail agli altri amministratori arrivano mascherate',
+  public.maschera_email('mario.rossi@gmail.com') = 'ma•••@gmail.com');
+set role authenticated;
+select pg_temp.esige('il registro non lo legge un amministratore qualunque', (select count(*) from public.registro_admin) = 0);
+do $$ begin
+  insert into public.sponsor (nome, dal) values ('Sponsor del secondo admin', current_date);
+  raise exception 'FALLITA: un amministratore qualunque ha aggiunto uno sponsor';
+exception when others then
+  if sqlerrm like 'FALLITA%' then raise; end if;
+  raise notice 'ok  gli sponsor li gestisce il proprietario (%)', sqlerrm;
+end $$;
+do $$ declare n int; begin
+  update public.app_interruttori set acceso = true where chiave = 'prudente';
+  get diagnostics n = row_count;
+  if n > 0 then raise exception 'FALLITA: un amministratore qualunque ha acceso la modalita'' prudente'; end if;
+  raise notice 'ok  la modalita'' prudente la tocca solo il proprietario';
+end $$;
+reset role;
+select pg_temp.entra('user_pub1');
+select public.admin_imposta_ruolo('user_nuovo', 'is_admin', true);
+select pg_temp.esige('il proprietario nomina un amministratore', (select is_admin from public.profiles where id = 'user_nuovo'));
+select public.admin_imposta_ruolo('user_nuovo', 'is_admin', false);
+set role authenticated;
+select pg_temp.esige('e il registro, che legge solo lui, lo ricorda',
+  (select count(*) from public.registro_admin where bersaglio = 'user_nuovo') >= 3);
+insert into public.sponsor (nome, dal) values ('Sponsor del proprietario', current_date);
+select pg_temp.esige('il proprietario aggiunge uno sponsor', exists (select 1 from public.sponsor where nome = 'Sponsor del proprietario'));
+reset role;
+
+-- colore, maglia e foto: solo valori validi
+select id as m_valida from public.league_members where user_id = 'user_bea' limit 1 \gset
+select set_config('prova.m_valida', :'m_valida', false);
+do $$ begin
+  update public.league_members set color = 'red"><img src=x>' where id = current_setting('prova.m_valida')::uuid;
+  raise exception 'FALLITA: e'' passato un colore che non e'' un colore';
+exception when others then
+  if sqlerrm like 'FALLITA%' then raise; end if;
+  raise notice 'ok  un colore che non e'' un colore non passa (%)', sqlerrm;
+end $$;
+do $$ begin
+  update public.league_members set kit = '{"c1":"blue;x"}' where id = current_setting('prova.m_valida')::uuid;
+  raise exception 'FALLITA: maglia con un colore finto';
+exception when others then
+  if sqlerrm like 'FALLITA%' then raise; end if;
+  raise notice 'ok  neanche nella maglia (%)', sqlerrm;
+end $$;
+do $$ begin
+  update public.league_members set crest_url = 'https://esempio.org/x.png' where id = current_setting('prova.m_valida')::uuid;
+  raise exception 'FALLITA: stemma da un sito esterno';
+exception when others then
+  if sqlerrm like 'FALLITA%' then raise; end if;
+  raise notice 'ok  lo stemma non arriva da un sito esterno (%)', sqlerrm;
+end $$;
+update public.league_members set color = '#27AE60', kit = '{"c1":"#27AE60","nome":"Bea","finitura":"oro","personaggio":7}',
+  crest_url = 'data:image/jpeg;base64,/9j/AAAA' where id = :'m_valida';
+select pg_temp.esige('colore, maglia e foto veri passano',
+  (select color from public.league_members where id = :'m_valida') = '#27AE60');
+
+-- chiudere una giornata: chi gioca soltanto non la chiude a meta'
+reset role;
+delete from public.matchday_status where matchday = 27;
+insert into public.match_events (match_id, player_id, club_id, minute, type)
+  values ('md27_m1', 'tale_10', 'tale', 30, 'goal');
+select pg_temp.entra('user_bea');
+do $$ begin
+  perform public.chiudi_giornata(27);
+  raise exception 'FALLITA: chi gioca ha chiuso una giornata con una partita sola';
+exception when others then
+  if sqlerrm like 'FALLITA%' then raise; end if;
+  raise notice 'ok  una giornata a meta'' non la chiude chi gioca (%)', sqlerrm;
+end $$;
+select pg_temp.entra('user_pub1');
+select public.chiudi_giornata(27);
+select pg_temp.esige('il Giudice o chi amministra la chiude', exists (select 1 from public.matchday_status where matchday = 27 and status = 'frozen'));
+reset role;
+delete from public.matchday_status where matchday = 27;
+delete from public.match_events where match_id = 'md27_m1';
+
+-- il creatore di una lega non lo declassa ne' lo toglie un altro amministratore della lega
+select pg_temp.entra('user_cip');
+select public.create_league('Lega di Cip','LDC','Cip FC','#1B84C6','CIP') as lega_cip \gset
+select pg_temp.entra('user_bea');
+select public.join_league((select invite_code from public.leagues where id = :'lega_cip'), 'Bea United', '#27ae60', 'BEU');
+update public.league_members set role = 'admin' where league_id = :'lega_cip' and user_id = 'user_bea';
+select set_config('prova.lega_cip', :'lega_cip', false);
+set role authenticated;
+update public.league_members set role = 'member' where league_id = :'lega_cip' and user_id = 'user_cip';
+do $$ begin
+  delete from public.league_members where league_id = current_setting('prova.lega_cip')::uuid and user_id = 'user_cip';
+  raise exception 'FALLITA: un co-amministratore ha tolto il creatore dalla lega';
+exception when others then
+  if sqlerrm like 'FALLITA%' then raise; end if;
+  raise notice 'ok  il creatore non si toglie dalla lega (%)', sqlerrm;
+end $$;
+reset role;
+select pg_temp.esige('ne'' si declassa', (select role from public.league_members where league_id = :'lega_cip' and user_id = 'user_cip') = 'admin');
 
 select 'tutte le prove sulle funzioni sono passate' as esito;

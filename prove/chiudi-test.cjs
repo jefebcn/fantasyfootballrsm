@@ -101,7 +101,18 @@ const ok = [], ko = []; const et = (c, t) => (c ? ok : ko).push(t);
   console.log('  stato:', JSON.stringify(stato));
   et(stato.c, "il tasto \"Calcola la giornata\" compare in home");
   et(/calcola la giornata/i.test(stato.testo || ''), `dice "${stato.testo}"`);
-  et(/partite|eventi/i.test(stato.nota), `e la nota spiega lo stato: "${stato.nota}"`);
+  // DOMENICA SI GIOCA ANCORA A REFERTI: dal 13/10 (035) si chiude dal martedi'
+  // alle 20:00, quando la FSGC ha completato cambi e cartellini. Il tasto c'e'
+  // ma e' spento, e dice da quando.
+  et(stato.spento && /si calcola da mar/i.test(stato.nota), `domenica il tasto è spento e dice da quando: "${stato.nota}"`);
+  await p.clock.setFixedTime(new Date('2026-09-22T18:30:00Z'));
+  await p.evaluate(() => { location.hash = '#/'; });
+  await p.reload({ waitUntil: 'load' }); await w(1800);
+  Object.assign(stato, await p.evaluate(() => {
+    const btn = document.querySelector('#chiudi-giornata');
+    return { c: !!btn, spento: btn ? btn.disabled : null, nota: [...document.querySelectorAll('.mnota')].map(x => x.innerText).join(' | ') };
+  }));
+  et(/partite|eventi/i.test(stato.nota), `martedì sera la nota spiega lo stato delle partite: "${stato.nota}"`);
   // Le due schede sono due cose diverse e devono restare separate: "Da
   // calcolare" guarda indietro, "Giornata corrente" guarda avanti. Tenerle
   // insieme obbligava la seconda a mostrare una data di chiusura scaduta.

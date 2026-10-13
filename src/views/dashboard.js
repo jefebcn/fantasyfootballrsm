@@ -340,9 +340,11 @@ function daCalcolare(ph, bloccato = null) {
   const q = S.giornataDaChiudere(ph.matchday);
   if (!q) return '';
   return sec('Da calcolare', `${q.giornata}ª giornata`) + `<div class="mcard">
-    <p class="mnota">${q.pronta
-    ? `Tutte le ${q.partite} partite hanno gli eventi: da qui i punteggi diventano definitivi`
-    : `Mancano gli eventi di ${q.mancanti} partite su ${q.partite}`}</p>
+    <p class="mnota">${q.presto
+    ? `Si calcola da ${dateIt(q.da)} alle ${timeIt(q.da)}: prima la FSGC completa i referti, con cambi e cartellini`
+    : q.pronta
+      ? `Tutte le ${q.partite} partite hanno gli eventi: da qui i punteggi diventano definitivi`
+      : `Mancano gli eventi di ${q.mancanti} partite su ${q.partite}`}</p>
     <div class="mact"><button class="a-btn big" id="chiudi-giornata"${q.pronta ? '' : ' disabled'}>${icon('lock', 'ic sm')}Calcola la giornata</button></div>
     <a class="mcta" href="#/voti/${q.giornata}">${pic('voti', 'menu', 'mini')}Voti della ${q.giornata}ª${icon('chev', 'ic sm')}</a>
   </div>`;

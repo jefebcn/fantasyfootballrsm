@@ -1985,4 +1985,47 @@ delete from public.match_events where match_id = 'md26_m1';
 delete from public.match_appearances where match_id = 'md26_m1';
 delete from public.lineups where matchday = 26;
 
+-- 035: una giornata si chiude dal martedi' alle 20:00 (ora di San Marino)
+reset role;
+insert into public.matchday_locks (matchday, lock_at) values (28, '2026-10-09 21:15+02')
+on conflict (matchday) do update set lock_at = excluded.lock_at;
+select pg_temp.esige('lock venerdi'' sera: si chiude dal martedi'' dopo alle 20:00',
+  public.chiusura_giornata(28) = '2026-10-13 20:00+02'::timestamptz);
+update public.matchday_locks set lock_at = '2026-10-13 18:30+02' where matchday = 28;
+select pg_temp.esige('turno infrasettimanale di martedi'' pomeriggio: la sera stessa',
+  public.chiusura_giornata(28) = '2026-10-13 20:00+02'::timestamptz);
+update public.matchday_locks set lock_at = '2026-10-13 20:45+02' where matchday = 28;
+select pg_temp.esige('martedi'' sera tardi: il martedi'' dopo',
+  public.chiusura_giornata(28) = '2026-10-20 20:00+02'::timestamptz);
+update public.matchday_locks set lock_at = now() - interval '1 hour' where matchday = 28;
+insert into public.match_events (match_id, player_id, club_id, minute, type) values ('md28_m1', 'tale_10', 'tale', 30, 'goal');
+delete from public.matchday_status where matchday = 28;
+select pg_temp.entra('user_bea');
+do $$ begin
+  perform public.chiudi_giornata(28);
+  raise exception 'FALLITA: chiusa prima del martedi''';
+exception when others then
+  if sqlerrm like 'FALLITA%' or sqlerrm not like '%si calcola da%' then raise; end if;
+  raise notice 'ok  prima del martedi'' sera non si chiude (%)', sqlerrm;
+end $$;
+-- e nemmeno il Giudice dalla sua pagina, che scrive la tabella direttamente
+update public.profiles set is_judge = true where id = 'user_cip';
+select pg_temp.entra('user_cip');
+set role authenticated;
+do $$ begin
+  insert into public.matchday_status (matchday, status) values (28, 'frozen');
+  raise exception 'FALLITA: il Giudice ha chiuso prima del martedi''';
+exception when others then
+  if sqlerrm like 'FALLITA%' or sqlerrm not like '%si calcola da%' then raise; end if;
+  raise notice 'ok  nemmeno il Giudice dalla sua pagina (%)', sqlerrm;
+end $$;
+reset role;
+select pg_temp.entra('user_pub1');
+select public.chiudi_giornata(28);
+select pg_temp.esige('il proprietario, nei casi eccezionali, si''', exists (select 1 from public.matchday_status where matchday = 28 and status = 'frozen'));
+reset role;
+delete from public.matchday_status where matchday = 28;
+delete from public.match_events where match_id = 'md28_m1';
+delete from public.matchday_locks where matchday = 28;
+
 select 'tutte le prove sulle funzioni sono passate' as esito;

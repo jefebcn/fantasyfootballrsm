@@ -77,19 +77,40 @@ begin
   if u not like 'https://%' then
     raise exception 'L''indirizzo non va: deve cominciare con https:// ed e'' la riga set_config(''promemoria.url'') in cima al file.';
   end if;
-  if t = 'IL-TOKEN-DEL-PROMEMORIA' or length(t) < 16 then
-    raise exception 'Manca il token: nella riga set_config(''promemoria.token'') in cima al file, al posto di IL-TOKEN-DEL-PROMEMORIA, va il valore del secret PROMEMORIA_TOKEN (Supabase -> Project Settings -> Edge Functions -> Secrets). E'' l''unica riga da riempire.';
+  -- Il segnaposto si scrive UNA volta sola nel file, nella riga da riempire:
+  -- se c'era anche qui, un «sostituisci tutto» dell'editor metteva il token
+  -- anche in questo controllo, e il file rifiutava il token giusto (Alex,
+  -- 13/10). Qui si riconosce dall'inizio, che un token vero non ha.
+  if t like 'IL-TOKEN%' or length(t) < 16 then
+    raise exception 'Manca il token: nella riga set_config(''promemoria.token'') in cima al file, al posto della scritta in maiuscolo, va il valore del secret PROMEMORIA_TOKEN (Supabase -> Project Settings -> Edge Functions -> Secrets). E'' l''unica riga da riempire.';
   end if;
 end $$;
 
 
 -- 1. Le due estensioni. pg_cron e' l'orologio, pg_net fa la chiamata HTTP.
-create extension if not exists pg_cron;
-create extension if not exists pg_net;
--- i due grant sono quelli della documentazione di Supabase: senza, il
--- proprietario del progetto non vede nemmeno l'elenco dei lavori pianificati
-grant usage on schema cron to postgres;
-grant all privileges on all tables in schema cron to postgres;
+--
+-- SOLO SE MANCANO, e i permessi SOLO SE SERVONO. Alex, 13/10: con pg_cron
+-- gia' acceso il file si fermava con «dependent privileges exist», dentro la
+-- funzione con cui Supabase sistema i permessi di cron quando l'estensione
+-- viene toccata. Su un progetto dove pg_cron e' gia' attivo non c'e' niente
+-- da accendere ne' da concedere: si salta.
+do $$
+begin
+  if not exists (select 1 from pg_extension where extname = 'pg_cron') then
+    create extension pg_cron;
+  end if;
+  if not exists (select 1 from pg_extension where extname = 'pg_net') then
+    create extension pg_net;
+  end if;
+  -- quelli della documentazione di Supabase: senza, il proprietario del
+  -- progetto non vede nemmeno l'elenco dei lavori pianificati
+  if not has_schema_privilege('postgres', 'cron', 'USAGE') then
+    grant usage on schema cron to postgres;
+  end if;
+  if not has_table_privilege('postgres', 'cron.job', 'SELECT') then
+    grant all privileges on all tables in schema cron to postgres;
+  end if;
+end $$;
 
 
 -- 2. Uno schema che l'API non espone.

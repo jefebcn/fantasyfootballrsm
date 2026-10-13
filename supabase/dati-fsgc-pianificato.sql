@@ -66,8 +66,9 @@ do $$
 declare
   t text := coalesce(current_setting('fsgc.token', true), '');
 begin
-  if t = 'IL-TOKEN-DI-GITHUB' or t = '' then
-    raise exception 'Manca il token: nella riga set_config(''fsgc.token'') in cima al file, al posto di IL-TOKEN-DI-GITHUB, va un token fine-grained di GitHub (comincia con github_pat_). E'' l''unica riga da riempire; come si fa e'' scritto sopra.';
+  -- il segnaposto sta UNA volta sola nel file (vedi promemoria-pianificato.sql)
+  if t like 'IL-TOKEN%' or t = '' then
+    raise exception 'Manca il token: nella riga set_config(''fsgc.token'') in cima al file, al posto della scritta in maiuscolo, va un token fine-grained di GitHub (comincia con github_pat_). E'' l''unica riga da riempire; come si fa e'' scritto sopra.';
   end if;
   if t like 'ghp\_%' or t like 'gho\_%' then
     raise exception 'Questo e'' un token "classic" di GitHub (comincia con ghp_): vale per tutti i tuoi repository. Serve uno fine-grained (github_pat_...) limitato a fantasyfootballrsm con il solo permesso Actions: read and write.';
@@ -81,10 +82,29 @@ end $$;
 -- 1. Le due estensioni. pg_cron e' l'orologio, pg_net fa la chiamata HTTP.
 --    Sono le stesse del promemoria: se quello e' gia' stato caricato, qui non
 --    cambia niente.
-create extension if not exists pg_cron;
-create extension if not exists pg_net;
-grant usage on schema cron to postgres;
-grant all privileges on all tables in schema cron to postgres;
+--
+-- SOLO SE MANCANO, e i permessi SOLO SE SERVONO. Alex, 13/10: con pg_cron
+-- gia' acceso il file si fermava con «dependent privileges exist», dentro la
+-- funzione con cui Supabase sistema i permessi di cron quando l'estensione
+-- viene toccata. Su un progetto dove pg_cron e' gia' attivo non c'e' niente
+-- da accendere ne' da concedere: si salta.
+do $$
+begin
+  if not exists (select 1 from pg_extension where extname = 'pg_cron') then
+    create extension pg_cron;
+  end if;
+  if not exists (select 1 from pg_extension where extname = 'pg_net') then
+    create extension pg_net;
+  end if;
+  -- quelli della documentazione di Supabase: senza, il proprietario del
+  -- progetto non vede nemmeno l'elenco dei lavori pianificati
+  if not has_schema_privilege('postgres', 'cron', 'USAGE') then
+    grant usage on schema cron to postgres;
+  end if;
+  if not has_table_privilege('postgres', 'cron.job', 'SELECT') then
+    grant all privileges on all tables in schema cron to postgres;
+  end if;
+end $$;
 
 
 -- 2. Lo schema che l'API non espone (lo stesso del promemoria).

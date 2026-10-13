@@ -295,6 +295,14 @@ export const impostazioni = {
         try { const e = await S.caricaRefertiMancanti(); ctx.toast(`Caricati: ${e.eventi} eventi, ${e.presenze} presenze`); } catch (err) { ctx.toast(err.message); }
         return;
       }
+      if (act === 'riallinea') {
+        const gare = S.refertiDaAggiornare();
+        if (!gare.length) { ctx.toast('In lega i referti sono già come quelli FSGC'); return; }
+        const nomi = gare.map((id) => { const m = S.match(id); return `${m.matchday}ª ${S.clubsById.get(m.homeClubId)?.name || m.homeClubId}–${S.clubsById.get(m.awayClubId)?.name || m.awayClubId}`; });
+        if (!confirm(`La FSGC ha completato il referto di ${gare.length === 1 ? 'una partita' : `${gare.length} partite`}:\n${nomi.join('\n')}\n\nRiscriverle in lega col referto? Eventuali modifiche fatte a mano su queste partite si perdono.`)) return;
+        try { const e = await S.aggiornaReferti(); ctx.toast(`Aggiornate ${e.gare.length === 1 ? 'una partita' : `${e.gare.length} partite`}: ${e.presenze} presenze, ${e.eventi} eventi`); } catch (err) { ctx.toast(err.message); }
+        return;
+      }
       if (act === 'password') { prompt2('Cambia password', 'Nuova password', 'type="password" autocomplete="new-password" placeholder="almeno 6 caratteri"', async (v) => { if (v.length < 6) { ctx.toast('Almeno 6 caratteri'); return; } try { await S.updatePassword(v); ctx.sheet(null); ctx.toast('Password aggiornata'); } catch (err) { ctx.toast(err.message); } }); return; }
       if (act === 'name') { prompt2('Cambia nome', 'Come ti chiami', `maxlength="24" value="${esc(S.profileInfo()?.display_name || '')}"`, async (v) => { if (!v) { ctx.toast('Scrivi un nome'); return; } try { await S.updateDisplayName(v); ctx.sheet(null); ctx.toast('Nome aggiornato'); } catch (err) { ctx.toast(err.message); } },
         'E\' il nome che si vede in tutte le tue leghe: nel menu, sulla scheda dello scontro e in classifica.'); }
@@ -321,7 +329,9 @@ export const avanzate = {
 
     const judge = p?.is_judge ? group('Giudice Dati', `
       ${row({ m: 'voti' }, 'Inserisci eventi', `Giornata ${S.currentMatchday()}`, 'admin')}
-      ${row({ m: 'statistiche' }, 'Carica i referti mancanti', 'Succede da solo all\'apertura: qui si forza a mano', 'seed')}`) : '';
+      ${row({ m: 'statistiche' }, 'Carica i referti mancanti', 'Succede da solo all\'apertura: qui si forza a mano', 'seed')}
+      ${(() => { const n = S.refertiDaAggiornare().length; return row({ m: 'statistiche' }, 'Aggiorna i referti cambiati',
+    n ? `${n === 1 ? 'Una partita diversa' : `${n} partite diverse`} dal referto FSGC` : 'In lega come nei referti FSGC', 'riallinea'); })()}`) : '';
 
     const data = group('Dati', `
       ${row({ m: 'quotazioni' }, 'Da dove vengono i dati', 'Lega, formazioni e voti sul server; listone e calendario generati dall\'app')}

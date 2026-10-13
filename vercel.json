@@ -45,5 +45,22 @@
         }
       ]
     }
+  ],
+  "redirects": [
+    {
+      "source": "/:dir(supabase|scripts|tests|prove|data|legale|regia|videos|social|store|strumenti|node_modules|\\.claude|\\.github)/:path*",
+      "destination": "/",
+      "permanent": false
+    },
+    {
+      "source": "/(.*)\\.md",
+      "destination": "/",
+      "permanent": false
+    },
+    {
+      "source": "/:file(package\\.json|package-lock\\.json|skills-lock\\.json|eslint\\.config\\.mjs)",
+      "destination": "/",
+      "permanent": false
+    }
   ]
 }

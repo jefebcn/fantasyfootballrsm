@@ -476,6 +476,8 @@ function avvisaReferti() {
 }
 
 async function boot() {
+  // Per la riparazione in index.html: i moduli si sono collegati, l'app e' partita.
+  window.__fcsPartita = true;
   seguiAltezza();
   registraServiceWorker();
   document.body.insertAdjacentHTML('afterbegin', SPRITE + AVATAR_SPRITE);

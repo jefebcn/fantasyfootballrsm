@@ -51,13 +51,17 @@ const TOLLERANZA = 3;          // pt: meno di cosi' e' arrotondamento, non disal
 
     // --- presentazione, prima schermata -----------------------------------
     await p.goto(`${BASE}/index.html#/onboarding`, { waitUntil: 'domcontentloaded' });
-    await w(1400);
+    // si aspetta la schermata, non un tempo fisso: sulla CI lenta 1,4 secondi
+    // non bastavano e la prova diceva "non c'e'" di tutto
+    await p.waitForSelector('.intro-body p', { timeout: 15000 }).catch(() => {});
+    await w(400);
     await inAsse('.intro-marchio .marchio', 'il marchio');
     await inAsse('.intro-body p', 'il testo');
 
     // --- presentazione, seconda schermata ---------------------------------
     await p.evaluate(() => document.querySelector('[data-next]')?.click());
-    await w(700);
+    await p.waitForSelector('.intro-eyebrow', { timeout: 10000 }).catch(() => {});
+    await w(500);
     await inAsse('.intro-eyebrow', "l'occhiello");
     await inAsse('.intro h1', 'il titolo');
     const card = await asse('.intro-points li');
@@ -69,7 +73,8 @@ const TOLLERANZA = 3;          // pt: meno di cosi' e' arrotondamento, non disal
 
     // --- accesso -----------------------------------------------------------
     await p.evaluate(() => { location.hash = '#/login'; });
-    await w(1200);
+    await p.waitForSelector('.auth2 .tit', { timeout: 10000 }).catch(() => {});
+    await w(600);
     await inAsse('.auth2 .testata .marchio', 'il marchio dell\'accesso');
     await inAsse('.auth2 .tit', "il titolo dell'accesso");
     const testata = await asse('.auth2 .testata .marchio');

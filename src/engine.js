@@ -605,9 +605,19 @@ export function defaultLineup(rosterIds, players, formation = '4-4-2') {
   const byRole = { P: [], D: [], C: [], A: [] };
   for (const id of rosterIds) byRole[players.get(id).role].push(id);
   for (const r in byRole) byRole[r].sort((a, b) => players.get(b).quotation - players.get(a).quotation);
-  const starters = [], bench = [];
-  for (const r of ['P', 'D', 'C', 'A']) { starters.push(...byRole[r].slice(0, need[r])); bench.push(...byRole[r].slice(need[r])); }
-  const benchOrdered = [bench.find((id) => players.get(id).role === 'P'), ...bench.filter((id) => players.get(id).role !== 'P')].filter(Boolean).slice(0, 7);
+  const starters = [];
+  for (const r of ['P', 'D', 'C', 'A']) starters.push(...byRole[r].slice(0, need[r]));
+  // PANCHINA A GIRO: un portiere, poi difensore, centrocampista, attaccante
+  // a turno, dal piu' quotato. Prima si riempiva per ruolo (portiere, poi
+  // tutti i difensori, poi i centrocampisti) e con 7 posti gli attaccanti
+  // restavano fuori: dalla 6ª un attaccante titolare senza voto sarebbe stato
+  // un buco, 0 punti (art. 8.6), con due attaccanti buoni in tribuna.
+  const resto = { P: byRole.P.slice(need.P), D: byRole.D.slice(need.D), C: byRole.C.slice(need.C), A: byRole.A.slice(need.A) };
+  const benchOrdered = [];
+  if (resto.P.length) benchOrdered.push(resto.P.shift());
+  while (benchOrdered.length < 7 && (resto.D.length || resto.C.length || resto.A.length)) {
+    for (const r of ['D', 'C', 'A']) if (benchOrdered.length < 7 && resto[r].length) benchOrdered.push(resto[r].shift());
+  }
   return { formation, starters, bench: benchOrdered, captainId: starters[0] ? bestBy(starters, players) : null, viceCaptainId: null };
 }
 function bestBy(ids, players) { return [...ids].sort((a, b) => players.get(b).quotation - players.get(a).quotation)[0]; }

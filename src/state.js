@@ -5,6 +5,7 @@
  * - Lega: membri, rose, formazioni, contestazioni.
  * Tutto ciò che il motore calcola è derivato e ricalcolabile da zero.
  */
+import { chiusuraGiornata } from './chiusura.js';
 import { buildSeason, draftRosters as buildDraft, mulberry32 } from './data.js';
 import { computeRating, computeLineupResult, computeStandings, defaultLineup, validaAcquisto, offertaMassima, DEFAULT_RULES , recordLega as computeRecord, testaATesta as computeH2H, esitoScontro, classificaPunti as computeClassificaPunti, premiAssegnati as computePremi } from './engine.js';
 import * as remote from './backend.js';
@@ -1388,6 +1389,14 @@ export function removeEvent(matchId, eventId) { assertOpen(matchId); g.matchEven
  * nessun evento, ma quante partite abbia una giornata lo sa solo qui, che ha
  * il calendario.
  */
+/*
+ * DAL MARTEDI' ALLE 20:00 (035). La FSGC completa i referti dopo il fischio:
+ * il 13/10 la 5ª era stata chiusa domenica sera, tre ore dopo l'ultima
+ * partita, e in lega era rimasta la versione a meta'. Il database non lascia
+ * chiudere prima del martedi' alle 20:00 (ora di San Marino) dopo la chiusura
+ * delle formazioni, tranne al proprietario; qui si calcola la stessa ora per
+ * dirlo sul tasto invece di farselo dire dall'errore.
+ */
 export function giornataDaChiudere(n = currentMatchday()) {
   // Una giornata prima della nascita della lega non e' roba sua: chiederne i
   // voti vorrebbe dire chiedere di calcolare una partita che non ha giocato.
@@ -1399,7 +1408,9 @@ export function giornataDaChiudere(n = currentMatchday()) {
   const partite = matchesOf(n);
   if (!partite.length) return null;
   const senza = partite.filter((m) => !(g.matchEvents[m.id] || []).length && !g.matchOverrides[m.id]);
-  return { giornata: n, pronta: senza.length === 0, mancanti: senza.length, partite: partite.length };
+  const da = chiusuraGiornata(matchday(n)?.lockAt);
+  const presto = !!da && now() < da && !isOwner();
+  return { giornata: n, pronta: senza.length === 0 && !presto, mancanti: senza.length, partite: partite.length, da, presto };
 }
 
 /** Chiude la giornata. Lo stato locale si aggiorna solo se il server dice di si'. */

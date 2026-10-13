@@ -1,6 +1,11 @@
 -- =====================================================================
 -- 034 — I doppioni dei giocatori: i voti tornano a chi ce li aveva
 --
+-- Tutto in UN blocco: l'SQL Editor di Supabase esegue i comandi uno alla
+-- volta su connessioni diverse, e una tabella temporanea creata in un comando
+-- non c'era piu' in quello dopo («relation doppi does not exist», 13/10).
+-- Un blocco DO e' anche tutto-o-niente: se qualcosa va storto non cambia nulla.
+--
 -- Da eseguire DOPO la 033 e DOPO aver pubblicato la versione dell'app che
 -- la accompagna (4.2.184 o successiva). Si può rieseguire: la seconda volta
 -- non trova più niente da correggere.
@@ -29,94 +34,99 @@
 -- eventi e formazioni, quindi la classifica si aggiorna da sola.
 -- =====================================================================
 
-begin;
+do $correzione$
+begin
+  drop table if exists doppi; drop table if exists chiuse; drop table if exists rimborsi;
+  create temp table doppi (extra text primary key, vero text not null) on commit drop;
+  insert into doppi (extra, vero) values
+    ('cailungo_28', 'cailungo_19'),    -- Hirsch
+    ('cailungo_29', 'cailungo_1'),     -- Tordella
+    ('cailungo_30', 'cailungo_6'),     -- Parisi
+    ('trepenne_28', 'trepenne_25'),    -- Rinaldi
+    ('trepenne_32', 'trepenne_25'),    -- Rinaldi
+    ('trepenne_29', 'trepenne_21'),    -- Cordioli
+    ('trepenne_31', 'trepenne_21'),    -- Cordioli
+    ('trepenne_30', 'trepenne_20'),    -- Cenni
+    ('cosmos_25', 'cosmos_18'),        -- Ulloa
+    ('cosmos_26', 'cosmos_18'),        -- Ulloa
+    ('trefiori_28', 'trefiori_23'),    -- Bernardi
+    ('lafiorita_25', 'lafiorita_10'),  -- Cicarelli
+    ('libertas_23', 'libertas_21');    -- Osayande
 
-create temp table doppi (extra text primary key, vero text not null) on commit drop;
-insert into doppi (extra, vero) values
-  ('cailungo_28', 'cailungo_19'),    -- Hirsch
-  ('cailungo_29', 'cailungo_1'),     -- Tordella
-  ('cailungo_30', 'cailungo_6'),     -- Parisi
-  ('trepenne_28', 'trepenne_25'),    -- Rinaldi
-  ('trepenne_32', 'trepenne_25'),    -- Rinaldi
-  ('trepenne_29', 'trepenne_21'),    -- Cordioli
-  ('trepenne_31', 'trepenne_21'),    -- Cordioli
-  ('trepenne_30', 'trepenne_20'),    -- Cenni
-  ('cosmos_25', 'cosmos_18'),        -- Ulloa
-  ('cosmos_26', 'cosmos_18'),        -- Ulloa
-  ('trefiori_28', 'trefiori_23'),    -- Bernardi
-  ('lafiorita_25', 'lafiorita_10'),  -- Cicarelli
-  ('libertas_23', 'libertas_21');    -- Osayande
+  -- 1. le giornate chiuse si riaprono per il tempo di questa correzione
+  create temp table chiuse on commit drop as
+    select * from public.matchday_status where status = 'frozen';
+  delete from public.matchday_status where status = 'frozen';
 
--- 1. le giornate chiuse si riaprono per il tempo di questa correzione
-create temp table chiuse on commit drop as
-  select * from public.matchday_status where status = 'frozen';
-delete from public.matchday_status where status = 'frozen';
+  -- 2. presenze, eventi, contestazioni
+  delete from public.match_appearances a using doppi d
+   where a.player_id = d.extra
+     and exists (select 1 from public.match_appearances b where b.match_id = a.match_id and b.player_id = d.vero);
+  update public.match_appearances a set player_id = d.vero from doppi d where a.player_id = d.extra;
+  update public.match_events e set player_id = d.vero from doppi d where e.player_id = d.extra;
+  update public.contestazioni c set player_id = d.vero from doppi d where c.player_id = d.extra;
 
--- 2. presenze, eventi, contestazioni
-delete from public.match_appearances a using doppi d
- where a.player_id = d.extra
-   and exists (select 1 from public.match_appearances b where b.match_id = a.match_id and b.player_id = d.vero);
-update public.match_appearances a set player_id = d.vero from doppi d where a.player_id = d.extra;
-update public.match_events e set player_id = d.vero from doppi d where e.player_id = d.extra;
-update public.contestazioni c set player_id = d.vero from doppi d where c.player_id = d.extra;
-
--- 3. rose
--- chi ha gia' anche quello del listone: il doppione si svincola
-update public.rosters r set released_at = now()
-  from doppi d
- where r.player_id = d.extra and r.released_at is null
-   and exists (select 1 from public.rosters r2 where r2.member_id = r.member_id
-                 and r2.player_id = d.vero and r2.released_at is null);
--- lega privata, quello del listone e' di un altro: si svincola e i crediti tornano
-create temp table rimborsi on commit drop as
-  select r.id, r.member_id, r.price_paid from public.rosters r join doppi d on d.extra = r.player_id
-   where r.released_at is null and r.lega_esclusiva is not null
-     and exists (select 1 from public.rosters r2 where r2.lega_esclusiva = r.lega_esclusiva
+  -- 3. rose
+  -- chi ha gia' anche quello del listone: il doppione si svincola
+  update public.rosters r set released_at = now()
+    from doppi d
+   where r.player_id = d.extra and r.released_at is null
+     and exists (select 1 from public.rosters r2 where r2.member_id = r.member_id
                    and r2.player_id = d.vero and r2.released_at is null);
-update public.rosters set released_at = now() where id in (select id from rimborsi);
-update public.league_members m set credits = m.credits + x.tot
-  from (select member_id, sum(price_paid) tot from rimborsi group by member_id) x
- where m.id = x.member_id;
--- tutti gli altri: il doppione diventa il giocatore del listone (anche nello
--- storico delle rose, che non ha vincoli)
-update public.rosters r set player_id = d.vero from doppi d
- where r.player_id = d.extra
-   and (r.released_at is not null
-        or not exists (select 1 from public.rosters r2 where r2.player_id = d.vero and r2.released_at is null
-                         and (r2.member_id = r.member_id
-                              or (r2.lega_esclusiva is not null and r2.lega_esclusiva = r.lega_esclusiva))));
+  -- lega privata, quello del listone e' di un altro: si svincola e i crediti tornano
+  create temp table rimborsi on commit drop as
+    select r.id, r.member_id, r.price_paid from public.rosters r join doppi d on d.extra = r.player_id
+     where r.released_at is null and r.lega_esclusiva is not null
+       and exists (select 1 from public.rosters r2 where r2.lega_esclusiva = r.lega_esclusiva
+                     and r2.player_id = d.vero and r2.released_at is null);
+  update public.rosters set released_at = now() where id in (select id from rimborsi);
+  update public.league_members m set credits = m.credits + x.tot
+    from (select member_id, sum(price_paid) tot from rimborsi group by member_id) x
+   where m.id = x.member_id;
+  -- tutti gli altri: il doppione diventa il giocatore del listone (anche nello
+  -- storico delle rose, che non ha vincoli)
+  update public.rosters r set player_id = d.vero from doppi d
+   where r.player_id = d.extra
+     and (r.released_at is not null
+          or not exists (select 1 from public.rosters r2 where r2.player_id = d.vero and r2.released_at is null
+                           and (r2.member_id = r.member_id
+                                or (r2.lega_esclusiva is not null and r2.lega_esclusiva = r.lega_esclusiva))));
 
--- formazioni: dove c'e' gia' quello del listone il doppione diventa un posto vuoto
-update public.lineups l set lineup = replace(l.lineup::text, '"' || d.extra || '"', '""')::jsonb
-  from doppi d
- where l.lineup::text like '%"' || d.extra || '"%' and l.lineup::text like '%"' || d.vero || '"%';
-update public.lineups l set lineup = replace(l.lineup::text, '"' || d.extra || '"', '"' || d.vero || '"')::jsonb
-  from doppi d
- where l.lineup::text like '%"' || d.extra || '"%';
+  -- formazioni: dove c'e' gia' quello del listone il doppione diventa un posto vuoto
+  update public.lineups l set lineup = replace(l.lineup::text, '"' || d.extra || '"', '""')::jsonb
+    from doppi d
+   where l.lineup::text like '%"' || d.extra || '"%' and l.lineup::text like '%"' || d.vero || '"%';
+  update public.lineups l set lineup = replace(l.lineup::text, '"' || d.extra || '"', '"' || d.vero || '"')::jsonb
+    from doppi d
+   where l.lineup::text like '%"' || d.extra || '"%';
 
--- scambi ancora aperti che nominano un doppione: il giocatore e' lo stesso
-update public.trades t
-   set offre = replace(t.offre::text, '"' || d.extra || '"', '"' || d.vero || '"')::jsonb,
-       chiede = replace(t.chiede::text, '"' || d.extra || '"', '"' || d.vero || '"')::jsonb
-  from doppi d
- where t.stato = 'proposta' and (t.offre::text || t.chiede::text) like '%"' || d.extra || '"%';
+  -- scambi ancora aperti che nominano un doppione: il giocatore e' lo stesso
+  update public.trades t
+     set offre = replace(t.offre::text, '"' || d.extra || '"', '"' || d.vero || '"')::jsonb,
+         chiede = replace(t.chiede::text, '"' || d.extra || '"', '"' || d.vero || '"')::jsonb
+    from doppi d
+   where t.stato = 'proposta' and (t.offre::text || t.chiede::text) like '%"' || d.extra || '"%';
 
--- 4. il doppione non si compra piu'
-update public.offerte o set stato = 'ritirata', chiusa_at = now()
-  from doppi d where o.player_id = d.extra and o.stato = 'aperta';
-delete from public.quotazioni q using doppi d where q.player_id = d.extra;
+  -- 4. il doppione non si compra piu'
+  update public.offerte o set stato = 'ritirata', chiusa_at = now()
+    from doppi d where o.player_id = d.extra and o.stato = 'aperta';
+  delete from public.quotazioni q using doppi d where q.player_id = d.extra;
 
--- le giornate chiuse tornano chiuse, come prima
-insert into public.matchday_status select * from chiuse
-on conflict (matchday) do update set status = excluded.status;
+  -- le giornate chiuse tornano chiuse, come prima
+  insert into public.matchday_status select * from chiuse
+  on conflict (matchday) do update set status = excluded.status;
+end $correzione$;
 
--- quanto e' rimasto da correggere: devono essere tutti zero
+-- quanto e' rimasto da correggere: i primi quattro devono essere zero
+with doppi(extra, vero) as (values
+  ('cailungo_28', 'cailungo_19'), ('cailungo_29', 'cailungo_1'), ('cailungo_30', 'cailungo_6'),
+  ('trepenne_28', 'trepenne_25'), ('trepenne_32', 'trepenne_25'), ('trepenne_29', 'trepenne_21'),
+  ('trepenne_31', 'trepenne_21'), ('trepenne_30', 'trepenne_20'), ('cosmos_25', 'cosmos_18'),
+  ('cosmos_26', 'cosmos_18'), ('trefiori_28', 'trefiori_23'), ('lafiorita_25', 'lafiorita_10'),
+  ('libertas_23', 'libertas_21'))
 select
   (select count(*) from public.match_appearances a join doppi d on d.extra = a.player_id) as presenze_doppioni,
   (select count(*) from public.match_events e join doppi d on d.extra = e.player_id) as eventi_doppioni,
   (select count(*) from public.rosters r join doppi d on d.extra = r.player_id where r.released_at is null) as rose_doppioni,
   (select count(*) from public.lineups l, doppi d where l.lineup::text like '%"' || d.extra || '"%') as formazioni_doppioni,
-  (select count(*) from rimborsi) as svincolati_con_rimborso,
-  (select count(*) from chiuse) as giornate_richiuse;
-
-commit;
+  (select count(*) from public.matchday_status where status = 'frozen') as giornate_chiuse;

@@ -77,8 +77,12 @@ begin
   if u not like 'https://%' then
     raise exception 'L''indirizzo non va: deve cominciare con https:// ed e'' la riga set_config(''promemoria.url'') in cima al file.';
   end if;
-  if t = 'IL-TOKEN-DEL-PROMEMORIA' or length(t) < 16 then
-    raise exception 'Manca il token: nella riga set_config(''promemoria.token'') in cima al file, al posto di IL-TOKEN-DEL-PROMEMORIA, va il valore del secret PROMEMORIA_TOKEN (Supabase -> Project Settings -> Edge Functions -> Secrets). E'' l''unica riga da riempire.';
+  -- Il segnaposto si scrive UNA volta sola nel file, nella riga da riempire:
+  -- se c'era anche qui, un «sostituisci tutto» dell'editor metteva il token
+  -- anche in questo controllo, e il file rifiutava il token giusto (Alex,
+  -- 13/10). Qui si riconosce dall'inizio, che un token vero non ha.
+  if t like 'IL-TOKEN%' or length(t) < 16 then
+    raise exception 'Manca il token: nella riga set_config(''promemoria.token'') in cima al file, al posto della scritta in maiuscolo, va il valore del secret PROMEMORIA_TOKEN (Supabase -> Project Settings -> Edge Functions -> Secrets). E'' l''unica riga da riempire.';
   end if;
 end $$;
 

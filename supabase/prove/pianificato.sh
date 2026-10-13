@@ -98,8 +98,7 @@ et $? "l'indirizzo scritto nel file e' quello di src/config.js"
 # il token corto e' l'altro modo di sbagliare: un token vuoto passerebbe il
 # controllo dell'indirizzo e la funzione risponderebbe 401 a ogni giro
 # si toccano SOLO le due righe del set_config, che sono le due che tocca chi lo
-# usa: il segnaposto compare anche nel controllo, e sostituirlo la' dentro
-# renderebbe il controllo sempre vero
+# usa (ma vedi sotto: anche il «sostituisci tutto» deve funzionare)
 riempi() { # url, token
   sed -e "/set_config('promemoria.url'/s|'https://[^']*'|'$1'|" \
       -e "/set_config('promemoria.token'/s|IL-TOKEN-DEL-PROMEMORIA|$2|" supabase/promemoria-pianificato.sql
@@ -111,6 +110,16 @@ USCITA=$("${P[@]}" -f /tmp/corto.sql 2>&1); ESITO=$?
 riempi 'prova.functions.supabase.co' 'token-di-prova-abcdef123456' > /tmp/nohttps.sql
 USCITA=$("${P[@]}" -f /tmp/nohttps.sql 2>&1); ESITO=$?
 [ $ESITO -ne 0 ] && echo "$USCITA" | grep -qi "indirizzo"; et $? "e un indirizzo senza https:// lo rifiuta"
+
+# Alex, 13/10: il token incollato con «sostituisci tutto» finiva anche nel
+# controllo, che allora rifiutava il token giusto. Il segnaposto ora sta una
+# volta sola: sostituirlo dappertutto deve dare lo stesso risultato.
+[ "$(grep -c 'IL-TOKEN-DEL-PROMEMORIA' supabase/promemoria-pianificato.sql)" = 1 ]; et $? "il segnaposto compare una volta sola nel file"
+sed -e "s|IL-TOKEN-DEL-PROMEMORIA|token-di-prova-abcdef123456|g" supabase/promemoria-pianificato.sql > /tmp/tutto.sql
+USCITA=$("${P[@]}" -f /tmp/tutto.sql 2>&1); ESITO=$?
+[ $ESITO -eq 0 ]; et $? "anche col «sostituisci tutto» dell'editor il token giusto passa$([ $ESITO -eq 0 ] || echo ": $(echo "$USCITA" | grep -i error | head -1)")"
+# quel giro ha gia' fatto una chiamata: si riparte puliti per le prove sotto
+Q "delete from interno.promemoria_corse" >/dev/null; Q "delete from net.chiamate" >/dev/null
 
 echo "== col file riempito =="
 TOKEN='token-di-prova-abcdef123456'

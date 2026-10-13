@@ -70,7 +70,11 @@ const MOMENTI = [
       localStorage.setItem('fcs:mock', JSON.stringify(s));
     });
     await p.evaluate(() => { location.hash = '#/'; });
-    await p.reload({ waitUntil: 'load' }); await w(1800);
+    await p.reload({ waitUntil: 'load' });
+    // si aspetta la card, non un tempo fisso: con la macchina carica 1,8
+    // secondi a volte non bastavano e la prova leggeva una pagina vuota
+    await p.waitForFunction(() => [...document.querySelectorAll('.a-sec')].some((x) => /Giornata corrente/i.test(x.innerText)), null, { timeout: 15000 }).catch(() => {});
+    await w(400);
 
     const dash = await p.evaluate(() => {
       const sezioni = [...document.querySelectorAll('.a-sec')].map((s) => s.innerText.replace(/\n/g, ' '));

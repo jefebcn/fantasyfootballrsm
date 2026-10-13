@@ -209,6 +209,9 @@ export function votoUfficio(rules = DEFAULT_RULES, n = null) {
 export function computeLineupResult({ lineup, ratings, players, managerCount, isHome = false, rules = DEFAULT_RULES, matchday = null }) {
   const ufficio = votoUfficio(rules, matchday);
   const get = (id) => ratings.get(id) || { isSV: true, svReason: 'non entrato', baseVote: null, bonus: 0, fantaVote: null, breakdown: [] };
+  // un id vuoto o sconosciuto non ferma il calcolo: quel posto e' scoperto
+  const noto = (id) => !!id && !!players.get(id);
+  lineup = { ...lineup, starters: (lineup.starters || []).filter(noto), bench: (lineup.bench || []).filter(noto) };
   const roleOf = (id) => players.get(id).role;
   const used = new Set();
   let subs = 0;
@@ -539,7 +542,7 @@ export function validateLineup(lineup, players, rules = DEFAULT_RULES) {
   const starters = lineup.starters.filter(Boolean);
   if (starters.length !== 11) errors.push(`Titolari: ${starters.length}/11`);
   const have = { P: 0, D: 0, C: 0, A: 0 };
-  for (const id of starters) have[players.get(id).role]++;
+  for (const id of starters) { const p = players.get(id); if (p) have[p.role]++; else errors.push(`Giocatore sconosciuto: ${id}`); }
   for (const r of ['P', 'D', 'C', 'A']) if (have[r] !== need[r]) errors.push(`${roleName(r)}: ${have[r]}/${need[r]}`);
   if (new Set([...starters, ...lineup.bench.filter(Boolean)]).size !== starters.length + lineup.bench.filter(Boolean).length) errors.push('Giocatore duplicato');
   if (lineup.captainId && !starters.includes(lineup.captainId)) errors.push('Il capitano deve essere titolare');
@@ -603,7 +606,7 @@ export function offertaMassima({ rosa, crediti, role, rules = DEFAULT_RULES }) {
 export function defaultLineup(rosterIds, players, formation = '4-4-2') {
   const need = parseModule(formation);
   const byRole = { P: [], D: [], C: [], A: [] };
-  for (const id of rosterIds) byRole[players.get(id).role].push(id);
+  for (const id of rosterIds) { const p = players.get(id); if (p) byRole[p.role].push(id); }
   for (const r in byRole) byRole[r].sort((a, b) => players.get(b).quotation - players.get(a).quotation);
   const starters = [];
   for (const r of ['P', 'D', 'C', 'A']) starters.push(...byRole[r].slice(0, need[r]));

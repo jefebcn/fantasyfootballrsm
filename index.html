@@ -54,6 +54,43 @@
   <div id="sheet" class="sheet"></div>
   <div id="toast" class="toast" role="status"></div>
   <noscript><p style="padding:24px;font-family:system-ui">L'app ha bisogno di JavaScript.</p></noscript>
+  <!-- Se l'app non parte, si ripara da sola.
+       Un modulo che non si collega agli altri (file di due versioni diverse in
+       cache) ferma tutto prima che app.js scriva una riga: restava lo schermo
+       bianco e l'unico rimedio era disinstallarla. Qui fuori dai moduli si
+       vede: con un errore si buttano service worker e cache e si ricarica, una
+       volta ogni dieci minuti al massimo, cosi' non puo' girare in tondo; se
+       non basta, o se dopo 15 secondi non e' partita, c'e' un bottone. -->
+  <script>
+  (function () {
+    var fatto = false;
+    function ripara() {
+      try { localStorage.setItem('fcs:riparata', String(Date.now())); } catch (e) { /* niente */ }
+      var sw = navigator.serviceWorker ? navigator.serviceWorker.getRegistrations().then(function (rr) { return Promise.all(rr.map(function (r) { return r.unregister(); })); }) : Promise.resolve();
+      var cc = window.caches ? caches.keys().then(function (kk) { return Promise.all(kk.map(function (k) { return caches.delete(k); })); }) : Promise.resolve();
+      Promise.all([sw, cc]).catch(function () { /* si ricarica comunque */ }).then(function () { location.reload(); });
+    }
+    function controlla(errore) {
+      if (window.__fcsPartita || fatto) return;
+      var ultima = 0;
+      try { ultima = Number(localStorage.getItem('fcs:riparata')) || 0; } catch (e) { /* niente */ }
+      if (errore && navigator.onLine !== false && Date.now() - ultima > 10 * 60 * 1000) { fatto = true; ripara(); return; }
+      fatto = true;
+      var a = document.getElementById('app');
+      a.innerHTML = '<div style="padding:48px 24px;text-align:center;font-family:system-ui,sans-serif">'
+        + '<p style="font-size:18px;font-weight:700;margin:0 0 8px">L\'app non si \u00e8 avviata</p>'
+        + '<p style="opacity:.75;margin:0 0 20px">' + (navigator.onLine === false ? 'Sei senza rete: collegati e riprova.' : 'Di solito basta ripararla: non perdi niente, i tuoi dati stanno sul server.') + '</p>'
+        + '<button id="ripara-app" type="button" style="font:inherit;font-weight:700;padding:12px 22px;border-radius:12px;border:0;background:#0e5e93;color:#fff">Ripara l\'app</button></div>';
+      document.getElementById('ripara-app').onclick = ripara;
+    }
+    window.addEventListener('error', function (e) {
+      // solo errori dei nostri file: quelli delle estensioni del browser no
+      if (e && e.filename && e.filename.indexOf(location.origin) !== 0) return;
+      setTimeout(function () { controlla(true); }, 3000);
+    });
+    setTimeout(function () { controlla(false); }, 15000);
+  })();
+  </script>
   <script type="module" src="src/app.js"></script>
 </body>
 </html>

@@ -90,7 +90,9 @@ const ok = [], ko = []; const et = (c, t) => (c ? ok : ko).push(t);
           localStorage.setItem('fcs:mock', JSON.stringify(s));
         }, c);
         await p.evaluate(() => { location.hash = '#/impostazioni'; });
-        await p.reload({ waitUntil: 'load' }); await w(1500);
+        await p.reload({ waitUntil: 'load' });
+        // si aspetta l'avatar, non un tempo fisso (con la suite intera 1,5 s a volte non bastava)
+        await p.waitForSelector('.pf-av', { timeout: 10000 }).catch(() => {});
         const m = await p.evaluate(() => {
           const e = document.querySelector('.pf-av'); if (!e) return null;
           const cs = getComputedStyle(e);

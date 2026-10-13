@@ -32,7 +32,7 @@ export const adminPartita = {
     const m = S.match(params.id); if (!m) return '<main class="a-body"><div class="empty"><p>Partita non trovata.</p></div></main>';
     const h = S.clubsById.get(m.homeClubId), a = S.clubsById.get(m.awayClubId); const frozen = S.isFrozen(m.matchday);
     const apps = S.appearancesOf(m.id); const evs = S.eventsOf(m.id); const P = (id) => S.playersById.get(id);
-    const clubPlayers = (cid) => S.base.players.filter((p) => p.clubId === cid && p.isActive).sort((x, y) => 'PDCA'.indexOf(x.role) - 'PDCA'.indexOf(y.role) || y.quotation - x.quotation);
+    const clubPlayers = (cid) => S.base.players.filter((p) => p.clubId === cid && p.isActive && !p.doppioneDi).sort((x, y) => 'PDCA'.indexOf(x.role) - 'PDCA'.indexOf(y.role) || y.quotation - x.quotation);
     const appOf = (pid) => apps.find((x) => x.playerId === pid);
     const goalsEv = (cid) => evs.filter((e) => (e.type === 'goal' && e.clubId === cid) || (e.type === 'own_goal' && e.clubId !== cid && [m.homeClubId, m.awayClubId].includes(e.clubId))).length;
     const warn = [];

@@ -6,7 +6,7 @@ export const listone = {
   title: 'Listone', sub: () => `Listone · ${S.base.players.length} tesserati`,
   render() {
     const owner = new Map(); for (const m of S.base.managers) for (const r of S.base.rosters[m.id]) owner.set(r.playerId, m);
-    let list = S.base.players.filter((p) => (!role || p.role === role) && (!clubId || p.clubId === clubId) && (!q || p.name.toLowerCase().includes(q) || p.firstName.toLowerCase().includes(q)));
+    let list = S.base.players.filter((p) => !p.doppioneDi && (!role || p.role === role) && (!clubId || p.clubId === clubId) && (!q || p.name.toLowerCase().includes(q) || p.firstName.toLowerCase().includes(q)));
     list = list.sort((a, b) => b.quotation - a.quotation).slice(0, 120);
     return `<main class="a-body">
       <div class="topbar" style="padding-top:0"><input class="field-input" id="q" placeholder="Cerca fra ${S.base.players.length} tesserati" value="${esc(q)}" autocomplete="off" style="flex:1"></div>

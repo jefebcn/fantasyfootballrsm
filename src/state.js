@@ -1335,7 +1335,7 @@ export function svincolati() {
   return memo('svincolati', () => {
     const presi = new Set();
     for (const m of base.managers) for (const r of (base.rosters[m.id] || [])) presi.add(r.playerId);
-    return base.players.filter((p) => p.isActive && !presi.has(p.id));
+    return base.players.filter((p) => p.isActive && !p.doppioneDi && !presi.has(p.id));
   });
 }
 /** Le offerte aperte su un giocatore, dalla piu' alta. */

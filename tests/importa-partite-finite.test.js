@@ -94,3 +94,20 @@ test("l'interruttore della modalità prudente si legge dalla risposta del databa
   const esiti = py(`print(json.dumps([m.prudente_da(t) for t in ${JSON.stringify(casi.map((c) => c[0]))}]))`);
   assert.deepEqual(esiti, casi.map((c) => c[1]));
 });
+
+// Tordella, 13/10: «Manuel Filippo Tordella» per la FSGC, «Manuel Tordella»
+// nel listone. L'import ne aveva fatto un giocatore nuovo, e chi aveva in
+// rosa quello del listone non ha mai preso il voto. Come lui altri dieci.
+test('un nome del referto col secondo nome porta al giocatore del listone', () => {
+  const r = py(`
+i = m.indice_giocatori()
+print(json.dumps({'alias': i['alias'], 'tordella': i['per_club']['cailungo'].get(m.chiavi('filippo-tordella-manuel')[0]),
+  'vannek': 'trefiori_27' in i['alias']}))`);
+  assert.equal(r.alias.cailungo_29, 'cailungo_1');
+  assert.equal(r.alias.trefiori_28, 'trefiori_23');   // Bernardi
+  assert.equal(r.alias.lafiorita_25, 'lafiorita_10'); // Cicarelli
+  assert.equal(r.tordella, 'cailungo_1');
+  assert.equal(r.vannek, false, 'Tjakko e Joas van Nek sono due persone diverse');
+  const t = py(`print(json.dumps(m.rimappa({'titolari': [['cailungo_29', 'x_1'], []], 'eventi': [['cailungo_29', 10, 'yellow']], 'cambi': [['a_1', 'cailungo_29', 70]]}, {'cailungo_29': 'cailungo_1'})))`);
+  assert.deepEqual(t, { titolari: [['cailungo_1', 'x_1'], []], eventi: [['cailungo_1', 10, 'yellow']], cambi: [['a_1', 'cailungo_1', 70]] });
+});

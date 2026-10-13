@@ -205,6 +205,12 @@ def tabellino(url, indice, squadre):
                     if isinstance(pk, tuple) and set(k1) <= set(pk)]
             if len({pid for _, pid in cand}) == 1:
                 return cand[0][1]
+            # e il contrario: il nome del listone tutto dentro quello del
+            # referto, che ha in piu' un secondo nome («Manuel Filippo Tordella»)
+            cand = {pid for pk, pid in indice.get('listone_club', {}).get(club, {}).items()
+                    if len(pk) >= 2 and set(pk) <= set(k1)}
+            if len(cand) == 1:
+                return next(iter(cand))
         mancanti[nome] = {'nome': nome, 'club': club, 'ruolo': ruolo}
         return None
 
@@ -284,7 +290,7 @@ def indice_giocatori():
     """Chiavi nome → id nostro, dal listone reale; anche divise per società."""
     d = json.loads((RADICE / 'data' / 'listone.json').read_text(encoding='utf-8'))
     mappa = json.loads((RADICE / 'data' / 'mappa-giocatori.json').read_text(encoding='utf-8'))
-    tutti, per_club = {}, {}
+    tutti, per_club, listone_club, alias, doppioni = {}, {}, {}, {}, {}
     for c in d['societa']:
         for g in c['giocatori']:
             nostro = mappa.get(g['tmId'])
@@ -294,6 +300,7 @@ def indice_giocatori():
             for k in chiavi(g['nome']):
                 tutti.setdefault(k, nostro)
                 per_club.setdefault(club, {}).setdefault(k, nostro)
+            listone_club.setdefault(club, {})[chiavi(g['nome'])[0]] = nostro
     # Gli extra della passata precedente: data.js li numera dopo i tesserati
     # Transfermarkt, società per società, nello stesso ordine. Senza indicizzarli
     # qui, i loro gol resterebbero senza marcatore a ogni riesecuzione.
@@ -310,10 +317,38 @@ def indice_giocatori():
         for e in json.loads(f.read_text(encoding='utf-8')):
             coda[e['club']] = coda.get(e['club'], 0) + 1
             nostro = f"{e['club']}_{coda[e['club']]}"
+            # UN EXTRA CHE E' UN GIOCATORE DEL LISTONE SOTTO UN ALTRO NOME. Il
+            # 13/10 Tordella, il portiere del Cailungo, ha scritto ad Alex: per
+            # la FSGC e' «Manuel Filippo Tordella», nel listone «Manuel
+            # Tordella», e l'import ne aveva fatto un giocatore nuovo. Chi aveva
+            # in rosa quello del listone non ha mai avuto il voto, per cinque
+            # giornate; e come lui Bernardi, Cicarelli, Rinaldi, Parisi e altri
+            # (secondi nomi, nomi girati). Se tutte le parole del nome del
+            # listone stanno nel nome della FSGC, nella stessa societa', ed e'
+            # uno solo, e' lui. L'extra resta in elenco (gli id sono posizioni),
+            # ma il suo nome porta al giocatore del listone.
+            k1 = chiavi(e['slug'])[0]
+            uguali = {pid for pk, pid in listone_club.get(e['club'], {}).items()
+                      if len(pk) >= 2 and set(pk) <= set(k1)}
+            vero = next(iter(uguali)) if len(uguali) == 1 else None
+            if vero:
+                alias[nostro] = vero
+                doppioni[e['slug']] = vero
             for k in chiavi(e['slug']):
-                tutti.setdefault(k, nostro)
-                per_club.setdefault(e['club'], {}).setdefault(k, nostro)
-    return {'tutti': tutti, 'per_club': per_club}
+                tutti.setdefault(k, vero or nostro)
+                per_club.setdefault(e['club'], {}).setdefault(k, vero or nostro)
+    return {'tutti': tutti, 'per_club': per_club, 'listone_club': listone_club, 'alias': alias, 'doppioni': doppioni}
+
+
+def rimappa(fatto, alias):
+    """Un tabellino gia' letto, con gli id degli extra doppioni portati al giocatore del listone."""
+    if not alias:
+        return fatto
+    a = lambda pid: alias.get(pid, pid)
+    return {**fatto,
+            'titolari': [[a(x) for x in lato] for lato in fatto.get('titolari', [])],
+            'eventi': [[a(e[0]), *e[1:]] for e in fatto.get('eventi', [])],
+            'cambi': [[a(c[0]), a(c[1]), *c[2:]] for c in fatto.get('cambi', [])]}
 
 
 def main():
@@ -326,6 +361,8 @@ def main():
 
     f = RADICE / 'data' / 'tabellini.json'
     fatti = json.loads(f.read_text(encoding='utf-8')) if f.exists() else {}
+    # i tabellini gia' in archivio sono stati letti col vecchio indice
+    fatti = {k: rimappa(t, idx['alias']) for k, t in fatti.items()}
     tutti_mancanti = {}
     ora = time.time()
     for i, p in enumerate(giocate, 1):
@@ -373,10 +410,10 @@ def main():
         for n, v in sorted(tutti_mancanti.items(), key=lambda x: -x[1]['volte'])[:12]:
             print(f"   {v['volte']:>3} × {n} ({v.get('club') or '?'}, {v.get('ruolo') or 'ruolo ignoto'})")
 
-    scrivi(cal, fatti, tutti_mancanti)
+    scrivi(cal, fatti, tutti_mancanti, idx['doppioni'])
 
 
-def scrivi(cal, fatti, mancanti=None):
+def scrivi(cal, fatti, mancanti=None, doppioni=None):
     righe = []
     for p in cal:
         righe.append('  [%d,%s,%s,%s,%s,%s,%s]' % (
@@ -437,8 +474,13 @@ def scrivi(cal, fatti, mancanti=None):
         parole = [w.capitalize() for w in re.split(r'[-_\s]+', v['slug']) if w]
         cognome = parole[-1] if len(parole) > 1 else parole[0]
         primo = ' '.join(parole[:-1]) or parole[0]
-        extra.append('  [%s,%s,%s,%s]' % (json.dumps(v['club']), json.dumps(primo),
-                                          json.dumps(cognome), json.dumps(v.get('ruolo') or 'C')))
+        # un doppione di un giocatore del listone (vedi indice_giocatori) resta
+        # al suo posto, col quinto campo che dice chi e' davvero: l'app non lo
+        # mette fra quelli da comprare
+        vero = (doppioni or {}).get(nome)
+        extra.append('  [%s,%s,%s,%s%s]' % (json.dumps(v['club']), json.dumps(primo),
+                                            json.dumps(cognome), json.dumps(v.get('ruolo') or 'C'),
+                                            ',' + json.dumps(vero) if vero else ''))
         elenco_extra.append({'slug': nome, 'club': v['club'], 'ruolo': v.get('ruolo') or 'C'})
     (RADICE / 'src' / 'listone-extra.js').write_text(
         '/**\n'
@@ -449,7 +491,7 @@ def scrivi(cal, fatti, mancanti=None):
         ' * Senza di loro un gol vero resterebbe senza marcatore.\n'
         ' * Quotazione: la minima del ruolo, non avendo un valore di mercato.\n'
         ' *\n'
-        ' * Forma: [clubId, nome, cognome, ruolo]\n'
+        ' * Forma: [clubId, nome, cognome, ruolo, doppioneDi?]\n'
         ' */\n'
         'export const LISTONE_EXTRA = [\n%s,\n];\n' % ',\n'.join(extra), encoding='utf-8')
     f_extra.write_text(json.dumps(elenco_extra, ensure_ascii=False, indent=1), encoding='utf-8')

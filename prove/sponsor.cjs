@@ -254,8 +254,13 @@ const giorno = (scarto) => { const d = new Date(); d.setDate(d.getDate() + scart
 
   // la console dice a chi appartiene lo spazio, e lo lascia scegliere
   await p.evaluate(() => { location.hash = '#/admin/console'; });
-  await p.reload({ waitUntil: 'load' }); await w(2000);
-  await p.evaluate(() => { const t = [...document.querySelectorAll('[data-atab]')].find((x) => x.dataset.atab === 'sponsor'); if (t) t.click(); }); await w(1200);
+  // Si aspetta che la console ci sia, non un tempo fisso: con la suite intera
+  // che gira il caricamento della console supera i 2 secondi, e la prova
+  // falliva senza che ci fosse niente di rotto (13/10).
+  await p.reload({ waitUntil: 'load' });
+  await p.waitForSelector('[data-atab="sponsor"]', { timeout: 15000 }).catch(() => {});
+  await p.evaluate(() => { const t = [...document.querySelectorAll('[data-atab]')].find((x) => x.dataset.atab === 'sponsor'); if (t) t.click(); });
+  await p.waitForSelector('#sp-lega', { timeout: 15000 }).catch(() => {}); await w(300);
   const console2 = await p.evaluate(() => ({
     scelta: !!document.getElementById('sp-lega'),
     voci: [...(document.getElementById('sp-lega')?.options || [])].map((o) => o.textContent.trim()),

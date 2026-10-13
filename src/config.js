@@ -50,7 +50,7 @@ export const TITOLARE = {
    * Qui va la persona che la rappresenta, e in pagina esce attaccata al nome:
    * "<societa'>, rappresentata da <nome>".
    */
-  rappresentante: 'Alex Conti',
+  rappresentante: '',   // Alex, 13/10: il suo nome non va in pagina; per il GDPR basta la societa'
   sede: 'Level 3, Tower Business Centre, Tower Road, Sliema SLM 1603',
   paese: 'Malta',
   // Due identificativi diversi, ed etichettarli conta: prima il campo era uno
@@ -60,7 +60,7 @@ export const TITOLARE = {
   registrazioneFiscale: 'VAT MT28491034',        // partita IVA maltese
   licenza: 'MBR C 98450',                        // numero nel registro delle imprese
   email: 'info@mediterraneandigital.mt',         // per le richieste sui dati
-  telefono: '+356 2133 4567',
+  telefono: '',         // Alex, 13/10: niente telefono in pagina, per i contatti basta l'e-mail
   // Vuota e resta vuota: la PEC e' un'istituzione italiana, una societa'
   // maltese non ce l'ha. Il campo non si tocca — e' rimasto perche' se un
   // giorno il titolare fosse italiano tornerebbe utile. Vuoto, la riga del

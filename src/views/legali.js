@@ -7,7 +7,6 @@
  * su tutti — il testo lo dichiara invece di inventarselo: un buco dichiarato e'
  * meglio di un nome falso in una pagina che la gente legge per fidarsi.
  */
-import * as S from '../state.js';
 import { esc, icon } from '../ui.js';
 import { TITOLARE, CONTATTO, LEGALI_AGGIORNATE, ETA_MINIMA } from '../config.js';
 
@@ -43,7 +42,9 @@ const rigaTitolare = () => {
  * inventa. Col titolare a Malta il trasferimento non esiste, e torna la frase
  * che c'era all'inizio — vera di nuovo, non rimessa per comodita'.
  */
-const rigaDove = () => `I dati vivono in un progetto Supabase${S.serverHost() ? ` (${esc(S.serverHost())})` : ''}, `
+// Alex, 13/10: niente nome del fornitore ne' indirizzo del server in pagina.
+// Al GDPR basta la categoria (banca dati in cloud) e il luogo (Unione).
+const rigaDove = () => 'I dati vivono in una banca dati in cloud, '
   + 'su server nell\'Unione Europea.'
   + (TITOLARE.dentroSEE
     ? ' Non sono previsti trasferimenti fuori dallo Spazio economico europeo;'
@@ -85,10 +86,10 @@ export const privacy = {
     'Non c\'è un responsabile della protezione dei dati (DPO): l\'app non fa trattamenti su larga scala né monitoraggio sistematico, quindi non è obbligatorio.',
   ])}
       ${blocco('Cosa viene salvato e perché', [
-    ['Il tuo account:', 'indirizzo e-mail e nome che scegli, per farti entrare e riconoscerti. La password non la vede nessuno, nemmeno chi amministra: la custodisce Supabase, cifrata.'],
+    ['Il tuo account:', 'indirizzo e-mail e nome che scegli, per farti entrare e riconoscerti. La password non la vede nessuno, nemmeno chi amministra: la custodisce cifrata il servizio che gestisce gli accessi.'],
     ['La tua squadra:', 'nome, stemma, maglia, rosa, formazioni e punteggi di ogni giornata. Senza questi il gioco non esiste.'],
     ['Quello che fai nella lega:', 'contestazioni aperte e, per il Giudice Dati, il registro delle modifiche ai voti. Servono a poter ricostruire come è venuto fuori un punteggio.'],
-    ['Gli errori dell\'app:', 'se l\'app va in errore sul tuo telefono, manda un rapporto tecnico: il messaggio d\'errore, la versione dell\'app, la schermata (senza quale giocatore o partita stavi guardando) e il tipo di telefono, per esempio «Android · Chrome». <b>Niente che dica chi sei</b>: nessun account, nessun identificativo del telefono, e un indirizzo e-mail finito per caso dentro un messaggio viene cancellato prima di salvarlo. Sta sugli stessi server di Supabase del resto, lo legge solo chi gestisce l\'app per correggere i difetti, e si cancella da solo dopo 30 giorni.'],
+    ['Gli errori dell\'app:', 'se l\'app va in errore sul tuo telefono, manda un rapporto tecnico: il messaggio d\'errore, la versione dell\'app, la schermata (senza quale giocatore o partita stavi guardando) e il tipo di telefono, per esempio «Android · Chrome». <b>Niente che dica chi sei</b>: nessun account, nessun identificativo del telefono, e un indirizzo e-mail finito per caso dentro un messaggio viene cancellato prima di salvarlo. Sta sugli stessi server del resto, lo legge solo chi gestisce l\'app per correggere i difetti, e si cancella da solo dopo 30 giorni.'],
     ['Chi ti ha invitato:', 'se ti iscrivi dal link di un altro giocatore, il tuo profilo si segna chi te l\'ha mandato. Serve solo a contare gli amici che ha portato (il badge «Reclutatore»): <b>agli altri si vede il numero, mai chi sono gli amici</b>. Vale solo per un account nuovo e non si cambia.'],
     'Non ci sono profilazione, tracciatori di terze parti né cookie di marketing. Nessun dato viene venduto o ceduto.',
     ['Lo spazio sponsor:', 'in home può comparire uno spazio comprato, dichiarato con la targhetta «Sponsor». <b>Non viene scelto in base a chi sei</b>: dipende solo dalla lega in cui stai guardando — è quello di tutta l\'app, uguale per tutti, oppure quello che un\'azienda ha comprato per quella lega, uguale per tutti quelli che ci giocano. Di quello spazio si contano due numeri al giorno — quante volte è comparso e quante è stato toccato — e basta: nessun identificativo, nessun indirizzo IP, nessuna riga che ti riguardi. Non si può risalire a te perché non c\'è niente da cui risalire.'],
@@ -102,7 +103,7 @@ export const privacy = {
     'Gli altri partecipanti della tua lega vedono nome squadra, nome fantallenatore, stemma, maglia, rosa e formazioni una volta chiuse le giornate. È il gioco.',
     'La tua e-mail non è visibile agli altri partecipanti.',
     ['Reclutatori:', 'accanto alla tua squadra gli altri vedono il badge «Reclutatore» e quanti amici hai portato. Ogni settimana chi ne ha portati di più può comparire nelle storie di Fantatitano su Instagram <b>col nome della squadra</b>, mai col tuo nome o la tua e-mail.'],
-    ['Fornitori:', 'Supabase (banca dati e accessi) tratta i dati per conto di chi gestisce l\'app, come responsabile del trattamento, e non li usa per sé.'],
+    ['Fornitori:', 'il fornitore della banca dati e degli accessi, con server nell\'Unione Europea, tratta i dati per conto di chi gestisce l\'app, come responsabile del trattamento, e non li usa per sé.'],
     ['YouTube:', 'gli highlights stanno sul canale della FSGC. Nessuna richiesta parte verso Google finché non tocchi play su un video; da quel momento Google vede il tuo indirizzo IP e cosa stai guardando, secondo le sue regole, non le nostre. Il dettaglio è in <a href="#/archiviazione">Cookie e memoria locale</a>.'],
   ])}
       ${blocco('Dove sta e per quanto', [
@@ -236,9 +237,10 @@ export const archiviazione = {
     const chiavi = [
       ['fcs:prefs', 'tema, lingua, promemoria, lega aperta l\'ultima volta'],
       ['fcs:auth', 'da quale sistema sei entrato'],
-      ['fcs:supabase', 'indirizzo del server, se l\'hai impostato a mano'],
+      // fcs:supabase non e' in elenco: nasce solo se il server si imposta a
+      // mano, cosa che sull'app pubblicata non succede (il server e' in config.js)
       ['fcs:email', 'l\'e-mail ricordata nella schermata di accesso, se l\'hai chiesto'],
-      ['sb-…-auth-token', 'la sessione di accesso, tenuta da Supabase per non farti rifare l\'accesso a ogni apertura. Se ne va quando esci dall\'account'],
+      ['sb-…-auth-token', 'la sessione di accesso, per non farti rifare l\'accesso a ogni apertura. Se ne va quando esci dall\'account'],
       ['fcs:invito, fcs:da', 'se sei arrivato da un link d\'invito: il codice della lega e chi te l\'ha mandato, finché non entri (al massimo due settimane)'],
       ['fcs:sponsor-visto', 'quale spazio sponsor è già stato contato oggi su questo telefono, così non viene contato due volte. È un nome e una data, niente di tuo'],
     ];
@@ -248,7 +250,7 @@ export const archiviazione = {
     'L\'unica cosa che viene contata è lo <b>spazio sponsor</b>: quante volte è comparso e quante è stato toccato, due numeri al giorno per quello spazio. Non per persona, e senza sapere chi sei. Su questo telefono resta solo un promemoria (<code>fcs:sponsor-visto</code>) che serve a non contare la stessa giornata due volte.',
     'Quello che usa è la memoria locale del browser, e solo per cose tecniche che servono a far funzionare l\'app come l\'hai lasciata. Per questo non compare una finestra a chiederti il consenso: per l\'archiviazione strettamente necessaria non va chiesto, e chiedertelo lo stesso sarebbe solo un fastidio inutile.',
     'Anche i caratteri sono serviti da qui. Prima arrivavano da Google Fonts, il che mandava il tuo indirizzo IP a Google a ogni apertura senza che nessuno l\'avesse chiesto: adesso i file stanno nell\'app.',
-    'Stessa storia per <code>supabase-js</code>, la libreria che parla col server: arrivava da una rete di distribuzione esterna, che a ogni avvio vedeva il tuo indirizzo IP. Adesso sta anche lei dentro l\'app. <b>All\'apertura non parte nessuna richiesta fuori da questo sito</b> tranne quella al nostro server, che serve a farti entrare.',
+    'Stessa storia per la libreria che parla col server: arrivava da una rete di distribuzione esterna, che a ogni avvio vedeva il tuo indirizzo IP. Adesso sta anche lei dentro l\'app. <b>All\'apertura non parte nessuna richiesta fuori da questo sito</b> tranne quella al nostro server, che serve a farti entrare.',
   ])}
       ${blocco('L\'unica eccezione: i video', [
     'Gli highlights delle partite stanno su YouTube, che è di Google. <b>Finché non tocchi play non parte nessuna richiesta verso di loro:</b> la copertina con squadre e risultato la disegna l\'app con i dati che ha già, non è un\'immagine scaricata da YouTube.',
@@ -280,7 +282,7 @@ export const licenze = {
     'Nomi delle società e degli atleti compaiono a scopo descrittivo, per identificare chi ha giocato cosa. L\'app non è affiliata alla FSGC e non ha con lei alcun accordo: prima di aprire le iscrizioni fuori dal giro di amici va chiesto il permesso per l\'uso dei nomi e delle prestazioni degli atleti.',
   ])}
       ${blocco('Software di terze parti', [
-    ['supabase-js', 'libreria per la banca dati e gli accessi, licenza MIT. Il file sta nell\'app (<code>vendor/supabase-js.js</code>), a versione fissa: non viene chiesto a nessuna rete esterna.'],
+    ['Libreria della banca dati', 'per i dati e gli accessi, open source con licenza MIT; la sua nota di copyright sta nel file dentro l\'app. È a versione fissa: non viene chiesta a nessuna rete esterna.'],
     ['Lato, IBM Plex Mono e Anton', 'i caratteri, licenza SIL Open Font License 1.1, che permette di ridistribuirli: infatti i file stanno nell\'app invece di essere chiesti a Google a ogni apertura.'],
     'Il resto dell\'app è scritto senza framework né librerie: niente altro codice di terzi gira su questa pagina.',
   ])}

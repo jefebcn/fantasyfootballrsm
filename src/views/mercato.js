@@ -79,7 +79,7 @@ export const mercato = {
 
     if (!S.mercatoDisponibile()) {
       return `<main class="a-body">
-        <div class="a-card a-rule"><span class="art">Da fare</span><p>Il mercato ha bisogno della migrazione <code>supabase/migrations/007-mercato-svincolati.sql</code>, da eseguire una volta nell'SQL Editor. Finché non c'è, qui sotto resta il solo elenco.</p></div>
+        <div class="a-card a-rule"><span class="art">Da fare</span><p>${S.isAdmin() ? 'Il mercato ha bisogno della migrazione <code>supabase/migrations/007-mercato-svincolati.sql</code>, da eseguire una volta nell\'SQL Editor.' : 'Il mercato non è ancora attivo.'} Finché non c'è, qui sotto resta il solo elenco.</p></div>
         <div class="vlist"><div class="vhead">Svincolati <span>${liberi.length}</span></div>${liberi.slice(0, 60).map((p) => `<a class="vr" href="#/giocatore/${esc(p.id)}" style="text-decoration:none">${faccia(p, CB(p.id))}<span class="nm"><b>${esc(p.name)}</b><span>${esc(CB(p.id).name)}</span></span><span class="fv">${p.quotation}</span></a>`).join('')}</div>
       </main>`;
     }

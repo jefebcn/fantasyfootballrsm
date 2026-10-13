@@ -162,6 +162,9 @@ export const impostazioni = {
       if (act === 'guida') { ctx.go('guida'); return; }
       if (act === 'sfondo') { S.store.set({ sfondoFoto: !S.store.get().sfondoFoto }); ctx.render(); return; }
       if (act === 'privacy') { ctx.go('privacy'); return; }
+      if (act === 'licenze') { ctx.go('licenze'); return; }
+      // le schede tecniche solo a chi amministra, anche se il tasto arrivasse da altrove
+      if (['server', 'diagnostica', 'schermo'].includes(act) && !S.isAdmin()) return;
       if (act === 'esporta') {
         // Il file si costruisce qui e non passa da nessun server: e' roba tua,
         // non c'e' motivo di farla viaggiare per consegnartela.
@@ -333,16 +336,19 @@ export const avanzate = {
       ${(() => { const n = S.refertiDaAggiornare().length; return row({ m: 'statistiche' }, 'Aggiorna i referti cambiati',
     n ? `${n === 1 ? 'Una partita diversa' : `${n} partite diverse`} dal referto FSGC` : 'In lega come nei referti FSGC', 'riallinea'); })()}`) : '';
 
+    // Le righe tecniche (server, diagnostica, misure) le vede solo chi
+    // amministra l'app: Alex, 13/10, non vuole in vetrina che server si usa.
+    const tecnico = S.isAdmin();
     const data = group('Dati', `
-      ${row({ m: 'quotazioni' }, 'Da dove vengono i dati', 'Lega, formazioni e voti sul server; listone e calendario generati dall\'app')}
-      ${row('shield', 'Atleti e società', 'Nomi e prestazioni useranno dati reali solo previo accordo con la FSGC')}
+      ${row({ m: 'quotazioni' }, 'Da dove vengono i dati', 'Lega, formazioni e voti sul nostro server; listone e calendario generati dall\'app')}
+      ${row('shield', 'Atleti e società', 'Nomi e risultati dai referti pubblici della FSGC: i dettagli in Licenze', 'licenze')}
       ${S.isLeagueAdmin() ? row('clock', 'Calendario dei lock',
     S.lockDaSistemare() === 0 ? 'Allineato: il server chiude le formazioni quando le chiude l\'app'
       : `${S.lockDaSistemare()} giornate da allineare — toccami`, 'lock-cal',
     S.lockDaSistemare() === 0 ? '' : 'danger') : ''}
-      ${row('gear', 'Server della lega', esc(S.serverHost() || '—'), 'server')}
+      ${tecnico ? `${row('gear', 'Server della lega', esc(S.serverHost() || '—'), 'server')}
       ${row('shield', 'Diagnostica accessi', 'Controlla sul progetto cosa manca ancora per far entrare la gente', 'diagnostica')}
-      ${row('calc', 'Misure dello schermo', 'Quanto occupa davvero l\'app su questo telefono, tacche comprese', 'schermo')}`);
+      ${row('calc', 'Misure dello schermo', 'Quanto occupa davvero l\'app su questo telefono, tacche comprese', 'schermo')}` : ''}`);
 
     return `<main class="a-body">${look}${league}${judge}${data}
       <p class="auth-foot">Versione ${VERSIONE} · motore ${S.rules().engineVersion}</p></main>`;

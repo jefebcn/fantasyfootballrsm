@@ -359,6 +359,20 @@ export async function mercatoAperto(leagueId) {
   return !!data;
 }
 
+// ---------------------------------------------------------------- interruttori
+/**
+ * Gli interruttori dell'app (032): { prudente: true|false }. Senza la 032 la
+ * tabella non c'e' e tornano tutti spenti: l'app funziona come prima.
+ */
+export async function caricaInterruttori() {
+  const { data, error } = await sb.from('app_interruttori').select('chiave, acceso');
+  if (error) return {};
+  return Object.fromEntries((data || []).map((r) => [r.chiave, !!r.acceso]));
+}
+export async function impostaInterruttore(chiave, acceso, userId) {
+  return must(await sb.from('app_interruttori').upsert({ chiave, acceso, cambiato_da: userId, cambiato_at: new Date().toISOString() }));
+}
+
 // ---------------------------------------------------------------- sponsor
 const daRiga = (r) => ({ id: r.id, nome: r.nome, claim: r.claim || '', logo: r.logo_url || '', link: r.link || '', dal: r.dal, al: r.al, attivo: r.attivo !== false, lega: r.lega_id || '' });
 /**

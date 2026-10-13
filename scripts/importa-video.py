@@ -13,7 +13,14 @@ I titoli del canale hanno una forma fissa:
     Campionato Sammarinese 2026-27, 3. giornata | Cosmos - Pennarossa 6-1
 
 da cui si ricavano giornata e squadre, e quindi a quale partita appartiene il
-video. Quelli che non seguono la forma (i sondaggi sul gol piu' bello, le
+video. Dalla 5ª (12/10) la FSGC li scrive senza la giornata:
+
+    Campionato Sammarinese 2026-27 | HL Cosmos - Juvenes Dogana 1-0
+
+e allora la giornata si trova nel calendario: la partita fra quelle due
+squadre, in quell'ordine, giocata nei giorni prima della pubblicazione. Senza
+questo i video della 5ª finivano fra «Dal canale» e la giornata restava
+ferma alla 4ª. Quelli che non seguono la forma (i sondaggi sul gol piu' bello, le
 interviste) restano come video del canale, senza partita.
 
 Produce src/video-dati.js. Da rilanciare insieme a importa-fsgc.py.
@@ -49,19 +56,50 @@ def prendi(url):
     return r.stdout.decode('utf-8', 'replace')
 
 
-def smonta(titolo):
+def calendario():
+    """Le partite di src/calendario-dati.js: [(giornata, casa, ospite, 'AAAA-MM-GG')]."""
+    f = RADICE / 'src' / 'calendario-dati.js'
+    if not f.exists():
+        return []
+    return [(int(n), a, b, d) for n, a, b, d in
+            re.findall(r'\[(\d+),"([a-z0-9]+)","([a-z0-9]+)","(\d{4}-\d{2}-\d{2})', f.read_text(encoding='utf-8'))]
+
+
+def giornata_di(casa, ospite, quando, cal):
+    """La giornata della partita casa-ospite giocata fino a 10 giorni prima di `quando`."""
+    if not quando:
+        return None
+    from datetime import date
+    q = date.fromisoformat(quando)
+    giuste = [(d, n) for n, a, b, d in cal if a == casa and b == ospite
+              and 0 <= (q - date.fromisoformat(d)).days <= 10]
+    return max(giuste)[1] if giuste else None
+
+
+def smonta(titolo, quando='', cal=None):
     """→ (giornata, casa, ospite) oppure None se il titolo non e' di una partita."""
     m = re.search(r'(\d+)\s*\.?\s*giornata\s*\|\s*(.+?)\s+-\s+(.+?)\s*$', titolo, re.I)
-    if not m:
-        return None
-    n = int(m.group(1))
-    casa, ospite = m.group(2), m.group(3)
+    n = None
+    if m:
+        n = int(m.group(1))
+        casa, ospite = m.group(2), m.group(3)
+    else:
+        # la forma della 5ª: «… | HL Casa - Ospite 1-0», senza la giornata
+        m = re.search(r'\|\s*(?:HL\s+)?(.+?)\s+-\s+(.+?)\s*$', titolo, re.I)
+        if not m:
+            return None
+        casa, ospite = m.group(1), m.group(2)
     # in coda al nome dell'ospite c'e' spesso il risultato: "Pennarossa 6-1"
     ospite = re.sub(r'\s+\d+\s*[-–]\s*\d+\s*$', '', ospite)
     a, b = CLUB.get(chiave(casa)), CLUB.get(chiave(ospite))
     if not a or not b:
         print(f'  ? squadre non riconosciute: "{casa}" / "{ospite}"', file=sys.stderr)
         return None
+    if n is None:
+        n = giornata_di(a, b, quando, cal if cal is not None else calendario())
+        if n is None:
+            print(f'  ? giornata non trovata nel calendario: {a}-{b} ({quando})', file=sys.stderr)
+            return None
     return n, a, b
 
 
@@ -70,6 +108,7 @@ def main():
     voci = re.findall(r'<entry>(.*?)</entry>', xml, re.S)
     print(f'{len(voci)} video nel feed')
     partite, canale = [], []
+    cal = calendario()
     for v in voci:
         vid = re.search(r'<yt:videoId>(.*?)</yt:videoId>', v)
         tit = re.search(r'<media:title>(.*?)</media:title>', v) or re.search(r'<title>(.*?)</title>', v)
@@ -80,7 +119,7 @@ def main():
         # &amp; e compagnia, che nel titolo ci finiscono
         for a, b in [('&amp;', '&'), ('&lt;', '<'), ('&gt;', '>'), ('&quot;', '"'), ('&#39;', "'")]:
             titolo = titolo.replace(a, b)
-        p = smonta(titolo)
+        p = smonta(titolo, quando, cal)
         if p:
             partite.append([p[0], p[1], p[2], vid, quando])
         else:

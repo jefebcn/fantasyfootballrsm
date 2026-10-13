@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { computeRating, computeLineupResult, computeStandings, toGoals, validateLineup, defaultLineup, DEFAULT_RULES, movimenti, recordLega, testaATesta, esitoScontro, classificaPunti, premiAssegnati } from '../src/engine.js';
+import { computeRating, computeLineupResult, computeStandings, toGoals, validateLineup, defaultLineup, DEFAULT_RULES, movimenti, recordLega, testaATesta, esitoScontro, classificaPunti, premiAssegnati, votoUfficio } from '../src/engine.js';
 
 const P = (id, role, clubId = 'home') => ({ id, role, clubId, quotation: 10 });
 const match = (o = {}) => ({ id: 'm1', homeClubId: 'home', awayClubId: 'away', homeGoals: 1, awayGoals: 0, status: 'played', ...o });
@@ -94,11 +94,11 @@ test('capitano S.V. → vice; entrambi S.V. → nessun raddoppio (art. 6.3)', ()
   res = computeLineupResult({ lineup, ratings, players, managerCount: 10 });
   assert.equal(res.captainId, null);
 });
-test('sostituzioni: stesso ruolo, ordine panchina, massimo 3, poi 5,5 d\'ufficio (art. 8.5-8.6)', () => {
+test('sostituzioni: stesso ruolo, ordine panchina, massimo 3, poi 5,5 d\'ufficio fino alla 5ª (art. 8.5-8.6)', () => {
   const ratings = allOk();
   ratings.set('d1', SV); ratings.set('d2', SV); ratings.set('d3', SV); ratings.set('d4', SV);
   ratings.set('bd1', SV); // il primo difensore in panchina è S.V.: salta al secondo
-  const res = computeLineupResult({ lineup, ratings, players, managerCount: 10 });
+  const res = computeLineupResult({ lineup, ratings, players, managerCount: 10, matchday: 5 });
   assert.equal(res.subsApplied.length, 1);
   assert.equal(res.subsApplied[0].in, 'bd2');
   const officials = res.rows.filter((r) => r.official);
@@ -130,7 +130,7 @@ test('validazione formazione e proposta d\'ufficio 4-4-2 per l\'editor (art. 8.4
 
 test('una giornata senza dati non produce risultati: nessun 5,5 d\'ufficio a tappeto', () => {
   const ratings = new Map();                    // nessun voto inserito
-  const res = computeLineupResult({ lineup, ratings, players, managerCount: 10 });
+  const res = computeLineupResult({ lineup, ratings, players, managerCount: 10, matchday: 5 });
   assert.equal(res.rows.every((r) => r.official), true);
   assert.equal(res.total, 5.5 * 11);
   assert.equal(res.goals, 0);                   // 60,5 < soglia 69,0
@@ -306,7 +306,7 @@ test('sostituzioni a modulo libero: entra il primo con voto anche di altro ruolo
   const libero = computeLineupResult({ lineup, ratings, players, managerCount: 10, rules: { ...DEFAULT_RULES, subMode: 'free' } });
   assert.equal(libero.subsApplied.length, 1);
   assert.notEqual(players.get(libero.subsApplied[0].in).role, 'C');
-  assert.ok(libero.total > stessoRuolo.total);                // 6,5 invece del 5,5 d'ufficio
+  assert.ok(libero.total > stessoRuolo.total);                // 6,5 invece del buco senza sostituto
 });
 
 test('fattore campo: si somma solo a chi gioca in casa (art. 11.3)', () => {
@@ -500,4 +500,29 @@ test('testaATesta: due squadre che non si sono mai incontrate', () => {
   assert.equal(r.partite.length, 0);
   assert.equal(r.v + r.n + r.p, 0);
   assert.equal(r.puntiA, 0);
+});
+
+// Alex, 13/10: «se non c'e' il sostituto devi avere il buco: un giocatore che
+// non ha giocato non ha il voto». Dalla 6ª giornata 0; fino alla 5ª, gia'
+// schierate e congelate con la regola di prima, resta il 5,5 d'ufficio.
+test('dalla 6ª un titolare senza voto e senza sostituto conta 0 (art. 8.6)', () => {
+  const ratings = allOk();
+  ratings.set('d1', SV); ratings.set('d2', SV); ratings.set('d3', SV); ratings.set('d4', SV);
+  ratings.set('bd1', SV);
+  const sesta = computeLineupResult({ lineup, ratings, players, managerCount: 10, matchday: 6 });
+  const quinta = computeLineupResult({ lineup, ratings, players, managerCount: 10, matchday: 5 });
+  const buchi = sesta.rows.filter((r) => r.official);
+  assert.equal(buchi.length, 3);
+  assert.ok(buchi.every((r) => r.fantaVote === 0 && r.baseVote === 0));
+  assert.equal(sesta.total, 6.5 * 8);
+  assert.equal(quinta.total, 6.5 * 8 + 5.5 * 3);
+  assert.equal(sesta.subsApplied.length, 1);          // la panchina ti salva ancora
+  assert.match(buchi[0].breakdown[0].label, /nessun voto/);
+});
+test('senza giornata la regola e\' quella di oggi: 0', () => {
+  assert.equal(votoUfficio(DEFAULT_RULES), 0);
+  assert.equal(votoUfficio(DEFAULT_RULES, 1), 5.5);
+  assert.equal(votoUfficio(DEFAULT_RULES, 5), 5.5);
+  assert.equal(votoUfficio(DEFAULT_RULES, 6), 0);
+  assert.equal(votoUfficio({ ...DEFAULT_RULES, noSubVotePrima: null }, 3), 0);
 });

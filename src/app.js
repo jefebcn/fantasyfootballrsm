@@ -467,9 +467,12 @@ function seguiAltezza() {
  * di una rumorosa.
  */
 function avvisaReferti() {
-  const a = S.prendiAvvisoReferti(); if (!a) return;
+  const n = S.prendiAvvisoCambiati();
+  const cambiati = n ? `Referti FSGC completati: ${n === 1 ? 'una partita' : `${n} partite`} da aggiornare in Impostazioni avanzate → Giudice Dati` : '';
+  const a = S.prendiAvvisoReferti();
+  if (!a) { if (cambiati) toast(cambiati); return; }
   const g = a.giornate.length === 1 ? `giornata ${a.giornate[0]}` : `giornate ${a.giornate.join(', ')}`;
-  toast(`Referti FSGC: ${a.gare.length === 1 ? 'una partita' : `${a.gare.length} partite`} in lega (${g}) · ${a.eventi} eventi`);
+  toast(`Referti FSGC: ${a.gare.length === 1 ? 'una partita' : `${a.gare.length} partite`} in lega (${g}) · ${a.eventi} eventi${cambiati ? ` · ${cambiati}` : ''}`);
 }
 
 async function boot() {

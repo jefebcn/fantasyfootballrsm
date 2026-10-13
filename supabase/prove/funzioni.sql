@@ -1998,6 +1998,10 @@ update public.matchday_locks set lock_at = '2026-10-13 20:45+02' where matchday 
 select pg_temp.esige('martedi'' sera tardi: il martedi'' dopo',
   public.chiusura_giornata(28) = '2026-10-20 20:00+02'::timestamptz);
 update public.matchday_locks set lock_at = now() - interval '1 hour' where matchday = 28;
+-- il martedi' fra le 20 e le 21 "un'ora fa" cade prima delle 20 e la chiusura
+-- e' gia' passata: la prova falliva per l'ora in cui girava. Allora la
+-- giornata parte adesso, e la chiusura e' il martedi' dopo.
+update public.matchday_locks set lock_at = now() where matchday = 28 and public.chiusura_giornata(28) <= now();
 insert into public.match_events (match_id, player_id, club_id, minute, type) values ('md28_m1', 'tale_10', 'tale', 30, 'goal');
 delete from public.matchday_status where matchday = 28;
 select pg_temp.entra('user_bea');

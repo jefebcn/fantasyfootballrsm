@@ -114,7 +114,14 @@ const num = (s) => Number(String(s).replace('+', '').replace('−', '-').replace
     et(sezione.dettagli[0]?.on && sezione.dettagli.slice(1).every((d) => !d.on), 'il primo è già aperto, gli altri al tocco');
     const sballati = sezione.dettagli.filter((d) => { const somma = d.voci.reduce((s, [, v]) => s + num(v), 0); return Math.abs(somma - num(d.tot)) > 0.01; });
     et(sballati.length === 0, `in ogni dettaglio le voci fanno il fantavoto (${sballati.length ? JSON.stringify(sballati[0]) : 'tutti tornano'})`);
-    sezione.righe.forEach((r, i) => { if (r.cap) et(sezione.dettagli[i].voci.some(([l]) => /Capitano/.test(l)) || num(r.fv) === num(sezione.dettagli[i].voci[0]?.[1]), `il capitano (${r.nome}) ha la voce del raddoppio`); });
+    // Il raddoppio vale per bonus e malus, non per voto base ed esito: un
+    // capitano che ha solo quelli non ha niente da raddoppiare, e la voce
+    // giustamente non c'e' (la rosa e' a caso: capitava una volta su cinque).
+    sezione.righe.forEach((r, i) => { if (r.cap) {
+      const voci = sezione.dettagli[i].voci;
+      const senzaBonus = voci.every(([l]) => /Voto base|Esito collettivo/.test(l));
+      et(voci.some(([l]) => /Capitano/.test(l)) || senzaBonus || num(r.fv) === num(voci[0]?.[1]), `il capitano (${r.nome}) ha la voce del raddoppio${senzaBonus ? ' (senza bonus né malus: niente da raddoppiare)' : ''}`);
+    } });
     await p.evaluate(() => document.querySelector('.voti-spiegati').previousElementSibling.scrollIntoView({ block: 'start' }));
     await p.screenshot({ path: `${USCITA}/voti-spiegati.png` }).catch(() => {});
     // il tocco apre il secondo

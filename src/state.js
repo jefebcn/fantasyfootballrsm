@@ -1100,7 +1100,7 @@ export function saveLineup(n, managerId, lineup) {
  * sull'undici d'ufficio, serve solo all'editor e alle probabili: qui non
  * entra piu', perche' una formazione mai consegnata non fa punti.
  */
-export function lineupResult(n, managerId, isHome = false) { return memo(`lr:${n}:${managerId}:${isHome ? 'c' : 't'}`, () => { const lineup = savedLineup(n, managerId); if (!lineup) return null; return { lineup, ...computeLineupResult({ lineup, ratings: ratingsOf(n), players: playersById, managerCount: Math.max(6, base.league.managerCount), isHome, rules: rules() }) }; }); }
+export function lineupResult(n, managerId, isHome = false) { return memo(`lr:${n}:${managerId}:${isHome ? 'c' : 't'}`, () => { const lineup = savedLineup(n, managerId); if (!lineup) return null; return { lineup, ...computeLineupResult({ lineup, ratings: ratingsOf(n), players: playersById, managerCount: Math.max(6, base.league.managerCount), isHome, rules: rules(), matchday: n }) }; }); }
 export function fixturesOf(n) {
   return memo(`fx:${n}`, () => {
     // In una lega a punti non ci sono scontri diretti: si gioca contro tutti

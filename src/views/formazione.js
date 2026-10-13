@@ -72,7 +72,7 @@ function autofill(d, rosterIds) {
  * perche'». Sotto la panchina, chi ha gia' il voto, dal piu' alto: voto base,
  * ogni bonus e malus con la sua regola, e il capitano col suo raddoppio — lo
  * stesso dettaglio della pagina Voti, senza doverci andare. Il primo e'
- * gia' aperto, gli altri si aprono col tocco. Chi vale 5,5 d'ufficio non ha
+ * gia' aperto, gli altri si aprono col tocco. Chi e' senza voto (art. 8.6) non ha
  * niente da spiegare e resta fuori.
  */
 function daDoveVengono(esito, voti) {
@@ -148,17 +148,19 @@ export const formazione = {
         ${!saved && !locked ? `<p class="small muted"><b>Se non consegni, la partita è persa 0-3 a tavolino</b> (art. 8.4). Quella qui sotto è solo una proposta — ${S.lineupFor(n, me.id).source === 'ufficio' ? 'il 4-4-2 con le quotazioni più alte' : `l'ultima che hai schierato (${S.lineupFor(n, me.id).source})`} — e non conta finché non la confermi.</p>` : ''}
         ${!saved && locked ? `<p class="small muted"><b>Formazione non consegnata</b>: la partita è persa 0-3 a tavolino (art. 8.4). Quella qui sotto non conta, è solo l'ultima proposta.</p>` : ''}
         ${b ? (() => {
-    // DA DOVE VIENE IL NUMERO. Con due voti sul campo e un totale di 62,5 la
-    // domanda e' legittima: chi non ha ancora giocato non vale zero, vale il
-    // voto d'ufficio (art. 8.6), e il totale e' quindi "quanto farei se la
-    // giornata finisse adesso". Senza dirlo, quel numero sembra sbagliato.
+    // DA DOVE VIENE IL NUMERO. Con due voti sul campo il totale e' "quanto
+    // farei se la giornata finisse adesso": chi non ha ancora giocato conta
+    // come un titolare senza sostituto (art. 8.6: 0 dalla 6ª, 5,5 fino alla
+    // 5ª). Senza dirlo, quel numero sembra sbagliato.
     const res = esito;
     if (!res) return `<p class="small muted">${b.mancanti === 1 ? 'Manca una partita' : `Mancano ${b.mancanti} partite su ${b.partite}`}: la formazione della ${b.giornata}ª si apre a giornata finita.</p>`;
     const ufficio = res.rows.filter((r) => r.official).length;
+    // fino alla 5ª 5,5 d'ufficio, dalla 6ª 0 (art. 8.6): lo dice la riga stessa
+    const valeUfficio = res.rows.find((r) => r.official)?.fantaVote || 0;
     const conVoto = res.rows.length - ufficio;
     const cambi = res.subsApplied.length;
     return `<div class="fase-punti"><span>Punti se finisse adesso</span><b>${fmt(res.total)}</b></div>
-        <p class="small muted"><b>${conVoto} su ${res.rows.length}</b> ${conVoto === 1 ? 'ha' : 'hanno'} il voto${cambi ? ` · ${cambi} ${cambi === 1 ? 'entrato dalla panchina' : 'entrati dalla panchina'}` : ''}${ufficio ? ` · ${ufficio === 1 ? 'uno vale' : `${ufficio} valgono`} ${fmt(S.rules().noSubVote)} d'ufficio finché non gioca${ufficio === 1 ? '' : 'no'} (art. 8.6)` : ''}.</p>
+        <p class="small muted"><b>${conVoto} su ${res.rows.length}</b> ${conVoto === 1 ? 'ha' : 'hanno'} il voto${cambi ? ` · ${cambi} ${cambi === 1 ? 'entrato dalla panchina' : 'entrati dalla panchina'}` : ''}${ufficio ? ` · ${ufficio === 1 ? 'uno' : ufficio} ${valeUfficio ? `${ufficio === 1 ? 'vale' : 'valgono'} ${fmt(valeUfficio)} d'ufficio` : `${ufficio === 1 ? 'conta' : 'contano'} 0`} finché non gioca${ufficio === 1 ? '' : 'no'} (art. 8.6)` : ''}.</p>
         <p class="small muted">${b.mancanti === 1 ? 'Manca una partita' : `Mancano ${b.mancanti} partite su ${b.partite}`}: i voti arrivano mano a mano, e la formazione della ${b.giornata}ª si apre a giornata finita.</p>`;
   })() : ''}
       </div>

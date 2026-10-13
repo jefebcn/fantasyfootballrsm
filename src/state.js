@@ -22,6 +22,25 @@ base.league = NO_LEAGUE; base.managers = []; base.rosters = {};
 
 let user = null, prof = null, leagues = [];
 let g = emptyGlobal(); let L = emptyLeague();
+/*
+ * UNA FORMAZIONE CON UN GIOCATORE CHE NON ESISTE NON DEVE FERMARE L'APP.
+ * Il 13/10 la 034 (doppioni) ha lasciato un posto vuoto ("") dove una
+ * formazione aveva sia il doppione sia il giocatore vero, e il motore dei
+ * punteggi cercava il ruolo di un giocatore inesistente: l'app non partiva
+ * piu' per tutta la lega. Qui si tolgono i posti vuoti e gli id sconosciuti;
+ * il posto resta scoperto, come una panchina corta.
+ */
+export function pulisciFormazioni(lineups) {
+  const ok = (id) => !!id && playersById.has(id);
+  const out = {};
+  for (const [k, l] of Object.entries(lineups || {})) {
+    if (!l || typeof l !== 'object') continue;
+    out[k] = { ...l,
+      starters: (l.starters || []).filter(ok), bench: (l.bench || []).filter(ok),
+      captainId: ok(l.captainId) ? l.captainId : null, viceCaptainId: ok(l.viceCaptainId) ? l.viceCaptainId : null };
+  }
+  return out;
+}
 let ready = false, connError = null;
 let prefs = load(PREFS_KEY, { theme: 'system', installedDismissed: false, currentLeagueId: null, onboarded: false, sfondoFoto: true });
 let onError = (e) => console.error(e);
@@ -116,7 +135,7 @@ async function loadAll() {
         for (const m of base.managers) m.reclutati = n[m.userId] || 0;
       } catch { /* niente badge, il resto c'e' */ }
     }
-    L = { lineups: data.lineups, contestazioni: data.contestazioni, scambi: [], offerte: [] };
+    L = { lineups: pulisciFormazioni(data.lineups), contestazioni: data.contestazioni, scambi: [], offerte: [] };
     L.scambi = scambi.ok ? scambi.v : []; L.scambiDisponibili = scambi.ok;
     // Le finestre del mercato le chiude chi apre l'app: nessuno ha un server
     // che gira di notte. La funzione e' ripetibile e a finestre non scadute

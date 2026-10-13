@@ -59,3 +59,25 @@ test('un tabellino finito si riscarica per due giorni, poi resta quello', () => 
     .replace(/null/g, 'None').replace(/false/g, 'False').replace(/true/g, 'True')}]))`);
   assert.deepEqual(esiti, casi.map((c) => c[3]));
 });
+
+// Il 13/10 la Folgore della 5ª giocava in dieci: due titolari non erano nel
+// listone quando il referto e' stato letto. L'extra era nato subito, ma il
+// tabellino in archivio restava senza di loro dopo le 48 ore.
+test('un tabellino con giocatori mancanti si riscarica fino alla chiusura', () => {
+  const k = '2026-10-10T15:00:00+02:00';            // sabato
+  const t0 = Date.parse(k) / 1000;
+  const chiude = Date.parse('2026-10-13T20:00:00+02:00') / 1000;
+  const manca = { finita: true, mancanti: { 'Rossi M.': { club: 'folgore' } } };
+  const casi = [
+    [manca, k, t0 + 60 * 3600, true],                 // lunedi' sera: oltre le 48 ore, ma manca qualcuno
+    [manca, k, chiude - 60, true],                    // martedi' 19:59
+    [manca, k, chiude + 60, false],                   // congelata: non si tocca piu'
+    [{ finita: true, mancanti: {} }, k, t0 + 60 * 3600, false],
+  ];
+  const esiti = py(`print(json.dumps([m.da_riscaricare(f, q, o) for f, q, o in ${JSON.stringify(casi.map(([f, q, o]) => [f, q, o]))
+    .replace(/null/g, 'None').replace(/false/g, 'False').replace(/true/g, 'True')}]))`);
+  assert.deepEqual(esiti, casi.map((c) => c[3]));
+  const giorni = py(`print(json.dumps([m.chiusura(q) for q in ${JSON.stringify([
+    '2026-10-11T15:00:00+02:00', '2026-10-13T20:45:00+02:00', '2026-10-13T18:00:00+02:00'])}]))`);
+  assert.deepEqual(giorni, [chiude, Date.parse('2026-10-20T20:00:00+02:00') / 1000, chiude]);
+});

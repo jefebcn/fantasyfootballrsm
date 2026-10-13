@@ -142,7 +142,22 @@ def da_riscaricare(fatto, quando, ora):
     if not quando:
         return False
     from datetime import datetime
-    return ora - datetime.fromisoformat(quando).timestamp() < RICONTROLLO
+    if ora - datetime.fromisoformat(quando).timestamp() < RICONTROLLO:
+        return True
+    # Un referto letto quando qualcuno dei suoi giocatori non era nel listone
+    # quel giocatore lo ha perso: l'extra nasce nello stesso giro, ma il
+    # tabellino era gia' scritto senza di lui. Il 13/10 la Folgore della 5ª
+    # aveva dieci titolari, con l'undicesimo e il dodicesimo gia' fra gli
+    # extra da due giorni. Si riprova finche' la giornata e' aperta.
+    return bool(fatto.get('mancanti')) and ora < chiusura(quando)
+
+
+def chiusura(quando):
+    """Il martedi' alle 20:00 dopo la partita, all'ora di San Marino: da li' la giornata e' congelata."""
+    from datetime import datetime, timedelta
+    k = datetime.fromisoformat(quando)
+    giorni = (1 - k.weekday()) % 7 or (7 if k.hour >= 20 else 0)
+    return (k + timedelta(days=giorni)).replace(hour=20, minute=0, second=0, microsecond=0).timestamp()
 
 
 def finita(quando, stato, ora):

@@ -1,5 +1,5 @@
 import * as S from '../state.js';
-import { validateLineup, parseModule } from '../engine.js';
+import { validateLineup, parseModule, votoUfficio } from '../engine.js';
 import { esc, roleChip, faccia, ROLE_NAME, badge, icon, avatar, dateIt, timeIt, fmt, voteRow, sec } from '../ui.js';
 import { schedeRosa } from './rosa.js';
 
@@ -93,6 +93,25 @@ function daDoveVengono(esito, voti) {
 }
 const r1 = (x) => Math.round(x * 10) / 10;
 
+/**
+ * PANCHINA SCOPERTA. Dalla 6ª un titolare senza voto e senza sostituto e' un
+ * buco e conta 0 (art. 8.6, Alex 13/10): se in panchina non c'e' nessuno di
+ * un ruolo che hai in campo, quel ruolo non ha rete. Non blocca la consegna —
+ * puo' essere una scelta — ma lo si dice prima, non a giornata finita.
+ */
+const UNO = { P: 'portiere', D: 'difensore', C: 'centrocampista', A: 'attaccante' };
+function scoperta(d, n) {
+  const ruolo = (id) => S.playersById.get(id)?.role;
+  const inCampo = new Set(d.starters.filter(Boolean).map(ruolo));
+  const inPanchina = new Set(d.bench.filter(Boolean).map(ruolo));
+  const senza = ['P', 'D', 'C', 'A'].filter((r) => inCampo.has(r) && !inPanchina.has(r));
+  if (!senza.length) return '';
+  const v = votoUfficio(S.rules(), n);
+  const conta = v ? `vale ${fmt(v)} d'ufficio` : 'è un buco e conta 0';
+  const chi = senza.map((r) => UNO[r]).join(senza.length > 2 ? ', ' : ' né ').replace(/, ([^,]*)$/, ' né $1');
+  return `<div class="warn info panchina-scoperta">${icon('warn', 'ic sm')}<span><b>In panchina non hai nessun ${chi}.</b> Se un titolare di ${senza.length > 1 ? 'quei ruoli' : 'quel ruolo'} non gioca, nessuno lo sostituisce: ${conta} (art. 8.6).</span></div>`;
+}
+
 export const formazione = {
   title: 'Formazione', sub: () => 'Rosa · Formazione',
   serveSquadra: true,   // senza una squadra in questa lega: app.js mostra «Non fai parte di questa lega»
@@ -178,6 +197,7 @@ export const formazione = {
       <div class="bench">${bench.map((id, i) => benchRow(id, i, bench, locked, grezzo(id))).join('')}</div>
       ${esito ? daDoveVengono(esito, voti) : ''}
       ${errors.length ? `<div class="warn block">${icon('warn', 'ic sm')}<span>${errors.map(esc).join(' · ')}</span></div>` : ''}
+      ${!b && !locked ? scoperta(d, n) : ''}
       ${b
     ? `<a class="a-btn" href="#/voti/${n}" style="text-decoration:none">${icon('votes', 'ic sm')}Voti della ${n}ª</a>`
     : `<button class="a-btn" id="confirm" ${locked || errors.length ? 'disabled' : ''}>${icon('check', 'ic sm')}${locked ? 'Formazione bloccata' : `Conferma formazione · ${d.starters.filter(Boolean).length}/11`}</button>`}

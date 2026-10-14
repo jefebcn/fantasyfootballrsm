@@ -5,7 +5,21 @@ export const regolamento = {
   title: 'Regolamento', appbar: 'back', sub: () => 'Regolamento ed opzioni',
   render() {
     const r = S.rules(); const row = (k, v) => `<tr><td>${k}</td><td class="num" style="text-align:right">${v}</td></tr>`;
+    // LA LEGA PUBBLICA IN CINQUE RIGHE, PRIMA DI TUTTO. Un iscritto, 14/10:
+    // «quanti acquisti ci sono nella stagione? O ogni giornata si cambia
+    // quanti se ne vuole?». Le regole del mercato della Open stavano solo in
+    // una riga del negozio, e la schermata iniziale diceva «mercato libero fra
+    // una giornata e l'altra», che vale per le leghe fra amici.
+    const totale = Object.values({ P: 3, D: 8, C: 8, A: 6, ...(r.roster || {}) }).reduce((x, y) => x + y, 0);
+    const open = S.legaPubblica() ? `<div class="a-card open-come"><p class="rule-art">COME FUNZIONA LA LEGA PUBBLICA</p>
+      <p><b>1. La rosa.</b> ${totale} giocatori, comprati dal <a href="#/negozio">Negozio</a> con i crediti della lega. I giocatori non sono esclusivi: lo stesso può stare nella rosa di tutti.</p>
+      <p><b>2. Il mercato.</b> Compri e togli quanti giocatori vuoi <b>fino alla chiusura delle formazioni della tua prima giornata</b>. Da lì la rosa è quella <b>per tutta la stagione</b>: niente acquisti né cessioni a ogni giornata. Se la rosa è ancora incompleta, puoi sempre completarla.</p>
+      <p><b>3. La formazione.</b> Va confermata <b>a ogni giornata</b>, entro le 15:00 del giorno della prima partita (di solito il venerdì), e solo con la rosa completa. Se non la confermi, quella giornata vale zero.</p>
+      <p><b>4. La classifica.</b> Niente scontri diretti: i fantapunti di ogni giornata si sommano e vince chi ne ha di più.</p>
+      <p><b>5. I crediti.</b> Tieni da parte quanto basta per completare la rosa: il Negozio non ti lascia spendere tanto da restare a metà.</p>
+    </div>` : '';
     return `<main class="a-body rules">
+      ${open}
       <div class="a-card"><p class="rule-art">PRINCIPIO FONDANTE</p><p>Non esistendo pagelle per il Campionato Sammarinese, nessun voto è espresso da una redazione. Ogni valutazione nasce da eventi oggettivi e verificabili del referto FSGC, eventualmente confermati dal video di Titani.TV. Il referto fa fede; nessun giudizio soggettivo; il dato si congela.</p></div>
       <h3>Art. 4 — Voto base (Voto Titano)</h3>
       <table><tr><th>Condizione</th><th>Voto</th></tr>${row('Almeno 20 minuti', fmt(r.baseVote))}${row('Meno di 20 minuti senza eventi', 'S.V.')}${row('Meno di 20 minuti con eventi', fmt(r.baseVote) + ' + eventi')}${row('Non entrato / squalificato', 'S.V.')}</table>

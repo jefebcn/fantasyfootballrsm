@@ -1095,9 +1095,37 @@ export function negozio() {
   const entrato = io.entrato ? new Date(io.entrato) : null;
   const prima = entrato ? base.matchdays.find((md) => new Date(md.lockAt) > entrato) : null;
   const chiude = prima ? new Date(prima.lockAt) : null;
+  const aperto = !!chiude && now() < chiude;
+  // RISERVA CREDITI (038): quanto serve, al minimo, per riempire i posti
+  // vuoti coi giocatori meno cari di ogni ruolo. `riserva(ruolo)` e' quella
+  // che resta da coprire DOPO aver preso un giocatore di quel ruolo.
+  const miei = new Set((base.rosters[io.id] || []).map((r) => r.playerId));
+  const minimo = {};
+  for (const g of base.players) {
+    if (g.isActive === false || g.doppioneDi || miei.has(g.id)) continue;
+    minimo[g.role] = Math.min(minimo[g.role] ?? Infinity, g.quotation);
+  }
+  const riserva = (ruolo = null) => ['P', 'D', 'C', 'A'].reduce((tot, r) =>
+    tot + Math.max(0, manca[r] - (r === ruolo ? 1 : 0)) * (Number.isFinite(minimo[r]) ? minimo[r] : 0), 0);
+  // Comprare e vendere: nella finestra della prima giornata, oppure finche'
+  // la rosa non e' completa (037, 038). A rosa completa, dopo, e' quella.
   return { crediti: io.credits ?? 0, quote, per, manca, mancanti,
     completa: mancanti === 0, giornata: prima ? prima.number : null, chiude,
-    aperto: !!chiude && now() < chiude };
+    aperto, compra: aperto || mancanti > 0, vende: aperto || mancanti > 0, riserva,
+    totale: Object.values(quote).reduce((x, y) => x + y, 0) };
+}
+/**
+ * LEGA PUBBLICA: LA FORMAZIONE ASPETTA LA ROSA INTERA. Alex, 14/10: con mezza
+ * rosa si giocava tutta la stagione. Il database lo rifiuta (037); qui serve
+ * a dirlo prima, sul bottone, invece che con un errore dopo il tocco.
+ * Torna null quando non c'e' niente che blocchi.
+ */
+export function rosaIncompletaPerSchierare(managerId = me()?.id) {
+  if (!legaPubblica() || !managerId) return null;
+  const quote = { ...DEFAULT_RULES.roster, ...(rules().roster || {}) };
+  const serve = Object.values(quote).reduce((x, y) => x + y, 0);
+  const ha = (base.rosters[managerId] || []).length;
+  return ha < serve ? { ha, serve, mancano: serve - ha } : null;
 }
 /*
  * COMPRARE E VENDERE SI VEDE SUBITO. Alex, 10/10: facendo la rosa «il tasto
@@ -1170,6 +1198,8 @@ export function saveLineup(n, managerId, lineup) {
   // collegamento diretto.
   const b = schieramentoBloccato();
   if (b && n === b.giornata) throw new Error(`La ${b.inGioco}ª giornata è ancora in corso: la formazione della ${n}ª si apre quando finisce`);
+  const rosa = rosaIncompletaPerSchierare(managerId);
+  if (rosa) throw new Error(`Nella lega pubblica la formazione si consegna con la rosa completa: hai ${rosa.ha} giocatori su ${rosa.serve}. Completala dal Negozio.`);
   const rec = { ...lineup, submittedAt: now().toISOString() }; L.lineups[`${n}:${managerId}`] = rec; notify();
   return remote.upsertLineup(base.league.id, managerId, n, rec).catch((e) => { onError(e); refresh(); });
 }

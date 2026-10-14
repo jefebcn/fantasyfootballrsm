@@ -151,6 +151,7 @@ export const formazione = {
     };
     const s = slotsByRole(d); const errors = validateLineup({ ...d, starters: d.starters.filter(Boolean), bench: d.bench.filter(Boolean) }, S.playersById);
     const saved = S.savedLineup(n, me.id);
+    const rosa = S.rosaIncompletaPerSchierare(me.id);
     const fx = S.myFixture(n, me.id); const opp = fx ? S.managersById.get(fx.homeManagerId === me.id ? fx.awayManagerId : fx.homeManagerId) : null;
     const slot = (id, role, i) => id
       ? `<div class="slot" data-slot="${role}:${i}"><span class="av faccia">${d.captainId === id ? '<span class="cap">C</span>' : d.viceCaptainId === id ? '<span class="cap">V</span>' : ''}${avatar(P(id), S.clubsById.get(P(id).clubId))}${roleChip(role)}${voto(id)}</span><b>${esc(P(id).lastName)}</b></div>`
@@ -198,8 +199,11 @@ export const formazione = {
       ${esito ? daDoveVengono(esito, voti) : ''}
       ${errors.length ? `<div class="warn block">${icon('warn', 'ic sm')}<span>${errors.map(esc).join(' · ')}</span></div>` : ''}
       ${!b && !locked ? scoperta(d, n) : ''}
+      ${!b && !locked && rosa ? `<div class="warn block rosa-incompleta">${icon('warn', 'ic sm')}<span><b>Rosa incompleta: ${rosa.ha} su ${rosa.serve}.</b> Nella lega pubblica la formazione si consegna con tutti i ${rosa.serve} giocatori: ${rosa.mancano === 1 ? 'te ne manca 1' : `te ne mancano ${rosa.mancano}`}. Puoi ancora comprarli.</span></div>` : ''}
       ${b
     ? `<a class="a-btn" href="#/voti/${n}" style="text-decoration:none">${icon('votes', 'ic sm')}Voti della ${n}ª</a>`
+    : !locked && rosa
+    ? `<a class="a-btn" id="completa-rosa" href="#/negozio" style="text-decoration:none">${icon('cart', 'ic sm')}Completa la rosa · ${rosa.ha}/${rosa.serve}</a>`
     : `<button class="a-btn" id="confirm" ${locked || errors.length ? 'disabled' : ''}>${icon('check', 'ic sm')}${locked ? 'Formazione bloccata' : `Conferma formazione · ${d.starters.filter(Boolean).length}/11`}</button>`}
       <p class="small muted" style="text-align:center">${b ? `La formazione della ${b.giornata}ª si apre quando la ${n}ª è finita.` : 'Capitano e vice: tocca un titolare. Il capitano raddoppia bonus e malus (art. 6).'}</p>
     </main>`;

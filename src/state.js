@@ -1095,9 +1095,25 @@ export function negozio() {
   const entrato = io.entrato ? new Date(io.entrato) : null;
   const prima = entrato ? base.matchdays.find((md) => new Date(md.lockAt) > entrato) : null;
   const chiude = prima ? new Date(prima.lockAt) : null;
+  const aperto = !!chiude && now() < chiude;
+  // Comprare: nella finestra della prima giornata, oppure finche' la rosa non
+  // e' completa (037). Vendere solo nella finestra: e' `aperto`.
   return { crediti: io.credits ?? 0, quote, per, manca, mancanti,
     completa: mancanti === 0, giornata: prima ? prima.number : null, chiude,
-    aperto: !!chiude && now() < chiude };
+    aperto, compra: aperto || mancanti > 0, totale: Object.values(quote).reduce((x, y) => x + y, 0) };
+}
+/**
+ * LEGA PUBBLICA: LA FORMAZIONE ASPETTA LA ROSA INTERA. Alex, 14/10: con mezza
+ * rosa si giocava tutta la stagione. Il database lo rifiuta (037); qui serve
+ * a dirlo prima, sul bottone, invece che con un errore dopo il tocco.
+ * Torna null quando non c'e' niente che blocchi.
+ */
+export function rosaIncompletaPerSchierare(managerId = me()?.id) {
+  if (!legaPubblica() || !managerId) return null;
+  const quote = { ...DEFAULT_RULES.roster, ...(rules().roster || {}) };
+  const serve = Object.values(quote).reduce((x, y) => x + y, 0);
+  const ha = (base.rosters[managerId] || []).length;
+  return ha < serve ? { ha, serve, mancano: serve - ha } : null;
 }
 /*
  * COMPRARE E VENDERE SI VEDE SUBITO. Alex, 10/10: facendo la rosa «il tasto
@@ -1170,6 +1186,8 @@ export function saveLineup(n, managerId, lineup) {
   // collegamento diretto.
   const b = schieramentoBloccato();
   if (b && n === b.giornata) throw new Error(`La ${b.inGioco}ª giornata è ancora in corso: la formazione della ${n}ª si apre quando finisce`);
+  const rosa = rosaIncompletaPerSchierare(managerId);
+  if (rosa) throw new Error(`Nella lega pubblica la formazione si consegna con la rosa completa: hai ${rosa.ha} giocatori su ${rosa.serve}. Completala dal Negozio.`);
   const rec = { ...lineup, submittedAt: now().toISOString() }; L.lineups[`${n}:${managerId}`] = rec; notify();
   return remote.upsertLineup(base.league.id, managerId, n, rec).catch((e) => { onError(e); refresh(); });
 }

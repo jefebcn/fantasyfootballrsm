@@ -60,7 +60,9 @@ export const negozio = {
         ${['P', 'D', 'C', 'A'].map((r) => `<div class="neg-q${n.manca[r] ? '' : ' pieno'}">
           <b>${n.per[r]}/${n.quote[r]}</b><span>${r}</span></div>`).join('')}
       </div>
-      ${n.aperto
+      ${n.riparazione
+    ? `<p class="neg-quando riparazione">${icon('clock', 'ic sm')}<span><b>${esc(n.riparazione.nome)} aperto</b> fino a ${n.riparazione.fine.toLocaleDateString('it-IT', { weekday: 'short', day: 'numeric', month: 'numeric' })} alle ${String(n.riparazione.fine.getHours()).padStart(2, '0')}:${String(n.riparazione.fine.getMinutes()).padStart(2, '0')}: togli e compra liberamente. Poi la rosa torna bloccata.</span></p>`
+    : n.aperto
     // Il testo dentro UN solo elemento: .neg-quando e' una riga flex, e un
     // <b> lasciato figlio diretto diventa un riquadro a se' con lo spazio
     // intorno — sullo schermo usciva "alle 13:00 , quando comincia".

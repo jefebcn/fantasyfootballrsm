@@ -13,7 +13,7 @@ export const regolamento = {
     const totale = Object.values({ P: 3, D: 8, C: 8, A: 6, ...(r.roster || {}) }).reduce((x, y) => x + y, 0);
     const open = S.legaPubblica() ? `<div class="a-card open-come"><p class="rule-art">COME FUNZIONA LA LEGA PUBBLICA</p>
       <p><b>1. La rosa.</b> ${totale} giocatori, comprati dal <a href="#/negozio">Negozio</a> con i crediti della lega. I giocatori non sono esclusivi: lo stesso può stare nella rosa di tutti.</p>
-      <p><b>2. Il mercato.</b> Compri e togli quanti giocatori vuoi <b>fino alla chiusura delle formazioni della tua prima giornata</b>. Da lì la rosa è quella <b>per tutta la stagione</b>: niente acquisti né cessioni a ogni giornata. Se la rosa è ancora incompleta, puoi sempre completarla.</p>
+      <p><b>2. Il mercato.</b> Compri e togli quanti giocatori vuoi <b>fino alla chiusura delle formazioni della tua prima giornata</b>. Da lì la rosa è quella <b>per tutta la stagione</b>: niente acquisti né cessioni a ogni giornata. Se la rosa è ancora incompleta, puoi sempre completarla. <b>Nella pausa invernale si apre il mercato di riparazione</b>: per qualche giorno tutti possono di nuovo togliere e comprare; le date si annunciano in app e sui social.</p>
       <p><b>3. La formazione.</b> Va confermata <b>a ogni giornata</b>, entro le 15:00 del giorno della prima partita (di solito il venerdì), e solo con la rosa completa. Se non la confermi, quella giornata vale zero.</p>
       <p><b>4. La classifica.</b> Niente scontri diretti: i fantapunti di ogni giornata si sommano e vince chi ne ha di più.</p>
       <p><b>5. I crediti.</b> Tieni da parte quanto basta per completare la rosa: il Negozio non ti lascia spendere tanto da restare a metà.</p>

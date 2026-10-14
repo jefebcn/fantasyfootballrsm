@@ -262,7 +262,14 @@ function fasciaSponsor() {
  * resto — e dice quanto manca, quanto ha da spendere e quando chiude.
  */
 function invitoNegozio() {
-  const n = S.negozio(); if (!n || n.completa) return '';
+  const n = S.negozio(); if (!n) return '';
+  // 039: la finestra di riparazione si annuncia a tutti, anche a rosa completa.
+  if (n.completa && n.riparazione) {
+    return tile({ href: '#/negozio', lead: icon('cart'), leadKind: 'accent',
+      title: `${n.riparazione.nome} aperto`,
+      sub: `Fino a ${n.riparazione.fine.toLocaleDateString('it-IT', { weekday: 'short', day: 'numeric', month: 'numeric' })}: togli e compra liberamente` });
+  }
+  if (n.completa) return '';
   const quando = n.chiude
     ? `${n.chiude.toLocaleDateString('it-IT', { weekday: 'short', day: 'numeric', month: 'numeric' })} ${String(n.chiude.getHours()).padStart(2, '0')}:${String(n.chiude.getMinutes()).padStart(2, '0')}`
     : null;

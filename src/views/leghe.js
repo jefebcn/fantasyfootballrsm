@@ -50,7 +50,7 @@ function comeFunziona() {
   const punti = [
     ['voti', 'Niente pagelle', 'Il voto nasce dagli eventi del referto FSGC, non dal giudizio di un giornalista.'],
     ['probabili', 'Una giornata per settimana', 'Si schiera entro le 15 del giorno della prima partita, di solito il venerdì. Il martedì la giornata si chiude.'],
-    ['quotazioni', 'Rosa da 25', 'Listone del campionato sammarinese, 500 crediti all\'asta, mercato libero fra una giornata e l\'altra.'],
+    ['quotazioni', 'Rosa da 25', 'Listone del campionato sammarinese e 500 crediti: all\'asta nella lega fra amici, dal negozio nella lega pubblica (lì la rosa si sceglie prima della tua prima giornata e poi resta quella).'],
   ];
   return sec('Come funziona') + `<div class="a-card howto">${punti.map(([ic, t, d]) => `<div class="how"><i>${pic(ic, 'menu')}</i><span><b>${t}</b><span>${d}</span></span></div>`).join('')}</div>`;
 }
@@ -65,7 +65,7 @@ function comeFunziona() {
  */
 function moduloPubblica() {
   return `<div class="a-card" style="display:flex;flex-direction:column;gap:6px">
-    <p class="auth-hint" style="margin:0 0 4px"><b>Come funziona una lega pubblica.</b> Ci entra chiunque, senza codice. I giocatori non sono esclusivi: possono stare nella rosa di tutti, altrimenti dal ventesimo iscritto non resterebbero più portieri. Non ci sono scontri diretti: ogni giornata i tuoi fantapunti si sommano, e vince chi ne ha di più.</p>
+    <p class="auth-hint" style="margin:0 0 4px"><b>Come funziona una lega pubblica.</b> Ci entra chiunque, senza codice. I giocatori non sono esclusivi: possono stare nella rosa di tutti, altrimenti dal ventesimo iscritto non resterebbero più portieri. Non ci sono scontri diretti: ogni giornata i tuoi fantapunti si sommano, e vince chi ne ha di più. La rosa si compra dal negozio fino alla prima giornata di ognuno, poi resta quella per la stagione.</p>
     <label class="lbl" for="pname">Nome della lega</label>
     <input class="field-input" id="pname" placeholder="es. Titano Open" maxlength="40">
     <div class="due">

@@ -206,6 +206,8 @@ export function createClient(_url, _key, opts) {
           const mio = T('league_members').find((m) => m.league_id === args.p_league && m.user_id === userId);
           const aperto = () => {
             if (!lega || !lega.pubblica || !mio) return false;
+            // 039: una finestra di riparazione aperta adesso
+            if (T('finestre_mercato').some((f) => new Date(f.inizio) <= new Date() && new Date() <= new Date(f.fine))) return true;
             const entrato = new Date(mio.created_at || 0);
             const prossimi = T('matchday_locks').filter((k) => new Date(k.lock_at) > entrato)
               .sort((a, b) => a.matchday - b.matchday);

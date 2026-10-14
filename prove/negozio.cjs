@@ -279,6 +279,19 @@ const ok = [], ko = []; const et = (c, t) => (c ? ok : ko).push(t);
   await p.evaluate(() => { location.hash = '#/rosa/formazione'; }); await w(1300);
   const pronta = await p.evaluate(() => ({ conferma: !!document.querySelector('#confirm'), completa: !!document.querySelector('#completa-rosa') }));
   et(pronta.conferma && !pronta.completa, 'a rosa completa torna il bottone "Conferma formazione"');
+  // 040: col mercato aperto si salva la formazione e poi si vende un
+  // titolare: la formazione va riconfermata, non resta col giocatore ceduto.
+  const venduto = await p.evaluate(async () => {
+    const S = await import('/src/state.js');
+    const n = S.base.matchdays.find((m) => new Date(m.lockAt) > new Date()).number;
+    const lu = S.lineupFor(n, S.me().id);
+    await S.saveLineup(n, S.me().id, { ...lu, bench: (lu.bench || []).filter(Boolean) });
+    await new Promise((r) => setTimeout(r, 300));
+    const prima = !!S.savedLineup(n, S.me().id);
+    const esito = await S.vendiGiocatore(lu.starters[0]);
+    return { prima, tolte: esito?.formazioni_tolte, dopo: !!S.savedLineup(n, S.me().id) };
+  });
+  et(venduto.prima && venduto.tolte === 1 && !venduto.dopo, `vendendo un titolare la formazione salvata si toglie e va riconfermata (${JSON.stringify(venduto)})`);
 
   et(errori.length === 0, `nessun errore JS${errori.length ? ' — ' + errori[0] : ''}`);
   await b.close();

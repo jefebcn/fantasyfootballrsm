@@ -225,8 +225,15 @@ export function createClient(_url, _key, opts) {
             const r = mie().find((x) => x.player_id === args.p_player);
             if (!r) throw new Error('Questo giocatore non è in rosa');
             tables.rosters = T('rosters').filter((x) => x !== r);
-            mio.credits += r.price_paid; persisti();
-            return { data: { player_id: args.p_player, reso: r.price_paid, crediti: mio.credits }, error: null };
+            mio.credits += r.price_paid;
+            // 040: le formazioni ancora da giocare che lo contengono si tolgono
+            const aperta = (n) => !T('matchday_locks').some((k) => k.matchday === n && new Date(k.lock_at) <= new Date());
+            const prima = T('lineups').length;
+            tables.lineups = T('lineups').filter((l) => !(l.member_id === mio.id && aperta(l.matchday)
+              && [...(l.lineup?.starters || []), ...(l.lineup?.bench || [])].includes(args.p_player)));
+            const tolte = prima - tables.lineups.length;
+            persisti();
+            return { data: { player_id: args.p_player, reso: r.price_paid, crediti: mio.credits, formazioni_tolte: tolte }, error: null };
           }
           const q = T('quotazioni').find((x) => x.player_id === args.p_player);
           if (!q) throw new Error(`Giocatore sconosciuto (${args.p_player})`);

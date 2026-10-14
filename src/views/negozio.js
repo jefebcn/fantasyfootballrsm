@@ -36,9 +36,11 @@ export const negozio = {
     // toglierlo farebbe sembrare che il giocatore non esista.
     const compra = (p) => {
       if (miei.has(p.id)) return ['dentro', ''];
-      if (!n.aperto) return ['', 'chiuso'];
+      if (!n.compra) return ['', 'chiuso'];
       if (!n.manca[p.role]) return ['', `hai già ${n.quote[p.role]} ${ROLE_NAME[p.role].toLowerCase()}`];
       if (p.quotation > n.crediti) return ['', 'crediti finiti'];
+      // 038: la riserva per completare la rosa coi meno cari
+      if (n.crediti - p.quotation < n.riserva(p.role)) return ['', 'riserva crediti'];
       return ['libero', ''];
     };
 
@@ -63,7 +65,12 @@ export const negozio = {
     // <b> lasciato figlio diretto diventa un riquadro a se' con lo spazio
     // intorno — sullo schermo usciva "alle 13:00 , quando comincia".
     ? `<p class="neg-quando">${icon('clock', 'ic sm')}<span>Puoi cambiare la rosa fino a ${quando ? `<b>${quando}</b>` : 'l\'inizio della tua prima giornata'}${n.giornata ? `, quando comincia la ${n.giornata}ª giornata` : ''}. Poi è quella.</span></p>`
+    : n.compra
+    // 037: la finestra e' passata ma la rosa e' a meta'. Si compra solo
+    // quello che manca, e senza rosa intera la formazione non si consegna.
+    ? `<p class="neg-quando">${icon('clock', 'ic sm')}<span><b>Completa la rosa</b>: ${n.mancanti === 1 ? 'ti manca 1 giocatore' : `ti mancano ${n.mancanti} giocatori`}, e senza rosa intera la formazione non si consegna. Puoi comprare e, se ti servono crediti, anche togliere giocatori: a 25 la rosa è quella.</span></p>`
     : `<p class="neg-quando chiuso">${icon('lock', 'ic sm')}<span><b>Il mercato è chiuso</b>: la tua prima giornata è già cominciata.</span></p>`}
+      ${!n.completa && n.riserva() > 0 ? `<p class="small muted neg-riserva">Riserva crediti: tieni da parte almeno <b>${plurale(n.riserva(), 'credito', 'crediti')}</b> per i ${plurale(n.mancanti, 'giocatore', 'giocatori')} che mancano, coi meno cari di ogni ruolo.</p>` : ''}
       ${n.completa ? `<div class="neg-fatto">${icon('check', 'ic sm')}<div><b>Rosa completa</b><span>25 giocatori. Ora puoi schierare la formazione.</span></div>
         <a class="a-btn" href="#/rosa/formazione">Schiera</a></div>` : ''}
 
@@ -71,7 +78,7 @@ export const negozio = {
       <div class="vlist">${rosa.map((r) => `<div class="vr">${faccia(r.player, r.club)}
         <span class="nm"><b>${esc(r.player.name)}</b><span>${esc(r.club.name)} · ${r.player.role}</span></span>
         <span class="fv" style="font-size:14px">${r.pricePaid}</span>
-        ${n.aperto ? `<button class="chip neg-via" data-vendi="${esc(r.playerId)}" aria-label="Togli ${esc(r.player.name)}">${icon('trash', 'ic sm')}</button>` : ''}
+        ${n.vende ? `<button class="chip neg-via" data-vendi="${esc(r.playerId)}" aria-label="Togli ${esc(r.player.name)}">${icon('trash', 'ic sm')}</button>` : ''}
       </div>`).join('')}</div>` : ''}
 
       <div class="a-sec"><b>Chi vuoi</b><span>${n.mancanti ? `mancano ${n.mancanti}` : 'rosa completa'}</span></div>

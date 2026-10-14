@@ -267,9 +267,11 @@ function invitoNegozio() {
     ? `${n.chiude.toLocaleDateString('it-IT', { weekday: 'short', day: 'numeric', month: 'numeric' })} ${String(n.chiude.getHours()).padStart(2, '0')}:${String(n.chiude.getMinutes()).padStart(2, '0')}`
     : null;
   if (!n.aperto) {
-    return tile({ href: '#/negozio', lead: icon('lock'), leadKind: 'warn',
+    // 037: finestra passata, ma la rosa a meta' si puo' ancora completare —
+    // ed e' l'unico modo di tornare a consegnare la formazione.
+    return tile({ href: '#/negozio', lead: icon('cart'), leadKind: 'warn',
       title: `Rosa incompleta: ${n.mancanti} da prendere`,
-      sub: 'Il mercato è chiuso: la tua prima giornata è già cominciata' });
+      sub: 'Senza rosa completa la formazione non si consegna. Completala dal Negozio.' });
   }
   return `<a class="negozio-cta" href="#/negozio" data-negozio>
     <i>${icon('cart')}</i>

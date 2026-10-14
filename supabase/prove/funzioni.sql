@@ -1124,8 +1124,12 @@ insert into public.quotazioni (player_id, ruolo, quotazione, nome, club) values
   ('prova_p3', 'P', 8, 'Portiere Tre', 'Prova'),
   ('prova_p4', 'P', 9, 'Portiere Quattro', 'Prova'),
   ('prova_d1', 'D', 95, 'Difensore Caro', 'Prova'),
-  ('prova_d2', 'D', 7, 'Difensore Semplice', 'Prova')
+  ('prova_d2', 'D', 7, 'Difensore Semplice', 'Prova'),
+  ('prova_d3', 'D', 6, 'Difensore Economico', 'Prova')
 on conflict (player_id) do nothing;
+-- Rosa piccola (3 portieri e 2 difensori): con 100 crediti una rosa da 25
+-- non si fa, e la riserva crediti (038) fermerebbe il primo acquisto.
+update public.leagues set rules = coalesce(rules, '{}'::jsonb) || '{"roster":{"P":3,"D":2,"C":0,"A":0}}'::jsonb where id = :'aperta';
 
 select pg_temp.entra('user_pub1');
 set role authenticated;
@@ -2031,5 +2035,73 @@ reset role;
 delete from public.matchday_status where matchday = 28;
 delete from public.match_events where match_id = 'md28_m1';
 delete from public.matchday_locks where matchday = 28;
+
+-- 037: nella lega pubblica la formazione si consegna con la rosa completa
+select id as m_pub1 from public.league_members where league_id = :'aperta' and user_id = 'user_pub1' \gset
+select pg_temp.esige('la lega pubblica chiede la somma delle sue quote (qui 5)', public.rosa_richiesta(:'aperta') = 5);
+select pg_temp.esige('senza quote sue se ne contano 25', public.rosa_richiesta(:'lega') = 25);
+select pg_temp.entra('user_pub1');
+set role authenticated;
+do $$ begin
+  insert into public.lineups (league_id, member_id, matchday, lineup)
+  select l.id, m.id, 22, '{"formation":"4-4-2","starters":[],"bench":[]}'::jsonb
+    from public.leagues l join public.league_members m on m.league_id = l.id
+   where l.short_name = 'TOP' and m.user_id = 'user_pub1';
+  raise exception 'FALLITA: con mezza rosa la formazione non doveva passare';
+exception when others then
+  if sqlerrm like 'FALLITA%' or sqlerrm not like '%rosa completa%' then raise; end if;
+  raise notice 'ok  con mezza rosa la formazione non si consegna (%)', sqlerrm;
+end $$;
+reset role;
+-- la finestra del negozio e' passata: entrato prima del lock della 21
+update public.league_members set created_at = now() - interval '6 days' where id = :'m_pub1';
+delete from public.matchday_locks where matchday < 21 and lock_at > now() - interval '6 days';
+select pg_temp.entra('user_pub1');
+set role authenticated;
+select pg_temp.esige('il mercato della prima giornata e'' chiuso', not public.mercato_aperto(:'aperta'));
+select public.compra_giocatore(:'aperta', 'prova_d2');
+select pg_temp.esige('ma con la rosa a meta'' si compra ancora, per completarla',
+  exists (select 1 from public.rosters where member_id = :'m_pub1' and player_id = 'prova_d2' and released_at is null));
+-- 038: con la rosa a meta' si vende anche, per liberare crediti
+select public.vendi_giocatore(:'aperta', 'prova_d2');
+select pg_temp.esige('con la rosa a meta'' si vende anche a mercato chiuso (038)',
+  not exists (select 1 from public.rosters where member_id = :'m_pub1' and player_id = 'prova_d2' and released_at is null));
+select public.compra_giocatore(:'aperta', 'prova_d2');
+-- RISERVA CREDITI: con 15 crediti, preso il portiere da 12 ne restano 3, e
+-- per l'ultimo difensore (il meno caro costa 6) non basterebbero.
+reset role;
+update public.league_members set credits = 15 where id = :'m_pub1';
+select pg_temp.entra('user_pub1');
+set role authenticated;
+do $$ begin
+  perform public.compra_giocatore((select id from public.leagues where short_name = 'TOP'), 'prova_p2');
+  raise exception 'FALLITA: la riserva crediti doveva fermarlo';
+exception when others then
+  if sqlerrm like 'FALLITA%' or sqlerrm not like 'Riserva crediti%' then raise; end if;
+  raise notice 'ok  la riserva crediti ferma l''acquisto che lascerebbe bloccati (%)', sqlerrm;
+end $$;
+reset role;
+-- con le quote della lega a 3 la rosa (p1, p3, d2) e' completa
+update public.leagues set rules = coalesce(rules, '{}'::jsonb) || '{"roster":{"P":2,"D":1,"C":0,"A":0}}'::jsonb where id = :'aperta';
+select pg_temp.entra('user_pub1');
+set role authenticated;
+do $$ begin
+  insert into public.lineups (league_id, member_id, matchday, lineup)
+  select l.id, m.id, 22, '{"formation":"4-4-2","starters":[],"bench":[]}'::jsonb
+    from public.leagues l join public.league_members m on m.league_id = l.id
+   where l.short_name = 'TOP' and m.user_id = 'user_pub1';
+  raise exception 'FALLITA: doveva fermarla formazione_valida (11 titolari)';
+exception when others then
+  if sqlerrm like 'FALLITA%' or sqlerrm like '%rosa completa%' then raise; end if;
+  raise notice 'ok  a rosa completa la regola lascia passare (%)', sqlerrm;
+end $$;
+do $$ begin
+  perform public.compra_giocatore((select id from public.leagues where short_name = 'TOP'), 'prova_p4');
+  raise exception 'FALLITA: a rosa completa e mercato chiuso non si doveva comprare';
+exception when others then
+  if sqlerrm like 'FALLITA%' or sqlerrm not like '%chiuso%' then raise; end if;
+  raise notice 'ok  a rosa completa il mercato chiuso resta chiuso (%)', sqlerrm;
+end $$;
+reset role;
 
 select 'tutte le prove sulle funzioni sono passate' as esito;

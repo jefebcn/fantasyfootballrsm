@@ -167,6 +167,24 @@ const ok = [], ko = []; const et = (c, t) => (c ? ok : ko).push(t);
   const reso = await p.evaluate(() => JSON.parse(localStorage.getItem('fcs:mock')).tables.league_members[0].credits);
   et(reso === prima + costo, `venduto, tornano esattamente i crediti pagati (${prima} + ${costo} = ${reso})`);
 
+  // --- LA FORMAZIONE ASPETTA LA ROSA INTERA (037, Alex 14/10). Con mezza
+  // rosa il bottone non conferma: porta al negozio, e sotto il database
+  // rifiuta comunque.
+  await p.evaluate(() => { location.hash = '#/rosa/formazione'; }); await w(1300);
+  const form = await p.evaluate(() => ({
+    conferma: !!document.querySelector('#confirm'),
+    completa: document.querySelector('#completa-rosa')?.getAttribute('href') || null,
+    avviso: document.querySelector('.rosa-incompleta')?.innerText.replace(/\n/g, ' ') || '',
+  }));
+  et(!form.conferma && form.completa === '#/negozio', `con mezza rosa niente "Conferma": il bottone porta al negozio (${form.completa})`);
+  et(/Rosa incompleta/.test(form.avviso) && /25/.test(form.avviso), `e dice quanti ne mancano (${form.avviso.slice(0, 80)})`);
+  const salvaForzato = await p.evaluate(async () => {
+    const S = await import('/src/state.js');
+    const n = S.currentMatchday();
+    try { await S.saveLineup(n, S.me().id, S.lineupFor(n, S.me().id)); return 'salvata'; } catch (e) { return e.message; }
+  });
+  et(/rosa completa/.test(salvaForzato), `e chi aggira il bottone trova la regola sotto ("${salvaForzato.slice(0, 70)}")`);
+
   // --- IL MERCATO CHIUDE. Non si tocca il calendario — il Giudice Dati lo
   // riallinea da solo a ogni apertura, e la prova si guarderebbe le mani —
   // si sposta l'OROLOGIO un'ora oltre la chiusura delle formazioni della
@@ -179,24 +197,68 @@ const ok = [], ko = []; const et = (c, t) => (c ? ok : ko).push(t);
   });
   await ctx.clock.setFixedTime(new Date(+new Date(primoLock) + 3600000));
   await p.reload({ waitUntil: 'load' }); await w(1800);
+  // --- MERCATO CHIUSO, ROSA A META': si compra ancora, solo per completarla
+  await p.evaluate(() => { location.hash = '#/negozio'; }); await w(1200);
+  const meta = await p.evaluate(() => ({
+    avviso: document.querySelector('.neg-quando')?.innerText.replace(/\n/g, ' ') || '',
+    compra: document.querySelectorAll('[data-compra]:not([disabled])').length,
+    vendi: document.querySelectorAll('[data-vendi]').length,
+    riserva: document.querySelector('.neg-riserva')?.innerText || '',
+  }));
+  et(/Riserva crediti/.test(meta.riserva), `dice quanti crediti tenere da parte per completarla (${meta.riserva.slice(0, 60)})`);
+  et(/Completa la rosa/.test(meta.avviso), `a mercato chiuso con la rosa a metà dice di completarla (${meta.avviso.slice(0, 70)})`);
+  et(meta.compra > 0 && meta.vendi > 0, `si compra ancora, e si può togliere per liberare crediti (038) (${meta.compra} da comprare, ${meta.vendi} da togliere)`);
+  const preso = await p.evaluate(async () => {
+    const S = await import('/src/state.js');
+    const miei = new Set(S.rosterIds(S.me().id)); const n = S.negozio();
+    const g = S.base.players.find((x) => !miei.has(x.id) && n.manca[x.role] && x.quotation <= n.crediti && !x.doppioneDi);
+    try { await S.compraGiocatore(g.id); return 'preso'; } catch (e) { return e.message; }
+  });
+  et(preso === 'preso', `e il database lo lascia comprare (${preso})`);
+
+  // --- MERCATO CHIUSO, ROSA COMPLETA: chiuso davvero
+  await p.evaluate(async () => {
+    const S = await import('/src/state.js');
+    const s = JSON.parse(localStorage.getItem('fcs:mock'));
+    const io = s.tables.league_members.find((m) => m.user_id === s.userId);
+    const miei = new Set(s.tables.rosters.filter((r) => r.member_id === io.id && !r.released_at).map((r) => r.player_id));
+    const quote = { P: 3, D: 8, C: 8, A: 6 }; const per = { P: 0, D: 0, C: 0, A: 0 };
+    for (const id of miei) per[S.playersById.get(id).role]++;
+    for (const g of S.base.players) {
+      if (miei.has(g.id) || g.doppioneDi || per[g.role] >= quote[g.role]) continue;
+      s.tables.rosters.push({ id: 'r' + g.id, league_id: io.league_id, member_id: io.id, player_id: g.id, price_paid: 1, released_at: null });
+      per[g.role]++;
+    }
+    localStorage.setItem('fcs:mock', JSON.stringify(s));
+  });
+  await p.reload({ waitUntil: 'load' }); await w(1800);
   await p.evaluate(() => { location.hash = '#/negozio'; }); await w(1200);
   const chiuso = await p.evaluate(() => ({
     avviso: document.querySelector('.neg-quando')?.innerText.replace(/\n/g, ' ') || '',
     compra: document.querySelectorAll('[data-compra]:not([disabled])').length,
     vendi: document.querySelectorAll('[data-vendi]').length,
   }));
-  et(/chiuso/i.test(chiuso.avviso), `a mercato chiuso lo dice (${chiuso.avviso})`);
+  et(/chiuso/i.test(chiuso.avviso), `a mercato chiuso e rosa completa lo dice (${chiuso.avviso})`);
   et(chiuso.compra === 0 && chiuso.vendi === 0, `e non si compra né si vende (${chiuso.compra} bottoni)`);
 
   // e il rifiuto non sta solo nella schermata: si chiama la funzione a mano
   const forzato = await p.evaluate(async () => {
     const S = await import('/src/state.js');
-    try { await S.compraGiocatore(S.base.players[0].id); return 'passata'; }
+    const miei = new Set(S.rosterIds(S.me().id));
+    try { await S.compraGiocatore(S.base.players.find((g) => !miei.has(g.id)).id); return 'passata'; }
     catch (e) { return e.message; }
   });
   et(/chiuso/i.test(forzato), `e chi aggira la schermata trova la stessa regola sotto ("${forzato}")`);
   const dopoRifiuto = await p.evaluate(async () => { const S = await import('/src/state.js'); return { rosa: S.rosterIds(S.me().id).length, db: (JSON.parse(localStorage.getItem('fcs:mock')).tables.rosters || []).filter((r) => !r.released_at).length }; });
   et(dopoRifiuto.rosa === dopoRifiuto.db, `rifiutato dal database, l'acquisto anticipato sullo schermo torna indietro (${dopoRifiuto.rosa} in rosa, ${dopoRifiuto.db} nel database)`);
+
+  // a rosa completa la formazione si conferma (orologio di nuovo prima del
+  // lock: a giornata bloccata il bottone non c'e' per nessuno)
+  await ctx.clock.setFixedTime(new Date(+new Date(primoLock) - 2 * 3600000));
+  await p.reload({ waitUntil: 'load' }); await w(1800);
+  await p.evaluate(() => { location.hash = '#/rosa/formazione'; }); await w(1300);
+  const pronta = await p.evaluate(() => ({ conferma: !!document.querySelector('#confirm'), completa: !!document.querySelector('#completa-rosa') }));
+  et(pronta.conferma && !pronta.completa, 'a rosa completa torna il bottone "Conferma formazione"');
 
   et(errori.length === 0, `nessun errore JS${errori.length ? ' — ' + errori[0] : ''}`);
   await b.close();

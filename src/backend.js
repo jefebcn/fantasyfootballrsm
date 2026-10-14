@@ -20,6 +20,30 @@ const withTimeout = (promise, ms, what) => Promise.race([
 ]);
 
 /**
+ * SESSIONE SCADUTA MENTRE IL TELEFONO DORMIVA. Console, 13-14/10: «Token non
+ * accettato» su iPhone, all'apertura. L'app resta sospesa per ore, il token
+ * scade, e al risveglio le prime richieste partono col token vecchio prima
+ * che il rinnovo automatico faccia in tempo: il database risponde 401 «JWT
+ * expired» e l'app restava senza dati. Qui, se una richiesta ai dati torna
+ * con il token scaduto, si rinnova la sessione e la si rifa' una volta.
+ */
+export function rinnovaSeScaduto(fetchFn, rinnova) {
+  return async (input, init = {}) => {
+    const r = await fetchFn(input, init);
+    const url = typeof input === 'string' ? input : input?.url || '';
+    if (r.status !== 401 || !url.includes('/rest/v1/')) return r;
+    let corpo = '';
+    try { corpo = await r.clone().text(); } catch { /* corpo illeggibile: si lascia com'e' */ }
+    if (!/jwt expired|PGRST301|PGRST303/i.test(corpo)) return r;
+    const token = await rinnova().catch(() => null);
+    if (!token) return r;
+    const headers = new Headers(init.headers || (typeof input === 'string' ? undefined : input.headers));
+    headers.set('Authorization', `Bearer ${token}`);
+    return fetchFn(input, { ...init, headers });
+  };
+}
+
+/**
  * accessToken: se presente, l'identità arriva da un fornitore esterno (Clerk) e
  * l'autenticazione di Supabase non viene usata. Altrimenti si usa Supabase Auth.
  */
@@ -29,7 +53,8 @@ export async function init({ accessToken } = {}) {
   external = !!accessToken;
   sb = external
     ? mod.createClient(c.url, c.key, { accessToken })
-    : mod.createClient(c.url, c.key, { auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true } });
+    : mod.createClient(c.url, c.key, { auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true },
+      global: { fetch: rinnovaSeScaduto((...a) => fetch(...a), async () => (await sb.auth.refreshSession()).data?.session?.access_token || null) } });
   if (external) { providers = {}; return null; }
   const { data } = await withTimeout(sb.auth.getSession(), SUPABASE_TIMEOUT_MS, 'Supabase non raggiungibile');
   providers = await loadProviders(c);
@@ -113,6 +138,7 @@ export function translate(error) {
   if (m.includes('more than one relationship') || m.includes('pgrst201')) return 'Il database ha più di un collegamento fra queste tabelle e la richiesta è ambigua: va indicata la chiave da usare.';
   if (m.includes('failed to fetch') || m.includes('networkerror')) return 'Nessuna connessione al server.';
   if (m.includes('invalid input syntax for type uuid')) return 'Il database non è pronto per Clerk: esegui la migrazione 001-identita-esterna.sql nell\'SQL Editor.';
+  if (!external && (m.includes('jwt expired') || m.includes('pgrst301') || m.includes('pgrst303'))) return 'La sessione è scaduta: chiudi e riapri l\'app. Se succede ancora, esci e rientra dal Profilo.';
   if (m.includes('jwt') || m.includes('jwks') || m.includes('invalid claim')) return 'Token non accettato da Supabase: controlla l\'integrazione Clerk in Authentication → Third-Party Auth e che il claim "role" valga "authenticated".';
   return error?.message || 'Errore imprevisto.';
 }

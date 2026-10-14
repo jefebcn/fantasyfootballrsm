@@ -2114,6 +2114,23 @@ select pg_temp.esige('e si vende', not exists (select 1 from public.rosters wher
 select public.compra_giocatore(:'aperta', 'prova_d3');
 select pg_temp.esige('e si compra', exists (select 1 from public.rosters where member_id = :'m_pub1' and player_id = 'prova_d3' and released_at is null));
 reset role;
+-- 040: vendere un giocatore schierato toglie la formazione ancora da giocare
+insert into public.matchday_locks (matchday, lock_at) values (29, now() + interval '3 days'), (30, now() - interval '1 day')
+  on conflict (matchday) do update set lock_at = excluded.lock_at;
+delete from public.lineups where member_id = :'m_pub1' and matchday in (29, 30);
+insert into public.lineups (league_id, member_id, matchday, lineup) values
+  (:'aperta', :'m_pub1', 29, '{"formation":"4-4-2","starters":["prova_d3"],"bench":[]}'),
+  (:'aperta', :'m_pub1', 30, '{"formation":"4-4-2","starters":["prova_d3"],"bench":[]}');
+select pg_temp.entra('user_pub1');
+set role authenticated;
+select (public.vendi_giocatore(:'aperta', 'prova_d3') ->> 'formazioni_tolte')::int as tolte \gset
+reset role;
+select pg_temp.esige('vendendo un giocatore schierato la formazione da giocare si toglie (040)',
+  :tolte = 1 and not exists (select 1 from public.lineups where member_id = :'m_pub1' and matchday = 29));
+select pg_temp.esige('ma quella di una giornata gia'' cominciata resta',
+  exists (select 1 from public.lineups where member_id = :'m_pub1' and matchday = 30));
+delete from public.lineups where member_id = :'m_pub1' and matchday in (29, 30);
+delete from public.matchday_locks where matchday in (29, 30);
 -- user_pub1 qui e' il proprietario: la prova di chi non lo e' la fa user_bea
 select pg_temp.entra('user_bea');
 set role authenticated;

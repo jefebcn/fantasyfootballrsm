@@ -1190,6 +1190,18 @@ export async function vendiGiocatore(playerId) {
     const r = await remote.vendiGiocatore(base.league.id, playerId);
     const io = me();
     if (io && r && r.crediti != null) { io.credits = r.crediti; notify(); }
+    // 040: le formazioni ancora da giocare che lo contenevano il database le
+    // ha tolte; qui si tolgono subito, senza aspettare il ricaricamento.
+    if (io && r?.formazioni_tolte) {
+      for (const k of Object.keys(L.lineups)) {
+        const [n, mid] = k.split(':');
+        const l = L.lineups[k];
+        const md = matchday(+n);
+        if (mid === String(io.id) && (!md || new Date(md.lockAt) > now())
+          && [...(l.starters || []), ...(l.bench || [])].includes(playerId)) delete L.lineups[k];
+      }
+      notify();
+    }
     debounced(); return r;
   } catch (e) { annulla?.(); throw e; }
 }

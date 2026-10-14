@@ -1124,8 +1124,12 @@ insert into public.quotazioni (player_id, ruolo, quotazione, nome, club) values
   ('prova_p3', 'P', 8, 'Portiere Tre', 'Prova'),
   ('prova_p4', 'P', 9, 'Portiere Quattro', 'Prova'),
   ('prova_d1', 'D', 95, 'Difensore Caro', 'Prova'),
-  ('prova_d2', 'D', 7, 'Difensore Semplice', 'Prova')
+  ('prova_d2', 'D', 7, 'Difensore Semplice', 'Prova'),
+  ('prova_d3', 'D', 6, 'Difensore Economico', 'Prova')
 on conflict (player_id) do nothing;
+-- Rosa piccola (3 portieri e 2 difensori): con 100 crediti una rosa da 25
+-- non si fa, e la riserva crediti (038) fermerebbe il primo acquisto.
+update public.leagues set rules = coalesce(rules, '{}'::jsonb) || '{"roster":{"P":3,"D":2,"C":0,"A":0}}'::jsonb where id = :'aperta';
 
 select pg_temp.entra('user_pub1');
 set role authenticated;
@@ -2034,9 +2038,8 @@ delete from public.matchday_locks where matchday = 28;
 
 -- 037: nella lega pubblica la formazione si consegna con la rosa completa
 select id as m_pub1 from public.league_members where league_id = :'aperta' and user_id = 'user_pub1' \gset
-select pg_temp.esige('la lega pubblica chiede 25 giocatori', public.rosa_richiesta(:'aperta') = 25);
-select pg_temp.esige('nella privata la regola non tocca niente: anche li'' se ne contano 25, ma non blocca',
-  public.rosa_richiesta(:'lega') = 25);
+select pg_temp.esige('la lega pubblica chiede la somma delle sue quote (qui 5)', public.rosa_richiesta(:'aperta') = 5);
+select pg_temp.esige('senza quote sue se ne contano 25', public.rosa_richiesta(:'lega') = 25);
 select pg_temp.entra('user_pub1');
 set role authenticated;
 do $$ begin
@@ -2059,12 +2062,23 @@ select pg_temp.esige('il mercato della prima giornata e'' chiuso', not public.me
 select public.compra_giocatore(:'aperta', 'prova_d2');
 select pg_temp.esige('ma con la rosa a meta'' si compra ancora, per completarla',
   exists (select 1 from public.rosters where member_id = :'m_pub1' and player_id = 'prova_d2' and released_at is null));
+-- 038: con la rosa a meta' si vende anche, per liberare crediti
+select public.vendi_giocatore(:'aperta', 'prova_d2');
+select pg_temp.esige('con la rosa a meta'' si vende anche a mercato chiuso (038)',
+  not exists (select 1 from public.rosters where member_id = :'m_pub1' and player_id = 'prova_d2' and released_at is null));
+select public.compra_giocatore(:'aperta', 'prova_d2');
+-- RISERVA CREDITI: con 15 crediti, preso il portiere da 12 ne restano 3, e
+-- per l'ultimo difensore (il meno caro costa 6) non basterebbero.
+reset role;
+update public.league_members set credits = 15 where id = :'m_pub1';
+select pg_temp.entra('user_pub1');
+set role authenticated;
 do $$ begin
-  perform public.vendi_giocatore((select id from public.leagues where short_name = 'TOP'), 'prova_d2');
-  raise exception 'FALLITA: a mercato chiuso non si doveva poter vendere';
+  perform public.compra_giocatore((select id from public.leagues where short_name = 'TOP'), 'prova_p2');
+  raise exception 'FALLITA: la riserva crediti doveva fermarlo';
 exception when others then
-  if sqlerrm like 'FALLITA%' then raise; end if;
-  raise notice 'ok  vendere a mercato chiuso no, nemmeno con la rosa a meta'' (%)', sqlerrm;
+  if sqlerrm like 'FALLITA%' or sqlerrm not like 'Riserva crediti%' then raise; end if;
+  raise notice 'ok  la riserva crediti ferma l''acquisto che lascerebbe bloccati (%)', sqlerrm;
 end $$;
 reset role;
 -- con le quote della lega a 3 la rosa (p1, p3, d2) e' completa

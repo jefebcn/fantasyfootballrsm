@@ -115,7 +115,7 @@ export const negozio = {
       const v = e.target.closest('[data-vendi]');
       if (v) {
         v.disabled = true;
-        try { const esito = await S.vendiGiocatore(v.dataset.vendi); ctx.toast(`Tolto, +${plurale(esito?.reso ?? 0, 'credito', 'crediti')}`); }
+        try { const esito = await S.vendiGiocatore(v.dataset.vendi); ctx.toast(esito?.formazioni_tolte ? `Tolto, +${plurale(esito?.reso ?? 0, 'credito', 'crediti')}. Era nella tua formazione: confermala di nuovo` : `Tolto, +${plurale(esito?.reso ?? 0, 'credito', 'crediti')}`); }
         catch (err) { ctx.toast(err.message || 'Non è stato possibile toglierlo'); }
         ctx.render();
       }

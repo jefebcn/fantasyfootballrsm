@@ -217,7 +217,8 @@ export function createClient(_url, _key, opts) {
           const mie = () => T('rosters').filter((r) => r.league_id === args.p_league && r.member_id === mio.id && !r.released_at);
           // 037: chi ha la rosa incompleta puo' sempre COMPRARE (vendere no).
           const serve = Object.values({ P: 3, D: 8, C: 8, A: 6, ...(lega.rules?.roster || {}) }).reduce((x, y) => x + y, 0);
-          if (!aperto() && (name === 'vendi_giocatore' || mie().length >= serve)) throw new Error('Il mercato è chiuso: la tua prima giornata è già cominciata');
+          // 038: finche' la rosa non e' completa si vende anche, per liberare crediti.
+          if (!aperto() && mie().length >= serve) throw new Error('Il mercato è chiuso: la tua prima giornata è già cominciata');
           if (name === 'vendi_giocatore') {
             const r = mie().find((x) => x.player_id === args.p_player);
             if (!r) throw new Error('Questo giocatore non è in rosa');
@@ -232,6 +233,16 @@ export function createClient(_url, _key, opts) {
           const quanti = mie().filter((x) => (T('quotazioni').find((z) => z.player_id === x.player_id) || {}).ruolo === q.ruolo).length;
           if (quanti >= quote[q.ruolo]) throw new Error(`Hai già ${quote[q.ruolo]} giocatori in quel ruolo: è il massimo`);
           if (mio.credits < q.quotazione) throw new Error(`Ti restano ${mio.credits} crediti e ne servono ${q.quotazione}`);
+          // 038: riserva crediti per completare la rosa coi giocatori meno cari
+          const ruoloDi = (id) => (T('quotazioni').find((z) => z.player_id === id) || {}).ruolo;
+          const ho = new Set(mie().map((x) => x.player_id));
+          let riserva = 0;
+          for (const r of Object.keys(quote)) {
+            const vuoti = Math.max(0, quote[r] - mie().filter((x) => ruoloDi(x.player_id) === r).length - (r === q.ruolo ? 1 : 0));
+            const prezzi = T('quotazioni').filter((z) => z.ruolo === r && !ho.has(z.player_id)).map((z) => z.quotazione);
+            riserva += vuoti * (prezzi.length ? Math.min(...prezzi) : 0);
+          }
+          if (mio.credits - q.quotazione < riserva) throw new Error(`Riserva crediti: dopo questo acquisto te ne resterebbero ${mio.credits - q.quotazione}, ma ne servono almeno ${riserva} per completare la rosa coi giocatori meno cari`);
           T('rosters').push({ id: uid(), league_id: args.p_league, member_id: mio.id, player_id: args.p_player,
             price_paid: q.quotazione, released_at: null });
           mio.credits -= q.quotazione; persisti();

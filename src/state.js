@@ -1096,11 +1096,23 @@ export function negozio() {
   const prima = entrato ? base.matchdays.find((md) => new Date(md.lockAt) > entrato) : null;
   const chiude = prima ? new Date(prima.lockAt) : null;
   const aperto = !!chiude && now() < chiude;
-  // Comprare: nella finestra della prima giornata, oppure finche' la rosa non
-  // e' completa (037). Vendere solo nella finestra: e' `aperto`.
+  // RISERVA CREDITI (038): quanto serve, al minimo, per riempire i posti
+  // vuoti coi giocatori meno cari di ogni ruolo. `riserva(ruolo)` e' quella
+  // che resta da coprire DOPO aver preso un giocatore di quel ruolo.
+  const miei = new Set((base.rosters[io.id] || []).map((r) => r.playerId));
+  const minimo = {};
+  for (const g of base.players) {
+    if (g.isActive === false || g.doppioneDi || miei.has(g.id)) continue;
+    minimo[g.role] = Math.min(minimo[g.role] ?? Infinity, g.quotation);
+  }
+  const riserva = (ruolo = null) => ['P', 'D', 'C', 'A'].reduce((tot, r) =>
+    tot + Math.max(0, manca[r] - (r === ruolo ? 1 : 0)) * (Number.isFinite(minimo[r]) ? minimo[r] : 0), 0);
+  // Comprare e vendere: nella finestra della prima giornata, oppure finche'
+  // la rosa non e' completa (037, 038). A rosa completa, dopo, e' quella.
   return { crediti: io.credits ?? 0, quote, per, manca, mancanti,
     completa: mancanti === 0, giornata: prima ? prima.number : null, chiude,
-    aperto, compra: aperto || mancanti > 0, totale: Object.values(quote).reduce((x, y) => x + y, 0) };
+    aperto, compra: aperto || mancanti > 0, vende: aperto || mancanti > 0, riserva,
+    totale: Object.values(quote).reduce((x, y) => x + y, 0) };
 }
 /**
  * LEGA PUBBLICA: LA FORMAZIONE ASPETTA LA ROSA INTERA. Alex, 14/10: con mezza

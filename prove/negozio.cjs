@@ -203,9 +203,11 @@ const ok = [], ko = []; const et = (c, t) => (c ? ok : ko).push(t);
     avviso: document.querySelector('.neg-quando')?.innerText.replace(/\n/g, ' ') || '',
     compra: document.querySelectorAll('[data-compra]:not([disabled])').length,
     vendi: document.querySelectorAll('[data-vendi]').length,
+    riserva: document.querySelector('.neg-riserva')?.innerText || '',
   }));
+  et(/Riserva crediti/.test(meta.riserva), `dice quanti crediti tenere da parte per completarla (${meta.riserva.slice(0, 60)})`);
   et(/Completa la rosa/.test(meta.avviso), `a mercato chiuso con la rosa a metà dice di completarla (${meta.avviso.slice(0, 70)})`);
-  et(meta.compra > 0 && meta.vendi === 0, `si compra ancora, ma non si vende (${meta.compra} da comprare, ${meta.vendi} da togliere)`);
+  et(meta.compra > 0 && meta.vendi > 0, `si compra ancora, e si può togliere per liberare crediti (038) (${meta.compra} da comprare, ${meta.vendi} da togliere)`);
   const preso = await p.evaluate(async () => {
     const S = await import('/src/state.js');
     const miei = new Set(S.rosterIds(S.me().id)); const n = S.negozio();

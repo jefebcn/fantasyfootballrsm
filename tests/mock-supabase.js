@@ -88,6 +88,17 @@ function builder(table) {
   return b;
 }
 function guardFrozen(table, list) {
+  // 037: nella lega pubblica la formazione si consegna con la rosa completa.
+  if (table === 'lineups') {
+    for (const r of list) {
+      const lega = T('leagues').find((l) => l.id === r.league_id);
+      if (!lega || !lega.pubblica) continue;
+      const serve = Object.values({ P: 3, D: 8, C: 8, A: 6, ...(lega.rules?.roster || {}) }).reduce((x, y) => x + y, 0);
+      const ha = T('rosters').filter((x) => x.member_id === r.member_id && !x.released_at).length;
+      if (ha < serve) throw new Error(`Nella lega pubblica la formazione si consegna con la rosa completa: hai ${ha} giocatori su ${serve}. Completala dal Negozio.`);
+    }
+    return;
+  }
   if (!['match_events', 'match_appearances', 'match_overrides'].includes(table)) return;
   for (const r of list) { const n = +((r.match_id || '').match(/^md(\d+)/) || [])[1]; if (T('matchday_status').some((s) => s.matchday === n && s.status === 'frozen')) throw new Error(`Giornata ${n} congelata (art. 9.2)`); }
 }
@@ -203,8 +214,10 @@ export function createClient(_url, _key, opts) {
           if (name === 'mercato_aperto') return { data: aperto(), error: null };
           if (!mio) throw new Error('Non sei in questa lega');
           if (!lega.pubblica) throw new Error("In questa lega la rosa si fa con l'asta, non dal negozio");
-          if (!aperto()) throw new Error('Il mercato è chiuso: la tua prima giornata è già cominciata');
           const mie = () => T('rosters').filter((r) => r.league_id === args.p_league && r.member_id === mio.id && !r.released_at);
+          // 037: chi ha la rosa incompleta puo' sempre COMPRARE (vendere no).
+          const serve = Object.values({ P: 3, D: 8, C: 8, A: 6, ...(lega.rules?.roster || {}) }).reduce((x, y) => x + y, 0);
+          if (!aperto() && (name === 'vendi_giocatore' || mie().length >= serve)) throw new Error('Il mercato è chiuso: la tua prima giornata è già cominciata');
           if (name === 'vendi_giocatore') {
             const r = mie().find((x) => x.player_id === args.p_player);
             if (!r) throw new Error('Questo giocatore non è in rosa');

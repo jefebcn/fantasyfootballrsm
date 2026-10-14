@@ -2104,4 +2104,31 @@ exception when others then
 end $$;
 reset role;
 
+-- 039: il mercato di riparazione riapre tutto a tutti, per qualche giorno
+insert into public.finestre_mercato (nome, inizio, fine) values ('Riparazione di prova', now() - interval '1 hour', now() + interval '1 day');
+select pg_temp.entra('user_pub1');
+set role authenticated;
+select pg_temp.esige('con la finestra di riparazione il mercato e'' aperto anche a rosa completa', public.mercato_aperto(:'aperta'));
+select public.vendi_giocatore(:'aperta', 'prova_d2');
+select pg_temp.esige('e si vende', not exists (select 1 from public.rosters where member_id = :'m_pub1' and player_id = 'prova_d2' and released_at is null));
+select public.compra_giocatore(:'aperta', 'prova_d3');
+select pg_temp.esige('e si compra', exists (select 1 from public.rosters where member_id = :'m_pub1' and player_id = 'prova_d3' and released_at is null));
+reset role;
+-- user_pub1 qui e' il proprietario: la prova di chi non lo e' la fa user_bea
+select pg_temp.entra('user_bea');
+set role authenticated;
+do $$ begin
+  insert into public.finestre_mercato (nome, inizio, fine) values ('Furbo', now(), now() + interval '1 year');
+  raise exception 'FALLITA: un giocatore qualunque non doveva poter aprire il mercato';
+exception when others then
+  if sqlerrm like 'FALLITA%' then raise; end if;
+  raise notice 'ok  il mercato di riparazione lo apre solo il proprietario (%)', sqlerrm;
+end $$;
+reset role;
+delete from public.finestre_mercato;
+select pg_temp.entra('user_pub1');
+set role authenticated;
+select pg_temp.esige('chiusa la finestra, il mercato torna chiuso', not public.mercato_aperto(:'aperta'));
+reset role;
+
 select 'tutte le prove sulle funzioni sono passate' as esito;

@@ -397,6 +397,15 @@ export async function caricaInterruttori() {
   if (error) return {};
   return Object.fromEntries((data || []).map((r) => [r.chiave, !!r.acceso]));
 }
+/**
+ * Le finestre del mercato di riparazione (039): [{ nome, inizio, fine }].
+ * Senza la 039 la tabella non c'e': nessuna finestra, l'app va come prima.
+ */
+export async function caricaFinestre() {
+  const { data, error } = await sb.from('finestre_mercato').select('nome, inizio, fine');
+  if (error) return [];
+  return data || [];
+}
 export async function impostaInterruttore(chiave, acceso, userId) {
   return must(await sb.from('app_interruttori').upsert({ chiave, acceso, cambiato_da: userId, cambiato_at: new Date().toISOString() }));
 }

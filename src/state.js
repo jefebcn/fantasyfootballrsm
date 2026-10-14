@@ -108,6 +108,7 @@ async function loadAll() {
   legheP.catch(() => {});   // se il profilo fallisce prima, l'errore e' quello, non questo
   const sponsorP = remote.caricaSponsor().catch(() => []);
   const interruttoriP = remote.caricaInterruttori().catch(() => ({}));
+  const finestreP = remote.caricaFinestre().catch(() => []);
   prof = (await remote.ensureProfile(user)) || { id: user.id, display_name: user.email, is_judge: false };
   await consegnaReclutatore();
   // INSIEME, NON IN FILA. Le leghe, i voti di tutti, lo sponsor e — per il
@@ -162,6 +163,7 @@ async function loadAll() {
   // con una schermata di errore. Stessa scelta fatta per gli scambi.
   sponsor = await sponsorP;
   interruttori = await interruttoriP;
+  finestre = await finestreP;
   remote.subscribe(prefs.currentLeagueId, debounced);
   // Il Giudice Dati allinea il calendario dei lock senza doverselo ricordare:
   // e' un dato derivato dal calendario, identico a ogni giro, e l'RPC riscrive
@@ -881,6 +883,18 @@ let sponsor = [];
  * FSGC si ferma (lo legge scripts/importa-fsgc.py). Leghe e punti restano.
  */
 let interruttori = {};
+let finestre = [];
+/**
+ * IL MERCATO DI RIPARAZIONE (039). Nella pausa invernale, per qualche giorno,
+ * nella lega pubblica tutti tolgono e comprano di nuovo. Le date le scrive il
+ * proprietario nel database, quando la FSGC le fa sapere. Torna la finestra
+ * aperta adesso, o null.
+ */
+export function finestraRiparazione() {
+  const t = now();
+  const f = finestre.find((x) => new Date(x.inizio) <= t && t <= new Date(x.fine));
+  return f ? { nome: f.nome || 'Mercato di riparazione', fine: new Date(f.fine) } : null;
+}
 export const prudente = () => !!interruttori.prudente;
 export async function impostaPrudente(acceso) {
   await remote.impostaInterruttore('prudente', acceso, user.id);
@@ -1095,7 +1109,8 @@ export function negozio() {
   const entrato = io.entrato ? new Date(io.entrato) : null;
   const prima = entrato ? base.matchdays.find((md) => new Date(md.lockAt) > entrato) : null;
   const chiude = prima ? new Date(prima.lockAt) : null;
-  const aperto = !!chiude && now() < chiude;
+  const riparazione = finestraRiparazione();
+  const aperto = !!riparazione || (!!chiude && now() < chiude);
   // RISERVA CREDITI (038): quanto serve, al minimo, per riempire i posti
   // vuoti coi giocatori meno cari di ogni ruolo. `riserva(ruolo)` e' quella
   // che resta da coprire DOPO aver preso un giocatore di quel ruolo.
@@ -1111,7 +1126,7 @@ export function negozio() {
   // la rosa non e' completa (037, 038). A rosa completa, dopo, e' quella.
   return { crediti: io.credits ?? 0, quote, per, manca, mancanti,
     completa: mancanti === 0, giornata: prima ? prima.number : null, chiude,
-    aperto, compra: aperto || mancanti > 0, vende: aperto || mancanti > 0, riserva,
+    aperto, riparazione, compra: aperto || mancanti > 0, vende: aperto || mancanti > 0, riserva,
     totale: Object.values(quote).reduce((x, y) => x + y, 0) };
 }
 /**

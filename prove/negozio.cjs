@@ -252,6 +252,26 @@ const ok = [], ko = []; const et = (c, t) => (c ? ok : ko).push(t);
   const dopoRifiuto = await p.evaluate(async () => { const S = await import('/src/state.js'); return { rosa: S.rosterIds(S.me().id).length, db: (JSON.parse(localStorage.getItem('fcs:mock')).tables.rosters || []).filter((r) => !r.released_at).length }; });
   et(dopoRifiuto.rosa === dopoRifiuto.db, `rifiutato dal database, l'acquisto anticipato sullo schermo torna indietro (${dopoRifiuto.rosa} in rosa, ${dopoRifiuto.db} nel database)`);
 
+  // --- IL MERCATO DI RIPARAZIONE (039): con la finestra aperta, a rosa
+  // completa e mercato chiuso, si torna a togliere e comprare.
+  await p.evaluate(() => {
+    const s = JSON.parse(localStorage.getItem('fcs:mock'));
+    const ora = Date.now();   // l'orologio della pagina e' gia' spostato oltre il lock
+    s.tables.finestre_mercato = [{ id: 1, nome: 'Mercato di riparazione', inizio: new Date(ora - 3600000).toISOString(), fine: new Date(ora + 86400000).toISOString() }];
+    localStorage.setItem('fcs:mock', JSON.stringify(s));
+  });
+  await p.reload({ waitUntil: 'load' }); await w(1800);
+  await p.evaluate(() => { location.hash = '#/negozio'; }); await w(1200);
+  const rip = await p.evaluate(() => ({
+    avviso: document.querySelector('.neg-quando')?.innerText.replace(/\n/g, ' ') || '',
+    vendi: document.querySelectorAll('[data-vendi]').length,
+  }));
+  et(/Mercato di riparazione aperto/.test(rip.avviso) && rip.vendi > 0, `con la finestra di riparazione il negozio si riapre a rosa completa (${rip.avviso.slice(0, 60)} · ${rip.vendi} da togliere)`);
+  await p.evaluate(() => { location.hash = '#/'; }); await w(1200);
+  const tileRip = await p.evaluate(() => /Mercato di riparazione aperto/i.test(document.body.innerText));
+  et(tileRip, 'e la home lo annuncia');
+  await p.evaluate(() => { const s = JSON.parse(localStorage.getItem('fcs:mock')); s.tables.finestre_mercato = []; localStorage.setItem('fcs:mock', JSON.stringify(s)); });
+
   // a rosa completa la formazione si conferma (orologio di nuovo prima del
   // lock: a giornata bloccata il bottone non c'e' per nessuno)
   await ctx.clock.setFixedTime(new Date(+new Date(primoLock) - 2 * 3600000));

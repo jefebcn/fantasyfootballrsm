@@ -2456,3 +2456,6 @@ a.crow .cls-chev{flex:none;color:var(--text-muted);margin-left:-4px}
 /* Il premio: cifra in evidenza, il resto («coupon») piu' piccolo ma leggibile */
 .premio-c{font-size:1.18em;font-weight:900;white-space:nowrap}
 .premio-t{font-size:.7em;font-weight:700;letter-spacing:.03em;opacity:.92}
+/* La pagina per i calciatori (041) */
+.ades-scelta{display:flex;gap:10px;align-items:flex-start;padding:10px 12px;margin:6px 0;border:1px solid var(--border, rgba(127,127,127,.25));border-radius:var(--r-md);font-size:14px;line-height:1.4;cursor:pointer}
+.ades-scelta input{margin-top:3px;flex:none}

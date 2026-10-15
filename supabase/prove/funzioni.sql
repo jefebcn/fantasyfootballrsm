@@ -2197,4 +2197,25 @@ delete from public.giocatori_esclusi where player_id = 'prova_d3';
 reset role;
 select pg_temp.esige('l''interruttore dei nomi brevi c''e'' ed e'' spento', not (select acceso from public.app_interruttori where chiave = 'nomi_brevi'));
 
+-- 042: le squalifiche le scrive il Giudice (o chi amministra), le legge chiunque
+select pg_temp.entra('user_bea');
+set role authenticated;
+do $$ begin
+  insert into public.squalifiche (player_id, matchday) values ('prova_d1', 6);
+  raise exception 'FALLITA: un giocatore qualunque non doveva poter squalificare';
+exception when others then
+  if sqlerrm like 'FALLITA%' then raise; end if;
+  raise notice 'ok  squalificare lo fa solo il Giudice (%)', sqlerrm;
+end $$;
+reset role;
+select pg_temp.entra('user_pub1');
+set role authenticated;
+insert into public.squalifiche (player_id, matchday, nota) values ('prova_d1', 6, 'somma di ammonizioni');
+reset role;
+select set_config('request.jwt.claims', '', false);
+set role anon;
+select pg_temp.esige('la squalifica la vede anche chi non ha un account (042)', exists (select 1 from public.squalifiche where player_id = 'prova_d1' and matchday = 6));
+reset role;
+delete from public.squalifiche;
+
 select 'tutte le prove sulle funzioni sono passate' as esito;

@@ -30,7 +30,8 @@ export const rosa = {
       const list = r.filter((x) => x.player.role === role).sort((a, b) => b.player.quotation - a.player.quotation);
       return `<div class="vlist"><div class="vhead">${ROLE_NAME[role]} <span>${list.length}/${S.rules().roster[role]}</span></div>${list.map((x) => {
         const rt = ratings.get(x.playerId); const v = rt ? (rt.isSV ? 'S.V.' : fmt(rt.fantaVote)) : '–';
-        return `<a class="vr" href="#/giocatore/${x.playerId}" style="text-decoration:none">${faccia(x.player, x.club)}<span class="nm"><b${x.player.isActive ? '' : ' style="text-decoration:line-through"'}>${esc(x.player.name)}</b><span>${esc(x.club.name)} · quot. ${x.player.quotation} · pagato ${x.pricePaid}${x.player.isActive ? '' : ' · <b style="color:var(--negative)">RIMOSSO · rimborso 50%</b>'}</span></span><span class="ev"></span><span class="fv${rt && !rt.isSV ? '' : ' sv'}">${v}</span></a>`;
+        const sq = S.squalifica(x.playerId);
+        return `<a class="vr" href="#/giocatore/${x.playerId}" style="text-decoration:none">${faccia(x.player, x.club)}<span class="nm"><b${x.player.isActive ? '' : ' style="text-decoration:line-through"'}>${esc(x.player.name)}${sq ? ` <i class="squal" title="${esc(sq.motivo)}">SQUALIFICATO</i>` : ''}</b><span>${esc(x.club.name)} · quot. ${x.player.quotation} · pagato ${x.pricePaid}${x.player.isActive ? '' : ' · <b style="color:var(--negative)">RIMOSSO · rimborso 50%</b>'}</span></span><span class="ev"></span><span class="fv${rt && !rt.isSV ? '' : ' sv'}">${v}</span></a>`;
       }).join('')}</div>`;
     }).join('');
     return `<main class="a-body">

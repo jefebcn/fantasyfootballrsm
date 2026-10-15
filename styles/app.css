@@ -2459,3 +2459,7 @@ a.crow .cls-chev{flex:none;color:var(--text-muted);margin-left:-4px}
 /* La pagina per i calciatori (041) */
 .ades-scelta{display:flex;gap:10px;align-items:flex-start;padding:10px 12px;margin:6px 0;border:1px solid var(--border, rgba(127,127,127,.25));border-radius:var(--r-md);font-size:14px;line-height:1.4;cursor:pointer}
 .ades-scelta input{margin-top:3px;flex:none}
+/* Squalificato (042): il bollino rosso accanto al nome, e la sigla sul campo */
+.squal{display:inline-block;vertical-align:middle;margin-left:4px;padding:1px 6px;border-radius:999px;background:var(--negative);color:#fff;font:800 9.5px/1.5 var(--font-ui, inherit);font-style:normal;letter-spacing:.06em}
+.squal-t{color:var(--negative)}
+.slot .faccia .squal-x{position:absolute;left:-4px;bottom:-2px;padding:0 4px;border-radius:6px;background:var(--negative);color:#fff;font:800 9px/1.5 var(--font-ui, inherit);letter-spacing:.04em;z-index:2}

@@ -70,7 +70,7 @@ const piede = () => `<p class="small muted" style="text-align:center;margin-top:
   Ultimo aggiornamento: ${esc(dataIt(LEGALI_AGGIORNATE))}.</p>`;
 
 const disclaimer = blocco('Onestà su questa pagina', [
-  'Questo testo descrive come funziona l\'app oggi ed è scritto per farsi capire, non da un legale. Prima di aprire le iscrizioni fuori dal giro di amici va fatto rivedere da chi di dovere, insieme all\'accordo con la FSGC per nomi e prestazioni degli atleti.',
+  'Questo testo descrive come funziona l\'app oggi ed è scritto per farsi capire, non nel linguaggio di un contratto. Se qualcosa non è chiaro o ti sembra sbagliato, scrivici: lo correggiamo.',
 ]);
 
 export const privacy = {
@@ -283,7 +283,8 @@ export const licenze = {
     return `<main class="a-body">
       ${blocco('I dati del campionato', [
     'Calendario, risultati, tabellini e anagrafiche degli atleti vengono dai referti pubblici della <b>FSGC</b>, la Federazione Sammarinese Giuoco Calcio. Sono pubblicati da lei e qui vengono solo riorganizzati.',
-    'Nomi delle società e degli atleti compaiono a scopo descrittivo, per identificare chi ha giocato cosa. L\'app non è affiliata alla FSGC e non ha con lei alcun accordo: prima di aprire le iscrizioni fuori dal giro di amici va chiesto il permesso per l\'uso dei nomi e delle prestazioni degli atleti.',
+    'Nomi delle società e degli atleti compaiono solo a scopo descrittivo e informativo, per dire chi ha giocato e come, come fanno giornali e siti di statistiche. Fantatitano non è affiliato alla FSGC né alle società del campionato, non ne usa loghi o stemmi e non ne rappresenta le posizioni.',
+    'Se la FSGC, una società o un atleta ha osservazioni su come questi dati compaiono nell\'app, può scriverci: ne terremo conto.',
   ])}
       ${blocco('Software di terze parti', [
     ['Libreria della banca dati', 'per i dati e gli accessi, open source con licenza MIT; la sua nota di copyright sta nel file dentro l\'app. È a versione fissa: non viene chiesta a nessuna rete esterna.'],
@@ -294,7 +295,8 @@ export const licenze = {
     'Gli highlights sono del canale YouTube della <b>FSGC</b> e restano suoi: l\'app non li copia né li ricarica altrove, si limita a mostrarli da dove stanno e a dire a quale partita appartengono.',
   ])}
       ${blocco('Immagini e personaggi', [
-    `<b>Questa è la parte da sistemare prima di aprire al pubblico.</b> Gli avatar selezionabili raffigurano personaggi e persone riconoscibili, e le fotografie di sfondo non sono state realizzate per questo progetto. In una lega privata fra amici è una cosa; pubblicarli a chiunque è un'altra, e vuole materiale originale o con licenza.`,
+    'Le caricature dei calciatori fra cui scegliere l\'avatar sono originali, create per questo progetto: ognuna è diversa dalle altre e non raffigura persone reali.',
+    'Le fotografie di sfondo vengono da una raccolta di immagini gratuite, con licenza che ne permette l\'uso.',
     '<b>TITO</b>, il draghetto viola, è la mascotte di Fantatitano, disegnato per questo progetto.',
     'Stemmi e maglie caricati dai partecipanti restano di chi li ha caricati: l\'app li mostra solo agli altri della sua lega.',
     'Il logo, le icone e il campo di gioco sono disegnati per questo progetto.',

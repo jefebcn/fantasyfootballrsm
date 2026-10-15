@@ -48,7 +48,7 @@ function benchRow(id, i, bench, locked, voto = '') {
   const su = i > 0 && bench[i - 1]; const giu = i < 6 && bench[i + 1];
   return `<div class="br" data-bench="${i}"><span class="n">${i + 1}</span>
     ${faccia(p, clubOf(id))}
-    <span class="nm"><b>${esc(p.name)}</b><span>${esc(clubOf(id).name)} · quot. ${p.quotation}</span></span>
+    <span class="nm"><b>${esc(p.name)}${!locked && S.squalifica(id) ? ' <i class="squal">SQUALIFICATO</i>' : ''}</b><span>${esc(clubOf(id).name)} · quot. ${p.quotation}</span></span>
     ${voto}
     <span class="primo${primo ? '' : ' no'}"${primo ? ` title="Primo ${ROLE_NAME[p.role].slice(0, -1).toLowerCase()} della panchina: entra lui se un ${ROLE_NAME[p.role].slice(0, -1).toLowerCase()} titolare non prende voto"` : ' aria-hidden="true"'}>${primo ? `1º ${p.role}` : ''}</span>
     ${locked ? '' : `<span class="acts"><button class="rm" data-up="${i}" aria-label="Sposta su ${esc(p.name)}" ${su ? '' : 'disabled'}>${icon('up', 'ic sm')}</button><button class="rm" data-down="${i}" aria-label="Sposta giù ${esc(p.name)}" ${giu ? '' : 'disabled'}>${icon('down', 'ic sm')}</button></span>`}</div>`;
@@ -167,7 +167,7 @@ export const formazione = {
     const rosa = S.rosaIncompletaPerSchierare(me.id);
     const fx = S.myFixture(n, me.id); const opp = fx ? S.managersById.get(fx.homeManagerId === me.id ? fx.awayManagerId : fx.homeManagerId) : null;
     const slot = (id, role, i) => id
-      ? `<div class="slot" data-slot="${role}:${i}"><span class="av faccia">${d.captainId === id ? '<span class="cap">C</span>' : d.viceCaptainId === id ? '<span class="cap">V</span>' : ''}${avatar(P(id), S.clubsById.get(P(id).clubId))}${roleChip(role)}${voto(id)}</span><b>${esc(P(id).lastName)}</b></div>`
+      ? `<div class="slot" data-slot="${role}:${i}"><span class="av faccia">${d.captainId === id ? '<span class="cap">C</span>' : d.viceCaptainId === id ? '<span class="cap">V</span>' : ''}${avatar(P(id), S.clubsById.get(P(id).clubId))}${roleChip(role)}${voto(id)}${!locked && S.squalifica(id, n) ? '<span class="squal-x" title="Squalificato">SQ</span>' : ''}</span><b>${esc(P(id).lastName)}</b></div>`
       : `<div class="slot vuoto" data-slot="${role}:${i}"><span class="av">+</span><b>${ROLE_NAME[role].slice(0, -1).replace('Portier', 'Portiere')}</b></div>`;
     const line = (role) => `<div class="line" data-line="${role.toLowerCase()}">${s[role].map((id, i) => slot(id, role, i)).join('')}</div>`;
     const bench = Array.from({ length: 7 }, (_, i) => d.bench[i] || null);
@@ -234,7 +234,7 @@ export const formazione = {
     const pickSheet = (role, onPick, title, libero = null) => {
       const list = rosterIds.filter((id) => (role ? P(id).role === role : true)).sort((a, b) => P(b).quotation - P(a).quotation);
       const preso = (id) => id !== libero && used().has(id);
-      ctx.sheet(`<h3>${title}</h3><div class="plist">${list.map((id) => `<button data-pick="${id}" ${preso(id) ? 'disabled' : ''}>${roleChip(P(id).role)}<span><b>${esc(P(id).name)}</b><span>${esc(clubOf(id).name)}${preso(id) ? ' · già schierato' : ''}</span></span><span class="q">${P(id).quotation}</span></button>`).join('')}</div>`);
+      ctx.sheet(`<h3>${title}</h3><div class="plist">${list.map((id) => `<button data-pick="${id}" ${preso(id) ? 'disabled' : ''}>${roleChip(P(id).role)}<span><b>${esc(P(id).name)}</b><span>${esc(clubOf(id).name)}${preso(id) ? ' · già schierato' : ''}${S.squalifica(id, n) ? ' · <b class="squal-t">squalificato</b>' : ''}</span></span><span class="q">${P(id).quotation}</span></button>`).join('')}</div>`);
       document.getElementById('sheet').onclick = (e) => { const b = e.target.closest('[data-pick]'); if (!b) return; onPick(b.dataset.pick); ctx.sheet(null); ctx.render(); };
     };
     root.querySelector('main').addEventListener('click', (e) => {

@@ -421,6 +421,22 @@ export async function escludiGiocatore(playerId, nota = '') {
 export async function riammettiGiocatore(playerId) {
   return must(await sb.from('giocatori_esclusi').delete().eq('player_id', playerId));
 }
+/**
+ * Le squalifiche scritte dal Giudice Dati (042): [{ playerId, matchday,
+ * squalificato, nota }]. Senza la 042 la tabella non c'e': restano quelle
+ * che l'app calcola da sola dalle espulsioni.
+ */
+export async function caricaSqualifiche() {
+  const { data, error } = await sb.from('squalifiche').select('player_id, matchday, squalificato, nota');
+  if (error) return [];
+  return (data || []).map((r) => ({ playerId: r.player_id, matchday: r.matchday, squalificato: r.squalificato, nota: r.nota || '' }));
+}
+export async function scriviSqualifica(playerId, matchday, squalificato, nota, userId) {
+  return must(await sb.from('squalifiche').upsert({ player_id: playerId, matchday, squalificato, nota: nota || null, created_by: userId }));
+}
+export async function togliSqualifica(playerId, matchday) {
+  return must(await sb.from('squalifiche').delete().eq('player_id', playerId).eq('matchday', matchday));
+}
 /** La pagina #/giocatori (041): scrive chiunque, anche senza account. */
 export async function inviaAdesione({ nome, squadra, scelta, contatto, nota }) {
   const { error } = await sb.from('adesioni_giocatori').insert({ nome, squadra: squadra || null, scelta, contatto: contatto || null, nota: nota || null });

@@ -19,10 +19,66 @@ export const adminGiornata = {
         return `<a class="mrow" href="#/admin/partita/${m.id}" style="text-decoration:none;color:inherit"><span class="st ${cls}">${cls === 'st-ok' ? icon('check', 'ic sm') : cls === 'st-ip' ? '●' : ''}</span><div><b>${esc(h.name)} — ${esc(a.name)}</b><span>${m.venue ? `${esc(m.venue)} · ` : ''}${m.status === 'scheduled' ? 'da inserire' : `${ev} ${ev === 1 ? 'evento' : 'eventi'}`}</span></div>${right}${icon('chev', 'ic sm')}</a>`; }).join('')}</div>
       ${open.length ? `<a class="warn info" href="#/admin/contestazioni" style="text-decoration:none">${icon('flag', 'ic sm')}<span><b>${open.length} contestazioni aperte</b> · scadenza mar 18:00</span></a>` : ''}
       ${st === 'frozen' ? `<div class="warn info">${icon('lock', 'ic sm')}<span>Giornata ${n} congelata: nessuna modifica possibile (art. 9.2).</span></div>` : `<a class="a-btn" href="#/admin/congela" style="text-decoration:none">${icon('lock', 'ic sm')}Vai al congelamento</a>`}
+      ${squalificatiCard()}
       <div class="chips" style="justify-content:center"><a class="chip" href="#/admin/registro" style="text-decoration:none">Registro modifiche</a><a class="chip" href="#/voti/${n}" style="text-decoration:none">Vista pubblica</a></div>
     </main>`;
   },
+  mount(root, ctx) {
+    const inp = root.querySelector('#sq-cerca');
+    if (inp) inp.onkeydown = (e) => { if (e.key === 'Enter') { cercaSq = inp.value; ctx.render(); } };
+    root.querySelector('main').addEventListener('click', async (e) => {
+      const n = S.giornataDaSchierare();
+      const add = e.target.closest('[data-sq-add]');
+      if (add) {
+        const p = S.playersById.get(add.dataset.sqAdd); if (!p) return;
+        const quante = prompt(`Squalificare ${S.nomeVero(p).firstName} ${S.nomeVero(p).lastName}: per quante giornate, a partire dalla ${n}ª?`, '1');
+        if (quante === null) return;
+        const k = Math.max(1, Math.min(10, parseInt(quante, 10) || 1));
+        const nota = prompt('Motivo (si vede accanto al bollino)', k > 1 ? `squalificato per ${k} giornate` : 'squalificato dal giudice sportivo');
+        if (nota === null) return;
+        add.disabled = true;
+        try { for (let i = 0; i < k; i++) await S.scriviSqualifica(p.id, n + i, true, nota.trim()); cercaSq = ''; ctx.toast('Squalifica segnata'); ctx.render(); }
+        catch (err) { ctx.toast(/squalifiche|relation|schema cache/i.test(err.message || '') ? 'Prima va eseguita la 042 nell\'SQL Editor' : (err.message || 'Non è stato possibile')); add.disabled = false; }
+        return;
+      }
+      const via = e.target.closest('[data-sq-via]');
+      if (via) {
+        const [id, modo] = via.dataset.sqVia.split('|');
+        via.disabled = true;
+        try {
+          // una squalifica scritta si cancella; quella calcolata da un'espulsione
+          // si annulla con una riga che dice «non squalificato»
+          if (modo === 'scritta') await S.togliSqualifica(id, n); else await S.scriviSqualifica(id, n, false, 'annullata');
+          ctx.toast('Bollino tolto'); ctx.render();
+        } catch (err) { ctx.toast(err.message || 'Non è stato possibile'); via.disabled = false; }
+      }
+    });
+  },
 };
+
+/**
+ * GLI SQUALIFICATI DELLA PROSSIMA GIORNATA (042). Gli espulsi della giornata
+ * prima ci sono gia', calcolati dagli eventi; il resto (piu' giornate, somma
+ * di gialli) lo segna il Giudice dal comunicato della FSGC. Il bollino si
+ * vede in Rosa, in Formazione e nella scheda del giocatore.
+ */
+let cercaSq = '';
+function squalificatiCard() {
+  const n = S.giornataDaSchierare(); if (!n) return '';
+  const lista = S.squalificatiDi(n);
+  const nome = (id) => { const p = S.playersById.get(id); return p ? `${esc(S.nomeVero(p).firstName)} ${esc(S.nomeVero(p).lastName)}` : esc(id); };
+  const club = (id) => esc(S.clubsById.get(S.playersById.get(id)?.clubId)?.name || '');
+  const q = cercaSq.trim().toLowerCase();
+  const trovati = q.length < 2 ? [] : S.base.players.filter((p) => !p.doppioneDi && `${S.nomeVero(p).firstName} ${S.nomeVero(p).lastName}`.toLowerCase().includes(q)).slice(0, 8);
+  return `<div class="a-card">
+    <b>Squalificati per la ${n}ª giornata</b>
+    <span class="small muted" style="display:block;margin:2px 0 8px">Gli espulsi della ${n - 1}ª ci sono già da soli. Il resto lo segni tu dal comunicato del giudice sportivo FSGC: il bollino si vede in Rosa e in Formazione.</span>
+    ${lista.length ? `<div class="vlist">${lista.map((x) => `<div class="adm-u"><span><b${x.annullata ? ' style="text-decoration:line-through"' : ''}>${nome(x.playerId)}</b> <span class="small muted">${club(x.playerId)} · ${x.annullata ? 'annullata' : esc(x.motivo)}</span></span>
+      ${x.annullata ? `<button class="chip" data-sq-via="${esc(x.playerId)}|scritta">Rimetti</button>` : `<button class="chip" data-sq-via="${esc(x.playerId)}|${x.manuale ? 'scritta' : 'calcolata'}">Togli</button>`}</div>`).join('')}</div>` : '<p class="small muted" style="margin:0 0 8px">Nessuno, per ora.</p>'}
+    <input class="field-input" id="sq-cerca" placeholder="Cerca un giocatore e premi Invio" value="${esc(cercaSq)}" autocomplete="off">
+    ${trovati.length ? `<div class="vlist">${trovati.map((p) => `<div class="adm-u"><span><b>${nome(p.id)}</b> <span class="small muted">${club(p.id)}</span></span><button class="chip" data-sq-add="${esc(p.id)}">Squalifica</button></div>`).join('')}</div>` : ''}
+  </div>`;
+}
 
 // ------------------------------------------------------------ partita
 let step = 1; let side = 'home';

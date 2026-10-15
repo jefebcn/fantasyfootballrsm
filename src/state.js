@@ -110,6 +110,7 @@ async function loadAll() {
   const interruttoriP = remote.caricaInterruttori().catch(() => ({}));
   const finestreP = remote.caricaFinestre().catch(() => []);
   const esclusiP = remote.caricaEsclusi().catch(() => []);
+  const squalificheP = remote.caricaSqualifiche().catch(() => []);
   prof = (await remote.ensureProfile(user)) || { id: user.id, display_name: user.email, is_judge: false };
   await consegnaReclutatore();
   // INSIEME, NON IN FILA. Le leghe, i voti di tutti, lo sponsor e — per il
@@ -167,6 +168,7 @@ async function loadAll() {
   finestre = await finestreP;
   esclusi = await esclusiP;
   applicaNomi();
+  squalifiche = await squalificheP;
   remote.subscribe(prefs.currentLeagueId, debounced);
   // Il Giudice Dati allinea il calendario dei lock senza doverselo ricordare:
   // e' un dato derivato dal calendario, identico a ogni giro, e l'RPC riscrive
@@ -945,6 +947,45 @@ export async function escludiGiocatore(playerId, nota) {
 export async function riammettiGiocatore(playerId) {
   await remote.riammettiGiocatore(playerId);
   esclusi = esclusi.filter((x) => x !== playerId); applicaNomi(); notify();
+}
+/*
+ * LE SQUALIFICHE (042). Chi e' espulso in una giornata salta la successiva:
+ * lo si calcola dagli eventi, senza che nessuno lo scriva. Il resto (piu'
+ * giornate, somma di gialli) lo scrive il Giudice Dati, e una sua riga vince
+ * sempre sul calcolo: squalificato=false toglie il bollino a un'espulsione
+ * annullata dalla FSGC.
+ */
+let squalifiche = [];
+const ESPULSIONI = new Set(['second_yellow', 'red_direct']);
+// l'import dal sito FSGC il doppio giallo lo scrive come due 'yellow': conta
+// come espulsione anche quello
+const espulsoNella = (evs, playerId) => evs.some((e) => e.playerId === playerId && ESPULSIONI.has(e.type))
+  || evs.filter((e) => e.playerId === playerId && e.type === 'yellow').length >= 2;
+function espulsoIn(playerId, n) {
+  for (const m of matchesOf(n)) if (espulsoNella(eventsOf(m.id), playerId)) return true;
+  return false;
+}
+/** null se puo' giocare, altrimenti { motivo, manuale }. */
+export function squalifica(playerId, n = giornataDaSchierare()) {
+  if (!playerId || !n) return null;
+  const scritta = squalifiche.find((q) => q.playerId === playerId && q.matchday === n);
+  if (scritta) return scritta.squalificato ? { motivo: scritta.nota || 'squalificato dal giudice sportivo', manuale: true } : null;
+  return n > 1 && espulsoIn(playerId, n - 1) ? { motivo: `espulso alla ${n - 1}ª giornata`, manuale: false } : null;
+}
+/** Tutti gli squalificati di una giornata, per il Giudice Dati. */
+export function squalificatiDi(n) {
+  const ids = new Set(squalifiche.filter((q) => q.matchday === n).map((q) => q.playerId));
+  if (n > 1) for (const m of matchesOf(n - 1)) { const evs = eventsOf(m.id); for (const e of evs) if (espulsoNella(evs, e.playerId)) ids.add(e.playerId); }
+  return [...ids].map((id) => ({ playerId: id, ...(squalifica(id, n) || { annullata: true }), scritta: squalifiche.some((q) => q.playerId === id && q.matchday === n) }));
+}
+export async function scriviSqualifica(playerId, n, squalificato, nota = '') {
+  await remote.scriviSqualifica(playerId, n, squalificato, nota, user.id);
+  squalifiche = [...squalifiche.filter((q) => !(q.playerId === playerId && q.matchday === n)), { playerId, matchday: n, squalificato, nota }];
+  notify();
+}
+export async function togliSqualifica(playerId, n) {
+  await remote.togliSqualifica(playerId, n);
+  squalifiche = squalifiche.filter((q) => !(q.playerId === playerId && q.matchday === n)); notify();
 }
 export const inviaAdesione = (dati) => remote.inviaAdesione(dati);
 export const caricaAdesioni = () => remote.caricaAdesioni();

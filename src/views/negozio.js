@@ -72,7 +72,8 @@ export const negozio = {
     // quello che manca, e senza rosa intera la formazione non si consegna.
     ? `<p class="neg-quando">${icon('clock', 'ic sm')}<span><b>Completa la rosa</b>: ${n.mancanti === 1 ? 'ti manca 1 giocatore' : `ti mancano ${n.mancanti} giocatori`}, e senza rosa intera la formazione non si consegna. Puoi comprare e, se ti servono crediti, anche togliere giocatori: a 25 la rosa è quella.</span></p>`
     : `<p class="neg-quando chiuso">${icon('lock', 'ic sm')}<span><b>Il mercato è chiuso</b>: la tua prima giornata è già cominciata.</span></p>`}
-      ${!n.completa && n.riserva() > 0 ? `<p class="small muted neg-riserva">Riserva crediti: tieni da parte almeno <b>${plurale(n.riserva(), 'credito', 'crediti')}</b> per i ${plurale(n.mancanti, 'giocatore', 'giocatori')} che mancano, coi meno cari di ogni ruolo.</p>` : ''}
+      ${n.scoperto && n.vende ? `<p class="neg-quando neg-scoperto">${icon('cart', 'ic sm')}<span><b>Così non ci arrivi</b>: per i ${plurale(n.mancanti, 'giocatore', 'giocatori')} che mancano servono almeno <b>${plurale(n.riserva(), 'credito', 'crediti')}</b>, anche coi meno cari, e ne hai ${n.crediti}. Togli uno dei giocatori più cari qui sotto: ti tornano i crediti che l'avevi pagato, e con quelli completi la rosa.</span></p>`
+    : !n.completa && n.riserva() > 0 ? `<p class="small muted neg-riserva">Riserva crediti: tieni da parte almeno <b>${plurale(n.riserva(), 'credito', 'crediti')}</b> per i ${plurale(n.mancanti, 'giocatore', 'giocatori')} che mancano, coi meno cari di ogni ruolo.</p>` : ''}
       ${n.completa ? `<div class="neg-fatto">${icon('check', 'ic sm')}<div><b>Rosa completa</b><span>25 giocatori. Ora puoi schierare la formazione.</span></div>
         <a class="a-btn" href="#/rosa/formazione">Schiera</a></div>` : ''}
 

@@ -216,6 +216,21 @@ const ok = [], ko = []; const et = (c, t) => (c ? ok : ko).push(t);
   });
   et(preso === 'preso', `e il database lo lascia comprare (${preso})`);
 
+  // --- ROSA A META' E CREDITI FINITI: l'unica uscita e' togliere uno caro.
+  // Cinque squadre vere ci sono rimaste ferme per giorni (15/10): l'app deve
+  // dirlo, non solo spegnere i bottoni.
+  const crPrima = await p.evaluate(() => JSON.parse(localStorage.getItem('fcs:mock')).tables.league_members.find((m) => m.user_id === JSON.parse(localStorage.getItem('fcs:mock')).userId).credits);
+  await p.evaluate(() => { const s = JSON.parse(localStorage.getItem('fcs:mock')); s.tables.league_members.find((m) => m.user_id === s.userId).credits = 1; localStorage.setItem('fcs:mock', JSON.stringify(s)); });
+  await p.reload({ waitUntil: 'load' }); await w(1800);
+  await p.evaluate(() => { location.hash = '#/negozio'; }); await w(1200);
+  const scoperto = await p.evaluate(() => document.querySelector('.neg-scoperto')?.innerText.replace(/\n/g, ' ') || '');
+  et(/Togli uno dei giocatori più cari/.test(scoperto), `senza crediti per finire dice di togliere un giocatore caro (${scoperto.slice(0, 60)})`);
+  await p.evaluate(() => { location.hash = '#/'; }); await w(1200);
+  const tileBloccata = await p.evaluate(() => /Rosa bloccata: mancano \d+ crediti/i.test(document.body.innerText));
+  et(tileBloccata, 'e la home lo annuncia');
+  await p.evaluate((c) => { const s = JSON.parse(localStorage.getItem('fcs:mock')); s.tables.league_members.find((m) => m.user_id === s.userId).credits = c; localStorage.setItem('fcs:mock', JSON.stringify(s)); }, crPrima);
+  await p.reload({ waitUntil: 'load' }); await w(1800);
+
   // --- MERCATO CHIUSO, ROSA COMPLETA: chiuso davvero
   await p.evaluate(async () => {
     const S = await import('/src/state.js');

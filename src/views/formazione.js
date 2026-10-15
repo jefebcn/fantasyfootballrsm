@@ -6,10 +6,22 @@ import { schedeRosa } from './rosa.js';
 let draft = null; let draftFor = null;
 function ensureDraft() {
   const n = S.giornataDaSchierare(); const me = S.me();
-  if (!draft || draftFor !== `${n}:${me.id}`) { const l = S.lineupFor(n, me.id); draft = { formation: l.formation, starters: [...l.starters], bench: [...l.bench], captainId: l.captainId, viceCaptainId: l.viceCaptainId }; draftFor = `${n}:${me.id}`; }
+  if (!draft || draftFor !== `${n}:${me.id}`) { const l = S.lineupFor(n, me.id); draft = { formation: l.formation, starters: [...l.starters], bench: [...l.bench], captainId: l.captainId, viceCaptainId: l.viceCaptainId }; draftFor = `${n}:${me.id}`; tolti = []; }
   return draft;
 }
 const P = (id) => S.playersById.get(id);
+/** Chi non e' piu' in rosa esce dalla formazione da preparare: la bozza resta
+ *  in memoria anche mentre si vende dal Negozio, e la proposta puo' venire da
+ *  una giornata vecchia. Lo slot resta vuoto, cosi' si vede cosa rimettere. */
+let tolti = [];
+function togliCeduti(d, managerId) {
+  const fuori = new Set(S.fuoriRosa(managerId, [...d.starters, ...d.bench]));
+  if (!fuori.size) return;
+  tolti = [...new Set([...tolti, ...fuori])];
+  d.starters = d.starters.map((id) => (fuori.has(id) ? null : id));
+  d.bench = d.bench.filter((id) => !fuori.has(id));
+  if (fuori.has(d.captainId)) d.captainId = null; if (fuori.has(d.viceCaptainId)) d.viceCaptainId = null;
+}
 
 /** Segnature del campo. viewBox 100x136: il disegno si stira col riquadro,
  *  ma vector-effect tiene le linee dello stesso spessore. */
@@ -129,7 +141,8 @@ export const formazione = {
     const b = S.schieramentoBloccato();
     const n = b ? b.inGioco : S.giornataDaSchierare(); const md = S.matchday(n); const st = S.matchdayStatus(n);
     const locked = st !== 'open' && st !== 'scheduled';
-    const d = b ? S.lineupFor(n, me.id) : (() => { const x = ensureDraft(); normalize(x); return x; })();
+    const d = b ? S.lineupFor(n, me.id) : (() => { const x = ensureDraft(); if (!locked) togliCeduti(x, me.id); normalize(x); return x; })();
+    if (locked || b) tolti = [];
     // I voti ci sono solo a giornata cominciata, e arrivano una partita per
     // volta: chi non ha ancora giocato semplicemente non ce l'ha.
     //
@@ -166,6 +179,7 @@ export const formazione = {
         <div class="fase-lock">${icon('clock', 'ic sm')}<span>${locked ? 'bloccata da' : 'si chiude'} <b>${dateIt(md.lockAt)} ${timeIt(md.lockAt)}</b></span>
           <span class="sep"></span>${saved ? `<span>salvata ${dateIt(saved.submittedAt)} ${timeIt(saved.submittedAt)}</span>` : '<span class="da-fare">da consegnare</span>'}</div>
         ${!saved && !locked ? `<p class="small muted"><b>Se non consegni, la partita è persa 0-3 a tavolino</b> (art. 8.4). Quella qui sotto è solo una proposta — ${S.lineupFor(n, me.id).source === 'ufficio' ? 'il 4-4-2 con le quotazioni più alte' : `l'ultima che hai schierato (${S.lineupFor(n, me.id).source})`} — e non conta finché non la confermi.</p>` : ''}
+        ${tolti.length && !locked ? `<p class="small muted ceduti"><b>${tolti.map((id) => esc(P(id) ? P(id).name : id)).join(', ')}</b> non ${tolti.length === 1 ? 'è' : 'sono'} più nella tua rosa: ${tolti.length === 1 ? "l'abbiamo tolto" : "li abbiamo tolti"} dalla formazione. Scegli chi mettere al ${tolti.length === 1 ? 'suo posto' : 'loro posto'} e conferma.</p>` : ''}
         ${!saved && locked ? `<p class="small muted"><b>Formazione non consegnata</b>: la partita è persa 0-3 a tavolino (art. 8.4). Quella qui sotto non conta, è solo l'ultima proposta.</p>` : ''}
         ${b ? (() => {
     // DA DOVE VIENE IL NUMERO. Con due voti sul campo il totale e' "quanto
@@ -265,7 +279,7 @@ export const formazione = {
       if (e.target.closest('#confirm')) {
         const errors = validateLineup({ ...d, starters: d.starters.filter(Boolean), bench: d.bench.filter(Boolean) }, S.playersById);
         if (errors.length) { ctx.toast(errors[0]); return; }
-        try { S.saveLineup(n, me.id, { ...d, bench: d.bench.filter(Boolean) }); ctx.toast(`Formazione salvata · giornata ${n}`); }
+        try { S.saveLineup(n, me.id, { ...d, bench: d.bench.filter(Boolean) }); tolti = []; ctx.toast(`Formazione salvata · giornata ${n}`); }
         catch (err) { ctx.toast(err.message); ctx.render(); }
       }
     });

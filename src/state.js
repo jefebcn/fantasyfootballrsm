@@ -1124,7 +1124,11 @@ export function negozio() {
     tot + Math.max(0, manca[r] - (r === ruolo ? 1 : 0)) * (Number.isFinite(minimo[r]) ? minimo[r] : 0), 0);
   // Comprare e vendere: nella finestra della prima giornata, oppure finche'
   // la rosa non e' completa (037, 038). A rosa completa, dopo, e' quella.
-  return { crediti: io.credits ?? 0, quote, per, manca, mancanti,
+  // Senza crediti per finire nemmeno coi meno cari si e' bloccati: l'unica
+  // uscita e' togliere un giocatore caro (si riprende quello che si e' pagato).
+  // Cinque squadre vere ci sono rimaste per giorni senza capirlo (15/10).
+  const scoperto = mancanti > 0 ? Math.max(0, riserva() - (io.credits ?? 0)) : 0;
+  return { crediti: io.credits ?? 0, quote, per, manca, mancanti, scoperto,
     completa: mancanti === 0, giornata: prima ? prima.number : null, chiude,
     aperto, riparazione, compra: aperto || mancanti > 0, vende: aperto || mancanti > 0, riserva,
     totale: Object.values(quote).reduce((x, y) => x + y, 0) };

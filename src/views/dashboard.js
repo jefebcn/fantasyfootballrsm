@@ -273,6 +273,11 @@ function invitoNegozio() {
   const quando = n.chiude
     ? `${n.chiude.toLocaleDateString('it-IT', { weekday: 'short', day: 'numeric', month: 'numeric' })} ${String(n.chiude.getHours()).padStart(2, '0')}:${String(n.chiude.getMinutes()).padStart(2, '0')}`
     : null;
+  if (n.scoperto) {
+    return tile({ href: '#/negozio', lead: icon('cart'), leadKind: 'warn',
+      title: `Rosa bloccata: mancano ${n.scoperto} crediti`,
+      sub: 'Per completarla togli un giocatore caro dal Negozio: ti tornano i crediti che l\'avevi pagato.' });
+  }
   if (!n.aperto) {
     // 037: finestra passata, ma la rosa a meta' si puo' ancora completare —
     // ed e' l'unico modo di tornare a consegnare la formazione.

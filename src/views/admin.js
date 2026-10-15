@@ -296,7 +296,11 @@ function andamento(persone) {
  * contrario. Lo calcola la 020, qui si disegna e basta.
  */
 function consegne(r) {
-  const serie = Array.isArray(r?.consegne) ? r.consegne : [];
+  // Chi ha consegnato c'era, anche se oggi risulta entrato dopo: la
+  // ripartenza della lega pubblica (14/10) ha spostato in avanti l'ingresso
+  // di tutti, e la 5ª diceva "3 squadre su 2 (150%)".
+  const serie = (Array.isArray(r?.consegne) ? r.consegne : [])
+    .map((g) => ({ ...g, squadre: Math.max(g.squadre || 0, g.consegne || 0) }));
   if (!serie.length) {
     return `<div class="a-sec"><b>Chi consegna</b><span>niente ancora</span></div>
       <p class="small muted" style="margin:0 2px">La prima colonna compare quando una giornata chiude: finche' il lock non e' passato si consegna ancora, e contarla direbbe un calo che non c'e'.</p>`;

@@ -293,6 +293,33 @@ const ok = [], ko = []; const et = (c, t) => (c ? ok : ko).push(t);
   });
   et(venduto.prima && venduto.tolte === 1 && !venduto.dopo, `vendendo un titolare la formazione salvata si toglie e va riconfermata (${JSON.stringify(venduto)})`);
 
+  // La bozza della formazione era gia' aperta col giocatore venduto dentro:
+  // tornandoci non deve piu' esserci (15/10, Android: "Il giocatore
+  // trefiori_19 non è nella tua rosa" dal server, con l'id grezzo).
+  await p.evaluate(() => { location.hash = '#/rosa'; }); await w(600);
+  await p.evaluate(() => { location.hash = '#/rosa/formazione'; }); await w(1300);
+  const bozza = await p.evaluate(() => ({
+    avviso: document.querySelector('.ceduti')?.innerText || '',
+    vuoti: document.querySelectorAll('.slot.vuoto').length,
+  }));
+  et(/non è più nella tua rosa/.test(bozza.avviso) && bozza.vuoti === 1,
+    `nella bozza aperta il venduto lascia il posto vuoto e lo dice (${bozza.avviso.slice(0, 50)} · ${bozza.vuoti} vuoto)`);
+  const rifiuto = await p.evaluate(async () => {
+    const S = await import('/src/state.js');
+    const n = S.base.matchdays.find((m) => new Date(m.lockAt) > new Date()).number;
+    const lu = S.lineupFor(n, S.me().id);
+    const ruolo = S.playersById.get(lu.starters.find(Boolean)).role;
+    const fuori = () => S.base.players.filter((g) => !S.rosterIds(S.me().id).includes(g.id) && g.role === ruolo).sort((a, b) => a.quotation - b.quotation);
+    // la rosa torna a 25 (se no la regola della rosa completa parla per prima)
+    const preso = await S.compraGiocatore(fuori()[0].id).then(() => true, () => false);
+    const venduto = fuori()[0];
+    if (!preso) return 'acquisto rifiutato';
+    const starters = [...lu.starters]; starters[starters.findIndex((id) => id && S.playersById.get(id).role === ruolo)] = venduto.id;
+    try { S.saveLineup(n, S.me().id, { ...lu, starters, bench: [] }); return 'passata'; }
+    catch (e) { return e.message; }
+  });
+  et(/non è più nella tua rosa/.test(rifiuto) && !/_\d/.test(rifiuto), `e chi ci prova lo stesso legge il nome, non l'id ("${rifiuto}")`);
+
   et(errori.length === 0, `nessun errore JS${errori.length ? ' — ' + errori[0] : ''}`);
   await b.close();
   for (const t of ok) console.log('  ok  ' + t);

@@ -15,8 +15,12 @@ import { crest } from './ui.js';
  *
  * Il 7 ottobre 2026 7, 8, 14 e 16 (calciatori veri), 10, 11 e 20 (personaggi
  * di cartoni animati) e 21 sono stati tolti per il rischio commerciale e
- * rimessi lo stesso giorno, per scelta di Alex: si rivede se l'app si allarga
- * oltre San Marino.
+ * rimessi lo stesso giorno, per scelta di Alex. Il 15/10, con l'app aperta a
+ * tutti e l'incontro con la FSGC, tolti davvero (file compresi) e sostituiti
+ * da 40-47, personaggi originali generati da Alex e scontornati con rembg:
+ * stessa posizione nell'elenco, e chi aveva il vecchio si trova il nuovo
+ * (SOSTITUITI qui sotto). Numeri nuovi e non i vecchi riusati: un telefono
+ * con la vecchia immagine in memoria non la mostra piu'.
  *
  * 30 e' TITO, la mascotte di Fantatitano, disegnato da Alex per il progetto
  * (media/tito-sorgenti/braccia.webp, ritagliato alla stessa altezza degli
@@ -25,7 +29,11 @@ import { crest } from './ui.js';
 // 31 e' TITO d'oro: lo stesso TITO in oro (media/avatar/31.webp, fatto dal
 // 30), premio dei Reclutatori per chi porta 3 amici. Sta in elenco come gli
 // altri; chi non l'ha sbloccato lo vede col lucchetto.
-const NUMERI = [30, 31, 1, 6, 7, 8, 10, 11, 14, 16, 20, 21];
+const NUMERI = [30, 31, 1, 6, 40, 41, 42, 43, 44, 45, 46, 47];
+/** Chi aveva scelto uno dei personaggi tolti il 15/10 ha quello nuovo che ne
+ *  ha preso il posto. Nessuna migrazione dei dati: la scelta salvata resta il
+ *  vecchio numero finche' la squadra non ne sceglie un altro. */
+const SOSTITUITI = { 7: 40, 8: 41, 10: 42, 11: 43, 14: 44, 16: 45, 20: 46, 21: 47 };
 const NOMI = { 30: 'TITO', 31: 'TITO d\'oro' };
 export const QUANTI = NUMERI.length;
 export const elenco = () => [...NUMERI];
@@ -35,7 +43,8 @@ export const nomePersonaggio = (n) => NOMI[n] || `Personaggio ${n}`;
 /** Il personaggio scelto, o null se la squadra tiene la maglia. Un numero non
  *  piu' in elenco (personaggio ritirato) vale come "nessuno". */
 export const scelto = (m) => {
-  const n = Number(m?.kit?.personaggio);
+  const salvato = Number(m?.kit?.personaggio);
+  const n = SOSTITUITI[salvato] || salvato;
   return NUMERI.includes(n) ? n : null;
 };
 

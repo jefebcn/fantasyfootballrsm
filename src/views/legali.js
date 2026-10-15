@@ -70,7 +70,7 @@ const piede = () => `<p class="small muted" style="text-align:center;margin-top:
   Ultimo aggiornamento: ${esc(dataIt(LEGALI_AGGIORNATE))}.</p>`;
 
 const disclaimer = blocco('Onestà su questa pagina', [
-  'Questo testo descrive come funziona l\'app oggi ed è scritto per farsi capire, non da un legale. Prima di aprire le iscrizioni fuori dal giro di amici va fatto rivedere da chi di dovere, insieme all\'accordo con la FSGC per nomi e prestazioni degli atleti.',
+  'Questo testo descrive come funziona l\'app oggi ed è scritto per farsi capire, non nel linguaggio di un contratto. Se qualcosa non è chiaro o ti sembra sbagliato, scrivici: lo correggiamo.',
 ]);
 
 export const privacy = {
@@ -283,7 +283,8 @@ export const licenze = {
     return `<main class="a-body">
       ${blocco('I dati del campionato', [
     'Calendario, risultati, tabellini e anagrafiche degli atleti vengono dai referti pubblici della <b>FSGC</b>, la Federazione Sammarinese Giuoco Calcio. Sono pubblicati da lei e qui vengono solo riorganizzati.',
-    'Nomi delle società e degli atleti compaiono a scopo descrittivo, per identificare chi ha giocato cosa. L\'app non è affiliata alla FSGC e non ha con lei alcun accordo: prima di aprire le iscrizioni fuori dal giro di amici va chiesto il permesso per l\'uso dei nomi e delle prestazioni degli atleti.',
+    'Nomi delle società e degli atleti compaiono solo a scopo descrittivo e informativo, per dire chi ha giocato e come, come fanno giornali e siti di statistiche. Fantatitano non è affiliato alla FSGC né alle società del campionato, non ne usa loghi o stemmi e non ne rappresenta le posizioni.',
+    'Se la FSGC, una società o un atleta ha osservazioni su come questi dati compaiono nell\'app, può scriverci: ne terremo conto.',
   ])}
       ${blocco('Software di terze parti', [
     ['Libreria della banca dati', 'per i dati e gli accessi, open source con licenza MIT; la sua nota di copyright sta nel file dentro l\'app. È a versione fissa: non viene chiesta a nessuna rete esterna.'],

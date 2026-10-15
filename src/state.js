@@ -1219,6 +1219,17 @@ export function lineupFor(n, managerId) {
   for (let k = n - 1; k >= primaGiornata(); k--) { const prev = L.lineups[`${k}:${managerId}`]; if (prev) return { ...prev, source: `giornata ${k}` }; }
   return { ...defaultLineup(rosterIds(managerId).filter((id) => playersById.get(id).isActive), playersById), source: 'ufficio' };
 }
+/**
+ * I giocatori di una formazione che non sono (piu') nella rosa: venduti dal
+ * Negozio, o tolti dall'admin dopo che la formazione era gia' stata preparata.
+ * Il server li rifiuta (028) con l'id grezzo, "trefiori_19": meglio
+ * accorgersene qui e dirlo col nome. Senza rosa assegnata non si controlla
+ * niente, come fa il server.
+ */
+export function fuoriRosa(managerId, ids) {
+  const rosa = rosterIds(managerId); if (!rosa.length) return [];
+  const mia = new Set(rosa); return ids.filter((id) => id && !mia.has(id));
+}
 export function saveLineup(n, managerId, lineup) {
   // La regola sta qui e non solo nella schermata: una regola messa solo nella
   // schermata vale solo per quella schermata, e qui ci si arriva anche da un
@@ -1227,6 +1238,8 @@ export function saveLineup(n, managerId, lineup) {
   if (b && n === b.giornata) throw new Error(`La ${b.inGioco}ª giornata è ancora in corso: la formazione della ${n}ª si apre quando finisce`);
   const rosa = rosaIncompletaPerSchierare(managerId);
   if (rosa) throw new Error(`Nella lega pubblica la formazione si consegna con la rosa completa: hai ${rosa.ha} giocatori su ${rosa.serve}. Completala dal Negozio.`);
+  const fuori = fuoriRosa(managerId, [...lineup.starters, ...lineup.bench]);
+  if (fuori.length) { const p = playersById.get(fuori[0]); throw new Error(`${p ? p.name : fuori[0]} non è più nella tua rosa: sostituiscilo e conferma di nuovo`); }
   const rec = { ...lineup, submittedAt: now().toISOString() }; L.lineups[`${n}:${managerId}`] = rec; notify();
   return remote.upsertLineup(base.league.id, managerId, n, rec).catch((e) => { onError(e); refresh(); });
 }

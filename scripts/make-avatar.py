@@ -18,6 +18,10 @@ foto vera dietro (uno stadio, un muro di graffiti) non basta: lo script lo dice
 invece di consegnare un ritaglio sbagliato.
 
     python3 scripts/make-avatar.py
+
+40-47 (15/10) non passano da qui: non hanno un sorgente in media/, e sono
+stati scontornati con rembg (modello isnet-general-use), che regge anche i
+personaggi del colore dello sfondo. Lo script non li tocca.
 """
 import pathlib
 import sys

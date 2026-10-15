@@ -33,9 +33,11 @@ const ok = [], ko = []; const et = (c, t) => (c ? ok : ko).push(t);
     const mio = s.tables.league_members.find((m) => m.user_id === s.userId);
     mio.kit = { ...(mio.kit || {}), personaggio: 30 };
     const base = { league_id: mio.league_id, role: 'manager', credits: 500, color: '#1B84C6' };
-    s.tables.profiles.push({ id: 'u_enea', display_name: 'Enea' }, { id: 'u_mirco', display_name: 'Mirco' });
+    s.tables.profiles.push({ id: 'u_enea', display_name: 'Enea' }, { id: 'u_mirco', display_name: 'Mirco' }, { id: 'u_leo', display_name: 'Leo' });
     s.tables.league_members.push({ ...base, id: 'm_enea', user_id: 'u_enea', team_name: 'Ac Haramball', owner_name: 'Enea', initials: 'AH', kit: { personaggio: 1 } },
-      { ...base, id: 'm_mirco', user_id: 'u_mirco', team_name: 'Ccc', owner_name: 'Mirco', initials: 'C', color: '#27AE60' });
+      { ...base, id: 'm_mirco', user_id: 'u_mirco', team_name: 'Ccc', owner_name: 'Mirco', initials: 'C', color: '#27AE60' },
+      // aveva il 16, tolto il 15/10: al suo posto c'e' il 45
+      { ...base, id: 'm_leo', user_id: 'u_leo', team_name: 'Leo United', owner_name: 'Leo', initials: 'LU', kit: { personaggio: 16 } });
     localStorage.setItem('fcs:mock', JSON.stringify(s));
   });
   await p.reload({ waitUntil: 'load' }); await w(1500);
@@ -50,6 +52,7 @@ const ok = [], ko = []; const et = (c, t) => (c ? ok : ko).push(t);
   et(/avatar\/30\.webp/.test(di('Chirinquito').pers || ''), `la mia squadra mostra TITO (${di('Chirinquito').pers})`);
   et(/avatar\/1\.webp/.test(di('Ac Haramball').pers || ''), `chi ha scelto un personaggio lo mostra (${di('Ac Haramball').pers})`);
   et(di('Ccc').maglia && !di('Ccc').pers, 'chi non l\'ha scelto tiene la maglia');
+  et(/avatar\/45\.webp/.test(di('Leo United').pers || ''), `chi aveva un personaggio tolto ha quello che ne ha preso il posto (${di('Leo United').pers})`);
   et(di('Chirinquito').h >= 40, `il personaggio si vede, non e' un francobollo (${Math.round(di('Chirinquito').h)} px)`);
   await p.screenshot({ path: `${USCITA}/personaggi-lega.png` }).catch(() => {});
   et(errori.length === 0, `nessun errore JS${errori.length ? ' — ' + errori[0] : ''}`);

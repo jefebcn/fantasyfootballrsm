@@ -109,6 +109,7 @@ async function loadAll() {
   const sponsorP = remote.caricaSponsor().catch(() => []);
   const interruttoriP = remote.caricaInterruttori().catch(() => ({}));
   const finestreP = remote.caricaFinestre().catch(() => []);
+  const esclusiP = remote.caricaEsclusi().catch(() => []);
   prof = (await remote.ensureProfile(user)) || { id: user.id, display_name: user.email, is_judge: false };
   await consegnaReclutatore();
   // INSIEME, NON IN FILA. Le leghe, i voti di tutti, lo sponsor e — per il
@@ -164,6 +165,8 @@ async function loadAll() {
   sponsor = await sponsorP;
   interruttori = await interruttoriP;
   finestre = await finestreP;
+  esclusi = await esclusiP;
+  applicaNomi();
   remote.subscribe(prefs.currentLeagueId, debounced);
   // Il Giudice Dati allinea il calendario dei lock senza doverselo ricordare:
   // e' un dato derivato dal calendario, identico a ogni giro, e l'RPC riscrive
@@ -896,6 +899,56 @@ export function finestraRiparazione() {
   return f ? { nome: f.nome || 'Mercato di riparazione', fine: new Date(f.fine) } : null;
 }
 export const prudente = () => !!interruttori.prudente;
+/*
+ * I NOMI DEI GIOCATORI, SE SERVE (041). Due strumenti pronti e spenti, per
+ * il caso in cui la FSGC o un calciatore chieda di non mostrare i nomi:
+ * - nomi_brevi (interruttore): tutti diventano iniziali, «G.V.»;
+ * - giocatori_esclusi: chi ha chiesto di non comparire diventa «Giocatore N».
+ * Si cambiano gli oggetti dei giocatori una volta sola, qui: ogni schermata
+ * legge nome e cognome da li', e formazioni e punti usano solo gli id. Il
+ * nome vero resta da parte (_vero) per poter tornare indietro e per la
+ * console, che deve sapere chi ha escluso.
+ */
+let esclusi = [];
+export const nomiBrevi = () => !!interruttori.nomi_brevi;
+export const giocatoriEsclusi = () => esclusi.slice();
+export const nomeVero = (p) => (p && (p._vero || p)) || null;
+function applicaNomi() {
+  const fuori = new Set(esclusi);
+  const ordineEsclusi = [...fuori].sort();
+  const usate = new Map();
+  for (const p of base.players) {
+    if (!p._vero) p._vero = { firstName: p.firstName, lastName: p.lastName, name: p.name };
+    Object.assign(p, p._vero);
+    if (fuori.has(p.id)) {
+      const n = `Giocatore ${ordineEsclusi.indexOf(p.id) + 1}`;
+      Object.assign(p, { firstName: '', lastName: n, name: n });
+    } else if (nomiBrevi()) {
+      const iniz = (t) => (t || '').split(/[\s'-]+/).filter(Boolean).map((w) => w[0].toUpperCase()).join('');
+      let sigla = `${iniz(p._vero.firstName)}.${iniz(p._vero.lastName)}.`;
+      // due con le stesse iniziali nella stessa squadra: si numerano
+      const k = `${p.clubId}:${sigla}`; const gia = usate.get(k) || 0; usate.set(k, gia + 1);
+      if (gia) sigla += ` ${gia + 1}`;
+      Object.assign(p, { firstName: '', lastName: sigla, name: sigla });
+    }
+  }
+}
+export async function impostaNomiBrevi(acceso) {
+  await remote.impostaInterruttore('nomi_brevi', acceso, user.id);
+  interruttori = { ...interruttori, nomi_brevi: acceso }; applicaNomi(); notify();
+}
+export async function escludiGiocatore(playerId, nota) {
+  await remote.escludiGiocatore(playerId, nota);
+  if (!esclusi.includes(playerId)) esclusi = [...esclusi, playerId];
+  applicaNomi(); notify();
+}
+export async function riammettiGiocatore(playerId) {
+  await remote.riammettiGiocatore(playerId);
+  esclusi = esclusi.filter((x) => x !== playerId); applicaNomi(); notify();
+}
+export const inviaAdesione = (dati) => remote.inviaAdesione(dati);
+export const caricaAdesioni = () => remote.caricaAdesioni();
+export const segnaAdesioneLetta = (id) => remote.segnaAdesioneLetta(id);
 export async function impostaPrudente(acceso) {
   await remote.impostaInterruttore('prudente', acceso, user.id);
   interruttori = { ...interruttori, prudente: acceso }; notify();

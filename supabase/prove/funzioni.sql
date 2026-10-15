@@ -2148,4 +2148,53 @@ set role authenticated;
 select pg_temp.esige('chiusa la finestra, il mercato torna chiuso', not public.mercato_aperto(:'aperta'));
 reset role;
 
+-- 041: chi chiede di non comparire, chi aderisce, nomi brevi
+select set_config('request.jwt.claims', '', false);
+set role anon;
+insert into public.adesioni_giocatori (nome, squadra, scelta, contatto) values ('Mario Rossi', 'Folgore', 'escludimi', '@mario');
+select pg_temp.esige('senza account si legge chi e'' escluso (041)', (select count(*) from public.giocatori_esclusi) >= 0);
+do $$ begin
+  perform 1 from public.adesioni_giocatori;
+  raise exception 'FALLITA: senza account non si dovevano leggere le richieste degli altri';
+exception when others then
+  if sqlerrm like 'FALLITA%' then raise; end if;
+  raise notice 'ok  le richieste dei calciatori non le legge chi passa (%)', sqlerrm;
+end $$;
+do $$ begin
+  insert into public.adesioni_giocatori (nome, scelta) values ('X', 'aderisco');
+  raise exception 'FALLITA: un nome di una lettera doveva essere rifiutato';
+exception when others then
+  if sqlerrm like 'FALLITA%' then raise; end if;
+  raise notice 'ok  un modulo vuoto non passa (%)', sqlerrm;
+end $$;
+do $$ begin
+  insert into public.giocatori_esclusi (player_id) values ('prova_d3');
+  raise exception 'FALLITA: senza account non si doveva escludere nessuno';
+exception when others then
+  if sqlerrm like 'FALLITA%' then raise; end if;
+  raise notice 'ok  escludere un giocatore non lo fa chi passa (%)', sqlerrm;
+end $$;
+reset role;
+select pg_temp.entra('user_bea');
+set role authenticated;
+do $$ begin
+  insert into public.giocatori_esclusi (player_id) values ('prova_d3');
+  raise exception 'FALLITA: un giocatore qualunque non doveva poter escludere';
+exception when others then
+  if sqlerrm like 'FALLITA%' then raise; end if;
+  raise notice 'ok  escludere lo fa solo chi amministra (%)', sqlerrm;
+end $$;
+select pg_temp.esige('e le richieste un giocatore qualunque non le vede', (select count(*) from public.adesioni_giocatori) = 0);
+reset role;
+select pg_temp.entra('user_pub1');
+set role authenticated;
+insert into public.giocatori_esclusi (player_id, nota) values ('prova_d3', 'ha scritto il 15/10');
+select pg_temp.esige('chi amministra esclude', exists (select 1 from public.giocatori_esclusi where player_id = 'prova_d3'));
+select pg_temp.esige('e legge le richieste', exists (select 1 from public.adesioni_giocatori where nome = 'Mario Rossi'));
+update public.adesioni_giocatori set letta = true where nome = 'Mario Rossi';
+select pg_temp.esige('e le segna come fatte', (select letta from public.adesioni_giocatori where nome = 'Mario Rossi'));
+delete from public.giocatori_esclusi where player_id = 'prova_d3';
+reset role;
+select pg_temp.esige('l''interruttore dei nomi brevi c''e'' ed e'' spento', not (select acceso from public.app_interruttori where chiave = 'nomi_brevi'));
+
 select 'tutte le prove sulle funzioni sono passate' as esito;

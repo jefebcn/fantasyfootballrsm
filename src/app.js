@@ -18,7 +18,7 @@ const ROUTES = [
   ['classifica', views.classifica], ['voti', views.voti], ['voti/:n', views.voti],
   ['live/:id', views.live], ['formazione/:id', views.formazioneDi], ['formazione/:id/:n', views.formazioneDi], ['listone', views.listone], ['negozio', views.negozio], ['giocatore/:id', views.giocatore],
   ['confronto/:a', views.confronto], ['confronto/:a/:b', views.confronto],
-  ['video', views.video], ['regolamento', views.regolamento], ['regole', views.regole], ['scheda', views.scheda], ['impostazioni', views.impostazioni], ['impostazioni/avanzate', views.avanzate], ['scambi', views.scambi], ['privacy', views.privacy], ['termini', views.termini], ['archiviazione', views.archiviazione], ['licenze', views.licenze], ['cancella-account', views.cancella],
+  ['video', views.video], ['regolamento', views.regolamento], ['regole', views.regole], ['scheda', views.scheda], ['impostazioni', views.impostazioni], ['impostazioni/avanzate', views.avanzate], ['scambi', views.scambi], ['privacy', views.privacy], ['termini', views.termini], ['archiviazione', views.archiviazione], ['licenze', views.licenze], ['cancella-account', views.cancella], ['giocatori', views.adesione],
   ['admin', views.adminGiornata], ['admin/partita/:id', views.adminPartita], ['admin/contestazioni', views.adminContestazioni],
   ['admin/congela', views.adminCongela], ['admin/console', views.adminConsole], ['admin/registro', views.adminRegistro], ['mercato', views.mercato], ['asta', views.asta],
   ['login', views.login], ['leghe', views.leghe], ['lega', views.lega], ['gestione', views.gestione], ['squadra', views.squadra], ['vice/:code', views.vice], ['setup', views.setup], ['offline', views.offline], ['sospeso', views.sospeso], ['benvenuto', views.onboarding], ['guida', views.guida],
@@ -228,7 +228,9 @@ const ALLOWED = { 'no-league': ['leghe', 'guida', 'impostazioni', 'impostazioni/
 // cose funzionanti non e' un'informativa, ed e' anche quello che chiede chi
 // controlla un'app prima di pubblicarla (le stesse pagine escono statiche in
 // privacy.html e termini.html, vedi scripts/genera-legali.cjs).
-const SEMPRE = ['privacy', 'termini', 'archiviazione', 'licenze', 'cancella-account'];
+// e la pagina per i calciatori (041): chi chiede di non comparire non deve
+// prima farsi un account
+const SEMPRE = ['privacy', 'termini', 'archiviazione', 'licenze', 'cancella-account', 'giocatori'];
 let invitoAccompagnato = false;
 function gate(path) {
   if (SEMPRE.includes(path)) return null;

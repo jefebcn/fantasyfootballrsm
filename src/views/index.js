@@ -30,3 +30,4 @@ export { lega } from './lega.js';
 export { gestione } from './gestione.js';
 export { squadra } from './squadra.js';
 export { vice } from './vice.js';
+export { adesione } from './adesione.js';

@@ -406,6 +406,35 @@ export async function caricaFinestre() {
   if (error) return [];
   return data || [];
 }
+/**
+ * I giocatori che hanno chiesto di non comparire (041): [playerId]. Senza la
+ * 041 la tabella non c'e': nessuno escluso, l'app va come prima.
+ */
+export async function caricaEsclusi() {
+  const { data, error } = await sb.from('giocatori_esclusi').select('player_id');
+  if (error) return [];
+  return (data || []).map((r) => r.player_id);
+}
+export async function escludiGiocatore(playerId, nota = '') {
+  return must(await sb.from('giocatori_esclusi').upsert({ player_id: playerId, nota: nota || null }));
+}
+export async function riammettiGiocatore(playerId) {
+  return must(await sb.from('giocatori_esclusi').delete().eq('player_id', playerId));
+}
+/** La pagina #/giocatori (041): scrive chiunque, anche senza account. */
+export async function inviaAdesione({ nome, squadra, scelta, contatto, nota }) {
+  const { error } = await sb.from('adesioni_giocatori').insert({ nome, squadra: squadra || null, scelta, contatto: contatto || null, nota: nota || null });
+  if (error) throw new Error(/adesioni_giocatori|relation|schema cache/i.test(error.message) ? 'Il modulo non è ancora attivo: riprova fra qualche giorno' : error.message);
+}
+/** Le richieste arrivate, per la console. null se la 041 non c'e'. */
+export async function caricaAdesioni() {
+  const { data, error } = await sb.from('adesioni_giocatori').select('id, nome, squadra, scelta, contatto, nota, letta, created_at').order('created_at', { ascending: false }).limit(200);
+  if (error) return null;
+  return data || [];
+}
+export async function segnaAdesioneLetta(id) {
+  return must(await sb.from('adesioni_giocatori').update({ letta: true }).eq('id', id));
+}
 export async function impostaInterruttore(chiave, acceso, userId) {
   return must(await sb.from('app_interruttori').upsert({ chiave, acceso, cambiato_da: userId, cambiato_at: new Date().toISOString() }));
 }

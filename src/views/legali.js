@@ -110,6 +110,7 @@ export const privacy = {
     rigaDove(),
     ['Per quanto:', 'finché la tua squadra esiste in una lega. Eliminata la lega o il tuo profilo, i dati vanno via con loro. Il registro delle modifiche ai voti resta finché resta la lega, in forma anonima rispetto a chi non ne fa più parte.'],
     'Il listone, il calendario e i tabellini del campionato non sono dati personali tuoi: arrivano dai referti pubblici della FSGC.',
+    '<b>Se giochi nel campionato:</b> nome e prestazioni dei calciatori compaiono per descrivere le partite. Puoi chiedere di non comparire dalla pagina <a href="#/giocatori">Per i giocatori</a> (fantatitano.site/#/giocatori): diventi «Giocatore», con ruolo e squadra. Quello che scrivi lì (nome, squadra, la tua scelta e un contatto se lo lasci) lo legge solo chi gestisce l\'app, per fare quello che chiedi.',
   ])}
       ${blocco('I tuoi diritti', [
     'Puoi chiedere di <b>vedere</b> i dati che ti riguardano, di <b>correggerli</b>, di <b>cancellarli</b>, di <b>limitarne</b> l\'uso, di <b>riceverli</b> in un formato leggibile da una macchina e di <b>opporti</b> a un trattamento fondato sul legittimo interesse.',

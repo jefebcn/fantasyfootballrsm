@@ -386,6 +386,53 @@ function prudenza() {
   </div>`;
 }
 
+/**
+ * I NOMI DEI GIOCATORI (041), sotto la modalita' prudente e per la stessa
+ * ragione: se un calciatore o la FSGC chiede qualcosa sui nomi, si risponde
+ * da qui, dal telefono, senza un rilascio. Tre cose: l'interruttore dei nomi
+ * brevi, chi ha chiesto di non comparire, e le richieste arrivate dalla
+ * pagina #/giocatori.
+ */
+let cercaEscluso = '';
+function riservatezza(adesioni) {
+  if (!S.isOwner()) return '';
+  const brevi = S.nomiBrevi();
+  const esclusi = S.giocatoriEsclusi().map((id) => S.playersById.get(id)).filter(Boolean);
+  const q = cercaEscluso.trim().toLowerCase();
+  const trovati = q.length < 2 ? [] : S.base.players
+    .filter((p) => !p.doppioneDi && !esclusi.includes(p) && `${S.nomeVero(p).firstName} ${S.nomeVero(p).lastName}`.toLowerCase().includes(q)).slice(0, 8);
+  const vero = (p) => `${esc(S.nomeVero(p).firstName)} ${esc(S.nomeVero(p).lastName)}`;
+  const club = (p) => esc(S.clubsById.get(p.clubId)?.name || '');
+  const nuove = (adesioni || []).filter((a) => !a.letta);
+  return `<div class="a-card prudente${brevi ? ' on' : ''}">
+    <b>Nomi brevi: ${brevi ? 'accesi' : 'spenti'}</b>
+    <span class="small muted">${brevi
+    ? 'Tutti i giocatori compaiono con le iniziali («G.V.»). Formazioni e punti non cambiano.'
+    : 'Se chiedono di non mostrare i nomi: tutti i giocatori compaiono con le iniziali («G.V.»). Formazioni e punti non cambiano. Si spegne quando vuoi.'}</span>
+    <div class="azioni"><button class="chip" data-brevi="${brevi ? 'off' : 'on'}">${brevi ? 'Spegni' : 'Accendi'}</button></div>
+  </div>
+  <div class="a-card">
+    <b>Chi ha chiesto di non comparire</b>
+    <span class="small muted" style="display:block;margin:2px 0 8px">Nell'app diventa «Giocatore N», con ruolo e squadra. Formazioni e punti restano.</span>
+    ${esclusi.length ? `<div class="vlist">${esclusi.map((p) => `<div class="adm-u"><span><b>${vero(p)}</b> <span class="small muted">${club(p)} · ${esc(p.lastName)}</span></span>
+      <button class="chip" data-riammetti="${esc(p.id)}">Rimetti il nome</button></div>`).join('')}</div>` : '<p class="small muted" style="margin:0 0 8px">Nessuno, per ora.</p>'}
+    <input class="field-input" id="adm-escludi" placeholder="Cerca il giocatore da escludere" value="${esc(cercaEscluso)}" autocomplete="off">
+    ${trovati.length ? `<div class="vlist">${trovati.map((p) => `<div class="adm-u"><span><b>${vero(p)}</b> <span class="small muted">${club(p)}</span></span>
+      <button class="chip" data-escludi="${esc(p.id)}">Escludi</button></div>`).join('')}</div>` : ''}
+  </div>
+  <div class="a-card">
+    <b>Richieste dei giocatori${nuove.length ? ` · ${nuove.length} nuove` : ''}</b>
+    <span class="small muted" style="display:block;margin:2px 0 8px">Dalla pagina <b>fantatitano.site/#/giocatori</b>: non è collegata dall'app, la mandi tu quando serve.</span>
+    ${adesioni === null ? '<p class="small muted" style="margin:0">Per vederle esegui nell\'SQL Editor la SQL <b>041</b>.</p>'
+    : !adesioni ? '<p class="small muted" style="margin:0">Sto guardando…</p>'
+      : !adesioni.length ? '<p class="small muted" style="margin:0">Nessuna richiesta.</p>'
+        : `<div class="vlist">${adesioni.slice(0, 30).map((a) => `<div class="adm-u${a.letta ? ' letta' : ''}"><span>
+      <b>${esc(a.nome)}</b> <span class="small muted">${esc(a.squadra || '')} · ${new Date(a.created_at).toLocaleDateString('it-IT')}</span><br>
+      <span class="small">${a.scelta === 'aderisco' ? '✅ Ci sta' : '🚫 Non vuole comparire'}${a.contatto ? ` · ${esc(a.contatto)}` : ''}</span>${a.nota ? `<br><span class="small muted">${esc(a.nota)}</span>` : ''}</span>
+      ${a.letta ? '' : `<button class="chip" data-letta="${a.id}">Fatto</button>`}</div>`).join('')}</div>`}
+  </div>`;
+}
+
 function numeri(r) {
   if (!r) return `<p class="small muted">Sto contando…</p>`;
   const q = [
@@ -580,7 +627,7 @@ export const adminConsole = {
       <button class="${aTab === 'leghe' ? 'on' : ''}" data-atab="leghe">Leghe</button>
       <button class="${aTab === 'sponsor' ? 'on' : ''}" data-atab="sponsor">Sponsor</button></div></div>`;
     let corpo = '';
-    if (aTab === 'numeri') corpo = prudenza() + numeri(cache.numeri) + consegne(cache.numeri) + errori(cache.errori) + andamento(cache.persone);
+    if (aTab === 'numeri') corpo = prudenza() + riservatezza(cache.adesioni) + numeri(cache.numeri) + consegne(cache.numeri) + errori(cache.errori) + andamento(cache.persone);
     else if (aTab === 'persone') {
       corpo = `${daConfermare(cache.daConfermare)}<input class="field-input" id="adm-cerca" placeholder="Cerca per nome o e-mail" value="${esc(cerca)}" autocomplete="off">
         ${persone(cache.persone)}`;
@@ -603,6 +650,7 @@ export const adminConsole = {
     const carica = async () => {
       try {
         if (aTab === 'numeri' && !cache.numeri) { cache.numeri = await S.adminRiepilogo(); ctx.render(); }
+        if (aTab === 'numeri' && cache.adesioni === undefined && S.isOwner()) { cache.adesioni = await S.caricaAdesioni(); ctx.render(); }
         if (aTab === 'numeri' && cache.errori === undefined) { cache.errori = await S.caricaErrori(7); ctx.render(); }
         // l'andamento si disegna sull'elenco delle persone: la scheda dei
         // numeri lo chiede una volta e poi resta in cache come le altre
@@ -637,6 +685,10 @@ export const adminConsole = {
         ctx.render();
       };
     }
+    // la ricerca del giocatore da escludere e' locale (il listone sta gia'
+    // nell'app): si cerca alla pressione di Invio, come qui sopra
+    const inpEs = root.querySelector('#adm-escludi');
+    if (inpEs) inpEs.onkeydown = (e) => { if (e.key === 'Enter') { cercaEscluso = inpEs.value; ctx.render(); } };
     root.querySelector('main').addEventListener('click', async (e) => {
       const t = e.target.closest('[data-atab]');
       if (t) { aTab = t.dataset.atab; ctx.render(); return; }
@@ -711,6 +763,40 @@ export const adminConsole = {
           cache.squadre = await S.adminSquadre(cerca, 100);
           ctx.toast('Rinominata'); ctx.render();
         } catch (err) { ctx.toast(err.message || 'Non è stato possibile'); rn.disabled = false; }
+        return;
+      }
+      const br = e.target.closest('[data-brevi]');
+      if (br) {
+        const acceso = br.dataset.brevi === 'on';
+        if (!confirm(acceso
+          ? 'Accendere i nomi brevi? Tutti i giocatori compariranno con le iniziali, per tutti gli utenti. Si spegne da qui quando vuoi.'
+          : 'Spegnere i nomi brevi? Tornano i nomi dei giocatori.')) return;
+        br.disabled = true;
+        try { await S.impostaNomiBrevi(acceso); ctx.toast(acceso ? 'Nomi brevi accesi' : 'Nomi brevi spenti'); ctx.render(); }
+        catch (err) { ctx.toast(err.message || 'Non è stato possibile'); br.disabled = false; }
+        return;
+      }
+      const es = e.target.closest('[data-escludi]');
+      if (es) {
+        const p = S.playersById.get(es.dataset.escludi);
+        if (!p || !confirm(`Escludere ${S.nomeVero(p).firstName} ${S.nomeVero(p).lastName}? Nell'app comparirà come «Giocatore», con ruolo e squadra.`)) return;
+        es.disabled = true;
+        try { await S.escludiGiocatore(p.id); cercaEscluso = ''; ctx.toast('Escluso'); ctx.render(); }
+        catch (err) { ctx.toast(/giocatori_esclusi|relation|schema cache/i.test(err.message || '') ? 'Prima va eseguita la 041 nell\'SQL Editor' : (err.message || 'Non è stato possibile')); es.disabled = false; }
+        return;
+      }
+      const ri = e.target.closest('[data-riammetti]');
+      if (ri) {
+        ri.disabled = true;
+        try { await S.riammettiGiocatore(ri.dataset.riammetti); ctx.toast('Nome rimesso'); ctx.render(); }
+        catch (err) { ctx.toast(err.message || 'Non è stato possibile'); ri.disabled = false; }
+        return;
+      }
+      const le = e.target.closest('[data-letta]');
+      if (le) {
+        le.disabled = true;
+        try { await S.segnaAdesioneLetta(+le.dataset.letta); cache.adesioni = await S.caricaAdesioni(); ctx.render(); }
+        catch (err) { ctx.toast(err.message || 'Non è stato possibile'); le.disabled = false; }
         return;
       }
       const pr = e.target.closest('[data-prudente]');

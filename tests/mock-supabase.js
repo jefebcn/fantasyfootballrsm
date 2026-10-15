@@ -59,7 +59,7 @@ function builder(table) {
     {
       try {
         let data = null; const rows = T(table);
-        const pk = { lineups: ['league_id', 'member_id', 'matchday'], match_overrides: ['match_id'], match_appearances: ['match_id', 'player_id'], matchday_status: ['matchday'], matchday_locks: ['matchday'], profiles: ['id'], app_interruttori: ['chiave'] }[table] || ['id'];
+        const pk = { lineups: ['league_id', 'member_id', 'matchday'], match_overrides: ['match_id'], match_appearances: ['match_id', 'player_id'], matchday_status: ['matchday'], matchday_locks: ['matchday'], profiles: ['id'], app_interruttori: ['chiave'], giocatori_esclusi: ['player_id'] }[table] || ['id'];
         const withDefaults = (r) => ({ id: uid(), created_at: now(), ...r });
         // __MOCK_SESSIONE_PERSA__: il token e' scaduto e la rete non l'ha
         // rinnovato, le richieste partono come anonimo. Come Supabase vero: i

@@ -73,6 +73,8 @@ const ok = [], ko = []; const et = (c, t) => (c ? ok : ko).push(t);
   et(!(await p.$('.invito-calc')), '«Non gioco» lo toglie');
   await p.reload({ waitUntil: 'load' }); await w(1500);
   et(!(await p.$('.invito-calc')), 'e non torna riaprendo l\'app');
+  const conti = await p.evaluate(() => Object.fromEntries((JSON.parse(localStorage.getItem('fcs:mock')).tables.banner_conteggi || []).map((r) => [r.evento, r.n])));
+  et(conti.visto === 1 && conti.non_gioco === 1 && conti.pagina === 1 && !conti.ci_gioco, `il banner si conta una volta per telefono: visto, «Non gioco», pagina (${JSON.stringify(conti)})`);
 
   await p.evaluate(() => {
     const s = JSON.parse(localStorage.getItem('fcs:mock'));
@@ -84,6 +86,7 @@ const ok = [], ko = []; const et = (c, t) => (c ? ok : ko).push(t);
   await p.waitForFunction(() => /Mario Rossi/.test(document.body.innerText), null, { timeout: 8000 }).catch(() => {});
   const c1 = await p.evaluate(() => document.body.innerText);
   et(/Da verificare/.test(c1) && c1.includes(codice), 'la richiesta arriva in console, da verificare, col suo codice');
+  et(/1\s*l'hanno visto/.test(c1) && /non hanno scelto/.test(c1) && /aperta da 1 telefoni/.test(c1), 'in console la statistica del banner');
   et(/Minorenne · genitore Anna Rossi/.test(c1) && /Sponsor sì/.test(c1), 'con minorenne, genitore e sponsor in vista');
   const pid = await p.evaluate(() => document.querySelector('[data-ades-gioc]')?.value);
   et(/^virtus_/.test(pid || ''), `propone i giocatori della sua squadra (${pid})`);

@@ -128,6 +128,7 @@ export const adesione = {
     </main>`;
   },
   mount(root, ctx) {
+    S.contaBannerUnaVolta('pagina');
     const f = root.querySelector('#ades');
     const leggi = () => {
       const v = (sel) => f.querySelector(sel);

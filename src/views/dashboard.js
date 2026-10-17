@@ -242,9 +242,9 @@ function invitoCalciatori() {
   if (S.store.get().bannerCalciatori) return '';
   try { if (localStorage.getItem('ft.adesione')) return ''; } catch { /* niente */ }
   return `<div class="a-card invito-calc">
-    <i class="cp-ico">${icon('shirt')}</i>
+    <i class="cp-ico cp-logo">${logo()}</i>
     <div class="cp-txt"><b>Giochi nel campionato sammarinese?</b>
-      <span>Il tuo nome è in Fantatitano. Dicci se ci stai, oppure se preferisci non comparire: ci vuole un minuto.</span>
+      <span>Allora sei già nel listone di Fantatitano, con nome e statistiche. Dicci se ti va bene comparire, oppure se preferisci di no: bastano due minuti.</span>
       <div class="cp-btn"><button class="a-btn" data-calc="si">Ci gioco</button><button class="a-btn sec" data-calc="no">Non gioco</button></div>
     </div>
   </div>`;

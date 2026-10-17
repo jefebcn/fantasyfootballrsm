@@ -2482,7 +2482,8 @@ a.crow .cls-chev{flex:none;color:var(--text-muted);margin-left:-4px}
 .ades-azioni .a-btn{flex:1;text-decoration:none;font-size:12px}
 .mono{font-family:var(--font-data)}
 /* Banner in Home per i calciatori, e il bollino sulla scheda (044) */
-.invito-calc .cp-ico{background:var(--c-oro-600, #B87C0C)}
+.invito-calc .cp-ico.cp-logo{background:var(--c-titano-700, #21397F)}
+.invito-calc .cp-logo .logo{width:24px;height:24px}
 .aderito{display:inline-flex;align-items:center;gap:5px;font:700 11.5px var(--font-display);color:var(--positive-ink);background:var(--positive-soft);border-radius:999px;padding:3px 10px}
 .aderito .ic{width:12px;height:12px}
 /* La console: le richieste dei calciatori */

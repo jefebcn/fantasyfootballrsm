@@ -529,6 +529,18 @@ export async function caricaProva(id) {
   const { data, error } = await sb.from('prove_consenso').select('id, tipo, dati, impronta, caricata_at').eq('id', Number(id)).maybeSingle();
   return error ? null : data;
 }
+/**
+ * I conteggi anonimi del banner dei calciatori (045): solo numeri per
+ * giorno. Una richiesta persa non e' un errore da mostrare.
+ */
+export function contaBanner(evento) {
+  return sb.rpc('conta_banner', { p_evento: evento }).then(() => true, () => false);
+}
+export async function caricaConteggiBanner() {
+  const { data, error } = await sb.from('banner_conteggi').select('giorno, evento, n');
+  if (error) return null;
+  return data || [];
+}
 /** I giocatori col bollino «Ha aderito» (044). Senza la 044: nessuno. */
 export async function caricaAderenti() {
   const { data, error } = await sb.rpc('giocatori_aderenti');

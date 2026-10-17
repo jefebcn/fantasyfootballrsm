@@ -658,9 +658,10 @@ export const dashboard = {
       slot.querySelector('#inst-no').onclick = () => { S.store.set({ installedDismissed: true }); slot.innerHTML = ''; };
     };
     show(); document.addEventListener('installable', show, { once: true });
+    if (root.querySelector('.invito-calc')) S.contaBannerUnaVolta('visto');
     root.querySelector('.invito-calc')?.addEventListener('click', (e) => {
-      if (e.target.closest('[data-calc="si"]')) { location.hash = '#/giocatori'; return; }
-      if (e.target.closest('[data-calc="no"]')) { S.store.set({ bannerCalciatori: true }); ctx.toast('Va bene, non lo mostro più'); }
+      if (e.target.closest('[data-calc="si"]')) { S.contaBannerUnaVolta('ci_gioco'); location.hash = '#/giocatori'; return; }
+      if (e.target.closest('[data-calc="no"]')) { S.contaBannerUnaVolta('non_gioco'); S.store.set({ bannerCalciatori: true }); ctx.toast('Va bene, non lo mostro più'); }
     });
     root.querySelector('.chiedi-push')?.addEventListener('click', async (e) => {
       const b = e.target.closest('[data-push]'); if (!b) return;

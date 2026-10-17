@@ -2413,4 +2413,25 @@ alter table public.adesioni_giocatori disable trigger adesioni_sigillo;
 delete from public.adesioni_giocatori;
 alter table public.adesioni_giocatori enable trigger adesioni_sigillo;
 
+-- 045: i conteggi del banner dei calciatori, anonimi
+select set_config('request.jwt.claims', '', false);
+set role anon;
+select public.conta_banner('visto'); select public.conta_banner('visto'); select public.conta_banner('ci_gioco');
+select public.conta_banner('chissacosa');
+reset role;
+select pg_temp.esige('il banner si conta anche senza account, un giorno per riga',
+  (select n from public.banner_conteggi where evento = 'visto' and giorno = (now() at time zone 'Europe/Rome')::date) = 2
+  and (select n from public.banner_conteggi where evento = 'ci_gioco') = 1);
+select pg_temp.esige('un tipo sconosciuto non si conta e non fa errore', (select count(*) from public.banner_conteggi) = 2);
+set role anon;
+do $$ begin
+  perform * from public.banner_conteggi;
+  raise exception 'FALLITA: i conteggi non dovevano leggersi senza account';
+exception when others then
+  if sqlerrm like 'FALLITA%' then raise; end if;
+  raise notice 'ok  i conteggi li legge solo chi amministra (%)', sqlerrm;
+end $$;
+reset role;
+delete from public.banner_conteggi;
+
 select 'tutte le prove sulle funzioni sono passate' as esito;

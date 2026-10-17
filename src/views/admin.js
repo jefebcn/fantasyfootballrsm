@@ -302,8 +302,8 @@ let aTab = 'numeri';        // 'numeri' | 'persone' | 'squadre' | 'leghe' | 'spo
 // Le richieste dei calciatori, il registro dei passaggi e la sua verifica
 // arrivano insieme: l'attestato e il CSV li usano tutti e tre.
 async function ricaricaConsensi() {
-  const [ad, reg, ok] = await Promise.all([S.caricaAdesioni(), S.caricaRegistro(), S.verificaRegistro()]);
-  cache.adesioni = ad; cache.registro = reg; cache.integro = ok;
+  const [ad, reg, ok, ban] = await Promise.all([S.caricaAdesioni(), S.caricaRegistro(), S.verificaRegistro(), S.caricaConteggiBanner()]);
+  cache.adesioni = ad; cache.registro = reg; cache.integro = ok; cache.banner = ban;
 }
 let cache = { numeri: null, persone: null, squadre: null, leghe: null, conteggi: null, errori: undefined, daConfermare: undefined };
 let cerca = '';
@@ -533,7 +533,25 @@ function calciatori(adesioni) {
   const registro = `<div class="ades-reg"><span class="small">${reg == null ? 'Registro: esegui la SQL <b>044</b>'
     : `Registro: <b>${reg.length}</b> ${reg.length === 1 ? 'passaggio' : 'passaggi'} · ${ok ? (ok.integro ? '<b class="ok">catena integra</b>' : `<b class="ko">catena rotta alla riga ${ok.prima_rotta}</b>`) : 'verifica non disponibile'}`}</span>
     <div class="azioni"><button class="chip" data-ades-csv="consensi">Scarica consensi (CSV)</button><button class="chip" data-ades-csv="registro">Scarica registro (CSV)</button></div></div>`;
-  return `<div class="a-card">${intest}${conta}${registro}${adesioni.length ? `<div>${righe}</div>` : '<p class="small muted" style="margin:0">Nessuna richiesta, per ora.</p>'}</div>`;
+  return `<div class="a-card">${intest}${statBanner(adesioni)}${conta}${registro}${adesioni.length ? `<div>${righe}</div>` : '<p class="small muted" style="margin:0">Nessuna richiesta, per ora.</p>'}</div>`;
+}
+
+/**
+ * La statistica interna del banner (045): telefoni che l'hanno visto, cosa
+ * hanno scelto, chi non ha scelto niente, e quanti sono arrivati alla pagina
+ * e hanno mandato la richiesta. Solo numeri, nessun nome.
+ */
+function statBanner(adesioni) {
+  const b = cache.banner;
+  if (b == null) return '<p class="small muted" style="margin:0 0 8px">Statistiche del banner: esegui la SQL <b>045</b>.</p>';
+  const tot = (ev) => b.filter((r) => r.evento === ev).reduce((s, r) => s + r.n, 0);
+  const visto = tot('visto'), si = tot('ci_gioco'), no = tot('non_gioco');
+  const nulla = Math.max(0, visto - si - no);
+  const pct = (x) => (visto ? ` <small>${Math.round((x / visto) * 100)}%</small>` : '');
+  return `<div class="ades-stat"><span class="small muted">Banner in Home, da quando si conta (un telefono conta una volta)</span>
+    <div class="ades-conta ades-conta4"><div><b>${visto}</b><span>l'hanno visto</span></div><div><b>${si}${pct(si)}</b><span>«Ci gioco»</span></div>
+    <div><b>${no}${pct(no)}</b><span>«Non gioco»</span></div><div><b>${nulla}${pct(nulla)}</b><span>non hanno scelto</span></div></div>
+    <span class="small">Pagina dei calciatori aperta da <b>${tot('pagina')}</b> telefoni · richieste inviate <b>${(adesioni || []).length}</b></span></div>`;
 }
 
 /**

@@ -2232,16 +2232,16 @@ button,a,.chip,[data-compra],[data-vendi]{touch-action:manipulation}
 .moduli.spenti .chip{opacity:.55;pointer-events:none}
 .moduli.spenti .chip.on{opacity:1}
 /* La richiesta gentile delle push (dashboard, sotto la formazione) */
-.chiedi-push{display:flex;gap:12px;align-items:flex-start}
-.chiedi-push .cp-ico{flex:none;width:36px;height:36px;border-radius:50%;display:grid;place-items:center;background:var(--c-titano-600);color:#fff}
-.chiedi-push .cp-ico .ic{width:18px;height:18px}
-.chiedi-push .cp-txt{flex:1;min-width:0;display:flex;flex-direction:column;gap:4px}
-.chiedi-push .cp-txt b{font-family:var(--font-display);font-size:15px}
-.chiedi-push .cp-passi{margin:4px 0 2px;padding-left:20px;display:flex;flex-direction:column;gap:5px;font-size:13.5px;line-height:1.4}
-.chiedi-push .cp-passi b,.chiedi-push .cp-txt span b{font-family:inherit;font-size:inherit;font-weight:700}
-.chiedi-push .cp-txt>span{font-size:13px;color:var(--text-muted)}
-.chiedi-push .cp-btn{display:flex;gap:8px;margin-top:8px}
-.chiedi-push .cp-btn .a-btn{height:40px;font-size:12px;flex:1}
+.chiedi-push,.invito-calc{display:flex;gap:12px;align-items:flex-start}
+.chiedi-push .cp-ico,.invito-calc .cp-ico{flex:none;width:36px;height:36px;border-radius:50%;display:grid;place-items:center;background:var(--c-titano-600);color:#fff}
+.chiedi-push .cp-ico .ic,.invito-calc .cp-ico .ic{width:18px;height:18px}
+.chiedi-push .cp-txt,.invito-calc .cp-txt{flex:1;min-width:0;display:flex;flex-direction:column;gap:4px}
+.chiedi-push .cp-txt b,.invito-calc .cp-txt b{font-family:var(--font-display);font-size:15px}
+.chiedi-push .cp-passi,.invito-calc .cp-passi{margin:4px 0 2px;padding-left:20px;display:flex;flex-direction:column;gap:5px;font-size:13.5px;line-height:1.4}
+.chiedi-push .cp-passi b,.chiedi-push .cp-txt span b,.invito-calc .cp-passi b,.invito-calc .cp-txt span b{font-family:inherit;font-size:inherit;font-weight:700}
+.chiedi-push .cp-txt>span,.invito-calc .cp-txt>span{font-size:13px;color:var(--text-muted)}
+.chiedi-push .cp-btn,.invito-calc .cp-btn{display:flex;gap:8px;margin-top:8px}
+.chiedi-push .cp-btn .a-btn,.invito-calc .cp-btn .a-btn{height:40px;font-size:12px;flex:1}
 /* Classifica a punti: la riga si tocca e porta alla formazione (#/formazione/:id) */
 a.crow{color:inherit;text-decoration:none}
 a.crow .cls-chev{flex:none;color:var(--text-muted);margin-left:-4px}
@@ -2459,6 +2459,75 @@ a.crow .cls-chev{flex:none;color:var(--text-muted);margin-left:-4px}
 /* La pagina per i calciatori (041) */
 .ades-scelta{display:flex;gap:10px;align-items:flex-start;padding:10px 12px;margin:6px 0;border:1px solid var(--border, rgba(127,127,127,.25));border-radius:var(--r-md);font-size:14px;line-height:1.4;cursor:pointer}
 .ades-scelta input{margin-top:3px;flex:none}
+/* Il consenso (044): la scelta presa si vede, gli sponsor stanno sotto il «si'» */
+.ades-scelta:has(input:checked){border-color:var(--primary);background:var(--primary-soft)}
+.ades-scelta.ades-sub{margin-left:22px;border-style:dashed}
+.ades-seg{display:flex;gap:8px}
+.ades-seg label{position:relative;flex:1;text-align:center;padding:9px;border:1.5px solid var(--border-strong);border-radius:12px;font-weight:700;cursor:pointer}
+.ades-seg label:has(input:checked){border-color:var(--primary);background:var(--primary-soft);color:var(--primary-ink)}
+.ades-seg input{position:absolute;inset:0;width:100%;height:100%;margin:0;opacity:0;cursor:pointer}
+.ades-seg label:focus-within{outline:2px solid var(--primary);outline-offset:2px}
+.ades-gen{display:flex;flex-direction:column;gap:6px;margin-top:10px}
+.ades-chk{display:flex;gap:10px;align-items:flex-start;font-size:13.5px;line-height:1.4;cursor:pointer;margin-top:8px}
+.ades-chk input{margin-top:2px;flex:none}
+.ades-testo{font-size:13.5px;line-height:1.5;border:1px solid var(--border);border-radius:12px;padding:8px 12px}
+.ades-testo summary{font-weight:700;color:var(--primary-ink);cursor:pointer}
+.ades-testo h3{font-size:14px;margin:12px 0 4px}
+.ades-testo ul{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:4px}
+.ades-testo p{margin:0}
+.ades-fatto{display:flex;flex-direction:column;gap:10px}
+.ades-codice{font:600 30px/1 var(--font-data);letter-spacing:.14em;text-align:center;padding:18px 8px;border:2px dashed var(--border-strong);border-radius:14px;background:var(--surface-2, var(--surface));user-select:all}
+.ades-passi{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:6px;font-size:14px;line-height:1.45}
+.ades-azioni{display:flex;gap:8px}
+.ades-azioni .a-btn{flex:1;text-decoration:none;font-size:12px}
+.mono{font-family:var(--font-data)}
+/* Banner in Home per i calciatori, e il bollino sulla scheda (044) */
+.invito-calc .cp-ico.cp-logo{background:var(--c-titano-700, #21397F)}
+.invito-calc .cp-logo .logo{width:24px;height:24px}
+.aderito{display:inline-flex;align-items:center;gap:5px;font:700 11.5px var(--font-display);color:var(--positive-ink);background:var(--positive-soft);border-radius:999px;padding:3px 10px}
+.aderito .ic{width:12px;height:12px}
+/* La console: le richieste dei calciatori */
+.adm-ades{display:flex;flex-direction:column;gap:6px;padding:10px 0;border-top:1px solid var(--border)}
+.adm-ades:first-child{border-top:0}
+.adm-ades .riga1{display:flex;justify-content:space-between;gap:8px;align-items:baseline}
+.adm-ades .tags{display:flex;flex-wrap:wrap;gap:5px}
+.adm-ades .tags span{font-size:11.5px;border:1px solid var(--border);border-radius:6px;padding:1px 6px;color:var(--text-muted)}
+.adm-ades .azioni{display:flex;flex-wrap:wrap;gap:6px}
+.stato-ades{font:700 11px var(--font-display);padding:3px 8px;border-radius:999px;white-space:nowrap}
+.stato-ades.attesa{background:var(--accent-soft);color:var(--accent-ink)}
+.stato-ades.verificato{background:var(--positive-soft);color:var(--positive-ink)}
+.stato-ades.respinto{background:var(--negative-soft);color:var(--negative-ink)}
+.ades-conta{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;text-align:center;margin:6px 0 4px}
+.ades-conta div{background:var(--surface-2, var(--surface));border-radius:10px;padding:7px 4px}
+.ades-conta b{display:block;font:900 18px var(--font-display);font-variant-numeric:tabular-nums}
+.ades-conta span{font-size:11px;color:var(--text-muted)}
+.ades-reg{display:flex;flex-direction:column;gap:6px;margin:4px 0 8px;padding:8px 10px;border-radius:10px;background:var(--surface-2, var(--surface))}
+.ades-reg .ok,.attestato .ok{color:var(--positive-ink)}
+.ades-reg .ko,.attestato .ko{color:var(--negative-ink)}
+.adm-ades .azioni a.chip{text-decoration:none}
+.stato-ades.ritirato{background:var(--surface-2, var(--surface));color:var(--text-muted)}
+/* L'attestato di un consenso (044): si legge a schermo e si salva in PDF */
+.attestato .a-card{display:flex;flex-direction:column;gap:8px}
+.att-testa h2{margin:2px 0 0;font:900 20px/1.2 var(--font-display)}
+.att-stato{margin:0;font-weight:700}
+.att-stato.verificato{color:var(--positive-ink)}
+.att-stato.attesa{color:var(--accent-ink)}
+.att-stato.respinto,.att-stato.ritirato{color:var(--negative-ink)}
+.att-tab{width:100%;border-collapse:collapse;font-size:13.5px}
+.att-tab th,.att-tab td{text-align:left;vertical-align:top;padding:6px 4px;border-bottom:1px solid var(--border)}
+.att-tab th{width:38%;color:var(--text-muted);font-weight:600}
+.att-reg th{width:auto}
+.att-hash{word-break:break-all;font-size:11px}
+.att-testo{white-space:pre-wrap;font:12.5px/1.5 var(--font-body);background:var(--surface-2, var(--surface));border-radius:10px;padding:10px;margin:0;max-height:none}
+.att-scelte{margin:0;padding-left:4px;list-style:none;display:flex;flex-direction:column;gap:6px;font-size:13.5px}
+.att-prova{max-width:100%;max-height:520px;object-fit:contain;border:1px solid var(--border);border-radius:10px;align-self:flex-start}
+.att-azioni .a-btn{width:auto;padding:0 16px}
+@media print{
+  .a-appbar,.a-nav,.no-print,.a-drawer,#toast{display:none!important}
+  body,.app,.a-body{background:#fff!important;color:#000!important}
+  .attestato .a-card{break-inside:avoid;box-shadow:none;border:1px solid #ccc}
+  .att-prova{max-height:none}
+}
 /* Squalificato (042): il bollino rosso accanto al nome, e la sigla sul campo */
 .squal{display:inline-block;vertical-align:middle;margin-left:4px;padding:1px 6px;border-radius:999px;background:var(--negative);color:var(--on-negative);font:800 9.5px/1.5 var(--font-ui, inherit);font-style:normal;letter-spacing:.06em}
 .squal-t{color:var(--negative)}

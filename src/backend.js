@@ -437,19 +437,103 @@ export async function scriviSqualifica(playerId, matchday, squalificato, nota, u
 export async function togliSqualifica(playerId, matchday) {
   return must(await sb.from('squalifiche').delete().eq('player_id', playerId).eq('matchday', matchday));
 }
-/** La pagina #/giocatori (041): scrive chiunque, anche senza account. */
-export async function inviaAdesione({ nome, squadra, scelta, contatto, nota }) {
-  const { error } = await sb.from('adesioni_giocatori').insert({ nome, squadra: squadra || null, scelta, contatto: contatto || null, nota: nota || null });
-  if (error) throw new Error(/adesioni_giocatori|relation|schema cache/i.test(error.message) ? 'Il modulo non è ancora attivo: riprova fra qualche giorno' : error.message);
+/**
+ * La pagina #/giocatori (041, 044): scrive chiunque, anche senza account.
+ * Il codice di verifica lo sceglie il telefono: e' solo un'etichetta per
+ * ritrovare la richiesta quando arriva il DM, non un segreto. Se per caso e'
+ * gia' preso (indice unico) se ne prova un altro.
+ */
+const ALFABETO = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+export const nuovoCodice = () => `FT-${Array.from({ length: 4 }, () => ALFABETO[Math.floor(Math.random() * ALFABETO.length)]).join('')}`;
+export async function inviaAdesione({ nome, squadra, scelta, contatto, nota, sponsor, maggiorenne, genitore, instagram, versione }) {
+  const riga = { nome, squadra: squadra || null, scelta, contatto: contatto || null, nota: nota || null };
+  // dalla 044: senza le colonne nuove la richiesta parte come prima (041)
+  const piu = { sponsor: !!sponsor, maggiorenne, genitore: genitore || null, instagram: instagram || null, versione };
+  for (let prova = 0; prova < 4; prova++) {
+    const codice = nuovoCodice();
+    const { error } = await sb.from('adesioni_giocatori').insert({ ...riga, ...piu, codice });
+    if (!error) return { codice };
+    if (error.code === '23505') continue;
+    if (/column|schema cache/i.test(error.message) && /sponsor|codice|maggiorenne|genitore|instagram|versione/.test(error.message)) {
+      const { error: e2 } = await sb.from('adesioni_giocatori').insert(riga);
+      if (e2) break;
+      return { codice: null };
+    }
+    throw new Error(/adesioni_giocatori|relation|schema cache/i.test(error.message) ? 'Il modulo non è ancora attivo: riprova fra qualche giorno' : error.message);
+  }
+  throw new Error('Non è stato possibile inviare: riprova fra poco');
 }
 /** Le richieste arrivate, per la console. null se la 041 non c'e'. */
 export async function caricaAdesioni() {
-  const { data, error } = await sb.from('adesioni_giocatori').select('id, nome, squadra, scelta, contatto, nota, letta, created_at').order('created_at', { ascending: false }).limit(200);
+  const base = 'id, nome, squadra, scelta, contatto, nota, letta, created_at';
+  let { data, error } = await sb.from('adesioni_giocatori')
+    .select(`${base}, sponsor, maggiorenne, genitore, instagram, codice, versione, ip, dispositivo, stato, verificato_come, verificato_at, verificato_da, prova, player_id, ritirato_at`)
+    .order('created_at', { ascending: false }).limit(200);
+  // senza la 044 le colonne nuove non ci sono: si leggono quelle della 041
+  if (error && /column/i.test(error.message)) ({ data, error } = await sb.from('adesioni_giocatori').select(base).order('created_at', { ascending: false }).limit(200));
   if (error) return null;
   return data || [];
 }
 export async function segnaAdesioneLetta(id) {
   return must(await sb.from('adesioni_giocatori').update({ letta: true }).eq('id', id));
+}
+/**
+ * Chi amministra: «e' lui». Prima lo screenshot del messaggio (DM o societa'),
+ * compresso qui e salvato in prove_consenso con la sua impronta; poi la
+ * verifica che lo cita: il database rifiuta una verifica senza la prova di
+ * quella richiesta. Data e autore li scrive il database.
+ */
+async function comprimi(file) {
+  const url = URL.createObjectURL(file);
+  try {
+    const img = await new Promise((ok, ko) => { const i = new Image(); i.onload = () => ok(i); i.onerror = () => ko(new Error('Lo screenshot non si apre: prova con un PNG o un JPEG')); i.src = url; });
+    const k = Math.min(1, 1600 / Math.max(img.naturalWidth, img.naturalHeight));
+    const c = document.createElement('canvas'); c.width = Math.round(img.naturalWidth * k); c.height = Math.round(img.naturalHeight * k);
+    c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+    for (const q of [0.85, 0.7, 0.55]) { const d = c.toDataURL('image/jpeg', q); if (d.length <= 2700000) return d; }
+    throw new Error('Lo screenshot è troppo grande anche compresso');
+  } finally { URL.revokeObjectURL(url); }
+}
+export async function verificaAdesione(a, come, playerId, file) {
+  const dati = await comprimi(file);
+  const { data: pr, error: ep } = await sb.from('prove_consenso').insert({ adesione_id: a.id, tipo: 'image/jpeg', dati }).select('id').single();
+  if (ep) throw new Error(/prove_consenso|relation|schema cache/i.test(ep.message) ? 'Prima va eseguita la 044 nell\'SQL Editor' : ep.message);
+  return must(await sb.from('adesioni_giocatori').update({ stato: 'verificato', verificato_come: come,
+    verificato_at: new Date().toISOString(), player_id: playerId, prova: String(pr.id), letta: true }).eq('id', a.id));
+}
+export async function respingiAdesione(id) {
+  return must(await sb.from('adesioni_giocatori').update({ stato: 'respinto', letta: true }).eq('id', id));
+}
+/** Il calciatore ritira il consenso (te lo scrive in DM o per e-mail). */
+export async function ritiraAdesione(id) {
+  return must(await sb.from('adesioni_giocatori').update({ ritirato_at: new Date().toISOString() }).eq('id', id));
+}
+/** Il registro dei passaggi, con le impronte (044). Solo chi amministra. */
+export async function caricaRegistro() {
+  const { data, error } = await sb.from('consensi_registro').select('id, adesione_id, evento, chi, quando, impronta_prec, impronta, dati').order('id', { ascending: true }).limit(5000);
+  if (error) return null;
+  return data || [];
+}
+/** { righe, integro, prima_rotta }: la catena ricalcolata dal database. */
+export async function verificaRegistro() {
+  const { data, error } = await sb.rpc('verifica_registro');
+  if (error) return null;
+  return Array.isArray(data) ? data[0] : data;
+}
+export async function testoConsenso(versione) {
+  const { data, error } = await sb.from('consensi_testi').select('versione, testo, impronta, dal').eq('versione', versione).maybeSingle();
+  return error ? null : data;
+}
+/** Lo screenshot della verifica, con la sua impronta (solo chi amministra). */
+export async function caricaProva(id) {
+  const { data, error } = await sb.from('prove_consenso').select('id, tipo, dati, impronta, caricata_at').eq('id', Number(id)).maybeSingle();
+  return error ? null : data;
+}
+/** I giocatori col bollino «Ha aderito» (044). Senza la 044: nessuno. */
+export async function caricaAderenti() {
+  const { data, error } = await sb.rpc('giocatori_aderenti');
+  if (error) return [];
+  return (data || []).map((r) => (typeof r === 'string' ? r : r.giocatori_aderenti)).filter(Boolean);
 }
 export async function impostaInterruttore(chiave, acceso, userId) {
   return must(await sb.from('app_interruttori').upsert({ chiave, acceso, cambiato_da: userId, cambiato_at: new Date().toISOString() }));

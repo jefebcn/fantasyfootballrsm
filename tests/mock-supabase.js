@@ -156,6 +156,15 @@ export function createClient(_url, _key, opts) {
     from: builder,
     async rpc(name, args) {
       try {
+        // I calciatori col bollino (044): aperta anche a chi non ha un account.
+        // L'ultima richiesta verificata di ognuno decide.
+        if (name === 'giocatori_aderenti') {
+          const ultima = new Map();
+          T('adesioni_giocatori').filter((r) => r.stato === 'verificato' && r.player_id)
+            .sort((x, y) => String(x.verificato_at).localeCompare(String(y.verificato_at)))
+            .forEach((r) => ultima.set(r.player_id, r.scelta));
+          return { data: [...ultima].filter(([, sc]) => sc === 'aderisco').map(([pid]) => pid), error: null };
+        }
         // Il contatore dello sponsor (018) sta PRIMA del controllo
         // dell'account: nel vero si puo' chiamare anche da anonimo, e una
         // prova che lo chiama sempre da iscritto non proverebbe quel caso.

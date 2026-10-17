@@ -437,19 +437,59 @@ export async function scriviSqualifica(playerId, matchday, squalificato, nota, u
 export async function togliSqualifica(playerId, matchday) {
   return must(await sb.from('squalifiche').delete().eq('player_id', playerId).eq('matchday', matchday));
 }
-/** La pagina #/giocatori (041): scrive chiunque, anche senza account. */
-export async function inviaAdesione({ nome, squadra, scelta, contatto, nota }) {
-  const { error } = await sb.from('adesioni_giocatori').insert({ nome, squadra: squadra || null, scelta, contatto: contatto || null, nota: nota || null });
-  if (error) throw new Error(/adesioni_giocatori|relation|schema cache/i.test(error.message) ? 'Il modulo non è ancora attivo: riprova fra qualche giorno' : error.message);
+/**
+ * La pagina #/giocatori (041, 044): scrive chiunque, anche senza account.
+ * Il codice di verifica lo sceglie il telefono: e' solo un'etichetta per
+ * ritrovare la richiesta quando arriva il DM, non un segreto. Se per caso e'
+ * gia' preso (indice unico) se ne prova un altro.
+ */
+const ALFABETO = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+export const nuovoCodice = () => `FT-${Array.from({ length: 4 }, () => ALFABETO[Math.floor(Math.random() * ALFABETO.length)]).join('')}`;
+export async function inviaAdesione({ nome, squadra, scelta, contatto, nota, sponsor, maggiorenne, genitore, instagram, versione }) {
+  const riga = { nome, squadra: squadra || null, scelta, contatto: contatto || null, nota: nota || null };
+  // dalla 044: senza le colonne nuove la richiesta parte come prima (041)
+  const piu = { sponsor: !!sponsor, maggiorenne, genitore: genitore || null, instagram: instagram || null, versione };
+  for (let prova = 0; prova < 4; prova++) {
+    const codice = nuovoCodice();
+    const { error } = await sb.from('adesioni_giocatori').insert({ ...riga, ...piu, codice });
+    if (!error) return { codice };
+    if (error.code === '23505') continue;
+    if (/column|schema cache/i.test(error.message) && /sponsor|codice|maggiorenne|genitore|instagram|versione/.test(error.message)) {
+      const { error: e2 } = await sb.from('adesioni_giocatori').insert(riga);
+      if (e2) break;
+      return { codice: null };
+    }
+    throw new Error(/adesioni_giocatori|relation|schema cache/i.test(error.message) ? 'Il modulo non è ancora attivo: riprova fra qualche giorno' : error.message);
+  }
+  throw new Error('Non è stato possibile inviare: riprova fra poco');
 }
 /** Le richieste arrivate, per la console. null se la 041 non c'e'. */
 export async function caricaAdesioni() {
-  const { data, error } = await sb.from('adesioni_giocatori').select('id, nome, squadra, scelta, contatto, nota, letta, created_at').order('created_at', { ascending: false }).limit(200);
+  const base = 'id, nome, squadra, scelta, contatto, nota, letta, created_at';
+  let { data, error } = await sb.from('adesioni_giocatori')
+    .select(`${base}, sponsor, maggiorenne, genitore, instagram, codice, versione, stato, verificato_come, verificato_at, player_id`)
+    .order('created_at', { ascending: false }).limit(200);
+  // senza la 044 le colonne nuove non ci sono: si leggono quelle della 041
+  if (error && /column/i.test(error.message)) ({ data, error } = await sb.from('adesioni_giocatori').select(base).order('created_at', { ascending: false }).limit(200));
   if (error) return null;
   return data || [];
 }
 export async function segnaAdesioneLetta(id) {
   return must(await sb.from('adesioni_giocatori').update({ letta: true }).eq('id', id));
+}
+/** Chi amministra: «e' lui», con come l'ha verificato e quale giocatore e'. */
+export async function verificaAdesione(id, come, playerId) {
+  return must(await sb.from('adesioni_giocatori').update({ stato: 'verificato', verificato_come: come,
+    verificato_at: new Date().toISOString(), player_id: playerId, letta: true }).eq('id', id));
+}
+export async function respingiAdesione(id) {
+  return must(await sb.from('adesioni_giocatori').update({ stato: 'respinto', letta: true }).eq('id', id));
+}
+/** I giocatori col bollino «Ha aderito» (044). Senza la 044: nessuno. */
+export async function caricaAderenti() {
+  const { data, error } = await sb.rpc('giocatori_aderenti');
+  if (error) return [];
+  return (data || []).map((r) => (typeof r === 'string' ? r : r.giocatori_aderenti)).filter(Boolean);
 }
 export async function impostaInterruttore(chiave, acceso, userId) {
   return must(await sb.from('app_interruttori').upsert({ chiave, acceso, cambiato_da: userId, cambiato_at: new Date().toISOString() }));

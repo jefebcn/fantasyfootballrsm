@@ -25,7 +25,7 @@ let inviato = null;
 
 // Il testo del consenso, versione S.VERSIONE_CONSENSO. Cambiandolo si cambia
 // anche la versione: chi ha aderito prima ha letto quello vecchio.
-const TESTO = `
+export const TESTO_CONSENSO = `
   <h3>Cosa comprende il «Ci sto»</h3>
   <ul>
     <li>Il tuo nome, ruolo, squadra e statistiche di gara (presenze, minuti, gol, assist, cartellini) nel gioco: listone, rose, formazioni, voti e classifiche.</li>
@@ -44,7 +44,17 @@ const TESTO = `
   <h3>Se cambi idea</h3>
   <p>Puoi ritirare il consenso quando vuoi, da questa pagina o scrivendo a support@fantatitano.site. Entro 7 giorni nell'app compari come «Giocatore», con ruolo e squadra. Se ce lo chiedi togliamo il tuo nome anche dai post già pubblicati. Ritirarlo non costa niente e non ha conseguenze.</p>
   <h3>Cosa conserviamo</h3>
-  <p>La tua scelta, il nome, la squadra, il profilo Instagram se lo hai dato, se sei maggiorenne (e il nome del genitore), la data, la versione di questo testo e come abbiamo verificato. Lo legge solo chi gestisce l'app. Lo teniamo finché il consenso vale e per 2 anni dopo un ritiro, come prova di cosa avevi scelto.</p>`;
+  <p>La tua scelta, il nome, la squadra, il profilo Instagram se lo hai dato, se sei maggiorenne (e il nome del genitore), data e ora, l'indirizzo IP e il tipo di dispositivo da cui hai inviato, la versione di questo testo e come abbiamo verificato che sei tu, compreso lo screenshot del messaggio di verifica. Lo legge solo chi gestisce l'app. Lo teniamo finché il consenso vale e per 2 anni dopo un ritiro, come prova di cosa avevi scelto.</p>`;
+
+// Le frasi che il calciatore spunta: sono il consenso vero e proprio, e la
+// 044 le conserva parola per parola insieme al testo (consensi_testi).
+export const SCELTE = {
+  aderisco: '<b>Ci sto.</b> Il mio nome e le mie statistiche di gara possono comparire in Fantatitano: nel gioco, nelle classifiche e nei post dei social di Fantatitano.',
+  sponsor: '<b>Anche con sponsor e premi</b> (facoltativo). Il mio nome può comparire anche in iniziative con uno sponsor o con premi. Foto, video e voce no: per quelli mi chiederete a parte, per iscritto.',
+  escludimi: '<b>Non voglio comparire.</b> Mostratemi solo come «Giocatore», con ruolo e squadra. Formazioni e punteggi degli altri non cambiano.',
+  genitore: 'Sono il genitore o il tutore e sono d\'accordo con la scelta qui sopra.',
+  dichiaro: 'Dichiaro di essere la persona indicata (o il suo genitore) e di aver letto cosa vuol dire.',
+};
 
 function verifica(r) {
   const si = r.scelta === 'aderisco';
@@ -91,9 +101,9 @@ export const adesione = {
         </div>
         <div class="a-card" role="radiogroup" aria-labelledby="ad-l-scelta">
           <p class="lbl" id="ad-l-scelta">Cosa preferisci?</p>
-          <label class="ades-scelta"><input type="radio" name="ad-scelta" value="aderisco"> <span><b>Ci sto.</b> Il mio nome e le mie statistiche di gara possono comparire in Fantatitano: nel gioco, nelle classifiche e nei post dei social di Fantatitano.</span></label>
-          <label class="ades-scelta ades-sub" id="ad-sponsor-box" hidden><input type="checkbox" id="ad-sponsor"> <span><b>Anche con sponsor e premi</b> (facoltativo). Il mio nome può comparire anche in iniziative con uno sponsor o con premi. Foto, video e voce no: per quelli mi chiederete a parte, per iscritto.</span></label>
-          <label class="ades-scelta"><input type="radio" name="ad-scelta" value="escludimi"> <span><b>Non voglio comparire.</b> Mostratemi solo come «Giocatore», con ruolo e squadra. Formazioni e punteggi degli altri non cambiano.</span></label>
+          <label class="ades-scelta"><input type="radio" name="ad-scelta" value="aderisco"> <span>${SCELTE.aderisco}</span></label>
+          <label class="ades-scelta ades-sub" id="ad-sponsor-box" hidden><input type="checkbox" id="ad-sponsor"> <span>${SCELTE.sponsor}</span></label>
+          <label class="ades-scelta"><input type="radio" name="ad-scelta" value="escludimi"> <span>${SCELTE.escludimi}</span></label>
         </div>
         <div class="a-card">
           <p class="lbl" id="ad-l-eta">Hai 18 anni o più?</p>
@@ -105,12 +115,12 @@ export const adesione = {
             <span class="small muted">Sotto i 18 anni serve anche un genitore o chi ne fa le veci.</span>
             <label class="lbl" for="ad-gen">Nome e cognome del genitore</label>
             <input class="field-input" id="ad-gen" maxlength="80" autocomplete="off">
-            <label class="ades-chk"><input type="checkbox" id="ad-gen-ok"> <span>Sono il genitore o il tutore e sono d'accordo con la scelta qui sopra.</span></label>
+            <label class="ades-chk"><input type="checkbox" id="ad-gen-ok"> <span>${SCELTE.genitore}</span></label>
           </div>
         </div>
         <div class="a-card">
-          <details class="ades-testo"><summary>Leggi cosa vuol dire, per intero</summary>${TESTO}</details>
-          <label class="ades-chk"><input type="checkbox" id="ad-io"> <span>Dichiaro di essere la persona indicata (o il suo genitore) e di aver letto cosa vuol dire.</span></label>
+          <details class="ades-testo"><summary>Leggi cosa vuol dire, per intero</summary>${TESTO_CONSENSO}</details>
+          <label class="ades-chk"><input type="checkbox" id="ad-io"> <span>${SCELTE.dichiaro}</span></label>
           <button class="a-btn" type="submit" id="ad-invia" style="margin-top:12px;width:100%" disabled>${icon('check', 'ic sm')}Invia</button>
           <p class="small muted" style="margin:10px 2px 0">Testo <span class="mono">${esc(S.VERSIONE_CONSENSO)}</span>. Quello che scrivi lo legge solo chi gestisce l'app. Il dettaglio è nell'<a href="#/privacy">informativa</a>.</p>
         </div>

@@ -1001,8 +1001,8 @@ export const VERSIONE_CONSENSO = 'v1 · 17/10/2026';
 export const inviaAdesione = (dati) => remote.inviaAdesione({ ...dati, versione: VERSIONE_CONSENSO });
 export const caricaAdesioni = () => remote.caricaAdesioni();
 export const segnaAdesioneLetta = (id) => remote.segnaAdesioneLetta(id);
-export async function verificaAdesione(a, come, playerId) {
-  await remote.verificaAdesione(a.id, come, playerId);
+export async function verificaAdesione(a, come, playerId, file) {
+  await remote.verificaAdesione(a, come, playerId, file);
   if (a.scelta === 'escludimi') {
     if (!esclusi.includes(playerId)) await escludiGiocatore(playerId, `richiesta #${a.id}`);
     aderenti.delete(playerId);
@@ -1014,6 +1014,19 @@ export async function verificaAdesione(a, come, playerId) {
   notify();
 }
 export const respingiAdesione = (id) => remote.respingiAdesione(id);
+/** Ritiro del consenso: il bollino sparisce e il nome torna «Giocatore». */
+export async function ritiraAdesione(a) {
+  await remote.ritiraAdesione(a.id);
+  if (a.player_id) {
+    aderenti.delete(a.player_id);
+    if (a.scelta === 'aderisco' && !esclusi.includes(a.player_id)) await escludiGiocatore(a.player_id, `ritiro #${a.id}`);
+  }
+  notify();
+}
+export const caricaRegistro = () => remote.caricaRegistro();
+export const verificaRegistro = () => remote.verificaRegistro();
+export const testoConsenso = (v) => remote.testoConsenso(v);
+export const urlProva = (path) => remote.urlProva(path);
 export async function impostaPrudente(acceso) {
   await remote.impostaInterruttore('prudente', acceso, user.id);
   interruttori = { ...interruttori, prudente: acceso }; notify();

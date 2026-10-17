@@ -74,9 +74,9 @@ function builder(table) {
           // come Supabase: al massimo max_rows righe per richiesta (1000), il
           // resto non arriva e nessuno lo dice. Le prove possono abbassarlo.
           data = data.slice(0, globalThis.__MAX_RIGHE__ ?? 1000); }
-        if (op === 'insert') { const list = (Array.isArray(payload) ? payload : [payload]).map(withDefaults); guardFrozen(table, list); rows.push(...list); data = list.map(expand); }
+        if (op === 'insert') { const list = (Array.isArray(payload) ? payload : [payload]).map(withDefaults); guardFrozen(table, list); if (table === 'adesioni_giocatori') list.forEach((r) => sigillo(r, null)); rows.push(...list); data = list.map(expand); }
         if (op === 'upsert') { const list = (Array.isArray(payload) ? payload : [payload]); guardFrozen(table, list); for (const r of list) { const i = rows.findIndex((x) => pk.every((k) => x[k] === r[k])); if (i >= 0) rows[i] = { ...rows[i], ...r }; else rows.push(withDefaults(r)); } data = list; }
-        if (op === 'update') { data = []; for (const r of rows) if (filters.every((f) => f(r))) { Object.assign(r, payload); data.push(expand(r)); } }
+        if (op === 'update') { data = []; for (const r of rows) if (filters.every((f) => f(r))) { const prima = { ...r }; Object.assign(r, payload); if (table === 'adesioni_giocatori') sigillo(r, prima); data.push(expand(r)); } }
         if (op === 'delete') { const del = apply(rows); guardFrozen(table, del); tables[table] = rows.filter((r) => !del.includes(r)); data = del; }
         if (single || maybe) data = data[0] || null;
         if (single && !data) throw new Error('no rows');
@@ -86,6 +86,21 @@ function builder(table) {
     }
   }
   return b;
+}
+// Il consenso dei calciatori (044), come i trigger del database: data, IP e
+// dispositivo li scrive il server, chi verifica pure, e ogni passaggio va nel
+// registro con la sua impronta (qui finta: le impronte vere le prova l'SQL).
+function sigillo(r, prima) {
+  if (!prima) {
+    r.id = T('adesioni_giocatori').length + 1;
+    Object.assign(r, { created_at: now(), ip: '127.0.0.1', dispositivo: (typeof navigator !== 'undefined' && navigator.userAgent) || 'prova', stato: r.stato || 'attesa' });
+  } else if (r.stato === 'verificato' && prima.stato !== 'verificato') { r.verificato_at = now(); r.verificato_da = userId; }
+  const ev = !prima ? 'inviata' : (r.ritirato_at && !prima.ritirato_at) ? 'ritirata'
+    : (r.stato === 'verificato' && prima.stato !== 'verificato') ? 'verificata' : (r.stato === 'respinto' && prima.stato !== 'respinto') ? 'respinta' : null;
+  if (!ev) return;
+  const reg = T('consensi_registro'); const prec = reg.length ? reg[reg.length - 1].impronta : null;
+  reg.push({ id: reg.length + 1, adesione_id: r.id, evento: ev, chi: prima ? userId : null, quando: now(), dati: { ...r },
+    impronta_prec: prec, impronta: Math.random().toString(16).slice(2).padEnd(64, '0') });
 }
 function guardFrozen(table, list) {
   // 037: nella lega pubblica la formazione si consegna con la rosa completa.
@@ -154,6 +169,22 @@ export function createClient(_url, _key, opts) {
       onAuthStateChange(fn) { authListeners.push(fn); },
     },
     from: builder,
+    // Lo storage (044: gli screenshot delle verifiche), in memoria come data URL.
+    storage: {
+      from(bucket) {
+        return {
+          async upload(path, file) {
+            const buf = new Uint8Array(await file.arrayBuffer()); let bin = ''; buf.forEach((x) => { bin += String.fromCharCode(x); });
+            T('storage_objects').push({ bucket, path, url: `data:${file.type || 'image/png'};base64,${btoa(bin)}` }); persisti();
+            return { data: { path }, error: null };
+          },
+          async createSignedUrl(path) {
+            const o = T('storage_objects').find((x) => x.bucket === bucket && x.path === path);
+            return o ? { data: { signedUrl: o.url }, error: null } : { data: null, error: { message: 'Object not found' } };
+          },
+        };
+      },
+    },
     async rpc(name, args) {
       try {
         // I calciatori col bollino (044): aperta anche a chi non ha un account.
@@ -162,9 +193,10 @@ export function createClient(_url, _key, opts) {
           const ultima = new Map();
           T('adesioni_giocatori').filter((r) => r.stato === 'verificato' && r.player_id)
             .sort((x, y) => String(x.verificato_at).localeCompare(String(y.verificato_at)))
-            .forEach((r) => ultima.set(r.player_id, r.scelta));
+            .forEach((r) => ultima.set(r.player_id, r.ritirato_at ? 'ritirato' : r.scelta));
           return { data: [...ultima].filter(([, sc]) => sc === 'aderisco').map(([pid]) => pid), error: null };
         }
+        if (name === 'verifica_registro') return { data: { righe: T('consensi_registro').length, integro: true, prima_rotta: null }, error: null };
         // Il contatore dello sponsor (018) sta PRIMA del controllo
         // dell'account: nel vero si puo' chiamare anche da anonimo, e una
         // prova che lo chiama sempre da iscritto non proverebbe quel caso.

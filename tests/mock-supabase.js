@@ -185,7 +185,16 @@ export function createClient(_url, _key, opts) {
           const giorno = new Date().toISOString().slice(0, 10);
           const r = T('banner_conteggi').find((x) => x.giorno === giorno && x.evento === args.p_evento);
           if (r) r.n++; else T('banner_conteggi').push({ giorno, evento: args.p_evento, n: 1 });
-          persisti(); return { data: null, error: null };
+          // Si scrive SOLO il contatore, dentro quello che c'e' gia' salvato: il
+          // banner si conta all'apertura della Home, e un persisti() qui
+          // riscriveva tutto il finto database con la copia in memoria,
+          // cancellando i dati che le prove avevano appena preparato.
+          try {
+            const salv = JSON.parse(localStorage.getItem(CHIAVE) || '{}');
+            salv.tables = salv.tables || {}; salv.tables.banner_conteggi = T('banner_conteggi');
+            localStorage.setItem(CHIAVE, JSON.stringify(salv));
+          } catch { /* quota */ }
+          return { data: null, error: null };
         }
         if (name === 'verifica_registro') return { data: { righe: T('consensi_registro').length, integro: true, prima_rotta: null }, error: null };
         // Il contatore dello sponsor (018) sta PRIMA del controllo

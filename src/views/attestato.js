@@ -80,7 +80,7 @@ export const attestato = {
         ${(passi || []).map((r) => `<tr><td>${esc(r.id)}</td><td>${esc(EVENTO[r.evento] || r.evento)}</td><td>${quando(r.quando)}</td><td class="mono att-hash">${esc(r.impronta)}</td></tr>`).join('')}</table>
         <p class="small">Stato della catena, verificato dal database adesso: ${integro ? (integro.integro ? `<b class="ok">integra</b> (${integro.righe} righe in tutto)` : `<b class="ko">rotta alla riga ${integro.prima_rotta}</b>`) : 'non disponibile'}.</p></div>
 
-      <p class="small muted att-piede">Generato il ${quando(new Date().toISOString())} da fantatitano.site. Fantatitano non è affiliato alla FSGC né alle società.</p>
+      <p class="small muted att-piede">Generato il ${quando(new Date().toISOString())} da fantatitano.site. Fantatitano per il momento non è affiliato alla FSGC né alle società.</p>
     </main>`;
   },
   mount(root, ctx) {

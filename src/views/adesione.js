@@ -86,7 +86,7 @@ export const adesione = {
     const club = S.base.clubs.slice().sort((a, b) => a.name.localeCompare(b.name));
     return `<main class="a-body">
       <div class="a-card testo">
-        <p><b>Fantatitano è un fantacalcio gratuito sul campionato sammarinese.</b> Non è affiliato alla FSGC né alle società e non usa i loro loghi o marchi. Usa nome, ruolo, squadra e statistiche dei giocatori, presi dai referti pubblici delle partite.</p>
+        <p><b>Fantatitano è un fantacalcio gratuito sul campionato sammarinese.</b> Per il momento non è affiliato alla FSGC né alle società, e non usa i loro loghi o marchi. Usa nome, ruolo, squadra e statistiche dei giocatori, presi dai referti pubblici delle partite.</p>
         <p class="small muted">Qui ci dici se sei d'accordo. Non serve un account e puoi cambiare idea quando vuoi.</p>
       </div>
       <form id="ades" novalidate>

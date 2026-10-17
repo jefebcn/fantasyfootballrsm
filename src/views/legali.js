@@ -141,7 +141,7 @@ export const termini = {
     return `<main class="a-body">
       ${blocco('Cos\'è', [
     'Fantatitano è un gioco fra amici sul campionato di San Marino. È gratuito, non ci sono acquisti, abbonamenti né premi in denaro.',
-    'Non è affiliato alla FSGC né alle società del campionato, e non ne rappresenta le posizioni.',
+    'Per il momento non è affiliato alla FSGC né alle società del campionato, e non ne rappresenta le posizioni.',
   ])}
       ${blocco('Di chi è l\'app', [
     'Il codice, la grafica, le illustrazioni, i testi, il nome e il marchio Fantatitano appartengono a chi gestisce l\'app: tutti i diritti sono riservati. Non si possono copiare, ripubblicare o riusare, in tutto o in parte, senza un permesso scritto.',
@@ -285,7 +285,7 @@ export const licenze = {
     return `<main class="a-body">
       ${blocco('I dati del campionato', [
     'Calendario, risultati, tabellini e anagrafiche degli atleti vengono dai referti pubblici della <b>FSGC</b>, la Federazione Sammarinese Giuoco Calcio. Sono pubblicati da lei e qui vengono solo riorganizzati.',
-    'Nomi delle società e degli atleti compaiono solo a scopo descrittivo e informativo, per dire chi ha giocato e come, come fanno giornali e siti di statistiche. Fantatitano non è affiliato alla FSGC né alle società del campionato, non ne usa loghi o stemmi e non ne rappresenta le posizioni.',
+    'Nomi delle società e degli atleti compaiono solo a scopo descrittivo e informativo, per dire chi ha giocato e come, come fanno giornali e siti di statistiche. Fantatitano per il momento non è affiliato alla FSGC né alle società del campionato, non ne usa loghi o stemmi e non ne rappresenta le posizioni.',
     'Se la FSGC, una società o un atleta ha osservazioni su come questi dati compaiono nell\'app, può scriverci: ne terremo conto.',
   ])}
       ${blocco('Software di terze parti', [

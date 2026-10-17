@@ -79,6 +79,10 @@ APERTE="$APERTE reclutatori_settimana"
 # giocatore lo vede chiunque. Restituisce solo identificativi del listone
 # (virtus_14), mai chi ha scritto la richiesta ne' come l'ha verificata.
 APERTE="$APERTE giocatori_aderenti"
+# E conta_banner (045): chi vede il banner dei calciatori, e cosa sceglie,
+# si conta anche senza account (la pagina #/giocatori si apre dalla storia).
+# Come conta_sponsor: pochi tipi, nessun ritorno, un tetto al giorno.
+APERTE="$APERTE conta_banner"
 # Su una riga sola, con uno spazio davanti e dietro: il confronto piu' sotto
 # cerca " nome " e i ritorni a capo dell'elenco lo facevano fallire per gli
 # ultimi di ogni riga. Preso dal guardiano stesso alla prima corsa, che e' il
@@ -115,6 +119,19 @@ for pr in select insert update delete; do
     ok "l'anonimo non ha $pr sui conteggi"
   else
     ko "l'anonimo ha $pr su sponsor_conteggi: il rendiconto si scrive a mano"
+  fi
+done
+
+if [ "$(V "select pg_get_function_result('public.conta_banner(text)'::regprocedure)")" = void ]; then
+  ok "conta_banner non restituisce niente"
+else
+  ko "conta_banner ora restituisce qualcosa: da anonimo diventa una finestra sul database"
+fi
+for pr in select insert update delete; do
+  if [ "$(V "select has_table_privilege('anon','public.banner_conteggi','$pr')")" = f ]; then
+    ok "l'anonimo non ha $pr sui conteggi del banner"
+  else
+    ko "l'anonimo ha $pr su banner_conteggi: i numeri si scrivono a mano"
   fi
 done
 

@@ -181,6 +181,12 @@ export function createClient(_url, _key, opts) {
             .forEach((r) => ultima.set(r.player_id, r.ritirato_at ? 'ritirato' : r.scelta));
           return { data: [...ultima].filter(([, sc]) => sc === 'aderisco').map(([pid]) => pid), error: null };
         }
+        if (name === 'conta_banner') {
+          const giorno = new Date().toISOString().slice(0, 10);
+          const r = T('banner_conteggi').find((x) => x.giorno === giorno && x.evento === args.p_evento);
+          if (r) r.n++; else T('banner_conteggi').push({ giorno, evento: args.p_evento, n: 1 });
+          persisti(); return { data: null, error: null };
+        }
         if (name === 'verifica_registro') return { data: { righe: T('consensi_registro').length, integro: true, prima_rotta: null }, error: null };
         // Il contatore dello sponsor (018) sta PRIMA del controllo
         // dell'account: nel vero si puo' chiamare anche da anonimo, e una

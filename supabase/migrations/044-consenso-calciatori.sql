@@ -44,10 +44,13 @@ grant select on table public.consensi_testi to anon, authenticated;
 drop policy if exists consensi_testi_lettura on public.consensi_testi;
 create policy consensi_testi_lettura on public.consensi_testi for select to anon, authenticated using (true);
 
--- La v1 non si riscrive: se il testo cambia, si fa la v2.
+-- La v1 non si riscrive: se il testo cambia, si fa la v2. I ritorni a capo
+-- si tolgono: incollando dal telefono diventano \r\n e l'impronta non
+-- tornerebbe piu' con il testo dell'app (17/10). Finche' nessuno ha aderito
+-- alla v1, una rieseguita la rimette a posto.
 insert into public.consensi_testi (versione, testo, impronta, dal)
 select 'v1 · 17/10/2026', t, encode(sha256(convert_to(t, 'UTF8')), 'hex'), '2026-10-17 12:00+02'
-  from (select $testo$Le frasi che si spuntano
+  from (select replace($testo$Le frasi che si spuntano
 [scelta] Ci sto. Il mio nome e le mie statistiche di gara possono comparire in Fantatitano: nel gioco, nelle classifiche e nei post dei social di Fantatitano.
 [facoltativa, solo con «Ci sto»] Anche con sponsor e premi (facoltativo). Il mio nome può comparire anche in iniziative con uno sponsor o con premi. Foto, video e voce no: per quelli mi chiederete a parte, per iscritto.
 [scelta] Non voglio comparire. Mostratemi solo come «Giocatore», con ruolo e squadra. Formazioni e punteggi degli altri non cambiano.
@@ -67,8 +70,10 @@ Dopo l'invio ricevi un codice. Ce lo mandi in privato dal tuo profilo Instagram 
 Se cambi idea
 Puoi ritirare il consenso quando vuoi: da questa pagina, scegliendo «Non voglio comparire», oppure scrivendo a support@fantatitano.site. Entro 7 giorni nell'app compari come «Giocatore», con ruolo e squadra. Se ce lo chiedi togliamo il tuo nome anche dai post già pubblicati. Ritirarlo non costa niente e non ha conseguenze.
 Cosa conserviamo
-La tua scelta, il nome, la squadra, il profilo Instagram se lo hai dato, se sei maggiorenne (e il nome del genitore), data e ora, l'indirizzo IP e il tipo di dispositivo da cui hai inviato, la versione di questo testo e come abbiamo verificato che sei tu, compreso lo screenshot del messaggio di verifica. Lo legge solo chi gestisce l'app. Lo teniamo finché il consenso vale e per 2 anni dopo un ritiro, come prova di cosa avevi scelto.$testo$::text as t) x
-on conflict (versione) do nothing;
+La tua scelta, il nome, la squadra, il profilo Instagram se lo hai dato, se sei maggiorenne (e il nome del genitore), data e ora, l'indirizzo IP e il tipo di dispositivo da cui hai inviato, la versione di questo testo e come abbiamo verificato che sei tu, compreso lo screenshot del messaggio di verifica. Lo legge solo chi gestisce l'app. Lo teniamo finché il consenso vale e per 2 anni dopo un ritiro, come prova di cosa avevi scelto.$testo$, E'\r', '')::text as t) x
+on conflict (versione) do update set testo = excluded.testo, impronta = excluded.impronta
+  where public.consensi_testi.testo <> excluded.testo
+    and not exists (select 1 from public.adesioni_giocatori a where to_jsonb(a) ->> 'versione' = excluded.versione);
 
 -- ------------------------------------------------- 1, 3, 4. le colonne
 alter table public.adesioni_giocatori

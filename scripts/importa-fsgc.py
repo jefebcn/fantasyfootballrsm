@@ -35,6 +35,11 @@ CLUB = {
     'La Fiorita': 'lafiorita',
 }
 RUOLI = {'Portiere': 'P', 'Difensore': 'D', 'Centrocampista': 'C', 'Attaccante': 'A'}
+# Extra della FSGC che sono un giocatore del listone scritto con una lettera
+# diversa, dove il confronto delle parole non basta. Slug FSGC -> id nostro.
+#   Piscitella: «Giammario» per Transfermarkt, «Gianmario» per la FSGC (17/10,
+#   segnalato da un utente: era in vendita due volte, i voti al doppione).
+STESSA_PERSONA = {'piscitella-gianmario': 'virtus_14'}
 
 
 def prendi(url):
@@ -306,7 +311,7 @@ def indice_giocatori():
     # qui, i loro gol resterebbero senza marcatore a ogni riesecuzione.
     f = RADICE / 'data' / 'extra.json'
     if f.exists():
-        coda = {}
+        coda, extra_visti = {}, set()
         for c in d['societa']:
             club = None
             for g in c['giocatori']:
@@ -331,6 +336,15 @@ def indice_giocatori():
             uguali = {pid for pk, pid in listone_club.get(e['club'], {}).items()
                       if len(pk) >= 2 and set(pk) <= set(k1)}
             vero = next(iter(uguali)) if len(uguali) == 1 else None
+            # Nome scritto con una lettera diversa: le parole non combaciano e
+            # serve dirlo a mano (vedi STESSA_PERSONA).
+            vero = vero or STESSA_PERSONA.get(e['slug'])
+            # Lo stesso extra scritto due volte, una «nome cognome» e una
+            # «cognome nome» (Caverzan, Montali, 17/10): le chiavi sono uguali e
+            # i voti andavano gia' al primo. Il secondo e' un doppione del primo.
+            gia = per_club.get(e['club'], {}).get(k1)
+            vero = vero or (gia if gia in extra_visti else None)
+            extra_visti.add(nostro)
             if vero:
                 alias[nostro] = vero
                 doppioni[e['slug']] = vero

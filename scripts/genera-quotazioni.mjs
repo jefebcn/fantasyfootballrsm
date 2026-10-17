@@ -21,7 +21,10 @@ const base = buildSeason();
 const club = new Map(base.clubs.map((c) => [c.id, c.name]));
 const q = (s) => `'${String(s).replace(/'/g, "''")}'`;
 
-const righe = base.players.map((p) => `  (${q(p.id)}, ${q(p.role)}, ${p.quotation}, ${q(p.name)}, ${q(club.get(p.clubId) || p.clubId)})`);
+// I doppioni (034, 043) non si vendono: rieseguire questo file non deve
+// rimetterli nel listino da cui la correzione li ha tolti.
+const inVendita = base.players.filter((p) => !p.doppioneDi);
+const righe = inVendita.map((p) => `  (${q(p.id)}, ${q(p.role)}, ${p.quotation}, ${q(p.name)}, ${q(club.get(p.clubId) || p.clubId)})`);
 
 const sql = `-- Il listino dentro il database: prezzi e ruoli per il negozio della lega
 -- aperta (migrazione 019).
@@ -34,7 +37,7 @@ const sql = `-- Il listino dentro il database: prezzi e ruoli per il negozio del
 -- Chi e' sparito dal listone NON viene cancellato di proposito: e' gia' nella
 -- rosa di qualcuno, e cancellarlo lascerebbe rose con giocatori senza prezzo.
 --
--- ${base.players.length} giocatori.
+-- ${inVendita.length} giocatori.
 
 insert into public.quotazioni (player_id, ruolo, quotazione, nome, club) values
 ${righe.join(',\n')}

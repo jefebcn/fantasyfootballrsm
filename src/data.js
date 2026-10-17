@@ -146,6 +146,12 @@ export function buildSeason(_seed = 20262027) {
       clubId, role, quotation: QUOT_MIN[role] ?? 5, age: null, isActive: true, daFsgc: true,
       ...(doppioneDi ? { doppioneDi } : {}) });
   }
+  // Il ruolo di chi era in vendita due volte con due ruoli diversi (17/10):
+  // vale quello del doppione che quasi tutti avevano in rosa, cosi' cambia
+  // l'equilibrio dei ruoli al minor numero di squadre. Qui e non nei file
+  // generati: li' l'ordine decide gli id, e spostare una riga li cambierebbe.
+  const RUOLO_CORRETTO = { virtus_14: 'A', academy_24: 'D' };
+  for (const p of players) if (RUOLO_CORRETTO[p.id]) p.role = RUOLO_CORRETTO[p.id];
 
   // Omonimi veri: la Folgore ha due Garcia Rufer, Azael e Augusto, che
   // abbreviati sarebbero entrambi «Rufer A.». Dove il cognome con la sola

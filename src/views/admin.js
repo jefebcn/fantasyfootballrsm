@@ -459,7 +459,6 @@ function riservatezza(adesioni) {
     .filter((p) => !p.doppioneDi && !esclusi.includes(p) && `${S.nomeVero(p).firstName} ${S.nomeVero(p).lastName}`.toLowerCase().includes(q)).slice(0, 8);
   const vero = (p) => `${esc(S.nomeVero(p).firstName)} ${esc(S.nomeVero(p).lastName)}`;
   const club = (p) => esc(S.clubsById.get(p.clubId)?.name || '');
-  const nuove = (adesioni || []).filter((a) => !a.letta);
   return `<div class="a-card prudente${brevi ? ' on' : ''}">
     <b>Nomi brevi: ${brevi ? 'accesi' : 'spenti'}</b>
     <span class="small muted">${brevi
@@ -476,17 +475,52 @@ function riservatezza(adesioni) {
     ${trovati.length ? `<div class="vlist">${trovati.map((p) => `<div class="adm-u"><span><b>${vero(p)}</b> <span class="small muted">${club(p)}</span></span>
       <button class="chip" data-escludi="${esc(p.id)}">Escludi</button></div>`).join('')}</div>` : ''}
   </div>
-  <div class="a-card">
-    <b>Richieste dei giocatori${nuove.length ? ` · ${nuove.length} nuove` : ''}</b>
-    <span class="small muted" style="display:block;margin:2px 0 8px">Dalla pagina <b>fantatitano.site/#/giocatori</b>: non è collegata dall'app, la mandi tu quando serve.</span>
-    ${adesioni === null ? '<p class="small muted" style="margin:0">Per vederle esegui nell\'SQL Editor la SQL <b>041</b>.</p>'
-    : !adesioni ? '<p class="small muted" style="margin:0">Sto guardando…</p>'
-      : !adesioni.length ? '<p class="small muted" style="margin:0">Nessuna richiesta.</p>'
-        : `<div class="vlist">${adesioni.slice(0, 30).map((a) => `<div class="adm-u${a.letta ? ' letta' : ''}"><span>
-      <b>${esc(a.nome)}</b> <span class="small muted">${esc(a.squadra || '')} · ${new Date(a.created_at).toLocaleDateString('it-IT')}</span><br>
-      <span class="small">${a.scelta === 'aderisco' ? '✅ Ci sta' : '🚫 Non vuole comparire'}${a.contatto ? ` · ${esc(a.contatto)}` : ''}</span>${a.nota ? `<br><span class="small muted">${esc(a.nota)}</span>` : ''}</span>
-      ${a.letta ? '' : `<button class="chip" data-letta="${a.id}">Fatto</button>`}</div>`).join('')}</div>`}
-  </div>`;
+  ${calciatori(adesioni)}`;
+}
+
+/**
+ * IL CONSENSO DEI CALCIATORI (044). Ogni richiesta arriva «in attesa»: vale
+ * solo quando la verifichi. Il codice e' quello che il calciatore ti manda in
+ * DM dal suo Instagram (o che ti scrive la sua societa'): lo cerchi qui, scegli
+ * il giocatore del listone e premi come l'hai verificato. Un si' da' il
+ * bollino «Ha aderito»; un no lo mette fra gli esclusi.
+ */
+function candidati(a) {
+  const club = S.base.clubs.find((c) => c.name === a.squadra);
+  const parole = String(a.nome || '').toLowerCase().split(/\s+/).filter((w) => w.length > 1);
+  const punti = (p) => { const n = `${S.nomeVero(p).firstName} ${S.nomeVero(p).lastName}`.toLowerCase(); return parole.filter((w) => n.includes(w)).length; };
+  const tutti = S.base.players.filter((p) => !p.doppioneDi && (!club || p.clubId === club.id));
+  return tutti.map((p) => ({ p, n: punti(p) })).sort((x, y) => y.n - x.n || S.nomeVero(x.p).lastName.localeCompare(S.nomeVero(y.p).lastName)).slice(0, club ? 40 : 15);
+}
+function calciatori(adesioni) {
+  const intest = '<b>Calciatori: il consenso</b><span class="small muted" style="display:block;margin:2px 0 8px">Dalla pagina <b>fantatitano.site/#/giocatori</b> e dal banner in Home. Vale solo quello che verifichi tu: il codice arriva in DM a @fantatitano dal profilo del calciatore, o te lo scrive la sua società.</span>';
+  if (adesioni === null) return `<div class="a-card">${intest}<p class="small muted" style="margin:0">Per vederle esegui nell'SQL Editor la SQL <b>041</b>.</p></div>`;
+  if (!adesioni) return `<div class="a-card">${intest}<p class="small muted" style="margin:0">Sto guardando…</p></div>`;
+  const stato = (a) => a.stato || 'attesa';
+  const ver = adesioni.filter((a) => stato(a) === 'verificato');
+  const conta = `<div class="ades-conta"><div><b>${ver.filter((a) => a.scelta === 'aderisco').length}</b><span>ci stanno</span></div>
+    <div><b>${adesioni.filter((a) => stato(a) === 'attesa').length}</b><span>da verificare</span></div>
+    <div><b>${ver.filter((a) => a.scelta === 'escludimi').length}</b><span>non vogliono</span></div></div>`;
+  const ordine = { attesa: 0, verificato: 1, respinto: 2 };
+  const righe = adesioni.slice().sort((x, y) => ordine[stato(x)] - ordine[stato(y)]).slice(0, 40).map((a) => {
+    const st = stato(a);
+    const pill = { attesa: 'Da verificare', verificato: `Verificato${a.verificato_come ? ` · ${a.verificato_come === 'societa' ? 'società' : 'Instagram'}` : ''}`, respinto: 'Non è lui' }[st];
+    const legato = a.player_id && S.playersById.get(a.player_id);
+    const tags = [a.squadra, a.scelta === 'aderisco' ? 'Ci sto' : 'Non vuole comparire',
+      a.scelta === 'aderisco' ? (a.sponsor ? 'Sponsor sì' : 'Sponsor no') : '',
+      a.maggiorenne === false ? `Minorenne · genitore ${a.genitore || '?'}` : a.maggiorenne ? 'Maggiorenne' : ''].filter(Boolean);
+    const scegli = st === 'attesa' ? `<select class="field-input" data-ades-gioc="${a.id}" aria-label="Quale giocatore è">${candidati(a).map(({ p }, i) =>
+      `<option value="${esc(p.id)}"${i === 0 ? ' selected' : ''}>${esc(S.nomeVero(p).lastName)} ${esc(S.nomeVero(p).firstName)} · ${esc(S.clubsById.get(p.clubId)?.name || '')}</option>`).join('')}</select>
+      <div class="azioni"><button class="chip" data-ades-ver="${a.id}|instagram">Verificato via Instagram</button><button class="chip" data-ades-ver="${a.id}|societa">Dalla società</button><button class="chip" data-ades-resp="${a.id}">Non è lui</button></div>` : '';
+    return `<div class="adm-ades">
+      <div class="riga1"><b>${esc(a.nome)}</b><span class="stato-ades ${st}">${pill}</span></div>
+      <div class="tags">${tags.map((t) => `<span>${esc(t)}</span>`).join('')}</div>
+      <span class="small muted">${a.codice ? `Codice <b class="mono">${esc(a.codice)}</b> · ` : ''}${a.instagram ? `${esc(a.instagram)} · ` : 'senza Instagram · '}${new Date(a.created_at).toLocaleDateString('it-IT')}${a.versione ? ` · testo ${esc(a.versione.split(' · ')[0])}` : ''}${legato ? ` · è ${esc(S.nomeVero(legato).lastName)} ${esc(S.nomeVero(legato).firstName)}` : ''}</span>
+      ${a.contatto || a.nota ? `<span class="small">${esc([a.contatto, a.nota].filter(Boolean).join(' · '))}</span>` : ''}
+      ${scegli}
+    </div>`;
+  }).join('');
+  return `<div class="a-card">${intest}${conta}${adesioni.length ? `<div>${righe}</div>` : '<p class="small muted" style="margin:0">Nessuna richiesta, per ora.</p>'}</div>`;
 }
 
 function numeri(r) {
@@ -848,11 +882,25 @@ export const adminConsole = {
         catch (err) { ctx.toast(err.message || 'Non è stato possibile'); ri.disabled = false; }
         return;
       }
-      const le = e.target.closest('[data-letta]');
-      if (le) {
-        le.disabled = true;
-        try { await S.segnaAdesioneLetta(+le.dataset.letta); cache.adesioni = await S.caricaAdesioni(); ctx.render(); }
-        catch (err) { ctx.toast(err.message || 'Non è stato possibile'); le.disabled = false; }
+      const av = e.target.closest('[data-ades-ver]');
+      if (av) {
+        const [id, come] = av.dataset.adesVer.split('|');
+        const a = (cache.adesioni || []).find((x) => String(x.id) === id); if (!a) return;
+        const pid = root.querySelector(`[data-ades-gioc="${id}"]`)?.value;
+        const p = pid && S.playersById.get(pid); if (!p) { ctx.toast('Scegli prima quale giocatore è'); return; }
+        const chi = `${S.nomeVero(p).firstName} ${S.nomeVero(p).lastName}`;
+        if (!confirm(`Confermi che ${a.nome} è ${chi}, verificato ${come === 'societa' ? 'dalla società' : 'via Instagram'}? ${a.scelta === 'aderisco' ? 'Avrà il bollino «Ha aderito».' : 'Nell\'app comparirà come «Giocatore».'}`)) return;
+        av.disabled = true;
+        try { await S.verificaAdesione(a, come, p.id); cache.adesioni = await S.caricaAdesioni(); ctx.toast('Verificato'); ctx.render(); }
+        catch (err) { ctx.toast(/stato|verificato|column/i.test(err.message || '') ? 'Prima va eseguita la 044 nell\'SQL Editor' : (err.message || 'Non è stato possibile')); av.disabled = false; }
+        return;
+      }
+      const ar = e.target.closest('[data-ades-resp]');
+      if (ar) {
+        if (!confirm('Segnare questa richiesta come «non è lui»? Non conta e resta solo nello storico.')) return;
+        ar.disabled = true;
+        try { await S.respingiAdesione(+ar.dataset.adesResp); cache.adesioni = await S.caricaAdesioni(); ctx.render(); }
+        catch (err) { ctx.toast(err.message || 'Non è stato possibile'); ar.disabled = false; }
         return;
       }
       const pr = e.target.closest('[data-prudente]');

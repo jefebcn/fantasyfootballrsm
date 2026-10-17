@@ -111,6 +111,7 @@ async function loadAll() {
   const finestreP = remote.caricaFinestre().catch(() => []);
   const esclusiP = remote.caricaEsclusi().catch(() => []);
   const squalificheP = remote.caricaSqualifiche().catch(() => []);
+  const aderentiP = remote.caricaAderenti().catch(() => []);
   prof = (await remote.ensureProfile(user)) || { id: user.id, display_name: user.email, is_judge: false };
   await consegnaReclutatore();
   // INSIEME, NON IN FILA. Le leghe, i voti di tutti, lo sponsor e — per il
@@ -169,6 +170,7 @@ async function loadAll() {
   esclusi = await esclusiP;
   applicaNomi();
   squalifiche = await squalificheP;
+  aderenti = new Set(await aderentiP);
   remote.subscribe(prefs.currentLeagueId, debounced);
   // Il Giudice Dati allinea il calendario dei lock senza doverselo ricordare:
   // e' un dato derivato dal calendario, identico a ogni giro, e l'RPC riscrive
@@ -666,7 +668,7 @@ function hashStr(s) { let h = 2166136261; for (const c of String(s)) { h ^= c.ch
 export const store = {
   get: () => ({ theme: prefs.theme, installedDismissed: prefs.installedDismissed, onboarded: prefs.onboarded,
     avvisi: prefs.avvisi, sfondoFoto: prefs.sfondoFoto !== false, avvisatoPer: prefs.avvisatoPer || 0, guidaVista: !!prefs.guidaVista,
-    pushChiesto: prefs.pushChiesto || null }),
+    pushChiesto: prefs.pushChiesto || null, bannerCalciatori: !!prefs.bannerCalciatori }),
   set: (patch) => { Object.assign(prefs, patch); persistPrefs(); notify(); },
 };
 export function resetAll() { localStorage.removeItem(PREFS_KEY); }
@@ -912,6 +914,7 @@ export const prudente = () => !!interruttori.prudente;
  * console, che deve sapere chi ha escluso.
  */
 let esclusi = [];
+let aderenti = new Set();   // chi ha il bollino «Ha aderito» (044)
 export const nomiBrevi = () => !!interruttori.nomi_brevi;
 export const giocatoriEsclusi = () => esclusi.slice();
 export const nomeVero = (p) => (p && (p._vero || p)) || null;
@@ -987,9 +990,30 @@ export async function togliSqualifica(playerId, n) {
   await remote.togliSqualifica(playerId, n);
   squalifiche = squalifiche.filter((q) => !(q.playerId === playerId && q.matchday === n)); notify();
 }
-export const inviaAdesione = (dati) => remote.inviaAdesione(dati);
+/*
+ * IL CONSENSO DEI CALCIATORI (041, 044). La richiesta la scrive chiunque da
+ * #/giocatori; vale solo quando chi amministra l'ha verificata (DM dal suo
+ * Instagram o conferma della societa') e l'ha legata a un giocatore del
+ * listone. Da li': un si' da' il bollino «Ha aderito», un no lo esclude.
+ */
+export const haAderito = (playerId) => aderenti.has(playerId);
+export const VERSIONE_CONSENSO = 'v1 · 17/10/2026';
+export const inviaAdesione = (dati) => remote.inviaAdesione({ ...dati, versione: VERSIONE_CONSENSO });
 export const caricaAdesioni = () => remote.caricaAdesioni();
 export const segnaAdesioneLetta = (id) => remote.segnaAdesioneLetta(id);
+export async function verificaAdesione(a, come, playerId) {
+  await remote.verificaAdesione(a.id, come, playerId);
+  if (a.scelta === 'escludimi') {
+    if (!esclusi.includes(playerId)) await escludiGiocatore(playerId, `richiesta #${a.id}`);
+    aderenti.delete(playerId);
+  } else {
+    aderenti.add(playerId);
+    // chi aveva chiesto di non comparire e ora ci sta torna col suo nome
+    if (esclusi.includes(playerId)) await riammettiGiocatore(playerId);
+  }
+  notify();
+}
+export const respingiAdesione = (id) => remote.respingiAdesione(id);
 export async function impostaPrudente(acceso) {
   await remote.impostaInterruttore('prudente', acceso, user.id);
   interruttori = { ...interruttori, prudente: acceso }; notify();

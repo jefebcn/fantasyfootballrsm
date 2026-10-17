@@ -2264,4 +2264,49 @@ delete from public.match_appearances where match_id = 'md26_m1';
 delete from public.lineups where matchday = 26;
 delete from public.rosters where player_id in ('virtus_14', 'virtus_25');
 
+-- 044: il consenso dei calciatori. Chi passa scrive solo richieste in
+-- attesa; il bollino arriva quando chi amministra verifica.
+select set_config('request.jwt.claims', '', false);
+set role anon;
+insert into public.adesioni_giocatori (nome, squadra, scelta, sponsor, maggiorenne, instagram, codice, versione)
+  values ('Mario Rossi', 'Virtus', 'aderisco', true, true, '@mariorossi', 'FT-AB12', 'v1');
+do $$ begin
+  insert into public.adesioni_giocatori (nome, scelta, stato, player_id) values ('Furbo', 'aderisco', 'verificato', 'virtus_14');
+  raise exception 'FALLITA: chi passa non doveva potersi dare da solo il verificato';
+exception when others then
+  if sqlerrm like 'FALLITA%' then raise; end if;
+  raise notice 'ok  chi passa non si verifica da solo (%)', sqlerrm;
+end $$;
+do $$ begin
+  insert into public.adesioni_giocatori (nome, scelta, maggiorenne) values ('Ragazzo Senza', 'aderisco', false);
+  raise exception 'FALLITA: un minorenne che aderisce senza genitore doveva essere rifiutato';
+exception when others then
+  if sqlerrm like 'FALLITA%' then raise; end if;
+  raise notice 'ok  sotto i 18 anni serve il genitore (%)', sqlerrm;
+end $$;
+do $$ begin
+  insert into public.adesioni_giocatori (nome, scelta, sponsor) values ('No Sponsor', 'escludimi', true);
+  raise exception 'FALLITA: gli sponsor senza il si'' al gioco dovevano essere rifiutati';
+exception when others then
+  if sqlerrm like 'FALLITA%' then raise; end if;
+  raise notice 'ok  gli sponsor solo per chi dice si'' (%)', sqlerrm;
+end $$;
+select pg_temp.esige('nessun bollino prima della verifica', not exists (select 1 from public.giocatori_aderenti()));
+reset role;
+select pg_temp.entra('user_pub1');
+set role authenticated;
+update public.adesioni_giocatori set stato = 'verificato', verificato_come = 'instagram', verificato_at = now(), player_id = 'virtus_14'
+ where codice = 'FT-AB12';
+reset role;
+select set_config('request.jwt.claims', '', false);
+set role anon;
+select pg_temp.esige('verificata da chi amministra: il bollino lo vede anche chi non ha un account',
+  exists (select 1 from public.giocatori_aderenti() g where g = 'virtus_14'));
+reset role;
+insert into public.adesioni_giocatori (nome, scelta, stato, verificato_come, verificato_at, player_id, codice)
+  values ('Mario Rossi', 'escludimi', 'verificato', 'instagram', now() + interval '1 minute', 'virtus_14', 'FT-CD34');
+select pg_temp.esige('se poi ritira il consenso, il bollino sparisce',
+  not exists (select 1 from public.giocatori_aderenti() g where g = 'virtus_14'));
+delete from public.adesioni_giocatori;
+
 select 'tutte le prove sulle funzioni sono passate' as esito;

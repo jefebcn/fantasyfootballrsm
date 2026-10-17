@@ -75,6 +75,10 @@ APERTE="$APERTE segnala_errore"
 # due sopra: per questo il controllo qui sotto guarda che siano SOLO nome
 # della squadra e numero, niente identificativi ne' nomi di persona.
 APERTE="$APERTE reclutatori_settimana"
+# E giocatori_aderenti (044): il bollino «Ha aderito» sulla scheda di un
+# giocatore lo vede chiunque. Restituisce solo identificativi del listone
+# (virtus_14), mai chi ha scritto la richiesta ne' come l'ha verificata.
+APERTE="$APERTE giocatori_aderenti"
 # Su una riga sola, con uno spazio davanti e dietro: il confronto piu' sotto
 # cerca " nome " e i ritorni a capo dell'elenco lo facevano fallire per gli
 # ultimi di ogni riga. Preso dal guardiano stesso alla prima corsa, che e' il

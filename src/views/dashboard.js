@@ -233,6 +233,23 @@ function richiestaPromemoria() {
   </div>`;
 }
 
+/**
+ * «Giochi nel campionato?» (044). Chi usa l'app e' spesso anche chi gioca:
+ * il banner porta alla pagina del consenso, una volta sola. Sparisce con
+ * «Non gioco» o quando da questo telefono una richiesta e' gia' partita.
+ */
+function invitoCalciatori() {
+  if (S.store.get().bannerCalciatori) return '';
+  try { if (localStorage.getItem('ft.adesione')) return ''; } catch { /* niente */ }
+  return `<div class="a-card invito-calc">
+    <i class="cp-ico cp-logo">${logo()}</i>
+    <div class="cp-txt"><b>Giochi nel campionato sammarinese?</b>
+      <span>Allora sei già nel listone di Fantatitano, con nome e statistiche. Dicci se ti va bene comparire, oppure se preferisci di no: bastano due minuti.</span>
+      <div class="cp-btn"><button class="a-btn" data-calc="si">Ci gioco</button><button class="a-btn sec" data-calc="no">Non gioco</button></div>
+    </div>
+  </div>`;
+}
+
 const INDIRIZZO_OK = /^(https?:\/\/|\/)/i;
 function fasciaSponsor() {
   const sp = S.sponsorInVetrina(); if (!sp) return '';
@@ -597,6 +614,7 @@ export const dashboard = {
           title: 'Rose non ancora assegnate',
           sub: S.isLeagueAdmin() ? "Generale o inserirle dalla gestione lega" : "Le assegna l'admin della lega dopo l'asta" }) : azione(ph, bloccato)}
       ${richiestaPromemoria()}
+      ${invitoCalciatori()}
       ${ultimiCinque(last, me)}
       ${prossimePartite(ph)}
       ${lockDaSistemare()}
@@ -640,6 +658,10 @@ export const dashboard = {
       slot.querySelector('#inst-no').onclick = () => { S.store.set({ installedDismissed: true }); slot.innerHTML = ''; };
     };
     show(); document.addEventListener('installable', show, { once: true });
+    root.querySelector('.invito-calc')?.addEventListener('click', (e) => {
+      if (e.target.closest('[data-calc="si"]')) { location.hash = '#/giocatori'; return; }
+      if (e.target.closest('[data-calc="no"]')) { S.store.set({ bannerCalciatori: true }); ctx.toast('Va bene, non lo mostro più'); }
+    });
     root.querySelector('.chiedi-push')?.addEventListener('click', async (e) => {
       const b = e.target.closest('[data-push]'); if (!b) return;
       const unNo = () => { const c = S.store.get().pushChiesto; S.store.set({ pushChiesto: { volte: (c?.volte || 0) + 1, ultima: Date.now() } }); };

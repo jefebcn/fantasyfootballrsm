@@ -299,6 +299,12 @@ export const adminRegistro = {
  * se la rifa' la persona — che e' anche l'unico modo in cui resta sua.
  */
 let aTab = 'numeri';        // 'numeri' | 'persone' | 'squadre' | 'leghe' | 'sponsor'
+// Le richieste dei calciatori, il registro dei passaggi e la sua verifica
+// arrivano insieme: l'attestato e il CSV li usano tutti e tre.
+async function ricaricaConsensi() {
+  const [ad, reg, ok] = await Promise.all([S.caricaAdesioni(), S.caricaRegistro(), S.verificaRegistro()]);
+  cache.adesioni = ad; cache.registro = reg; cache.integro = ok;
+}
 let cache = { numeri: null, persone: null, squadre: null, leghe: null, conteggi: null, errori: undefined, daConfermare: undefined };
 let cerca = '';
 
@@ -459,7 +465,6 @@ function riservatezza(adesioni) {
     .filter((p) => !p.doppioneDi && !esclusi.includes(p) && `${S.nomeVero(p).firstName} ${S.nomeVero(p).lastName}`.toLowerCase().includes(q)).slice(0, 8);
   const vero = (p) => `${esc(S.nomeVero(p).firstName)} ${esc(S.nomeVero(p).lastName)}`;
   const club = (p) => esc(S.clubsById.get(p.clubId)?.name || '');
-  const nuove = (adesioni || []).filter((a) => !a.letta);
   return `<div class="a-card prudente${brevi ? ' on' : ''}">
     <b>Nomi brevi: ${brevi ? 'accesi' : 'spenti'}</b>
     <span class="small muted">${brevi
@@ -476,17 +481,88 @@ function riservatezza(adesioni) {
     ${trovati.length ? `<div class="vlist">${trovati.map((p) => `<div class="adm-u"><span><b>${vero(p)}</b> <span class="small muted">${club(p)}</span></span>
       <button class="chip" data-escludi="${esc(p.id)}">Escludi</button></div>`).join('')}</div>` : ''}
   </div>
-  <div class="a-card">
-    <b>Richieste dei giocatori${nuove.length ? ` · ${nuove.length} nuove` : ''}</b>
-    <span class="small muted" style="display:block;margin:2px 0 8px">Dalla pagina <b>fantatitano.site/#/giocatori</b>: non è collegata dall'app, la mandi tu quando serve.</span>
-    ${adesioni === null ? '<p class="small muted" style="margin:0">Per vederle esegui nell\'SQL Editor la SQL <b>041</b>.</p>'
-    : !adesioni ? '<p class="small muted" style="margin:0">Sto guardando…</p>'
-      : !adesioni.length ? '<p class="small muted" style="margin:0">Nessuna richiesta.</p>'
-        : `<div class="vlist">${adesioni.slice(0, 30).map((a) => `<div class="adm-u${a.letta ? ' letta' : ''}"><span>
-      <b>${esc(a.nome)}</b> <span class="small muted">${esc(a.squadra || '')} · ${new Date(a.created_at).toLocaleDateString('it-IT')}</span><br>
-      <span class="small">${a.scelta === 'aderisco' ? '✅ Ci sta' : '🚫 Non vuole comparire'}${a.contatto ? ` · ${esc(a.contatto)}` : ''}</span>${a.nota ? `<br><span class="small muted">${esc(a.nota)}</span>` : ''}</span>
-      ${a.letta ? '' : `<button class="chip" data-letta="${a.id}">Fatto</button>`}</div>`).join('')}</div>`}
-  </div>`;
+  ${calciatori(adesioni)}`;
+}
+
+/**
+ * IL CONSENSO DEI CALCIATORI (044). Ogni richiesta arriva «in attesa»: vale
+ * solo quando la verifichi. Il codice e' quello che il calciatore ti manda in
+ * DM dal suo Instagram (o che ti scrive la sua societa'): lo cerchi qui, scegli
+ * il giocatore del listone e premi come l'hai verificato. Un si' da' il
+ * bollino «Ha aderito»; un no lo mette fra gli esclusi.
+ */
+function candidati(a) {
+  const club = S.base.clubs.find((c) => c.name === a.squadra);
+  const parole = String(a.nome || '').toLowerCase().split(/\s+/).filter((w) => w.length > 1);
+  const punti = (p) => { const n = `${S.nomeVero(p).firstName} ${S.nomeVero(p).lastName}`.toLowerCase(); return parole.filter((w) => n.includes(w)).length; };
+  const tutti = S.base.players.filter((p) => !p.doppioneDi && (!club || p.clubId === club.id));
+  return tutti.map((p) => ({ p, n: punti(p) })).sort((x, y) => y.n - x.n || S.nomeVero(x.p).lastName.localeCompare(S.nomeVero(y.p).lastName)).slice(0, club ? 40 : 15);
+}
+function calciatori(adesioni) {
+  const intest = '<b>Calciatori: il consenso</b><span class="small muted" style="display:block;margin:2px 0 8px">Dalla pagina <b>fantatitano.site/#/giocatori</b> e dal banner in Home. Vale solo quello che verifichi tu: il codice arriva in DM a @fantatitano dal profilo del calciatore, o te lo scrive la sua società.</span>';
+  if (adesioni === null) return `<div class="a-card">${intest}<p class="small muted" style="margin:0">Per vederle esegui nell'SQL Editor la SQL <b>041</b>.</p></div>`;
+  if (!adesioni) return `<div class="a-card">${intest}<p class="small muted" style="margin:0">Sto guardando…</p></div>`;
+  const stato = (a) => (a.ritirato_at ? 'ritirato' : a.stato || 'attesa');
+  const ver = adesioni.filter((a) => stato(a) === 'verificato');
+  const conta = `<div class="ades-conta"><div><b>${ver.filter((a) => a.scelta === 'aderisco').length}</b><span>ci stanno</span></div>
+    <div><b>${adesioni.filter((a) => stato(a) === 'attesa').length}</b><span>da verificare</span></div>
+    <div><b>${ver.filter((a) => a.scelta === 'escludimi').length}</b><span>non vogliono</span></div></div>`;
+  const ordine = { attesa: 0, verificato: 1, ritirato: 2, respinto: 3 };
+  const righe = adesioni.slice().sort((x, y) => ordine[stato(x)] - ordine[stato(y)]).slice(0, 40).map((a) => {
+    const st = stato(a);
+    const pill = { attesa: 'Da verificare', verificato: `Verificato${a.verificato_come ? ` · ${a.verificato_come === 'societa' ? 'società' : 'Instagram'}` : ''}`, respinto: 'Non è lui', ritirato: 'Ritirato' }[st];
+    const legato = a.player_id && S.playersById.get(a.player_id);
+    const tags = [a.squadra, a.scelta === 'aderisco' ? 'Ci sto' : 'Non vuole comparire',
+      a.scelta === 'aderisco' ? (a.sponsor ? 'Sponsor sì' : 'Sponsor no') : '',
+      a.maggiorenne === false ? `Minorenne · genitore ${a.genitore || '?'}` : a.maggiorenne ? 'Maggiorenne' : ''].filter(Boolean);
+    const scegli = st === 'attesa' ? `<select class="field-input" data-ades-gioc="${a.id}" aria-label="Quale giocatore è">${candidati(a).map(({ p }, i) =>
+      `<option value="${esc(p.id)}"${i === 0 ? ' selected' : ''}>${esc(S.nomeVero(p).lastName)} ${esc(S.nomeVero(p).firstName)} · ${esc(S.clubsById.get(p.clubId)?.name || '')}</option>`).join('')}</select>
+      <label class="lbl" for="ades-file-${a.id}">Screenshot del messaggio (obbligatorio)</label>
+      <input class="field-input" type="file" accept="image/*" id="ades-file-${a.id}" data-ades-file="${a.id}">
+      <div class="azioni"><button class="chip" data-ades-ver="${a.id}|instagram">Verificato via Instagram</button><button class="chip" data-ades-ver="${a.id}|societa">Dalla società</button><button class="chip" data-ades-resp="${a.id}">Non è lui</button></div>` : '';
+    return `<div class="adm-ades">
+      <div class="riga1"><b>${esc(a.nome)}</b><span class="stato-ades ${st}">${pill}</span></div>
+      <div class="tags">${tags.map((t) => `<span>${esc(t)}</span>`).join('')}</div>
+      <span class="small muted">${a.codice ? `Codice <b class="mono">${esc(a.codice)}</b> · ` : ''}${a.instagram ? `${esc(a.instagram)} · ` : 'senza Instagram · '}${new Date(a.created_at).toLocaleDateString('it-IT')}${a.versione ? ` · testo ${esc(a.versione.split(' · ')[0])}` : ''}${legato ? ` · è ${esc(S.nomeVero(legato).lastName)} ${esc(S.nomeVero(legato).firstName)}` : ''}</span>
+      ${a.contatto || a.nota ? `<span class="small">${esc([a.contatto, a.nota].filter(Boolean).join(' · '))}</span>` : ''}
+      ${scegli}
+      <div class="azioni"><a class="chip" href="#/consenso/${a.id}">Attestato</a>${st === 'verificato' ? `<button class="chip" data-ades-rit="${a.id}">Ha ritirato il consenso</button>` : ''}</div>
+    </div>`;
+  }).join('');
+  const reg = cache.registro; const ok = cache.integro;
+  const registro = `<div class="ades-reg"><span class="small">${reg == null ? 'Registro: esegui la SQL <b>044</b>'
+    : `Registro: <b>${reg.length}</b> ${reg.length === 1 ? 'passaggio' : 'passaggi'} · ${ok ? (ok.integro ? '<b class="ok">catena integra</b>' : `<b class="ko">catena rotta alla riga ${ok.prima_rotta}</b>`) : 'verifica non disponibile'}`}</span>
+    <div class="azioni"><button class="chip" data-ades-csv="consensi">Scarica consensi (CSV)</button><button class="chip" data-ades-csv="registro">Scarica registro (CSV)</button></div></div>`;
+  return `<div class="a-card">${intest}${conta}${registro}${adesioni.length ? `<div>${righe}</div>` : '<p class="small muted" style="margin:0">Nessuna richiesta, per ora.</p>'}</div>`;
+}
+
+/**
+ * I due fogli per un ente o un avvocato: le richieste (una riga ciascuna, con
+ * tutto quello che serve a dimostrare il consenso) e il registro dei
+ * passaggi con le impronte. CSV col punto e virgola: Excel italiano lo apre
+ * diviso in colonne.
+ */
+function scaricaCsv(quale) {
+  const cella = (v) => { const t = v == null ? '' : String(v); return /[;"\n]/.test(t) ? `"${t.replace(/"/g, '""')}"` : t; };
+  const data = (t) => (t ? new Date(t).toLocaleString('it-IT', { timeZone: 'Europe/Rome' }) : '');
+  const gioc = (id) => { const p = id && S.playersById.get(id); return p ? `${S.nomeVero(p).lastName} ${S.nomeVero(p).firstName} (${id})` : (id || ''); };
+  let righe;
+  if (quale === 'registro') {
+    righe = [['riga', 'richiesta', 'passaggio', 'quando (ora di San Marino)', 'quando (UTC)', 'chi', 'impronta precedente', 'impronta']]
+      .concat((cache.registro || []).map((r) => [r.id, r.adesione_id, r.evento, data(r.quando), r.quando, r.chi || 'il calciatore (senza account)', r.impronta_prec || '', r.impronta]));
+  } else {
+    righe = [['richiesta', 'inviata il', 'nome', 'squadra', 'scelta', 'sponsor', 'maggiorenne', 'genitore', 'instagram', 'codice', 'versione del testo',
+      'indirizzo IP', 'dispositivo', 'stato', 'verificato come', 'verificato il', 'verificato da', 'screenshot', 'giocatore', 'ritirato il']]
+      .concat((cache.adesioni || []).map((a) => [a.id, data(a.created_at), a.nome, a.squadra, a.scelta === 'aderisco' ? 'ci sta' : 'non vuole comparire',
+        a.sponsor ? 'sì' : 'no', a.maggiorenne == null ? '' : a.maggiorenne ? 'sì' : 'no', a.genitore, a.instagram, a.codice, a.versione,
+        a.ip, a.dispositivo, a.stato || 'attesa', a.verificato_come === 'societa' ? 'società' : a.verificato_come, data(a.verificato_at),
+        a.verificato_da, a.prova, gioc(a.player_id), data(a.ritirato_at)]));
+  }
+  const testo = '\ufeff' + righe.map((r) => r.map(cella).join(';')).join('\r\n');
+  const url = URL.createObjectURL(new Blob([testo], { type: 'text/csv;charset=utf-8' }));
+  const l = document.createElement('a'); l.href = url;
+  l.download = `fantatitano-${quale === 'registro' ? 'registro-consensi' : 'consensi'}-${new Date().toISOString().slice(0, 10)}.csv`;
+  document.body.append(l); l.click(); l.remove(); setTimeout(() => URL.revokeObjectURL(url), 2000);
 }
 
 function numeri(r) {
@@ -706,7 +782,7 @@ export const adminConsole = {
     const carica = async () => {
       try {
         if (aTab === 'numeri' && !cache.numeri) { cache.numeri = await S.adminRiepilogo(); ctx.render(); }
-        if (aTab === 'numeri' && cache.adesioni === undefined && S.isOwner()) { cache.adesioni = await S.caricaAdesioni(); ctx.render(); }
+        if (aTab === 'numeri' && cache.adesioni === undefined && S.isOwner()) { await ricaricaConsensi(); ctx.render(); }
         if (aTab === 'numeri' && cache.errori === undefined) { cache.errori = await S.caricaErrori(7); ctx.render(); }
         // l'andamento si disegna sull'elenco delle persone: la scheda dei
         // numeri lo chiede una volta e poi resta in cache come le altre
@@ -848,11 +924,48 @@ export const adminConsole = {
         catch (err) { ctx.toast(err.message || 'Non è stato possibile'); ri.disabled = false; }
         return;
       }
-      const le = e.target.closest('[data-letta]');
-      if (le) {
-        le.disabled = true;
-        try { await S.segnaAdesioneLetta(+le.dataset.letta); cache.adesioni = await S.caricaAdesioni(); ctx.render(); }
-        catch (err) { ctx.toast(err.message || 'Non è stato possibile'); le.disabled = false; }
+      const av = e.target.closest('[data-ades-ver]');
+      if (av) {
+        const [id, come] = av.dataset.adesVer.split('|');
+        const a = (cache.adesioni || []).find((x) => String(x.id) === id); if (!a) return;
+        const pid = root.querySelector(`[data-ades-gioc="${id}"]`)?.value;
+        const p = pid && S.playersById.get(pid); if (!p) { ctx.toast('Scegli prima quale giocatore è'); return; }
+        const file = root.querySelector(`[data-ades-file="${id}"]`)?.files?.[0];
+        if (!file) { ctx.toast('Allega lo screenshot del messaggio: è la prova della verifica'); return; }
+        if (file.size > 20 * 1024 * 1024) { ctx.toast('Lo screenshot supera 20 MB'); return; }
+        const chi = `${S.nomeVero(p).firstName} ${S.nomeVero(p).lastName}`;
+        if (!confirm(`Confermi che ${a.nome} è ${chi}, verificato ${come === 'societa' ? 'dalla società' : 'via Instagram'}? ${a.scelta === 'aderisco' ? 'Avrà il bollino «Ha aderito».' : 'Nell\'app comparirà come «Giocatore».'}`)) return;
+        av.disabled = true;
+        try {
+          await S.verificaAdesione(a, come, p.id, file);
+          // un «non voglio comparire» verificato chiude i «ci sto» di prima dello stesso giocatore
+          if (a.scelta === 'escludimi') {
+            for (const x of cache.adesioni || []) {
+              if (x.id !== a.id && x.player_id === p.id && x.scelta === 'aderisco' && x.stato === 'verificato' && !x.ritirato_at) await S.ritiraAdesione(x);
+            }
+          }
+          await ricaricaConsensi(); ctx.toast('Verificato'); ctx.render();
+        }
+        catch (err) { ctx.toast(/stato|verificato|column/i.test(err.message || '') ? 'Prima va eseguita la 044 nell\'SQL Editor' : (err.message || 'Non è stato possibile')); av.disabled = false; }
+        return;
+      }
+      const rt = e.target.closest('[data-ades-rit]');
+      if (rt) {
+        const a = (cache.adesioni || []).find((x) => String(x.id) === rt.dataset.adesRit); if (!a) return;
+        if (!confirm(`${a.nome} ritira il consenso? Resta nel registro con la data di oggi${a.scelta === 'aderisco' ? ', perde il bollino e nell\'app comparirà come «Giocatore»' : ''}.`)) return;
+        rt.disabled = true;
+        try { await S.ritiraAdesione(a); await ricaricaConsensi(); ctx.toast('Ritiro registrato'); ctx.render(); }
+        catch (err) { ctx.toast(err.message || 'Non è stato possibile'); rt.disabled = false; }
+        return;
+      }
+      const cv = e.target.closest('[data-ades-csv]');
+      if (cv) { scaricaCsv(cv.dataset.adesCsv); return; }
+      const ar = e.target.closest('[data-ades-resp]');
+      if (ar) {
+        if (!confirm('Segnare questa richiesta come «non è lui»? Non conta e resta solo nello storico.')) return;
+        ar.disabled = true;
+        try { await S.respingiAdesione(+ar.dataset.adesResp); await ricaricaConsensi(); ctx.render(); }
+        catch (err) { ctx.toast(err.message || 'Non è stato possibile'); ar.disabled = false; }
         return;
       }
       const pr = e.target.closest('[data-prudente]');

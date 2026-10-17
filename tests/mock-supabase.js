@@ -26,10 +26,10 @@ function contaReclutato(id) {
 }
 
 function builder(table) {
-  const filters = []; let op = 'select'; let payload = null; let single = false; let maybe = false; let orderBy = []; let lim = null; let da = null; let a = null; 
+  const filters = []; let op = 'select'; let cols = '*'; let payload = null; let single = false; let maybe = false; let orderBy = []; let lim = null; let da = null; let a = null; 
   const apply = (rows) => rows.filter((r) => filters.every((f) => f(r)));
   const b = {
-    select() { return b; },   // il finto server torna sempre le righe
+    select(c) { if (op === 'select') cols = c || '*'; return b; },   // il finto server torna sempre le righe
     eq(k, v) { filters.push((r) => r[k] === v); return b; },
     // "is null" in SQL prende anche le colonne mai scritte. Qui invece
     // undefined === null e' falso, quindi .is('released_at', null) scartava
@@ -64,6 +64,11 @@ function builder(table) {
         // __MOCK_SESSIONE_PERSA__: il token e' scaduto e la rete non l'ha
         // rinnovato, le richieste partono come anonimo. Come Supabase vero: i
         // profili non si vedono e scriverne uno lo rifiuta la RLS.
+        // Come dalla 026: dei profili si leggono solo id, nome e amici
+        // portati. Il resto (anche select('*')) lo rifiuta il database.
+        if (table === 'profiles' && op === 'select' && String(cols).split(',').some((c) => !['id', 'display_name', 'reclutati'].includes(c.trim()))) {
+          res({ data: null, error: { code: '42501', message: 'permission denied for table profiles' } }); return;
+        }
         if (globalThis.__MOCK_SESSIONE_PERSA__ && table === 'profiles') {
           if (op === 'select') { res({ data: (single || maybe) ? null : [], error: null }); return; }
           if (op === 'upsert' || op === 'insert') { res({ data: null, error: { code: '42501', message: 'new row violates row-level security policy for table "profiles"' } }); return; }
@@ -75,6 +80,7 @@ function builder(table) {
           // resto non arriva e nessuno lo dice. Le prove possono abbassarlo.
           data = data.slice(0, globalThis.__MAX_RIGHE__ ?? 1000); }
         if (op === 'insert') { const list = (Array.isArray(payload) ? payload : [payload]).map(withDefaults); guardFrozen(table, list); if (table === 'adesioni_giocatori') list.forEach((r) => sigillo(r, null)); if (table === 'prove_consenso') list.forEach((r) => { r.id = T('prove_consenso').length + 1; r.impronta = Math.random().toString(16).slice(2).padEnd(64, '0'); r.caricata_at = now(); r.caricata_da = userId; }); rows.push(...list); data = list.map(expand); }
+        if (op === 'upsert' && table === 'profiles') globalThis.__mockProfiloScritto = true;
         if (op === 'upsert') { const list = (Array.isArray(payload) ? payload : [payload]); guardFrozen(table, list); for (const r of list) { const i = rows.findIndex((x) => pk.every((k) => x[k] === r[k])); if (i >= 0) rows[i] = { ...rows[i], ...r }; else rows.push(withDefaults(r)); } data = list; }
         if (op === 'update') { data = []; for (const r of rows) if (filters.every((f) => f(r))) { const prima = { ...r }; Object.assign(r, payload); if (table === 'adesioni_giocatori') sigillo(r, prima); data.push(expand(r)); } }
         if (op === 'delete') { const del = apply(rows); guardFrozen(table, del); tables[table] = rows.filter((r) => !del.includes(r)); data = del; }
@@ -515,7 +521,12 @@ export function createClient(_url, _key, opts) {
           l.premi = pr; persisti(); return { data: pr, error: null };
         }
         // 026: il proprio profilo intero (gli altri ne leggono solo nome e amici)
-        if (name === 'mio_profilo' && globalThis.__MOCK_SESSIONE_PERSA__) return { data: null, error: null };
+        // mio_profilo e' solo per chi e' entrato: da anonimo la rifiuta (026)
+        if (name === 'mio_profilo' && globalThis.__MOCK_SESSIONE_PERSA__) return { data: null, error: { code: '42501', message: 'permission denied for function mio_profilo' } };
+        // __MOCK_PROFILO_ASSENTE__: il primo accesso, quando l'utente c'e' ma
+        // il profilo no — lo crea il client (001). Finche' non lo scrive,
+        // mio_profilo non trova niente, senza errore.
+        if (name === 'mio_profilo' && globalThis.__MOCK_PROFILO_ASSENTE__ && !globalThis.__mockProfiloScritto) return { data: null, error: null };
         if (name === 'mio_profilo') { return { data: T('profiles').find((x) => x.id === userId) || null, error: null }; }
         if (name === 'join_league') { const l = T('leagues').find((x) => x.invite_code === args.p_code.toUpperCase()); if (!l) throw new Error('Codice invito non valido'); if (!T('league_members').some((m) => m.league_id === l.id && m.user_id === userId)) T('league_members').push({ id: uid(), league_id: l.id, user_id: userId, role: 'fantallenatore', team_name: args.p_team, owner_name: prof.display_name, color: args.p_color, initials: args.p_initials, credits: 500, created_at: now() }); contaReclutato(userId); persisti(); return { data: l.id, error: null }; }
         if (name === 'sync_matchday_locks') {

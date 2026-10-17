@@ -2218,4 +2218,50 @@ select pg_temp.esige('la squalifica la vede anche chi non ha un account (042)', 
 reset role;
 delete from public.squalifiche;
 
+-- 043: Piscitella in vendita due volte (17/10). Uno ha solo il doppione, un
+-- altro li ha tutti e due: il primo si ritrova quello vero, il secondo
+-- riprende i crediti del doppione.
+reset role;
+delete from public.matchday_status where matchday = 26;
+insert into public.match_appearances (match_id, player_id, club_id, started, minutes_played)
+  values ('md26_m1', 'virtus_25', 'virtus', true, 90);
+insert into public.match_events (match_id, player_id, club_id, minute, type) values ('md26_m1', 'virtus_25', 'virtus', 29, 'goal');
+insert into public.matchday_status (matchday, status) values (26, 'frozen');
+-- nella lega pubblica: ognuno ha i suoi, lo stesso giocatore sta in piu' rose
+select id as m_solo from public.league_members where league_id = :'lp' and user_id = 'user_pub1' \gset
+select id as m_tutti, credits as crediti_prima from public.league_members where league_id = :'lp' and user_id = 'user_pub2' \gset
+delete from public.rosters where player_id in ('virtus_14', 'virtus_25');
+insert into public.rosters (league_id, member_id, player_id, price_paid)
+  select league_id, id, 'virtus_25', 6 from public.league_members where id in (:'m_solo', :'m_tutti');
+insert into public.rosters (league_id, member_id, player_id, price_paid)
+  select league_id, id, 'virtus_14', 23 from public.league_members where id = :'m_tutti';
+insert into public.lineups (league_id, member_id, matchday, lineup)
+  select league_id, id, 26, '{"starters":["virtus_25"],"bench":[],"captainId":"virtus_25"}'::jsonb
+    from public.league_members where id = :'m_solo'
+on conflict (league_id, member_id, matchday) do update set lineup = excluded.lineup;
+\i supabase/migrations/043-doppioni-piscitella.sql
+select pg_temp.esige('presenza e gol del doppione passano a Piscitella del listone',
+  exists (select 1 from public.match_appearances where match_id = 'md26_m1' and player_id = 'virtus_14')
+  and exists (select 1 from public.match_events where match_id = 'md26_m1' and player_id = 'virtus_14' and type = 'goal')
+  and not exists (select 1 from public.match_appearances where player_id = 'virtus_25'));
+select pg_temp.esige('chi aveva solo il doppione si ritrova quello vero, anche in formazione',
+  exists (select 1 from public.rosters where member_id = :'m_solo' and player_id = 'virtus_14' and released_at is null)
+  and (select lineup->>'captainId' from public.lineups where member_id = :'m_solo' and matchday = 26) = 'virtus_14');
+select pg_temp.esige('chi li aveva tutti e due tiene quello vero e riprende i 6 crediti',
+  (select count(*) from public.rosters where member_id = :'m_tutti' and player_id = 'virtus_14' and released_at is null) = 1
+  and (select credits from public.league_members where id = :'m_tutti') = :crediti_prima + 6);
+select pg_temp.esige('nel listino Piscitella e'' attaccante e il doppione non c''e'' piu''',
+  (select ruolo from public.quotazioni where player_id = 'virtus_14') = 'A'
+  and not exists (select 1 from public.quotazioni where player_id = 'virtus_25'));
+select pg_temp.esige('i giocatori dei tabellini che mancavano ora si possono comprare',
+  exists (select 1 from public.quotazioni where player_id = 'folgore_27'));
+select pg_temp.esige('la giornata chiusa torna chiusa (043)', exists (select 1 from public.matchday_status where matchday = 26 and status = 'frozen'));
+\i supabase/migrations/043-doppioni-piscitella.sql
+select pg_temp.esige('rieseguita non rimborsa due volte', (select credits from public.league_members where id = :'m_tutti') = :crediti_prima + 6);
+delete from public.matchday_status where matchday = 26;
+delete from public.match_events where match_id = 'md26_m1';
+delete from public.match_appearances where match_id = 'md26_m1';
+delete from public.lineups where matchday = 26;
+delete from public.rosters where player_id in ('virtus_14', 'virtus_25');
+
 select 'tutte le prove sulle funzioni sono passate' as esito;

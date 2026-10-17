@@ -9,7 +9,7 @@
 -- Chi e' sparito dal listone NON viene cancellato di proposito: e' gia' nella
 -- rosa di qualcuno, e cancellarlo lascerebbe rose con giocatori senza prezzo.
 --
--- 422 giocatori.
+-- 412 giocatori.
 
 insert into public.quotazioni (player_id, ruolo, quotazione, nome, club) values
   ('academy_1', 'P', 16, 'Giulianelli F.', 'SM Academy U22'),
@@ -262,7 +262,7 @@ insert into public.quotazioni (player_id, ruolo, quotazione, nome, club) values
   ('murata_4', 'D', 12, 'Lombardi L.', 'Murata'),
   ('murata_5', 'D', 12, 'Mozzillo M.', 'Murata'),
   ('murata_6', 'D', 12, 'Kassi O.', 'Murata'),
-  ('murata_7', 'D', 10, 'Ceccaroni G.', 'Murata'),
+  ('murata_7', 'D', 10, 'Ceccaroni Giac.', 'Murata'),
   ('murata_8', 'D', 10, 'Martelli L.', 'Murata'),
   ('murata_9', 'D', 8, 'Raimondi A.', 'Murata'),
   ('murata_10', 'C', 21, 'Baldazzi Alb.', 'Murata'),
@@ -399,41 +399,31 @@ insert into public.quotazioni (player_id, ruolo, quotazione, nome, club) values
   ('virtus_11', 'C', 29, 'Ciacci E.', 'Virtus'),
   ('virtus_12', 'C', 28, 'Amati A.', 'Virtus'),
   ('virtus_13', 'C', 27, 'Golinucci A.', 'Virtus'),
-  ('virtus_14', 'C', 23, 'Piscitella G.', 'Virtus'),
+  ('virtus_14', 'A', 23, 'Piscitella G.', 'Virtus'),
   ('virtus_15', 'C', 22, 'Buonocunto I.', 'Virtus'),
   ('virtus_16', 'C', 19, 'Yazici A.', 'Virtus'),
   ('virtus_17', 'C', 15, 'Muggeo J.', 'Virtus'),
   ('virtus_18', 'C', 10, 'Blanco B.', 'Virtus'),
   ('virtus_19', 'C', 10, 'Lisanti K.', 'Virtus'),
-  ('virtus_20', 'C', 8, 'Borioni N.', 'Virtus'),
+  ('virtus_20', 'C', 8, 'Borioni Ni.', 'Virtus'),
   ('virtus_21', 'A', 38, 'Badalassi I.', 'Virtus'),
   ('virtus_22', 'A', 38, 'Benincasa S.', 'Virtus'),
   ('virtus_23', 'A', 31, 'Gjoni A.', 'Virtus'),
   ('virtus_24', 'A', 26, 'Gasperoni M.', 'Virtus'),
-  ('cailungo_28', 'C', 5, 'Hirsch Adolfo .', 'Cailungo'),
   ('faetano_26', 'C', 5, 'Abbadessa Cristiano.', 'Faetano'),
-  ('trepenne_28', 'C', 5, 'Rinaldi Danilo .', 'Tre Penne'),
-  ('academy_24', 'C', 5, 'Montali G.', 'SM Academy U22'),
-  ('trepenne_29', 'C', 5, 'Cordioli Mario .', 'Tre Penne'),
-  ('trepenne_30', 'C', 5, 'Cenni Mattia .', 'Tre Penne'),
-  ('cosmos_25', 'C', 5, 'Brito R.', 'Cosmos'),
+  ('academy_24', 'D', 5, 'Montali G.', 'SM Academy U22'),
   ('sangiovanni_26', 'C', 5, 'Caverzan T.', 'San Giovanni'),
   ('trefiori_27', 'C', 5, 'Nek T.', 'Tre Fiori'),
-  ('trefiori_28', 'A', 6, 'Leon B.', 'Tre Fiori'),
-  ('sangiovanni_27', 'C', 5, 'Thomas C.', 'San Giovanni'),
-  ('lafiorita_25', 'C', 5, 'Daniel C.', 'La Fiorita'),
-  ('trepenne_31', 'C', 5, 'Meddi C.', 'Tre Penne'),
-  ('cailungo_29', 'P', 6, 'Manuel F.', 'Cailungo'),
   ('academy_25', 'C', 5, 'Giacomo G.', 'SM Academy U22'),
   ('academy_26', 'C', 5, 'Nicola M.', 'SM Academy U22'),
-  ('academy_27', 'D', 5, 'Gabriele M.', 'SM Academy U22'),
   ('academy_28', 'C', 5, 'Alessandro M.', 'SM Academy U22'),
-  ('libertas_23', 'A', 6, 'Osagie O.', 'Libertas'),
-  ('cailungo_30', 'D', 5, 'Ciro P.', 'Cailungo'),
-  ('virtus_25', 'A', 6, 'Gianmario P.', 'Virtus'),
   ('murata_27', 'C', 5, 'Andrea R.', 'Murata'),
-  ('trepenne_32', 'C', 5, 'Ezequiel R.', 'Tre Penne'),
-  ('cosmos_26', 'C', 5, 'Richard U.', 'Cosmos')
+  ('murata_28', 'C', 5, 'Ceccaroni Gian.', 'Murata'),
+  ('academy_29', 'C', 5, 'Mattei L.', 'SM Academy U22'),
+  ('academy_30', 'C', 5, 'Zavoli M.', 'SM Academy U22'),
+  ('virtus_26', 'C', 5, 'Borioni Na.', 'Virtus'),
+  ('juvenes_24', 'D', 5, 'Yuriy B.', 'Juvenes/Dogana'),
+  ('folgore_27', 'C', 5, 'Mathias S.', 'Folgore')
 on conflict (player_id) do update
   set ruolo = excluded.ruolo, quotazione = excluded.quotazione,
       nome = excluded.nome, club = excluded.club;

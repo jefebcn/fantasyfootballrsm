@@ -1612,6 +1612,25 @@ insert into public.profiles (id, display_name) values ('user_furbo', 'Furbo 3') 
 reset role;
 select pg_temp.esige('e il nome si cambia ancora',
   (select display_name = 'Furbo 3' from public.profiles where id = 'user_furbo'));
+-- Il primo accesso (Console, 17/10: «permission denied for table profiles»).
+-- Chi entra per la prima volta non ha ancora il profilo: mio_profilo() non
+-- trova niente, senza errore, e l'app lo crea con l'upsert che ignora i
+-- doppioni (ensureProfile) — senza leggere niente dalla tabella.
+select pg_temp.entra('user_nuovo');
+set role authenticated;
+select pg_temp.esige('a chi entra la prima volta mio_profilo() risponde null, senza errore',
+  (select public.mio_profilo() is null));
+insert into public.profiles (id, display_name) values ('user_nuovo', 'Nuovo') on conflict (id) do nothing;
+select pg_temp.esige('l''app crea il profilo e mio_profilo() lo restituisce intero',
+  (select (public.mio_profilo() ->> 'display_name') = 'Nuovo' and (public.mio_profilo() ? 'is_admin')));
+reset role;
+set role anon;
+do $$ begin
+  perform public.mio_profilo();
+  raise exception 'FALLITA: l''anonimo chiama mio_profilo()';
+exception when insufficient_privilege then raise notice 'ok  da anonimo mio_profilo() si rifiuta (l''app la legge come sessione persa)';
+end $$;
+reset role;
 set role anon;
 do $$ begin
   perform display_name from public.profiles limit 1;
@@ -2412,5 +2431,26 @@ alter table public.prove_consenso enable trigger prove_sigillo;
 alter table public.adesioni_giocatori disable trigger adesioni_sigillo;
 delete from public.adesioni_giocatori;
 alter table public.adesioni_giocatori enable trigger adesioni_sigillo;
+
+-- 045: i conteggi del banner dei calciatori, anonimi
+select set_config('request.jwt.claims', '', false);
+set role anon;
+select public.conta_banner('visto'); select public.conta_banner('visto'); select public.conta_banner('ci_gioco');
+select public.conta_banner('chissacosa');
+reset role;
+select pg_temp.esige('il banner si conta anche senza account, un giorno per riga',
+  (select n from public.banner_conteggi where evento = 'visto' and giorno = (now() at time zone 'Europe/Rome')::date) = 2
+  and (select n from public.banner_conteggi where evento = 'ci_gioco') = 1);
+select pg_temp.esige('un tipo sconosciuto non si conta e non fa errore', (select count(*) from public.banner_conteggi) = 2);
+set role anon;
+do $$ begin
+  perform * from public.banner_conteggi;
+  raise exception 'FALLITA: i conteggi non dovevano leggersi senza account';
+exception when others then
+  if sqlerrm like 'FALLITA%' then raise; end if;
+  raise notice 'ok  i conteggi li legge solo chi amministra (%)', sqlerrm;
+end $$;
+reset role;
+delete from public.banner_conteggi;
 
 select 'tutte le prove sulle funzioni sono passate' as esito;

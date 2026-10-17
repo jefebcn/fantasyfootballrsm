@@ -1024,6 +1024,23 @@ export async function ritiraAdesione(a) {
   notify();
 }
 export const caricaRegistro = () => remote.caricaRegistro();
+/*
+ * I conteggi del banner (045): ogni telefono conta una volta sola per tipo,
+ * e se lo ricorda qui. Cosi' «visto» vuol dire telefoni, non aperture.
+ * Se lo ricorda solo quando il server ha contato: su un database senza la
+ * 045, o con la rete giu', il telefono conta alla prossima apertura.
+ */
+const bannerInCorso = new Set();
+export function contaBannerUnaVolta(evento) {
+  const k = `ft.banner.${evento}`;
+  try { if (localStorage.getItem(k) || bannerInCorso.has(k)) return; } catch { return; }
+  bannerInCorso.add(k);
+  remote.contaBanner(evento).then((contato) => {
+    bannerInCorso.delete(k);
+    if (contato) try { localStorage.setItem(k, '1'); } catch { /* conta di nuovo, pazienza */ }
+  });
+}
+export const caricaConteggiBanner = () => remote.caricaConteggiBanner();
 export const verificaRegistro = () => remote.verificaRegistro();
 export const testoConsenso = (v) => remote.testoConsenso(v);
 export const caricaProva = (id) => remote.caricaProva(id);

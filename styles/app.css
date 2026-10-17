@@ -2501,6 +2501,9 @@ a.crow .cls-chev{flex:none;color:var(--text-muted);margin-left:-4px}
 .ades-conta div{background:var(--surface-2, var(--surface));border-radius:10px;padding:7px 4px}
 .ades-conta b{display:block;font:900 18px var(--font-display);font-variant-numeric:tabular-nums}
 .ades-conta span{font-size:11px;color:var(--text-muted)}
+.ades-conta4{grid-template-columns:repeat(4,1fr)}
+.ades-conta b small{font-size:11px;font-weight:700;color:var(--text-muted)}
+.ades-stat{display:flex;flex-direction:column;gap:4px;margin-bottom:10px;padding-bottom:10px;border-bottom:1px solid var(--border)}
 .ades-reg{display:flex;flex-direction:column;gap:6px;margin:4px 0 8px;padding:8px 10px;border-radius:10px;background:var(--surface-2, var(--surface))}
 .ades-reg .ok,.attestato .ok{color:var(--positive-ink)}
 .ades-reg .ko,.attestato .ko{color:var(--negative-ink)}

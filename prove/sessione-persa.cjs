@@ -41,11 +41,11 @@ const ok = [], ko = []; const et = (c, t) => (c ? ok : ko).push(t);
   await p.evaluate(() => sessionStorage.setItem('prova:persa', '1'));
   await p.reload({ waitUntil: 'load' }); await w(2000);
   const fuori = await p.evaluate(() => ({ hash: location.hash, testo: document.body.innerText, riprova: !!document.getElementById('retry') }));
-  et(!/row-level security|violates/i.test(fuori.testo), 'nessun messaggio del database sullo schermo');
+  et(!/row-level security|violates|permission denied/i.test(fuori.testo), 'nessun messaggio del database sullo schermo');
   et(fuori.riprova && /connessione/i.test(fuori.testo), `dice che manca la connessione, con «Riprova» (${fuori.hash})`);
   const dopo = await p.evaluate(() => { const s = JSON.parse(localStorage.getItem('fcs:mock'));
     return { nome: s.tables.profiles.find((x) => x.id === s.userId)?.display_name,
-      rls: (s.tables.errori_app || []).filter((e) => /row-level security/i.test(e.messaggio)).length }; });
+      rls: (s.tables.errori_app || []).filter((e) => /row-level security|permission denied/i.test(e.messaggio)).length }; });
   et(dopo.rls === 0, `in Console non arriva come errore dell'app (${dopo.rls})`);
   et(dopo.nome === nomePrima, `il profilo resta quello di prima («${dopo.nome}»)`);
 

@@ -172,11 +172,22 @@ export function onAuth(fn) { sb.auth.onAuthStateChange((_e, session) => fn(sessi
  * portati, e le colonne riservate (ruoli, sospensione, chi ti ha invitato)
  * arrivano solo da mio_profilo(), che restituisce la riga di chi chiama.
  * Su un database senza la 026 la funzione non c'e': si legge come prima.
+ *
+ * Solo in quel caso. Console, 17/10: «permission denied for table profiles».
+ * Al primo accesso il profilo non c'e' ancora e mio_profilo non trova
+ * niente; con la sessione persa la richiesta parte da anonimo e mio_profilo
+ * la rifiuta. In tutti e due i casi si ripiegava su select('*'), che dalla
+ * 026 il database nega: chi si iscriveva restava fuori. Ora «non trovato»
+ * vuol dire null (il profilo lo crea ensureProfile) e il rifiuto vuol dire
+ * sessione persa, cioe' rete.
  */
+const SESSIONE_PERSA = 'Nessuna connessione al server: la sessione non si è rinnovata. Riprova.';
 export async function profile(userId) {
   const { data, error } = await sb.rpc('mio_profilo');
-  if (!error && data && data.id === userId) return data;
-  return must(await sb.from('profiles').select('*').eq('id', userId).maybeSingle());
+  if (!error) return data && data.id === userId ? data : null;
+  if (error.code === 'PGRST202') return must(await sb.from('profiles').select('*').eq('id', userId).maybeSingle());
+  if (error.code === '42501' && !external) throw new Error(SESSIONE_PERSA);
+  throw new Error(translate(error));
 }
 // Senza .select() dopo la scrittura: restituirebbe tutte le colonne, che
 // dalla 026 non si leggono. Il profilo aggiornato si rilegge da profile().
@@ -210,7 +221,6 @@ export async function rinominaNelleLeghe(userId, nuovo) {
  * rifiuto della RLS qui vuol dire sessione persa, cioe' rete. Se il profilo
  * c'e' gia', non si tocca (ignoreDuplicates: niente nome sovrascritto).
  */
-const SESSIONE_PERSA = 'Nessuna connessione al server: la sessione non si è rinnovata. Riprova.';
 export async function ensureProfile(user) {
   const p = await profile(user.id);
   if (p) return p;
@@ -534,7 +544,7 @@ export async function caricaProva(id) {
  * giorno. Una richiesta persa non e' un errore da mostrare.
  */
 export function contaBanner(evento) {
-  return sb.rpc('conta_banner', { p_evento: evento }).then(() => true, () => false);
+  return sb.rpc('conta_banner', { p_evento: evento }).then(({ error }) => !error, () => false);
 }
 export async function caricaConteggiBanner() {
   const { data, error } = await sb.from('banner_conteggi').select('giorno, evento, n');

@@ -1612,6 +1612,25 @@ insert into public.profiles (id, display_name) values ('user_furbo', 'Furbo 3') 
 reset role;
 select pg_temp.esige('e il nome si cambia ancora',
   (select display_name = 'Furbo 3' from public.profiles where id = 'user_furbo'));
+-- Il primo accesso (Console, 17/10: «permission denied for table profiles»).
+-- Chi entra per la prima volta non ha ancora il profilo: mio_profilo() non
+-- trova niente, senza errore, e l'app lo crea con l'upsert che ignora i
+-- doppioni (ensureProfile) — senza leggere niente dalla tabella.
+select pg_temp.entra('user_nuovo');
+set role authenticated;
+select pg_temp.esige('a chi entra la prima volta mio_profilo() risponde null, senza errore',
+  (select public.mio_profilo() is null));
+insert into public.profiles (id, display_name) values ('user_nuovo', 'Nuovo') on conflict (id) do nothing;
+select pg_temp.esige('l''app crea il profilo e mio_profilo() lo restituisce intero',
+  (select (public.mio_profilo() ->> 'display_name') = 'Nuovo' and (public.mio_profilo() ? 'is_admin')));
+reset role;
+set role anon;
+do $$ begin
+  perform public.mio_profilo();
+  raise exception 'FALLITA: l''anonimo chiama mio_profilo()';
+exception when insufficient_privilege then raise notice 'ok  da anonimo mio_profilo() si rifiuta (l''app la legge come sessione persa)';
+end $$;
+reset role;
 set role anon;
 do $$ begin
   perform display_name from public.profiles limit 1;

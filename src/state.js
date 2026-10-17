@@ -1026,7 +1026,7 @@ export async function ritiraAdesione(a) {
 export const caricaRegistro = () => remote.caricaRegistro();
 export const verificaRegistro = () => remote.verificaRegistro();
 export const testoConsenso = (v) => remote.testoConsenso(v);
-export const urlProva = (path) => remote.urlProva(path);
+export const caricaProva = (id) => remote.caricaProva(id);
 export async function impostaPrudente(acceso) {
   await remote.impostaInterruttore('prudente', acceso, user.id);
   interruttori = { ...interruttori, prudente: acceso }; notify();

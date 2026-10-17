@@ -42,7 +42,7 @@ export const TESTO_CONSENSO = `
   <h3>Come verifichiamo che sei tu</h3>
   <p>Dopo l'invio ricevi un codice. Ce lo mandi in privato dal tuo profilo Instagram a <b>@${IG}</b>, oppure ce lo conferma il dirigente della tua squadra. Finché non è verificato il consenso non vale e nell'app non cambia niente.</p>
   <h3>Se cambi idea</h3>
-  <p>Puoi ritirare il consenso quando vuoi, da questa pagina o scrivendo a support@fantatitano.site. Entro 7 giorni nell'app compari come «Giocatore», con ruolo e squadra. Se ce lo chiedi togliamo il tuo nome anche dai post già pubblicati. Ritirarlo non costa niente e non ha conseguenze.</p>
+  <p>Puoi ritirare il consenso quando vuoi: da questa pagina, scegliendo «Non voglio comparire», oppure scrivendo a support@fantatitano.site. Entro 7 giorni nell'app compari come «Giocatore», con ruolo e squadra. Se ce lo chiedi togliamo il tuo nome anche dai post già pubblicati. Ritirarlo non costa niente e non ha conseguenze.</p>
   <h3>Cosa conserviamo</h3>
   <p>La tua scelta, il nome, la squadra, il profilo Instagram se lo hai dato, se sei maggiorenne (e il nome del genitore), data e ora, l'indirizzo IP e il tipo di dispositivo da cui hai inviato, la versione di questo testo e come abbiamo verificato che sei tu, compreso lo screenshot del messaggio di verifica. Lo legge solo chi gestisce l'app. Lo teniamo finché il consenso vale e per 2 anni dopo un ritiro, come prova di cosa avevi scelto.</p>`;
 

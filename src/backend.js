@@ -478,17 +478,28 @@ export async function segnaAdesioneLetta(id) {
   return must(await sb.from('adesioni_giocatori').update({ letta: true }).eq('id', id));
 }
 /**
- * Chi amministra: «e' lui». Prima lo screenshot del messaggio (DM o societa')
- * nel contenitore privato, poi la verifica che lo cita: il database rifiuta
- * una verifica senza prova. Data e autore li scrive il database.
+ * Chi amministra: «e' lui». Prima lo screenshot del messaggio (DM o societa'),
+ * compresso qui e salvato in prove_consenso con la sua impronta; poi la
+ * verifica che lo cita: il database rifiuta una verifica senza la prova di
+ * quella richiesta. Data e autore li scrive il database.
  */
+async function comprimi(file) {
+  const url = URL.createObjectURL(file);
+  try {
+    const img = await new Promise((ok, ko) => { const i = new Image(); i.onload = () => ok(i); i.onerror = () => ko(new Error('Lo screenshot non si apre: prova con un PNG o un JPEG')); i.src = url; });
+    const k = Math.min(1, 1600 / Math.max(img.naturalWidth, img.naturalHeight));
+    const c = document.createElement('canvas'); c.width = Math.round(img.naturalWidth * k); c.height = Math.round(img.naturalHeight * k);
+    c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+    for (const q of [0.85, 0.7, 0.55]) { const d = c.toDataURL('image/jpeg', q); if (d.length <= 2700000) return d; }
+    throw new Error('Lo screenshot è troppo grande anche compresso');
+  } finally { URL.revokeObjectURL(url); }
+}
 export async function verificaAdesione(a, come, playerId, file) {
-  const ext = (file.name.match(/\.([a-z0-9]{2,5})$/i)?.[1] || 'png').toLowerCase();
-  const path = `${a.codice || `richiesta-${a.id}`}/${Date.now()}.${ext}`;
-  const { error: eu } = await sb.storage.from('prove-consenso').upload(path, file, { contentType: file.type || 'image/png', upsert: false });
-  if (eu) throw new Error(/bucket|not found/i.test(eu.message) ? 'Prima va eseguita la 044 nell\'SQL Editor' : eu.message);
+  const dati = await comprimi(file);
+  const { data: pr, error: ep } = await sb.from('prove_consenso').insert({ adesione_id: a.id, tipo: 'image/jpeg', dati }).select('id').single();
+  if (ep) throw new Error(/prove_consenso|relation|schema cache/i.test(ep.message) ? 'Prima va eseguita la 044 nell\'SQL Editor' : ep.message);
   return must(await sb.from('adesioni_giocatori').update({ stato: 'verificato', verificato_come: come,
-    verificato_at: new Date().toISOString(), player_id: playerId, prova: path, letta: true }).eq('id', a.id));
+    verificato_at: new Date().toISOString(), player_id: playerId, prova: String(pr.id), letta: true }).eq('id', a.id));
 }
 export async function respingiAdesione(id) {
   return must(await sb.from('adesioni_giocatori').update({ stato: 'respinto', letta: true }).eq('id', id));
@@ -513,10 +524,10 @@ export async function testoConsenso(versione) {
   const { data, error } = await sb.from('consensi_testi').select('versione, testo, impronta, dal').eq('versione', versione).maybeSingle();
   return error ? null : data;
 }
-/** Un link di dieci minuti allo screenshot della verifica (contenitore privato). */
-export async function urlProva(path) {
-  const { data, error } = await sb.storage.from('prove-consenso').createSignedUrl(path, 600);
-  return error ? null : data?.signedUrl || null;
+/** Lo screenshot della verifica, con la sua impronta (solo chi amministra). */
+export async function caricaProva(id) {
+  const { data, error } = await sb.from('prove_consenso').select('id, tipo, dati, impronta, caricata_at').eq('id', Number(id)).maybeSingle();
+  return error ? null : data;
 }
 /** I giocatori col bollino «Ha aderito» (044). Senza la 044: nessuno. */
 export async function caricaAderenti() {

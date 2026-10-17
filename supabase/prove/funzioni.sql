@@ -2272,13 +2272,7 @@ select set_config('request.headers', '{"x-forwarded-for":"203.0.113.7, 10.0.0.1"
 set role anon;
 insert into public.adesioni_giocatori (nome, squadra, scelta, sponsor, maggiorenne, instagram, codice, versione, created_at, ip)
   values ('Mario Rossi', 'Virtus', 'aderisco', true, true, '@mariorossi', 'FT-AB12', 'v1 · 17/10/2026', '2020-01-01', '1.1.1.1');
-do $$ begin
-  insert into public.adesioni_giocatori (nome, scelta, stato, player_id) values ('Furbo', 'aderisco', 'verificato', 'virtus_14');
-  raise exception 'FALLITA: chi passa non doveva potersi dare da solo il verificato';
-exception when others then
-  if sqlerrm like 'FALLITA%' then raise; end if;
-  raise notice 'ok  chi passa non si verifica da solo (%)', sqlerrm;
-end $$;
+insert into public.adesioni_giocatori (nome, scelta, stato, player_id, codice) values ('Furbo', 'aderisco', 'verificato', 'virtus_14', 'FT-FU80');
 do $$ begin
   insert into public.adesioni_giocatori (nome, scelta, maggiorenne) values ('Ragazzo Senza', 'aderisco', false);
   raise exception 'FALLITA: un minorenne che aderisce senza genitore doveva essere rifiutato';
@@ -2302,6 +2296,8 @@ exception when others then
 end $$;
 select pg_temp.esige('nessun bollino prima della verifica', not exists (select 1 from public.giocatori_aderenti()));
 reset role;
+select pg_temp.esige('chi passa non si verifica da solo: la richiesta resta in attesa, senza giocatore',
+  (select stato = 'attesa' and player_id is null from public.adesioni_giocatori where codice = 'FT-FU80'));
 select pg_temp.esige('data, IP e dispositivo li scrive il database, non il telefono',
   (select ip = '203.0.113.7' and dispositivo = 'Prova/1.0' and created_at > now() - interval '1 hour'
      from public.adesioni_giocatori where codice = 'FT-AB12'));
@@ -2332,9 +2328,34 @@ exception when others then
   if sqlerrm like 'FALLITA%' then raise; end if;
   raise notice 'ok  una richiesta non si cancella (%)', sqlerrm;
 end $$;
+do $$ begin
+  update public.adesioni_giocatori set stato = 'verificato', verificato_come = 'instagram', player_id = 'virtus_14',
+    prova = '999999', verificato_at = now() where codice = 'FT-AB12';
+  raise exception 'FALLITA: una prova che non esiste doveva essere rifiutata';
+exception when others then
+  if sqlerrm like 'FALLITA%' then raise; end if;
+  raise notice 'ok  la prova deve essere uno screenshot caricato per questa richiesta (%)', sqlerrm;
+end $$;
+insert into public.prove_consenso (adesione_id, tipo, dati)
+  select id, 'image/png', 'data:image/png;base64,iVBORw0KGgo=' from public.adesioni_giocatori where codice = 'FT-AB12'
+  returning id as prova_id \gset
 update public.adesioni_giocatori set stato = 'verificato', verificato_come = 'instagram', player_id = 'virtus_14',
-  prova = 'FT-AB12/dm.png', verificato_at = now() where codice = 'FT-AB12';
+  prova = :'prova_id', verificato_at = now() where codice = 'FT-AB12';
+do $$ begin
+  update public.prove_consenso set dati = 'data:image/png;base64,ALTRO';
+  raise exception 'FALLITA: uno screenshot caricato non doveva potersi sostituire';
+exception when others then
+  if sqlerrm like 'FALLITA%' then raise; end if;
+  raise notice 'ok  uno screenshot caricato non si sostituisce (%)', sqlerrm;
+end $$;
+insert into public.adesioni_giocatori (nome, scelta, stato, player_id, codice) values ('Inventato', 'aderisco', 'verificato', 'virtus_14', 'FT-ZZ99');
 reset role;
+select pg_temp.esige('una richiesta scritta da chi amministra nasce comunque in attesa',
+  (select stato = 'attesa' and player_id is null from public.adesioni_giocatori where codice = 'FT-ZZ99'));
+select pg_temp.esige('lo screenshot ha la sua impronta, e finisce nel registro della verifica',
+  (select r.dati ->> 'impronta_prova' = pc.impronta and length(pc.impronta) = 64
+     from public.consensi_registro r join public.prove_consenso pc on pc.id::text = r.dati ->> 'prova'
+    where r.evento = 'verificata'));
 select pg_temp.esige('chi ha verificato lo scrive il database',
   (select verificato_da = 'user_pub1' from public.adesioni_giocatori where codice = 'FT-AB12'));
 select set_config('request.jwt.claims', '', false);
@@ -2384,6 +2405,9 @@ select set_config('request.headers', '', false);
 alter table public.consensi_registro disable trigger registro_intoccabile;
 delete from public.consensi_registro;
 alter table public.consensi_registro enable trigger registro_intoccabile;
+alter table public.prove_consenso disable trigger prove_sigillo;
+delete from public.prove_consenso;
+alter table public.prove_consenso enable trigger prove_sigillo;
 alter table public.adesioni_giocatori disable trigger adesioni_sigillo;
 delete from public.adesioni_giocatori;
 alter table public.adesioni_giocatori enable trigger adesioni_sigillo;

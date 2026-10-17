@@ -932,11 +932,20 @@ export const adminConsole = {
         const p = pid && S.playersById.get(pid); if (!p) { ctx.toast('Scegli prima quale giocatore è'); return; }
         const file = root.querySelector(`[data-ades-file="${id}"]`)?.files?.[0];
         if (!file) { ctx.toast('Allega lo screenshot del messaggio: è la prova della verifica'); return; }
-        if (file.size > 5 * 1024 * 1024) { ctx.toast('Lo screenshot supera 5 MB'); return; }
+        if (file.size > 20 * 1024 * 1024) { ctx.toast('Lo screenshot supera 20 MB'); return; }
         const chi = `${S.nomeVero(p).firstName} ${S.nomeVero(p).lastName}`;
         if (!confirm(`Confermi che ${a.nome} è ${chi}, verificato ${come === 'societa' ? 'dalla società' : 'via Instagram'}? ${a.scelta === 'aderisco' ? 'Avrà il bollino «Ha aderito».' : 'Nell\'app comparirà come «Giocatore».'}`)) return;
         av.disabled = true;
-        try { await S.verificaAdesione(a, come, p.id, file); await ricaricaConsensi(); ctx.toast('Verificato'); ctx.render(); }
+        try {
+          await S.verificaAdesione(a, come, p.id, file);
+          // un «non voglio comparire» verificato chiude i «ci sto» di prima dello stesso giocatore
+          if (a.scelta === 'escludimi') {
+            for (const x of cache.adesioni || []) {
+              if (x.id !== a.id && x.player_id === p.id && x.scelta === 'aderisco' && x.stato === 'verificato' && !x.ritirato_at) await S.ritiraAdesione(x);
+            }
+          }
+          await ricaricaConsensi(); ctx.toast('Verificato'); ctx.render();
+        }
         catch (err) { ctx.toast(/stato|verificato|column/i.test(err.message || '') ? 'Prima va eseguita la 044 nell\'SQL Editor' : (err.message || 'Non è stato possibile')); av.disabled = false; }
         return;
       }

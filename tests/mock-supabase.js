@@ -74,7 +74,7 @@ function builder(table) {
           // come Supabase: al massimo max_rows righe per richiesta (1000), il
           // resto non arriva e nessuno lo dice. Le prove possono abbassarlo.
           data = data.slice(0, globalThis.__MAX_RIGHE__ ?? 1000); }
-        if (op === 'insert') { const list = (Array.isArray(payload) ? payload : [payload]).map(withDefaults); guardFrozen(table, list); if (table === 'adesioni_giocatori') list.forEach((r) => sigillo(r, null)); rows.push(...list); data = list.map(expand); }
+        if (op === 'insert') { const list = (Array.isArray(payload) ? payload : [payload]).map(withDefaults); guardFrozen(table, list); if (table === 'adesioni_giocatori') list.forEach((r) => sigillo(r, null)); if (table === 'prove_consenso') list.forEach((r) => { r.id = T('prove_consenso').length + 1; r.impronta = Math.random().toString(16).slice(2).padEnd(64, '0'); r.caricata_at = now(); r.caricata_da = userId; }); rows.push(...list); data = list.map(expand); }
         if (op === 'upsert') { const list = (Array.isArray(payload) ? payload : [payload]); guardFrozen(table, list); for (const r of list) { const i = rows.findIndex((x) => pk.every((k) => x[k] === r[k])); if (i >= 0) rows[i] = { ...rows[i], ...r }; else rows.push(withDefaults(r)); } data = list; }
         if (op === 'update') { data = []; for (const r of rows) if (filters.every((f) => f(r))) { const prima = { ...r }; Object.assign(r, payload); if (table === 'adesioni_giocatori') sigillo(r, prima); data.push(expand(r)); } }
         if (op === 'delete') { const del = apply(rows); guardFrozen(table, del); tables[table] = rows.filter((r) => !del.includes(r)); data = del; }
@@ -169,22 +169,7 @@ export function createClient(_url, _key, opts) {
       onAuthStateChange(fn) { authListeners.push(fn); },
     },
     from: builder,
-    // Lo storage (044: gli screenshot delle verifiche), in memoria come data URL.
-    storage: {
-      from(bucket) {
-        return {
-          async upload(path, file) {
-            const buf = new Uint8Array(await file.arrayBuffer()); let bin = ''; buf.forEach((x) => { bin += String.fromCharCode(x); });
-            T('storage_objects').push({ bucket, path, url: `data:${file.type || 'image/png'};base64,${btoa(bin)}` }); persisti();
-            return { data: { path }, error: null };
-          },
-          async createSignedUrl(path) {
-            const o = T('storage_objects').find((x) => x.bucket === bucket && x.path === path);
-            return o ? { data: { signedUrl: o.url }, error: null } : { data: null, error: { message: 'Object not found' } };
-          },
-        };
-      },
-    },
+
     async rpc(name, args) {
       try {
         // I calciatori col bollino (044): aperta anche a chi non ha un account.

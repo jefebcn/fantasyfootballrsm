@@ -19,7 +19,7 @@ async function carica(id) {
   const [adesioni, registro, integro] = await Promise.all([S.caricaAdesioni(), S.caricaRegistro(), S.verificaRegistro()]);
   const a = (adesioni || []).find((x) => String(x.id) === String(id));
   if (!a) return { a: null };
-  const [testo, prova] = await Promise.all([a.versione ? S.testoConsenso(a.versione) : null, a.prova ? S.urlProva(a.prova) : null]);
+  const [testo, prova] = await Promise.all([a.versione ? S.testoConsenso(a.versione) : null, a.prova ? S.caricaProva(a.prova) : null]);
   return { a, testo, prova, integro, passi: (registro || []).filter((r) => String(r.adesione_id) === String(id)) };
 }
 
@@ -72,7 +72,8 @@ export const attestato = {
       <div class="a-card"><b>La verifica</b>
         <table class="att-tab">${riga('Giocatore', gioc)}${riga('Come', a.verificato_come === 'societa' ? 'conferma della società' : a.verificato_come === 'instagram' ? 'messaggio privato dal suo profilo Instagram' : '—')}
         ${riga('Verificata il', quando(a.verificato_at))}${riga('Da', chiHa(a.verificato_da))}</table>
-        ${prova ? `<img class="att-prova" src="${esc(prova)}" alt="Screenshot del messaggio di verifica">` : a.prova ? '<p class="small muted">Screenshot salvato, ma non è stato possibile aprirlo ora.</p>' : ''}</div>
+        ${prova ? `<table class="att-tab">${riga('Screenshot caricato il', quando(prova.caricata_at))}${riga('Impronta dello screenshot', `<span class="mono att-hash">${esc(prova.impronta || '—')}</span>`)}</table>
+        <img class="att-prova" src="${esc(/^data:image\/(jpeg|png|webp);base64,/.test(prova.dati) ? prova.dati : '')}" alt="Screenshot del messaggio di verifica">` : a.prova ? '<p class="small muted">Screenshot salvato, ma non è stato possibile aprirlo ora.</p>' : ''}</div>
 
       <div class="a-card"><b>Il registro</b>
         <p class="small muted">Ogni passaggio è scritto una volta e non si modifica. Ognuno porta l'impronta di quello prima: se una riga venisse toccata, la catena non tornerebbe più.</p>

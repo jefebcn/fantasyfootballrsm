@@ -19,8 +19,8 @@
 --     (non il telefono, che potrebbe mentire).
 --  4. La verifica: chi amministra sceglie il giocatore, dice come l'ha
 --     verificato (DM Instagram o societa') e allega lo screenshot del
---     messaggio, in un contenitore privato. Chi ha verificato lo scrive il
---     database.
+--     messaggio (prove_consenso: privata, con la sua impronta, e non si
+--     sostituisce). Chi ha verificato e quando lo scrive il database.
 --  5. Il consenso non si modifica: nome, scelte, codice, testo, data, IP non
 --     cambiano piu' dopo l'invio, e nessuno cancella una richiesta. Un
 --     cambio d'idea e' una richiesta nuova, o un ritiro (con la sua data).
@@ -65,7 +65,7 @@ Sotto i 18 anni il consenso lo dà anche un genitore o chi ne fa le veci, indica
 Come verifichiamo che sei tu
 Dopo l'invio ricevi un codice. Ce lo mandi in privato dal tuo profilo Instagram a @fantatitano, oppure ce lo conferma il dirigente della tua squadra. Finché non è verificato il consenso non vale e nell'app non cambia niente.
 Se cambi idea
-Puoi ritirare il consenso quando vuoi, da questa pagina o scrivendo a support@fantatitano.site. Entro 7 giorni nell'app compari come «Giocatore», con ruolo e squadra. Se ce lo chiedi togliamo il tuo nome anche dai post già pubblicati. Ritirarlo non costa niente e non ha conseguenze.
+Puoi ritirare il consenso quando vuoi: da questa pagina, scegliendo «Non voglio comparire», oppure scrivendo a support@fantatitano.site. Entro 7 giorni nell'app compari come «Giocatore», con ruolo e squadra. Se ce lo chiedi togliamo il tuo nome anche dai post già pubblicati. Ritirarlo non costa niente e non ha conseguenze.
 Cosa conserviamo
 La tua scelta, il nome, la squadra, il profilo Instagram se lo hai dato, se sei maggiorenne (e il nome del genitore), data e ora, l'indirizzo IP e il tipo di dispositivo da cui hai inviato, la versione di questo testo e come abbiamo verificato che sei tu, compreso lo screenshot del messaggio di verifica. Lo legge solo chi gestisce l'app. Lo teniamo finché il consenso vale e per 2 anni dopo un ritiro, come prova di cosa avevi scelto.$testo$::text as t) x
 on conflict (versione) do nothing;
@@ -117,7 +117,9 @@ begin
     new.created_at := now();
     new.ip := coalesce(split_part(h ->> 'x-forwarded-for', ',', 1), h ->> 'cf-connecting-ip', h ->> 'x-real-ip');
     new.dispositivo := left(h ->> 'user-agent', 300);
-    new.verificato_da := null;
+    -- una richiesta nasce in attesa, anche se la scrive chi amministra
+    new.stato := 'attesa'; new.verificato_come := null; new.verificato_at := null; new.verificato_da := null;
+    new.prova := null; new.player_id := null; new.ritirato_at := null;
     return new;
   end if;
   if (new.nome, new.squadra, new.scelta, new.sponsor, new.maggiorenne, new.genitore, new.instagram,
@@ -135,6 +137,9 @@ begin
     raise exception 'Il ritiro ha già la sua data';
   end if;
   if new.stato = 'verificato' and old.stato <> 'verificato' then
+    if not exists (select 1 from public.prove_consenso pc where pc.id::text = new.prova and pc.adesione_id = new.id) then
+      raise exception 'La verifica vuole lo screenshot del messaggio, caricato per questa richiesta';
+    end if;
     new.verificato_at := now();
     new.verificato_da := public.current_user_id();
   end if;
@@ -194,6 +199,9 @@ begin
     else null end;
   if ev is null then return new; end if;   -- «letta» e simili non sono passaggi del consenso
   d := to_jsonb(new) - 'letta';
+  if ev = 'verificata' then
+    d := d || jsonb_build_object('impronta_prova', (select pc.impronta from public.prove_consenso pc where pc.id::text = new.prova));
+  end if;
   perform pg_advisory_xact_lock(4404404);  -- uno alla volta: la catena non si biforca
   select r.impronta into prec from public.consensi_registro r order by r.id desc limit 1;
   insert into public.consensi_registro (adesione_id, evento, chi, quando, dati, impronta_prec, impronta)
@@ -238,17 +246,40 @@ revoke all on function public.verifica_registro() from public, anon;
 grant execute on function public.verifica_registro() to authenticated;
 
 -- --------------------------------------------- 4. lo screenshot, privato
-insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
-values ('prove-consenso', 'prove-consenso', false, 5242880, array['image/png', 'image/jpeg', 'image/webp', 'image/heic'])
-on conflict (id) do update set public = false, file_size_limit = excluded.file_size_limit,
-  allowed_mime_types = excluded.allowed_mime_types;
-drop policy if exists prove_consenso_leggi on storage.objects;
-create policy prove_consenso_leggi on storage.objects for select to authenticated
-  using (bucket_id = 'prove-consenso' and public.is_admin());
-drop policy if exists prove_consenso_carica on storage.objects;
-create policy prove_consenso_carica on storage.objects for insert to authenticated
-  with check (bucket_id = 'prove-consenso' and public.is_admin());
--- niente update ne' delete: una prova caricata resta
+-- Dentro il database e non nello storage: cosi' la prova sta insieme al
+-- consenso, ha la sua impronta e segue le stesse regole (non si tocca). Il
+-- telefono la comprime prima (JPEG, lato lungo 1600 px).
+create table if not exists public.prove_consenso (
+  id           bigserial primary key,
+  adesione_id  bigint not null references public.adesioni_giocatori(id),
+  tipo         text not null check (tipo in ('image/jpeg', 'image/png', 'image/webp')),
+  dati         text not null check (char_length(dati) <= 2800000),
+  impronta     text,
+  caricata_at  timestamptz not null default now(),
+  caricata_da  text
+);
+alter table public.prove_consenso enable row level security;
+revoke all on table public.prove_consenso from public, anon, authenticated;
+grant select, insert on table public.prove_consenso to authenticated;
+grant usage on sequence public.prove_consenso_id_seq to authenticated;
+drop policy if exists prove_leggi on public.prove_consenso;
+create policy prove_leggi on public.prove_consenso for select to authenticated using (public.is_admin());
+drop policy if exists prove_carica on public.prove_consenso;
+create policy prove_carica on public.prove_consenso for insert to authenticated with check (public.is_admin());
+
+create or replace function public.prove_sigillo() returns trigger
+language plpgsql security definer set search_path = public as $$
+begin
+  if tg_op <> 'INSERT' then raise exception 'Una prova caricata non si modifica e non si cancella'; end if;
+  new.impronta := encode(sha256(convert_to(new.dati, 'UTF8')), 'hex');
+  new.caricata_at := now();
+  new.caricata_da := public.current_user_id();
+  return new;
+end $$;
+revoke execute on function public.prove_sigillo() from public, anon, authenticated;
+drop trigger if exists prove_sigillo on public.prove_consenso;
+create trigger prove_sigillo before insert or update or delete on public.prove_consenso
+  for each row execute function public.prove_sigillo();
 
 -- ------------------------------------------------- 7. il bollino per tutti
 create or replace function public.giocatori_aderenti() returns setof text
@@ -267,4 +298,4 @@ grant execute on function public.giocatori_aderenti() to anon, authenticated;
 select (select count(*) from public.adesioni_giocatori) as richieste,
        (select left(impronta, 16) from public.consensi_testi where versione = 'v1 · 17/10/2026') as impronta_testo_v1,
        (select count(*) from public.consensi_registro) as righe_registro,
-       (select public from storage.buckets where id = 'prove-consenso') as prove_pubbliche;
+       (select count(*) from public.prove_consenso) as prove;

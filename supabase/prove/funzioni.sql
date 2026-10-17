@@ -2303,6 +2303,7 @@ select pg_temp.esige('data, IP e dispositivo li scrive il database, non il telef
      from public.adesioni_giocatori where codice = 'FT-AB12'));
 select pg_temp.esige('il testo v1 e'' conservato con la sua impronta',
   (select impronta = encode(sha256(convert_to(testo, 'UTF8')), 'hex') and testo like '%Ci sto.%' and testo like '%@fantatitano%'
+          and position(E'\r' in testo) = 0
      from public.consensi_testi where versione = 'v1 · 17/10/2026'));
 select pg_temp.entra('user_pub1');
 set role authenticated;

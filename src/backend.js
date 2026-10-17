@@ -467,7 +467,7 @@ export async function inviaAdesione({ nome, squadra, scelta, contatto, nota, spo
 export async function caricaAdesioni() {
   const base = 'id, nome, squadra, scelta, contatto, nota, letta, created_at';
   let { data, error } = await sb.from('adesioni_giocatori')
-    .select(`${base}, sponsor, maggiorenne, genitore, instagram, codice, versione, stato, verificato_come, verificato_at, player_id`)
+    .select(`${base}, sponsor, maggiorenne, genitore, instagram, codice, versione, ip, dispositivo, stato, verificato_come, verificato_at, verificato_da, prova, player_id, ritirato_at`)
     .order('created_at', { ascending: false }).limit(200);
   // senza la 044 le colonne nuove non ci sono: si leggono quelle della 041
   if (error && /column/i.test(error.message)) ({ data, error } = await sb.from('adesioni_giocatori').select(base).order('created_at', { ascending: false }).limit(200));
@@ -477,13 +477,46 @@ export async function caricaAdesioni() {
 export async function segnaAdesioneLetta(id) {
   return must(await sb.from('adesioni_giocatori').update({ letta: true }).eq('id', id));
 }
-/** Chi amministra: «e' lui», con come l'ha verificato e quale giocatore e'. */
-export async function verificaAdesione(id, come, playerId) {
+/**
+ * Chi amministra: «e' lui». Prima lo screenshot del messaggio (DM o societa')
+ * nel contenitore privato, poi la verifica che lo cita: il database rifiuta
+ * una verifica senza prova. Data e autore li scrive il database.
+ */
+export async function verificaAdesione(a, come, playerId, file) {
+  const ext = (file.name.match(/\.([a-z0-9]{2,5})$/i)?.[1] || 'png').toLowerCase();
+  const path = `${a.codice || `richiesta-${a.id}`}/${Date.now()}.${ext}`;
+  const { error: eu } = await sb.storage.from('prove-consenso').upload(path, file, { contentType: file.type || 'image/png', upsert: false });
+  if (eu) throw new Error(/bucket|not found/i.test(eu.message) ? 'Prima va eseguita la 044 nell\'SQL Editor' : eu.message);
   return must(await sb.from('adesioni_giocatori').update({ stato: 'verificato', verificato_come: come,
-    verificato_at: new Date().toISOString(), player_id: playerId, letta: true }).eq('id', id));
+    verificato_at: new Date().toISOString(), player_id: playerId, prova: path, letta: true }).eq('id', a.id));
 }
 export async function respingiAdesione(id) {
   return must(await sb.from('adesioni_giocatori').update({ stato: 'respinto', letta: true }).eq('id', id));
+}
+/** Il calciatore ritira il consenso (te lo scrive in DM o per e-mail). */
+export async function ritiraAdesione(id) {
+  return must(await sb.from('adesioni_giocatori').update({ ritirato_at: new Date().toISOString() }).eq('id', id));
+}
+/** Il registro dei passaggi, con le impronte (044). Solo chi amministra. */
+export async function caricaRegistro() {
+  const { data, error } = await sb.from('consensi_registro').select('id, adesione_id, evento, chi, quando, impronta_prec, impronta, dati').order('id', { ascending: true }).limit(5000);
+  if (error) return null;
+  return data || [];
+}
+/** { righe, integro, prima_rotta }: la catena ricalcolata dal database. */
+export async function verificaRegistro() {
+  const { data, error } = await sb.rpc('verifica_registro');
+  if (error) return null;
+  return Array.isArray(data) ? data[0] : data;
+}
+export async function testoConsenso(versione) {
+  const { data, error } = await sb.from('consensi_testi').select('versione, testo, impronta, dal').eq('versione', versione).maybeSingle();
+  return error ? null : data;
+}
+/** Un link di dieci minuti allo screenshot della verifica (contenitore privato). */
+export async function urlProva(path) {
+  const { data, error } = await sb.storage.from('prove-consenso').createSignedUrl(path, 600);
+  return error ? null : data?.signedUrl || null;
 }
 /** I giocatori col bollino «Ha aderito» (044). Senza la 044: nessuno. */
 export async function caricaAderenti() {

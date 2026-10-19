@@ -221,6 +221,19 @@ export async function rinominaNelleLeghe(userId, nuovo) {
  * rifiuto della RLS qui vuol dire sessione persa, cioe' rete. Se il profilo
  * c'e' gia', non si tocca (ignoreDuplicates: niente nome sovrascritto).
  */
+/**
+ * Lo stesso, a meta' avvio. Console, 18/10 (4.2.204, schermata offline):
+ * «permission denied for table profiles». Il profilo era arrivato, poi la
+ * sessione e' caduta e i nomi della lega (league_members con i profili)
+ * sono partiti da anonimo, che i profili non li legge. Un rifiuto cosi',
+ * senza piu' una sessione valida, e' la rete: si dice quello.
+ */
+export async function seSessionePersa(e) {
+  if (external || !/permission denied|row-level security/i.test(e?.message || '')) return e;
+  const { data } = await sb.auth.getSession().catch(() => ({ data: null }));
+  const s = data?.session;
+  return s && !(s.expires_at && s.expires_at * 1000 < Date.now()) ? e : new Error(SESSIONE_PERSA);
+}
 export async function ensureProfile(user) {
   const p = await profile(user.id);
   if (p) return p;

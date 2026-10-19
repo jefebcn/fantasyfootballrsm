@@ -69,6 +69,10 @@ function builder(table) {
         if (table === 'profiles' && op === 'select' && String(cols).split(',').some((c) => !['id', 'display_name', 'reclutati'].includes(c.trim()))) {
           res({ data: null, error: { code: '42501', message: 'permission denied for table profiles' } }); return;
         }
+        // i nomi della lega leggono i profili: da anonimo, rifiutati (026)
+        if (globalThis.__MOCK_SESSIONE_PERSA__ && table === 'league_members' && op === 'select' && /profiles/.test(cols)) {
+          res({ data: null, error: { code: '42501', message: 'permission denied for table profiles' } }); return;
+        }
         if (globalThis.__MOCK_SESSIONE_PERSA__ && table === 'profiles') {
           if (op === 'select') { res({ data: (single || maybe) ? null : [], error: null }); return; }
           if (op === 'upsert' || op === 'insert') { res({ data: null, error: { code: '42501', message: 'new row violates row-level security policy for table "profiles"' } }); return; }
@@ -527,6 +531,8 @@ export function createClient(_url, _key, opts) {
         // il profilo no — lo crea il client (001). Finche' non lo scrive,
         // mio_profilo non trova niente, senza errore.
         if (name === 'mio_profilo' && globalThis.__MOCK_PROFILO_ASSENTE__ && !globalThis.__mockProfiloScritto) return { data: null, error: null };
+        // __MOCK_SCADE_DOPO_PROFILO__: il profilo arriva, poi la sessione cade
+        if (name === 'mio_profilo' && globalThis.__MOCK_SCADE_DOPO_PROFILO__) { globalThis.__MOCK_SCADE_DOPO_PROFILO__ = false; globalThis.__MOCK_SESSIONE_PERSA__ = true; globalThis.__mockLettureSessione = 1; return { data: T('profiles').find((x) => x.id === userId) || null, error: null }; }
         if (name === 'mio_profilo') { return { data: T('profiles').find((x) => x.id === userId) || null, error: null }; }
         if (name === 'join_league') { const l = T('leagues').find((x) => x.invite_code === args.p_code.toUpperCase()); if (!l) throw new Error('Codice invito non valido'); if (!T('league_members').some((m) => m.league_id === l.id && m.user_id === userId)) T('league_members').push({ id: uid(), league_id: l.id, user_id: userId, role: 'fantallenatore', team_name: args.p_team, owner_name: prof.display_name, color: args.p_color, initials: args.p_initials, credits: 500, created_at: now() }); contaReclutato(userId); persisti(); return { data: l.id, error: null }; }
         if (name === 'sync_matchday_locks') {

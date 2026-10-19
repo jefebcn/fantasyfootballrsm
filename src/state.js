@@ -96,7 +96,8 @@ export async function init() {
     // e' pronta: prima restava «pronta» senza leghe e a un iscritto mostrava
     // «Benvenuto, per giocare serve una lega» come se avesse perso la
     // squadra (prove/sessione-persa.cjs). Meglio la schermata con «Riprova».
-    connError = e; ready = false; onError(e);
+    const err = await remote.seSessionePersa(e).catch(() => e);
+    connError = err; ready = false; onError(err);
   }
 }
 export async function retry() { await init(); notify(); return ready; }

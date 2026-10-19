@@ -26,6 +26,7 @@ const ok = [], ko = []; const et = (c, t) => (c ? ok : ko).push(t);
     localStorage.setItem('fcs:prefs', JSON.stringify({ onboarded: true, guidaVista: true, theme: 'light' }));
     localStorage.setItem('fcs:supabase', JSON.stringify({ url: 'https://mock.supabase.co', key: 'mock-key-mock-key-mock' }));
     if (sessionStorage.getItem('prova:persa')) globalThis.__MOCK_SESSIONE_PERSA__ = true;
+    if (sessionStorage.getItem('prova:dopo')) globalThis.__MOCK_SCADE_DOPO_PROFILO__ = true;
   });
   const p = await ctx.newPage(); p.on('dialog', (d) => d.accept());
   const errori = []; p.on('pageerror', (e) => errori.push(e.message));
@@ -54,6 +55,19 @@ const ok = [], ko = []; const et = (c, t) => (c ? ok : ko).push(t);
   if (fuori.riprova) { await p.click('#retry'); await w(1800); }
   const dentro = await p.evaluate(() => ({ hash: location.hash, testo: document.body.innerText }));
   et(/Prova FC|Torneo/.test(dentro.testo), `tornata la sessione, «Riprova» fa entrare (${dentro.hash})`);
+
+  // Console, 18/10: la sessione cade DOPO il profilo, mentre arrivano i nomi
+  // della lega (che leggono i profili): stessa schermata, niente database
+  await p.evaluate(() => { localStorage.setItem('fcs:mock', JSON.stringify({ ...JSON.parse(localStorage.getItem('fcs:mock')), tables: { ...JSON.parse(localStorage.getItem('fcs:mock')).tables, errori_app: [] } })); sessionStorage.setItem('prova:dopo', '1'); });
+  await p.reload({ waitUntil: 'load' }); await w(2000);
+  const meta = await p.evaluate(() => ({ hash: location.hash, testo: document.body.innerText, riprova: !!document.getElementById('retry'),
+    negati: (JSON.parse(localStorage.getItem('fcs:mock')).tables.errori_app || []).filter((e) => /permission denied/i.test(e.messaggio)).length }));
+  et(meta.riprova && /connessione/i.test(meta.testo), `sessione caduta a meta' avvio: dice che manca la connessione (${meta.hash})`);
+  et(!/permission denied/i.test(meta.testo), 'e non mostra «permission denied»');
+  et(meta.negati === 0, `e in Console non arriva (${meta.negati})`);
+  await p.evaluate(() => { sessionStorage.removeItem('prova:dopo'); globalThis.__MOCK_SESSIONE_PERSA__ = false; });
+  if (meta.riprova) { await p.click('#retry'); await w(1800); }
+  et(/Prova FC|Torneo/.test(await p.evaluate(() => document.body.innerText)), 'e «Riprova» fa rientrare');
   et(errori.length === 0, `nessun errore JS${errori.length ? ' — ' + errori[0] : ''}`);
   await b.close();
   for (const t of ok) console.log('  ok  ' + t);

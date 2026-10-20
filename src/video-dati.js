@@ -37,6 +37,7 @@ export const PARTITE = [
   [5, "virtus", "academy", "Mm97eyX3kzA", "2026-10-12"],
 ];
 export const VIDEO_CANALE = [
+  ["k5vOVjOxYN0", "Special Cup 2026", "2026-10-20"],
   ["Hfp8sM-wZFQ", "Campionato Sammarinese 2026-27, 5. giornata - VOTA LA PARATA PIÙ BELLA!", "2026-10-12"],
   ["LMZO2mADpqg", "Campionato Sammarinese 2026-27, 5. giornata - VOTA IL GOL PIÙ BELLO!", "2026-10-12"],
   ["zsomoTLWsfU", "Campionato Sammarinese 2026-27, 4. giornata - VOTA LA PARATA PIÙ BELLA!", "2026-09-21"],

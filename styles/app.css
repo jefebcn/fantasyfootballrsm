@@ -2503,6 +2503,14 @@ a.crow .cls-chev{flex:none;color:var(--text-muted);margin-left:-4px}
 .ades-conta span{font-size:11px;color:var(--text-muted)}
 .ades-conta4{grid-template-columns:repeat(4,1fr)}
 .ades-conta b small{font-size:11px;font-weight:700;color:var(--text-muted)}
+.ades-tot{display:flex;flex-direction:column;gap:6px;margin:6px 0 8px}
+.ades-barra{display:flex;height:10px;border-radius:99px;overflow:hidden;background:var(--surface-2, var(--surface))}
+.ades-barra i{display:block;height:100%;background:var(--accent)}
+.ades-barra i.att{background:repeating-linear-gradient(45deg,var(--accent) 0 4px,transparent 4px 8px);opacity:.6}
+.ades-club{display:flex;flex-wrap:wrap;gap:4px}
+.ades-club span{font-size:11px;padding:3px 8px;border-radius:99px;border:1px solid var(--border);color:var(--text-muted)}
+.ades-club span.si{color:var(--text);border-color:var(--accent)}
+.ades-club small{color:var(--text-muted)}
 .ades-stat{display:flex;flex-direction:column;gap:4px;margin-bottom:10px;padding-bottom:10px;border-bottom:1px solid var(--border)}
 .ades-reg{display:flex;flex-direction:column;gap:6px;margin:4px 0 8px;padding:8px 10px;border-radius:10px;background:var(--surface-2, var(--surface))}
 .ades-reg .ok,.attestato .ok{color:var(--positive-ink)}

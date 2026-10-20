@@ -508,6 +508,34 @@ function calciatori(adesioni) {
     <div><b>${adesioni.filter((a) => stato(a) === 'attesa').length}</b><span>da verificare</span></div>
     <div><b>${ver.filter((a) => a.scelta === 'escludimi').length}</b><span>non vogliono</span></div></div>`;
   const ordine = { attesa: 0, verificato: 1, ritirato: 2, respinto: 3 };
+  return `<div class="a-card">${intest}${statBanner(adesioni)}${conta}${copertura(adesioni, stato)}${resto(adesioni, stato, ordine)}`;
+}
+
+/**
+ * Quanti del listone hanno detto si', e quanti ne mancano (Alex, 20/10:
+ * «inserisci magari una % sul totale, cosi' da sapere quanti ne mancano»).
+ * Conta i giocatori, non le richieste: due richieste per lo stesso
+ * giocatore valgono uno. Le richieste in attesa non hanno ancora un
+ * giocatore e si contano a parte, per squadra.
+ */
+function copertura(adesioni, stato) {
+  const listone = S.base.players.filter((p) => !p.doppioneDi);
+  const si = new Set(adesioni.filter((a) => stato(a) === 'verificato' && a.scelta === 'aderisco' && a.player_id).map((a) => a.player_id));
+  const attesa = adesioni.filter((a) => stato(a) === 'attesa' && a.scelta === 'aderisco');
+  const tot = listone.length; const n = listone.filter((p) => si.has(p.id)).length;
+  const pct = (x) => (tot ? Math.round((x / tot) * 1000) / 10 : 0);
+  const club = S.base.clubs.map((c) => {
+    const suoi = listone.filter((p) => p.clubId === c.id);
+    return { nome: c.name, n: suoi.filter((p) => si.has(p.id)).length, tot: suoi.length, att: attesa.filter((a) => a.squadra === c.name).length };
+  }).filter((c) => c.tot).sort((a, b) => b.n - a.n || b.att - a.att || a.nome.localeCompare(b.nome));
+  return `<div class="ades-tot">
+    <span class="small">Sul listone: <b>${n}</b> su <b>${tot}</b> calciatori (<b>${String(pct(n)).replace('.', ',')}%</b>) · ne mancano <b>${tot - n}</b>${attesa.length ? ` · altri <b>${attesa.length}</b> in attesa` : ''}</span>
+    <div class="ades-barra" role="img" aria-label="${pct(n)}% del listone"><i style="width:${pct(n)}%"></i><i class="att" style="width:${pct(attesa.length)}%"></i></div>
+    <div class="ades-club">${club.map((c) => `<span${c.n ? ' class="si"' : ''}>${esc(c.nome)} <b>${c.n}/${c.tot}</b>${c.att ? ` <small>+${c.att}</small>` : ''}</span>`).join('')}</div>
+  </div>`;
+}
+
+function resto(adesioni, stato, ordine) {
   const righe = adesioni.slice().sort((x, y) => ordine[stato(x)] - ordine[stato(y)]).slice(0, 40).map((a) => {
     const st = stato(a);
     const pill = { attesa: 'Da verificare', verificato: `Verificato${a.verificato_come ? ` · ${a.verificato_come === 'societa' ? 'società' : 'Instagram'}` : ''}`, respinto: 'Non è lui', ritirato: 'Ritirato' }[st];
@@ -533,7 +561,7 @@ function calciatori(adesioni) {
   const registro = `<div class="ades-reg"><span class="small">${reg == null ? 'Registro: esegui la SQL <b>044</b>'
     : `Registro: <b>${reg.length}</b> ${reg.length === 1 ? 'passaggio' : 'passaggi'} · ${ok ? (ok.integro ? '<b class="ok">catena integra</b>' : `<b class="ko">catena rotta alla riga ${ok.prima_rotta}</b>`) : 'verifica non disponibile'}`}</span>
     <div class="azioni"><button class="chip" data-ades-csv="consensi">Scarica consensi (CSV)</button><button class="chip" data-ades-csv="registro">Scarica registro (CSV)</button></div></div>`;
-  return `<div class="a-card">${intest}${statBanner(adesioni)}${conta}${registro}${adesioni.length ? `<div>${righe}</div>` : '<p class="small muted" style="margin:0">Nessuna richiesta, per ora.</p>'}</div>`;
+  return `${registro}${adesioni.length ? `<div>${righe}</div>` : '<p class="small muted" style="margin:0">Nessuna richiesta, per ora.</p>'}</div>`;
 }
 
 /**

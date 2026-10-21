@@ -22,6 +22,55 @@ import { createClient } from 'npm:@supabase/supabase-js@2.58.0';
  */
 const ORE_PRIMA = 24;
 
+/**
+ * APP IPHONE. I telefoni dell'app App Store non hanno un'iscrizione web: hanno
+ * un codice dispositivo di Apple, salvato in push_subscriptions come
+ * "apns:<codice>" (src/notifiche.js). A loro si spedisce passando da Apple
+ * (APNs) con una chiave .p8 creata sul sito Apple Developer — vedi IOS.md.
+ *
+ * Secret, tutti in Edge Functions -> Secrets:
+ *   APNS_KEY      il contenuto del file .p8, righe BEGIN/END comprese
+ *   APNS_KEY_ID   i 10 caratteri della chiave
+ *   APNS_TEAM_ID  i 10 caratteri del Team ID dell'account sviluppatore
+ *   APNS_TOPIC    il bundle id dell'app (se manca: site.fantatitano.app)
+ *   APNS_SANDBOX  "1" solo per provare con l'app lanciata da Xcode; TestFlight
+ *                 e App Store usano il server normale, quindi di solito non c'e'
+ * Senza i primi tre i telefoni iPhone si saltano e basta: le notifiche web
+ * partono lo stesso.
+ */
+type Apns = { chiave: string; keyId: string; teamId: string; topic: string; host: string };
+let jwtApns: { token: string; creato: number } | null = null;
+
+const b64u = (b: Uint8Array) => btoa(String.fromCharCode(...b)).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+
+/** Il gettone firmato che Apple vuole a ogni invio. Vale un'ora: lo si rifa' ogni 50 minuti. */
+async function gettoneApns(a: Apns): Promise<string> {
+  const ora = Math.floor(Date.now() / 1000);
+  if (jwtApns && ora - jwtApns.creato < 3000) return jwtApns.token;
+  const testa = b64u(new TextEncoder().encode(JSON.stringify({ alg: 'ES256', kid: a.keyId })));
+  const corpo = b64u(new TextEncoder().encode(JSON.stringify({ iss: a.teamId, iat: ora })));
+  const der = Uint8Array.from(atob(a.chiave.replace(/-----[A-Z ]+-----/g, '').replace(/\s+/g, '')), (c) => c.charCodeAt(0));
+  const k = await crypto.subtle.importKey('pkcs8', der, { name: 'ECDSA', namedCurve: 'P-256' }, false, ['sign']);
+  const firma = new Uint8Array(await crypto.subtle.sign({ name: 'ECDSA', hash: 'SHA-256' }, k, new TextEncoder().encode(`${testa}.${corpo}`)));
+  jwtApns = { token: `${testa}.${corpo}.${b64u(firma)}`, creato: ora };
+  return jwtApns.token;
+}
+
+/** Spedisce a un iPhone. 'ok', 'morto' (dispositivo sparito: non riprovare) o 'riprova'. */
+async function spedisciApns(a: Apns, dispositivo: string, n: { titolo: string; corpo: string; tag: string; url: string }) {
+  const r = await fetch(`https://${a.host}/3/device/${dispositivo}`, {
+    method: 'POST',
+    headers: {
+      authorization: `bearer ${await gettoneApns(a)}`,
+      'apns-topic': a.topic, 'apns-push-type': 'alert', 'apns-priority': '10', 'apns-collapse-id': n.tag,
+    },
+    body: JSON.stringify({ aps: { alert: { title: n.titolo, body: n.corpo }, sound: 'default' }, url: n.url }),
+  });
+  if (r.ok) return 'ok';
+  const motivo = await r.json().then((j) => j.reason).catch(() => '');
+  return r.status === 410 || motivo === 'BadDeviceToken' || motivo === 'Unregistered' ? 'morto' : 'riprova';
+}
+
 const gestisci = async (req: Request): Promise<Response> => {
   // Due guasti diversi, e per mesi rispondevano la stessa identica cosa.
   // Il 17 settembre l'azione pianificata ha preso 401 e dal registro non si
@@ -108,6 +157,16 @@ const gestisci = async (req: Request): Promise<Response> => {
 
   const sb = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!);
 
+  const apnsChiave = Deno.env.get('APNS_KEY')?.trim();
+  const apnsKeyId = Deno.env.get('APNS_KEY_ID')?.trim();
+  const apnsTeam = Deno.env.get('APNS_TEAM_ID')?.trim();
+  const apns: Apns | null = apnsChiave && apnsKeyId && apnsTeam ? {
+    chiave: apnsChiave, keyId: apnsKeyId, teamId: apnsTeam,
+    topic: Deno.env.get('APNS_TOPIC')?.trim() || 'site.fantatitano.app',
+    host: Deno.env.get('APNS_SANDBOX')?.trim() === '1' ? 'api.sandbox.push.apple.com' : 'api.push.apple.com',
+  } : null;
+  let iphoneSaltati = 0;
+
   // Quali giornate hanno il lock nel giorno che viene? Le date stanno su
   // matchday_locks, cioe' la stessa fonte che regola i permessi: se qui si
   // usasse un'altra formula tornerebbe lo scarto di otto giorni.
@@ -139,12 +198,21 @@ const gestisci = async (req: Request): Promise<Response> => {
     const quanto = l.ore >= 1.5 ? `fra ${Math.round(l.ore)} ore` : "fra meno di un'ora";
     const daRimettere: string[] = [];
     for (const g of gente ?? []) {
-      const carico = JSON.stringify({
+      const avviso = {
         titolo: `Giornata ${l.matchday}: manca la formazione`,
         corpo: `${g.team_name} in ${g.league_name}. Si chiude ${quanto}: senza consegna la partita è persa 0-3 a tavolino.`,
         tag: `formazione-${l.matchday}`,
         url: './#/rosa/formazione',
-      });
+      };
+      if (g.endpoint.startsWith('apns:')) {
+        if (!apns) { iphoneSaltati++; daRimettere.push(g.endpoint); continue; }
+        const esito = await spedisciApns(apns, g.endpoint.slice(5), avviso).catch(() => 'riprova');
+        if (esito === 'ok') spedite++;
+        else if (esito === 'morto') morti.push(g.endpoint);
+        else daRimettere.push(g.endpoint);
+        continue;
+      }
+      const carico = JSON.stringify(avviso);
       try {
         await webpush.sendNotification(
           { endpoint: g.endpoint, keys: { p256dh: g.p256dh, auth: g.auth } },
@@ -168,7 +236,10 @@ const gestisci = async (req: Request): Promise<Response> => {
   }
   if (morti.length) await sb.from('push_subscriptions').update({ failed_at: new Date().toISOString() }).in('endpoint', morti);
 
-  return Response.json({ giornate: candidate.map((c) => c.matchday), spedite, iscritti, scaduti: morti.length, da_rifare: rimessi });
+  return Response.json({
+    giornate: candidate.map((c) => c.matchday), spedite, iscritti, scaduti: morti.length, da_rifare: rimessi,
+    ...(iphoneSaltati ? { iphone_senza_chiave_apns: iphoneSaltati } : {}),
+  });
 };
 
 /**

@@ -13,10 +13,18 @@
     "prove": "./prove/tutte.sh"
   },
   "devDependencies": {
+    "@capacitor/cli": "8.5.2",
     "@supabase/supabase-js": "^2.58.0",
     "esbuild": "^0.28.2",
     "eslint": "^10.1.0",
     "playwright": "^1.56.0",
     "web-push": "^3.6.7"
+  },
+  "dependencies": {
+    "@capacitor/app": "8.1.2",
+    "@capacitor/core": "8.5.2",
+    "@capacitor/ios": "8.5.2",
+    "@capacitor/push-notifications": "8.1.3",
+    "@capacitor/share": "8.0.3"
   }
 }

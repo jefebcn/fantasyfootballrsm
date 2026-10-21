@@ -206,3 +206,12 @@ corsa dopo riprova. Gli indirizzi morti (404 e 410) no: quelli si marcano
 Non serve che tu tenga accesa la funzione né che ricordi di lanciarla: la
 pianificazione se ne occupa. E non serve nessun servizio a pagamento: il push
 lo consegnano i browser, gratis.
+
+## L'app iPhone (App Store)
+
+I telefoni che usano l'app dell'App Store non hanno un'iscrizione web: la
+funzione li riconosce dall'indirizzo `apns:...` e spedisce passando da Apple.
+Servono altri tre secret (`APNS_KEY`, `APNS_KEY_ID`, `APNS_TEAM_ID`): come si
+ottengono è in `IOS.md`, passo 3. Senza, gli iPhone si saltano, il promemoria
+resta in coda per il giro dopo e la risposta lo dice
+(`iphone_senza_chiave_apns`); le notifiche web partono come sempre.

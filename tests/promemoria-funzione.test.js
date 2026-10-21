@@ -24,6 +24,10 @@ import webpush from 'web-push';
 
 const ambiente = {};
 let rompi = null;
+// per le prove dell'iPhone: un lock fra 5 ore e chi va avvisato
+let lockFinti = [];
+let genteFinta = [];
+const segnati = { morti: [], rifare: [] };
 
 globalThis.__banco = {
   webpush,
@@ -36,11 +40,14 @@ globalThis.__banco = {
         // che la funzione incatena con .is().
         select: (_c, opts) => (opts?.head
           ? { is: async () => ({ count: 2, error: null }) }
-          : Promise.resolve({ data: [], error: null })),
-        update: () => ({ in: async () => ({}) }),
+          : Promise.resolve({ data: lockFinti, error: null })),
+        update: () => ({ in: async (_c, lista) => { segnati.morti.push(...lista); return {}; } }),
       };
     },
-    rpc: async () => ({ data: [], error: null }),
+    rpc: async (nome, p) => {
+      if (nome === 'promemoria_da_rifare') { segnati.rifare.push(...p.p_endpoints); return { data: p.p_endpoints.length, error: null }; }
+      return { data: genteFinta, error: null };
+    },
   }),
 };
 
@@ -78,7 +85,7 @@ const buone = {
 
 /** Rimette l'ambiente da zero: i casi non si devono sporcare fra loro. */
 const con = (env) => {
-  rompi = null;
+  rompi = null; lockFinti = []; genteFinta = []; segnati.morti = []; segnati.rifare = [];
   for (const k of Object.keys(ambiente)) delete ambiente[k];
   Object.assign(ambiente, env);
 };
@@ -160,4 +167,69 @@ test('un guasto imprevisto esce leggibile, non come Internal Server Error', asyn
   assert.equal(stato, 500);
   assert.match(corpo, /eccezione non prevista/);
   assert.match(corpo, /sternutito/);
+});
+
+// ---- APP IPHONE: invio tramite Apple (APNs) ----
+const { generateKeyPairSync, createVerify } = await import('node:crypto');
+const coppia = generateKeyPairSync('ec', { namedCurve: 'P-256' });
+const p8 = coppia.privateKey.export({ type: 'pkcs8', format: 'pem' });
+const conIphone = (extra = {}) => {
+  con({ ...buone, APNS_KEY: p8, APNS_KEY_ID: 'ABC123DEFG', APNS_TEAM_ID: 'TEAM123456', ...extra });
+  lockFinti = [{ matchday: 7, lock_at: new Date(Date.now() + 5 * 3600e3).toISOString() }];
+  genteFinta = [{ user_id: 'u1', endpoint: 'apns:abcd1234', p256dh: 'apns', auth: 'apns', league_name: 'Titano Open', team_name: 'I Draghi' }];
+};
+const fetchVero = globalThis.fetch;
+const conFetch = async (stato, corpo, fn) => {
+  const viste = [];
+  globalThis.fetch = async (url, init) => { viste.push({ url: String(url), init }); return new Response(corpo, { status: stato }); };
+  try { await fn(); } finally { globalThis.fetch = fetchVero; }
+  return viste;
+};
+
+test('iPhone: spedisce ad Apple con un gettone ES256 valido', async () => {
+  conIphone();
+  let corpo;
+  const viste = await conFetch(200, '', async () => { corpo = (await risposta()).corpo; });
+  assert.match(corpo, /"spedite":1/);
+  assert.equal(viste.length, 1);
+  const { url, init } = viste[0];
+  assert.equal(url, 'https://api.push.apple.com/3/device/abcd1234');
+  assert.equal(init.headers['apns-topic'], 'site.fantatitano.app');
+  assert.equal(init.headers['apns-push-type'], 'alert');
+  const [testa, carico, firma] = init.headers.authorization.replace('bearer ', '').split('.');
+  assert.deepEqual(JSON.parse(Buffer.from(testa, 'base64url')), { alg: 'ES256', kid: 'ABC123DEFG' });
+  assert.equal(JSON.parse(Buffer.from(carico, 'base64url')).iss, 'TEAM123456');
+  const v = createVerify('SHA256'); v.update(`${testa}.${carico}`);
+  assert.ok(v.verify({ key: coppia.publicKey, dsaEncoding: 'ieee-p1363' }, Buffer.from(firma, 'base64url')), 'la firma la accetterebbe Apple');
+  const msg = JSON.parse(init.body);
+  assert.match(msg.aps.alert.title, /Giornata 7/);
+  assert.equal(msg.url, './#/rosa/formazione');
+});
+
+test('iPhone: dispositivo sparito (410) si segna e non si riprova', async () => {
+  conIphone();
+  await conFetch(410, JSON.stringify({ reason: 'Unregistered' }), () => risposta());
+  assert.deepEqual(segnati.morti, ['apns:abcd1234']);
+  assert.deepEqual(segnati.rifare, []);
+});
+
+test('iPhone: Apple non risponde, il promemoria si rimette in coda', async () => {
+  conIphone();
+  await conFetch(503, '', () => risposta());
+  assert.deepEqual(segnati.rifare, ['apns:abcd1234']);
+});
+
+test('iPhone senza chiave APNs: non si perde, si rimette in coda e lo dice', async () => {
+  conIphone({ APNS_KEY: undefined });
+  let corpo;
+  const viste = await conFetch(200, '', async () => { corpo = (await risposta()).corpo; });
+  assert.equal(viste.length, 0);
+  assert.match(corpo, /"iphone_senza_chiave_apns":1/);
+  assert.deepEqual(segnati.rifare, ['apns:abcd1234']);
+});
+
+test('APNS_SANDBOX=1 usa il server di prova di Apple', async () => {
+  conIphone({ APNS_SANDBOX: '1' });
+  const viste = await conFetch(200, '', () => risposta());
+  assert.match(viste[0].url, /^https:\/\/api\.sandbox\.push\.apple\.com\//);
 });

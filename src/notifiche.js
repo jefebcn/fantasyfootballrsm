@@ -16,8 +16,66 @@
  */
 import { VAPID_PUBBLICA } from './config.js';
 
-export const supportate = () => typeof Notification !== 'undefined' && 'serviceWorker' in navigator;
-export const permesso = () => (supportate() ? Notification.permission : 'unsupported');
+/**
+ * DENTRO L'APP IPHONE (App Store, cartella ios/). L'app e' questo stesso sito
+ * aperto da un guscio nativo (Capacitor), e li' le notifiche web non ci sono:
+ * passano da Apple. Le funzioni qui sotto restano le stesse per chi le chiama,
+ * cambia solo cosa fanno dentro. Il dispositivo si salva in push_subscriptions
+ * come le iscrizioni web, con l'indirizzo "apns:<codice>": la funzione che
+ * spedisce (supabase/functions/promemoria) lo riconosce dal prefisso.
+ *
+ * vendor/capacitor-core.js e' @capacitor/core 8.5.2 copiato com'e' da
+ * node_modules/@capacitor/core/dist/index.js. Si carica SOLO dentro l'app:
+ * sul sito non parte nessuna richiesta in piu'.
+ */
+const capacitor = () => (typeof window !== 'undefined' && window.Capacitor?.isNativePlatform?.() ? window.Capacitor : null);
+export const nativa = () => !!capacitor();
+let pluginPush = null;
+let permessoNativo = 'default';
+let tokenNativo = null;
+let aspettaToken = null;
+let avvio = Promise.resolve();
+const STATI = { granted: 'granted', denied: 'denied' };
+// Il plugin viaggia dentro un oggetto, mai da solo in una promessa: il proxy di
+// Capacitor risponde a qualunque nome, anche a "then", e una promessa che si
+// risolve con lui chiamerebbe un metodo nativo "then" che non esiste.
+const push = () => (pluginPush ||= import('../vendor/capacitor-core.js').then((m) => ({ P: m.registerPlugin('PushNotifications') })));
+
+// addListener restituisce una promessa: se il plugin manca non deve finire in un errore non gestito
+const ascolta = (plugin, evento, fn) => Promise.resolve().then(() => plugin.addListener(evento, fn)).catch(() => {});
+
+async function avviaNativo() {
+  const [{ P }, core] = await Promise.all([push(), import('../vendor/capacitor-core.js')]);
+  try { permessoNativo = STATI[(await P.checkPermissions()).receive] || 'default'; } catch { /* resta default */ }
+  ascolta(P, 'registration', (t) => { tokenNativo = t.value; aspettaToken?.(t.value); });
+  ascolta(P, 'registrationError', () => aspettaToken?.(null));
+  // tocco sulla notifica: si apre la schermata giusta (es. la formazione)
+  ascolta(P, 'pushNotificationActionPerformed', (a) => {
+    const h = String(a.notification?.data?.url || '').split('#')[1];
+    if (h) location.hash = h;
+  });
+  // il codice del dispositivo puo' cambiare: lo si chiede a ogni avvio
+  if (permessoNativo === 'granted') P.register().catch(() => {});
+  // i link di fantatitano.site (conferma e-mail, «Entra senza password»,
+  // inviti) aprono l'app invece di Safari: qui si va alla pagina giusta
+  const vaiA = (url) => { try { if (url && new URL(url).host === location.host && url !== location.href) location.href = url; } catch { /* link estraneo */ } };
+  const App = core.registerPlugin('App');
+  ascolta(App, 'appUrlOpen', ({ url }) => vaiA(url));
+  // app chiusa e aperta proprio da un link: quel link arriva qui
+  // (una volta sola: ai ricaricamenti successivi il link di lancio e' sempre quello)
+  let primo = true;
+  try { primo = !sessionStorage.getItem('fcs:lancio'); sessionStorage.setItem('fcs:lancio', '1'); } catch { /* niente memoria */ }
+  if (primo) App.getLaunchUrl().then((r) => vaiA(r?.url)).catch(() => {});
+  // condividere: il foglio nativo di iOS al posto di quello del browser
+  const Share = core.registerPlugin('Share');
+  navigator.share = (d) => Share.share({ title: d?.title, text: d?.text, url: d?.url, dialogTitle: d?.title });
+}
+if (nativa()) avvio = avviaNativo().catch(() => {});
+/** Si risolve quando l'app iPhone sa gia' se le notifiche sono permesse. */
+export const nativoPronto = () => avvio;
+
+export const supportate = () => nativa() || (typeof Notification !== 'undefined' && 'serviceWorker' in navigator);
+export const permesso = () => (nativa() ? permessoNativo : supportate() ? Notification.permission : 'unsupported');
 export const pushConfigurato = () => !!VAPID_PUBBLICA;
 
 /** iPhone e iPad, compreso l'iPad che si presenta come un Mac con lo schermo tattile. */
@@ -47,7 +105,7 @@ export function doveCondividi() {
 }
 
 /** Aperta dalla schermata Home, non dentro un browser. */
-export const installata = () => navigator.standalone === true
+export const installata = () => nativa() || navigator.standalone === true
   || (typeof matchMedia === 'function' && matchMedia('(display-mode: standalone)').matches);
 
 /**
@@ -112,6 +170,10 @@ export function comeChiedere({ avvisi, chiesto, consegnato, permesso: perm, supp
 export const daChiedere = (o) => comeChiedere(o) === 'permesso';
 
 export async function chiediPermesso() {
+  if (nativa()) {
+    try { permessoNativo = STATI[(await (await push()).P.requestPermissions()).receive] || 'default'; } catch { /* resta com'era */ }
+    return permessoNativo;
+  }
   if (!supportate()) return 'unsupported';
   try { return await Notification.requestPermission(); } catch { return permesso(); }
 }
@@ -128,7 +190,8 @@ async function registrazione() {
  * di dove si tengono le preferenze.
  */
 export async function avvisaFormazione(p, { giaAvvisato, segna }) {
-  if (!p || permesso() !== 'granted') return false;
+  // nell'app iPhone l'avviso arriva da Apple (promemoria sul server)
+  if (!p || nativa() || permesso() !== 'granted') return false;
   if (giaAvvisato === p.giornata) return false;
   const reg = await registrazione(); if (!reg) return false;
   const ore = Math.floor(p.ore);
@@ -149,6 +212,14 @@ export async function avvisaFormazione(p, { giaAvvisato, segna }) {
 
 /** Iscrizione alle push. Senza chiave VAPID non si fa: non c'e' chi le manda. */
 export async function iscriviPush() {
+  if (nativa()) {
+    if (permessoNativo !== 'granted') return null;
+    const token = tokenNativo || await new Promise((ok) => {
+      aspettaToken = ok; setTimeout(() => ok(null), 15000);
+      push().then(({ P }) => P.register()).catch(() => ok(null));
+    });
+    return token ? { endpoint: `apns:${token}`, keys: { p256dh: 'apns', auth: 'apns' } } : null;
+  }
   if (!pushConfigurato() || permesso() !== 'granted') return null;
   const reg = await registrazione(); if (!reg || !reg.pushManager) return null;
   const esistente = await reg.pushManager.getSubscription();
@@ -169,12 +240,24 @@ export async function iscriviPush() {
  * impostazioni deve dire quello che e' vero su QUESTO telefono.
  */
 export async function iscrittoPush() {
+  if (nativa()) return permessoNativo === 'granted' && !!tokenNativo;
   if (!pushConfigurato() || permesso() !== 'granted') return false;
   const reg = await registrazione(); if (!reg || !reg.pushManager) return false;
   try { return !!(await reg.pushManager.getSubscription()); } catch { return false; }
 }
 
+/** L'indirizzo con cui questo dispositivo e' iscritto, o null. */
+export async function indirizzoPush() {
+  if (nativa()) return tokenNativo ? `apns:${tokenNativo}` : null;
+  const reg = await registrazione(); if (!reg || !reg.pushManager) return null;
+  try { return (await reg.pushManager.getSubscription())?.endpoint || null; } catch { return null; }
+}
+
 export async function disiscriviPush() {
+  if (nativa()) {
+    try { await (await push()).P.unregister(); } catch { /* gia' fuori */ }
+    tokenNativo = null; return true;
+  }
   const reg = await registrazione(); if (!reg || !reg.pushManager) return false;
   const sub = await reg.pushManager.getSubscription();
   return sub ? sub.unsubscribe() : false;

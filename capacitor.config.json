@@ -1,0 +1,19 @@
+{
+  "appId": "site.fantatitano.app",
+  "appName": "Fantatitano",
+  "webDir": "nativo/www",
+  "server": {
+    "url": "https://fantatitano.site",
+    "errorPath": "offline.html"
+  },
+  "ios": {
+    "limitsNavigationsToAppBoundDomains": true,
+    "contentInset": "never",
+    "backgroundColor": "#0a0a0c"
+  },
+  "plugins": {
+    "PushNotifications": {
+      "presentationOptions": ["banner", "sound", "list"]
+    }
+  }
+}

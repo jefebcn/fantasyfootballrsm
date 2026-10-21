@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Assistenza · Fantatitano</title>
+<meta name="description" content="Assistenza Fantatitano: come contattarci e le domande più frequenti.">
+<meta name="theme-color" content="#1B84C6">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="stylesheet" href="design/tokens/tokens.css">
+<link rel="stylesheet" href="styles/font.css">
+<link rel="stylesheet" href="styles/app.css">
+<style>
+  /* La pagina sta in piedi da sola: niente riquadro dell'app, niente barre. */
+  body{margin:0;background:var(--bg);color:var(--text);font-family:var(--font-body)}
+  .stat{max-width:720px;margin:0 auto;padding:24px 16px calc(40px + env(safe-area-inset-bottom,0px))}
+  .stat header{display:flex;align-items:center;gap:12px;margin-bottom:18px}
+  .stat header b{font:800 20px var(--font-display);text-transform:uppercase;letter-spacing:.02em}
+  .stat header span{font-size:12px;color:var(--text-muted)}
+  .stat .a-body{padding:0;gap:14px;display:flex;flex-direction:column}
+  .stat .torna{display:inline-block;margin-top:24px;font-size:13px;color:var(--primary)}
+</style>
+</head>
+<body>
+<div class="stat">
+  <header><img src="icons/icon-192.png" alt="" width="40" height="40" style="border-radius:10px">
+    <span><b>Fantatitano</b><br><span>Assistenza</span></span></header>
+  <main class="a-body">
+      <section class="group"><h3>Scrivici</h3>
+  <div class="a-card testo"><p>Per un problema con l'app, un dato che non torna o una domanda sul gioco scrivi a <b>support@fantatitano.site</b>. Rispondiamo di solito entro due giorni.</p><p>Puoi trovarci anche su Instagram: <b>@fantatitano</b>.</p></div></section>
+      <section class="group"><h3>Le domande più frequenti</h3>
+  <div class="a-card testo"><p><b>Quando si chiudono le formazioni?</b> Alle 15:00 del giorno della prima partita della giornata, di solito il venerdì. Chi non consegna perde 0-3 a tavolino.</p><p><b>Da dove arrivano i voti?</b> Dai referti pubblici delle partite: il voto parte da 6 e si muove con gol, assist, cartellini e risultato. Il conto è visibile riga per riga nell'app.</p><p><b>Un dato è sbagliato?</b> Si contesta dall'app entro il martedì: alle 20:00 la giornata si congela.</p><p><b>Come gioco con gli amici?</b> Nell'app vai su Leghe, tocca «Crea una lega con gli amici» e manda il link d'invito.</p><p><b>Come cancello l'account?</b> Dall'app: Profilo, poi «Elimina account». Tutti i dettagli sono nella pagina <a href="cancella-account.html">Cancellare l'account</a>.</p></div></section>
+      <section class="group"><h3>Le altre pagine</h3>
+  <div class="a-card testo"><p><a href="privacy.html">Privacy</a> · <a href="termini.html">Termini d'uso</a> · <a href="cancella-account.html">Cancellare l'account</a></p><p>Fantatitano non è affiliato alla Federazione Sammarinese Giuoco Calcio né alle società del campionato.</p></div></section>
+</main>
+  <a class="torna" href="./">Apri Fantatitano</a>
+</div>
+</body>
+</html>

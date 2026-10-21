@@ -1,9 +1,14 @@
 # Pubblicare Fantatitano sull'App Store
 
-La strada completa, in ordine. Le parti marcate **TU** le fa Alex (o chi ha in
-mano l'account Apple); il resto è già nel repository. Il giorno del Mac in
-prestito è il **passo 7**: tutto quello che viene prima si fa da iPhone o dal
-computer, così sul Mac si sta due-tre ore e non un pomeriggio.
+La strada completa, in ordine. Il resto è già nel repository. Il giorno del
+Mac in prestito è il **passo 7**: tutto quello che viene prima si fa da iPhone
+o dal computer, così sul Mac si sta due-tre ore e non un pomeriggio.
+
+**Chi fa cosa.** Da San Marino Apple non accetta l'iscrizione al programma
+sviluppatori, quindi l'account lo intesta **l'amico** (cittadino croato, UE).
+Lui fa solo i passi marcati **AMICO**: iscriversi, invitare Alex, rinnovare
+ogni anno. Una volta invitato come Admin, **TU** (Alex) fai tutto il resto con
+il tuo ID Apple. **IO** sono le parti che faccio io nel repository.
 
 Come per Google Play (PLAY.md), l'app **è il sito**: un guscio nativo
 (Capacitor) apre `https://fantatitano.site` a schermo intero. Quello che si
@@ -41,38 +46,63 @@ condivisione nativa, link che aprono l'app.
 
 ---
 
-## 1. Account Apple Developer — **TU**, da iPhone, subito
+## 1. Account Apple Developer — **AMICO**, da iPhone, subito
 
-È il passo più lento: parti per primo.
+È il passo più lento: parte per primo.
 
 1. Sull'iPhone installa l'app **Apple Developer** (gratis, dall'App Store).
-2. Entra con il tuo ID Apple. Serve l'**autenticazione a due fattori** attiva
-   (Impostazioni → il tuo nome → Accesso e sicurezza).
-3. Tocca **Iscriviti ora** (*Enroll*), scegli **Persona fisica**
-   (*Individual*), fotografa il documento quando lo chiede.
-4. Paga **99 € l'anno**.
+2. Entra con il **suo** ID Apple. Serve l'**autenticazione a due fattori**
+   attiva (Impostazioni → il suo nome → Accesso e sicurezza).
+3. Tocca **Iscriviti ora** (*Enroll*), sceglie **Persona fisica**
+   (*Individual*), fotografa il suo documento quando lo chiede.
+4. Paga **99 € l'anno** (puoi rimborsarglieli tu: per Apple paga lui).
 
-Tempi: di solito 24-48 ore. Arriva un'e-mail «Welcome to the Apple Developer
-Program».
+Tempi: di solito 24-48 ore. Gli arriva un'e-mail «Welcome to the Apple
+Developer Program».
 
-**Da sapere prima di rispondere a «Sei un operatore commerciale?».** Per le
-regole europee (DSA) Apple chiede se sei un *trader*. Se rispondi **sì**
-(l'app ha sponsor, quindi è un'attività), nella scheda dello Store compaiono
-**nome, indirizzo, telefono ed e-mail**. Se rispondi **no** l'app resta
-disponibile, con l'avviso che non sei un operatore commerciale; con gli
-sponsor però la risposta corretta è sì. Per l'indirizzo puoi usare un
-recapito di lavoro invece di casa; telefono ed e-mail possono essere quelli
-dell'app (`support@fantatitano.site`). Si può cambiare in seguito da App Store
-Connect → Business.
+**Cosa vuol dire intestarlo a lui.** Per Apple l'app è **sua**: il suo nome
+compare sullo Store come sviluppatore, il contratto con Apple è a suo nome e
+solo lui può rinnovare l'iscrizione e accettare i nuovi contratti quando
+Apple li cambia (arriva un avviso in App Store Connect: va accettato, se no si
+bloccano gli aggiornamenti). Tutto il resto lo fai tu come Admin (passo 1b).
 
-Sull'intestazione: l'app appartiene a **chi intesta l'account**. Se un giorno
-la si vuole passare alla società, Apple permette il trasferimento da un
-account all'altro, ma è una procedura a parte.
+**«Sei un operatore commerciale?» (DSA).** Le regole europee obbligano Apple a
+chiederlo. Se risponde **sì** (l'app ha sponsor, quindi è un'attività),
+sulla scheda compaiono **il suo nome, indirizzo, telefono ed e-mail**. Per
+telefono ed e-mail può mettere quelli dell'app (`support@fantatitano.site`);
+l'indirizzo deve essere il suo. Se risponde **no** l'app resta disponibile
+con l'avviso che non è un operatore commerciale: finché gli sponsor non sono
+attivi è una risposta difendibile, e si può cambiare in seguito da App Store
+Connect → Business. Decidetelo insieme prima che risponda.
 
-## 2. Il Team ID — **TU**, poi io
+**Una cosa da fare fra voi.** Una scrittura privata semplice, anche una mail
+firmata da tutti e due: l'app, il nome Fantatitano e i dati sono tuoi, lui
+tiene l'account per conto tuo e lo trasferisce quando glielo chiedi. Apple
+permette di **trasferire un'app pubblicata** a un altro account (per esempio
+quello di una società) mantenendo recensioni e utenti: passo 11.
 
-Appena l'account è attivo: [developer.apple.com/account](https://developer.apple.com/account)
-→ **Membership details** → **Team ID** (10 lettere e numeri).
+## 1b. L'invito ad Alex come Admin — **AMICO**, 5 minuti, poi **TU**
+
+Appena l'account è attivo, dal computer:
+
+1. [appstoreconnect.apple.com](https://appstoreconnect.apple.com) → **Utenti e
+   accesso** → **+**.
+2. Nome, cognome ed **e-mail dell'ID Apple di Alex**.
+3. Ruolo **Admin**, e spunta **Accesso a Certificati, Identificatori e
+   Profili** (serve per la chiave delle notifiche e per firmare l'app).
+4. **Invita**.
+
+**TU**: ti arriva un'e-mail da Apple, tocca **Accetta l'invito** ed entra con
+il tuo ID Apple (anche lui con l'autenticazione a due fattori). Da qui in
+avanti, ogni volta che la guida dice «developer.apple.com» o «App Store
+Connect», entri **tu** col tuo ID Apple e scegli il team dell'amico (in alto
+a destra, se hai più team).
+
+## 2. Il Team ID — **TU**, poi **IO**
+
+Dopo l'invito: [developer.apple.com/account](https://developer.apple.com/account)
+→ **Membership details** → **Team ID** (10 lettere e numeri). È quello del
+team dell'amico.
 
 Mandamelo: con quello lancio
 
@@ -140,7 +170,7 @@ nella scheda.
 La build non c'è ancora: il bottone «Invia per la revisione» resta spento
 fino al passo 7. Va bene così.
 
-## 5. Il Mac del tuo amico — **lui**, il giorno prima
+## 5. Il Mac in prestito — **chi lo presta**, il giorno prima
 
 Da controllare e preparare **prima**, perché sono le cose lente:
 
@@ -189,12 +219,12 @@ Download ZIP*, si scompatta, e nel Terminale si entra nella cartella con
 
 Si apre Xcode. Poi:
 
-1. **Xcode → Settings → Accounts → +** → *Apple ID* → entra con il tuo
-   account sviluppatore.
+1. **Xcode → Settings → Accounts → +** → *Apple ID* → entra con **il tuo** ID
+   Apple (quello invitato come Admin al passo 1b).
 2. Nella colonna a sinistra clicca **App** (l'icona blu in cima), poi il
    target **App** → scheda **Signing & Capabilities**:
    - spunta **Automatically manage signing**;
-   - **Team**: il tuo nome;
+   - **Team**: il team dell'amico (porta il suo nome);
    - controlla che ci siano **Push Notifications** e **Associated Domains**
      (arrivano già dal progetto). Se una manca: **+ Capability** e aggiungila.
 3. Aspetta che Xcode scarichi i pacchetti (barra in alto: *Resolving
@@ -218,6 +248,7 @@ Apple: per provarle così serve il secret `APNS_SANDBOX` = `1` su Supabase, da
 |---|---|
 | *No account for team* / *Signing requires a development team* | punto 1 e 2: account in Xcode e Team scelto |
 | *Failed to register bundle identifier* | il Bundle ID è già registrato su un altro account: dimmelo |
+| *You do not have permission to create certificates* | nell'invito del passo 1b manca la spunta «Accesso a Certificati, Identificatori e Profili»: l'amico la aggiunge da Utenti e accesso |
 | *Missing package product* / errori sui pacchetti | File → Packages → **Reset Package Caches**, poi riprova |
 | *SDK version issue* (90725) all'upload | Xcode troppo vecchio: serve Xcode 26 o più recente |
 | L'upload chiede la crittografia | è già dichiarata nel progetto; se lo chiede: «Nessuno degli algoritmi» |
@@ -282,16 +313,24 @@ Center e si rimanda.
 - Senza Mac si può usare un servizio che compila nel cloud su Mac in affitto
   (per esempio Codemagic, che ha un piano gratuito): si configura una volta
   con le chiavi di App Store Connect. Quando servirà, lo preparo.
-- L'abbonamento sviluppatore si rinnova ogni anno (99 €): se scade, l'app
-  sparisce dallo Store.
+- L'abbonamento sviluppatore si rinnova ogni anno (99 €) e lo rinnova
+  **l'amico**: se scade, l'app sparisce dallo Store. Conviene il rinnovo
+  automatico.
+- **Passare l'app a un altro account** (tuo, se un giorno Apple lo permette
+  da San Marino, o di una società): App Store Connect → l'app → Informazioni
+  sull'app → **Trasferisci app**. Lo avvia l'amico, lo accetta il nuovo
+  titolare; l'app resta sullo Store con recensioni e utenti. Prima del
+  trasferimento si aggiornano i secret delle notifiche (nuova chiave del
+  nuovo team) e il file dei link (passo 2).
 
 ## Tempi in breve
 
 | Passo | Chi | Tempo |
 |---|---|---|
-| 1. Account Apple Developer | TU | 1-2 giorni di attesa |
-| 2-4. Team ID, chiave notifiche, scheda | TU (+ io) | 1 ora in tutto |
-| 5. Preparare il Mac | l'amico | la sera prima |
+| 1. Account Apple Developer | AMICO | 1-2 giorni di attesa |
+| 1b. Invito di Alex come Admin | AMICO, poi TU | 5 minuti |
+| 2-4. Team ID, chiave notifiche, scheda | TU (+ IO) | 1 ora in tutto |
+| 5. Preparare il Mac | chi lo presta | la sera prima |
 | 6. Account di prova | insieme | 20 minuti |
 | 7. Build e upload | TU sul Mac | 2-3 ore |
 | 8. TestFlight | TU | 20 minuti |

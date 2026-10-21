@@ -16,6 +16,8 @@
  * vanno i dati di chi gioca.
  *
  *   node scripts/schermate-store.cjs        scrive in store/
+ *   LARGO=430 ALTO=932 FUORI=store/ios node scripts/schermate-store.cjs
+ *                                           le stesse per l'App Store, 1290x2796
  */
 const { chromium } = require('playwright');
 const fs = require('fs');
@@ -26,7 +28,8 @@ const FUORI = process.env.FUORI || 'store';
 // Play vuole 9:16 in verticale, lato minimo 320 e massimo 3840, e per essere
 // consigliabile almeno quattro immagini da 1080 in su. 360x640 per tre fa
 // esattamente 1080x1920.
-const LARGO = 360, ALTO = 640, DENSITA = 3;
+// App Store (iPhone 6,9"): LARGO=430 ALTO=932 FUORI=store/ios -> 1290x2796.
+const LARGO = Number(process.env.LARGO) || 360, ALTO = Number(process.env.ALTO) || 640, DENSITA = 3;
 
 // Alcune schermate vanno fatte scorrere: la cosa che vale non e' sempre in
 // cima. Nella formazione, per dire, sopra c'e' l'avviso della consegna e il

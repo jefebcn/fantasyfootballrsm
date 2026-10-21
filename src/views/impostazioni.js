@@ -34,7 +34,7 @@ function apriAvvisi(ctx) {
       ${perm === 'denied' ? `<p class="auth-hint">Le notifiche sono bloccate dalle impostazioni del telefono per questo sito: vanno riattivate da lì.</p>` : ''}
       ${motivo === 'ios-nel-browser' ? `<p class="auth-hint avvisi-ios"><b>Su iPhone le notifiche funzionano solo con l'app installata.</b> Tocca <b>Condividi</b> (${esc(AV.doveCondividi().replace(/^Il quadrato/, 'il quadrato').replace(/\.$/, ''))}), poi <b>Aggiungi alla schermata Home</b>, e apri l'app da lì: qui comparirà il bottone per consentirle.</p>` : ''}
       ${motivo === 'browser-senza' ? `<p class="auth-hint">Questo browser non supporta le notifiche: da qui l'avviso arriva solo ad app aperta.</p>` : ''}
-      ${on && perm === 'granted' ? `<button class="a-btn sec" data-avvisi="prova" style="margin-top:10px">Mandami un avviso di prova</button>` : ''}
+      ${on && perm === 'granted' && !AV.nativa() ? `<button class="a-btn sec" data-avvisi="prova" style="margin-top:10px">Mandami un avviso di prova</button>` : ''}
       <p class="auth-hint"><b>Ad app aperta</b> l'avviso arriva${perm === 'granted' ? '' : ' appena dai il permesso'}: si controlla ogni volta che apri la dashboard, e ne arriva uno solo per giornata.</p>
       <p class="auth-hint"><b>A telefono chiuso</b> ${!AV.pushConfigurato()
     ? 'servono le notifiche push, e la chiave non è ancora configurata. Il codice c\'è tutto — i passi che restano sono nelle istruzioni del promemoria — ma finché la chiave manca questa parte è spenta, e preferiamo dirlo che lasciartelo scoprire.'

@@ -32,6 +32,7 @@ in modo deterministico: sono uguali per tutte le leghe e non serve caricarli.
 | `tests/engine.test.js` | Test dei casi limite del regolamento (17 test) |
 | `tests/mock-supabase.js` | Mock in memoria di supabase-js per lo smoke test del flusso account/leghe |
 | `design/` | Design kit: identità, sistema, architettura informativa, schermate, prototipo (`design/index.html`) |
+| `ios/` · `capacitor.config.json` · `nativo/` | **App iPhone** (Capacitor): apre fantatitano.site con notifiche native. Passi per l'App Store in [`IOS.md`](IOS.md), scheda in `store/scheda-appstore.md` |
 
 ## Sviluppo
 

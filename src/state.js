@@ -91,6 +91,8 @@ export async function init() {
     ready = true;
     if (user && !prefs.onboarded) { prefs.onboarded = true; persistPrefs(); }
     await loadAll();
+    // app iPhone: il codice del dispositivo puo' cambiare, si risalva a ogni avvio
+    if (user && AV.nativa()) AV.nativoPronto().then(() => AV.permesso() === 'granted' && iscriviAvvisi()).catch(() => {});
   } catch (e) {
     // Se l'avvio si ferma a meta' (profilo o leghe non arrivati), l'app NON
     // e' pronta: prima restava «pronta» senza leghe e a un iscritto mostrava
@@ -1179,9 +1181,8 @@ export async function iscriviAvvisi() {
   return true;
 }
 export async function disiscriviAvvisi() {
-  const reg = 'serviceWorker' in navigator ? await navigator.serviceWorker.ready.catch(() => null) : null;
-  const sub = reg && reg.pushManager ? await reg.pushManager.getSubscription() : null;
-  if (sub) { try { await remote.togliPush(sub.endpoint); } catch { /* gia' via */ } }
+  const endpoint = await AV.indirizzoPush();
+  if (endpoint) { try { await remote.togliPush(endpoint); } catch { /* gia' via */ } }
   return AV.disiscriviPush();
 }
 

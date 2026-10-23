@@ -8,6 +8,7 @@ import { VERSIONE } from '../versione.js';
 import * as diagnostica from '../diagnostica.js';
 import { scaricaMieiDati } from '../miei-dati.js';
 import { misure } from '../schermo.js';
+import { apriNuovaPassword } from './nuova-password.js';
 
 const row = (ic, title, sub, action = '', cls = '') => `<button class="setting ${cls}" ${action ? `data-act="${action}"` : 'disabled style="cursor:default"'}><i class="ico${typeof ic === 'object' ? ' illus' : ''}">${typeof ic === 'object' ? pic(ic.m, 'menu') : icon(ic)}</i><span class="txt"><b>${title}</b>${sub ? `<span>${sub}</span>` : ''}</span>${action ? icon('chev', 'ic sm chev') : ''}</button>`;
 /**
@@ -306,7 +307,7 @@ export const impostazioni = {
         try { const e = await S.aggiornaReferti(); ctx.toast(`Aggiornate ${e.gare.length === 1 ? 'una partita' : `${e.gare.length} partite`}: ${e.presenze} presenze, ${e.eventi} eventi`); } catch (err) { ctx.toast(err.message); }
         return;
       }
-      if (act === 'password') { prompt2('Cambia password', 'Nuova password', 'type="password" autocomplete="new-password" placeholder="almeno 6 caratteri"', async (v) => { if (v.length < 6) { ctx.toast('Almeno 6 caratteri'); return; } try { await S.updatePassword(v); ctx.sheet(null); ctx.toast('Password aggiornata'); } catch (err) { ctx.toast(err.message); } }); return; }
+      if (act === 'password') { apriNuovaPassword({ sheet: ctx.sheet, toast: ctx.toast }); return; }
       if (act === 'name') { prompt2('Cambia nome', 'Come ti chiami', `maxlength="24" value="${esc(S.profileInfo()?.display_name || '')}"`, async (v) => { if (!v) { ctx.toast('Scrivi un nome'); return; } try { await S.updateDisplayName(v); ctx.sheet(null); ctx.toast('Nome aggiornato'); } catch (err) { ctx.toast(err.message); } },
         'E\' il nome che si vede in tutte le tue leghe: nel menu, sulla scheda dello scontro e in classifica.'); }
     });

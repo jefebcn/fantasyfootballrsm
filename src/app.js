@@ -7,6 +7,7 @@ import * as diagnostica from './diagnostica.js';
 import * as views from './views/index.js';
 import * as AV from './notifiche.js';
 import { VERSIONE } from './versione.js';
+import { apriNuovaPassword, segnaRecupero, recuperoInCorso } from './views/nuova-password.js';
 
 const root = document.getElementById('app');
 let current = null; // { view, params }
@@ -367,6 +368,19 @@ function authCallbackError() {
 function mostraRitornoFallito(err) {
   const usato = /otp_expired|expired|invalid/i.test(`${err.codice} ${err.testo}`);
   if (!usato) { toast(err.testo); return; }
+  // Gia' dentro: e' il secondo tocco sullo stesso link, il primo ha
+  // funzionato. Chi stava recuperando la password la sceglie qui, senza
+  // chiedere un altro link (log del 23/10: due tocchi a vuoto, poi la
+  // password vecchia sbagliata due volte).
+  if (S.currentUser()) {
+    sheet(`<h3>Quel link l'avevi già usato</h3>
+      <p class="auth-hint">Vale una volta sola, e la prima volta ha funzionato: <b>sei già dentro</b>. Se stavi recuperando la password, sceglila adesso.</p>
+      <button class="a-btn" id="ritorno-pw" style="margin-top:12px">Scegli la nuova password</button>
+      <button class="sottile centro" id="ritorno-ok" style="margin-top:6px">Va bene così</button>`);
+    document.getElementById('ritorno-pw').onclick = () => apriNuovaPassword({ sheet, toast }, { recupero: true });
+    document.getElementById('ritorno-ok').onclick = () => sheet(null);
+    return;
+  }
   sheet(`<h3>Quel link era già stato aperto</h3>
     <p class="auth-hint">Vale una volta sola, e certe caselle di posta lo aprono da sole per controllarlo prima di mostrartelo. Non hai sbagliato niente.</p>
     <ul class="passi">
@@ -505,6 +519,9 @@ async function boot() {
   // e chi l'ha mandato, per i Reclutatori (023)
   if (qs.get('da')) S.ricordaReclutatore(qs.get('da'));
   const callbackError = authCallbackError();
+  // Il ritorno dal link «Password dimenticata?» porta type=recovery: va letto
+  // PRIMA di S.init(), che consuma il frammento coi token e lo ripulisce.
+  if (/(^|[#?&])type=recovery(&|$)/.test(`${location.hash}&${location.search}`)) segnaRecupero();
   root.innerHTML = `<div class="app">${splash()}</div>`;
   await S.init();
   // Da qui gli errori del telefono partono verso la console (022). Quelli
@@ -518,6 +535,10 @@ async function boot() {
   // e il foglio aperto qui sparirebbe un istante dopo essere comparso.
   // Visto succedere, non dedotto.
   if (callbackError) setTimeout(() => mostraRitornoFallito(callbackError), 300);
+  // Tornati dal link del recupero si e' dentro, ma con la password vecchia:
+  // la nuova si chiede subito (Alex, 23/10). Stesso ritardo del foglio qui
+  // sopra, per lo stesso motivo.
+  else if (recuperoInCorso() && S.currentUser()) setTimeout(() => apriNuovaPassword({ sheet, toast }, { recupero: true }), 300);
   avvisaReferti();
   window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); window.__installPrompt = e; document.dispatchEvent(new Event('installable')); });
 }

@@ -2417,6 +2417,8 @@ a.crow .cls-chev{flex:none;color:var(--text-muted);margin-left:-4px}
    piccole quando sono quattro. */
 .seg-cls button{white-space:nowrap;min-width:0;overflow:hidden;text-overflow:ellipsis}
 .seg-cls button:first-child:nth-last-child(n+4),.seg-cls button:first-child:nth-last-child(n+4) ~ button{font-size:14.5px;letter-spacing:.03em;padding-left:2px;padding-right:2px}
+/* sei schede (la console, dalla 046): ancora un filo piu' strette, se no la scheda accesa si taglia */
+.seg-cls button:first-child:nth-last-child(n+6),.seg-cls button:first-child:nth-last-child(n+6) ~ button{font-size:12.5px;letter-spacing:0;padding-left:1px;padding-right:1px}
 
 /* Console: il riquadro che dice di eseguire una migrazione */
 .avviso-console{display:flex;flex-direction:column;gap:4px;padding:12px 14px}

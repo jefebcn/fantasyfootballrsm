@@ -457,6 +457,13 @@ export const adminConfermaEmail = (id) => remote.adminConfermaEmail(id);
 export const adminLeghe = (limite) => remote.adminLeghe(limite);
 // --- moderazione (015)
 export const adminSquadre = (cerca, limite) => remote.adminSquadre(cerca, limite);
+export const adminFormazioni = (n) => remote.adminFormazioni(n);
+export const adminConfermaFormazione = (leagueId, memberId, n, da) => remote.adminConfermaFormazione(leagueId, memberId, n, da);
+/** Salva la formazione in preparazione: se ci si dimentica di confermarla, chi amministra puo' farlo (046). */
+export function salvaBozza(n, managerId, lineup) {
+  if (!base.league?.id) return Promise.resolve(false);
+  return remote.salvaBozza(base.league.id, managerId, n, lineup).catch(() => false);
+}
 export const adminRinomina = (memberId, squadra, fantallenatore) => remote.adminRinomina(memberId, squadra, fantallenatore);
 export async function adminSospendi(userId, on) {
   await remote.adminSospendi(userId, on);

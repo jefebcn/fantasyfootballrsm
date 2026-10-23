@@ -2699,7 +2699,15 @@ a.crow .cls-chev{flex:none;color:var(--text-muted);margin-left:-4px}
 .fx-r > span > span{white-space:nowrap}
 .fx-c{font-style:normal;font-size:9px;font-weight:800;margin-left:3px;padding:1px 4px;border-radius:4px;background:var(--c-oro-400,#F2B705);color:#1A1A1A;vertical-align:1px}
 .fx-c.v{background:var(--surface-2);color:var(--text)}
-.fx-undici .anche,.fx-sotto .anche{color:var(--primary-ink);font-weight:700}
+.fx-undici .anche,.fx-sotto .anche{text-decoration:underline;text-decoration-color:var(--primary);text-decoration-thickness:2px;text-underline-offset:3px}
+.fx-v{font-style:normal;font-family:var(--font-data);font-size:11px;font-weight:700;margin-left:4px;padding:1px 5px;border-radius:5px;background:var(--surface-2);color:var(--text)}
+.fx-v.su{background:rgba(30,142,78,.16);color:#1E9E57}
+.fx-v.giu{background:rgba(180,54,58,.14);color:#D04A50}
+.fx-v.sv{color:var(--text-muted);font-weight:500}
+.fx-panca{display:grid;grid-template-columns:auto minmax(0,1fr);gap:8px;font-size:12px;color:var(--text-muted);padding-top:4px;border-top:1px dashed var(--border)}
+.fx-panca b{font-size:10.5px;text-transform:uppercase;letter-spacing:.05em}
+.fx-nontorna{display:flex;gap:6px;align-items:flex-start;margin:0;font-size:12px;color:var(--text-muted);line-height:1.4}
+.fx-nontorna .ic{flex:none;margin-top:2px;color:var(--warning,#D9822B)}
 .fx-quando{margin-top:4px}
 @media (min-width:700px){.fx-lista{display:grid;grid-template-columns:1fr 1fr}}
 .fd-giornata>span b{white-space:nowrap}

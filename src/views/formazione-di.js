@@ -33,6 +33,19 @@ export function giornateChiuse() {
   return out;
 }
 
+/**
+ * Il modulo dichiarato e i ruoli di adesso possono non tornare: Faustina
+ * (23/10) aveva consegnato un 3-4-3 il 12/10 con Piscitella centrocampista,
+ * e il 17/10 Piscitella e' diventato attaccante. Valeva quando l'ha
+ * consegnata; lo si dice, invece di lasciare un «3-4-3» con quattro punte.
+ */
+export function nonTorna(l) {
+  const [d, c, a] = String(l.formation || '').split('-').map(Number);
+  const conta = { P: 0, D: 0, C: 0, A: 0 };
+  for (const id of (l.starters || []).filter(Boolean)) { const p = S.playersById.get(id); if (p) conta[p.role]++; }
+  return d && (conta.D !== d || conta.C !== c || conta.A !== a) ? `${conta.D}-${conta.C}-${conta.A}` : '';
+}
+
 export const formazioneDi = {
   title: 'Formazione', appbar: 'back', sub: () => 'Formazione',
   render({ params }) {
@@ -81,6 +94,7 @@ export const formazioneDi = {
     }
     return `<main class="a-body">${testa}${frecce}
       <p class="prehead libero">${esc(salvata.formation || '')}${salvata.submittedAt ? ` · consegnata ${dateIt(salvata.submittedAt)} alle ${timeIt(salvata.submittedAt)}` : ''}</p>
+      ${nonTorna(salvata) ? `<p class="fx-nontorna">${icon('warn', 'ic sm')}<span>Consegnata come ${esc(salvata.formation)}: dopo, nel listone, un giocatore ha cambiato ruolo e oggi i ruoli fanno ${nonTorna(salvata)}. Vale la formazione com'era quando è stata consegnata.</span></p>` : ''}
       ${campo}${totale}
       <div class="a-sec"><b>Panchina</b><span>ordine di ingresso</span></div>${panchina}
       ${quandoProssima}</main>`;

@@ -291,6 +291,26 @@ export async function adminConfermaEmail(id) { return must(await sb.rpc('admin_c
 export async function adminSospendi(userId, on) { return must(await sb.rpc('admin_sospendi', { p_user: userId, p_on: on })); }
 export async function adminSquadre(cerca, limite = 50) { return must(await sb.rpc('admin_squadre', { p_cerca: cerca || null, p_limite: limite })) || []; }
 export async function adminRinomina(memberId, squadra, fantallenatore) { return must(await sb.rpc('admin_rinomina', { p_member: memberId, p_squadra: squadra, p_fantallenatore: fantallenatore || null })); }
+/**
+ * Le formazioni di una giornata squadra per squadra, e la conferma a nome di
+ * una squadra (046). Senza la 046 le funzioni non ci sono: lo si dice.
+ */
+const senza046 = (error) => new Error(/admin_formazioni|admin_conferma_formazione|schema cache|could not find/i.test(error.message) ? 'Prima va eseguita la 046 nell\'SQL Editor' : error.message);
+export async function adminFormazioni(n) {
+  const { data, error } = await sb.rpc('admin_formazioni', { p_matchday: n });
+  if (error) throw senza046(error);
+  return data || { giornata: n, squadre: [] };
+}
+export async function adminConfermaFormazione(leagueId, memberId, n, da) {
+  const { data, error } = await sb.rpc('admin_conferma_formazione', { p_league: leagueId, p_member: memberId, p_matchday: n, p_da: da });
+  if (error) throw senza046(error);
+  return data;
+}
+/** La formazione mentre la si prepara (046): la vede solo chi amministra. Senza la 046 non fa niente. */
+export async function salvaBozza(leagueId, memberId, matchday, lineup) {
+  const { error } = await sb.from('formazioni_bozze').upsert({ league_id: leagueId, member_id: memberId, matchday, lineup, updated_at: new Date().toISOString() });
+  return !error;
+}
 export async function adminLeghe(limite = 50) { return must(await sb.rpc('admin_leghe', { p_limite: limite })) || []; }
 /** Chi e' il proprietario dell'app (033). Senza la 033 la funzione non c'e': nessuno. */
 export async function proprietarioApp() { const { data, error } = await sb.rpc('proprietario_app'); return error ? null : data || null; }

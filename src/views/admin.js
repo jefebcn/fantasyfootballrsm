@@ -491,6 +491,15 @@ function riservatezza(adesioni) {
  * il giocatore del listone e premi come l'hai verificato. Un si' da' il
  * bollino «Ha aderito»; un no lo mette fra gli esclusi.
  */
+/**
+ * Quello che si e' scelto su una richiesta da verificare (giocatore e
+ * screenshot), tenuto qui e non solo nel modulo. La console si ridisegna da
+ * sola a ogni aggiornamento dal server, e il venerdi' mattina arriva una
+ * formazione al minuto: a ogni ridisegno il campo del file tornava vuoto e
+ * «Verificato» rispondeva che mancava lo screenshot (Alex, 23/10).
+ */
+const scelti = new Map();
+
 function candidati(a) {
   const club = S.base.clubs.find((c) => c.name === a.squadra);
   const parole = String(a.nome || '').toLowerCase().split(/\s+/).filter((w) => w.length > 1);
@@ -543,10 +552,13 @@ function resto(adesioni, stato, ordine) {
     const tags = [a.squadra, a.scelta === 'aderisco' ? 'Ci sto' : 'Non vuole comparire',
       a.scelta === 'aderisco' ? (a.sponsor ? 'Sponsor sì' : 'Sponsor no') : '',
       a.maggiorenne === false ? `Minorenne · genitore ${a.genitore || '?'}` : a.maggiorenne ? 'Maggiorenne' : ''].filter(Boolean);
-    const scegli = st === 'attesa' ? `<select class="field-input" data-ades-gioc="${a.id}" aria-label="Quale giocatore è">${candidati(a).map(({ p }, i) =>
-      `<option value="${esc(p.id)}"${i === 0 ? ' selected' : ''}>${esc(S.nomeVero(p).lastName)} ${esc(S.nomeVero(p).firstName)} · ${esc(S.clubsById.get(p.clubId)?.name || '')}</option>`).join('')}</select>
+    const memo = scelti.get(String(a.id)) || {};
+    const lista = candidati(a); const voluto = lista.some(({ p }) => p.id === memo.pid) ? memo.pid : lista[0]?.p.id;
+    const scegli = st === 'attesa' ? `<select class="field-input" data-ades-gioc="${a.id}" aria-label="Quale giocatore è">${lista.map(({ p }) =>
+      `<option value="${esc(p.id)}"${p.id === voluto ? ' selected' : ''}>${esc(S.nomeVero(p).lastName)} ${esc(S.nomeVero(p).firstName)} · ${esc(S.clubsById.get(p.clubId)?.name || '')}</option>`).join('')}</select>
       <label class="lbl" for="ades-file-${a.id}">Screenshot del messaggio (obbligatorio)</label>
       <input class="field-input" type="file" accept="image/*" id="ades-file-${a.id}" data-ades-file="${a.id}">
+      ${memo.file ? `<span class="small">Allegato: <b>${esc(memo.file.name || 'screenshot')}</b> ✓</span>` : ''}
       <div class="azioni"><button class="chip" data-ades-ver="${a.id}|instagram">Verificato via Instagram</button><button class="chip" data-ades-ver="${a.id}|societa">Dalla società</button><button class="chip" data-ades-resp="${a.id}">Non è lui</button></div>` : '';
     return `<div class="adm-ades">
       <div class="riga1"><b>${esc(a.nome)}</b><span class="stato-ades ${st}">${pill}</span></div>
@@ -867,6 +879,14 @@ export const adminConsole = {
     // nell'app): si cerca alla pressione di Invio, come qui sopra
     const inpEs = root.querySelector('#adm-escludi');
     if (inpEs) inpEs.onkeydown = (e) => { if (e.key === 'Enter') { cercaEscluso = inpEs.value; ctx.render(); } };
+    root.querySelector('main').addEventListener('change', (e) => {
+      const f = e.target.closest('[data-ades-file]'); const g = e.target.closest('[data-ades-gioc]');
+      const id = f?.dataset.adesFile || g?.dataset.adesGioc; if (!id) return;
+      const memo = scelti.get(id) || {};
+      if (f && f.files?.[0]) memo.file = f.files[0];
+      if (g) memo.pid = g.value;
+      scelti.set(id, memo);
+    });
     root.querySelector('main').addEventListener('click', async (e) => {
       const t = e.target.closest('[data-atab]');
       if (t) { aTab = t.dataset.atab; ctx.render(); return; }
@@ -974,9 +994,10 @@ export const adminConsole = {
       if (av) {
         const [id, come] = av.dataset.adesVer.split('|');
         const a = (cache.adesioni || []).find((x) => String(x.id) === id); if (!a) return;
-        const pid = root.querySelector(`[data-ades-gioc="${id}"]`)?.value;
+        const memo = scelti.get(id) || {};
+        const pid = root.querySelector(`[data-ades-gioc="${id}"]`)?.value || memo.pid;
         const p = pid && S.playersById.get(pid); if (!p) { ctx.toast('Scegli prima quale giocatore è'); return; }
-        const file = root.querySelector(`[data-ades-file="${id}"]`)?.files?.[0];
+        const file = root.querySelector(`[data-ades-file="${id}"]`)?.files?.[0] || memo.file;
         if (!file) { ctx.toast('Allega lo screenshot del messaggio: è la prova della verifica'); return; }
         if (file.size > 20 * 1024 * 1024) { ctx.toast('Lo screenshot supera 20 MB'); return; }
         const chi = `${S.nomeVero(p).firstName} ${S.nomeVero(p).lastName}`;
@@ -984,6 +1005,7 @@ export const adminConsole = {
         av.disabled = true;
         try {
           await S.verificaAdesione(a, come, p.id, file);
+          scelti.delete(id);
           // un «non voglio comparire» verificato chiude i «ci sto» di prima dello stesso giocatore
           if (a.scelta === 'escludimi') {
             for (const x of cache.adesioni || []) {

@@ -91,6 +91,7 @@ export async function init() {
     ready = true;
     if (user && !prefs.onboarded) { prefs.onboarded = true; persistPrefs(); }
     await loadAll();
+    programmaAlLock();
     // app iPhone: il codice del dispositivo puo' cambiare, si risalva a ogni avvio
     if (user && AV.nativa()) AV.nativoPronto().then(() => AV.permesso() === 'granted' && iscriviAvvisi()).catch(() => {});
   } catch (e) {
@@ -221,6 +222,22 @@ async function loadAll() {
 let timer = null;
 function debounced() { clearTimeout(timer); timer = setTimeout(() => refresh(), 400); }
 export async function refresh() { if (!ready) return; try { await loadAll(); } catch (e) { onError(e); } notify(); }
+/**
+ * AL LOCK SI RICARICA DA SOLA. Le formazioni degli altri arrivano solo dal
+ * lock in poi (policy lineups_read, 004): chi aveva l'app aperta in quel
+ * momento non le vedeva finche' non la riapriva, e «Formazioni di tutti»
+ * diceva «non consegnata» per tutti. Un timer sul prossimo lock, qualche
+ * secondo dopo, e la lega si ricarica; poi si programma il lock dopo.
+ */
+let timerLock = null;
+function programmaAlLock() {
+  clearTimeout(timerLock);
+  const t = now().getTime();
+  const prossimo = base.matchdays.map((m) => +new Date(m.lockAt)).filter((x) => x > t).sort((a, b) => a - b)[0];
+  // setTimeout regge al massimo ~24 giorni: oltre, ci pensa la prossima apertura
+  if (!prossimo || prossimo - t > 2147483647 - 60000) return;
+  timerLock = setTimeout(() => { refresh(); programmaAlLock(); }, prossimo - t + 15000);
+}
 
 // ---------------------------------------------------------------- sessione
 const returnUrl = () => location.origin + location.pathname;

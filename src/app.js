@@ -17,7 +17,7 @@ const ROUTES = [
   ['', views.dashboard], ['rosa', views.rosa], ['rosa/formazione', views.formazione],
   ['calendario', views.calendario], ['calendario/:n', views.calendario],
   ['classifica', views.classifica], ['voti', views.voti], ['voti/:n', views.voti],
-  ['live/:id', views.live], ['formazione/:id', views.formazioneDi], ['formazione/:id/:n', views.formazioneDi], ['listone', views.listone], ['negozio', views.negozio], ['giocatore/:id', views.giocatore],
+  ['live/:id', views.live], ['formazione/:id', views.formazioneDi], ['formazione/:id/:n', views.formazioneDi], ['formazioni', views.formazioniTutte], ['formazioni/:n', views.formazioniTutte], ['listone', views.listone], ['negozio', views.negozio], ['giocatore/:id', views.giocatore],
   ['confronto/:a', views.confronto], ['confronto/:a/:b', views.confronto],
   ['video', views.video], ['regolamento', views.regolamento], ['regole', views.regole], ['scheda', views.scheda], ['impostazioni', views.impostazioni], ['impostazioni/avanzate', views.avanzate], ['scambi', views.scambi], ['privacy', views.privacy], ['termini', views.termini], ['archiviazione', views.archiviazione], ['licenze', views.licenze], ['cancella-account', views.cancella], ['giocatori', views.adesione], ['consenso/:id', views.attestato],
   ['admin', views.adminGiornata], ['admin/partita/:id', views.adminPartita], ['admin/contestazioni', views.adminContestazioni],
@@ -201,6 +201,7 @@ function drawer() {
     <div class="d-sec"><span class="chip">Setup</span></div>
     ${item('#/lega', { m: 'leghe' }, 'Profilo lega', S.base.league.inviteCode ? `codice ${esc(S.base.league.inviteCode)}` : '')}${item('#/lega', { m: 'squadre' }, 'Partecipanti', String(S.base.managers.length))}${item('#/regolamento', { m: 'guide' }, 'Regolamento ed opzioni')}${item('#/classifica', { m: 'statistiche' }, 'Competizioni')}
     <div class="d-sec"><span class="chip">Gioca</span></div>
+    ${S.base.league.id ? item('#/formazioni', 'users', 'Formazioni di tutti', 'dal lock di ogni giornata') : ''}
     ${S.legaPubblica() ? item('#/negozio', { l: 'rose' }, 'La tua rosa', `${S.rosterIds(S.me()?.id).length}/25`) : ''}${item('#/listone', { m: 'quotazioni' }, 'Listone', String(S.base.players.length))}${S.legaPubblica()
     // Il mercato degli svincolati e' una gara per chi e' rimasto libero: in
     // una lega aperta non e' libero nessuno e non e' preso nessuno, quindi

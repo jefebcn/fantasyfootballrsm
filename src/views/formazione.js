@@ -254,7 +254,8 @@ export const formazione = {
       ${!b && !locked ? scoperta(d, n) : ''}
       ${!b && !locked && rosa ? `<div class="warn block rosa-incompleta">${icon('warn', 'ic sm')}<span><b>Rosa incompleta: ${rosa.ha} su ${rosa.serve}.</b> Nella lega pubblica la formazione si consegna con tutti i ${rosa.serve} giocatori: ${rosa.mancano === 1 ? 'te ne manca 1' : `te ne mancano ${rosa.mancano}`}. Puoi ancora comprarli.</span></div>` : ''}
       ${b
-    ? `<a class="a-btn" href="#/voti/${n}" style="text-decoration:none">${icon('votes', 'ic sm')}Voti della ${n}ª</a>`
+    ? `<a class="a-btn" href="#/voti/${n}" style="text-decoration:none">${icon('votes', 'ic sm')}Voti della ${n}ª</a>
+      <a class="a-btn sec" href="#/formazioni/${n}" style="text-decoration:none">${icon('users', 'ic sm')}Le formazioni degli altri</a>`
     : !locked && rosa
     ? `<a class="a-btn" id="completa-rosa" href="#/negozio" style="text-decoration:none">${icon('cart', 'ic sm')}Completa la rosa · ${rosa.ha}/${rosa.serve}</a>`
     : `<button class="a-btn" id="confirm" ${locked || errors.length ? 'disabled' : ''}>${icon('check', 'ic sm')}${locked ? 'Formazione bloccata' : `Conferma formazione · ${d.starters.filter(Boolean).length}/11`}</button>`}

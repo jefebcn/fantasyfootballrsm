@@ -67,10 +67,10 @@ const ok = [], ko = []; const et = (c, t) => (c ? ok : ko).push(t);
     tab: [...document.querySelectorAll('[data-atab]')].map((x) => x.innerText.trim()),
   }));
   et(num.schede >= 6, `da amministratore la console mostra i numeri (${num.schede} riquadri)`);
-  // Cinque da quando c'e' lo spazio dello sponsor (017): il numero e' qui
+  // Sei da quando ci sono le formazioni (046), cinque dallo sponsor (017): il numero e' qui
   // perche' una scheda che sparisce senza che nessuno se ne accorga e' un
   // pezzo di console che smette di esistere.
-  et(num.tab.length === 5 && /Sponsor/i.test(num.tab.join(' ')), `con cinque schede (${num.tab.join(', ')})`);
+  et(num.tab.length === 6 && /Sponsor/i.test(num.tab.join(' ')) && /Consegne/i.test(num.tab.join(' ')), `con sei schede (${num.tab.join(', ')})`);
   // Le etichette escono in maiuscolo: il CSS ha text-transform e innerText
   // restituisce il testo RESO. Confronto senza distinguere le maiuscole.
   et(/iscritti/i.test(num.testo) && /leghe/i.test(num.testo), 'fra cui iscritti e leghe');

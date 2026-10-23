@@ -298,7 +298,8 @@ export const adminRegistro = {
  * chiavi del database su ogni telefono. Si manda un link per reimpostarla e
  * se la rifa' la persona — che e' anche l'unico modo in cui resta sua.
  */
-let aTab = 'numeri';        // 'numeri' | 'persone' | 'squadre' | 'leghe' | 'sponsor'
+let aTab = 'numeri';        // 'numeri' | 'formazioni' | 'persone' | 'squadre' | 'leghe' | 'sponsor'
+let soloDaSistemare = true;  // scheda Formazioni: solo le squadre con qualcosa da fare
 // Le richieste dei calciatori, il registro dei passaggi e la sua verifica
 // arrivano insieme: l'attestato e il CSV li usano tutti e tre.
 async function ricaricaConsensi() {
@@ -803,6 +804,50 @@ function sponsor() {
   </div>`;
 }
 
+/**
+ * FORMAZIONI (046). Per la giornata da schierare, squadra per squadra:
+ * consegnata, solo preparata (la bozza che l'app salva da sola) o niente. E
+ * il tasto per consegnarla a nome della squadra, prima della chiusura: la
+ * bozza, oppure la stessa formazione dell'ultima giornata consegnata.
+ * Alex, 23/10: «vedere se l'hanno confermata e in caso confermargliela io».
+ */
+function statoFormazione(s) {
+  const cons = s.consegnata_at ? new Date(s.consegnata_at).getTime() : 0;
+  const boz = s.bozza_at ? new Date(s.bozza_at).getTime() : 0;
+  if (cons && boz > cons + 60000) return 'modificata';
+  if (cons) return 'consegnata';
+  if (boz) return 'bozza';
+  return 'niente';
+}
+function formazioni(r) {
+  if (r === null) return '<div class="a-card"><p class="small muted" style="margin:0">Sto leggendo le formazioni…</p></div>';
+  if (r && r.errore) return `<div class="a-card"><p class="small" style="margin:0">${esc(r.errore)}</p></div>`;
+  const tutte = r.squadre || []; const n = r.giornata;
+  const chiusa = r.chiusura && new Date(r.chiusura) <= new Date();
+  const conta = { consegnata: 0, modificata: 0, bozza: 0, niente: 0 };
+  tutte.forEach((s) => { conta[statoFormazione(s)]++; });
+  const vedi = soloDaSistemare ? tutte.filter((s) => statoFormazione(s) !== 'consegnata') : tutte;
+  const leghe = new Map(); vedi.forEach((s) => { if (!leghe.has(s.lega_id)) leghe.set(s.lega_id, { nome: s.lega, righe: [] }); leghe.get(s.lega_id).righe.push(s); });
+  const riga = (s) => {
+    const st = statoFormazione(s); const k = `${s.lega_id}|${s.squadra_id}`;
+    const pill = { consegnata: ['verificato', `Consegnata ${quando(s.consegnata_at)}`], modificata: ['attesa', 'Cambiata dopo la consegna, non riconfermata'],
+      bozza: ['attesa', `Preparata ${quando(s.bozza_at)}, non confermata`], niente: ['ritirato', 'Niente'] }[st];
+    const tasti = chiusa ? '' : [
+      st === 'bozza' || st === 'modificata' ? `<button class="chip" data-form-conf="${k}|bozza">${st === 'modificata' ? 'Conferma la modifica' : 'Conferma per lui'}</button>` : '',
+      (st === 'niente' || st === 'bozza') && s.ultima ? `<button class="chip" data-form-conf="${k}|ultima">Come la ${s.ultima}ª</button>` : '',
+    ].join('');
+    return `<div class="adm-ades"><div class="riga1"><b>${esc(s.squadra)}</b><span class="stato-ades ${pill[0]}">${esc(pill[1])}</span></div>
+      <span class="small muted">${esc(s.allenatore || '')}${st === 'niente' && !s.ultima ? ' · non ha mai consegnato' : ''}</span>
+      ${tasti ? `<div class="azioni">${tasti}</div>` : ''}</div>`;
+  };
+  return `<div class="a-card"><b>Formazioni · ${n}ª giornata</b>
+    <span class="small muted" style="display:block;margin:2px 0 8px">${r.chiusura ? `${chiusa ? 'Chiusa' : 'Si chiude'} ${quando(r.chiusura)}` : ''}${chiusa ? ': dopo la chiusura non si consegna per conto di nessuno.' : '. «Conferma per lui» consegna la formazione che ha preparato; «Come la …ª» ripete l\'ultima che ha consegnato. Valgono i controlli di sempre (rosa, modulo, capitano) e la conferma resta nel registro.'}</span>
+    <div class="ades-stat"><span><b>${conta.consegnata}</b> consegnate</span><span><b>${conta.bozza + conta.modificata}</b> preparate e non confermate</span><span><b>${conta.niente}</b> senza niente</span><span>su <b>${tutte.length}</b> squadre</span></div>
+    <div class="chips" style="margin:8px 0"><button class="chip${soloDaSistemare ? ' on' : ''}" data-form-filtro="da">Da sistemare</button><button class="chip${soloDaSistemare ? '' : ' on'}" data-form-filtro="tutte">Tutte</button></div>
+    ${vedi.length ? [...leghe.values()].map((l) => `<div class="a-sec"><b>${esc(l.nome)}</b><span>${l.righe.length}</span></div><div>${l.righe.map(riga).join('')}</div>`).join('') : '<p class="small muted" style="margin:0">Niente da sistemare: tutte le squadre hanno consegnato.</p>'}
+  </div>`;
+}
+
 export const adminConsole = {
   title: 'Console', appbar: 'back', sub: () => 'Amministrazione dell\'app',
   render() {
@@ -812,12 +857,14 @@ export const adminConsole = {
     }
     const barra = `<div class="segwrap"><div class="seg seg-cls">
       <button class="${aTab === 'numeri' ? 'on' : ''}" data-atab="numeri">Numeri</button>
+      <button class="${aTab === 'formazioni' ? 'on' : ''}" data-atab="formazioni">Consegne</button>
       <button class="${aTab === 'persone' ? 'on' : ''}" data-atab="persone">Persone</button>
       <button class="${aTab === 'squadre' ? 'on' : ''}" data-atab="squadre">Squadre</button>
       <button class="${aTab === 'leghe' ? 'on' : ''}" data-atab="leghe">Leghe</button>
       <button class="${aTab === 'sponsor' ? 'on' : ''}" data-atab="sponsor">Sponsor</button></div></div>`;
     let corpo = '';
     if (aTab === 'numeri') corpo = prudenza() + riservatezza(cache.adesioni) + numeri(cache.numeri) + consegne(cache.numeri) + errori(cache.errori) + andamento(cache.persone);
+    else if (aTab === 'formazioni') corpo = formazioni(cache.formazioni ?? null);
     else if (aTab === 'persone') {
       corpo = `${daConfermare(cache.daConfermare)}<input class="field-input" id="adm-cerca" placeholder="Cerca per nome o e-mail" value="${esc(cerca)}" autocomplete="off">
         ${persone(cache.persone)}`;
@@ -845,6 +892,11 @@ export const adminConsole = {
         // l'andamento si disegna sull'elenco delle persone: la scheda dei
         // numeri lo chiede una volta e poi resta in cache come le altre
         if (aTab === 'numeri' && !cache.persone) { cache.persone = await S.adminPersone(null, 100); ctx.render(); }
+        if (aTab === 'formazioni' && cache.formazioni === undefined) {
+          cache.formazioni = null;
+          try { cache.formazioni = await S.adminFormazioni(S.giornataDaSchierare()); } catch (e) { cache.formazioni = { errore: e.message }; }
+          ctx.render();
+        }
         if ((aTab === 'leghe' || aTab === 'sponsor') && !cache.leghe) { cache.leghe = await S.adminLeghe(200); ctx.render(); }
         if (aTab === 'persone' && cache.proprietario === undefined) { cache.proprietario = await S.proprietarioApp(); ctx.render(); }
         if (aTab === 'persone' && !cache.persone) { cache.persone = await S.adminPersone(cerca, 100); ctx.render(); }
@@ -889,7 +941,25 @@ export const adminConsole = {
     });
     root.querySelector('main').addEventListener('click', async (e) => {
       const t = e.target.closest('[data-atab]');
-      if (t) { aTab = t.dataset.atab; ctx.render(); return; }
+      if (t) { aTab = t.dataset.atab; if (aTab === 'formazioni') cache.formazioni = undefined; ctx.render(); return; }
+      const ff = e.target.closest('[data-form-filtro]');
+      if (ff) { soloDaSistemare = ff.dataset.formFiltro === 'da'; ctx.render(); return; }
+      const fc = e.target.closest('[data-form-conf]');
+      if (fc) {
+        const [lega, squadra, da] = fc.dataset.formConf.split('|');
+        const s = (cache.formazioni?.squadre || []).find((x) => x.squadra_id === squadra); if (!s) return;
+        const n = cache.formazioni.giornata;
+        const cosa = da === 'ultima' ? `la stessa formazione della ${s.ultima}ª giornata` : 'la formazione che ha preparato';
+        if (!confirm(`Consegnare a nome di ${s.squadra} ${cosa}, per la ${n}ª giornata? Vale come se l'avesse confermata lui.`)) return;
+        fc.disabled = true;
+        try {
+          await S.adminConfermaFormazione(lega, squadra, n, da);
+          ctx.toast(`Consegnata per ${s.squadra}`);
+          cache.formazioni = await S.adminFormazioni(n); ctx.render();
+          S.refresh();
+        } catch (err) { ctx.toast(err.message || 'Non è stato possibile'); fc.disabled = false; }
+        return;
+      }
       const mod = e.target.closest('[data-sp-mod]');
       if (mod) { spBozza = { ...S.sponsorTutti().find((x) => x.id === mod.dataset.spMod) }; ctx.render(); return; }
       const del = e.target.closest('[data-sp-del]');

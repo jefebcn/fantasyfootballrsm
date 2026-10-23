@@ -59,7 +59,7 @@ function builder(table) {
     {
       try {
         let data = null; const rows = T(table);
-        const pk = { lineups: ['league_id', 'member_id', 'matchday'], match_overrides: ['match_id'], match_appearances: ['match_id', 'player_id'], matchday_status: ['matchday'], matchday_locks: ['matchday'], profiles: ['id'], app_interruttori: ['chiave'], giocatori_esclusi: ['player_id'], squalifiche: ['player_id', 'matchday'] }[table] || ['id'];
+        const pk = { lineups: ['league_id', 'member_id', 'matchday'], match_overrides: ['match_id'], match_appearances: ['match_id', 'player_id'], matchday_status: ['matchday'], matchday_locks: ['matchday'], formazioni_bozze: ['league_id', 'member_id', 'matchday'], profiles: ['id'], app_interruttori: ['chiave'], giocatori_esclusi: ['player_id'], squalifiche: ['player_id', 'matchday'] }[table] || ['id'];
         const withDefaults = (r) => ({ id: uid(), created_at: now(), ...r });
         // __MOCK_SESSIONE_PERSA__: il token e' scaduto e la rete non l'ha
         // rinnovato, le richieste partono come anonimo. Come Supabase vero: i
@@ -417,6 +417,33 @@ export function createClient(_url, _key, opts) {
               return { member_id: m.id, squadra: m.team_name, fantallenatore: m.owner_name || p2.display_name || null,
                 iniziali: m.initials, lega: l.name, league_id: m.league_id, user_id: m.user_id,
                 sospeso: !!p2.sospeso, creata: m.created_at }; }), error: null };
+        }
+        // 046: le formazioni di una giornata squadra per squadra, e la conferma da amministratore
+        if (name === 'admin_formazioni') {
+          if (!amministro()) throw new Error("Serve essere amministratore dell'app");
+          const n = args.p_matchday; const lk = T('matchday_locks').find((k) => k.matchday === n);
+          const squadre = T('league_members').filter((m) => T('rosters').some((r) => r.member_id === m.id && !r.released_at)).map((m) => {
+            const l = T('leagues').find((x) => x.id === m.league_id) || {}; const p2 = T('profiles').find((x) => x.id === m.user_id) || {};
+            const li = T('lineups').find((x) => x.member_id === m.id && x.matchday === n); const b = T('formazioni_bozze').find((x) => x.member_id === m.id && x.matchday === n);
+            const prima = T('lineups').filter((x) => x.member_id === m.id && x.matchday < n).map((x) => x.matchday);
+            return { lega_id: m.league_id, lega: l.name, pubblica: !!l.pubblica, squadra_id: m.id, squadra: m.team_name, allenatore: m.owner_name || p2.display_name,
+              consegnata_at: li?.submitted_at || null, bozza_at: b?.updated_at || null, ultima: prima.length ? Math.max(...prima) : null };
+          });
+          return { data: { giornata: n, chiusura: lk?.lock_at || null, squadre }, error: null };
+        }
+        if (name === 'admin_conferma_formazione') {
+          if (!amministro()) throw new Error("Serve essere amministratore dell'app");
+          const n = args.p_matchday; const lk = T('matchday_locks').find((k) => k.matchday === n);
+          if (lk && new Date(lk.lock_at) <= new Date()) return { data: null, error: { message: `La ${n}ª giornata è già chiusa` } };
+          let f = null; let da = null;
+          if (args.p_da === 'bozza') f = T('formazioni_bozze').find((x) => x.member_id === args.p_member && x.matchday === n)?.lineup;
+          else { const u = T('lineups').filter((x) => x.member_id === args.p_member && x.matchday < n).sort((x, y) => y.matchday - x.matchday)[0]; f = u?.lineup; da = u?.matchday ?? null; }
+          if (!f) return { data: null, error: { message: 'Non c\'è una formazione da confermare' } };
+          const L2 = T('lineups'); const i = L2.findIndex((x) => x.member_id === args.p_member && x.matchday === n);
+          const riga = { league_id: args.p_league, member_id: args.p_member, matchday: n, lineup: f, submitted_at: now() };
+          if (i >= 0) L2[i] = riga; else L2.push(riga);
+          persisti();
+          return { data: { da: args.p_da, dalla_giornata: da }, error: null };
         }
         if (name === 'admin_rinomina') {
           if (!amministro()) throw new Error("Serve essere amministratore dell'app");

@@ -6,8 +6,24 @@ import { schedeRosa } from './rosa.js';
 let draft = null; let draftFor = null;
 function ensureDraft() {
   const n = S.giornataDaSchierare(); const me = S.me();
-  if (!draft || draftFor !== `${n}:${me.id}`) { const l = S.lineupFor(n, me.id); draft = { formation: l.formation, starters: [...l.starters], bench: [...l.bench], captainId: l.captainId, viceCaptainId: l.viceCaptainId }; draftFor = `${n}:${me.id}`; tolti = []; }
+  if (!draft || draftFor !== `${n}:${me.id}`) { const l = S.lineupFor(n, me.id); draft = { formation: l.formation, starters: [...l.starters], bench: [...l.bench], captainId: l.captainId, viceCaptainId: l.viceCaptainId }; draftFor = `${n}:${me.id}`; tolti = []; bozzaSalvata = comeBozza(draft); }
   return draft;
+}
+/**
+ * LA BOZZA SUL SERVER (046). Prima la formazione in preparazione stava solo
+ * nel telefono: chi la sistemava e si dimenticava «Conferma formazione»
+ * perdeva 0-3 a tavolino con la squadra pronta sullo schermo. Ora a ogni
+ * modifica (non all'apertura: quella e' la proposta dell'app, non una scelta)
+ * la bozza parte da sola dopo un attimo, e chi amministra la vede e la puo'
+ * confermare. Conta solo come promemoria: consegnata e' solo quella confermata.
+ */
+let bozzaSalvata = null; let attesaBozza = null;
+const comeBozza = (d) => JSON.stringify({ formation: d.formation, starters: d.starters, bench: d.bench.filter(Boolean), captainId: d.captainId || null, viceCaptainId: d.viceCaptainId || null });
+function programmaBozza(n, managerId, d) {
+  const corpo = comeBozza(d);
+  if (corpo === bozzaSalvata) return;
+  clearTimeout(attesaBozza);
+  attesaBozza = setTimeout(() => { bozzaSalvata = corpo; S.salvaBozza(n, managerId, JSON.parse(corpo)); }, 1500);
 }
 const P = (id) => S.playersById.get(id);
 /** Chi non e' piu' in rosa esce dalla formazione da preparare: la bozza resta
@@ -226,6 +242,7 @@ export const formazione = {
     if (S.schieramentoBloccato()) return;   // la schermata e' un avviso, non ha niente da agganciare
     const d = ensureDraft(); const n = S.giornataDaSchierare(); const me = S.me(); const st = S.matchdayStatus(n);
     if (st !== 'open' && st !== 'scheduled') return;
+    programmaBozza(n, me.id, d);
     const rosterIds = S.rosterIds(me.id).filter((id) => P(id).isActive);
     const used = () => new Set([...d.starters, ...d.bench].filter(Boolean));
     /** `libero` e' chi sta gia' nel posto che si sta sostituendo: va offerto,
@@ -279,7 +296,7 @@ export const formazione = {
       if (e.target.closest('#confirm')) {
         const errors = validateLineup({ ...d, starters: d.starters.filter(Boolean), bench: d.bench.filter(Boolean) }, S.playersById);
         if (errors.length) { ctx.toast(errors[0]); return; }
-        try { S.saveLineup(n, me.id, { ...d, bench: d.bench.filter(Boolean) }); tolti = []; ctx.toast(`Formazione salvata · giornata ${n}`); }
+        try { S.saveLineup(n, me.id, { ...d, bench: d.bench.filter(Boolean) }); tolti = []; clearTimeout(attesaBozza); bozzaSalvata = comeBozza(d); ctx.toast(`Formazione salvata · giornata ${n}`); }
         catch (err) { ctx.toast(err.message); ctx.render(); }
       }
     });

@@ -94,6 +94,11 @@ const ok = [], ko = []; const et = (c, t) => (c ? ok : ko).push(t);
   et(/screenshot/i.test(await p.evaluate(() => document.getElementById('toast')?.textContent || '')), 'senza screenshot non verifica e lo dice');
   const PNG = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==', 'base64');
   await p.setInputFiles('[data-ades-file]', { name: 'dm.png', mimeType: 'image/png', buffer: PNG });
+  // la console si ridisegna da sola a ogni aggiornamento dal server (il
+  // venerdi' mattina e' una formazione al minuto): lo screenshot scelto non
+  // deve sparire (Alex, 23/10: «non mi fa salvare lo screen»)
+  await p.evaluate(async () => (await import('/src/state.js')).refresh()); await w(500);
+  et(/Allegato: dm\.png/.test(await p.evaluate(() => document.body.innerText)), 'dopo un ridisegno lo screenshot scelto resta allegato');
   await p.click('[data-ades-ver$="|instagram"]');
   await p.waitForFunction(() => /Verificato/.test(document.getElementById('toast')?.textContent || ''), null, { timeout: 8000 }).catch(() => {});
   const c2 = await p.evaluate(() => document.body.innerText);

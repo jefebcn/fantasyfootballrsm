@@ -631,6 +631,13 @@ function numeri(r) {
     ['Leghe', r.leghe, `${r.leghe_pubbliche || 0} pubbliche`],
     ['Squadre', r.squadre, `${r.rose_complete || 0} con la rosa completa`],
     ['Formazioni consegnate', r.formazioni, 'in tutto, da sempre'],
+    ...(() => {
+      // la percentuale dell'ultima giornata chiusa: il numero che si porta a uno sponsor (vedi consegne())
+      const g = (Array.isArray(r.consegne) ? r.consegne : []).filter((x) => x.squadre || x.consegne).at(-1);
+      if (!g) return [];
+      const su = Math.max(g.squadre || 0, g.consegne || 0);
+      return [['Consegnano', su ? `${Math.round((g.consegne / su) * 100)}%` : '—', `alla ${g.giornata}ª: ${g.consegne} su ${su}`]];
+    })(),
     ['Telefoni col push', r.telefoni_push, ''],
     ['Contestazioni aperte', r.contestazioni_aperte, r.contestazioni_aperte ? 'da guardare' : 'nessuna'],
     ['Giornate calcolate', r.giornate_congelate, ''],
@@ -850,12 +857,16 @@ function formazioni(r) {
 
 export const adminConsole = {
   title: 'Console', appbar: 'back', sub: () => 'Amministrazione dell\'app',
+  // Dal computer la console si apre in largo (Alex, 23/10: «la dashboard da
+  // admin da desktop, in grande»): menu a sinistra, cruscotto a griglia. Sul
+  // telefono resta com'era: lo decide il CSS, sopra i 1100px.
+  largo: true,
   render() {
     if (!S.isAdmin()) {
       return `<main class="a-body"><div class="empty">${icon('lock')}<p>Questa console è di chi amministra l'app.</p>
         <p class="small muted">Il primo amministratore si nomina dal database, non da qui: se si potesse dall'app, chiunque si darebbe i poteri da solo.</p></div></main>`;
     }
-    const barra = `<div class="segwrap"><div class="seg seg-cls">
+    const barra = `<div class="segwrap adm-tabs"><div class="seg seg-cls">
       <button class="${aTab === 'numeri' ? 'on' : ''}" data-atab="numeri">Numeri</button>
       <button class="${aTab === 'formazioni' ? 'on' : ''}" data-atab="formazioni">Consegne</button>
       <button class="${aTab === 'persone' ? 'on' : ''}" data-atab="persone">Persone</button>
@@ -863,7 +874,18 @@ export const adminConsole = {
       <button class="${aTab === 'leghe' ? 'on' : ''}" data-atab="leghe">Leghe</button>
       <button class="${aTab === 'sponsor' ? 'on' : ''}" data-atab="sponsor">Sponsor</button></div></div>`;
     let corpo = '';
-    if (aTab === 'numeri') corpo = prudenza() + riservatezza(cache.adesioni) + numeri(cache.numeri) + consegne(cache.numeri) + errori(cache.errori) + andamento(cache.persone);
+    // Sul telefono i blocchi restano in colonna, nell'ordine di sempre (lo
+    // dice il CSS con `order`); dal computer diventano un cruscotto: i numeri
+    // in alto, i due grafici affiancati, gli errori accanto agli interruttori.
+    if (aTab === 'numeri') {
+      corpo = `<div class="adm-dash">
+        <section class="d-cfg">${prudenza()}${riservatezza(cache.adesioni)}</section>
+        <section class="d-kpi">${numeri(cache.numeri)}</section>
+        <section class="d-con">${consegne(cache.numeri)}</section>
+        <section class="d-err">${errori(cache.errori)}</section>
+        <section class="d-isc">${andamento(cache.persone)}</section>
+      </div>`;
+    }
     else if (aTab === 'formazioni') corpo = formazioni(cache.formazioni ?? null);
     else if (aTab === 'persone') {
       corpo = `${daConfermare(cache.daConfermare)}<input class="field-input" id="adm-cerca" placeholder="Cerca per nome o e-mail" value="${esc(cerca)}" autocomplete="off">
@@ -873,8 +895,8 @@ export const adminConsole = {
         ${squadre(cache.squadre)}`;
     } else if (aTab === 'sponsor') corpo = sponsor();
     else corpo = leghe(cache.leghe);
-    return `<main class="a-body">${barra}
-      ${aTab === 'numeri' ? `<div class="a-sec"><b>Come va</b><span>adesso</span></div>` : ''}
+    return `<main class="a-body adm-console">${barra}
+      ${aTab === 'numeri' ? `<div class="a-sec adm-titolo"><b>Come va</b><span>adesso · ${timeIt(new Date().toISOString())}</span></div>` : ''}
       ${corpo}
       ${aTab === 'persone' ? `<p class="small muted">«Link password» manda alla persona un messaggio per reimpostarla da sé: la password non la può leggere né scrivere nessuno, nemmeno da qui. «Sospendi» le impedisce di schierare, contestare ed entrare in altre leghe: le squadre e i punti restano.</p>` : ''}
       ${aTab === 'sponsor' ? `<p class="small muted">Una <b>vista</b> è un dispositivo in un giorno, non un disegno della schermata: chi apre l'app dieci volte oggi conta uno. Non si registra chi guarda: per ogni sponsor c'è una riga al giorno con due numeri, e nient'altro.</p>

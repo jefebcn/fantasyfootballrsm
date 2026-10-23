@@ -154,6 +154,7 @@ function tabellaPunti(st, me, inCorso, mosse) {
       <span class="nm"><b>${esc(m.teamName)}</b><span>${esc(m.owner)} · ${r.played} ${r.played === 1 ? 'giornata' : 'giornate'}</span></span>
       <span class="pt"><b>${fmt(r.punti)}</b><span>punti</span></span>${icon('chev', 'ic sm cls-chev')}</a>`; }).join('')}</div>
     <p class="small muted" style="margin:-4px 2px 0">Tocca una squadra per vedere la sua formazione: si vede dal lock della giornata.</p>
+    <a class="a-btn sec" href="#/formazioni" style="text-decoration:none">${icon('users', 'ic sm')}Le formazioni di tutti</a>
     <div class="a-card dett"><div class="dhead"><b>Dettaglio</b><span>giornate · media · migliore</span></div>
       ${st.map((r) => { const m = S.managersById.get(r.managerId);
     return `<div class="drow${r.managerId === me?.id ? ' io' : ''}"><span class="nm">${r.position}. ${esc(m.teamName)}</span>

@@ -24,7 +24,7 @@ import { figura } from '../personaggio.js';
  */
 
 /** Le giornate di questa lega gia' chiuse (lock passato), dalla piu' recente. */
-function giornateChiuse() {
+export function giornateChiuse() {
   const out = [];
   for (let n = Math.min(30, S.giornataAperta()); n >= S.primaGiornata(); n--) {
     const md = S.matchday(n);

@@ -2674,3 +2674,32 @@ a.crow .cls-chev{flex:none;color:var(--text-muted);margin-left:-4px}
   .adm-console .adm-u .nm > span,.adm-console .adm-u .dati{font-size:12.5px}
   .adm-dash .vlist.adm-err{grid-template-columns:1fr}
 }
+
+/* LE FORMAZIONI DI TUTTI (#/formazioni): una scheda per squadra, l'undici
+   scritto per ruoli, i propri giocatori in evidenza. */
+.fx-lista{display:flex;flex-direction:column;gap:10px}
+.fx-sq{display:flex;flex-direction:column;gap:10px;text-decoration:none;color:inherit;padding:12px 14px}
+.fx-sq[hidden]{display:none}
+.fx-sq.io{box-shadow:var(--sh-card),inset 0 0 0 2px var(--primary)}
+.fx-testa{display:flex;align-items:center;gap:10px}
+.fx-testa .nm{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px}
+.fx-testa .nm b{font-weight:700;font-size:14.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.fx-testa .nm > span{font-size:12px;color:var(--text-muted)}
+.fx-testa > .ic{color:var(--text-muted);flex:none}
+.fx-tua{font-style:normal;font-size:10px;font-weight:700;padding:2px 6px;border-radius:999px;background:var(--primary-soft);color:var(--primary-ink);vertical-align:2px}
+.fx-pt{display:flex;flex-direction:column;align-items:flex-end;flex:none}
+.fx-pt b{font-family:var(--font-display);font-size:20px;font-variant-numeric:tabular-nums;line-height:1}
+.fx-pt span{font-size:10px;color:var(--text-muted)}
+.fx-nc{font-size:11px;font-weight:700;color:var(--negative);flex:none}
+.fx-sq.vuota{opacity:.75}
+.fx-undici{display:flex;flex-direction:column;gap:5px;border-top:1px solid var(--border);padding-top:9px}
+.fx-r{display:grid;grid-template-columns:22px minmax(0,1fr);gap:8px;align-items:start}
+.fx-r .rl{width:20px;height:20px;font-size:10px}
+.fx-r > span{display:flex;flex-wrap:wrap;gap:4px 10px;font-size:13px;line-height:20px}
+.fx-r > span > span{white-space:nowrap}
+.fx-c{font-style:normal;font-size:9px;font-weight:800;margin-left:3px;padding:1px 4px;border-radius:4px;background:var(--c-oro-400,#F2B705);color:#1A1A1A;vertical-align:1px}
+.fx-c.v{background:var(--surface-2);color:var(--text)}
+.fx-undici .anche,.fx-sotto .anche{color:var(--primary-ink);font-weight:700}
+.fx-quando{margin-top:4px}
+@media (min-width:700px){.fx-lista{display:grid;grid-template-columns:1fr 1fr}}
+.fd-giornata>span b{white-space:nowrap}

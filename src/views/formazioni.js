@@ -1,6 +1,6 @@
 import * as S from '../state.js';
 import { esc, fmt, icon, crest, badge, dateIt, timeIt } from '../ui.js';
-import { giornateChiuse } from './formazione-di.js';
+import { giornateChiuse, nonTorna } from './formazione-di.js';
 
 /**
  * LE FORMAZIONI DI TUTTI (Alex, 23/10, girando un messaggio: «di solito nei
@@ -18,16 +18,25 @@ import { giornateChiuse } from './formazione-di.js';
  */
 const RUOLI = ['P', 'D', 'C', 'A'];
 
-function undici(l, mie) {
+/** Il fantavoto accanto al nome, appena c'e': verde da 7, rosso sotto il 6. */
+function voto(r, giocata = false) {
+  // senza voto: se la sua squadra ha gia' giocato e' un senza voto, se no non si sa ancora
+  if (!r) return giocata ? '<i class="fx-v sv">s.v.</i>' : '';
+  if (r.isSV) return '<i class="fx-v sv">s.v.</i>';
+  return `<i class="fx-v${r.fantaVote >= 7 ? ' su' : r.fantaVote < 6 ? ' giu' : ''}">${fmt(r.fantaVote)}</i>`;
+}
+function undici(l, mie, voti, giocate = new Set()) {
+  const v = (p) => (voti ? voto(voti.get(p.id), giocate.has(p.clubId)) : '');
   const per = { P: [], D: [], C: [], A: [] };
   for (const id of (l.starters || []).filter(Boolean)) {
     const p = S.playersById.get(id); if (!p) continue;
     const segno = l.captainId === id ? '<i class="fx-c">C</i>' : l.viceCaptainId === id ? '<i class="fx-c v">V</i>' : '';
-    per[p.role]?.push(`<span class="${mie.has(id) ? 'anche' : ''}">${esc(p.lastName)}${segno}</span>`);
+    per[p.role]?.push(`<span class="${mie.has(id) ? 'anche' : ''}">${esc(p.lastName)}${segno}${v(p)}</span>`);
   }
-  return RUOLI.map((r) => `<div class="fx-r"><b class="rl rl-${r.toLowerCase()}">${r}</b><span>${per[r].join('') || '—'}</span></div>`).join('');
+  const righe = RUOLI.map((r) => `<div class="fx-r"><b class="rl rl-${r.toLowerCase()}">${r}</b><span>${per[r].join('') || '—'}</span></div>`).join('');
+  const panca = (l.bench || []).filter(Boolean).map((id) => S.playersById.get(id)).filter(Boolean);
+  return righe + (panca.length ? `<div class="fx-panca"><b>Panchina</b><span>${panca.map((p) => `${esc(p.lastName)}${v(p)}`).join(' · ')}</span></div>` : '');
 }
-
 export const formazioniTutte = {
   title: 'Formazioni', appbar: 'back', sub: () => 'Le formazioni di tutti',
   render({ params }) {
@@ -46,6 +55,8 @@ export const formazioniTutte = {
     const me = S.me();
     const mia = me ? S.savedLineup(n, me.id) : null;
     const mie = new Set(mia ? (mia.starters || []).filter(Boolean) : []);
+    const voti = conVoti ? S.ratingsOf(n) : null;
+    const giocate = new Set(S.matchesOf(n).filter((x) => x.status === 'played').flatMap((x) => [x.homeClubId, x.awayClubId]));
     // chi ha piu' punti in cima quando ci sono i voti; prima, in ordine di nome
     const righe = S.base.managers.map((m) => {
       const l = S.savedLineup(n, m.id);
@@ -63,7 +74,8 @@ export const formazioniTutte = {
       return `<a class="a-card fx-sq${io ? ' io' : ''}" data-cerca="${cerca}" href="#/formazione/${m.id}/${n}">
         <div class="fx-testa">${crest(m, 'sm')}<span class="nm"><b>${esc(m.teamName)}${io ? ' <i class="fx-tua">la tua</i>' : ''}</b><span>${esc(m.owner || '')} · ${esc(l.formation || '')}</span></span>
           ${punti !== null ? `<span class="fx-pt"><b>${fmt(punti)}</b><span>punti</span></span>` : ''}${icon('chev', 'ic sm')}</div>
-        <div class="fx-undici">${undici(l, io ? new Set() : mie)}</div></a>`;
+        <div class="fx-undici">${undici(l, io ? new Set() : mie, voti, giocate)}</div>
+        ${nonTorna(l) ? `<p class="fx-nontorna">${icon('warn', 'ic sm')}<span>Consegnata come ${esc(l.formation)}: dopo, nel listone, un giocatore ha cambiato ruolo e oggi i ruoli fanno ${nonTorna(l)}. Vale la formazione com'era quando è stata consegnata.</span></p>` : ''}</a>`;
     };
     return `<main class="a-body">
       <div class="fd-giornata">
@@ -71,7 +83,7 @@ export const formazioniTutte = {
         <span><b>Giornata ${n}</b>${badge(st)}</span>
         ${dopo ? `<a class="ib" href="#/formazioni/${dopo}" aria-label="Giornata ${dopo}">${icon('chev')}</a>` : '<span class="ib spento"></span>'}
       </div>
-      <p class="small muted fx-sotto"><b>${consegnate}</b> su ${righe.length} hanno consegnato.${mie.size ? ' In <b class="anche">evidenza</b> i giocatori che hai schierato anche tu.' : ''} Tocca una squadra per vederla sul campo.</p>
+      <p class="small muted fx-sotto"><b>${consegnate}</b> su ${righe.length} hanno consegnato.${voti ? ' Accanto ai nomi il fantavoto, appena c\'è.' : ''}${mie.size ? ' <span class="anche">Sottolineati</span> i giocatori che hai schierato anche tu.' : ''} Tocca una squadra per vederla sul campo.</p>
       ${righe.length > 6 ? '<input class="field-input" id="fx-cerca" type="search" placeholder="Cerca una squadra o un allenatore" autocomplete="off">' : ''}
       <div class="fx-lista">${righe.map(carta).join('')}</div>
       <p class="small muted fx-nessuno" hidden>Nessuna squadra con questo nome.</p>

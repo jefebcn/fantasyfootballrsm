@@ -288,7 +288,7 @@ export function render() {
   const corpo = fuori
     ? `<main class="a-body"><div class="empty"><p>Non fai parte di questa lega.</p><a class="a-btn" href="#/leghe" style="text-decoration:none">Le mie leghe</a></div></main>`
     : view.render(ctx);
-  root.innerHTML = `<div class="app${senzaNav ? ' senza-nav' : ''}">${appbar(view, ctx)}${corpo}${senzaNav ? '' : nav(path)}${drawer()}</div>`;
+  root.innerHTML = `<div class="app${senzaNav ? ' senza-nav' : ''}${view.largo ? ' largo' : ''}">${appbar(view, ctx)}${corpo}${senzaNav ? '' : nav(path)}${drawer()}</div>`;
   if (view.mount && !fuori) view.mount(root, ctx);
   const body = root.querySelector('.a-body');
   if (body && scrollMemo[path] && prevPath === path) body.scrollTop = scrollMemo[path];

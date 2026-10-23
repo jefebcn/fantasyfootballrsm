@@ -9,7 +9,8 @@
  *  - dalla panchina, «in campo al posto di…» fa lo stesso dall'altro lato;
  *  - la tribuna (chi non e' convocato) si vede, e da li' si va in panchina;
  *  - «Completa la panchina» riempie i posti liberi, portiere per primo;
- *  - la formazione si conferma come prima.
+ *  - la formazione si conferma come prima;
+ *  - sotto ogni giocatore la fantamedia (FM), per chi non li conosce tutti.
  */
 const { chromium } = require('playwright');
 const BASE = process.env.BASE || 'http://localhost:4173';
@@ -41,6 +42,11 @@ const ok = [], ko = []; const et = (c, t) => (c ? ok : ko).push(t);
     const trib = [...document.querySelectorAll('[data-trib]')].map((x) => x.dataset.trib);
     return { tit, panca, trib, ruoli: Object.fromEntries([...trib].map((id) => [id, S.playersById.get(id).role])) };
   });
+
+  // ---- 0. la fantamedia sotto ogni titolare (Alex, 23/10)
+  const fm = await p.evaluate(() => [...document.querySelectorAll('.slot .fm')].map((x) => x.innerText));
+  et(fm.length === 11 && fm.every((x) => /^FM (\d+,\d{2}|–)$/.test(x)), `sotto ogni titolare la fantamedia (${fm.slice(0, 3).join(', ')}…)`);
+  et(await p.evaluate(() => [...document.querySelectorAll('[data-bench]:not(.vuota) .nm > span')].every((x) => /FM /.test(x.innerText))), 'e accanto a ogni panchinaro');
 
   // ---- 1. dal campo: un panchinaro si sceglie e lo scambio e' in un tocco
   const prima = await stato();

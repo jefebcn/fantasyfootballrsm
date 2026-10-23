@@ -65,7 +65,7 @@ function benchRow(id, i, bench, locked, voto = '', lampo = new Set()) {
   const su = i > 0 && bench[i - 1]; const giu = i < 6 && bench[i + 1];
   return `<div class="br${lampo.has(id) ? ' appena' : ''}" data-bench="${i}"><span class="n">${i + 1}</span>
     ${faccia(p, clubOf(id))}
-    <span class="nm"><b>${esc(p.name)}${!locked && S.squalifica(id) ? ' <i class="squal">SQUALIFICATO</i>' : ''}</b><span>${esc(clubOf(id).name)} · quot. ${p.quotation}</span></span>
+    <span class="nm"><b>${esc(p.name)}${!locked && S.squalifica(id) ? ' <i class="squal">SQUALIFICATO</i>' : ''}</b><span>${locked ? '' : `${fmTesto(id)} · `}${esc(clubOf(id).name)} · quot. ${p.quotation}</span></span>
     ${voto}
     <span class="primo${primo ? '' : ' no'}"${primo ? ` title="Primo ${ROLE_NAME[p.role].slice(0, -1).toLowerCase()} della panchina: entra lui se un ${ROLE_NAME[p.role].slice(0, -1).toLowerCase()} titolare non prende voto"` : ' aria-hidden="true"'}>${primo ? `1º ${p.role}` : ''}</span>
     ${locked ? '' : `<span class="acts"><button class="rm" data-up="${i}" aria-label="Sposta su ${esc(p.name)}" ${su ? '' : 'disabled'}>${icon('up', 'ic sm')}</button><button class="rm" data-down="${i}" aria-label="Sposta giù ${esc(p.name)}" ${giu ? '' : 'disabled'}>${icon('down', 'ic sm')}</button></span>`}</div>`;
@@ -75,6 +75,19 @@ const ruoloDi = (id) => P(id)?.role;
 const perQuot = (a, b) => P(b).quotation - P(a).quotation;
 const perRuolo = (a, b) => (M.RUOLI.indexOf(ruoloDi(a)) - M.RUOLI.indexOf(ruoloDi(b))) || perQuot(a, b);
 let appena = new Set();
+/**
+ * LA FANTAMEDIA (Alex, 23/10): «sotto i personaggi una fantamedia, cosi' chi
+ * non conosce bene i calciatori puo' basarsi sulle statistiche». E' la media
+ * dei fantavoti nelle partite giocate fin qui (S.rendimento), senza quelle
+ * senza voto. Sotto il 6 in rosso, dal 7 in verde: si legge senza leggere.
+ */
+const fmDi = (id) => S.rendimento(id);
+const fmClasse = (m) => (m == null ? 'fm-nd' : m >= 7 ? 'fm-su' : m < 6 ? 'fm-giu' : '');
+const fmNum = (m) => (m == null ? '–' : fmt(m, 2));
+const fmChip = (id) => { const r = fmDi(id); return `<i class="fm ${fmClasse(r.media)}" title="${r.media == null ? 'Nessun voto finora' : `Fantamedia in ${r.presenze} ${r.presenze === 1 ? 'partita' : 'partite'}`}">FM ${fmNum(r.media)}</i>`; };
+const fmTesto = (id) => { const r = fmDi(id); return r.media == null ? '<span class="fm-t fm-nd">FM –</span>' : `<span class="fm-t ${fmClasse(r.media)}">FM ${fmNum(r.media)}</span> in ${r.presenze}`; };
+/** Chi scegliere prima: chi ha la fantamedia piu' alta, poi la quotazione. */
+const perFm = (a, b) => ((fmDi(b).media ?? -1) - (fmDi(a).media ?? -1)) || perQuot(a, b);
 const slotsByRole = (d) => M.posti(d, ruoloDi);
 /** `recupera` va passato solo quando si cambia modulo: e' li' che un titolare
  *  resta fuori senza averlo deciso, e ripescarlo in panchina evita di perderlo.
@@ -185,7 +198,7 @@ export const formazione = {
     // chi si e' appena mosso lampeggia un attimo: si vede dove e' finito
     const lampo = appena; appena = new Set();
     const slot = (id, role, i) => id
-      ? `<div class="slot${lampo.has(id) ? ' appena' : ''}" data-slot="${role}:${i}"><span class="av faccia">${d.captainId === id ? '<span class="cap">C</span>' : d.viceCaptainId === id ? '<span class="cap">V</span>' : ''}${avatar(P(id), S.clubsById.get(P(id).clubId))}${roleChip(role)}${voto(id)}${!locked && S.squalifica(id, n) ? '<span class="squal-x" title="Squalificato">SQ</span>' : ''}</span><b>${esc(P(id).lastName)}</b></div>`
+      ? `<div class="slot${lampo.has(id) ? ' appena' : ''}" data-slot="${role}:${i}"><span class="av faccia">${d.captainId === id ? '<span class="cap">C</span>' : d.viceCaptainId === id ? '<span class="cap">V</span>' : ''}${avatar(P(id), S.clubsById.get(P(id).clubId))}${roleChip(role)}${voto(id)}${!locked && S.squalifica(id, n) ? '<span class="squal-x" title="Squalificato">SQ</span>' : ''}</span><b>${esc(P(id).lastName)}</b>${!locked ? fmChip(id) : ''}</div>`
       : `<div class="slot vuoto" data-slot="${role}:${i}"><span class="av">+</span><b>${ROLE_NAME[role].slice(0, -1).replace('Portier', 'Portiere')}</b></div>`;
     const line = (role) => `<div class="line" data-line="${role.toLowerCase()}">${s[role].map((id, i) => slot(id, role, i)).join('')}</div>`;
     const bench = Array.from({ length: 7 }, (_, i) => d.bench[i] || null);
@@ -228,13 +241,14 @@ export const formazione = {
     : `<p class="small muted nota">Si cambia a ogni giornata: ${S.rules().modules.length} moduli, la rosa li copre tutti.</p>
       <div class="moduli" data-modules>${S.rules().modules.map((m) => `<button class="chip mod${m === d.formation ? ' on' : ''}" data-mod="${m}" ${locked ? 'disabled' : ''}>${m}</button>`).join('')}</div>`}
       <div class="pitch-wrap"><div class="pitch">${CAMPO}${line('P')}${line('D')}${line('C')}${line('A')}</div></div>
+      ${!locked && !b ? '<p class="small muted nota fm-nota"><b>FM</b> è la fantamedia: la media dei fantavoti nelle partite giocate fin qui. <span class="fm-su">Verde</span> da 7 in su, <span class="fm-giu">rossa</span> sotto il 6.</p>' : ''}
       <div class="a-sec"><b>Panchina</b><span class="copertura">${editabile ? M.RUOLI.map((r) => `<i class="${ruoliPanca.has(r) ? '' : 'manca'}" title="${ruoliPanca.has(r) ? `${UNO[r]} in panchina` : `nessun ${UNO[r]} in panchina`}">${r}</i>`).join('') : ''}${bench.filter(Boolean).length}/7</span></div>
       <p class="small muted nota">L'ordine conta: al posto di un titolare senza voto entra il <b>primo panchinaro dello stesso ruolo</b> (art. 8.2).${editabile ? ' Tocca un panchinaro per mandarlo in campo.' : ''}</p>
       <div class="bench">${bench.map((id, i) => benchRow(id, i, bench, locked, grezzo(id), lampo)).join('')}</div>
       ${editabile && d.bench.length < 7 && inTribuna.length ? `<button class="a-btn ghost completa" id="completa-panchina">${icon('userplus', 'ic sm')}Completa la panchina · ${7 - d.bench.length === 1 ? '1 posto libero' : `${7 - d.bench.length} posti liberi`}</button>` : ''}
       ${editabile && inTribuna.length ? `<div class="a-sec"><b>Tribuna</b><span>${inTribuna.length === 1 ? '1 non convocato' : `${inTribuna.length} non convocati`}</span></div>
       <p class="small muted nota">Non giocano questa giornata. Tocca per mandarli in campo o in panchina.</p>
-      <div class="tribuna">${inTribuna.map((id) => `<button data-trib="${id}"${lampo.has(id) ? ' class="appena"' : ''}>${faccia(P(id), clubOf(id))}<b>${esc(P(id).lastName)}</b><span class="q">${S.squalifica(id, n) ? '<i class="squal">SQ</i>' : `quot. ${P(id).quotation}`}</span></button>`).join('')}</div>` : ''}
+      <div class="tribuna">${inTribuna.map((id) => `<button data-trib="${id}"${lampo.has(id) ? ' class="appena"' : ''}>${faccia(P(id), clubOf(id))}<b>${esc(P(id).lastName)}</b>${S.squalifica(id, n) ? '<span class="q"><i class="squal">SQ</i></span>' : fmChip(id)}</button>`).join('')}</div>` : ''}
       ${esito ? daDoveVengono(esito, voti) : ''}
       ${errors.length ? `<div class="warn block">${icon('warn', 'ic sm')}<span>${errors.map(esc).join(' · ')}</span></div>` : ''}
       ${!b && !locked ? scoperta(d, n) : ''}
@@ -262,14 +276,14 @@ export const formazione = {
     // Prima chi stava in panchina compariva spento («gia' schierato») e per
     // cambiare un titolare bisognava toglierlo e poi scegliere: due passi, e se
     // ci si fermava a meta' il posto restava vuoto.
-    const riga = (id, mossa, tag = '', cls = '') => `<button ${mossa}>${faccia(P(id), clubOf(id))}<span><b>${nome(id)}</b><span>${esc(clubOf(id).name)} · quot. ${P(id).quotation}${sq(id) ? ' · <b class="squal-t">squalificato</b>' : ''}</span></span>${tag ? `<span class="tag ${cls}">${tag}</span>` : '<span></span>'}</button>`;
+    const riga = (id, mossa, tag = '', cls = '') => `<button ${mossa}>${faccia(P(id), clubOf(id))}<span><b>${nome(id)}</b><span>${fmTesto(id)} · ${esc(clubOf(id).name)} · quot. ${P(id).quotation}${sq(id) ? ' · <b class="squal-t">squalificato</b>' : ''}</span></span>${tag ? `<span class="tag ${cls}">${tag}</span>` : '<span></span>'}</button>`;
     const libero = (mossa, r) => `<button ${mossa}><span class="av-ph">+</span><span><b>Posto libero</b><span>manca un ${UNO[r]}</span></span><span class="tag vuoto">libero</span></button>`;
     const gruppo = (titolo, righe) => (righe.length ? `<p class="pl-gruppo">${titolo}</p><div class="plist cambio">${righe.join('')}</div>` : '');
     const testa = (id, sotto) => `<div class="cambio-testa">${faccia(P(id), clubOf(id))}<span><b>${nome(id)}</b><span>${sotto}</span></span></div>`;
     const inCampo = (r, i, pid) => `data-m="campo" data-r="${r}" data-i="${i}" data-pid="${pid}"`;
     const inPanca = (pos, pid) => `data-m="panca" data-pos="${pos}" data-pid="${pid}"`;
     const panchinari = (r) => d.bench.map((x, k) => [x, k]).filter(([x]) => !r || ruoloDi(x) === r);
-    const fuori = (r) => M.tribuna(d, rosterIds).filter((x) => !r || ruoloDi(x) === r).sort(r ? perQuot : perRuolo);
+    const fuori = (r) => M.tribuna(d, rosterIds).filter((x) => !r || ruoloDi(x) === r).sort(r ? perFm : perRuolo);
 
     const apri = (html) => {
       ctx.sheet(html);

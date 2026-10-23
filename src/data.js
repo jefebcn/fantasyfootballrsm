@@ -54,8 +54,8 @@ function scartoRoma(t) {
   const m = /GMT([+-])(\d{2}):(\d{2})/.exec(s);
   return m ? (m[1] === '-' ? -1 : 1) * (Number(m[2]) + Number(m[3]) / 60) : 1;
 }
-/** Dalla 7a giornata il lock e' 10 minuti prima del primo calcio d'inizio. */
-export const LOCK_PRIMA_DAL = 7;
+/** Dalla 6a giornata il lock e' 10 minuti prima del primo calcio d'inizio. */
+export const LOCK_PRIMA_DAL = 6;
 export const LOCK_PRIMA_MINUTI = 10;
 /**
  * L'istante in cui a Roma sono le `ora` del giorno in cui cade `t`.
@@ -180,12 +180,13 @@ export function buildSeason(_seed = 20262027) {
   // chi segnava. Il regolamento (art. 8) dice "lock all'inizio della prima
   // gara": le 15:00 sono un anticipo, non un ritardo.
   //
-  // Dalla 7a (Alex, 23/10) il lock e' 10 minuti prima della prima partita:
+  // Dalla 6a (Alex, 23/10) il lock e' 10 minuti prima della prima partita:
   // le 15:00 chiudevano sei ore prima del fischio delle 21:15 e chi
-  // schierava la sera restava fuori. Le giornate fino alla 6a restano com'erano:
-  // sono chiuse, le formazioni degli altri si sono gia' viste, e riaprirle
-  // cambierebbe la storia. Dove l'orario della FSGC non c'e' ancora resta la
-  // stima delle 15:00, che si sposta quando l'orario arriva.
+  // schierava la sera restava fuori. La 6a, gia' chiusa alle 15:00, l'ha
+  // voluta riaprire lui fino alle 21:05 sapendo che le formazioni degli altri
+  // si erano gia' viste. Le giornate fino alla 5a restano com'erano. Dove
+  // l'orario della FSGC non c'e' ancora resta la stima delle 15:00, che si
+  // sposta quando l'orario arriva.
   const matchdays = []; const matches = [];
   let ultimoNoto = null; let ultimoN = 0;   // ultima giornata con un orario vero
   const perGiornata = {};

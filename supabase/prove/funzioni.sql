@@ -2453,4 +2453,83 @@ end $$;
 reset role;
 delete from public.banner_conteggi;
 
+-- 046: formazioni preparate e conferma da amministratore
+reset role;
+select set_config('request.jwt.claims', '', false);
+insert into public.profiles (id, display_name) values ('user_boz', 'Bozzo'), ('user_boz2', 'Altro') on conflict (id) do nothing;
+select pg_temp.entra('user_boz');
+select public.create_league('Lega Bozze', 'LBZ', 'Bozze FC', '#123456', 'BF') as lega_boz \gset
+reset role;
+select id as m_boz from public.league_members where league_id = :'lega_boz' and user_id = 'user_boz' \gset
+insert into public.matchday_locks (matchday, lock_at) values (27, now() + interval '3 days')
+  on conflict (matchday) do update set lock_at = excluded.lock_at;
+insert into public.matchday_locks (matchday, lock_at) values (26, now() - interval '3 days')
+  on conflict (matchday) do update set lock_at = excluded.lock_at;
+select pg_temp.formazione(:'m_boz', '4-4-2')::text as f_boz \gset
+select set_config('prova.lega_boz', :'lega_boz', false), set_config('prova.m_boz', :'m_boz', false);
+select pg_temp.entra('user_boz');
+set role authenticated;
+insert into public.formazioni_bozze (league_id, member_id, matchday, lineup) values (:'lega_boz', :'m_boz', 27, :'f_boz'::jsonb);
+reset role;
+select pg_temp.esige('la bozza la salva chi prepara la formazione',
+  exists (select 1 from public.formazioni_bozze where member_id = :'m_boz' and matchday = 27));
+select pg_temp.entra('user_boz2');
+set role authenticated;
+select pg_temp.esige('le bozze degli altri non si vedono',
+  not exists (select 1 from public.formazioni_bozze where member_id = :'m_boz'));
+do $$ begin
+  perform public.admin_formazioni(27);
+  raise exception 'FALLITA: l''elenco doveva essere chiuso a chi non amministra';
+exception when others then
+  if sqlerrm like 'FALLITA%' then raise; end if;
+  raise notice 'ok  l''elenco delle formazioni e'' solo per chi amministra (%)', sqlerrm;
+end $$;
+reset role;
+update public.profiles set is_admin = true where id = 'user_pub1';
+select pg_temp.entra('user_pub1');
+set role authenticated;
+select pg_temp.esige('l''amministratore vede la squadra con la bozza e senza consegna',
+  exists (select 1 from jsonb_array_elements(public.admin_formazioni(27) -> 'squadre') s
+           where s ->> 'squadra_id' = :'m_boz' and s ->> 'bozza_at' is not null and s ->> 'consegnata_at' is null));
+select public.admin_conferma_formazione(:'lega_boz', :'m_boz', 27, 'bozza');
+reset role;
+select pg_temp.esige('confermata dall''amministratore: ora e'' consegnata, uguale alla bozza',
+  (select lineup -> 'starters' = (:'f_boz'::jsonb -> 'starters') from public.lineups where member_id = :'m_boz' and matchday = 27));
+select pg_temp.esige('e resta nel registro degli amministratori',
+  exists (select 1 from public.registro_admin where azione = 'conferma_formazione' and bersaglio = :'m_boz'));
+-- una bozza sbagliata non passa: gli stessi controlli di una consegna normale
+update public.formazioni_bozze set lineup = jsonb_set(lineup, '{starters}', (lineup -> 'starters') - 10) where member_id = :'m_boz';
+select pg_temp.entra('user_pub1');
+set role authenticated;
+do $$ begin
+  perform public.admin_conferma_formazione(current_setting('prova.lega_boz')::uuid, current_setting('prova.m_boz')::uuid, 27, 'bozza');
+  raise exception 'FALLITA: una bozza con 10 titolari non doveva passare';
+exception when others then
+  if sqlerrm like 'FALLITA%' then raise; end if;
+  raise notice 'ok  la conferma passa dagli stessi controlli della consegna (%)', sqlerrm;
+end $$;
+reset role;
+select pg_temp.esige('e la formazione buona resta', (select jsonb_array_length(lineup -> 'starters') = 11 from public.lineups where member_id = :'m_boz' and matchday = 27));
+-- a giornata chiusa non si consegna per conto di nessuno
+select pg_temp.entra('user_pub1');
+set role authenticated;
+do $$ begin
+  perform public.admin_conferma_formazione(current_setting('prova.lega_boz')::uuid, current_setting('prova.m_boz')::uuid, 26, 'ultima');
+  raise exception 'FALLITA: a giornata chiusa la conferma doveva essere rifiutata';
+exception when others then
+  if sqlerrm like 'FALLITA%' then raise; end if;
+  raise notice 'ok  a giornata chiusa non si conferma (%)', sqlerrm;
+end $$;
+-- «come l'ultima»: la 27 consegnata si ripete alla 28
+reset role;
+insert into public.matchday_locks (matchday, lock_at) values (28, now() + interval '10 days')
+  on conflict (matchday) do update set lock_at = excluded.lock_at;
+select pg_temp.entra('user_pub1');
+set role authenticated;
+select pg_temp.esige('«come l''ultima» ripete la formazione della 27',
+  (public.admin_conferma_formazione(:'lega_boz', :'m_boz', 28, 'ultima') ->> 'dalla_giornata') = '27');
+reset role;
+select pg_temp.esige('e la 28 risulta consegnata', exists (select 1 from public.lineups where member_id = :'m_boz' and matchday = 28));
+select set_config('request.jwt.claims', '', false);
+
 select 'tutte le prove sulle funzioni sono passate' as esito;

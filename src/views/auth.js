@@ -1,12 +1,17 @@
 import * as S from '../state.js';
 import { esc, icon, logo, marchio } from '../ui.js';
 import { ETA_MINIMA } from '../config.js';
+import { erroreRegole } from '../password.js';
 
 let tab = 'in';            // 'in' | 'up' | 'link'
 let pending = null;        // { email, kind: 'confirm' | 'link' }
 let busy = false;
 let notice = null;         // { kind: 'ok' | 'err', text }
 let emailGia = null;        // l'e-mail che ha gia' un account: la si rimette in «Accedi»
+// Quello che si era scritto, rimesso nei campi quando un errore ridisegna la
+// schermata: prima ogni «password non corretta» svuotava anche l'e-mail (e il
+// nome all'iscrizione), e si ricominciava da capo. La password no: si riscrive.
+let scritti = {};
 
 let pendingTab = null;
 /** Consente a un'altra vista di aprire l'accesso già sulla scheda giusta. */
@@ -65,7 +70,7 @@ export const login = {
     if (slot) { slot.innerHTML = ''; S.clerkMount(slot, 'sign-in'); return; }
     const val = (s) => root.querySelector(s)?.value.trim() || '';
     const setBusy = (on, label) => { busy = on; const b = root.querySelector('#primary'); if (b) { b.disabled = on; b.dataset.label ||= b.textContent; b.textContent = on ? label : b.dataset.label; } };
-    const fail = (e) => { notice = { kind: 'err', text: e.message || String(e) }; ctx.render(); };
+    const fail = (e) => { scritti = { email: val('#email'), name: val('#name') }; notice = { kind: 'err', text: e.message || String(e) }; ctx.render(); };
 
     root.querySelector('main').addEventListener('click', async (e) => {
       const t = e.target.closest('[data-tab]'); if (t) { tab = t.dataset.tab; notice = null; ctx.render(); return; }
@@ -81,7 +86,7 @@ export const login = {
       if (e.target.closest('#vailink')) { tab = 'link'; notice = null; ctx.render(); return; }
       if (e.target.closest('#forgot')) {
         const email = val('#email'); if (!valid(email)) { fail(new Error('Scrivi prima la tua e-mail.')); return; }
-        try { await S.resetPassword(email); notice = { kind: 'ok', text: `Link per reimpostare la password mandato a ${email}.` }; ctx.render(); } catch (err) { fail(err); }
+        try { await S.resetPassword(email); scritti = { email }; notice = { kind: 'ok', text: `Link mandato a ${email}. Aprilo e scegli subito la password nuova: l'app te la chiede appena entri. Il link vale una volta sola.` }; ctx.render(); } catch (err) { fail(err); }
         return;
       }
       if (!e.target.closest('#primary') || busy) return;
@@ -107,6 +112,8 @@ export const login = {
       }
       const password = val('#password');
       if (password.length < 6) { fail(new Error('La password deve avere almeno 6 caratteri.')); return; }
+      // all'iscrizione le regole intere del server (src/password.js), qui e non dopo un giro a vuoto
+      if (tab === 'up' && erroreRegole(password)) { fail(new Error(erroreRegole(password))); return; }
       if (tab === 'in') {
         setBusy(true, 'Accedo…'); try { await S.signInPassword(email, password); } catch (err) { setBusy(false); fail(err); }
         return;
@@ -137,9 +144,9 @@ function socialBlock() {
 }
 function credentialsPanel() {
   const up = tab === 'up';
-  return `${campo('email', 'E-mail', `type="email" autocomplete="email" inputmode="email" value="${esc(up ? '' : (emailGia || emailRicordata()))}"`)}
-    ${up ? campo('name', 'Come ti chiami', 'autocomplete="name" maxlength="24"') : ''}
-    ${campo('password', up ? 'Password, almeno 6 caratteri' : 'Password',
+  return `${campo('email', 'E-mail', `type="email" autocomplete="email" inputmode="email" value="${esc(scritti.email || (up ? '' : (emailGia || emailRicordata())))}"`)}
+    ${up ? campo('name', 'Come ti chiami', `autocomplete="name" maxlength="24" value="${esc(scritti.name || '')}"`) : ''}
+    ${campo('password', up ? 'Password: 6 caratteri, lettere e numeri' : 'Password',
       `type="password" autocomplete="${up ? 'new-password' : 'current-password'}"`,
       `<button type="button" class="occhio" id="vedi" aria-label="Mostra la password">${icon('eye', 'ic sm')}</button>`)}
     <div class="riga">
@@ -150,7 +157,7 @@ function credentialsPanel() {
     ${up ? legale() : '<button class="sottile centro" data-tab="link">Entra senza password, con un link</button>'}`;
 }
 function linkPanel() {
-  return `${campo('email', 'E-mail', `type="email" autocomplete="email" inputmode="email" value="${esc(emailRicordata())}"`)}
+  return `${campo('email', 'E-mail', `type="email" autocomplete="email" inputmode="email" value="${esc(scritti.email || emailRicordata())}"`)}
     <button class="a-btn oro" id="primary">Mandami il link</button>
     <p class="nota">Senza password: ricevi un'e-mail, tocchi il link e sei dentro. Se non hai un account, viene creato al primo accesso.</p>
     ${legale()}

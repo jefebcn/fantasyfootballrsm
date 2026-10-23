@@ -43,3 +43,23 @@ test('nessun lock dopo il calcio d\'inizio della prima partita della sua giornat
       `giornata ${r.matchday}: lock ${r.lock_at} dopo il primo calcio d'inizio ${new Date(primo[r.matchday]).toISOString()}`);
   }
 });
+
+// Dalla 7a (Alex, 23/10): 10 minuti prima del primo calcio d'inizio, non piu'
+// alle 15:00. Le giornate gia' chiuse restano dove erano.
+test('dalla 7a giornata il lock e\' 10 minuti prima della prima partita', async () => {
+  const { CALENDARIO } = await import('../src/calendario-dati.js');
+  const { LOCK_PRIMA_DAL, LOCK_PRIMA_MINUTI } = await import('../src/data.js');
+  const primo = {};
+  for (const [g, , , iso] of CALENDARIO) {
+    const t = Date.parse(iso);
+    if (Number.isFinite(t) && t > 0 && !(primo[g] <= t)) primo[g] = t;
+  }
+  const r = Object.fromEntries(righeLock().map((x) => [x.matchday, Date.parse(x.lock_at)]));
+  let viste = 0;
+  for (const [g, t] of Object.entries(primo)) {
+    if (+g < LOCK_PRIMA_DAL) continue;
+    assert.equal(r[g], t - LOCK_PRIMA_MINUTI * 60000, `giornata ${g}`); viste++;
+  }
+  assert.ok(viste >= 1, 'serve almeno una giornata dalla 7a con gli orari');
+  assert.equal(new Date(r[6]).toISOString(), '2026-10-23T13:00:00.000Z', 'la 6a, gia\' chiusa, non si riapre');
+});

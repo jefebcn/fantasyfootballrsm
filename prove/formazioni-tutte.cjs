@@ -55,7 +55,9 @@ const ok = [], ko = []; const et = (c, t) => (c ? ok : ko).push(t);
     // la mia della giornata chiusa dichiara un modulo che coi ruoli di oggi non torna (il caso Faustina, 23/10)
     s.tables.lineups.push({ league_id: lega, member_id: mio, matchday: n - 1, lineup: { ...undici(mio), formation: '3-4-3' }, submitted_at: ora });
     // una giornata coi voti gia' caricati, per vederli accanto ai nomi
-    let conDati = 0; for (let k = n - 1; k >= 1; k--) if (S.hasData(k)) { conDati = k; break; }
+    // giocata per intero: a giornata in corso (la 6ª il 23/10 sera) i giocatori
+    // di prova possono non avere ancora il voto, e la prova non direbbe niente
+    let conDati = 0; for (let k = n - 1; k >= 1; k--) if (S.hasData(k) && S.matchesOf(k).every((m) => m.status === 'played')) { conDati = k; break; }
     if (conDati && conDati !== n - 1) s.tables.lineups.push({ league_id: lega, member_id: 'm_bruno', matchday: conDati, lineup: conPanca('m_bruno'), submitted_at: ora });
     localStorage.setItem('fcs:conDati', String(conDati));
     // e cosi' quella gia' consegnata per la giornata aperta: l'editor deve dirlo

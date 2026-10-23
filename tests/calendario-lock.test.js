@@ -44,9 +44,9 @@ test('nessun lock dopo il calcio d\'inizio della prima partita della sua giornat
   }
 });
 
-// Dalla 7a (Alex, 23/10): 10 minuti prima del primo calcio d'inizio, non piu'
-// alle 15:00. Le giornate gia' chiuse restano dove erano.
-test('dalla 7a giornata il lock e\' 10 minuti prima della prima partita', async () => {
+// Dalla 6a (Alex, 23/10): 10 minuti prima del primo calcio d'inizio, non piu'
+// alle 15:00. Le giornate prima restano dove erano.
+test('dalla 6a giornata il lock e\' 10 minuti prima della prima partita', async () => {
   const { CALENDARIO } = await import('../src/calendario-dati.js');
   const { LOCK_PRIMA_DAL, LOCK_PRIMA_MINUTI } = await import('../src/data.js');
   const primo = {};
@@ -60,6 +60,7 @@ test('dalla 7a giornata il lock e\' 10 minuti prima della prima partita', async 
     if (+g < LOCK_PRIMA_DAL) continue;
     assert.equal(r[g], t - LOCK_PRIMA_MINUTI * 60000, `giornata ${g}`); viste++;
   }
-  assert.ok(viste >= 1, 'serve almeno una giornata dalla 7a con gli orari');
-  assert.equal(new Date(r[6]).toISOString(), '2026-10-23T13:00:00.000Z', 'la 6a, gia\' chiusa, non si riapre');
+  assert.ok(viste >= 1, 'serve almeno una giornata con gli orari');
+  assert.equal(new Date(r[6]).toISOString(), '2026-10-23T19:05:00.000Z', 'la 6a chiude alle 21:05 di San Marino');
+  assert.equal(new Date(r[5]).toISOString(), '2026-10-09T13:00:00.000Z', 'la 5a resta alle 15:00');
 });

@@ -50,8 +50,18 @@ const ok = [], ko = []; const et = (c, t) => (c ? ok : ko).push(t);
     });
     const undici = (m) => { const r = rosa[m]; const of = (role) => r.filter((id) => S.playersById.get(id).role === role);
       return { formation: '4-4-2', starters: [...of('P').slice(0, 1), ...of('D').slice(0, 4), ...of('C').slice(0, 4), ...of('A').slice(0, 2)], bench: [], captainId: of('A')[0], viceCaptainId: of('C')[0] }; };
-    (s.tables.lineups ||= []).push({ league_id: lega, member_id: 'm_bruno', matchday: n - 1, lineup: undici('m_bruno'), submitted_at: ora });
-    s.tables.lineups.push({ league_id: lega, member_id: mio, matchday: n - 1, lineup: undici(mio), submitted_at: ora });
+    const conPanca = (m) => { const u = undici(m); u.bench = rosa[m].filter((id) => !u.starters.includes(id)).slice(0, 3); return u; };
+    (s.tables.lineups ||= []).push({ league_id: lega, member_id: 'm_bruno', matchday: n - 1, lineup: conPanca('m_bruno'), submitted_at: ora });
+    // la mia della giornata chiusa dichiara un modulo che coi ruoli di oggi non torna (il caso Faustina, 23/10)
+    s.tables.lineups.push({ league_id: lega, member_id: mio, matchday: n - 1, lineup: { ...undici(mio), formation: '3-4-3' }, submitted_at: ora });
+    // una giornata coi voti gia' caricati, per vederli accanto ai nomi
+    // giocata per intero: a giornata in corso (la 6ª il 23/10 sera) i giocatori
+    // di prova possono non avere ancora il voto, e la prova non direbbe niente
+    let conDati = 0; for (let k = n - 1; k >= 1; k--) if (S.hasData(k) && S.matchesOf(k).every((m) => m.status === 'played')) { conDati = k; break; }
+    if (conDati && conDati !== n - 1) s.tables.lineups.push({ league_id: lega, member_id: 'm_bruno', matchday: conDati, lineup: conPanca('m_bruno'), submitted_at: ora });
+    localStorage.setItem('fcs:conDati', String(conDati));
+    // e cosi' quella gia' consegnata per la giornata aperta: l'editor deve dirlo
+    s.tables.lineups.push({ league_id: lega, member_id: mio, matchday: n, lineup: { ...undici(mio), formation: '3-4-3' }, submitted_at: ora });
     localStorage.setItem('fcs:mock', JSON.stringify(s));
   }, n);
   await p.reload({ waitUntil: 'load' }); await w(1800);
@@ -68,6 +78,10 @@ const ok = [], ko = []; const et = (c, t) => (c ? ok : ko).push(t);
   et(bruno?.cap, 'con il capitano segnato');
   et(bruno?.anche === 1, 'e in evidenza il giocatore che ho schierato anch\'io');
   et(/Carla United[\s\S]*non consegnata/.test(testo), 'Carla: non consegnata');
+  const extra = await p.evaluate(() => { const c = [...document.querySelectorAll('.fx-sq')]; const b = c.find((x) => /Bruno United/.test(x.innerText)); const io = c.find((x) => /Alex FC/.test(x.innerText));
+    return { voti: b.querySelectorAll('.fx-v').length, panca: b.querySelector('.fx-panca')?.innerText || '', notaBruno: !!b.querySelector('.fx-nontorna'), notaMia: io.querySelector('.fx-nontorna')?.innerText || '' }; });
+  et(/Panchina/i.test(extra.panca), 'e la panchina');
+  et(!extra.notaBruno && /Consegnata come 3-4-3[\s\S]*4-4-2/.test(extra.notaMia), `un modulo che coi ruoli di oggi non torna lo dice («${extra.notaMia.slice(0, 70)}»)`);
   et(new RegExp(`Quelle della ${n}ª si vedono da`).test(testo), `per la ${n}ª, ancora aperta, dice da quando si vedranno`);
 
   // ---- la ricerca
@@ -81,6 +95,21 @@ const ok = [], ko = []; const et = (c, t) => (c ? ok : ko).push(t);
   // ---- toccando si apre sul campo
   await p.click(`.fx-sq[href="${bruno.href}"]`); await w(1000);
   et(await p.evaluate(() => location.hash) === bruno.href, `toccando Bruno si apre la sua formazione (${bruno.href})`);
+
+  // ---- i voti accanto ai nomi, su una giornata che li ha
+  const conDati = +(await p.evaluate(() => localStorage.getItem('fcs:conDati')));
+  if (conDati) {
+    await p.evaluate((k) => { location.hash = `#/formazioni/${k}`; }, conDati); await w(1000);
+    const v = await p.evaluate(() => [...document.querySelectorAll('.fx-sq')].find((x) => /Bruno United/.test(x.innerText))?.querySelectorAll('.fx-v').length || 0);
+    et(v > 0, `accanto ai nomi il fantavoto (${conDati}ª: ${v} voti su Bruno)`);
+  } else ok.push('(nessuna giornata coi voti, niente fantavoti da mostrare)');
+
+  // ---- l'editor avvisa chi ha consegnato una formazione che non torna piu'
+  // (mentre si gioca la giornata prima l'editor mostra quella in campo: lo dice dopo)
+  await p.evaluate(() => { location.hash = '#/rosa/formazione'; }); await w(1500);
+  if (await p.evaluate(async () => !(await import('/src/state.js')).schieramentoBloccato())) {
+    et(/non torna più/.test(await p.evaluate(() => document.querySelector('.consegnata-vecchia')?.innerText || '')), 'nell\'editor: «La formazione che hai consegnato non torna più»');
+  } else ok.push('(si sta giocando: l\'editor mostra la giornata in campo)');
 
   // ---- e dalla classifica
   await p.evaluate(() => { location.hash = '#/classifica'; }); await w(1000);

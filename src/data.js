@@ -54,6 +54,9 @@ function scartoRoma(t) {
   const m = /GMT([+-])(\d{2}):(\d{2})/.exec(s);
   return m ? (m[1] === '-' ? -1 : 1) * (Number(m[2]) + Number(m[3]) / 60) : 1;
 }
+/** Dalla 7a giornata il lock e' 10 minuti prima del primo calcio d'inizio. */
+export const LOCK_PRIMA_DAL = 7;
+export const LOCK_PRIMA_MINUTI = 10;
 /**
  * L'istante in cui a Roma sono le `ora` del giorno in cui cade `t`.
  *
@@ -176,6 +179,13 @@ export function buildSeason(_seed = 20262027) {
   // le 15:00 secche si sarebbe schierato a partita gia' cominciata, sapendo
   // chi segnava. Il regolamento (art. 8) dice "lock all'inizio della prima
   // gara": le 15:00 sono un anticipo, non un ritardo.
+  //
+  // Dalla 7a (Alex, 23/10) il lock e' 10 minuti prima della prima partita:
+  // le 15:00 chiudevano sei ore prima del fischio delle 21:15 e chi
+  // schierava la sera restava fuori. Le giornate fino alla 6a restano com'erano:
+  // sono chiuse, le formazioni degli altri si sono gia' viste, e riaprirle
+  // cambierebbe la storia. Dove l'orario della FSGC non c'e' ancora resta la
+  // stima delle 15:00, che si sposta quando l'orario arriva.
   const matchdays = []; const matches = [];
   let ultimoNoto = null; let ultimoN = 0;   // ultima giornata con un orario vero
   const perGiornata = {};
@@ -195,7 +205,9 @@ export function buildSeason(_seed = 20262027) {
     const primo = orari.length ? new Date(Math.min(...orari))
       : new Date((ultimoNoto ?? SEASON_START.getTime()) + (n - ultimoN) * 7 * 86400000);
     const alle15 = oraItaliana(primo, 15);
-    const sat = orari.length && primo < alle15 ? primo : alle15;
+    const sat = !orari.length ? alle15
+      : n >= LOCK_PRIMA_DAL ? new Date(+primo - LOCK_PRIMA_MINUTI * 60000)
+      : primo < alle15 ? primo : alle15;
     if (orari.length) { ultimoNoto = +sat; ultimoN = n; }
     const md = { id: `md${n}`, number: n, lockAt: sat.toISOString(), saturday: sat.toISOString() };
     matchdays.push(md);

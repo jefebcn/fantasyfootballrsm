@@ -58,6 +58,9 @@ export function sheet(html) {
   const sc = document.getElementById('sheet-scrim'), sh = document.getElementById('sheet');
   if (!html) { sc.classList.remove('on'); sh.classList.remove('on'); sh.innerHTML = ''; return; }
   sh.innerHTML = `<div class="handle"></div>${html}`; sc.classList.add('on'); sh.classList.add('on');
+  // Da nascosto (display:none) il foglio si tiene lo scorrimento del foglio
+  // di prima: un foglio nuovo si apriva a meta', senza la sua intestazione.
+  sh.scrollTop = 0;
 }
 // Lo splash: il marchio intero e la barra, niente altro.
 //

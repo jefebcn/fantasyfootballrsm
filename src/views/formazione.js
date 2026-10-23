@@ -1,7 +1,8 @@
 import * as S from '../state.js';
-import { validateLineup, parseModule, votoUfficio } from '../engine.js';
+import { validateLineup, votoUfficio } from '../engine.js';
 import { esc, roleChip, faccia, ROLE_NAME, badge, icon, avatar, dateIt, timeIt, fmt, voteRow, sec } from '../ui.js';
 import { schedeRosa } from './rosa.js';
+import * as M from '../formazione-mosse.js';
 
 let draft = null; let draftFor = null;
 function ensureDraft() {
@@ -57,12 +58,12 @@ const clubOf = (id) => S.clubsById.get(P(id).clubId);
  *  (togli e sostituisci stanno nel foglio, come per gli slot in campo).
  *  Il segno "1º" marca chi entra per primo in quel ruolo: e' l'unica cosa che
  *  l'ordine della panchina decide davvero (art. 8.2). */
-function benchRow(id, i, bench, locked, voto = '') {
+function benchRow(id, i, bench, locked, voto = '', lampo = new Set()) {
   if (!id) return `<div class="br vuota" data-bench="${i}"><span class="n">${i + 1}</span>
     <span class="av-ph">+</span><span class="nm"><b>Aggiungi un panchinaro</b><span>tocca per scegliere</span></span></div>`;
   const p = P(id); const primo = bench.findIndex((x) => x && P(x).role === p.role) === i;
   const su = i > 0 && bench[i - 1]; const giu = i < 6 && bench[i + 1];
-  return `<div class="br" data-bench="${i}"><span class="n">${i + 1}</span>
+  return `<div class="br${lampo.has(id) ? ' appena' : ''}" data-bench="${i}"><span class="n">${i + 1}</span>
     ${faccia(p, clubOf(id))}
     <span class="nm"><b>${esc(p.name)}${!locked && S.squalifica(id) ? ' <i class="squal">SQUALIFICATO</i>' : ''}</b><span>${esc(clubOf(id).name)} · quot. ${p.quotation}</span></span>
     ${voto}
@@ -70,12 +71,11 @@ function benchRow(id, i, bench, locked, voto = '') {
     ${locked ? '' : `<span class="acts"><button class="rm" data-up="${i}" aria-label="Sposta su ${esc(p.name)}" ${su ? '' : 'disabled'}>${icon('up', 'ic sm')}</button><button class="rm" data-down="${i}" aria-label="Sposta giù ${esc(p.name)}" ${giu ? '' : 'disabled'}>${icon('down', 'ic sm')}</button></span>`}</div>`;
 }
 
-function slotsByRole(d) {
-  const need = parseModule(d.formation); const out = { P: [], D: [], C: [], A: [] };
-  for (const id of d.starters) if (id && out[P(id).role].length < need[P(id).role]) out[P(id).role].push(id);
-  for (const r of ['P', 'D', 'C', 'A']) while (out[r].length < need[r]) out[r].push(null);
-  return out;
-}
+const ruoloDi = (id) => P(id)?.role;
+const perQuot = (a, b) => P(b).quotation - P(a).quotation;
+const perRuolo = (a, b) => (M.RUOLI.indexOf(ruoloDi(a)) - M.RUOLI.indexOf(ruoloDi(b))) || perQuot(a, b);
+let appena = new Set();
+const slotsByRole = (d) => M.posti(d, ruoloDi);
 /** `recupera` va passato solo quando si cambia modulo: e' li' che un titolare
  *  resta fuori senza averlo deciso, e ripescarlo in panchina evita di perderlo.
  *  A render invariato il ripescaggio non faceva nulla comunque (`before` e i
@@ -182,11 +182,16 @@ export const formazione = {
     const saved = S.savedLineup(n, me.id);
     const rosa = S.rosaIncompletaPerSchierare(me.id);
     const fx = S.myFixture(n, me.id); const opp = fx ? S.managersById.get(fx.homeManagerId === me.id ? fx.awayManagerId : fx.homeManagerId) : null;
+    // chi si e' appena mosso lampeggia un attimo: si vede dove e' finito
+    const lampo = appena; appena = new Set();
     const slot = (id, role, i) => id
-      ? `<div class="slot" data-slot="${role}:${i}"><span class="av faccia">${d.captainId === id ? '<span class="cap">C</span>' : d.viceCaptainId === id ? '<span class="cap">V</span>' : ''}${avatar(P(id), S.clubsById.get(P(id).clubId))}${roleChip(role)}${voto(id)}${!locked && S.squalifica(id, n) ? '<span class="squal-x" title="Squalificato">SQ</span>' : ''}</span><b>${esc(P(id).lastName)}</b></div>`
+      ? `<div class="slot${lampo.has(id) ? ' appena' : ''}" data-slot="${role}:${i}"><span class="av faccia">${d.captainId === id ? '<span class="cap">C</span>' : d.viceCaptainId === id ? '<span class="cap">V</span>' : ''}${avatar(P(id), S.clubsById.get(P(id).clubId))}${roleChip(role)}${voto(id)}${!locked && S.squalifica(id, n) ? '<span class="squal-x" title="Squalificato">SQ</span>' : ''}</span><b>${esc(P(id).lastName)}</b></div>`
       : `<div class="slot vuoto" data-slot="${role}:${i}"><span class="av">+</span><b>${ROLE_NAME[role].slice(0, -1).replace('Portier', 'Portiere')}</b></div>`;
     const line = (role) => `<div class="line" data-line="${role.toLowerCase()}">${s[role].map((id, i) => slot(id, role, i)).join('')}</div>`;
     const bench = Array.from({ length: 7 }, (_, i) => d.bench[i] || null);
+    const editabile = !b && !locked;
+    const inTribuna = editabile ? M.tribuna(d, S.rosterIds(me.id).filter((id) => P(id)?.isActive)).sort(perRuolo) : [];
+    const ruoliPanca = new Set(bench.filter(Boolean).map(ruoloDi));
     return `<main class="a-body">
       ${schedeRosa('formazione')}
       <div class="a-card a-fase">
@@ -223,9 +228,13 @@ export const formazione = {
     : `<p class="small muted nota">Si cambia a ogni giornata: ${S.rules().modules.length} moduli, la rosa li copre tutti.</p>
       <div class="moduli" data-modules>${S.rules().modules.map((m) => `<button class="chip mod${m === d.formation ? ' on' : ''}" data-mod="${m}" ${locked ? 'disabled' : ''}>${m}</button>`).join('')}</div>`}
       <div class="pitch-wrap"><div class="pitch">${CAMPO}${line('P')}${line('D')}${line('C')}${line('A')}</div></div>
-      <div class="a-sec"><b>Panchina</b><span>${bench.filter(Boolean).length}/7</span></div>
-      <p class="small muted nota">L'ordine conta: al posto di un titolare senza voto entra il <b>primo panchinaro dello stesso ruolo</b> (art. 8.2).</p>
-      <div class="bench">${bench.map((id, i) => benchRow(id, i, bench, locked, grezzo(id))).join('')}</div>
+      <div class="a-sec"><b>Panchina</b><span class="copertura">${editabile ? M.RUOLI.map((r) => `<i class="${ruoliPanca.has(r) ? '' : 'manca'}" title="${ruoliPanca.has(r) ? `${UNO[r]} in panchina` : `nessun ${UNO[r]} in panchina`}">${r}</i>`).join('') : ''}${bench.filter(Boolean).length}/7</span></div>
+      <p class="small muted nota">L'ordine conta: al posto di un titolare senza voto entra il <b>primo panchinaro dello stesso ruolo</b> (art. 8.2).${editabile ? ' Tocca un panchinaro per mandarlo in campo.' : ''}</p>
+      <div class="bench">${bench.map((id, i) => benchRow(id, i, bench, locked, grezzo(id), lampo)).join('')}</div>
+      ${editabile && d.bench.length < 7 && inTribuna.length ? `<button class="a-btn ghost completa" id="completa-panchina">${icon('userplus', 'ic sm')}Completa la panchina · ${7 - d.bench.length === 1 ? '1 posto libero' : `${7 - d.bench.length} posti liberi`}</button>` : ''}
+      ${editabile && inTribuna.length ? `<div class="a-sec"><b>Tribuna</b><span>${inTribuna.length === 1 ? '1 non convocato' : `${inTribuna.length} non convocati`}</span></div>
+      <p class="small muted nota">Non giocano questa giornata. Tocca per mandarli in campo o in panchina.</p>
+      <div class="tribuna">${inTribuna.map((id) => `<button data-trib="${id}"${lampo.has(id) ? ' class="appena"' : ''}>${faccia(P(id), clubOf(id))}<b>${esc(P(id).lastName)}</b><span class="q">${S.squalifica(id, n) ? '<i class="squal">SQ</i>' : `quot. ${P(id).quotation}`}</span></button>`).join('')}</div>` : ''}
       ${esito ? daDoveVengono(esito, voti) : ''}
       ${errors.length ? `<div class="warn block">${icon('warn', 'ic sm')}<span>${errors.map(esc).join(' · ')}</span></div>` : ''}
       ${!b && !locked ? scoperta(d, n) : ''}
@@ -235,7 +244,7 @@ export const formazione = {
     : !locked && rosa
     ? `<a class="a-btn" id="completa-rosa" href="#/negozio" style="text-decoration:none">${icon('cart', 'ic sm')}Completa la rosa · ${rosa.ha}/${rosa.serve}</a>`
     : `<button class="a-btn" id="confirm" ${locked || errors.length ? 'disabled' : ''}>${icon('check', 'ic sm')}${locked ? 'Formazione bloccata' : `Conferma formazione · ${d.starters.filter(Boolean).length}/11`}</button>`}
-      <p class="small muted" style="text-align:center">${b ? `La formazione della ${b.giornata}ª si apre quando la ${n}ª è finita.` : 'Capitano e vice: tocca un titolare. Il capitano raddoppia bonus e malus (art. 6).'}</p>
+      <p class="small muted" style="text-align:center">${b ? `La formazione della ${b.giornata}ª si apre quando la ${n}ª è finita.` : 'Tocca un titolare per cambiarlo o dargli la fascia: il capitano raddoppia bonus e malus (art. 6).'}</p>
     </main>`;
   },
   mount(root, ctx) {
@@ -243,56 +252,112 @@ export const formazione = {
     const d = ensureDraft(); const n = S.giornataDaSchierare(); const me = S.me(); const st = S.matchdayStatus(n);
     if (st !== 'open' && st !== 'scheduled') return;
     programmaBozza(n, me.id, d);
-    const rosterIds = S.rosterIds(me.id).filter((id) => P(id).isActive);
-    const used = () => new Set([...d.starters, ...d.bench].filter(Boolean));
-    /** `libero` e' chi sta gia' nel posto che si sta sostituendo: va offerto,
-     *  altrimenti nel foglio del cambio risulta "gia' schierato" e non si puo'
-     *  nemmeno riconfermare. */
-    const pickSheet = (role, onPick, title, libero = null) => {
-      const list = rosterIds.filter((id) => (role ? P(id).role === role : true)).sort((a, b) => P(b).quotation - P(a).quotation);
-      const preso = (id) => id !== libero && used().has(id);
-      ctx.sheet(`<h3>${title}</h3><div class="plist">${list.map((id) => `<button data-pick="${id}" ${preso(id) ? 'disabled' : ''}>${roleChip(P(id).role)}<span><b>${esc(P(id).name)}</b><span>${esc(clubOf(id).name)}${preso(id) ? ' · già schierato' : ''}${S.squalifica(id, n) ? ' · <b class="squal-t">squalificato</b>' : ''}</span></span><span class="q">${P(id).quotation}</span></button>`).join('')}</div>`);
-      document.getElementById('sheet').onclick = (e) => { const b = e.target.closest('[data-pick]'); if (!b) return; onPick(b.dataset.pick); ctx.sheet(null); ctx.render(); };
+    const rosterIds = S.rosterIds(me.id).filter((id) => P(id)?.isActive);
+    const sq = (id) => !!S.squalifica(id, n);
+    const nome = (id) => esc(P(id).name);
+    const cognome = (id) => P(id)?.lastName || '';
+
+    // ---- I FOGLI. Ogni riga e' una mossa intera: un tocco e il cambio e'
+    // fatto, chi esce va dove deve andare (panchina o tribuna) e lo si dice.
+    // Prima chi stava in panchina compariva spento («gia' schierato») e per
+    // cambiare un titolare bisognava toglierlo e poi scegliere: due passi, e se
+    // ci si fermava a meta' il posto restava vuoto.
+    const riga = (id, mossa, tag = '', cls = '') => `<button ${mossa}>${faccia(P(id), clubOf(id))}<span><b>${nome(id)}</b><span>${esc(clubOf(id).name)} · quot. ${P(id).quotation}${sq(id) ? ' · <b class="squal-t">squalificato</b>' : ''}</span></span>${tag ? `<span class="tag ${cls}">${tag}</span>` : '<span></span>'}</button>`;
+    const libero = (mossa, r) => `<button ${mossa}><span class="av-ph">+</span><span><b>Posto libero</b><span>manca un ${UNO[r]}</span></span><span class="tag vuoto">libero</span></button>`;
+    const gruppo = (titolo, righe) => (righe.length ? `<p class="pl-gruppo">${titolo}</p><div class="plist cambio">${righe.join('')}</div>` : '');
+    const testa = (id, sotto) => `<div class="cambio-testa">${faccia(P(id), clubOf(id))}<span><b>${nome(id)}</b><span>${sotto}</span></span></div>`;
+    const inCampo = (r, i, pid) => `data-m="campo" data-r="${r}" data-i="${i}" data-pid="${pid}"`;
+    const inPanca = (pos, pid) => `data-m="panca" data-pos="${pos}" data-pid="${pid}"`;
+    const panchinari = (r) => d.bench.map((x, k) => [x, k]).filter(([x]) => !r || ruoloDi(x) === r);
+    const fuori = (r) => M.tribuna(d, rosterIds).filter((x) => !r || ruoloDi(x) === r).sort(r ? perQuot : perRuolo);
+
+    const apri = (html) => {
+      ctx.sheet(html);
+      document.getElementById('sheet').onclick = (ev) => { const t = ev.target.closest('[data-m]'); if (t && !t.disabled) esegui(t.dataset); };
     };
+    /** Il titolare nel posto `i` del ruolo `r`: fascia, e chi entra al posto suo. */
+    const foglioTitolare = (r, i, id) => apri(`${testa(id, `Titolare · ${UNO[r]}`)}
+      <div class="fascia"><button class="chip${d.captainId === id ? ' on' : ''}" data-m="cap" data-pid="${id}">${icon('star', 'ic sm')}${d.captainId === id ? 'Capitano ✓' : 'Capitano'}</button><button class="chip${d.viceCaptainId === id ? ' on' : ''}" data-m="vice" data-pid="${id}">${icon('star', 'ic sm')}${d.viceCaptainId === id ? 'Vice ✓' : 'Vice'}</button></div>
+      <p class="sheet-sub cambio-domanda">Chi entra al posto suo? Un tocco e il cambio è fatto.</p>
+      ${gruppo(`Dalla panchina · ${cognome(id)} va a sedersi al suo posto`, panchinari(r).map(([x, k]) => riga(x, inCampo(r, i, x), `${k + 1}º in panchina`, 'panca')))}
+      ${gruppo(`Dalla tribuna · ${cognome(id)} va in tribuna`, fuori(r).map((x) => riga(x, inCampo(r, i, x), 'tribuna', 'trib')))}
+      ${!panchinari(r).length && !fuori(r).length ? `<p class="small muted">In rosa non hai altri ${ROLE_NAME[r].toLowerCase()}.</p>` : ''}
+      <div class="foglio-azioni">
+        ${d.bench.length < 7 ? `<button class="a-btn sec" data-m="in-panca" data-r="${r}" data-i="${i}">Mandalo in panchina</button>` : ''}
+        <button class="a-btn ghost" data-m="via-campo" data-r="${r}" data-i="${i}">${icon('out', 'ic sm')}Togli dalla formazione</button>
+      </div>`);
+    /** Un posto vuoto in campo. */
+    const foglioVuoto = (r, i) => apri(`<h3>Scegli il ${UNO[r]}</h3>
+      ${gruppo('Dalla panchina', panchinari(r).map(([x, k]) => riga(x, inCampo(r, i, x), `${k + 1}º in panchina`, 'panca')))}
+      ${gruppo('Dalla tribuna', fuori(r).map((x) => riga(x, inCampo(r, i, x), 'tribuna', 'trib')))}
+      ${!panchinari(r).length && !fuori(r).length ? `<p class="small muted">In rosa non hai altri ${ROLE_NAME[r].toLowerCase()}: comprane uno dal Negozio.</p>` : ''}`);
+    /** Il panchinaro al posto `pos`: in campo al posto di qualcuno, o scambiato con la tribuna. */
+    const foglioPanchinaro = (pos, id) => {
+      const r = ruoloDi(id); const s = slotsByRole(d);
+      apri(`${testa(id, `Panchina · ${pos + 1}º posto · ${UNO[r]}`)}
+        ${gruppo(`In campo al posto di… · chi esce va in panchina`, s[r].map((x, i) => (x ? riga(x, inCampo(r, i, id), 'titolare', 'campo') : libero(inCampo(r, i, id), r))))}
+        ${gruppo('Scambialo con uno della tribuna', fuori(null).map((x) => riga(x, inPanca(pos, x), 'tribuna', 'trib')))}
+        <div class="foglio-azioni"><button class="a-btn ghost" data-m="via-panca" data-pos="${pos}">${icon('trash', 'ic sm')}Togli dalla panchina</button></div>`);
+    };
+    /** Un posto libero in panchina. */
+    const foglioPostoPanca = (pos) => apri(`<h3>Aggiungi in panchina</h3><p class="sheet-sub">${pos + 1}º posto di 7</p>
+      ${M.RUOLI.map((r) => gruppo(`${ROLE_NAME[r]}${d.bench.some((x) => ruoloDi(x) === r) ? '' : ' · nessuno in panchina'}`, fuori(r).map((x) => riga(x, inPanca(pos, x))))).join('')}
+      ${fuori(null).length ? `<div class="foglio-azioni"><button class="a-btn sec" data-m="completa">${icon('userplus', 'ic sm')}Completa in automatico</button></div>` : '<p class="small muted">In tribuna non c\'è nessuno: tutta la rosa è già convocata.</p>'}`);
+    /** Uno della tribuna: in campo al posto di qualcuno, o in panchina. */
+    const foglioTribuna = (id) => {
+      const r = ruoloDi(id); const s = slotsByRole(d);
+      apri(`${testa(id, `In tribuna · ${UNO[r]}`)}
+        ${d.bench.length < 7 ? `<div class="foglio-azioni in-cima"><button class="a-btn sec" ${inPanca(d.bench.length, id)}>Mettilo in panchina · ${d.bench.length + 1}º posto</button></div>` : ''}
+        ${gruppo('In campo al posto di… · chi esce va in tribuna', s[r].map((x, i) => (x ? riga(x, inCampo(r, i, id), 'titolare', 'campo') : libero(inCampo(r, i, id), r))))}
+        ${gruppo('In panchina al posto di… · chi esce va in tribuna', panchinari(null).map(([x, k]) => riga(x, inPanca(k, id), `${k + 1}º in panchina`, 'panca')))}`);
+    };
+
+    const dove = (va) => (va === 'panchina' ? 'in panchina' : va === 'campo' ? 'cambia posto' : 'in tribuna');
+    const esegui = (x) => {
+      let msg = '';
+      if (x.m === 'cap' || x.m === 'vice') {
+        const k = x.m === 'cap' ? 'captainId' : 'viceCaptainId'; const altra = x.m === 'cap' ? 'viceCaptainId' : 'captainId';
+        if (d[k] === x.pid) { d[k] = null; msg = `${cognome(x.pid)} non è più ${x.m === 'cap' ? 'capitano' : 'vice'}`; }
+        else { d[k] = x.pid; if (d[altra] === x.pid) d[altra] = null; msg = `${cognome(x.pid)} ${x.m === 'cap' ? 'capitano' : 'vice capitano'}`; }
+        appena = new Set([x.pid]);
+      }
+      if (x.m === 'campo') {
+        const r = M.mettiInCampo(d, x.r, +x.i, x.pid, ruoloDi);
+        appena = new Set([x.pid, r.fuori].filter(Boolean));
+        msg = r.fuori ? `${cognome(x.pid)} in campo · ${cognome(r.fuori)} ${dove(r.va)}` : `${cognome(x.pid)} in campo`;
+        if (r.fasce.length) msg += ` · era ${r.fasce.join(' e ')}: dai la fascia a un titolare`;
+      }
+      if (x.m === 'panca') {
+        const r = M.mettiInPanchina(d, +x.pos, x.pid);
+        appena = new Set([x.pid, r.fuori].filter(Boolean));
+        msg = r.piena ? 'La panchina è piena: 7 su 7' : r.fuori ? `${cognome(x.pid)} in panchina · ${cognome(r.fuori)} in tribuna` : `${cognome(x.pid)} in panchina`;
+      }
+      if (x.m === 'via-campo') { const r = M.togliDalCampo(d, x.r, +x.i, ruoloDi); appena = new Set([r.fuori]); msg = `${cognome(r.fuori)} in tribuna · il posto resta libero`; }
+      if (x.m === 'in-panca') { const r = M.togliDalCampo(d, x.r, +x.i, ruoloDi); M.mettiInPanchina(d, d.bench.length, r.fuori); appena = new Set([r.fuori]); msg = `${cognome(r.fuori)} in panchina · il posto in campo resta libero`; }
+      if (x.m === 'via-panca') { const r = M.togliDallaPanchina(d, +x.pos); appena = new Set([r.fuori]); msg = `${cognome(r.fuori)} in tribuna`; }
+      if (x.m === 'completa') msg = completa();
+      ctx.sheet(null); ctx.render(); if (msg) ctx.toast(msg);
+    };
+    const completa = () => {
+      const presi = M.completaPanchina(d, rosterIds, ruoloDi, (id) => P(id).quotation, sq);
+      appena = new Set(presi);
+      return presi.length ? `In panchina: ${presi.map(cognome).join(', ')}` : 'Non c\'è nessuno da aggiungere';
+    };
+
     root.querySelector('main').addEventListener('click', (e) => {
       const mod = e.target.closest('[data-mod]'); if (mod) { d.formation = mod.dataset.mod; normalize(d, true); autofill(d, rosterIds); ctx.render(); return; }
       const sl = e.target.closest('[data-slot]');
       if (sl) {
-        const [role, i] = sl.dataset.slot.split(':'); const s = slotsByRole(d); const id = s[role][+i];
-        if (!id) { pickSheet(role, (pid) => { s[role][+i] = pid; d.starters = [...s.P, ...s.D, ...s.C, ...s.A]; }, `Scegli ${ROLE_NAME[role].toLowerCase()}`); return; }
-        ctx.sheet(`<h3>${esc(P(id).name)}</h3><div class="plist">
-          <button data-act="cap">${icon('star', 'ic sm')}<span><b>Capitano</b><span>raddoppia bonus e malus</span></span><span></span></button>
-          <button data-act="vice">${icon('star', 'ic sm')}<span><b>Vice capitano</b><span>subentra se il capitano è S.V.</span></span><span></span></button>
-          <button data-act="swap">${icon('shirt', 'ic sm')}<span><b>Sostituisci</b><span>scegli un altro ${ROLE_NAME[role].slice(0, -1).toLowerCase()}</span></span><span></span></button>
-          <button data-act="rm">${icon('out', 'ic sm')}<span><b>Togli dalla formazione</b></span><span></span></button></div>`);
-        document.getElementById('sheet').onclick = (ev) => {
-          const b = ev.target.closest('[data-act]'); if (!b) return; const s2 = slotsByRole(d);
-          if (b.dataset.act === 'cap') { if (d.viceCaptainId === id) d.viceCaptainId = null; d.captainId = id; }
-          if (b.dataset.act === 'vice') { if (d.captainId === id) d.captainId = null; d.viceCaptainId = id; }
-          if (b.dataset.act === 'rm') { s2[role][+i] = null; d.starters = [...s2.P, ...s2.D, ...s2.C, ...s2.A]; }
-          if (b.dataset.act === 'swap') { s2[role][+i] = null; d.starters = [...s2.P, ...s2.D, ...s2.C, ...s2.A]; ctx.sheet(null); pickSheet(role, (pid) => { const s3 = slotsByRole(d); s3[role][+i] = pid; d.starters = [...s3.P, ...s3.D, ...s3.C, ...s3.A]; }, `Scegli ${ROLE_NAME[role].toLowerCase()}`); return; }
-          ctx.sheet(null); ctx.render();
-        };
+        const [r, i] = sl.dataset.slot.split(':'); const id = slotsByRole(d)[r][+i];
+        if (id) foglioTitolare(r, +i, id); else foglioVuoto(r, +i);
         return;
       }
-      const up = e.target.closest('[data-up]'); if (up) { const i = +up.dataset.up; if (i > 0) [d.bench[i - 1], d.bench[i]] = [d.bench[i], d.bench[i - 1]]; ctx.render(); return; }
-      const dn = e.target.closest('[data-down]'); if (dn) { const i = +dn.dataset.down; if (i < 6) [d.bench[i + 1], d.bench[i]] = [d.bench[i], d.bench[i + 1]]; ctx.render(); return; }
+      const up = e.target.closest('[data-up]'); if (up) { M.spostaInPanchina(d, +up.dataset.up, -1); appena = new Set([d.bench[+up.dataset.up - 1]]); ctx.render(); return; }
+      const dn = e.target.closest('[data-down]'); if (dn) { M.spostaInPanchina(d, +dn.dataset.down, +1); appena = new Set([d.bench[+dn.dataset.down + 1]]); ctx.render(); return; }
       const br = e.target.closest('[data-bench]');
-      if (br) {
-        const i = +br.dataset.bench; const bid = d.bench[i];
-        const metti = (pid) => { d.bench[i] = pid; d.bench = d.bench.filter(Boolean).slice(0, 7); };
-        if (!bid) { pickSheet(null, metti, 'Scegli un panchinaro'); return; }
-        // riga occupata: stesso foglio degli slot in campo, invece dei tasti minuscoli in riga
-        ctx.sheet(`<h3>${esc(P(bid).name)}</h3><p class="sheet-sub">Panchina · posto ${i + 1} di 7</p><div class="plist">
-          <button data-bact="swap">${icon('shirt', 'ic sm')}<span><b>Sostituisci</b><span>scegli un altro giocatore per questo posto</span></span><span></span></button>
-          <button data-bact="rm">${icon('trash', 'ic sm')}<span><b>Togli dalla panchina</b><span>gli altri risalgono di un posto</span></span><span></span></button></div>`);
-        document.getElementById('sheet').onclick = (ev) => {
-          const t = ev.target.closest('[data-bact]'); if (!t) return;
-          if (t.dataset.bact === 'rm') { d.bench.splice(i, 1); ctx.sheet(null); ctx.render(); return; }
-          ctx.sheet(null); pickSheet(null, metti, 'Scegli un panchinaro', bid);
-        };
-        return;
-      }
+      if (br) { const i = +br.dataset.bench; if (d.bench[i]) foglioPanchinaro(i, d.bench[i]); else foglioPostoPanca(Math.min(i, d.bench.length)); return; }
+      const tr = e.target.closest('[data-trib]'); if (tr) { foglioTribuna(tr.dataset.trib); return; }
+      if (e.target.closest('#completa-panchina')) { const msg = completa(); ctx.render(); ctx.toast(msg); return; }
       if (e.target.closest('#confirm')) {
         const errors = validateLineup({ ...d, starters: d.starters.filter(Boolean), bench: d.bench.filter(Boolean) }, S.playersById);
         if (errors.length) { ctx.toast(errors[0]); return; }

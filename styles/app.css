@@ -703,6 +703,19 @@ hr.sep{border:0;border-top:1px solid var(--border);margin:4px 0}
 .fase-punti b{font-family:var(--font-display);font-size:22px;font-variant-numeric:tabular-nums}
 .slot b{font:600 10.5px var(--font-body);text-align:center;line-height:1;white-space:nowrap;overflow:hidden;
   text-overflow:ellipsis;max-width:74px;background:rgba(9,32,20,.78);border-radius:6px;padding:3px 7px}
+/* la fantamedia sotto il nome (Alex, 23/10): verde da 7, rossa sotto il 6 */
+.slot .fm{font:700 9.5px/1 var(--font-data);font-style:normal;color:#fff;background:rgba(9,32,20,.62);border-radius:5px;padding:2px 5px;margin-top:-2px;white-space:nowrap}
+.slot .fm.fm-su{background:#1E8E4E}
+.slot .fm.fm-giu{background:#B4363A}
+.slot .fm.fm-nd{opacity:.7}
+.tribuna .fm{font:700 10px/1 var(--font-data);font-style:normal;color:var(--text-muted);padding:2px 5px;border-radius:5px}
+.tribuna .fm.fm-su{background:rgba(30,142,78,.16);color:#1E8E4E}
+.tribuna .fm.fm-giu{background:rgba(180,54,58,.14);color:#C2414A}
+.fm-t{font-weight:700;color:var(--text)}
+.fm-t.fm-su,.fm-nota .fm-su{color:#1E9E57}
+.fm-t.fm-giu,.fm-nota .fm-giu{color:#D04A50}
+.fm-t.fm-nd{font-weight:500;color:var(--text-muted)}
+.fm-nota{margin-top:8px}
 /* "vuoto", non "empty": .empty e' lo stile degli SCHERMI vuoti (padding 40px,
    gap 14px) e gli slot liberi se lo prendevano per omonimia. Con la rosa non
    ancora assegnata sono vuoti tutti e undici: ogni riga cresceva di 80px e la

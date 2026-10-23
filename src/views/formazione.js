@@ -214,6 +214,16 @@ export const formazione = {
           <span class="sep"></span>${saved ? `<span>salvata ${dateIt(saved.submittedAt)} ${timeIt(saved.submittedAt)}</span>` : '<span class="da-fare">da consegnare</span>'}</div>
         ${!saved && !locked ? `<p class="small muted"><b>Se non consegni, la partita è persa 0-3 a tavolino</b> (art. 8.4). Quella qui sotto è solo una proposta — ${S.lineupFor(n, me.id).source === 'ufficio' ? 'il 4-4-2 con le quotazioni più alte' : `l'ultima che hai schierato (${S.lineupFor(n, me.id).source})`} — e non conta finché non la confermi.</p>` : ''}
         ${tolti.length && !locked ? `<p class="small muted ceduti"><b>${tolti.map((id) => esc(P(id) ? P(id).name : id)).join(', ')}</b> non ${tolti.length === 1 ? 'è' : 'sono'} più nella tua rosa: ${tolti.length === 1 ? "l'abbiamo tolto" : "li abbiamo tolti"} dalla formazione. Scegli chi mettere al ${tolti.length === 1 ? 'suo posto' : 'loro posto'} e conferma.</p>` : ''}
+        ${(() => {
+    // CONSEGNATA COL LISTONE DI PRIMA (23/10, Faustina): il 17/10 Piscitella
+    // e' passato da centrocampista ad attaccante, e una formazione 3-4-3
+    // consegnata il 12/10 e' diventata un 3-3-4 senza che nessuno lo dicesse.
+    // Il server l'aveva controllata quando e' arrivata; qui si ricontrolla coi
+    // ruoli di adesso, e chi e' ancora in tempo lo sa.
+    if (!saved || locked || b) return '';
+    const err = validateLineup({ ...saved, starters: (saved.starters || []).filter(Boolean), bench: (saved.bench || []).filter(Boolean) }, S.playersById, S.rules());
+    return err.length ? `<div class="warn block consegnata-vecchia">${icon('warn', 'ic sm')}<span><b>La formazione che hai consegnato non torna più</b> (${err.map(esc).join(' · ')}): dopo la consegna è cambiato qualcosa nel listone, per esempio il ruolo di un giocatore. Sistemala qui sotto e riconferma.</span></div>` : '';
+  })()}
         ${!saved && locked ? `<p class="small muted"><b>Formazione non consegnata</b>: la partita è persa 0-3 a tavolino (art. 8.4). Quella qui sotto non conta, è solo l'ultima proposta.</p>` : ''}
         ${b ? (() => {
     // DA DOVE VIENE IL NUMERO. Con due voti sul campo il totale e' "quanto

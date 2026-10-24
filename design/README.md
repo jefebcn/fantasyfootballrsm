@@ -1,16 +1,16 @@
 # Design — Fantatitano
 
-Progettazione visiva e funzionale dell'app, costruita **sulla grammatica di interfaccia di
-"Leghe Fantacalcio"** (drawer a sezioni, dashboard con hero-maglia, barra statistiche a
-quattro colonne, card partita, bottom bar a cinque voci) e **riscritta sul Voto Titano**:
-il fantacalcio senza pagelle definito in `regolamento-fantacampionato-sammarinese`.
+Progettazione visiva e funzionale dell'app (menu laterale a sezioni, dashboard con la
+maglia in copertina, barra statistiche a quattro colonne, card partita, barra in basso a
+cinque voci), costruita **sul Voto Titano**: il fantacalcio senza pagelle definito in
+`regolamento-fantacampionato-sammarinese`.
 
 Regola di precedenza: in caso di divergenza fra questi documenti e il regolamento, vale il
 regolamento. In caso di divergenza fra questi documenti e il README di prodotto, vale il README.
 
 | File | Contenuto |
 |---|---|
-| [01-identita-visiva.md](01-identita-visiva.md) | Perché azzurro Titano + oro corona, cosa si tiene e cosa si cambia rispetto a Leghe Fantacalcio |
+| [01-identita-visiva.md](01-identita-visiva.md) | Perché azzurro Titano + oro corona, e le scelte di prodotto che si vedono nell'interfaccia |
 | [02-design-system.md](02-design-system.md) | Colori, tipografia, spaziatura, componenti, stati, motion, accessibilità |
 | [03-architettura-informativa.md](03-architettura-informativa.md) | Mappa di navigazione: bottom bar, drawer, ruoli utente, permessi |
 | [04-schermate.md](04-schermate.md) | Specifica schermata per schermata, con le funzionalità e i dati mostrati |

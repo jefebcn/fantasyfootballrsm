@@ -11,21 +11,21 @@
 
 Le tre viste (pubblica, lega, admin) condividono la stessa shell: cambia solo il drawer.
 
-## Bottom bar (5 voci, come Leghe Fantacalcio)
+## Barra in basso (5 voci)
 
-| # | Voce | Icona | Schermata | Sostituisce |
-|---|---|---|---|---|
-| 1 | **Dashboard** | casa | Hero squadra, stat, fase settimana, live/prossima giornata | Dashboard |
-| 2 | **Rosa** | maglia | La mia rosa (25) + tab *Formazione* | Squadre |
-| 3 | **Calendario** | 31 | Giornate fanta + partite reali della giornata, con campo e link Titani.TV | Calendario |
-| 4 | **Classifica** | medaglia | Classifica con criteri di spareggio a vista | Classifica |
-| 5 | **Voti** | scheda | Voto Titano della giornata, tutti i giocatori, filtri società/ruolo | Video |
+| # | Voce | Icona | Schermata |
+|---|---|---|---|
+| 1 | **Dashboard** | campo | Hero squadra, stat, fase settimana, live/prossima giornata |
+| 2 | **Rosa** | maglia | La mia rosa (25) + tab *Formazione* |
+| 3 | **Calendario** | calendario | Giornate fanta + partite reali della giornata, con campo e link Titani.TV |
+| 4 | **Classifica** | coppa | Classifica con criteri di spareggio a vista |
+| 5 | **Voti** | grafico | Voto Titano della giornata, tutti i giocatori, filtri società/ruolo |
 
-*Perché Voti al posto di Video*: il README fissa come priorità 3 la "vista pubblica
+*Perché c'è Voti nella barra*: il README fissa come priorità 3 la "vista pubblica
 settimanale: classifica, voti, scontri diretti". Il video resta un link per partita (icona
 play) dentro Calendario e dentro il data entry, non una destinazione.
 
-## Drawer (hamburger)
+## Menu laterale
 
 ```
 [header gradiente]  username (oro) · e-mail · LOGOUT
@@ -46,7 +46,7 @@ Gioca
   ├ Fantallenatore dell'anno
   └ Scheda condivisibile     ← immagine PNG della giornata (README §9)
 
-Gestione                     (solo Admin di lega — come in Leghe Fantacalcio)
+Gestione                     (solo Admin di lega)
   ├ Gestione rose            ← correzioni manuali, rimozioni d'ufficio
   ├ Gestione formazioni      ← vedi/forza formazioni dei partecipanti
   ├ Sala trofei
@@ -70,14 +70,14 @@ Versione · pilota
 
 Dal bottone **Vai al Live** della dashboard si entra in una vista a schermo pieno con la
 propria app bar (indietro · chip lega con avatar e giornata · lista · condividi) e una
-**bottom bar secondaria a 4 icone**, come in Leghe Fantacalcio:
+**barra secondaria a 4 schede**:
 
-| Leghe Fantacalcio | Sammarinese | Contenuto |
-|---|---|---|
-| Campo | **Campo** | Le due formazioni una di fronte all'altra sul campo lungo |
-| Lista | **Lista** | Le stesse due formazioni in tabella, con breakdown |
-| Video | **Titani.TV** | Le partite reali della giornata con link al video |
-| Serie A | **Campionato** | Risultati e marcatori delle 8 gare reali |
+| Scheda | Contenuto |
+|---|---|
+| **Campo** | Le due formazioni una di fronte all'altra sul campo lungo |
+| **Lista** | Le stesse due formazioni in tabella, con breakdown |
+| **Titani.TV** | Le partite reali della giornata con link al video |
+| **Campionato** | Risultati e marcatori delle 8 gare reali |
 
 «Altri incontri» (bottone flottante) apre il selettore delle altre 4 partite fanta della
 giornata.

@@ -301,7 +301,8 @@ export const licenze = {
     'Le fotografie di sfondo vengono da una raccolta di immagini gratuite, con licenza che ne permette l\'uso.',
     '<b>TITO</b>, il draghetto viola, è la mascotte di Fantatitano, disegnato per questo progetto.',
     'Stemmi e maglie caricati dai partecipanti restano di chi li ha caricati: l\'app li mostra solo agli altri della sua lega.',
-    'Il logo, le icone e il campo di gioco sono disegnati per questo progetto.',
+    'Il logo e il campo di gioco sono disegnati per questo progetto.',
+    'Le icone (menu, eventi di partita, barra in basso) sono state disegnate per Fantatitano nell\'ottobre 2026, nei suoi colori, e hanno preso il posto di quelle dei primi prototipi.',
   ])}
       ${piede()}
     </main>`;

@@ -198,17 +198,17 @@ function drawer() {
           in cima, con la guida di TITO accanto. */
     item('#/impostazioni', 'gear', 'Impostazioni', 'account e privacy')}${item('#/guida', 'book', 'Come si gioca', 'la guida di TITO')}${/* I Reclutatori (023): l'invito in vista, non sepolto in Profilo lega */
     S.reclutatoriAttivi() && S.base.league.id ? item('#/lega', 'userplus', 'Invita amici', S.mieiReclutati() ? `Reclutatore · ${S.mieiReclutati()}` : 'diventa Reclutatore') : ''}
-    <div class="d-sec"><span class="chip">Setup</span></div>
-    ${item('#/lega', { m: 'leghe' }, 'Profilo lega', S.base.league.inviteCode ? `codice ${esc(S.base.league.inviteCode)}` : '')}${item('#/lega', { m: 'squadre' }, 'Partecipanti', String(S.base.managers.length))}${item('#/regolamento', { m: 'guide' }, 'Regolamento ed opzioni')}${item('#/classifica', { m: 'statistiche' }, 'Competizioni')}
-    <div class="d-sec"><span class="chip">Gioca</span></div>
+    <div class="d-sec"><span class="chip">La lega</span></div>
+    ${item('#/lega', { m: 'leghe' }, 'La tua lega', S.base.league.inviteCode ? `codice ${esc(S.base.league.inviteCode)}` : '')}${item('#/lega', { m: 'squadre' }, 'Partecipanti', String(S.base.managers.length))}${item('#/regolamento', { m: 'guide' }, 'Regole del gioco')}${item('#/classifica', { m: 'statistiche' }, 'Classifiche')}
+    <div class="d-sec"><span class="chip">In campo</span></div>
     ${S.base.league.id ? item('#/formazioni', 'users', 'Formazioni di tutti', 'dal lock di ogni giornata') : ''}
     ${S.legaPubblica() ? item('#/negozio', { l: 'rose' }, 'La tua rosa', `${S.rosterIds(S.me()?.id).length}/25`) : ''}${item('#/listone', { m: 'quotazioni' }, 'Listone', String(S.base.players.length))}${S.legaPubblica()
     // Il mercato degli svincolati e' una gara per chi e' rimasto libero: in
     // una lega aperta non e' libero nessuno e non e' preso nessuno, quindi
     // la voce porterebbe a una gara senza posta. La rosa si cambia dal
     // negozio, finche' il mercato e' aperto.
-    ? '' : item('#/mercato', { m: 'trasferimenti' }, 'Mercato libero', 'rilancio 24h')}${item('#/mercato', 'out', 'Fuori dal campionato', String(S.base.players.filter((p) => !p.isActive).length))}${item('#/scheda', { m: 'fantascore' }, 'Scheda condivisibile')}
-    ${S.isLeagueAdmin() ? `<div class="d-sec"><span class="chip">Gestione</span></div>${S.legaPubblica() ? item('#/classifica', { l: 'premi' }, 'Premi in palio', `${S.premi().length || 'nessuno'}`) : ''}${item('#/lega', { m: 'squadre' }, 'Gestione rose')}${item('#/lega', { m: 'vice-allenatore' }, 'Partecipanti e ruoli')}` : ''}
+    ? '' : item('#/mercato', { m: 'trasferimenti' }, 'Mercato libero', 'rilancio 24h')}${item('#/mercato', 'out', 'Fuori dal campionato', String(S.base.players.filter((p) => !p.isActive).length))}${item('#/scheda', { m: 'scheda' }, 'Scheda condivisibile')}
+    ${S.isLeagueAdmin() ? `<div class="d-sec"><span class="chip">Per chi amministra</span></div>${S.legaPubblica() ? item('#/classifica', { l: 'premi' }, 'Premi in palio', `${S.premi().length || 'nessuno'}`) : ''}${item('#/lega', { m: 'squadre' }, 'Gestione rose')}${item('#/lega', { m: 'vice-allenatore' }, 'Partecipanti e ruoli')}` : ''}
     ${S.isAdmin() ? `<div class="d-sec admin"><span class="chip">Amministrazione</span></div>
     ${item('#/admin/console', { l: 'strumenti' }, 'Console', 'persone, leghe e numeri')}` : ''}
     ${S.isJudge() ? `<div class="d-sec admin"><span class="chip">Giudice Dati</span></div>

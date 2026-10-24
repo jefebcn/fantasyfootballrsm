@@ -328,7 +328,7 @@ export const avanzate = {
     const league = S.hasLeague() ? group('Lega', `
       ${row({ m: 'squadre' }, esc(S.base.league.name), `${S.base.managers.length} partecipanti${S.base.league.inviteCode ? ` · codice ${esc(S.base.league.inviteCode)}` : ''}`, 'lega')}
       ${row({ m: 'leghe' }, 'Cambia o crea lega', `${S.myLeagues().length} ${S.myLeagues().length === 1 ? 'lega' : 'leghe'} · entra con un codice invito`, 'leghe')}
-      ${row({ m: 'guide' }, 'Regolamento ed opzioni', 'Voto Titano, bonus, soglie di conversione', 'regolamento')}`)
+      ${row({ m: 'guide' }, 'Regole del gioco', 'Voto Titano, bonus, soglie di conversione', 'regolamento')}`)
       : group('Lega', row({ m: 'leghe' }, 'Entra in una lega', 'Crea la tua oppure usa un codice invito', 'leghe'));
 
     const judge = p?.is_judge ? group('Giudice Dati', `

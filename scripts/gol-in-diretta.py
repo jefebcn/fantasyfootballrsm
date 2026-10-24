@@ -87,7 +87,17 @@ def main():
                 continue
             ref = {'g': c['g'], 'casa': c['casa'], 'ospite': c['ospite'], 'arbitro': t.get('arbitro'),
                    'titolari': t.get('titolari'), 'eventi': t['eventi'], 'cambi': t.get('cambi', [])}
-            gol = [f"{chiave}-{m}-{pid}" for pid, m, tipo in t['eventi'] if tipo in ('goal', 'own_goal')]
+            # CHI e' un gol: l'n-esimo della sua squadra in quella partita. Non
+            # il minuto ne' il marcatore: la FSGC li corregge a partita in
+            # corso (24/10, Murata-Domagnano: il 2-1 scritto al 68', poi al 67')
+            # e con loro nella chiave la correzione sembrava un gol nuovo, con
+            # una seconda storia. Il minuto e il marcatore restano nella storia.
+            gol, conta = {}, {}
+            for m, pid, tipo in sorted((m, pid, tipo) for pid, m, tipo in t['eventi'] if tipo in ('goal', 'own_goal')):
+                suo = pid.rsplit('_', 1)[0]
+                sq = suo if tipo == 'goal' else (c['ospite'] if suo == c['casa'] else c['casa'])
+                conta[sq] = conta.get(sq, 0) + 1
+                gol[f"{chiave}-{sq}-{conta[sq]}"] = f"{chiave}-{m}-{pid}"
             visti = stato['visti'].setdefault(chiave, [])
             for v in [v for v in visti if v not in gol]:
                 dice('ANNULLATO', v)
@@ -103,7 +113,8 @@ def main():
             if nuovi:
                 f = uscita / f'{chiave}.json'
                 f.write_text(json.dumps(ref, ensure_ascii=False))
-                cmd = ['node', str(RADICE / 'scripts' / 'storie-gol.mjs'), '--referto', str(f), '--solo', ','.join(nuovi),
+                chi = {gol[x]: x for x in nuovi}      # id della storia -> chiave stabile
+                cmd = ['node', str(RADICE / 'scripts' / 'storie-gol.mjs'), '--referto', str(f), '--solo', ','.join(chi),
                        '--n', str(stato['n']), '--uscita', str(uscita)] + (['--dati', a.dati] if a.dati else [])
                 r = subprocess.run(cmd, capture_output=True, text=True)
                 for riga in r.stdout.splitlines():
@@ -112,7 +123,7 @@ def main():
                     dice(riga)
                     if a.pubblica:
                         jpg = pathlib.Path(riga.split()[1])
-                        p = subprocess.run(['node', str(RADICE / 'scripts' / 'pubblica-storia.mjs'), str(jpg), jpg.stem],
+                        p = subprocess.run(['node', str(RADICE / 'scripts' / 'pubblica-storia.mjs'), str(jpg), chi.get(jpg.stem, jpg.stem)],
                                            capture_output=True, text=True)
                         dice((p.stdout.strip() or p.stderr.strip()[-300:] or 'ERRORE pubblicazione senza risposta'))
                 if r.returncode:

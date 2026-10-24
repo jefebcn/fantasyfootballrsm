@@ -63,10 +63,8 @@ a{color:var(--primary-ink)}   /* --primary sta a 4,23 sul fondo pagina: sotto 4,
    CSS, come alle sagome della barra in basso. 22px perche' il suo inchiostro
    riempie il riquadro, mentre le due a filo lasciano aria ai bordi. */
 .a-appbar .ib-mi{width:22px;height:22px}
-.a-hero .acts a{text-decoration:none}
 .a-card.a-fase .a-btn{text-decoration:none}
 .a-drawer .panel{width:min(84%,360px);border-radius:0 24px 24px 0}
-.a-hero .jersey{width:150px}
 /* Un comando SQL da incollare altrove: deve stare tutto sullo schermo del
    telefono senza tagliarsi, quindi va a capo invece di scorrere in orizzontale. */
 .sql{background:var(--surface-sunk);border:1px solid var(--border);border-radius:10px;
@@ -392,25 +390,56 @@ hr.sep{border:0;border-top:1px solid var(--border);margin:4px 0}
 /* hero */
 .a-league{display:none}
 .a-league .ic{color:var(--text-muted)}
+/* LA COPERTINA della Home (dashboard.js, copertina()).
+   In alto il Titano di notte con le tre torri, una fascia alta 210px; la
+   squadra comincia dove finisce il crinale, sul blu scuro che continua sotto
+   la foto. Maglia a sinistra e nome a destra, i numeri e le azioni dentro la
+   copertina invece che in una card che ci risale sopra. */
 .a-herowrap{margin:-12px -16px 0;overflow:hidden}
-.a-hero{position:relative;margin:0;background:var(--grad-hero);color:#fff;padding:16px 16px 44px;overflow:hidden;display:flex;flex-direction:column}
-.a-hero .tw{position:absolute;right:-26px;bottom:-24px;width:250px;height:250px;opacity:.08;color:#fff}
-.a-hero h2{position:relative;font-size:23px;font-weight:800;line-height:1.1;letter-spacing:-.02em;text-align:center;
-  margin-top:14px;padding-inline:52px;text-wrap:balance;text-shadow:0 2px 12px rgba(0,0,0,.25)}
-.a-hero .hero-owner{position:relative;text-align:center;font:500 12.5px var(--font-body);opacity:.8;margin:8px 0 0}
-.a-hero .hero-league{position:relative;align-self:center;display:inline-flex;align-items:center;gap:3px;
-  padding:5px 10px 5px 12px;border-radius:999px;background:rgba(255,255,255,.15);color:#fff;text-decoration:none;
-  font:600 11px var(--font-body);letter-spacing:.06em;text-transform:uppercase}
-.a-hero .hero-league .ic{width:14px;height:14px}
-.a-hero .jersey{position:relative;display:block}
-.a-hero .acts{position:absolute;right:14px;top:96px;display:flex;flex-direction:column;gap:10px;z-index:2}
-.a-hero .acts button{width:40px;height:40px;border-radius:50%;border:0;background:#fff;color:var(--c-titano-600);display:grid;place-items:center;box-shadow:0 4px 12px rgba(0,0,0,.25);cursor:pointer}
-.a-hero .acts button.gold{background:var(--c-oro-400);color:var(--c-titano-900)}
-.a-hero .logos{display:none}
-.a-hero .logos .logo{width:28px;height:28px}
-.a-hero .logos i{width:1px;height:18px;background:rgba(255,255,255,.4)}
-.a-hero .conf{position:absolute;inset:0;pointer-events:none}
-.a-herowrap + .a-card.a-stats{margin-top:-32px}
+.a-hero{position:relative;display:flex;flex-direction:column;gap:14px;padding:14px 16px 16px;
+  color:#fff;background:var(--grad-hero);overflow:hidden}
+.a-hero.foto{background:#04173B}
+.a-hero .tw{position:absolute;right:-26px;top:-20px;width:220px;height:220px;opacity:.08;color:#fff}
+.a-hero .sfondo{position:absolute;left:0;right:0;top:0;height:210px;z-index:0;overflow:hidden}
+.a-hero .sfondo img{display:block;width:100%;height:100%;object-fit:cover;object-position:center bottom}
+/* il velo: un filo in cima per la targa della lega, e in fondo si fonde col blu */
+.a-hero .sfondo i{position:absolute;inset:0;
+  background:linear-gradient(180deg,rgba(4,23,59,.35) 0%,rgba(4,23,59,0) 34%,rgba(4,23,59,0) 70%,#04173B 100%)}
+.a-hero > :not(.sfondo):not(.tw){position:relative;z-index:1}
+
+.a-hero .hero-league{align-self:flex-start;display:inline-flex;align-items:center;gap:8px;max-width:100%;
+  padding:7px 10px 7px 14px;border-radius:999px;color:#fff;text-decoration:none;
+  background:rgba(4,23,59,.55);border:1px solid rgba(255,255,255,.2);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
+.a-hero .hero-league>span{min-width:0}
+.a-hero .hero-league b{display:block;font:italic 900 15px/1.15 var(--font-display);text-transform:uppercase;letter-spacing:.01em;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.a-hero .hero-league small{display:block;font:500 11px var(--font-body);opacity:.8}
+.a-hero .hero-league .ic{flex:none;width:16px;height:16px;opacity:.75}
+
+.a-hero .hero-sq{display:grid;grid-template-columns:116px minmax(0,1fr);align-items:center;gap:14px}
+.a-hero.foto .hero-sq{margin-top:72px}
+.a-hero .jersey{display:block;width:116px;height:auto;filter:drop-shadow(0 10px 18px rgba(0,0,0,.45))}
+.a-hero .jersey.pers{height:150px;aspect-ratio:auto}
+.a-hero .jersey.pers .pers{max-height:150px;width:auto;margin:0 auto}
+.a-hero .hero-chi{min-width:0}
+.a-hero h2{margin:0;font:400 clamp(24px,7vw,30px)/1.02 var(--font-tito);text-transform:uppercase;letter-spacing:.01em;
+  text-wrap:balance;overflow-wrap:anywhere;text-shadow:0 2px 12px rgba(0,0,0,.35)}
+.a-hero .hero-owner{margin:6px 0 0;font:500 13px var(--font-body);opacity:.85}
+.a-hero .hero-marchio{display:inline-flex;align-items:center;gap:7px;margin-top:12px;padding:5px 14px 5px 8px;
+  border-radius:999px;color:#fff;text-decoration:none;background:rgba(255,255,255,.12)}
+.a-hero .hero-marchio .logo{width:22px;height:22px}
+
+.a-hero .a-stats{padding:10px 4px;border-radius:14px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14)}
+.a-hero .a-stats div+div{border-left-color:rgba(255,255,255,.16)}
+.a-hero .a-stats span{color:rgba(255,255,255,.78)}
+
+/* Tre azioni scritte per esteso: un simbolo da solo lasciava indovinare. */
+.hero-azioni{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.hero-azioni a{display:flex;align-items:center;justify-content:center;gap:6px;min-height:44px;padding:6px 8px;
+  border-radius:12px;color:#fff;text-decoration:none;text-align:center;font:600 12.5px/1.15 var(--font-body);
+  background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.16)}
+.hero-azioni a:active{background:rgba(255,255,255,.2)}
+.hero-azioni .ic{flex:none;width:17px;height:17px}
 .a-stats{margin-top:0;position:relative;display:grid;grid-template-columns:repeat(4,1fr);text-align:center;padding:12px 4px}
 .a-stats div+div{border-left:1px solid var(--border)}
 .a-stats b{display:block;font-family:var(--font-display);font-weight:700;font-size:24px;font-variant-numeric:tabular-nums;line-height:1.1}
@@ -523,7 +552,7 @@ hr.sep{border:0;border-top:1px solid var(--border);margin:4px 0}
    del nome squadra usciva dalla sua scatola (misurata a 77,8px con dentro
    "Hasta El Roxy") e sui nomi lunghi sarebbe finita sotto il bottone. */
 .d-chi{flex:1;min-width:0;display:block}
-.d-chi b{display:block;font-family:var(--font-display);font-weight:700;font-size:19px;line-height:1.15;color:var(--c-oro-400);
+.d-chi b{display:block;font-family:var(--font-display);font-weight:700;font-size:19px;line-height:1.15;color:#fff;
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .d-chi span{display:block;font-size:13px;line-height:1.3;opacity:.88;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .d-esci{flex:none;width:38px;height:38px;border-radius:50%;border:1px solid rgba(255,255,255,.28);
@@ -1230,7 +1259,7 @@ button,a{-webkit-tap-highlight-color:transparent}
 .a-nav a,.a-nav button{font-size:10.5px;letter-spacing:-.01em}
 .crest{flex:none}
 .vhead{position:sticky;top:0;z-index:1}
-@media (max-width:360px){.a-stats b{font-size:20px}.a-hero h2{font-size:20px;padding-inline:46px}}
+@media (max-width:360px){.a-stats b{font-size:20px}}
 
 /* --- accesso con Google e Apple --- */
 .social{display:flex;flex-direction:column;gap:8px}
@@ -2004,8 +2033,6 @@ button,a{-webkit-tap-highlight-color:transparent}
 .maglia .mg-luce{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;
   mix-blend-mode:multiply;pointer-events:none}
 .maglia .mg-scritte{position:absolute;inset:0;width:100%;height:100%}
-.a-hero .jersey{display:block;width:136px;height:auto;margin:2px auto 6px;
-  filter:drop-shadow(0 12px 20px rgba(0,0,0,.35))}
 .crest.foto{overflow:hidden;padding:0}
 .crest.foto img{width:100%;height:100%;object-fit:cover;border-radius:inherit}
 .crest.xl{width:104px;height:104px;font-size:26px;border-width:4px}
@@ -2057,45 +2084,6 @@ button,a{-webkit-tap-highlight-color:transparent}
 .a-card.testo a{text-underline-offset:3px;text-decoration-thickness:1.5px;font-weight:600}
 .a-card.testo code{font-family:var(--font-data);font-size:12px;background:var(--surface-2);
   border-radius:4px;padding:1px 5px}
-
-/* Copertina: la lega in una targa chiara,
-   poi il nome squadra, poi la maglia, e in fondo il marchio del campionato. */
-/* 34 e non 16: la card dei numeri risale di 26pt dentro la copertina, e con
-   16 il marchio in fondo le finiva incollato a 2pt. */
-.a-hero{padding-bottom:34px}
-.a-hero .hero-league{align-self:stretch;justify-content:space-between;background:var(--surface);
-  color:var(--text);padding:11px 14px 11px 16px;border-radius:14px;text-transform:none;
-  border-left:5px solid var(--accent);box-shadow:0 6px 16px rgba(0,0,0,.18)}
-/* Il nome intero, coi puntini se non ci sta. Il nome corto lo taglia la
-   creazione alle prime due parole: "Campionato dei Sudati di San Marino"
-   diventava "Campionato dei", che non e' un nome. */
-.a-hero .hero-league>span{min-width:0}
-.a-hero .hero-league b{display:block;font:700 16px var(--font-display);letter-spacing:-.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.a-hero .hero-league small{display:block;font:500 11px var(--font-body);color:var(--text-muted);margin-top:1px}
-.a-hero .hero-league .ic{width:18px;height:18px;color:var(--text-muted)}
-.a-hero h2{margin-top:16px;padding-inline:60px;font-size:21px}
-.a-hero .jersey{margin-top:10px}
-/* Coriandoli: sta sotto la maglia e non intercetta i tocchi. */
-.a-hero .conf{position:absolute;top:auto;left:0;right:0;bottom:30px;height:150px;pointer-events:none;opacity:.85;
-  background-repeat:no-repeat;
-  background-image:
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16'%3E%3Cpath d='M1 3l12-2-1 9-11 1z' fill='%23fff' opacity='.85'/%3E%3C/svg%3E"),
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16'%3E%3Cpath d='M2 2l12 1-2 9-10-2z' fill='%23E8B53A'/%3E%3C/svg%3E"),
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16'%3E%3Cpath d='M1 4l12-3v9l-12 2z' fill='%235BA8DC'/%3E%3C/svg%3E"),
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16'%3E%3Cpath d='M2 1l12 2-1 9-11-1z' fill='%23E8B53A'/%3E%3C/svg%3E"),
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16'%3E%3Cpath d='M1 2l12-1v9l-12 1z' fill='%23fff' opacity='.7'/%3E%3C/svg%3E"),
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16'%3E%3Cpath d='M2 3l12-2v9l-12 2z' fill='%235BA8DC'/%3E%3C/svg%3E");
-  background-position:5% 32%, 16% 82%, 27% 6%, 74% 12%, 88% 70%, 95% 38%}
-/* E' un collegamento, non piu' una scritta: aveva la forma di un tasto —
-   pastiglia, bordo, fondo schiarito — e non faceva niente. Adesso porta dove
-   il Voto Titano e' spiegato, che e' la domanda che fa venire. */
-.a-hero .hero-marchio{position:relative;display:inline-flex;align-self:center;align-items:center;justify-content:center;
-  gap:7px;margin-top:12px;padding:5px 14px 5px 8px;border-radius:999px;color:#fff;text-decoration:none;
-  background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.18)}
-.a-hero .hero-marchio:active{background:rgba(255,255,255,.22)}
-.a-hero .hero-marchio .logo{width:22px;height:22px}
-.a-hero .hero-marchio > span{font:700 11.5px var(--font-display);letter-spacing:.08em;text-transform:uppercase;opacity:.95}
-.a-herowrap + .a-card.a-stats{margin-top:-26px}
 /* L'ultima notizia su una riga. */
 .nflash{display:flex;align-items:center;gap:10px;background:var(--surface);border-radius:var(--r-md);
   box-shadow:var(--sh-card);padding:12px 14px;text-decoration:none;color:inherit;min-width:0}
@@ -2113,30 +2101,8 @@ button,a{-webkit-tap-highlight-color:transparent}
    che in tema scuro (azzurro chiaro) stava a 2,7 di contrasto. */
 .rl.rl-piu{background:var(--primary);color:var(--on-primary)}
 
-/* Copertina con la foto dello stadio sotto.
-   Non basta mettere la foto: sotto ci va un velo, se no il testo bianco
-   finisce sul prato chiaro e il contrasto crolla. Il velo e' scuro in basso
-   proprio dove il prato illumina, e la foto resta leggibile sopra. */
-.a-hero.foto{background:var(--c-titano-900)}
-.a-hero.foto .sfondo{position:absolute;inset:0;z-index:0;overflow:hidden}
-.a-hero.foto .sfondo img{width:100%;height:100%;object-fit:cover;object-position:center 62%}
-.a-hero.foto .sfondo i{position:absolute;inset:0;
-  background:linear-gradient(180deg,
-    rgba(7,22,44,.55) 0%,
-    rgba(7,22,44,.30) 32%,
-    rgba(7,22,44,.55) 70%,
-    rgba(7,22,44,.90) 100%)}
-/* Niente regola generica sui figli: rendendoli tutti "relative" si portavano
-   dentro al flusso anche il filigrana delle torri e i coriandoli, che sono
-   assoluti, e la copertina cresceva di 400px. Lo sfondo sta a z-index 0 e i
-   fratelli posizionati che vengono dopo nel DOM gli passano sopra da soli. */
-.a-hero.foto .tw{opacity:.07}
-
 /* Personaggi scontornati (src/personaggio.js). */
 .pers{display:block;width:100%;height:100%;object-fit:contain}
-.a-hero .jersey.pers{width:184px;height:auto;aspect-ratio:auto;
-  filter:drop-shadow(0 14px 22px rgba(0,0,0,.5))}
-.a-hero .jersey.pers .pers{max-height:230px;width:auto;margin:0 auto}
 .sm-img .pers{max-height:120px;width:auto}
 .pgrid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-top:10px}
 .pcell{position:relative;display:grid;place-items:center;padding:6px 2px;
@@ -2223,7 +2189,6 @@ button,a{-webkit-tap-highlight-color:transparent}
 
 /* Il nome della lega in corsivo nero, come sulla scheda della lega
    pubblica: in copertina e nella testa del menu. */
-.a-hero .hero-league b{font:italic 900 18px var(--font-display);text-transform:uppercase;letter-spacing:.01em}
 .d-nl b{font-style:italic;font-weight:900}
 
 /* Il corsivo nero anche nel resto dell'app (Alex, 8 ottobre): titoli delle
@@ -2474,11 +2439,15 @@ a.crow .cls-chev{flex:none;color:var(--text-muted);margin-left:-4px}
 .pubcard.on{outline-color:var(--c-lime)}
 .startcard b{font:400 17px/1.1 var(--font-tito);letter-spacing:.03em;text-transform:uppercase}
 
-/* Il menu: le etichette delle sezioni */
-.d-sec .chip{background:var(--c-viola);color:#fff;font:400 13px/1 var(--font-tito);letter-spacing:.07em;text-transform:uppercase;padding:5px 10px}
+/* Il menu: i titoli delle sezioni sono scritte, non pastiglie — piccole, in
+   Anton, con un filo che corre fino al bordo e separa i gruppi. */
+.d-sec{display:flex;align-items:center;gap:10px}
+.d-sec::after{content:'';flex:1;height:1px;background:var(--border)}
+.d-sec .chip,.d-sec.admin .chip{background:none;color:var(--text-muted);font:400 13px/1 var(--font-tito);letter-spacing:.09em;
+  text-transform:uppercase;padding:0;border-radius:0}
+.d-sec.admin .chip{color:var(--on-accent-soft)}
 
-/* Le azioni tonde: il carrello sulla maglia, i video, il «+» del negozio */
-.a-hero .acts button.gold{background:var(--c-lime);color:var(--c-inchiostro);box-shadow:3px 3px 0 var(--c-viola)}
+/* Le azioni tonde: i video, il «+» del negozio */
 .vh-p,.vid-play{background:var(--c-lime);color:var(--c-inchiostro)}
 .vid-play{box-shadow:3px 3px 0 var(--c-viola)}
 .neg-piu:not([disabled]){border-color:var(--tito-ink);color:var(--tito-ink);font:400 21px/1 var(--font-tito)}

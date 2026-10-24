@@ -322,7 +322,7 @@ export const avanzate = {
 
     const look = group('Aspetto', `<div class="a-card"><label class="lbl">Tema</label><div class="seg">${[['system', 'Sistema'], ['light', 'Chiaro'], ['dark', 'Scuro']].map(([k, l]) => `<button class="${d.theme === k ? 'on' : ''}" data-theme="${k}">${l}</button>`).join('')}</div></div>
       <button class="setting" data-act="sfondo"><i class="ico">${icon('img')}</i>
-        <span class="txt"><b>Foto in copertina</b><span>Lo stadio dietro la maglia, invece della tinta piena</span></span>
+        <span class="txt"><b>Foto in copertina</b><span>Il Titano con le tre torri dietro la squadra, invece della tinta piena</span></span>
         <span class="sw${d.sfondoFoto ? ' on' : ''}"></span></button>`);
 
     const league = S.hasLeague() ? group('Lega', `

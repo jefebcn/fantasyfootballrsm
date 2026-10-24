@@ -1,5 +1,5 @@
 /* Service worker — shell in cache, aggiornamento in background. */
-const VERSION = 'fcs-v4.2.219';
+const VERSION = 'fcs-v4.2.220';
 const SHELL = [
   './', './index.html', './manifest.webmanifest', './styles/app.css', './styles/logo.css', './styles/font.css', './design/tokens/tokens.css',
   // I caratteri stanno in casa: nella cache ci vanno, se no senza rete si vede
@@ -28,7 +28,7 @@ const SHELL = [
   // Sfondo della schermata d'accesso: è la prima cosa che si vede.
   './media/sfondo-accesso.jpg',
   // La maglia sta in copertina: e' la prima immagine della dashboard.
-  './media/maglia-base.webp', './media/sfondo-home.jpg',
+  './media/maglia-base.webp', './media/sfondo-home.jpg', './media/sfondo-titano.jpg',
 ];
 /**
  * Il guscio si riscarica dalla RETE, non dalla cache del browser.

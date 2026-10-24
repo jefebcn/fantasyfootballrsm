@@ -4,7 +4,6 @@ import * as AV from '../notifiche.js';
 import * as N from '../notizie.js';
 import { esc, premioHtml, fmt, icon, logo, badge, crest, pic, tile, sec, dateIt, timeIt, plurale, freccia } from '../ui.js';
 import { movimenti, anteprimaClassifica } from '../engine.js';
-import { maglia, kitOf } from '../maglia.js';
 import { personaggio, scelto, figura } from '../personaggio.js';
 
 const RULES = [
@@ -535,8 +534,53 @@ function notizie() {
     <a class="lcta" href="https://www.sanmarinortv.sm/sport/calcio-sammarinese-c15" target="_blank" rel="noopener noreferrer">Tutte le notizie su ${esc(N.fonte())}${icon('out', 'ic sm')}</a></div>`;
 }
 
+/**
+ * LA COPERTINA. Il Titano di notte con le tre torri, e sotto, al centro, la
+ * squadra: lo stemma (o il personaggio scelto), il nome, l'allenatore. Poi i
+ * numeri e tre azioni scritte per esteso.
+ *
+ * Prima era una vetrina sull'impaginazione di un'altra app — targa della lega,
+ * maglia sotto i riflettori con le bandierine, tre bottoni tondi di lato e la
+ * card dei numeri che risaliva sopra. Alex, 24/10: rifatta perche' fosse
+ * nostra, e con lo stemma al posto della maglia, che era il loro segno.
+ */
+function copertina(me, row, ph) {
+  const foto = S.store.get().sfondoFoto;
+  const numeri = S.aPunti()
+    // A punti "Punti" e "Fantapunti" sarebbero lo stesso numero due volte:
+    // al suo posto la media, che dice come stai andando e non solo quanto hai
+    // accumulato — con due giornate in meno un totale basso non vuol dire
+    // niente.
+    ? [[fmt(row.punti), 'Punti'], [row.played, 'Giornate'], [fmt(row.media || 0), 'Media']]
+    : [[row.points, 'Punti'], [row.played, 'Partite'], [fmt(row.fantapunti), 'Fantapunti']];
+  return `<div class="a-herowrap">
+    <div class="a-hero${foto ? ' foto' : ''}">
+      ${foto ? '<span class="sfondo"><img src="media/sfondo-titano.jpg" alt="" fetchpriority="high"><i></i></span>' : logo('tw')}
+      <a class="hero-league" href="#/leghe">
+        <span><b>${esc(S.base.league.name)}</b>
+        <small>${S.base.managers.length} ${S.base.managers.length === 1 ? 'squadra' : 'squadre'} · ${ph.next}ª giornata</small></span>${icon('chev', 'ic sm')}</a>
+      <a class="hero-stemma${scelto(me) ? ' pers' : ''}" href="#/squadra" aria-label="Modifica stemma e personaggio">
+        ${scelto(me) ? personaggio(scelto(me)) : crest(me, 'hero')}</a>
+      <div class="hero-chi">
+        <h2>${esc(me.teamName)}</h2>
+        <p class="hero-owner">${esc(me.owner)}</p>
+        <a class="hero-marchio" href="#/regolamento">${logo()}<span>Voto Titano</span></a>
+      </div>
+      <div class="a-stats">
+        <div><b>${row.position}<sup>ª</sup></b><span>Posizione</span></div>
+        ${numeri.map(([n, l]) => `<div><b>${n}</b><span>${l}</span></div>`).join('')}
+      </div>
+      <div class="hero-azioni">
+        <a href="#/scheda">${icon('share', 'ic sm')}<span>Condividi</span></a>
+        <a href="#/squadra">${icon('shirt', 'ic sm')}<span>La mia squadra</span></a>
+        <a href="#/mercato">${icon('cart', 'ic sm')}<span>Mercato</span></a>
+      </div>
+    </div>
+  </div>`;
+}
+
 export const dashboard = {
-  title: 'Dashboard',
+  title: 'Home',
   render() {
     const me = S.me(); const ph = S.weekPhase();
     if (!me) return `<main class="a-body"><div class="empty">${logo()}<p>Non fai parte di questa lega.</p><a class="a-btn" href="#/leghe" style="text-decoration:none">Le mie leghe</a></div></main>`;
@@ -570,39 +614,7 @@ export const dashboard = {
 
     return `<main class="a-body home">
       <div id="install-slot"></div>
-      <div class="a-herowrap">
-        <div class="a-hero${S.store.get().sfondoFoto ? ' foto' : ''}">
-          ${S.store.get().sfondoFoto ? '<span class="sfondo"><img src="media/sfondo-home.jpg" alt="" fetchpriority="high"><i></i></span>' : ''}
-          ${logo('tw')}<i class="conf"></i>
-          <a class="hero-league" href="#/leghe">
-            <span><b>${esc(S.base.league.name)}</b>
-            <small>${S.base.managers.length} ${S.base.managers.length === 1 ? 'squadra' : 'squadre'} · ${ph.next}ª giornata</small></span>${icon('chev', 'ic sm')}</a>
-          <h2>${esc(me.teamName)}</h2>
-          <a class="jersey${scelto(me) ? ' pers' : ''}" href="#/squadra" aria-label="Modifica stemma, maglia e personaggio">
-            ${scelto(me) ? personaggio(scelto(me)) : maglia(kitOf(me))}</a>
-          <div class="acts">
-            <a href="#/scheda" aria-label="Condividi la scheda"><button>${icon('share')}</button></a>
-            <a href="#/squadra" aria-label="La mia squadra"><button>${icon('gear')}</button></a>
-            <a href="#/mercato" aria-label="Mercato libero"><button class="gold">${icon('cart')}</button></a>
-          </div>
-          <p class="hero-owner">${esc(me.owner)}</p>
-          <a class="hero-marchio" href="#/regolamento">${logo()}<span>Voto Titano</span></a>
-        </div>
-      </div>
-      <div class="a-card a-stats">
-        <div><b>${row.position}<sup>ª</sup></b><span>Posizione</span></div>
-        ${S.aPunti()
-    // A punti "Punti" e "Fantapunti" sarebbero lo stesso numero due volte:
-    // al suo posto la media, che dice come stai andando e non solo quanto hai
-    // accumulato — con due giornate in meno un totale basso non vuol dire
-    // niente.
-    ? `<div><b>${fmt(row.punti)}</b><span>Punti</span></div>
-        <div><b>${row.played}</b><span>Giornate</span></div>
-        <div><b>${fmt(row.media || 0)}</b><span>Media</span></div>`
-    : `<div><b>${row.points}</b><span>Punti</span></div>
-        <div><b>${row.played}</b><span>Partite</span></div>
-        <div><b>${fmt(row.fantapunti)}</b><span>Fantapunti</span></div>`}
-      </div>
+      ${copertina(me, row, ph)}
       ${invitoNegozio()}
       ${notiziaBreve()}
       ${invitoPubblica()}

@@ -52,7 +52,7 @@ const ok = [], ko = []; const et = (c, t) => (c ? ok : ko).push(t);
       const marchio = document.querySelector('.hero-marchio');
       const voci = [...document.querySelectorAll('.a-nav a')];
       return {
-        appbar: r('.a-appbar'), hero: r('.a-hero'), marchio: r('.hero-marchio'), stats: r('.a-card.a-stats'),
+        appbar: r('.a-appbar'), hero: r('.a-hero'), marchio: r('.hero-marchio'), stats: r('.a-hero .a-stats'),
         slotVisibile: getComputedStyle(document.querySelector('#install-slot')).display,
         marchioTag: marchio ? marchio.tagName : null,
         marchioHref: marchio ? marchio.getAttribute('href') : null,

@@ -91,7 +91,7 @@ export function applyTheme() {
 
 // Sagome da media/icone/nav, colorate dalla CSS: la barra deve dire dove sei,
 // e lo dice col colore. Le icone già a colori non potevano.
-const NAV = [['', 'campo', 'Dashboard'], ['rosa', 'maglia-10', 'Rosa'], ['calendario', 'calendario', 'Calendario'],
+const NAV = [['', 'campo', 'Home'], ['rosa', 'maglia-10', 'Rosa'], ['calendario', 'calendario', 'Calendario'],
   ['classifica', 'coppa', 'Classifica'], ['voti', 'grafico', 'Voti']];
 
 function appbar(view, ctx) {

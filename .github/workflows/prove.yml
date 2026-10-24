@@ -15,8 +15,13 @@
 
 name: Prove
 
+# Sui rami le prove partono dalla PR, non anche dal push: prima giravano due
+# volte per ogni modifica (push e pull_request hanno riferimenti diversi, e il
+# gruppo qui sotto non le univa). Su main restano a ogni push: ci arrivano gli
+# import automatici, che una PR non ce l'hanno.
 on:
   push:
+    branches: [main]
   pull_request:
   schedule:
     - cron: '40 2 * * *'      # di notte, la passata completa
@@ -62,8 +67,16 @@ jobs:
       - name: La sentinella dell'import
         run: ./prove/sentinella-import.sh
 
+  # Quattro gruppi in parallelo (prove/tutte.sh, GRUPPO): da sole in fila
+  # erano 25-40 minuti, e ogni aggiornamento aspettava quelli prima di andare
+  # online. Se un gruppo fallisce gli altri finiscono lo stesso, cosi' si vede
+  # tutto quello che non va in un giro solo.
   browser:
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        gruppo: [1, 2, 3, 4]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -77,12 +90,13 @@ jobs:
         # A ogni push senza l'audit; di notte e a mano tutte.
         env:
           SALTA: ${{ (github.event_name == 'push' || github.event_name == 'pull_request') && 'audit-ux' || '' }}
+          GRUPPO: ${{ matrix.gruppo }}/4
         run: ./prove/tutte.sh
       - name: Gli screenshot, se qualcosa è andato male
         if: failure()
         uses: actions/upload-artifact@v4
         with:
-          name: schermate-${{ github.run_id }}
+          name: schermate-${{ github.run_id }}-${{ matrix.gruppo }}
           path: /tmp/tmp.*/
           if-no-files-found: ignore
           retention-days: 7

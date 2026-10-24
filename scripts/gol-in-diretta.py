@@ -8,13 +8,16 @@ e minuto ci sono gia' durante la gara (verificato il 24/10 su Murata-Domagnano
 e Fiorentino-Cailungo); i cambi arrivano dopo il fischio. Qui si legge la pagina
 ogni minuto con gli stessi strumenti dell'import (scripts/importa-fsgc.py).
 
-Per ora NON pubblica: scrive una riga «STORIA <file>» per ogni storia fatta,
-e chi lo fa girare la guarda. La pubblicazione arriva dopo la prova.
+Con --pubblica ogni storia passa a scripts/pubblica-storia.mjs, che la mette
+su Instagram solo se la variabile STORIE_GOL e' «on» (altrimenti e' una prova).
+Con --dati-db i dati del database (aderenti, possesso) si rileggono ogni mezz'ora.
 
     python3 scripts/gol-in-diretta.py --dati db.json --uscita /tmp/gol
+    python3 scripts/gol-in-diretta.py --dati-db --pubblica --per 19000    (su GitHub)
 
-Righe che scrive: STORIA, ANNULLATO (un gol sparito dalla pagina), ATTESA
-(punteggio cambiato ma marcatore non ancora scritto), ERRORE, FINE.
+Righe che scrive: STORIA, PUBBLICATA/PROVA/GIA' FATTA/TETTO (dalla
+pubblicazione), ANNULLATO (un gol sparito dalla pagina), ATTESA (punteggio
+cambiato ma marcatore non ancora scritto), ERRORE, FINE.
 """
 import argparse, importlib.util, json, pathlib, subprocess, sys, time
 from datetime import datetime
@@ -42,7 +45,12 @@ def main():
     ap.add_argument('--dati', default=None)
     ap.add_argument('--ogni', type=int, default=60)
     ap.add_argument('--anche-vecchi', action='store_true', help='fa la storia anche dei gol gia\' segnati alla partenza')
+    ap.add_argument('--dati-db', action='store_true', help='rilegge aderenti e possesso dal database (scripts/dati-storie.mjs)')
+    ap.add_argument('--pubblica', action='store_true')
+    ap.add_argument('--per', type=int, default=0, help='secondi, poi esce: su GitHub il turno dopo prende il posto')
     a = ap.parse_args()
+    avvio = time.time()
+    letti_db = 0
     uscita = pathlib.Path(a.uscita)
     uscita.mkdir(parents=True, exist_ok=True)
     stato_f = uscita / 'stato.json'
@@ -51,6 +59,13 @@ def main():
     primo = True
     while True:
         ora = time.time()
+        if a.per and ora - avvio > a.per:
+            dice('FINE turno finito')
+            break
+        if a.dati_db and ora - letti_db > 1800:
+            a.dati = str(uscita / 'dati.json')
+            subprocess.run(['node', str(RADICE / 'scripts' / 'dati-storie.mjs'), a.dati])
+            letti_db = ora
         try:
             cal = fsgc.calendario()
         except Exception as e:
@@ -92,8 +107,14 @@ def main():
                        '--n', str(stato['n']), '--uscita', str(uscita)] + (['--dati', a.dati] if a.dati else [])
                 r = subprocess.run(cmd, capture_output=True, text=True)
                 for riga in r.stdout.splitlines():
-                    if riga.startswith('STORIA'):
-                        dice(riga)
+                    if not riga.startswith('STORIA'):
+                        continue
+                    dice(riga)
+                    if a.pubblica:
+                        jpg = pathlib.Path(riga.split()[1])
+                        p = subprocess.run(['node', str(RADICE / 'scripts' / 'pubblica-storia.mjs'), str(jpg), jpg.stem],
+                                           capture_output=True, text=True)
+                        dice((p.stdout.strip() or p.stderr.strip()[-300:] or 'ERRORE pubblicazione senza risposta'))
                 if r.returncode:
                     dice('ERRORE storia', chiave, r.stderr.strip()[-300:])
                 else:

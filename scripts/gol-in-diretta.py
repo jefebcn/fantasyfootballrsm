@@ -24,8 +24,12 @@ spec = importlib.util.spec_from_file_location('fsgc', RADICE / 'scripts' / 'impo
 fsgc = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(fsgc)
 
-PRIMA = 10 * 60       # si comincia a guardare dieci minuti prima del calcio d'inizio
-DOPO = 150 * 60       # e si smette due ore e mezza dopo, recupero compreso
+# Dieci minuti prima del calcio d'inizio, fino a tre ore e mezza dopo. Tre e
+# mezza e non due e mezza: l'orario della FSGC porta il fuso scritto a mano
+# (+02:00 anche dopo il ritorno all'ora solare, 25/10), e un'ora di scarto
+# lascerebbe scoperto il secondo tempo.
+PRIMA = 10 * 60
+DOPO = 210 * 60
 
 
 def dice(*a):

@@ -166,10 +166,38 @@ export function scegli(storia, quanti = 3) {
 
 export const MODELLI = ['urlo', 'tabellone', 'scheda', 'squadra'];
 
+/**
+ * Gli sfondi (social/gol/sfondi) e le pose (social/gol/giocatori), tutti
+ * generati per Fantatitano il 24/10/2026: il Titano in sei atmosfere, cinque
+ * scorci di stadio, quattro astratti in grigio che prendono il colore della
+ * squadra che segna. Le pose sono calciatori qualunque, non ritratti: hanno la
+ * maglia magenta e la pagina la ridipinge nel colore del club.
+ */
+export const SFONDI = ['titano-tramonto', 'titano-notte', 'titano-temporale', 'titano-neve', 'titano-fuochi', 'titano-nebbia',
+  'stadio-pioggia', 'stadio-rete', 'stadio-alto', 'stadio-bandierina', 'stadio-rigore',
+  'astratto-esplosione', 'astratto-fumetto', 'astratto-velocita', 'astratto-tifo'];
+export const POSE = ['braccia', 'scivolata', 'salto', 'tiro'];
+
+const semeDi = (testo, base) => [...testo].reduce((h, c) => (h * 31 + c.charCodeAt(0)) >>> 0, base);
+
+/**
+ * Lo sfondo della n-esima storia della giornata. L'ordine e' rimescolato per
+ * giornata e poi si scorre: due storie di fila non hanno mai lo stesso sfondo,
+ * e prima di ripeterne uno passano tutti.
+ */
+export function sfondoPer(storia) {
+  const rnd = mulberry32(storia.g * 7919);
+  const giro = [...SFONDI].sort(() => rnd() - 0.5);
+  return giro[(storia.n || 0) % giro.length];
+}
+export function posaPer(storia) {
+  return POSE[(semeDi(storia.squadra.id, storia.g) + (storia.n || 0)) % POSE.length];
+}
+
 /** Il modello: chi non ha nome ha le storie della squadra; gli altri girano. */
 export function modelloPer(storia) {
-  if (!storia.nominabile) return storia.punteggio[0] + storia.punteggio[1] > 1 ? 'tabellone' : 'squadra';
-  const rnd = mulberry32([...storia.id].reduce((h, c) => (h * 33 + c.charCodeAt(0)) >>> 0, 11));
+  if (!storia.nominabile) return (storia.n || 0) % 2 ? 'tabellone' : 'squadra';
+  const rnd = mulberry32(semeDi(storia.id, 11));
   return ['urlo', 'tabellone', 'scheda'][Math.floor(rnd() * 3)];
 }
 
@@ -178,37 +206,84 @@ function inchiostro(hex) {
   const [r, g, b] = [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16) / 255);
   return 0.2126 * r + 0.7152 * g + 0.0722 * b > 0.45 ? '#0A0A0C' : '#FFFFFF';
 }
+/** «Gol della Virtus», «del Cosmos», «dell'Academy», «de La Fiorita». */
+const ARTICOLO = { virtus: 'della ', folgore: 'della ', libertas: 'della ', juvenes: 'della ', lafiorita: 'de ', academy: "dell'" };
+export const golDi = (c) => `Gol ${ARTICOLO[c.id] || 'del '}${c.name}`;
 const tondo = (c, cls = '') => `<span class="tondo ${cls}" style="background:${c.color};color:${inchiostro(c.color)}">${esc(c.shortName)}</span>`;
 
-/** La storia in HTML. radice: l'indirizzo della cartella del progetto, per font e sfondo. */
+/**
+ * La ridipintura della maglia, dentro la pagina: ogni pixel magenta prende il
+ * colore del club tenendo la sua luce, cosi' pieghe e ombre del disegno
+ * restano. Bianchi, pelle, capelli ed erba non sono magenta e non si toccano.
+ * Finito, il body prende data-pronto: e' il segnale per la fotografia.
+ */
+const RIDIPINGI = `<script>
+(async () => {
+  const hsv = (r, g, b) => { const M = Math.max(r, g, b), m = Math.min(r, g, b), d = M - m;
+    let h = 0; if (d) h = M === r ? ((g - b) / d) % 6 : M === g ? (b - r) / d + 2 : (r - g) / d + 4;
+    return [((h / 6) + 1) % 1, M ? d / M : 0, M]; };
+  const rgb = (h, s, v) => { const f = (n) => { const k = (n + h * 6) % 6; return v - v * s * Math.max(0, Math.min(k, 4 - k, 1)); };
+    return [f(5), f(3), f(1)]; };
+  for (const c of document.querySelectorAll('canvas.gioc')) {
+    const img = new Image(); img.src = c.dataset.src; await img.decode();
+    c.width = img.naturalWidth; c.height = img.naturalHeight;
+    const x = c.getContext('2d'); x.drawImage(img, 0, 0);
+    const dati = x.getImageData(0, 0, c.width, c.height), p = dati.data;
+    const col = c.dataset.colore; const [th, ts, tv] = hsv(...[1, 3, 5].map((i) => parseInt(col.slice(i, i + 2), 16) / 255));
+    for (let i = 0; i < p.length; i += 4) {
+      if (p[i + 3] < 10) continue;
+      const [h, s, v] = hsv(p[i] / 255, p[i + 1] / 255, p[i + 2] / 255);
+      if (h < 0.78 || h > 0.95 || s < 0.2 || v < 0.05) continue;
+      const luce = Math.min(1, v / 0.9);
+      const nv = tv < 0.3 ? (tv * 0.85 + 0.15) * luce : tv * luce;
+      const [r, g, b] = rgb(th, ts * Math.min(1, s / 0.75), Math.min(1, nv));
+      p[i] = r * 255; p[i + 1] = g * 255; p[i + 2] = b * 255;
+    }
+    x.putImageData(dati, 0, 0);
+  }
+  await document.fonts.ready;
+  await Promise.all([...document.images].map((i) => i.decode().catch(() => {})));
+  document.body.dataset.pronto = '1';
+})();
+<\/script>`;
+
+/** La storia in HTML. radice: l'indirizzo della cartella del progetto, per font, sfondi e pose. */
 export function htmlStoria(storia, modello = modelloPer(storia), radice = '../..') {
-  const fatti = scegli(storia, 3);
+  // la carta della squadra occupa mezza storia: li' i fatti sono due
+  const fatti = scegli(storia, modello === 'squadra' ? 2 : 3);
   const [gc, go] = storia.punteggio;
-  const chi = storia.nominabile ? esc(storia.marcatore) : storia.autogol ? 'Autogol' : `Gol della ${esc(storia.squadra.name)}`;
+  const sfondo = sfondoPer(storia);
+  const chi = storia.nominabile ? esc(storia.marcatore) : storia.autogol ? 'Autogol' : esc(golDi(storia.squadra));
   const risultato = `<div class="ris">${tondo(storia.casa)}<b>${gc}<i>–</i>${go}</b>${tondo(storia.ospite)}</div>`;
   const chips = fatti.map((x) => `<div class="fatto"><b>${esc(x.valore)}</b><span>${esc(x.testo)}</span></div>`).join('');
   const testa = `<div class="testa"><img src="${radice}/media/logo-mask.png" alt=""><span>Fantatitano</span><em>${storia.g}ª giornata</em></div>`;
   const piede = `<div class="piede">Il fantacalcio del Campionato Sammarinese · <b>fantatitano.site</b></div>`;
-  let corpo;
+  const giocatore = (cls) => `<canvas class="gioc ${cls}" data-src="${radice}/social/gol/giocatori/${posaPer(storia)}.png" data-colore="${storia.squadra.color}"></canvas>`;
+  const ruolo = storia.ruolo ? ` · ${{ P: 'portiere', D: 'difensore', C: 'centrocampista', A: 'attaccante' }[storia.ruolo]}` : '';
+  let corpo, figura = '';
   if (modello === 'urlo') {
+    figura = giocatore('a-destra');
     corpo = `<div class="urlo"><div class="min">${storia.minuto}'</div><h1>GOL!</h1><h2>${chi}</h2>
       <div class="sq">${tondo(storia.squadra, 'mini')}<span>${esc(storia.squadra.name)}</span></div></div>
-      ${risultato}<div class="fatti">${chips}</div>`;
+      <div class="giu">${risultato}<div class="fatti">${chips}</div></div>`;
   } else if (modello === 'tabellone') {
     corpo = `<div class="tab"><div class="lampo">GOL · ${storia.minuto}'</div>
       <div class="squadre"><div>${tondo(storia.casa, 'big')}<span>${esc(storia.casa.name)}</span></div>
       <b class="num">${gc}<i>:</i>${go}</b>
       <div>${tondo(storia.ospite, 'big')}<span>${esc(storia.ospite.name)}</span></div></div>
-      <h2>${chi}</h2></div><div class="fatti">${chips}</div>`;
+      <h2>${chi}</h2></div><div class="giu"><div class="fatti">${chips}</div></div>`;
   } else if (modello === 'scheda') {
+    figura = giocatore('al-centro');
     corpo = `<div class="scheda"><div class="occhio">GOL al ${storia.minuto}'</div><h2 class="nome">${chi}</h2>
-      <div class="sq">${tondo(storia.squadra, 'mini')}<span>${esc(storia.squadra.name)}${storia.ruolo ? ` · ${{ P: 'portiere', D: 'difensore', C: 'centrocampista', A: 'attaccante' }[storia.ruolo]}` : ''}</span></div>
-      <div class="griglia">${chips}</div></div>${risultato}`;
+      <div class="sq">${tondo(storia.squadra, 'mini')}<span>${esc(storia.squadra.name)}${ruolo}</span></div>
+      <div class="griglia">${chips}</div>${risultato}</div>`;
   } else {
+    figura = giocatore('sopra-carta');
     corpo = `<div class="colore" style="--c:${storia.squadra.color};--t:${inchiostro(storia.squadra.color)}">
-      ${tondo(storia.squadra, 'enorme')}<h1>GOL</h1><h2>${esc(storia.squadra.name)}</h2><div class="min2">${storia.minuto}'</div></div>
-      ${risultato}<div class="fatti">${chips}</div>`;
+      <h1>GOL</h1><h2>${esc(storia.squadra.name)}</h2><div class="min2">${storia.minuto}'</div></div>
+      <div class="giu">${risultato}<div class="fatti">${chips}</div></div>`;
   }
+  const tinta = sfondo.startsWith('astratto') ? `<div class="tinta" style="background:${storia.squadra.color}"></div>` : '';
   return `<!doctype html><html lang="it"><head><meta charset="utf-8"><style>
 @font-face{font-family:Anton;src:url(${radice}/media/font/anton-400-latin.woff2)}
 @font-face{font-family:Lato;font-weight:700;src:url(${radice}/media/font/lato-700-latin.woff2)}
@@ -216,46 +291,56 @@ export function htmlStoria(storia, modello = modelloPer(storia), radice = '../..
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{width:1080px;height:1920px;overflow:hidden}
 body{font-family:Lato,sans-serif;color:#fff;background:#04173B;position:relative}
-.sfondo{position:absolute;left:0;right:0;top:0;height:620px;background:url(${radice}/media/sfondo-titano.jpg) center bottom/cover}
-.sfondo::after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,rgba(4,23,59,.25),rgba(4,23,59,0) 40%,#04173B)}
-.wrap{position:absolute;inset:0;padding:150px 72px 120px;display:flex;flex-direction:column;gap:46px}
-.testa{display:flex;align-items:center;gap:16px;font:400 40px/1 Anton;letter-spacing:.03em;text-transform:uppercase}
+.sfondo{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.tinta{position:absolute;inset:0;mix-blend-mode:color;opacity:.9}
+/* il velo: leggero in alto, dove lo sfondo racconta; pieno in basso, dove si legge */
+.velo{position:absolute;inset:0;background:linear-gradient(180deg,rgba(4,23,59,.55) 0%,rgba(4,23,59,.1) 22%,rgba(4,23,59,.2) 45%,rgba(4,23,59,.8) 68%,rgba(4,23,59,.96) 100%)}
+.gioc{position:absolute;z-index:1;filter:drop-shadow(0 30px 40px rgba(0,0,0,.55))}
+.gioc.a-destra{right:-130px;top:470px;height:1080px}
+.gioc.al-centro{left:50%;transform:translateX(-50%);top:250px;height:900px}
+.gioc.sopra-carta{left:50%;transform:translateX(-50%);top:230px;height:640px}
+.wrap{position:absolute;inset:0;z-index:2;padding:140px 72px 110px;display:flex;flex-direction:column;gap:40px}
+.testa{display:flex;align-items:center;gap:16px;font:400 40px/1 Anton;letter-spacing:.03em;text-transform:uppercase;text-shadow:0 2px 12px rgba(0,0,0,.5)}
 .testa img{width:60px;filter:brightness(0) saturate(100%) invert(91%) sepia(62%) saturate(758%) hue-rotate(20deg)}
 .testa em{margin-left:auto;font-style:normal;color:#D9F51F;font-size:34px}
 .tondo{display:inline-grid;place-items:center;width:120px;height:120px;border-radius:50%;font:400 40px/1 Anton;letter-spacing:.02em;
   border:6px solid #04173B;box-shadow:0 0 0 4px #D9F51F;flex:none}
 .tondo.mini{width:72px;height:72px;font-size:24px;border-width:4px;box-shadow:0 0 0 3px #D9F51F}
 .tondo.big{width:190px;height:190px;font-size:60px}
-.tondo.enorme{width:300px;height:300px;font-size:96px;border-width:10px;box-shadow:0 0 0 8px #D9F51F}
-.ris{display:flex;align-items:center;justify-content:center;gap:40px;padding:34px;border-radius:40px;background:rgba(255,255,255,.07);border:3px solid rgba(255,255,255,.14)}
-.ris b{font:400 130px/1 Anton;letter-spacing:.02em}.ris b i{font-style:normal;color:#D9F51F;margin:0 18px}
-.fatti{display:flex;flex-direction:column;gap:22px}
-.fatto{display:flex;align-items:center;gap:30px;padding:26px 34px;border-radius:30px;background:#D9F51F;color:#0A0A0C;box-shadow:10px 10px 0 #4B06FC}
+.ris{display:flex;align-items:center;justify-content:center;gap:40px;padding:26px;border-radius:40px;background:rgba(4,23,59,.72);
+  border:3px solid rgba(255,255,255,.16);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
+.ris b{font:400 120px/1 Anton;letter-spacing:.02em}.ris b i{font-style:normal;color:#D9F51F;margin:0 18px}
+.giu{margin-top:auto;display:flex;flex-direction:column;gap:28px}
+.fatti{display:flex;flex-direction:column;gap:20px}
+.fatto{display:flex;align-items:center;gap:30px;padding:24px 34px;border-radius:30px;background:#D9F51F;color:#0A0A0C;box-shadow:10px 10px 0 #4B06FC}
 .fatto:nth-child(2){background:#fff;transform:rotate(-1.2deg)}
-.fatto b{font:400 76px/1 Anton;min-width:150px}
-.fatto span{font:900 38px/1.15 Lato}
-.urlo{margin-top:180px;text-align:left}
-.urlo .min{display:inline-block;padding:10px 26px;border-radius:999px;background:#4B06FC;font:400 56px/1 Anton}
-.urlo h1{font:400 300px/.86 Anton;color:#D9F51F;margin-top:10px;text-shadow:12px 12px 0 #4B06FC}
-.urlo h2,.tab h2{font:400 96px/1 Anton;text-transform:uppercase;margin-top:18px}
+.fatto:nth-child(3){background:#4B06FC;color:#fff;box-shadow:10px 10px 0 #D9F51F;transform:rotate(.8deg)}
+.fatto b{font:400 72px/1 Anton;min-width:150px}
+.fatto span{font:900 36px/1.15 Lato}
+.urlo{margin-top:120px;max-width:590px;text-shadow:0 4px 24px rgba(0,0,0,.45)}
+.urlo .min{display:inline-block;padding:10px 26px;border-radius:999px;background:#4B06FC;font:400 56px/1 Anton;text-shadow:none}
+.urlo h1{font:400 290px/.86 Anton;color:#D9F51F;margin-top:10px;text-shadow:12px 12px 0 #4B06FC}
+.urlo h2,.tab h2{font:400 92px/1 Anton;text-transform:uppercase;margin-top:18px}
 .sq{display:flex;align-items:center;gap:20px;margin-top:20px;font:900 40px Lato}
-.tab{margin-top:220px;text-align:center}
-.lampo{display:inline-block;padding:16px 40px;border-radius:999px;background:#D9F51F;color:#0A0A0C;font:400 64px/1 Anton;transform:rotate(-3deg);box-shadow:8px 8px 0 #4B06FC}
+.tab{margin-top:200px;text-align:center;text-shadow:0 4px 24px rgba(0,0,0,.5)}
+.lampo{display:inline-block;padding:16px 40px;border-radius:999px;background:#D9F51F;color:#0A0A0C;font:400 64px/1 Anton;transform:rotate(-3deg);box-shadow:8px 8px 0 #4B06FC;text-shadow:none}
 .squadre{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;margin-top:60px}
 .squadre div{display:flex;flex-direction:column;align-items:center;gap:20px;font:900 38px Lato}
 .num{font:400 200px/1 Anton}.num i{font-style:normal;color:#D9F51F}
-.scheda{margin-top:200px}
-.occhio{font:400 56px/1 Anton;color:#D9F51F;letter-spacing:.04em}
-.nome{font:400 150px/.92 Anton;text-transform:uppercase;margin-top:16px}
-.griglia{display:flex;flex-direction:column;gap:22px;margin-top:44px}
-.colore{margin-top:120px;padding:60px 40px;border-radius:50px;background:var(--c);color:var(--t);text-align:center;box-shadow:14px 14px 0 #D9F51F}
-.colore h1{font:400 260px/.9 Anton;margin-top:20px}.colore h2{font:400 90px/1 Anton;text-transform:uppercase}
-.min2{display:inline-block;margin-top:24px;padding:10px 30px;border-radius:999px;background:#04173B;color:#D9F51F;font:400 60px/1 Anton}
-.piede{margin-top:auto;text-align:center;font:700 30px Lato;opacity:.85}.piede b{color:#D9F51F}
-</style></head><body><div class="sfondo"></div><div class="wrap">${testa}${corpo}${piede}</div></body></html>`;
+.scheda{margin-top:auto;display:flex;flex-direction:column;gap:0}
+.occhio{display:inline-block;align-self:flex-start;padding:10px 26px;border-radius:999px;background:#D9F51F;color:#0A0A0C;font:400 52px/1 Anton;letter-spacing:.03em}
+.nome{font:400 140px/.92 Anton;text-transform:uppercase;margin-top:18px;text-shadow:0 6px 30px rgba(0,0,0,.6)}
+.griglia{display:flex;flex-direction:column;gap:20px;margin:36px 0 30px}
+.colore{margin-top:600px;padding:34px 40px 44px;border-radius:50px;background:var(--c);color:var(--t);text-align:center;box-shadow:14px 14px 0 #D9F51F}
+.colore h1{font:400 170px/.9 Anton}.colore h2{font:400 84px/1 Anton;text-transform:uppercase}
+.min2{display:inline-block;margin-top:20px;padding:10px 30px;border-radius:999px;background:#04173B;color:#D9F51F;font:400 56px/1 Anton}
+.piede{text-align:center;font:700 30px Lato;opacity:.9;text-shadow:0 2px 10px rgba(0,0,0,.6)}.piede b{color:#D9F51F}
+</style></head><body><img class="sfondo" src="${radice}/social/gol/sfondi/${sfondo}.jpg" alt="">${tinta}<div class="velo"></div>${figura}
+<div class="wrap">${testa}${corpo}${piede}</div>${RIDIPINGI}</body></html>`;
 }
 
 /** Tutte le storie di una giornata gia' giocata, nell'ordine dei gol. */
 export function storieDellaGiornata(g, dati) {
-  return REFERTI.filter((r) => r.g === g).flatMap((r) => golDelReferto(r).map((_, k) => fattiDelGol(r, k, dati)));
+  return REFERTI.filter((r) => r.g === g).flatMap((r) => golDelReferto(r).map((_, k) => fattiDelGol(r, k, dati)))
+    .map((s, n) => ({ ...s, n }));
 }

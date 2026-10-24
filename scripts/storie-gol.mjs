@@ -33,7 +33,10 @@ if (solo) storie = storie.filter((s) => solo.includes(s.id));
 mkdirSync(uscita, { recursive: true });
 
 // Come le prove: il Chromium della macchina se c'e', se no quello di Playwright.
-const b = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium' }).catch(() => chromium.launch());
+// La pagina ridipinge le maglie leggendo i pixel di un file locale: senza
+// questo permesso Chromium lo considererebbe un'altra origine e lo negherebbe.
+const ARGS = ['--allow-file-access-from-files'];
+const b = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium', args: ARGS }).catch(() => chromium.launch({ args: ARGS }));
 const p = await b.newPage({ viewport: { width: 1080, height: 1920 } });
 for (const s of storie) {
   const m = modello || modelloPer(s);
@@ -42,7 +45,7 @@ for (const s of storie) {
   const html = join(uscita, `${s.id}.html`);
   writeFileSync(html, htmlStoria(s, m, pathToFileURL(RADICE).href));
   await p.goto(pathToFileURL(html).href, { waitUntil: 'load' });
-  await p.evaluate(() => document.fonts.ready);
+  await p.waitForSelector('body[data-pronto]', { timeout: 30000 });
   await p.screenshot({ path: join(uscita, `${s.id}.jpg`), type: 'jpeg', quality: 90 });
   console.log(`${s.id}.jpg  [${m}]  ${s.nominabile ? s.marcatore : '(squadra)'}`);
 }

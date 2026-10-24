@@ -101,7 +101,7 @@ Acquaviva` con icona play se `videoUrl`. Stato: `Giocata 2-1` / `Rinviata` / `So
 
 ## S6 · Live (dettaglio partita fanta)
 
-Ricalca la schermata Live di Leghe Fantacalcio, elemento per elemento.
+La partita fanta di una giornata, dal vivo: le due squadre una contro l'altra.
 
 1. **App bar Live**: indietro · chip lega (avatar, `I SUDATI DI RSM` / `Giornata 2`, chevron
    per cambiare lega) · icona lista · icona condividi scheda.

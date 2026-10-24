@@ -95,8 +95,8 @@ live, non un'azione).
 
 ### Pill doppia voto
 `[ 6,5 | 9,5 ]` — cella sinistra **Voto Titano** (base + esito, testo scuro), cella
-destra **fantavoto** (azzurro su azzurro chiaro). Stessa forma della pill
-«voto | fantavoto» di Leghe Fantacalcio, ma la prima cella non è una pagella. Per un
+destra **fantavoto** (azzurro su azzurro chiaro). La prima cella non è
+una pagella: è il Voto Titano, che si ricava dai referti. Per un
 S.V. la pill mostra `[ S.V. | 5,5 ]` se vale il voto d'ufficio, `[ S.V. | → ]` se è
 scattata la sostituzione automatica.
 

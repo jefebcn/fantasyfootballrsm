@@ -33,13 +33,11 @@ TELA = 128
 # Il lato massimo e' diverso fra i gruppi perche' e' diverso il margine con cui
 # sono stati disegnati. Va tenuto fermo: cambiarlo rimescola icone gia' a posto.
 #
-# `icone` elenca quali toccare. Per la barra in basso e' scritto a mano: nella
-# cartella ci sono anche dieci disegni avanzati da un set precedente che non usa
-# nessuno (mask() viene chiamata in un punto solo, con questi cinque nomi), e
-# ritoccarli sarebbe rumore. Per il menu invece servono tutti.
+# `icone` elenca quali toccare; None vuol dire tutte quelle della cartella.
+# Dal 24/10 le cartelle hanno solo le icone disegnate per Fantatitano
+# (scripts/icone-fantatitano.py), quindi si toccano tutte.
 GRUPPI = {
-    'nav':  {'ottica': 100.0, 'max_lato': 120,
-             'icone': ['campo', 'maglia-10', 'calendario', 'coppa', 'grafico', 'aggiorna']},
+    'nav':  {'ottica': 100.0, 'max_lato': 120, 'icone': None},
     'menu': {'ottica': 100.0, 'max_lato': 122, 'icone': None},
     # Eventi: qui il tetto lo detta il palo, 113x73, che e' una porta vista di
     # lato. A grandezza ottica 100 vorrebbe essere largo 132 e sulla tela non ci

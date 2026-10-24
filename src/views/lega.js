@@ -35,7 +35,7 @@ function reclutatore() {
 }
 
 export const lega = {
-  title: 'Gestione lega', appbar: 'back', sub: () => 'Profilo lega · Partecipanti · Rose',
+  title: 'Gestione lega', appbar: 'back', sub: () => 'La tua lega · Partecipanti · Rose',
   render() {
     const L = S.base.league; const ms = S.base.managers; const admin = S.isLeagueAdmin(); const me = S.me();
     const rosterCount = (m) => (S.base.rosters[m.id] || []).length;

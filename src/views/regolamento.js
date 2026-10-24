@@ -2,7 +2,7 @@ import * as S from '../state.js';
 import { fmt } from '../ui.js';
 
 export const regolamento = {
-  title: 'Regolamento', appbar: 'back', sub: () => 'Regolamento ed opzioni',
+  title: 'Regolamento', appbar: 'back', sub: () => 'Regole del gioco',
   render() {
     const r = S.rules(); const row = (k, v) => `<tr><td>${k}</td><td class="num" style="text-align:right">${v}</td></tr>`;
     // LA LEGA PUBBLICA IN CINQUE RIGHE, PRIMA DI TUTTO. Un iscritto, 14/10:

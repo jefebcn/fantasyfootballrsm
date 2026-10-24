@@ -21,17 +21,13 @@ const GRUPPI = {
   nav: { cartella: 'nav', tolleranza: 0.08, max: 120,
          icone: ['campo', 'maglia-10', 'calendario', 'coppa', 'grafico'] },
   menu: { cartella: 'menu', tolleranza: 0.08, max: 122,
-          icone: ['assist', 'fantascore', 'guide', 'leghe', 'live', 'probabili', 'quotazioni',
+          icone: ['assist', 'scheda', 'guide', 'leghe', 'live', 'probabili', 'quotazioni',
                   'squadre', 'statistiche', 'trasferimenti', 'vice-allenatore', 'voti'] },
-  // Tredici delle ventiquattro non sono ancora usate da nessuna parte, ma sono
-  // dello stesso set e prima o poi entrano: se restassero fuori squadra, il
-  // giorno che si accende un gol-x2 stonerebbe accanto agli altri.
+  // gli eventi che l'app mostra (dal 24/10 il set e' tutto disegnato per
+  // Fantatitano: scripts/icone-fantatitano.py)
   eventi: { cartella: 'eventi', tolleranza: 0.08, max: 122,
-            icone: ['ammonizione', 'assist', 'assist-x2', 'autogol', 'azione-pericolosa',
-                    'calcio-inizio', 'capitano', 'corner', 'espulsione', 'espulsione-x2',
-                    'fuorigioco', 'gol', 'gol-pareggio', 'gol-subito', 'gol-vittoria', 'gol-x2',
-                    'palo', 'porta-inviolata', 'recupero', 'rigore-parato', 'rigore-sbagliato',
-                    'rigore-segnato', 'sostituzione-in', 'sostituzione-out'] },
+            icone: ['ammonizione', 'assist', 'autogol', 'capitano', 'espulsione', 'espulsione-x2',
+                    'gol', 'rigore-parato', 'rigore-sbagliato', 'sostituzione-in', 'sostituzione-out'] },
   // le quindici della pagina Gestione: si vedono in griglia, una accanto
   // all'altra, quindi se una pesa diverso si nota subito
   lega: { cartella: 'lega', tolleranza: 0.08, max: 122,

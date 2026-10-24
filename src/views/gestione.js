@@ -50,7 +50,7 @@ export const gestione = {
     const r = S.rules();
     const regole = nota(REGOLE, '#/regole', S.isLeagueAdmin() ? `${r.subMode === 'free' ? 'modulo libero' : 'stesso ruolo'} · ${r.maxSubs} cambi` : 'sola lettura');
     return `<main class="a-body">
-      ${blocco('Gioca', gioca)}
+      ${blocco('In campo', gioca)}
       ${blocco('La lega', lega)}
       ${blocco('Regole', regole)}
       ${blocco('Giudice Dati', giudice)}

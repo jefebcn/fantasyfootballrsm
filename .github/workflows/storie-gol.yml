@@ -1,0 +1,89 @@
+# Le storie Instagram dei gol, mentre si gioca.
+#
+# scripts/gol-in-diretta.py guarda ogni minuto le partite in corso sulla FSGC
+# e a ogni gol fa la storia; scripts/pubblica-storia.mjs la mette su Instagram.
+#
+# L'INTERRUTTORE e' la variabile del repository STORIE_GOL (Settings → Secrets
+# and variables → Actions → Variables):
+#   on     pubblica davvero
+#   off    il lavoro non parte neanche
+#   altro  (o non impostata) prova: le storie si fanno e restano negli
+#          artefatti del lavoro, su Instagram non va niente
+#
+# Come l'import dei dati (dati-fsgc.yml): GitHub fa partire i lavori pianificati
+# quando ha macchine libere, anche ore dopo. Quindi si parte ogni due ore e, se
+# si sta giocando (scripts/finestra-partite.mjs), il turno resta acceso cinque
+# ore e venti; quello dopo aspetta in coda e prende il posto appena questo
+# finisce. Fuori dai giorni di partita il lavoro finisce in un minuto.
+
+name: Storie dei gol
+
+on:
+  schedule:
+    - cron: '37 */2 * * *'
+  workflow_dispatch:
+
+concurrency:
+  group: storie-gol
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  diretta:
+    if: vars.STORIE_GOL != 'off'
+    runs-on: ubuntu-latest
+    timeout-minutes: 340
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Si gioca?
+        id: finestra
+        run: echo "si=$(node scripts/finestra-partite.mjs)" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/setup-python@v5
+        if: steps.finestra.outputs.si == 'si'
+        with:
+          python-version: '3.12'
+
+      - uses: actions/setup-node@v4
+        if: steps.finestra.outputs.si == 'si'
+        with:
+          node-version: '22'
+
+      - name: Le librerie
+        if: steps.finestra.outputs.si == 'si'
+        run: |
+          python3 -m pip install --quiet 'beautifulsoup4==4.15.0' 'lxml==6.1.3'
+          npm install --no-audit --no-fund
+          npx playwright install --with-deps chromium
+
+      # Quali gol hanno gia' la loro storia: il turno prima lo sa, questo no.
+      # (Il database lo sa comunque, storie_pubblicate, e non ripubblica.)
+      - name: Riprendi lo stato
+        if: steps.finestra.outputs.si == 'si'
+        uses: actions/cache@v4
+        with:
+          path: diretta/stato.json
+          key: storie-gol-${{ github.run_id }}
+          restore-keys: |
+            storie-gol-
+
+      - name: Gol in diretta
+        if: steps.finestra.outputs.si == 'si'
+        env:
+          STORIE_GOL: ${{ vars.STORIE_GOL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          IG_USER_ID: ${{ secrets.IG_USER_ID }}
+          IG_TOKEN: ${{ secrets.IG_TOKEN }}
+        run: python3 scripts/gol-in-diretta.py --uscita diretta --dati-db --pubblica --anche-vecchi --per 19200
+
+      - name: Le storie fatte
+        if: always() && steps.finestra.outputs.si == 'si'
+        uses: actions/upload-artifact@v4
+        with:
+          name: storie-${{ github.run_id }}
+          path: diretta/*.jpg
+          if-no-files-found: ignore
+          retention-days: 14

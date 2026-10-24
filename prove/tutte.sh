@@ -38,9 +38,15 @@ echo
 # quanto tutte le altre insieme. A ogni push si fanno le veloci, di notte
 # tutte.
 salta=" ${SALTA:-} "
-falliti=(); fatte=0
+# GRUPPO=2/4: solo una prova ogni quattro, a partire dalla seconda. Su CI i
+# quattro gruppi girano insieme (prove.yml): l'aggiornamento arriva online in
+# un quarto del tempo. Senza GRUPPO, tutte.
+gruppo=${GRUPPO:-1/1}; quale=${gruppo%/*}; quanti=${gruppo#*/}
+falliti=(); fatte=0; i=0
 for f in prove/*.cjs; do
   nome=$(basename "$f" .cjs)
+  i=$((i + 1))
+  [ $(( (i - 1) % quanti + 1 )) -eq "$quale" ] || continue
   case "$salta" in *" $nome "*) printf '%-22s saltata\n' "$nome"; continue ;; esac
   printf '%-22s ' "$nome"
   fatte=$((fatte + 1))

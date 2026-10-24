@@ -310,9 +310,9 @@ body{font-family:Lato,sans-serif;color:#fff;background:#04173B;position:relative
 .ris{display:flex;align-items:center;justify-content:center;gap:40px;padding:26px;border-radius:40px;background:rgba(4,23,59,.72);
   border:3px solid rgba(255,255,255,.16);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
 .ris b{font:400 120px/1 Anton;letter-spacing:.02em}.ris b i{font-style:normal;color:#D9F51F;margin:0 18px}
-.giu{margin-top:auto;display:flex;flex-direction:column;gap:28px}
-.fatti{display:flex;flex-direction:column;gap:20px}
-.fatto{display:flex;align-items:center;gap:30px;padding:24px 34px;border-radius:30px;background:#D9F51F;color:#0A0A0C;box-shadow:10px 10px 0 #4B06FC}
+.giu{margin-top:auto;display:flex;flex-direction:column;gap:40px}
+.fatti{display:flex;flex-direction:column;gap:36px}
+.fatto{display:flex;align-items:center;gap:30px;padding:22px 34px;border-radius:30px;background:#D9F51F;color:#0A0A0C;box-shadow:10px 10px 0 #4B06FC}
 .fatto:nth-child(2){background:#fff;transform:rotate(-1.2deg)}
 .fatto:nth-child(3){background:#4B06FC;color:#fff;box-shadow:10px 10px 0 #D9F51F;transform:rotate(.8deg)}
 .fatto b{font:400 72px/1 Anton;min-width:150px}
@@ -330,7 +330,7 @@ body{font-family:Lato,sans-serif;color:#fff;background:#04173B;position:relative
 .scheda{margin-top:auto;display:flex;flex-direction:column;gap:0}
 .occhio{display:inline-block;align-self:flex-start;padding:10px 26px;border-radius:999px;background:#D9F51F;color:#0A0A0C;font:400 52px/1 Anton;letter-spacing:.03em}
 .nome{font:400 140px/.92 Anton;text-transform:uppercase;margin-top:18px;text-shadow:0 6px 30px rgba(0,0,0,.6)}
-.griglia{display:flex;flex-direction:column;gap:20px;margin:36px 0 30px}
+.griglia{display:flex;flex-direction:column;gap:36px;margin:40px 0 40px}
 .colore{margin-top:600px;padding:34px 40px 44px;border-radius:50px;background:var(--c);color:var(--t);text-align:center;box-shadow:14px 14px 0 #D9F51F}
 .colore h1{font:400 170px/.9 Anton}.colore h2{font:400 84px/1 Anton;text-transform:uppercase}
 .min2{display:inline-block;margin-top:20px;padding:10px 30px;border-radius:999px;background:#04173B;color:#D9F51F;font:400 56px/1 Anton}

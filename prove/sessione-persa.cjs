@@ -54,7 +54,7 @@ const ok = [], ko = []; const et = (c, t) => (c ? ok : ko).push(t);
   await p.evaluate(() => { sessionStorage.removeItem('prova:persa'); globalThis.__MOCK_SESSIONE_PERSA__ = false; });
   if (fuori.riprova) { await p.click('#retry'); await w(1800); }
   const dentro = await p.evaluate(() => ({ hash: location.hash, testo: document.body.innerText }));
-  et(/Prova FC|Torneo/.test(dentro.testo), `tornata la sessione, «Riprova» fa entrare (${dentro.hash})`);
+  et(/Prova FC|Torneo/i.test(dentro.testo), `tornata la sessione, «Riprova» fa entrare (${dentro.hash})`);
 
   // Console, 18/10: la sessione cade DOPO il profilo, mentre arrivano i nomi
   // della lega (che leggono i profili): stessa schermata, niente database
@@ -67,7 +67,7 @@ const ok = [], ko = []; const et = (c, t) => (c ? ok : ko).push(t);
   et(meta.negati === 0, `e in Console non arriva (${meta.negati})`);
   await p.evaluate(() => { sessionStorage.removeItem('prova:dopo'); globalThis.__MOCK_SESSIONE_PERSA__ = false; });
   if (meta.riprova) { await p.click('#retry'); await w(1800); }
-  et(/Prova FC|Torneo/.test(await p.evaluate(() => document.body.innerText)), 'e «Riprova» fa rientrare');
+  et(/Prova FC|Torneo/i.test(await p.evaluate(() => document.body.innerText)), 'e «Riprova» fa rientrare');
   et(errori.length === 0, `nessun errore JS${errori.length ? ' — ' + errori[0] : ''}`);
   await b.close();
   for (const t of ok) console.log('  ok  ' + t);

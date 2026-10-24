@@ -4,7 +4,6 @@ import * as AV from '../notifiche.js';
 import * as N from '../notizie.js';
 import { esc, premioHtml, fmt, icon, logo, badge, crest, pic, tile, sec, dateIt, timeIt, plurale, freccia } from '../ui.js';
 import { movimenti, anteprimaClassifica } from '../engine.js';
-import { maglia, kitOf } from '../maglia.js';
 import { personaggio, scelto, figura } from '../personaggio.js';
 
 const RULES = [
@@ -536,15 +535,14 @@ function notizie() {
 }
 
 /**
- * LA COPERTINA. Il Titano di notte con le tre torri, e sotto la squadra:
- * maglia (o personaggio) a sinistra, nome e allenatore a destra, poi i numeri
- * e tre azioni scritte per esteso.
+ * LA COPERTINA. Il Titano di notte con le tre torri, e sotto, al centro, la
+ * squadra: lo stemma (o il personaggio scelto), il nome, l'allenatore. Poi i
+ * numeri e tre azioni scritte per esteso.
  *
- * Prima era una vetrina al centro — targa della lega, nome, maglia sotto i
- * riflettori con le bandierine, tre bottoni tondi di lato e la card dei numeri
- * che risaliva sopra — sull'impaginazione di un'altra app (Alex, 24/10:
- * rifatta perche' fosse nostra). Le azioni adesso dicono cosa fanno invece di
- * affidarlo a un simbolo.
+ * Prima era una vetrina sull'impaginazione di un'altra app — targa della lega,
+ * maglia sotto i riflettori con le bandierine, tre bottoni tondi di lato e la
+ * card dei numeri che risaliva sopra. Alex, 24/10: rifatta perche' fosse
+ * nostra, e con lo stemma al posto della maglia, che era il loro segno.
  */
 function copertina(me, row, ph) {
   const foto = S.store.get().sfondoFoto;
@@ -561,14 +559,12 @@ function copertina(me, row, ph) {
       <a class="hero-league" href="#/leghe">
         <span><b>${esc(S.base.league.name)}</b>
         <small>${S.base.managers.length} ${S.base.managers.length === 1 ? 'squadra' : 'squadre'} · ${ph.next}ª giornata</small></span>${icon('chev', 'ic sm')}</a>
-      <div class="hero-sq">
-        <a class="jersey${scelto(me) ? ' pers' : ''}" href="#/squadra" aria-label="Modifica stemma, maglia e personaggio">
-          ${scelto(me) ? personaggio(scelto(me)) : maglia(kitOf(me))}</a>
-        <div class="hero-chi">
-          <h2>${esc(me.teamName)}</h2>
-          <p class="hero-owner">${esc(me.owner)}</p>
-          <a class="hero-marchio" href="#/regolamento">${logo()}<span>Voto Titano</span></a>
-        </div>
+      <a class="hero-stemma${scelto(me) ? ' pers' : ''}" href="#/squadra" aria-label="Modifica stemma e personaggio">
+        ${scelto(me) ? personaggio(scelto(me)) : crest(me, 'hero')}</a>
+      <div class="hero-chi">
+        <h2>${esc(me.teamName)}</h2>
+        <p class="hero-owner">${esc(me.owner)}</p>
+        <a class="hero-marchio" href="#/regolamento">${logo()}<span>Voto Titano</span></a>
       </div>
       <div class="a-stats">
         <div><b>${row.position}<sup>ª</sup></b><span>Posizione</span></div>

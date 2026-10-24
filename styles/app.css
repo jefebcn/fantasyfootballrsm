@@ -393,8 +393,8 @@ hr.sep{border:0;border-top:1px solid var(--border);margin:4px 0}
 /* LA COPERTINA della Home (dashboard.js, copertina()).
    In alto il Titano di notte con le tre torri, una fascia alta 210px; la
    squadra comincia dove finisce il crinale, sul blu scuro che continua sotto
-   la foto. Maglia a sinistra e nome a destra, i numeri e le azioni dentro la
-   copertina invece che in una card che ci risale sopra. */
+   la foto: stemma e nome al centro, i numeri e le azioni dentro la copertina
+   invece che in una card che ci risale sopra. */
 .a-herowrap{margin:-12px -16px 0;overflow:hidden}
 .a-hero{position:relative;display:flex;flex-direction:column;gap:14px;padding:14px 16px 16px;
   color:#fff;background:var(--grad-hero);overflow:hidden}
@@ -407,7 +407,7 @@ hr.sep{border:0;border-top:1px solid var(--border);margin:4px 0}
   background:linear-gradient(180deg,rgba(4,23,59,.35) 0%,rgba(4,23,59,0) 34%,rgba(4,23,59,0) 70%,#04173B 100%)}
 .a-hero > :not(.sfondo):not(.tw){position:relative;z-index:1}
 
-.a-hero .hero-league{align-self:flex-start;display:inline-flex;align-items:center;gap:8px;max-width:100%;
+.a-hero .hero-league{align-self:center;display:inline-flex;align-items:center;gap:8px;max-width:100%;
   padding:7px 10px 7px 14px;border-radius:999px;color:#fff;text-decoration:none;
   background:rgba(4,23,59,.55);border:1px solid rgba(255,255,255,.2);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
 .a-hero .hero-league>span{min-width:0}
@@ -416,13 +416,16 @@ hr.sep{border:0;border-top:1px solid var(--border);margin:4px 0}
 .a-hero .hero-league small{display:block;font:500 11px var(--font-body);opacity:.8}
 .a-hero .hero-league .ic{flex:none;width:16px;height:16px;opacity:.75}
 
-.a-hero .hero-sq{display:grid;grid-template-columns:116px minmax(0,1fr);align-items:center;gap:14px}
-.a-hero.foto .hero-sq{margin-top:72px}
-.a-hero .jersey{display:block;width:116px;height:auto;filter:drop-shadow(0 10px 18px rgba(0,0,0,.45))}
-.a-hero .jersey.pers{height:150px;aspect-ratio:auto}
-.a-hero .jersey.pers .pers{max-height:150px;width:auto;margin:0 auto}
-.a-hero .hero-chi{min-width:0}
-.a-hero h2{margin:0;font:400 clamp(24px,7vw,30px)/1.02 var(--font-tito);text-transform:uppercase;letter-spacing:.01em;
+/* Lo stemma al centro, appoggiato sul piede del crinale: un tondo grande con
+   un anello lime, il segno della lega. Il personaggio, se scelto, al posto
+   suo e un po' piu' alto. */
+.a-hero .hero-stemma{align-self:center;display:block;text-decoration:none;filter:drop-shadow(0 10px 18px rgba(0,0,0,.45))}
+.a-hero.foto .hero-stemma{margin-top:86px}
+.a-hero .hero-stemma .crest.hero{width:108px;height:108px;font-size:30px;border:4px solid #04173B;box-shadow:0 0 0 3px var(--c-lime)}
+.a-hero .hero-stemma.pers{height:150px}
+.a-hero .hero-stemma.pers .pers{max-height:150px;width:auto;margin:0 auto}
+.a-hero .hero-chi{display:flex;flex-direction:column;align-items:center;text-align:center;margin-top:-4px;padding-bottom:4px}
+.a-hero h2{margin:0;padding-inline:8px;font:400 clamp(26px,7.6vw,32px)/1.02 var(--font-tito);text-transform:uppercase;letter-spacing:.01em;
   text-wrap:balance;overflow-wrap:anywhere;text-shadow:0 2px 12px rgba(0,0,0,.35)}
 .a-hero .hero-owner{margin:6px 0 0;font:500 13px var(--font-body);opacity:.85}
 .a-hero .hero-marchio{display:inline-flex;align-items:center;gap:7px;margin-top:12px;padding:5px 14px 5px 8px;

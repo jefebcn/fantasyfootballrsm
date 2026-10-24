@@ -1,6 +1,6 @@
 import * as S from '../state.js';
 import { esc, fmt, icon, crest, badge, dateIt, timeIt } from '../ui.js';
-import { fieldTeam, benchCol, campoProbabile } from './live.js';
+import { fieldTeam, benchCol, campoProbabile, attese } from './live.js';
 import { figura } from '../personaggio.js';
 
 /**
@@ -84,9 +84,11 @@ export const formazioneDi = {
     if (res) {
       const ratings = S.ratingsOf(n);
       const evs = {}; for (const mt of S.matchesOf(n)) for (const e of S.eventsOf(mt.id)) (evs[e.playerId] ||= []).push(e);
-      campo = `<div class="field fd-campo">${fieldTeam(res, ratings, evs, true)}<span class="box bot"></span></div>`;
-      panchina = `<div class="bench2">${benchCol(res, ratings)}</div>`;
-      totale = `<div class="a-card fd-tot"><span>Fantapunti</span><b>${fmt(res.total)}</b></div>`;
+      const aspettano = attese(n);
+      const daGiocare = res.rows.filter((row) => row.official && aspettano.has(S.playersById.get(row.playerId)?.clubId)).length;
+      campo = `<div class="field fd-campo">${fieldTeam(res, ratings, evs, true, aspettano)}<span class="box bot"></span></div>`;
+      panchina = `<div class="bench2">${benchCol(res, ratings, aspettano)}</div>`;
+      totale = `<div class="a-card fd-tot"><span>${daGiocare ? `Fantapunti finora <small>· ${daGiocare === 1 ? '1 deve ancora giocare' : `${daGiocare} devono ancora giocare`}</small>` : 'Fantapunti'}</span><b>${fmt(res.total)}</b></div>`;
     } else {
       campo = `<div class="field fd-campo">${campoProbabile({ ...salvata, starters: (salvata.starters || []).filter((id) => S.playersById.get(id)) }, true)}<span class="box bot"></span></div>`;
       panchina = `<div class="bench2">${(salvata.bench || []).map((id) => { const p = S.playersById.get(id); const c = p && S.clubsById.get(p.clubId);

@@ -95,6 +95,15 @@ const ok = [], ko = []; const et = (c, t) => (c ? ok : ko).push(t);
   // ---- toccando si apre sul campo
   await p.click(`.fx-sq[href="${bruno.href}"]`); await w(1000);
   et(await p.evaluate(() => location.hash) === bruno.href, `toccando Bruno si apre la sua formazione (${bruno.href})`);
+  // chi deve ancora giocare mostra l'ora della partita, non «S.V. 0,0» col segno del cambio (24/10)
+  const campo = await p.evaluate(async (n) => {
+    const S = await import('/src/state.js'); const { attese } = await import('/src/views/live.js');
+    const asp = attese(n); const l = S.savedLineup(n, 'm_bruno');
+    const devono = (l?.starters || []).filter((id) => asp.has(S.playersById.get(id)?.clubId)).length;
+    return { devono, attesa: document.querySelectorAll('.fd-campo .pill.attesa').length, sv: document.querySelectorAll('.fd-campo .pill.sv').length, conVoti: !!document.querySelector('.fd-campo .pill') };
+  }, n - 1);
+  if (campo.conVoti) et(campo.attesa === campo.devono, `sul campo chi deve ancora giocare ha l'ora della partita (${campo.attesa} su ${campo.devono}, ${campo.sv} S.V.)`);
+  else ok.push('(giornata senza voti: il campo mostra solo l\'undici)');
 
   // ---- i voti accanto ai nomi, su una giornata che li ha
   const conDati = +(await p.evaluate(() => localStorage.getItem('fcs:conDati')));

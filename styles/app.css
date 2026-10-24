@@ -1025,6 +1025,10 @@ hr.sep{border:0;border-top:1px solid var(--border);margin:4px 0}
 .pill span:first-child{color:var(--c-pietra-900)}
 .pill span:last-child{color:var(--c-titano-600);background:var(--c-titano-100)}
 .pill.sv span{color:var(--c-pietra-500)}
+/* chi deve ancora giocare: l'ora della partita, non «S.V. 0,0» (24/10) */
+.pill.attesa span,.pill.attesa span:last-child{background:rgba(255,255,255,.92);color:var(--c-pietra-700,#4A5565);font:700 10.5px var(--font-body);min-width:0;padding:3px 9px}
+.vpill.attesa span{font-size:10.5px;font-weight:700;color:var(--text-muted)}
+.fd-tot small{font-size:11px;color:var(--text-muted);font-weight:500}
 .ps b{font-size:10px;font-weight:600;text-align:center;line-height:1.1;text-shadow:0 1px 2px rgba(0,0,0,.4);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:74px}
 /* Asta: i riquadri delle squadre stanno su una riga che scorre, cosi' con otto
    partecipanti si passa da uno all'altro senza perdere di vista il listone. */

@@ -13,7 +13,24 @@ let tab = 'campo';
 const P = (id) => S.playersById.get(id);
 const club = (id) => S.clubsById.get(P(id).clubId);
 
-export function fieldTeam(res, ratings, evs, mirrored) {
+/**
+ * CHI DEVE ANCORA GIOCARE (Alex, 24/10: «perché si vedono tutti S.V. col
+ * segno del cambio?»). A giornata cominciata il titolare senza voto conta
+ * d'ufficio (art. 8.6), ma finché la sua partita non si gioca non e' «senza
+ * voto»: e' da giocare. Il sabato mattina, con una partita su otto giocata,
+ * il campo era tutto «S.V. 0,0» e frecce di uscita. Qui le squadre che non
+ * hanno ancora giocato, con l'ora della partita.
+ */
+export function attese(n) {
+  const m = new Map();
+  for (const x of S.matchesOf(n)) if (x.status !== 'played') { m.set(x.homeClubId, x.kickoffAt); m.set(x.awayClubId, x.kickoffAt); }
+  return m;
+}
+// partita gia' cominciata ma senza referto ancora: non e' piu' "sab 15:00", e' in attesa del voto
+const ora = (iso) => (!iso ? 'da giocare' : new Date(iso) <= S.now() ? 'in attesa' : `${dateIt(iso).split(' ')[0]} ${timeIt(iso)}`);
+const inAttesa = (attesa, id) => attesa.has(P(id)?.clubId);
+
+export function fieldTeam(res, ratings, evs, mirrored, attesa = new Map()) {
   const byRole = { P: [], D: [], C: [], A: [] };
   for (const row of res.rows) byRole[row.role].push(row);
   const order = mirrored ? ['A', 'C', 'D', 'P'] : ['P', 'D', 'C', 'A'];
@@ -22,17 +39,18 @@ export function fieldTeam(res, ratings, evs, mirrored) {
     // e' d'ufficio: in tutti i due i casi e' chi va mostrato sul campo.
     const shown = row.playerId; const p = P(shown);
     const ind = [];
-    if (row.subFor) ind.push(`<i class="segno">${pic('sostituzione-in')}</i>`); if (row.official) ind.push(`<i class="segno">${pic('sostituzione-out')}</i>`);
+    const aspetta = row.official && inAttesa(attesa, shown);
+    if (row.subFor) ind.push(`<i class="segno">${pic('sostituzione-in')}</i>`); if (row.official && !aspetta) ind.push(`<i class="segno">${pic('sostituzione-out')}</i>`);
     ind.push(evTiles(evs[shown] || []).replace(/style="[^"]*"/g, ''));
-    const pill = row.official ? `<span class="pill sv"><span>S.V.</span><span>${fmt(row.fantaVote)}</span></span>` : `<span class="pill"><span>${fmt(row.baseVote)}</span><span>${fmt(row.fantaVote)}</span></span>`;
+    const pill = aspetta ? `<span class="pill attesa"><span>${ora(attesa.get(P(shown).clubId))}</span></span>` : row.official ? `<span class="pill sv"><span>S.V.</span><span>${fmt(row.fantaVote)}</span></span>` : `<span class="pill"><span>${fmt(row.baseVote)}</span><span>${fmt(row.fantaVote)}</span></span>`;
     const cap = row.isCaptain ? '<span class="cap">C</span>' : (res.lineup.viceCaptainId === shown && !row.isCaptain ? '<span class="cap">V</span>' : '');
     return `<div class="ps" style="--tc:${club(shown).color}"><span class="av faccia">${cap}${avatar(p, club(shown))}${roleChip(row.role)}</span><span class="ind">${ind.join('')}</span>${pill}<b>${esc(p.lastName)}${row.subFor ? ` <small>(x ${esc(P(row.subFor).lastName)})</small>` : ''}</b></div>`;
   }).join('')}</div>`).join('');
 }
-export function benchCol(res, ratings) {
+export function benchCol(res, ratings, attesa = new Map()) {
   const inUse = new Set(res.rows.map((r) => r.playerId));
   return res.lineup.bench.map((id) => { const r = ratings.get(id); const p = P(id);
-    const v = inUse.has(id) ? `<span class="vpill"><span>${fmt(r.baseVote)}</span><span>${fmt(r.fantaVote)}</span></span>` : !r || r.isSV ? (r?.svReason?.includes('rinviata') ? '<span class="vpill sv"><span>S.V.</span><span>rinv.</span></span>' : '<span class="no">⊘</span>') : `<span class="vpill"><span>${fmt(r.baseVote)}</span><span>${fmt(r.fantaVote)}</span></span>`;
+    const v = !inUse.has(id) && !r && inAttesa(attesa, id) ? `<span class="vpill attesa"><span>${ora(attesa.get(p.clubId))}</span></span>` : inUse.has(id) ? `<span class="vpill"><span>${fmt(r.baseVote)}</span><span>${fmt(r.fantaVote)}</span></span>` : !r || r.isSV ? (r?.svReason?.includes('rinviata') ? '<span class="vpill sv"><span>S.V.</span><span>rinv.</span></span>' : '<span class="no">⊘</span>') : `<span class="vpill"><span>${fmt(r.baseVote)}</span><span>${fmt(r.fantaVote)}</span></span>`;
     return `<div class="b2">${roleChip(p.role)}<span class="nm"><b>${esc(p.lastName)}${inUse.has(id) ? ` <i class="segno sm">${pic('sostituzione-in')}</i>` : ''}</b><span>${esc(club(id).name)}</span></span>${v}</div>`; }).join('');
 }
 
@@ -153,17 +171,18 @@ export const live = {
       return `<main class="a-body" style="padding:0;gap:0">${head}
         <div style="padding:12px 16px 16px;display:flex;flex-direction:column;gap:12px">${body}</div></main>${barra}`;
     }
+    const aspettano = attese(n);
     const c = r.home.conversion;
     const formula = `<div class="a-card" id="formula-card" hidden><p class="formula"><b>Art. 11</b> · ${S.base.league.managerCount} fantallenatori · soglia <b>${fmt(c.threshold)}</b> · passo <b>${fmt(c.step)}</b><br>${fmt(r.homeScore)} → <b>${r.homeGoals} gol</b> · ${fmt(r.awayScore)} → <b>${r.awayGoals} gol</b><br>Parità di fantapunteggio = pareggio (11.1)</p></div>`;
     const notes = [r.home, r.away].map((x, i) => { const m = i ? a : h; const parts = [];
       if (x.captainNote.startsWith('nessun raddoppio')) parts.push('capitano e vice S.V. → nessun raddoppio (art. 6.3)');
       else if (x.captainNote.startsWith('vice')) parts.push(`capitano S.V. → raddoppia il vice ${esc(P(x.captainId).lastName)} (art. 6.3)`);
       for (const s of x.subsApplied) parts.push(`${esc(P(s.out).lastName)} S.V. → entra ${esc(P(s.in).lastName)} (panchina ${s.benchIndex})`);
-      const off = x.rows.filter((row) => row.official); if (off.length) parts.push(`${off.map((row) => esc(P(row.playerId).lastName)).join(', ')} senza sostituto: ${off[0].fantaVote ? `${fmt(off[0].fantaVote)} d'ufficio` : 'nessun voto, contano 0'} (art. 8.6)`);
+      const off = x.rows.filter((row) => row.official && !inAttesa(aspettano, row.playerId)); if (off.length) parts.push(`${off.map((row) => esc(P(row.playerId).lastName)).join(', ')} senza sostituto: ${off[0].fantaVote ? `${fmt(off[0].fantaVote)} d'ufficio` : 'nessun voto, contano 0'} (art. 8.6)`);
       return parts.length ? `<div class="warn info">${icon('warn', 'ic sm')}<span><b>${esc(m.teamName)}:</b> ${parts.join(' · ')}</span></div>` : ''; }).join('');
     let body = '';
-    if (tab === 'campo') body = `<div class="field"><span class="box top"></span>${fieldTeam(r.home, ratings, evs, false)}<div class="half"></div>${fieldTeam(r.away, ratings, evs, true)}<span class="box bot"></span></div>${notes}
-      <div class="a-sec"><b>Panchina</b><span>ordine di ingresso</span></div><div class="bench2" style="grid-template-columns:1fr 1fr;display:grid">${interleave(benchCol(r.home, ratings), benchCol(r.away, ratings))}</div>
+    if (tab === 'campo') body = `<div class="field"><span class="box top"></span>${fieldTeam(r.home, ratings, evs, false, aspettano)}<div class="half"></div>${fieldTeam(r.away, ratings, evs, true, aspettano)}<span class="box bot"></span></div>${notes}
+      <div class="a-sec"><b>Panchina</b><span>ordine di ingresso</span></div><div class="bench2" style="grid-template-columns:1fr 1fr;display:grid">${interleave(benchCol(r.home, ratings, aspettano), benchCol(r.away, ratings, aspettano))}</div>
       <a class="legend" href="#/regolamento" style="text-decoration:none">${icon('book')}Legenda Voto Titano${icon('chev', 'ic sm chev')}</a>`;
     else if (tab === 'lista') body = [r.home, r.away].map((x, i) => `<div class="vlist"><div class="vhead">${esc((i ? a : h).teamName)} · ${x.lineup.formation} <span>${fmt(x.total)}</span></div>${x.rows.map((row) => row.official ? `<div class="sub"><span class="arr">↓ ${row.role}</span><span><s>${esc(P(row.playerId).name)}</s> S.V. → <b>nessun sostituto</b></span><span class="fv">${fmt(row.fantaVote)}</span></div>` : (row.subFor ? `<div class="sub"><span class="arr">↓ ${row.role}</span><span><s>${esc(P(row.subFor).name)}</s> S.V. → <b>${esc(P(row.playerId).name)}</b></span><span class="fv">${fmt(row.fantaVote)}</span></div>` : '') + voteRow(P(row.playerId), club(row.playerId), { ...ratings.get(row.playerId), events: evs[row.playerId] || [], breakdown: row.isCaptain ? ratings.get(row.playerId).breakdown.map((l) => l.label === 'Voto base' || l.label === 'Esito collettivo' ? l : { ...l, value: l.value * 2, note: `${l.note ? l.note + ' · ' : ''}×2 capitano` }) : ratings.get(row.playerId).breakdown, fantaVote: row.fantaVote }, { captain: row.isCaptain })).join('')}</div>`).join('');
     else body = campionato;

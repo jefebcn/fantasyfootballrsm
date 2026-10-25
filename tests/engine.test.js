@@ -43,6 +43,18 @@ test('cambio portiere: gol subito solo a chi è in campo al momento del gol (art
   const gk2 = rate(P('g2', 'P'), app({ started: false, minutesPlayed: 30, enteredAt: 60 }), events, m);
   assert.equal(gk1.bonus, -1); assert.equal(gk2.bonus, -1);
 });
+test('gol subito nel recupero: il malus va al portiere rimasto in campo, dalla 6ª (art. 7.6)', () => {
+  // Cailungo-Libertas della 5ª: 1-2 col secondo gol al 93'. Fino alla 5ª il
+  // portiere ne pagava uno solo e quelle giornate restano come sono state
+  // congelate; dalla 6ª li paga tutti e due.
+  const events = [ev('x', 'goal', 79, 'away'), ev('y', 'goal', 93, 'away')];
+  const prima = rate(P('g', 'P'), app(), events, match({ homeGoals: 1, awayGoals: 2, matchday: 5 }));
+  const dopo = rate(P('g', 'P'), app(), events, match({ homeGoals: 1, awayGoals: 2, matchday: 6 }));
+  assert.equal(prima.bonus, -1); assert.equal(dopo.bonus, -2);
+  // chi e' uscito prima del 90' non paga il gol del recupero
+  const uscito = rate(P('g', 'P'), app({ minutesPlayed: 85 }), events, match({ homeGoals: 1, awayGoals: 2, matchday: 6 }));
+  assert.equal(uscito.bonus, -1);
+});
 test('autogol del compagno conta come gol subito per il portiere (art. 7.3)', () => {
   const m = match({ homeGoals: 0, awayGoals: 1 });
   const r = rate(P('g', 'P'), app(), [ev('d', 'own_goal', 50, 'home')], m);

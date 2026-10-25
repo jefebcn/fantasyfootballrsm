@@ -66,7 +66,11 @@ export const voti = {
     const evByPlayer = (matchId) => { const m = {}; for (const e of S.eventsOf(matchId)) (m[e.playerId] ||= []).push(e); return m; };
     const blocks = S.matchesOf(n).map((m) => {
       const h = S.clubsById.get(m.homeClubId), a = S.clubsById.get(m.awayClubId); const evs = evByPlayer(m.id);
-      const tutte = S.appearancesOf(m.id).map((ap) => ({ ap, p: S.playersById.get(ap.playerId), r: ratings.get(ap.playerId) }));
+      // Un giocatore nuovo del referto (Onano 24/10, Brighi 25/10) arriva nel
+      // database prima che il telefono abbia il listone aggiornato: senza la
+      // sua scheda la riga non si puo' disegnare, e la pagina intera si
+      // rompeva su p.clubId. Si salta; al prossimo aggiornamento dell'app c'e'.
+      const tutte = S.appearancesOf(m.id).map((ap) => ({ ap, p: S.playersById.get(ap.playerId), r: ratings.get(ap.playerId) })).filter((x) => x.p);
       let rows = tutte;
       if (filter.role) rows = rows.filter((x) => x.p.role === filter.role);
       if (filter.mine) rows = rows.filter((x) => mine.has(x.p.id));

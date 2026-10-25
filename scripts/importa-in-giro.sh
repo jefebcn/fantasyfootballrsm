@@ -71,6 +71,14 @@ un_giro() {
   git diff --stat -- src/
   python3 scripts/bump-sw.py
   node scripts/genera-lock.mjs
+  # Un tesserato nuovo dal referto (Onano dell'Academy, 23/10) va anche nel
+  # listino del database. Prima lo si doveva rigenerare a mano: senza,
+  # tests/doppioni.test.js bocciava i dati e l'import non committava niente,
+  # e dal venerdi' sera alla domenica mattina nessun referto e' arrivato.
+  node scripts/genera-quotazioni.mjs >/dev/null
+  if ! git diff --quiet -- supabase/seed-quotazioni.sql; then
+    echo "::warning::Il listino e' cambiato (giocatore nuovo dal referto): carica supabase/seed-quotazioni.sql nell'SQL Editor di Supabase, se no il negozio della lega aperta non lo vende."
+  fi
   if ! git diff --quiet -- supabase/migrations/012-calendario-lock.sql; then
     echo "::warning::Il calendario dei lock e' cambiato: carica supabase/migrations/012-calendario-lock.sql nell'SQL Editor di Supabase, se no il server chiude le formazioni nel giorno vecchio."
   fi
@@ -81,7 +89,7 @@ un_giro() {
   # data/extra.json: i tesserati del referto che il listone non ha. Senza
   # salvarlo, al giro dopo il reset lo riportava indietro e il giocatore
   # (Bakalyar della Juvenes, 11/10) non entrava mai nei titolari letti.
-  git add src/ sw.js data/extra.json supabase/migrations/012-calendario-lock.sql
+  git add src/ sw.js data/extra.json supabase/migrations/012-calendario-lock.sql supabase/seed-quotazioni.sql
   git commit -q -m "dati: import automatico del $(date -u +'%d/%m/%Y')" \
                 -m "$(git diff --cached --stat -- src/ | tail -1)"
   if git push -q origin "HEAD:$RAMO"; then

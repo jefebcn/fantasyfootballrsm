@@ -290,7 +290,7 @@ export const classifica = {
     // di una formazione: lineupResult() torna null a chi non ha consegnato
     // (art. 8.4) e questa riga andava in errore, portandosi via la
     // classifica intera. Sono un dato della lega, non di una squadra.
-    const c = conversionParams(S.base.league.managerCount, S.rules());
+    const c = conversionParams(S.squadreConversione(), S.rules());
     return `<div class="a-card a-rule"><span class="art">Art. 11</span><p><b>Conversione in gol:</b> con ${S.base.league.managerCount} ${S.base.league.managerCount === 1 ? 'fantallenatore' : 'fantallenatori'} il primo gol scatta a ${fmt(c.threshold)} e se ne aggiunge uno ogni ${fmt(c.step)} punti. Parità di fantapunteggio = pareggio.</p></div>`;
   })()}
     </main>`;

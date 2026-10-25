@@ -1428,7 +1428,14 @@ export function saveLineup(n, managerId, lineup) {
  * sull'undici d'ufficio, serve solo all'editor e alle probabili: qui non
  * entra piu', perche' una formazione mai consegnata non fa punti.
  */
-export function lineupResult(n, managerId, isHome = false) { return memo(`lr:${n}:${managerId}:${isHome ? 'c' : 't'}`, () => { const lineup = savedLineup(n, managerId); if (!lineup) return null; return { lineup, ...computeLineupResult({ lineup, ratings: ratingsOf(n), players: playersById, managerCount: Math.max(6, base.league.managerCount), isHome, rules: rules(), matchday: n }) }; }); }
+/**
+ * Quante squadre conta la conversione in gol (art. 11): le fasce partono da
+ * 6, e una lega piu' piccola usa la prima. Una funzione sola per il calcolo e
+ * per la frase che lo spiega: il 25/10 la classifica di una lega da quattro
+ * diceva «primo gol a 68» mentre il calcolo usava 70.
+ */
+export const squadreConversione = () => Math.max(6, base.league.managerCount);
+export function lineupResult(n, managerId, isHome = false) { return memo(`lr:${n}:${managerId}:${isHome ? 'c' : 't'}`, () => { const lineup = savedLineup(n, managerId); if (!lineup) return null; return { lineup, ...computeLineupResult({ lineup, ratings: ratingsOf(n), players: playersById, managerCount: squadreConversione(), isHome, rules: rules(), matchday: n }) }; }); }
 export function fixturesOf(n) {
   return memo(`fx:${n}`, () => {
     // In una lega a punti non ci sono scontri diretti: si gioca contro tutti

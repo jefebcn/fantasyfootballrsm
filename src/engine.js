@@ -39,6 +39,13 @@ export const DEFAULT_RULES = {
   // congelate con la regola di prima, restano col 5,5 d'ufficio.
   noSubVote: 0,
   noSubVotePrima: { finoAllaGiornata: 5, voto: 5.5 },
+  // Il gol subito nel recupero (art. 7: il malus va al portiere in campo al
+  // momento del gol). Il referto scrive 92', 93': il portiere rimasto fino
+  // alla fine era in campo, ma l'intervallo dei minuti giocati si ferma a 90
+  // e quel gol non gli veniva tolto (8 casi fra la 1ª e la 6ª, trovati il
+  // 25/10 rifacendo i conti di una lega a mano). Vale dalla 6ª: le giornate
+  // gia' congelate restano come sono state calcolate (art. 9.2).
+  recuperoAlPortiereDal: 6,
   conversion: [
     { min: 6, max: 8, threshold: 70.0, step: 6.0 },
     { min: 9, max: 10, threshold: 69.0, step: 6.0 },
@@ -123,9 +130,11 @@ export function computeRating({ player, appearance, events, match, rules = DEFAU
   // gol subiti dal portiere in campo al momento del gol (art. 7.6), autogol dei compagni inclusi
   if (role === 'P') {
     const [from, to] = onPitchInterval(appearance);
+    // chi e' arrivato al 90' c'era anche nel recupero
+    const finoAllaFine = to >= 90 && (match.matchday ?? Infinity) >= (rules.recuperoAlPortiereDal ?? Infinity);
     const conceded = events.filter((e) =>
       ((e.type === 'goal' && e.clubId !== player.clubId) || (e.type === 'own_goal' && e.clubId === player.clubId)) &&
-      e.minute >= from && e.minute <= to).length;
+      e.minute >= from && (finoAllaFine || e.minute <= to)).length;
     if (conceded) add(`Gol subiti × ${conceded}`, rules.goalConcededGK * conceded);
   }
 

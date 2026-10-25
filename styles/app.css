@@ -2306,6 +2306,18 @@ a.crow .cls-chev{flex:none;color:var(--text-muted);margin-left:-4px}
 .fd-tot{display:flex;align-items:center;justify-content:space-between}
 .fd-tot b{font-family:var(--font-display);font-size:22px}
 .fd-nota{margin:0 2px}
+/* La formazione di un altro (Alex, 25/10: «troppo compatta»). Sul campo della
+   partita le righe stanno strette perche' ci sono due undici; qui ce n'e' uno
+   solo e lo spazio c'e': righe piu' staccate, i segni della partita (gol,
+   assist, cartellini) in fila sotto il nome invece che in colonna sopra la
+   pastiglia, cosi' le pastiglie di una riga restano alla stessa altezza, e il nome su targhetta, col sostituito sotto invece che tagliato. */
+.fd-campo{gap:26px;padding:18px 4px 42px}
+.fd-campo .ps{width:88px;gap:5px}
+.fd-campo .ps .ind{position:static;order:3;flex-direction:row;justify-content:center;flex-wrap:wrap;gap:3px}
+.fd-campo .ps .ind:empty{display:none}
+.fd-campo .ps b{background:rgba(9,32,20,.78);border-radius:6px;padding:3px 7px;font:600 11px/1.15 var(--font-body);
+  text-shadow:none;max-width:88px}
+.fd-campo .ps b small{display:block;font-size:9.5px;font-weight:500;opacity:.8;overflow:hidden;text-overflow:ellipsis}
 
 /* ==========================================================================
    I TASTI DELLA HOME NELLO STILE DEI POST DI TITO (Alex, 11/10)

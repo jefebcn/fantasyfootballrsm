@@ -7,7 +7,7 @@
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { dalNostroCodice } from '../src/diagnostica.js';
+import { dalNostroCodice, promessaEsterna } from '../src/diagnostica.js';
 
 const SITO = 'https://fantatitano.site';
 
@@ -32,4 +32,19 @@ test('uno script di un altro sito non conta', () => {
   assert.equal(dalNostroCodice('https://estensione.example/inject.js', SITO), false);
   assert.equal(dalNostroCodice('https://fantatitano.site.altro.example/x.js', SITO), false);
   assert.equal(dalNostroCodice('__playwright_evaluation_script__', SITO), false);
+});
+
+test("le promesse rifiutate dalle estensioni di Safari non partono", () => {
+  // il caso vero: Safari da computer, 25/10, su home e benvenuto
+  assert.equal(promessaEsterna(new Error('No Listener: tabs:outgoing.message.ready'), SITO), true);
+  assert.equal(promessaEsterna('No Listener: tabs:outgoing.message.ready', SITO), true);
+  const est = new Error('x'); est.stack = 'Error: x\n    at safari-web-extension://ABC/content.js:1:2';
+  assert.equal(promessaEsterna(est, SITO), true);
+});
+
+test("le promesse rifiutate dell'app partono", () => {
+  const nostra = new Error('rete'); nostra.stack = `Error: rete\n    at ${SITO}/src/backend.js:10:3`;
+  assert.equal(promessaEsterna(nostra, SITO), false);
+  assert.equal(promessaEsterna({ message: 'JWT expired' }, SITO), false);
+  assert.equal(promessaEsterna(undefined, SITO), false);
 });

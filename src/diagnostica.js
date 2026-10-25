@@ -128,6 +128,20 @@ export function dalNostroCodice(file, origine = (typeof location !== 'undefined'
   return /\.m?js$/i.test(f.split(/[?#]/)[0]);
 }
 
+/**
+ * Una promessa rifiutata che non e' dell'app. Le estensioni di Safari
+ * lasciano rifiuti senza file, che passano da `unhandledrejection` e non da
+ * `error`: «No Listener: tabs:outgoing.message.ready» (Alex, 25/10: tre in
+ * una settimana, tutte su Safari da computer). Come per gli errori: si
+ * riconoscono dalla pila che viene da un'estensione e non tocca i nostri file,
+ * o dal messaggio, che e' quello della loro messaggistica fra schede.
+ */
+export function promessaEsterna(motivo, origine = (typeof location !== 'undefined' ? location.origin : '')) {
+  const pila = String(motivo?.stack || '');
+  if (/(?:-extension|webkit-masked-url):\/\//.test(pila) && !(origine && pila.includes(`${origine}/`))) return true;
+  return /^No Listener: tabs:/.test(String(motivo?.message || motivo || ''));
+}
+
 /** Si aggancia a quello che il browser sa e l'app non vedeva. */
 export function ascolta(finestra = window) {
   finestra.addEventListener('error', (e) => {
@@ -141,6 +155,7 @@ export function ascolta(finestra = window) {
     segna('errore', e?.message, dove);
   });
   finestra.addEventListener('unhandledrejection', (e) => {
+    if (promessaEsterna(e?.reason, finestra.location?.origin)) { annota('esterno', e?.reason?.message || e?.reason, ''); return; }
     segna('promessa', e?.reason?.message || e?.reason, e?.reason?.stack || '');
   });
 }

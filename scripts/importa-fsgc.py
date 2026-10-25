@@ -95,7 +95,8 @@ def calendario():
                 continue
             ris = re.match(r'^(\d+)\s*-\s*(\d+)$', c[2].strip())
             quando = re.match(r'(\d{2})/(\d{2})/(\d{4})\s+(\d{2}:\d{2})', c[0])
-            iso = (f'{quando.group(3)}-{quando.group(2)}-{quando.group(1)}T{quando.group(4)}:00+02:00'
+            iso = (f'{quando.group(3)}-{quando.group(2)}-{quando.group(1)}T{quando.group(4)}:00'
+                   f'{fuso_san_marino(int(quando.group(3)), int(quando.group(2)), int(quando.group(1)))}'
                    if quando else None)
             a = tr.select_one('a[href*="/it/partita/"]')
             fuori.append({'g': g, 'casa': casa, 'ospite': osp, 'quando': iso,
@@ -104,6 +105,24 @@ def calendario():
                           'go': int(ris.group(2)) if ris else None,
                           'url': a['href'] if a else None})
     return fuori
+
+
+def fuso_san_marino(aa, mm, gg):
+    """
+    Lo scarto dall'UTC di un giorno a San Marino: +02:00 con l'ora legale,
+    +01:00 senza. La FSGC scrive solo l'ora locale ("15:00"), e il fuso lo
+    mettevamo noi, sempre +02:00: dal 25 ottobre, ritorno all'ora solare,
+    ogni partita risultava un'ora prima del vero, e con lei la chiusura delle
+    formazioni (la 7ª si sarebbe chiusa alle 20:05 invece che alle 21:05).
+    Le regole europee: dall'ultima domenica di marzo all'ultima di ottobre.
+    Il cambio e' alle 3 di notte, quando non si gioca: basta il giorno.
+    """
+    from datetime import date, timedelta
+
+    def ultima_domenica(mese):
+        d = date(aa, mese, 31)
+        return d - timedelta(days=(d.weekday() + 1) % 7)
+    return '+02:00' if ultima_domenica(3) <= date(aa, mm, gg) < ultima_domenica(10) else '+01:00'
 
 
 def stato_partita(html):

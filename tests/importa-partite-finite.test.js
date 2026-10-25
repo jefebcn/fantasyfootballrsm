@@ -111,3 +111,20 @@ print(json.dumps({'alias': i['alias'], 'tordella': i['per_club']['cailungo'].get
   const t = py(`print(json.dumps(m.rimappa({'titolari': [['cailungo_29', 'x_1'], []], 'eventi': [['cailungo_29', 10, 'yellow']], 'cambi': [['a_1', 'cailungo_29', 70]]}, {'cailungo_29': 'cailungo_1'})))`);
   assert.deepEqual(t, { titolari: [['cailungo_1', 'x_1'], []], eventi: [['cailungo_1', 10, 'yellow']], cambi: [['a_1', 'cailungo_1', 70]] });
 });
+
+// Il fuso lo mette l'importatore: la FSGC scrive solo l'ora locale. Fino al
+// 25/10 era sempre +02:00, e dal ritorno all'ora solare le partite del calcio
+// risultavano un'ora prima, con loro la chiusura delle formazioni.
+test('il fuso segue l\'ora legale di San Marino', () => {
+  const f = py(`print(json.dumps([m.fuso_san_marino(*d) for d in [(2026, 10, 24), (2026, 10, 25), (2026, 11, 1), (2027, 3, 27), (2027, 3, 28)]]))`);
+  assert.deepEqual(f, ['+02:00', '+01:00', '+01:00', '+01:00', '+02:00']);
+});
+test('nel calendario le partite d\'inverno hanno il fuso d\'inverno', async () => {
+  const { CALENDARIO } = await import('../src/calendario-dati.js');
+  for (const [g, casa, , iso] of CALENDARIO) {
+    if (!iso) continue;
+    const giorno = iso.slice(0, 10);
+    const atteso = giorno >= '2026-10-25' && giorno < '2027-03-28' ? '+01:00' : '+02:00';
+    assert.ok(iso.endsWith(atteso), `${g}ª ${casa}: ${iso}`);
+  }
+});

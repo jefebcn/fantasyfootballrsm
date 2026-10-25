@@ -39,4 +39,5 @@ export const LISTONE_EXTRA = [
   ["virtus","Natan Jhaison","Borioni","C"],
   ["juvenes","Bakalyar","Yuriy","D"],
   ["folgore","Sahud Scutella","Mathias","C"],
+  ["academy","Francesco","Onano","C"],
 ];

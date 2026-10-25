@@ -5,10 +5,10 @@ ancora niente: questo file serve a decidere le regole prima di scrivere codice.
 
 ## 1. Da dove vengono le idee
 
-Abbiamo studiato le pagine pubbliche di Totoculo (totoculo.it), che gestisce un
-FantaFutsal da due stagioni. Ne riprendiamo **le meccaniche di gioco**, che sono
+Abbiamo studiato le pagine pubbliche del FantaFutsal di Totoculo (totoculo.it), attivo
+da due stagioni. Ne riprendiamo **le meccaniche di gioco**, che sono
 idee e non testo: formazione di giornata senza rosa, due moduli, bonus difesa,
-capitano obbligatorio, panchina unica, coppa parallela a gironi. Il testo qui
+capitano obbligatorio, panchina unica, campionato più coppa in tre fasi. Il testo qui
 sotto è nostro, e niente del loro codice, grafica o marchio entra nell'app.
 
 Dove le loro regole poggiano su dati che il referto FSGC non ha (voti
@@ -129,18 +129,94 @@ Sulle 38 partite si sarebbe attivato nel 17% delle formazioni 2-1-1.
   Restano voto base fisso più eventi, come nel calcio Fantatitano.
 - **Rigore parato +3**: il referto FSGC ha solo "rigore sbagliato".
 - **Assist +1**: la FSGC non li compila; la regola resterebbe senza dati.
-- **Pronostici 1X2 (TC League)**: è un altro gioco; per ora fuori.
 
-## 10. Da fare dopo (non in questa bozza)
+## 10. Le competizioni della stagione
 
-- **Coppa** parallela a gironi ed eliminazione diretta che usa gli stessi
-  punteggi, senza una formazione in più. Utile quando ci saranno abbastanza iscritti.
-- **Migliore della giornata** (punteggio più alto del turno).
+Una sola formazione a settimana vale per **due competizioni insieme**, come su
+Totoculo: chi gioca non deve fare niente in più per la coppa.
+
+### 10.1 Campionato (classifica generale)
+
+- Tutti gli iscritti al FantaFutsal, una classifica unica.
+- Ogni giornata si sommano i punti della formazione (§ 6–8). Niente scontri
+  diretti: conta il totale.
+- Vince chi ha più punti dopo la 30ª giornata FSGC.
+- Spareggi: media punti per giornata, poi miglior giornata, seconda miglior
+  giornata, terza, poi sorteggio.
+
+### 10.2 Coppa
+
+La coppa **non ricalcola niente**: il punteggio di ogni gara è esattamente il
+punteggio di campionato di quella giornata (capitano, panchina e bonus difesa
+compresi). Le chiusure delle formazioni sono le stesse.
+
+**Fase 1 — Gironi preliminari (6 turni).**
+Gli iscritti vengono divisi in due gironi, A e B, di pari numero (al massimo
+uno di differenza). A ogni turno si affronta un avversario diverso dello stesso
+girone, sorteggiato fra quelli non ancora incontrati. Se il girone è dispari,
+chi resta senza avversario gioca contro la media dei punteggi del girone in
+quella giornata. Vittoria 3, pareggio 1, sconfitta 0.
+
+**Fase 2 — Gironi principali (6 turni, andata e ritorno).**
+Passano i primi 16 di ogni girone preliminare: 32 squadre in 8 gironi da 4.
+I gironi si formano a fasce, in base al piazzamento: in ogni girone una
+squadra dei posti 1–4, una dei posti 5–8, e così via, alternando A e B.
+Passano le prime due di ogni girone.
+
+**Fase 3 — Eliminazione diretta (7 turni).**
+16 squadre: ottavi, quarti e semifinali con andata e ritorno, conta la somma
+dei punti delle due gare; finale in gara unica. In caso di parità passa chi ha
+fatto più punti nella gara di ritorno, poi chi era meglio classificato nella
+fase 2.
+
+**Classifica dei gironi a pari punti**: miglior punteggio nel turno in
+questione, poi differenza punti negli scontri, poi punti fatti, poi sorteggio.
+
+**Calendario sulle 30 giornate FSGC** (19 turni in tutto):
+
+| Fase | Turni | Giornate FSGC (proposta) |
+|---|---|---|
+| Preliminari | 6 | 9–14 |
+| Gironi principali | 6 | 15–20 |
+| Ottavi (A/R) | 2 | 21–22 |
+| Quarti (A/R) | 2 | 23–24 |
+| Semifinali (A/R) | 2 | 25–26 |
+| Finale | 1 | 27 |
+
+Le giornate 1–8 servono a raccogliere iscrizioni; le 28–30 restano di margine
+per gare rinviate. La coppa parte a iscrizioni chiuse.
+
+**Se gli iscritti sono meno di 50** la formula completa non regge. La natura
+della coppa e il punteggio restano uguali, cambia solo il formato:
+
+| Iscritti | Formato |
+|---|---|
+| 50 o più | completo: preliminari → 8 gironi da 4 → ottavi |
+| 24–49 | preliminari → passano 8 per girone → 4 gironi da 4 → quarti |
+| 8–23 | niente preliminari: gironi da 4 → passano le prime due → tabellone |
+| meno di 8 | niente coppa, solo campionato |
+
+### 10.3 Migliore della giornata
+
+A ogni giornata la squadra con il punteggio più alto fra tutti gli iscritti
+(anche fuori dalla coppa) viene indicata come migliore della giornata.
+
+### 10.4 Cosa deve mostrare l'app
+
+Nella sezione Futsal, per ogni iscritto: fase della coppa in corso, posizione
+nel girone, prossimo turno e avversario, classifica del girone, tabellone,
+campione in carica, migliore della giornata, e la formazione dell'avversario
+dopo la chiusura.
+
+## 11. Da fare dopo (non in questa bozza)
+
 - Selettore Calcio / Futsal nell'app, listone futsal, importazione dei referti.
+- Albo d'oro (campioni di campionato e coppa per stagione).
 
-## 11. Punti aperti
+## 12. Punti aperti
 
 1. Formazione libera di giornata (come qui) **oppure** leghe con rosa e asta come nel calcio?
 2. Mappatura dei ruoli: Universale con i Difensori va bene?
 3. Valori di punteggio: confermare gol +3, Porta −0,5 / +1, bonus difesa a 7,5.
 4. Leghe private fra amici: stesse regole, o anche lì la formazione libera?
+5. Coppa: va bene la formula a tre fasi e il calendario dalla 9ª alla 27ª giornata?

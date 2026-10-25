@@ -208,6 +208,39 @@ nel girone, prossimo turno e avversario, classifica del girone, tabellone,
 campione in carica, migliore della giornata, e la formazione dell'avversario
 dopo la chiusura.
 
+## 10-bis. Come fanno gli altri fantafutsal (ricerca del 25/10/2026)
+
+Non esiste un fantafutsal "ufficiale" con voti di redazione: nessuno, in Italia
+o all'estero, dà pagelle al calcio a 5. Tutti lavorano su eventi e statistiche.
+
+| | Totoculo | FantaCun | Linea Laterale | Any Given Sunday |
+|---|---|---|---|---|
+| Squadra | formazione libera ogni giornata | rosa 10, 100 crediti, quotazioni che cambiano, mercato libero | rosa 10, 100 crediti, draft a turni | 5 giocatrici + allenatore, 150 crediti, solo Coppa Italia femminile |
+| Limite per squadra reale | 1 | 1 | — | 2 |
+| Ruoli | P D C A | P D A | P D A | P L C PV (universali ricollocati) |
+| In campo | P + 4, moduli 1-2-1 / 2-1-1 | P + 2D + 2A, fisso | P + 4, oppure 5 di movimento | tutte e 5 |
+| Panchina | 1, stesso ruolo | 5 fissi (P D D A A), 3 cambi, uno per ruolo | 5, i loro punti non contano | nessun cambio |
+| Voto | statistico (Diretta.it) + bonus | nessuno: solo bonus e malus | +1 presenza + eventi | solo eventi |
+| Gol | +3 | +2 | +5 A, +6 D, +8 P | +10 |
+| Porta: gol subito / inviolata | −1 / +1 | −0,5 / +4 | −1 ogni 2 / +5 | — |
+| Capitano | raddoppia bonus/malus, no vice | — | raddoppia, con vice | raddoppia bonus/malus |
+| Chiusura | prima della giornata | lunedì 19:00 | 1' prima della prima gara, e ogni giocatore si blocca al via della sua partita | prima del torneo |
+| Classifica | somma + coppa | somma + premio di giornata | somma oppure testa a testa | somma |
+
+Cosa ne ricaviamo:
+
+- **Solo eventi, niente pagelle, è la norma.** Il nostro voto base 6 per chi è
+  in distinta è più generoso della media ma coerente.
+- **Il limite di uno per squadra reale** c'è in tre giochi su quattro: confermato.
+- **Due giochi su quattro usano solo tre ruoli (P, D, A)**: alternativa più
+  semplice ai nostri quattro.
+- **Eventi tipici del futsal** che altri premiano: tiro libero dei 10 metri
+  (dal sesto fallo), tiro libero parato, gol da metà campo. Il referto FSGC non
+  li distingue: restano fuori.
+- **Blocco giocatore per giocatore** (Linea Laterale): la giornata FSGC va dal
+  lunedì al giovedì, e si potrebbe cambiare chi gioca giovedì fino al via della
+  sua partita. Più complicato con panchina e capitano: da valutare dopo.
+
 ## 11. Da fare dopo (non in questa bozza)
 
 - Selettore Calcio / Futsal nell'app, listone futsal, importazione dei referti.

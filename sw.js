@@ -14,6 +14,7 @@ const SHELL = [
   // presi dalla cache puo' essere di un'altra versione (tests/sw-guscio.test.js).
   './src/colore.js', './src/diagnostica.js', './src/miei-dati.js', './src/notizie.js', './src/views/negozio.js', './src/views/sospeso.js',
   './src/calendario-dati.js', './src/eventi-dati.js', './src/listone-dati.js', './src/listone-extra.js',
+  './src/views/futsal.js', './src/futsal.js', './src/futsal-engine.js', './src/futsal-dati.js',
   './icons/icon-192.png', './icons/icon-512.png', './icons/maskable-512.png', './icons/apple-touch-icon.png',
   // icone evento: compaiono su Voti, Live e Giudice Dati, quindi valgono il precache.
   // Le altre (menu, eventi di secondo livello) entrano in cache al primo uso.

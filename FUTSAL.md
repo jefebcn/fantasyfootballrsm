@@ -1,21 +1,22 @@
 # Fantatitano Futsal — bozza di regolamento
 
-Stato: **bozza di lavoro sul ramo `futsal`**, non pubblicata. Nell'app non c'è
-ancora niente: questo file serve a decidere le regole prima di scrivere codice.
+Stato: **regolamento deciso il 25/10/2026, ramo `futsal`, non pubblicato.**
+Nell'app la sezione esiste ma è nascosta (si apre solo con `?futsal=1`).
 
 ## 1. Da dove vengono le idee
 
 Abbiamo studiato le pagine pubbliche del FantaFutsal di Totoculo (totoculo.it), attivo
 da due stagioni. Ne riprendiamo **le meccaniche di gioco**, che sono
 idee e non testo: formazione di giornata senza rosa, due moduli, bonus difesa,
-capitano obbligatorio, panchina unica, campionato più coppa in tre fasi. Il testo qui
+capitano obbligatorio, campionato più coppa in tre fasi. Altri dettagli vengono
+dal confronto con gli altri fantafutsal (§ 10-bis). Il testo qui
 sotto è nostro, e niente del loro codice, grafica o marchio entra nell'app.
 
 Dove le loro regole poggiano su dati che il referto FSGC non ha (voti
 statistici di Diretta.it, rigori parati, assist sistematici), la regola è
 adattata o tolta, e lo diciamo caso per caso (§ 9).
 
-## 2. I dati FSGC (verificati su 38 referti, giornate 1–6 del 2026/27)
+## 2. I dati FSGC (42 referti, giornate 1–6 del 2026/27)
 
 - Campionato: 15 squadre, 30 giornate, una giornata a settimana dal lunedì al
   giovedì sera (prima gara di solito alle 20:15). Ogni giornata una squadra riposa.
@@ -26,15 +27,16 @@ adattata o tolta, e lo diciamo caso per caso (§ 9).
 - Ogni giocatore ha una scheda con nome completo e un codice unico
   (`fsgc.sm/it/giocatore/<nome>/<id>`): gli omonimi si distinguono così.
 - Eventi: gol con minuto, gol su rigore, autogol, ammonizioni, espulsioni.
-  Assist: la voce esiste ma in 38 partite non è mai stata compilata.
-- Numeri: 5,2 gol a partita, 5 pareggi su 38, 12 porte inviolate su 76.
+  Assist: la voce esiste ma in 42 partite non è mai stata compilata.
+- Numeri: 5,1 gol a partita, 6 pareggi su 42, 12 porte inviolate su 84.
 
 ## 3. Formazione di giornata
 
 Niente rosa, niente asta, niente crediti. **A ogni giornata ognuno sceglie
 liberamente la formazione fra tutti i giocatori in listone**, come su Totoculo.
 
-- 1 Porta, 4 giocatori di movimento, 1 panchinaro: 6 scelte.
+- 1 Porta, 4 giocatori di movimento, 2 panchinari (un D e un A), capitano e
+  vice: 7 scelte.
 - **Al massimo un giocatore per squadra FSGC** (la Porta conta come la sua squadra).
   È il vincolo che impedisce a tutti di schierare la stessa formazione.
 - Chiusura: 10 minuti prima della prima gara della giornata. Dopo, formazione e
@@ -47,22 +49,22 @@ esclusività, di quotazioni e di mercato, e il gioco resta settimanale.
 
 ## 4. Ruoli e moduli
 
-I ruoli FSGC diventano quattro ruoli di gioco:
+I ruoli FSGC diventano **tre** ruoli di gioco, come in FantaCun e Linea Laterale:
 
-| Ruolo di gioco | Ruoli FSGC | Presenze per squadra a partita |
-|---|---|---|
-| **P** Porta | i portieri della squadra, insieme (§ 5) | 1 |
-| **D** Difensore | Centrale, Universale | ~2,7 |
-| **C** Centrocampista | Laterale | ~4,8 |
-| **A** Attaccante | Pivot | ~2,2 |
+| Ruolo di gioco | Ruoli FSGC | Presenze per squadra a partita | Gol a presenza |
+|---|---|---|---|
+| **P** Porta | i portieri della squadra, insieme (§ 5) | 1 | — |
+| **D** Difensore | Centrale, Laterale | ~5,4 | 0,21 |
+| **A** Attaccante | Pivot, Universale | ~4,3 | 0,31 |
 
-Il Centrale da solo è troppo raro (circa mezzo per squadra a partita) per fare
-un ruolo: per questo l'Universale sta con lui.
+Chi segna meno sta in difesa, chi segna di più in attacco. Il ruolo di un
+giocatore è quello che la FSGC gli dà più spesso in distinta (3 giocatori su
+201 cambiano ruolo da una partita all'altra).
 
 Moduli:
 
-- **1-2-1 standard**: P, 1 D, 2 C, 1 A.
-- **2-1-1 difensivo**: P, 2 D, 1 C, 1 A. Dà diritto al Bonus difesa (§ 7).
+- **2-2 standard**: P, 2 D, 2 A.
+- **3-1 difensivo**: P, 3 D, 1 A. Dà diritto al Bonus difesa (§ 7).
 
 ## 5. La Porta
 
@@ -88,7 +90,7 @@ sulla presenza. Poi si sommano bonus e malus dal referto.
 | Espulsione | −1 |
 | Rigore sbagliato | −3 |
 | Porta: gol subito | −0,5 |
-| Porta: porta inviolata | +1 |
+| Porta: porta inviolata | +3 |
 | Assist | **non conta** finché la FSGC non li compila sempre |
 | Rigore parato | **non conta**: il referto non lo distingue dal rigore fuori |
 
@@ -96,26 +98,33 @@ Il gol vale +3 come su Totoculo. Il gol subito vale −0,5 e non −1: lì il
 portiere ha un voto statistico che compensa, qui la Porta parte da 6 e con −1
 a gol scenderebbe in media sotto il 4 (2,6 gol subiti a partita).
 
-Sulle 38 partite reali, con queste regole: Porta 4,9 di media, D 6,9, C 6,7,
-A 6,9. Una formazione da 5 fa in media 32 punti (27,5 il 10% più basso, 38 il
-10% più alto).
+La porta inviolata vale +3 (FantaCun +4, Linea Laterale +5): succede nel 16%
+delle partite e deve pesare nella scelta della Porta.
+
+Calcolato dal motore dell'app (`src/futsal-engine.js`) sulle 42 partite reali:
+Porta 5,2 di media, D 6,6, A 6,8. Una formazione da 5 fa in media 32 punti
+(27 il 10% più basso, 38 il 10% più alto), capitano escluso.
 
 ## 7. Bonus difesa
 
-Con il modulo 2-1-1, se la media dei punteggi finali di **Porta + D + D** è
-almeno **7,5**, la squadra prende **+2**, una sola volta per giornata.
+Con il modulo 3-1, se la media dei punteggi finali di **Porta + i tre D** è
+almeno **7,0**, la squadra prende **+2**, una sola volta per giornata.
 Contano i punteggi dopo il capitano e dopo l'eventuale sostituzione; uno slot
 senza voto né sostituto vale 0 nella media.
 
-Sulle 38 partite si sarebbe attivato nel 17% delle formazioni 2-1-1.
+Sulle 42 partite si sarebbe attivato nel 19% delle formazioni 3-1. La soglia
+è a 7,0 e non a 7,5 per un motivo di conti: un D fa in media 0,3 punti meno di
+un A, e a 7,5 il bonus (12% delle volte) non ripagherebbe mai la rinuncia.
 
 ## 8. Capitano, panchina, classifica
 
-- **Capitano obbligatorio**, scelto fra i quattro di movimento (non la Porta).
-  Raddoppia bonus e malus, non il voto base. Niente vice: se il capitano non ha
-  voto, la fascia si perde.
-- **Un solo panchinaro**, che entra solo al posto di un titolare **dello stesso
-  ruolo** senza voto. Sostituisce al massimo un giocatore e non eredita la fascia.
+- **Capitano obbligatorio** e **vice**, scelti fra i quattro di movimento (non
+  la Porta). Il capitano raddoppia bonus e malus, non il voto base. Se non ha
+  voto la fascia passa al vice; se nemmeno il vice ha voto, nessun raddoppio.
+  Come nel calcio Fantatitano.
+- **Due panchinari, un D e un A.** Ognuno entra solo al posto di un titolare
+  del suo ruolo senza voto, e non eredita la fascia. La Porta non ha
+  panchinaro: è senza voto solo se la partita della squadra non si gioca.
 - **Senza voto**: chi non è in distinta, chi riposa, gare rinviate o a tavolino.
 - **Classifica**: somma dei punti di tutte le giornate; vince chi ha di più
   dopo la 30ª. Spareggi: media per giornata, poi miglior giornata, poi seconda
@@ -132,8 +141,8 @@ Sulle 38 partite si sarebbe attivato nel 17% delle formazioni 2-1-1.
 
 ## 10. Le competizioni della stagione
 
-Una sola formazione a settimana vale per **due competizioni insieme**, come su
-Totoculo: chi gioca non deve fare niente in più per la coppa.
+Una sola formazione a settimana vale per **tutto**: campionato, coppa e leghe
+private. Chi gioca non consegna niente in più.
 
 ### 10.1 Campionato (classifica generale)
 
@@ -196,6 +205,17 @@ della coppa e il punteggio restano uguali, cambia solo il formato:
 | 8–23 | niente preliminari: gironi da 4 → passano le prime due → tabellone |
 | meno di 8 | niente coppa, solo campionato |
 
+### 10.2-bis Leghe private
+
+Una lega privata è un **gruppo** di amici con la propria classifica, calcolata
+sulle stesse formazioni. Niente asta e niente rose: chi crea la lega sceglie
+solo il tipo di classifica.
+
+- **A somma**: come il campionato, ma fra i membri del gruppo.
+- **Testa a testa**: calendario di scontri diretti fra i membri; vince chi fa
+  più punti nella giornata (3 punti), pareggio a punteggio uguale (1 punto).
+  Non servono fasce di conversione in gol.
+
 ### 10.3 Migliore della giornata
 
 A ogni giornata la squadra con il punteggio più alto fra tutti gli iscritti
@@ -243,13 +263,18 @@ Cosa ne ricaviamo:
 
 ## 11. Da fare dopo (non in questa bozza)
 
-- Selettore Calcio / Futsal nell'app, listone futsal, importazione dei referti.
+- Consegna delle formazioni con salvataggio sul server (oggi l'editor futsal
+  salva solo sul telefono), classifiche e leghe private.
+- Coppa (calendario e tabellone).
+- Blocco giocatore per giocatore (§ 10-bis).
 - Albo d'oro (campioni di campionato e coppa per stagione).
 
-## 12. Punti aperti
+## 12. Decisioni prese (25/10/2026)
 
-1. Formazione libera di giornata (come qui) **oppure** leghe con rosa e asta come nel calcio?
-2. Mappatura dei ruoli: Universale con i Difensori va bene?
-3. Valori di punteggio: confermare gol +3, Porta −0,5 / +1, bonus difesa a 7,5.
-4. Leghe private fra amici: stesse regole, o anche lì la formazione libera?
-5. Coppa: va bene la formula a tre fasi e il calendario dalla 9ª alla 27ª giornata?
+1. Formazione libera di giornata, nessuna rosa né asta.
+2. Leghe private come gruppi sulle stesse formazioni (a somma o testa a testa).
+3. Tre ruoli: P (porta di squadra), D (Centrale, Laterale), A (Pivot, Universale).
+4. Moduli 2-2 e 3-1, bonus difesa +2 da media 7,0.
+5. Gol +3, Porta −0,5 a gol subito, +3 se inviolata; assist e rigori parati fuori.
+6. Due panchinari (D e A), capitano con vice.
+7. Coppa a tre fasi dalla 9ª alla 27ª giornata.

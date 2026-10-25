@@ -8,6 +8,7 @@ import * as views from './views/index.js';
 import * as AV from './notifiche.js';
 import { VERSIONE } from './versione.js';
 import { apriNuovaPassword, segnaRecupero, recuperoInCorso } from './views/nuova-password.js';
+import { futsalAttivo, leggiInterruttore, selettore } from './views/futsal.js';
 
 const root = document.getElementById('app');
 let current = null; // { view, params }
@@ -22,6 +23,9 @@ const ROUTES = [
   ['video', views.video], ['regolamento', views.regolamento], ['regole', views.regole], ['scheda', views.scheda], ['impostazioni', views.impostazioni], ['impostazioni/avanzate', views.avanzate], ['scambi', views.scambi], ['privacy', views.privacy], ['termini', views.termini], ['archiviazione', views.archiviazione], ['licenze', views.licenze], ['cancella-account', views.cancella], ['giocatori', views.adesione], ['consenso/:id', views.attestato],
   ['admin', views.adminGiornata], ['admin/partita/:id', views.adminPartita], ['admin/contestazioni', views.adminContestazioni],
   ['admin/congela', views.adminCongela], ['admin/console', views.adminConsole], ['admin/registro', views.adminRegistro], ['mercato', views.mercato], ['asta', views.asta],
+  // Il futsal (FUTSAL.md): nascosto finche' non si accende con ?futsal=1, vedi gate()
+  ['futsal', views.futsalHome], ['futsal/formazione', views.futsalFormazione], ['futsal/giornata/:n', views.futsalGiornata],
+  ['futsal/listone', views.futsalListone], ['futsal/regolamento', views.futsalRegolamento],
   ['login', views.login], ['leghe', views.leghe], ['lega', views.lega], ['gestione', views.gestione], ['squadra', views.squadra], ['vice/:code', views.vice], ['setup', views.setup], ['offline', views.offline], ['sospeso', views.sospeso], ['benvenuto', views.onboarding], ['guida', views.guida],
 ];
 
@@ -98,6 +102,7 @@ function appbar(view, ctx) {
   const league = S.base.league;
   const kind = (typeof view.appbar === 'function' ? view.appbar(ctx) : view.appbar) || 'main';
   if (kind === 'none') return '';
+  if (kind === 'futsal') return `<header class="a-appbar"><button class="ib" data-open-drawer aria-label="Menu">${icon('menu')}</button><div class="t"><b>Fantatitano Futsal</b><span>${esc(view.sub?.(ctx) || view.title)}</span></div><a class="ib" href="#/futsal/regolamento" aria-label="Regolamento futsal">${mask('fischietto', 'ib-mi')}</a></header>`;
   if (kind === 'back') return `<header class="a-appbar"><button class="ib flip" data-back aria-label="Indietro">${icon('chev')}</button><div class="t"><b>${esc(league.name)}</b><span>${esc(view.sub?.(ctx) || view.title)}</span></div>${view.actions ? view.actions(ctx) : ''}</header>`;
   return `<header class="a-appbar"><button class="ib" data-open-drawer aria-label="Menu">${icon('menu')}</button><div class="t"><b>${esc(league.name)}</b><span>${esc(view.sub?.(ctx) || view.title)}</span></div><button class="ib" data-refresh aria-label="Aggiorna">${mask('pallone-scambio', 'ib-mi')}</button><a class="ib" href="#/regolamento" aria-label="Regolamento">${mask('fischietto', 'ib-mi')}</a><a class="ib" href="#/admin/contestazioni" aria-label="Contestazioni">${icon('bandierina')}${S.contestazioni().some((c) => c.status === 'open') ? '<i class="dot"></i>' : ''}</a></header>`;
 }
@@ -113,7 +118,14 @@ function appbar(view, ctx) {
  * voce: cosi' resta attaccata all'icona qualunque sia la larghezza della
  * colonna, che cambia col telefono.
  */
+const NAV_FUTSAL = [['futsal', 'campo', 'Home'], ['futsal/formazione', 'maglia-10', 'Formazione'], ['futsal/giornata', 'grafico', 'Voti'],
+  ['futsal/listone', 'calendario', 'Listone'], ['futsal/regolamento', 'coppa', 'Regole']];
+function navFutsal(path) {
+  const attiva = path.split('/').slice(0, 2).join('/');
+  return `<nav class="a-nav">${NAV_FUTSAL.map(([p, ic, l]) => `<a href="#/${p}" class="${attiva === p ? 'on' : ''}"><i class="np">${mask(ic)}</i><span>${l}</span></a>`).join('')}</nav>`;
+}
 function nav(path) {
+  if (path.startsWith('futsal')) return navFutsal(path);
   const active = path.split('/')[0];
   const avviso = (p) => (p === 'voti' && S.matchdayStatus(S.currentMatchday()) === 'provisional' ? '<i class="dot"></i>' : '');
   return `<nav class="a-nav">${NAV.map(([p, ic, l]) => `<a href="#/${p}" class="${active === p ? 'on' : ''}"><i class="np">${mask(ic)}${avviso(p)}</i><span>${l}</span></a>`).join('')}</nav>`;
@@ -239,6 +251,8 @@ const SEMPRE = ['privacy', 'termini', 'archiviazione', 'licenze', 'cancella-acco
 let invitoAccompagnato = false;
 function gate(path) {
   if (SEMPRE.includes(path)) return null;
+  // Spento, il futsal non esiste: chi ci arriva da un indirizzo torna a casa.
+  if (path.startsWith('futsal') && !futsalAttivo()) return '';
   const st = S.appState();
   let target = STATE_ROUTE[st];
   // Chi apre l'app per la prima volta vede la presentazione; chi si è già registrato no.
@@ -263,6 +277,8 @@ function gate(path) {
   // Non a chi arriva da un invito: sa gia' dove andare, e il modulo e' pronto.
   if (st === 'no-league' && !S.store.get().guidaVista && !S.invitoInSospeso() && path !== 'guida') return 'guida';
   if (path === target || (ALLOWED[st] || []).includes(path)) return null;
+  // Il futsal non chiede una lega di calcio: basta l'account.
+  if (st === 'no-league' && path.startsWith('futsal')) return null;
   return target;
 }
 export function render() {
@@ -279,7 +295,7 @@ export function render() {
   // Senza una lega la barra non c'e': Rosa, Calendario, Classifica e Voti
   // riportavano tutti alla schermata delle leghe, e Voti aveva pure il pallino
   // rosso di una novita' che non c'era.
-  const senzaNav = view.nav === false || S.appState() === 'no-league';
+  const senzaNav = view.nav === false || (S.appState() === 'no-league' && !path.startsWith('futsal'));
   // Rosa, Formazione, Scheda e La mia squadra leggono la TUA squadra: in una
   // lega dove non ce l'hai (appena uscito, tolto dall'amministratore, i dati
   // della lega ancora in arrivo) si rompevano su me.id (Console, 12/10:
@@ -289,7 +305,10 @@ export function render() {
   const corpo = fuori
     ? `<main class="a-body"><div class="empty"><p>Non fai parte di questa lega.</p><a class="a-btn" href="#/leghe" style="text-decoration:none">Le mie leghe</a></div></main>`
     : view.render(ctx);
-  root.innerHTML = `<div class="app${senzaNav ? ' senza-nav' : ''}${view.largo ? ' largo' : ''}">${appbar(view, ctx)}${corpo}${senzaNav ? '' : nav(path)}${drawer()}</div>`;
+  // Calcio | Futsal in cima alla home del calcio, solo a interruttore acceso
+  // (la home del futsal lo mette da se').
+  const corpoSel = futsalAttivo() && ['', 'leghe'].includes(path) ? corpo.replace(/<main class="a-body([^"]*)">/, (m) => `${m}${selettore('calcio')}`) : corpo;
+  root.innerHTML = `<div class="app${senzaNav ? ' senza-nav' : ''}${view.largo ? ' largo' : ''}">${appbar(view, ctx)}${corpoSel}${senzaNav ? '' : nav(path)}${drawer()}</div>`;
   if (view.mount && !fuori) view.mount(root, ctx);
   const body = root.querySelector('.a-body');
   if (body && scrollMemo[path] && prevPath === path) body.scrollTop = scrollMemo[path];
@@ -395,7 +414,7 @@ function mostraRitornoFallito(err) {
 /** Il ritorno dal link e-mail porta i token nel frammento: ripulisce l'URL senza toccare il router. */
 function cleanAuthUrl() {
   const dirtyHash = location.hash && !location.hash.startsWith('#/');
-  const dirtyQuery = /[?&](code|error|error_description|invito|da)=/.test(location.search);
+  const dirtyQuery = /[?&](code|error|error_description|invito|da|futsal)=/.test(location.search);
   if (dirtyHash || dirtyQuery) history.replaceState(null, '', location.pathname + (dirtyHash ? '' : location.hash));
 }
 
@@ -514,6 +533,8 @@ async function boot() {
   // Il codice d'invito si legge subito, prima che l'indirizzo venga
   // ripulito: ?invito=ABC123 arriva dal link condiviso, oppure di ritorno
   // dalla conferma e-mail (lo porta dentro ritornoConInvito, in state.js).
+  // ?futsal=1 / ?futsal=0: l'interruttore della sezione nascosta (FUTSAL.md)
+  leggiInterruttore();
   const qs = new URLSearchParams(location.search);
   const invito = qs.get('invito');
   if (invito) S.ricordaInvito(invito);

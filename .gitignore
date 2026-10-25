@@ -17,3 +17,6 @@ package-lock.json
 
 # la cartella che Vercel pubblica, la prepara scripts/costruisci.mjs
 pubblico/
+
+# archivio di lavoro dell'importatore futsal, come quello del calcio
+data/futsal-tabellini.json

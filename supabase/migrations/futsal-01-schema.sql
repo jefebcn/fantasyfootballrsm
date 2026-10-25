@@ -200,7 +200,9 @@ declare uid text := public.current_user_id(); l public.futsal_leghe; c text;
 begin
   if not exists (select 1 from public.futsal_iscritti where user_id = uid) then raise exception 'Prima iscriviti al FantaFutsal'; end if;
   loop
-    c := 'F' || upper(substr(encode(gen_random_bytes(8), 'hex'), 1, 5));
+    -- md5 e random() sono di Postgres: gen_random_bytes su Supabase sta nello
+    -- schema extensions, fuori dal search_path di questa funzione
+    c := 'F' || upper(substr(md5(random()::text || clock_timestamp()::text), 1, 5));
     exit when not exists (select 1 from public.futsal_leghe where codice = c);
   end loop;
   insert into public.futsal_leghe (nome, tipo, codice, creata_da) values (trim(p_nome), coalesce(p_tipo, 'somma'), c, uid) returning * into l;

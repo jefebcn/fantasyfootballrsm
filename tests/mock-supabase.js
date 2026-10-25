@@ -58,8 +58,10 @@ function builder(table) {
   function esegui(res) {
     {
       try {
+        // database senza le migrazioni futsal: le tabelle non ci sono
+        if (String(table).startsWith('futsal_') && typeof window !== 'undefined' && window.__MOCK_SENZA_FUTSAL__) { res({ data: null, error: { code: '42P01', message: `relation "public.${table}" does not exist` } }); return; }
         let data = null; const rows = T(table);
-        const pk = { lineups: ['league_id', 'member_id', 'matchday'], match_overrides: ['match_id'], match_appearances: ['match_id', 'player_id'], matchday_status: ['matchday'], matchday_locks: ['matchday'], formazioni_bozze: ['league_id', 'member_id', 'matchday'], profiles: ['id'], app_interruttori: ['chiave'], giocatori_esclusi: ['player_id'], squalifiche: ['player_id', 'matchday'] }[table] || ['id'];
+        const pk = { lineups: ['league_id', 'member_id', 'matchday'], match_overrides: ['match_id'], match_appearances: ['match_id', 'player_id'], matchday_status: ['matchday'], matchday_locks: ['matchday'], formazioni_bozze: ['league_id', 'member_id', 'matchday'], profiles: ['id'], app_interruttori: ['chiave'], giocatori_esclusi: ['player_id'], squalifiche: ['player_id', 'matchday'], futsal_iscritti: ['user_id'], futsal_formazioni: ['user_id', 'giornata'], futsal_membri: ['lega_id', 'user_id'] }[table] || ['id'];
         const withDefaults = (r) => ({ id: uid(), created_at: now(), ...r });
         // __MOCK_SESSIONE_PERSA__: il token e' scaduto e la rete non l'ha
         // rinnovato, le richieste partono come anonimo. Come Supabase vero: i
@@ -687,6 +689,33 @@ export function createClient(_url, _key, opts) {
             if (!assegnato) chiudi('persa');
           }
           persisti(); return { data: n, error: null };
+        }
+        // Il FantaFutsal (supabase/migrations/futsal-01): le leghe di amici.
+        if (name.startsWith('futsal_') && window.__MOCK_SENZA_FUTSAL__) return { data: null, error: { code: 'PGRST202', message: 'Could not find the function in the schema cache' } };
+        if (name === 'futsal_crea_lega') {
+          if (!T('futsal_iscritti').some((x) => x.user_id === userId)) throw new Error('Prima iscriviti al FantaFutsal');
+          const l = { id: uid(), nome: args.p_nome, tipo: args.p_tipo || 'somma', codice: 'F' + Math.random().toString(16).slice(2, 7).toUpperCase(), creata_da: userId, avvio_giornata: null, membri_avvio: null, created_at: now() };
+          T('futsal_leghe').push(l); T('futsal_membri').push({ lega_id: l.id, user_id: userId, entrato_at: now() }); persisti();
+          return { data: l, error: null };
+        }
+        if (name === 'futsal_entra_lega') {
+          const l = T('futsal_leghe').find((x) => x.codice === String(args.p_codice).trim().toUpperCase());
+          if (!l) throw new Error('Codice non trovato');
+          if (l.avvio_giornata) throw new Error('La lega e\' gia\' partita');
+          if (!T('futsal_membri').some((m) => m.lega_id === l.id && m.user_id === userId)) T('futsal_membri').push({ lega_id: l.id, user_id: userId, entrato_at: now() });
+          persisti(); return { data: l.id, error: null };
+        }
+        if (name === 'futsal_esci_lega') {
+          tables.futsal_membri = T('futsal_membri').filter((m) => !(m.lega_id === args.p_lega && m.user_id === userId));
+          if (!T('futsal_membri').some((m) => m.lega_id === args.p_lega)) tables.futsal_leghe = T('futsal_leghe').filter((l) => l.id !== args.p_lega);
+          persisti(); return { data: null, error: null };
+        }
+        if (name === 'futsal_avvia_lega') {
+          const l = T('futsal_leghe').find((x) => x.id === args.p_lega);
+          if (!l || l.creata_da !== userId) throw new Error('Solo chi ha creato la lega la puo\' avviare');
+          l.avvio_giornata ||= args.__giornata || 7;
+          l.membri_avvio ||= T('futsal_membri').filter((m) => m.lega_id === l.id).map((m) => m.user_id);
+          persisti(); return { data: l.avvio_giornata, error: null };
         }
         throw new Error('rpc sconosciuta ' + name);
       } catch (e) { return { data: null, error: { message: e.message } }; }

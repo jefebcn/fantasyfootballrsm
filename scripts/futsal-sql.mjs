@@ -3,7 +3,7 @@
  * calendario dell'app. Sta qui e non nello script perche' la prova possa
  * confrontarlo col file senza scriverlo.
  */
-import { GIOCATORI_FUTSAL, GIORNATE, chiusura } from './futsal.js';
+import { GIOCATORI_FUTSAL, GIORNATE, chiusura } from '../src/futsal.js';
 
 const q = (s) => `'${String(s).replace(/'/g, "''")}'`;
 

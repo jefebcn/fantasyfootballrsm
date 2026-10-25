@@ -33,4 +33,4 @@ export { squadra } from './squadra.js';
 export { vice } from './vice.js';
 export { adesione } from './adesione.js';
 export { attestato } from './attestato.js';
-export { futsalHome, futsalFormazione, futsalGiornata, futsalListone, futsalRegolamento } from './futsal.js';
+export { futsalHome, futsalFormazione, futsalGiornata, futsalListone, futsalRegolamento, futsalClassifica, futsalCoppa, futsalLeghe, futsalLega } from './futsal.js';

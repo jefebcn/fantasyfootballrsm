@@ -24,8 +24,9 @@ const ROUTES = [
   ['admin', views.adminGiornata], ['admin/partita/:id', views.adminPartita], ['admin/contestazioni', views.adminContestazioni],
   ['admin/congela', views.adminCongela], ['admin/console', views.adminConsole], ['admin/registro', views.adminRegistro], ['mercato', views.mercato], ['asta', views.asta],
   // Il futsal (FUTSAL.md): nascosto finche' non si accende con ?futsal=1, vedi gate()
-  ['futsal', views.futsalHome], ['futsal/formazione', views.futsalFormazione], ['futsal/giornata/:n', views.futsalGiornata],
+  ['futsal', views.futsalHome], ['futsal/formazione', views.futsalFormazione], ['futsal/formazione/:n', views.futsalFormazione], ['futsal/giornata/:n', views.futsalGiornata],
   ['futsal/listone', views.futsalListone], ['futsal/regolamento', views.futsalRegolamento],
+  ['futsal/classifica', views.futsalClassifica], ['futsal/coppa', views.futsalCoppa], ['futsal/leghe', views.futsalLeghe], ['futsal/lega/:id', views.futsalLega],
   ['login', views.login], ['leghe', views.leghe], ['lega', views.lega], ['gestione', views.gestione], ['squadra', views.squadra], ['vice/:code', views.vice], ['setup', views.setup], ['offline', views.offline], ['sospeso', views.sospeso], ['benvenuto', views.onboarding], ['guida', views.guida],
 ];
 
@@ -118,8 +119,8 @@ function appbar(view, ctx) {
  * voce: cosi' resta attaccata all'icona qualunque sia la larghezza della
  * colonna, che cambia col telefono.
  */
-const NAV_FUTSAL = [['futsal', 'campo', 'Home'], ['futsal/formazione', 'maglia-10', 'Formazione'], ['futsal/giornata', 'grafico', 'Voti'],
-  ['futsal/listone', 'calendario', 'Listone'], ['futsal/regolamento', 'coppa', 'Regole']];
+const NAV_FUTSAL = [['futsal', 'campo', 'Home'], ['futsal/formazione', 'maglia-10', 'Formazione'], ['futsal/classifica', 'coppa', 'Classifica'],
+  ['futsal/giornata', 'grafico', 'Voti'], ['futsal/listone', 'calendario', 'Listone']];
 function navFutsal(path) {
   const attiva = path.split('/').slice(0, 2).join('/');
   return `<nav class="a-nav">${NAV_FUTSAL.map(([p, ic, l]) => `<a href="#/${p}" class="${attiva === p ? 'on' : ''}"><i class="np">${mask(ic)}</i><span>${l}</span></a>`).join('')}</nav>`;

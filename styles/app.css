@@ -2736,3 +2736,48 @@ a.crow .cls-chev{flex:none;color:var(--text-muted);margin-left:-4px}
 .fs-scelta .vr[disabled]{opacity:.45;cursor:not-allowed}
 .fs-scelta .vr{grid-template-columns:auto 1fr auto auto}
 .fs a.vr,.fs a.chip{text-decoration:none;color:inherit}
+/* Il campo da futsal: parquet chiaro, righe bianche, la Porta in basso. */
+.fs-campo{position:relative;aspect-ratio:2 / 2.6;min-height:420px;border-radius:14px;overflow:hidden;padding:26px 10px 18px;
+  display:flex;flex-direction:column;justify-content:space-between;
+  background:repeating-linear-gradient(90deg,rgba(0,0,0,.035) 0 9%,rgba(255,255,255,.05) 9% 18%),linear-gradient(180deg,#d9a86a,#c58d4f);
+  box-shadow:inset 0 0 0 2px rgba(255,255,255,.45),0 6px 18px rgba(0,0,0,.18)}
+.fs-righe{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+.fs-righe path,.fs-righe circle,.fs-righe rect{fill:none;stroke:rgba(255,255,255,.85);stroke-width:1.6;vector-effect:non-scaling-stroke}
+.fs-righe .pieno{fill:rgba(255,255,255,.85)}
+.fs-linea{position:relative;z-index:1;display:flex;justify-content:space-evenly;align-items:flex-start}
+.fs-slot2{display:flex;flex-direction:column;align-items:center;gap:3px;width:124px;background:none;border:0;padding:0;font:inherit;color:#fff;cursor:pointer}
+div.fs-slot2{cursor:default}
+.fs-slot2 b{font:700 12px var(--font-body);background:rgba(11,18,32,.82);padding:2px 7px;border-radius:6px;max-width:124px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.fs-slot2 small{font:600 10px var(--font-body);color:#2a1a08;background:rgba(255,255,255,.75);padding:1px 6px;border-radius:5px;max-width:124px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.fs-mg{position:relative;width:58px;display:block}
+.fs-num{position:absolute;inset:30% 0 auto;text-align:center;font:800 17px var(--font-display);font-style:normal;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.55)}
+.fs-cap{position:absolute;top:-2px;left:-6px;width:20px;height:20px;border-radius:50%;background:var(--c-oro-400);color:var(--c-titano-900);font:800 10px var(--font-display);font-style:normal;display:grid;place-items:center;border:2px solid #fff}
+.fs-pt{position:absolute;top:-4px;right:-12px;min-width:30px;text-align:center;padding:2px 5px;border-radius:8px;background:var(--c-titano-900);color:#fff;border:2px solid #fff;font:700 11px var(--font-data);font-style:normal}
+.fs-pt.zero{background:#5B6B7C}
+.fs-vuota{width:52px;height:52px;border-radius:50%;display:grid;place-items:center;border:2px dashed rgba(255,255,255,.9);font:700 24px var(--font-body);color:#fff;background:rgba(0,0,0,.12)}
+.fs-stato{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.fs-stato>div{display:flex;flex-direction:column;min-width:0}
+.fs-stato>div span{font-size:12px;color:var(--text-muted)}
+.fs-ok{display:inline-flex;align-items:center;gap:4px;font:600 12px var(--font-body);color:var(--positive-ink);background:var(--positive-soft);padding:4px 8px;border-radius:999px;white-space:nowrap}
+.fs-no{font:600 12px var(--font-body);color:var(--text-muted);background:var(--surface-sunk);padding:4px 8px;border-radius:999px;white-space:nowrap}
+.fs-totale{display:flex;align-items:baseline;justify-content:space-between}
+.fs-totale span{font-size:12px;color:var(--text-muted)}
+.fs-totale b{font:800 26px var(--font-display);font-variant-numeric:tabular-nums}
+.fs-io{display:flex;align-items:center;gap:10px;background:var(--surface);border-radius:var(--r-md);box-shadow:var(--sh-card);padding:10px 14px}
+.fs-io .crest{width:40px;height:40px;font-size:13px}
+.fs-io>div{flex:1;display:flex;flex-direction:column;min-width:0}
+.fs-io>div span{font-size:12px;color:var(--text-muted)}
+.fs-io a{color:var(--text-muted)}
+.fs-iscriviti,.fs-form{display:flex;flex-direction:column;gap:10px}
+.fs-iscriviti .chip{align-self:flex-start}
+.fs-pos{font:800 15px var(--font-display);min-width:22px;text-align:center;color:var(--text-muted)}
+.fs-classifica .vr{grid-template-columns:auto auto 1fr auto}
+.fs-mia{background:color-mix(in srgb,var(--primary) 9%,transparent)}
+.fs-sfida{display:grid;grid-template-columns:1fr auto auto auto 1fr;gap:6px;align-items:center;padding:10px 12px;border-top:1px solid var(--border);font-size:13px}
+.fs-sfida:first-child{border-top:0}
+.fs-sfida span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.fs-sfida span.r{text-align:right}
+.fs-sfida b{font:700 14px var(--font-data);font-variant-numeric:tabular-nums}
+.fs-sfida i{font-style:normal;color:var(--text-muted)}
+.fs-codice{font:800 15px var(--font-data);letter-spacing:.08em;background:var(--surface-sunk);padding:4px 10px;border-radius:8px}
+.fs-fasi p{margin:6px 0;font-size:13.5px}

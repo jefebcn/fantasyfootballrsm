@@ -19,6 +19,9 @@ const ok = [], ko = []; const et = (c, t) => (c ? ok : ko).push(t);
   const ctx = await b.newContext({ viewport: { width: 393, height: 852 }, deviceScaleFactor: 2, timezoneId: 'Europe/Rome', locale: 'it-IT', isMobile: true, hasTouch: true, serviceWorkers: 'block' });
   await ctx.addInitScript(() => {
     window.__SUPABASE_JS__ = '/tests/mock-supabase.js';
+    // questa prova gira come un database SENZA le migrazioni futsal: la
+    // formazione resta sul telefono (prove/futsal-server.cjs fa l'altro caso)
+    window.__MOCK_SENZA_FUTSAL__ = true;
     localStorage.setItem('fcs:auth', 'supabase');
     localStorage.setItem('fcs:prefs', JSON.stringify({ onboarded: true, guidaVista: true, theme: 'light' }));
     localStorage.setItem('fcs:supabase', JSON.stringify({ url: 'https://mock.supabase.co', key: 'mock-key-mock-key-mock' }));

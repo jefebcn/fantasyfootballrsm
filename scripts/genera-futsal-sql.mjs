@@ -8,7 +8,7 @@
  *   node scripts/genera-futsal-sql.mjs
  */
 import { writeFileSync } from 'node:fs';
-import { sqlFutsal } from '../src/futsal-sql.js';
+import { sqlFutsal } from './futsal-sql.mjs';
 
 const url = new URL('../supabase/migrations/futsal-02-dati.sql', import.meta.url);
 writeFileSync(url, sqlFutsal());

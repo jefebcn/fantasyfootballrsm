@@ -178,8 +178,13 @@ dei punti delle due gare; finale in gara unica. In caso di parità passa chi ha
 fatto più punti nella gara di ritorno, poi chi era meglio classificato nella
 fase 2.
 
-**Classifica dei gironi a pari punti**: miglior punteggio nel turno in
-questione, poi differenza punti negli scontri, poi punti fatti, poi sorteggio.
+**Classifica dei gironi a pari punti**: differenza fra punti fatti e subiti
+negli scontri, poi punti fatti, poi l'ordine del sorteggio iniziale.
+
+**Il sorteggio** è uno solo, all'inizio della coppa, ed è ripetibile: lo fa
+ogni telefono con lo stesso seme, e viene uguale per tutti
+(`src/futsal-gare.js`, `mescola`). Partecipa chi è iscritto alla chiusura
+della 9ª giornata.
 
 **Calendario sulle 30 giornate FSGC** (19 turni in tutto):
 
@@ -202,8 +207,11 @@ della coppa e il punteggio restano uguali, cambia solo il formato:
 |---|---|
 | 50 o più | completo: preliminari → 8 gironi da 4 → ottavi |
 | 24–49 | preliminari → passano 8 per girone → 4 gironi da 4 → quarti |
-| 8–23 | niente preliminari: gironi da 4 → passano le prime due → tabellone |
+| 8–23 | niente preliminari: gironi da 4 (da 5 se avanzano squadre, solo andata) → tabellone |
 | meno di 8 | niente coppa, solo campionato |
+
+**Chi va al tabellone** quando i gironi non sono una potenza di due: tutte le
+prime, poi le migliori seconde (punti, differenza, punti fatti) fino a 4, 8 o 16.
 
 ### 10.2-bis Leghe private
 

@@ -245,6 +245,9 @@ def scrivi(cal, fatti):
         'export const GIOCATORI = [\n%s,\n];\n' % ',\n'.join(righe_g) +
         'export const REFERTI = [\n%s,\n];\n' % ',\n'.join(righe_r), encoding='utf-8')
     print(f'\nscritto src/futsal-dati.js — {len(cal)} partite, {len(info)} giocatori, {len(fatti)} referti')
+    # listone e chiusure anche per il database (supabase/migrations/futsal-02-dati.sql)
+    import subprocess
+    subprocess.run(['node', str(RADICE / 'scripts' / 'genera-futsal-sql.mjs')], check=True)
 
 
 if __name__ == '__main__':

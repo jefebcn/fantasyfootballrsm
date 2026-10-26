@@ -2782,3 +2782,19 @@ div.fs-slot2{cursor:default}
 .fs-codice{font:800 15px var(--font-data);letter-spacing:.08em;background:var(--surface-sunk);padding:4px 10px;border-radius:8px}
 .fs-fasi p{margin:6px 0;font-size:13.5px}
 .fs-iscriviti h3,.fs-iscriviti p{margin:0}
+/* Futsal: chi entra la prima volta (i 18 punti del 26/10) */
+.fs-regole{display:inline-flex;align-items:center;gap:6px;text-decoration:none;color:var(--on-primary);font:700 12px var(--font-body);
+  background:rgba(255,255,255,.18);border-radius:999px;padding:6px 12px 6px 8px}
+.fs-regole .ib-mi{width:20px;height:20px}
+.fs-passi3 ol{margin:6px 0 8px;padding-left:20px;display:flex;flex-direction:column;gap:8px;font-size:14px}
+.fs-passi3 a{display:inline-flex;align-items:center;gap:2px;font:600 13px var(--font-body);color:var(--primary);text-decoration:none}
+.fs-conta{display:flex;align-items:baseline;justify-content:space-between;gap:8px;padding:2px 2px 0}
+.fs-conta b{font:800 16px var(--font-display)}
+.fs-conta span{font-size:12px;color:var(--text-muted)}
+.fs-fasce-scelta .vr{grid-template-columns:1fr auto auto;cursor:default}
+.fs-fbtn{width:40px;height:40px;border-radius:50%;border:2px solid var(--border-strong);background:var(--surface);font:800 14px var(--font-display);color:var(--text-muted);cursor:pointer}
+.fs-fbtn.on{background:var(--c-oro-400);border-color:var(--c-oro-400);color:var(--c-titano-900)}
+.fs-spiega b{font-size:14px}
+.fs-spiega p{margin:4px 0 0}
+.fs-partita summary::after{content:"Tocca per i voti ▾";grid-column:1 / -1;text-align:center;font:600 11px var(--font-body);color:var(--text-muted);margin-top:-2px}
+.fs-partita[open] summary::after{content:"Chiudi ▴"}

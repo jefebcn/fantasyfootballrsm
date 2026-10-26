@@ -97,7 +97,7 @@ export function votoGiocatore(giocatore, referti, clubDi, R = REGOLE_FUTSAL) {
   if (!p.ref.distinte[p.lato].includes(giocatore.id)) return { sv: true, motivo: 'non in distinta' };
   const g = golDi(p.ref, p.lato, clubDi);
   const e = esito(g.fatti, g.subiti, R);
-  const voci = [{ etichetta: 'Voto (in distinta)', valore: R.voto }, { etichetta: `Esito · ${e.nota}`, valore: e.valore }];
+  const voci = [{ etichetta: 'Convocato', valore: R.voto }, { etichetta: `Esito · ${e.nota}`, valore: e.valore }];
   const personali = eventiPersonali(p.ref.eventi.filter((x) => x[0] === giocatore.id), R);
   const base = r2(R.voto + e.valore), bonus = somma(personali);
   return { sv: false, base, bonus, totale: r2(base + bonus), voci: [...voci, ...personali] };
@@ -132,16 +132,16 @@ export function controllaFormazione(f, R = REGOLE_FUTSAL) {
   const errori = [];
   const m = R.moduli[f.modulo];
   if (!m) return ['Modulo non valido'];
-  if (!f.porta) errori.push('Manca la Porta');
+  if (!f.porta) errori.push('Manca la porta');
   const per = (r) => (f.titolari || []).filter((x) => x?.ruolo === r).length;
   for (const r of ['D', 'A']) if (per(r) !== m[r]) errori.push(`Servono ${m[r]} ${r === 'D' ? 'difensori' : 'attaccanti'} (ora ${per(r)})`);
   const panchina = (f.panchina || []).filter(Boolean);
-  for (const r of R.panchina) if (panchina.filter((x) => x.ruolo === r).length !== 1) errori.push(`In panchina serve un ${r === 'D' ? 'difensore' : 'attaccante'}`);
+  for (const r of R.panchina) if (panchina.filter((x) => x.ruolo === r).length !== 1) errori.push(`Manca ${r === 'D' ? 'il difensore' : 'l\'attaccante'} di riserva`);
   const club = [f.porta, ...(f.titolari || []).map((x) => x?.club), ...panchina.map((x) => x.club)].filter(Boolean);
-  if (new Set(club).size !== club.length) errori.push('Al massimo un giocatore per squadra (Porta e panchina comprese)');
+  if (new Set(club).size !== club.length) errori.push('Al massimo un giocatore per squadra (porta e riserve comprese)');
   const ids = (f.titolari || []).map((x) => x?.id);
-  if (!f.capitano || !ids.includes(f.capitano)) errori.push('Il capitano va scelto fra i titolari di movimento');
-  if (!f.vice || !ids.includes(f.vice)) errori.push('Il vice va scelto fra i titolari di movimento');
+  if (!f.capitano || !ids.includes(f.capitano)) errori.push('Scegli il capitano fra i quattro titolari');
+  if (!f.vice || !ids.includes(f.vice)) errori.push('Scegli il vice fra i quattro titolari');
   else if (f.vice === f.capitano) errori.push('Capitano e vice devono essere due giocatori diversi');
   return errori;
 }

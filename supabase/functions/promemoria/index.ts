@@ -185,9 +185,50 @@ const gestisci = async (req: Request): Promise<Response> => {
   const candidate = (locks ?? []).map((l) => ({
     ...l, ore: (new Date(l.lock_at).getTime() - ora) / 3600000,
   })).filter((l) => l.ore > 0 && l.ore <= ORE_PRIMA);
-  if (!candidate.length) return Response.json({ spedite: 0, iscritti, motivo: 'nessun lock nella finestra' });
+  // Il FantaFutsal (supabase/migrations/futsal-01, futsal-03): le sue
+  // giornate hanno un calendario proprio, dal lunedi' al giovedi'. Se le
+  // tabelle non ci sono (database senza le migrazioni futsal) si salta.
+  const { data: locksFutsal } = await sb.from('futsal_lock').select('giornata, lock_at');
+  const candidateFutsal = (locksFutsal ?? []).map((l) => ({
+    ...l, ore: (new Date(l.lock_at).getTime() - ora) / 3600000,
+  })).filter((l) => l.ore > 0 && l.ore <= ORE_PRIMA);
+  if (!candidate.length && !candidateFutsal.length) return Response.json({ spedite: 0, iscritti, motivo: 'nessun lock nella finestra' });
 
   let spedite = 0; const morti: string[] = []; let rimessi = 0;
+  let speditefutsal = 0;
+  /** Un avviso a un telefono: 'ok', 'morto' o 'riprova'. */
+  const spedisci = async (g: { endpoint: string; p256dh: string; auth: string }, avviso: { titolo: string; corpo: string; tag: string; url: string }) => {
+    if (g.endpoint.startsWith('apns:')) {
+      if (!apns) { iphoneSaltati++; return 'riprova'; }
+      return await spedisciApns(apns, g.endpoint.slice(5), avviso).catch(() => 'riprova');
+    }
+    try {
+      await webpush.sendNotification({ endpoint: g.endpoint, keys: { p256dh: g.p256dh, auth: g.auth } }, JSON.stringify(avviso));
+      return 'ok';
+    } catch (err) {
+      const code = (err as { statusCode?: number }).statusCode;
+      return code === 404 || code === 410 ? 'morto' : 'riprova';
+    }
+  };
+  for (const l of candidateFutsal) {
+    const { data: gente, error } = await sb.rpc('futsal_da_avvisare', { p_giornata: l.giornata });
+    if (error) break;
+    const quanto = l.ore >= 1.5 ? `fra ${Math.round(l.ore)} ore` : "fra meno di un'ora";
+    const daRimettere: string[] = [];
+    for (const g of gente ?? []) {
+      const esito = await spedisci(g, {
+        titolo: `Futsal, ${l.giornata}ª giornata: manca la formazione`,
+        corpo: `${g.squadra}: si chiude ${quanto}. Senza formazione la giornata vale 0 punti.`,
+        tag: `futsal-${l.giornata}`,
+        url: './#/futsal/formazione',
+      });
+      if (esito === 'ok') { spedite++; speditefutsal++; } else if (esito === 'morto') morti.push(g.endpoint); else daRimettere.push(g.endpoint);
+    }
+    if (daRimettere.length) {
+      const { data: n } = await sb.rpc('futsal_promemoria_da_rifare', { p_giornata: l.giornata, p_endpoints: daRimettere });
+      rimessi += Number(n ?? 0);
+    }
+  }
   for (const l of candidate) {
     const { data: gente, error: e2 } = await sb.rpc('da_avvisare', { p_matchday: l.matchday });
     if (e2) return Response.json({ errore: e2.message }, { status: 500 });
@@ -238,6 +279,7 @@ const gestisci = async (req: Request): Promise<Response> => {
 
   return Response.json({
     giornate: candidate.map((c) => c.matchday), spedite, iscritti, scaduti: morti.length, da_rifare: rimessi,
+    ...(candidateFutsal.length ? { futsal: { giornate: candidateFutsal.map((c) => c.giornata), spedite: speditefutsal } } : {}),
     ...(iphoneSaltati ? { iphone_senza_chiave_apns: iphoneSaltati } : {}),
   });
 };

@@ -27,25 +27,29 @@ let rompi = null;
 // per le prove dell'iPhone: un lock fra 5 ore e chi va avvisato
 let lockFinti = [];
 let genteFinta = [];
+// il FantaFutsal ha giornate e iscritti suoi (futsal-03)
+let lockFutsalFinti = [];
+let genteFutsalFinta = [];
 const segnati = { morti: [], rifare: [] };
 
 globalThis.__banco = {
   webpush,
   ambiente,
   createClient: () => ({
-    from: () => {
+    from: (tabella) => {
       if (rompi) throw new Error(rompi);
       return {
         // select() normale e' una promessa; con { head: true } e' la conta,
         // che la funzione incatena con .is().
         select: (_c, opts) => (opts?.head
           ? { is: async () => ({ count: 2, error: null }) }
-          : Promise.resolve({ data: lockFinti, error: null })),
+          : Promise.resolve({ data: tabella === 'futsal_lock' ? lockFutsalFinti : lockFinti, error: null })),
         update: () => ({ in: async (_c, lista) => { segnati.morti.push(...lista); return {}; } }),
       };
     },
     rpc: async (nome, p) => {
-      if (nome === 'promemoria_da_rifare') { segnati.rifare.push(...p.p_endpoints); return { data: p.p_endpoints.length, error: null }; }
+      if (nome === 'promemoria_da_rifare' || nome === 'futsal_promemoria_da_rifare') { segnati.rifare.push(...p.p_endpoints); return { data: p.p_endpoints.length, error: null }; }
+      if (nome === 'futsal_da_avvisare') return { data: genteFutsalFinta, error: null };
       return { data: genteFinta, error: null };
     },
   }),
@@ -85,7 +89,7 @@ const buone = {
 
 /** Rimette l'ambiente da zero: i casi non si devono sporcare fra loro. */
 const con = (env) => {
-  rompi = null; lockFinti = []; genteFinta = []; segnati.morti = []; segnati.rifare = [];
+  rompi = null; lockFinti = []; genteFinta = []; lockFutsalFinti = []; genteFutsalFinta = []; segnati.morti = []; segnati.rifare = [];
   for (const k of Object.keys(ambiente)) delete ambiente[k];
   Object.assign(ambiente, env);
 };
@@ -232,4 +236,19 @@ test('APNS_SANDBOX=1 usa il server di prova di Apple', async () => {
   conIphone({ APNS_SANDBOX: '1' });
   const viste = await conFetch(200, '', () => risposta());
   assert.match(viste[0].url, /^https:\/\/api\.sandbox\.push\.apple\.com\//);
+});
+
+test('futsal: avvisa chi non ha la formazione e porta alla formazione futsal', async () => {
+  conIphone();
+  lockFinti = [];
+  lockFutsalFinti = [{ giornata: 8, lock_at: new Date(Date.now() + 5 * 3600000).toISOString() }];
+  genteFutsalFinta = [{ user_id: 'u1', endpoint: 'apns:abcd1234', p256dh: '', auth: '', squadra: 'Titani Futsal' }];
+  let corpo;
+  const viste = await conFetch(200, '', async () => { corpo = (await risposta()).corpo; });
+  assert.equal(viste.length, 1);
+  const msg = JSON.parse(viste[0].init.body);
+  assert.match(msg.aps.alert.title, /Futsal, 8ª giornata/);
+  assert.match(msg.aps.alert.body, /Titani Futsal/);
+  assert.equal(msg.url, './#/futsal/formazione');
+  assert.match(corpo, /"futsal":\{"giornate":\[8\],"spedite":1\}/);
 });

@@ -143,3 +143,21 @@ select pg_temp.entra('fut_bea');
 select public.futsal_esci_lega((select id from public.futsal_leghe where codice = :'codice'));
 select pg_temp.esige('Bea esce dalla lega', not public.futsal_in_lega((select id from public.futsal_leghe limit 1)));
 reset role;
+
+-- promemoria (futsal-03): chi e' iscritto, ha un telefono e non ha consegnato
+insert into public.push_subscriptions (endpoint, user_id, p256dh, auth) values
+  ('https://push.example/bea', 'fut_bea', 'k', 'a'), ('https://push.example/alex', 'fut_alex', 'k', 'a')
+on conflict (endpoint) do nothing;
+select pg_temp.esige('il promemoria va a Bea, che non ha la formazione della 29, e non ad Alex',
+  (select array_agg(user_id) from public.futsal_da_avvisare(29)) = array['fut_bea']);
+select pg_temp.esige('e una volta sola', not exists (select 1 from public.futsal_da_avvisare(29)));
+select pg_temp.esige('un invio fallito si rimette in coda', public.futsal_promemoria_da_rifare(29, array['https://push.example/bea']) = 1);
+set role authenticated;
+select pg_temp.entra('fut_bea');
+do $$ begin
+  perform public.futsal_da_avvisare(29);
+  raise exception 'FALLITA: un utente ha letto chi avvisare';
+exception when others then if sqlerrm like 'FALLITA:%' then raise; end if;
+  raise notice 'ok  chi avvisare lo legge solo la funzione promemoria (%)', sqlerrm;
+end $$;
+reset role;

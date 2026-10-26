@@ -39,12 +39,66 @@ const nomeG = (g) => `${g.cognome} ${g.nome ? `${g.nome[0]}.` : ''}`;
 const ruoloChip = (r) => `<span class="rl rl-${r === 'P' ? 'p' : r === 'D' ? 'd' : 'a'}">${r}</span>`;
 const voto = (v, cap = false) => (v.sv ? '<span class="fv sv">S.V.</span>' : `<span class="fv${cap ? ' cap' : ''}">${fmt(v.totale)}</span>`);
 
+/** «tra 9 ore», «tra 2 giorni», «tra 25 minuti». */
+function traQuanto(d) {
+  const m = Math.round((d.getTime() - Date.now()) / 60000);
+  if (m < 60) return `tra ${Math.max(1, m)} ${m === 1 ? 'minuto' : 'minuti'}`;
+  const h = Math.round(m / 60);
+  if (h < 36) return `tra ${h} ${h === 1 ? 'ora' : 'ore'}`;
+  return `tra ${Math.round(h / 24)} giorni`;
+}
+/** La chiusura detta come la legge chi arriva: quanto manca, e quando. */
+function chiusuraDetta(d) {
+  if (!d) return 'Date non ancora fissate dalla FSGC';
+  const quando = `${dateIt(d.toISOString())} alle ${timeIt(d.toISOString())}`;
+  return d.getTime() > Date.now() ? `Si chiude ${traQuanto(d)} · ${quando}` : `Chiusa ${quando}: si gioca`;
+}
+const ZERO_PUNTI = 'Senza formazione quella giornata vale 0 punti.';
+
+/** Il riquadro d'iscrizione: in home, nella formazione e nelle leghe, ovunque serva. */
+const iscrizione = (titolo = 'Iscriviti con lo stesso account') => `<div class="a-card fs-iscriviti">
+  <span class="chip">FantaFutsal 2026/27 · gratis</span>
+  <h3>${titolo}</h3>
+  <p class="small muted">Scegli il nome della tua squadra: è quello che vedranno gli altri in classifica.</p>
+  <input class="field-input" id="fs-squadra" placeholder="Nome della tua squadra" maxlength="30" autocomplete="off">
+  <button class="a-btn big" id="fs-iscriviti">Iscriviti</button></div>`;
+function montaIscrizione(root, ctx) {
+  root.querySelector('#fs-iscriviti')?.addEventListener('click', async (e) => {
+    const nome = root.querySelector('#fs-squadra').value.trim();
+    if (nome.length < 2) { ctx.toast('Scrivi il nome della squadra'); return; }
+    e.target.disabled = true;
+    try { await FS.iscriviti(nome); ctx.toast('Iscritto: ora schiera la formazione'); ctx.render(); } catch (err) { ctx.toast(err.message); e.target.disabled = false; }
+  });
+}
+
+/** Il gioco in tre passi, per chi entra la prima volta. */
+const comeSiGioca = () => `<div class="a-card fs-passi3">
+  <p class="rule-art">COME SI GIOCA, IN 30 SECONDI</p>
+  <ol>
+    <li><b>Iscriviti</b> qui sotto: basta il nome della squadra, l'account è lo stesso del calcio.</li>
+    <li><b>Ogni settimana scegli 5 giocatori veri</b> del campionato sammarinese di futsal: la porta di una squadra, 2 difensori e 2 attaccanti, più 2 riserve. Uno solo per squadra.</li>
+    <li><b>Fai punti con quello che succede in campo</b>: gol, risultato della squadra, cartellini, dai referti ufficiali della FSGC. Chi ne fa di più vince.</li>
+  </ol>
+  <a href="#/futsal/regolamento">Tutte le regole ${icon('chev', 'ic sm')}</a></div>`;
+
+/** Per il menu laterale (app.js): chi sei nel futsal. */
+export function menuFutsal() {
+  const io = FS.io();
+  return { iscritto: !!io, squadra: io?.squadra || '', stemma: io ? crest({ color: io.colore, initials: io.iniziali }, 'md') : '' };
+}
+/** Per la barra in basso: c'e' una formazione da consegnare nella giornata aperta? */
+export function formazioneMancante() {
+  if (!FS.stato().attivo || !FS.io()) return false;
+  const n = F.giornataCorrente(), c = F.chiusura(n);
+  return !!c && c.getTime() > Date.now() && !FS.formazioneDi(n);
+}
+
 function leggi() { try { return JSON.parse(localStorage.getItem(FORMAZIONI)) || {}; } catch { return {}; } }
 function scrivi(tutte) { try { localStorage.setItem(FORMAZIONI, JSON.stringify(tutte)); } catch { /* niente */ } }
 
 // ---- home
 export const futsalHome = {
-  title: 'Futsal', appbar: 'futsal', sub: () => 'Campionato Sammarinese di Futsal',
+  title: 'Futsal', appbar: 'futsal', sub: () => 'Campionato di San Marino',
   render() {
     const n = F.giornataCorrente();
     const chiude = F.chiusura(n);
@@ -55,46 +109,44 @@ export const futsalHome = {
     const top = ultima ? migliori(ultima, 5) : [];
     const io = FS.io();
     const mvp = ultima && srv.iscritti.length ? classificaSomma(srv.iscritti.map((x) => x.user_id), [ultima], FS.punti)[0] : null;
+    // chi non e' ancora iscritto: prima il gioco spiegato e l'iscrizione,
+    // niente pulsante della formazione (portava a un campo pieno di errori)
+    const nuovo = srv.attivo && srv.caricato && !io;
+    const aperta = chiude && chiude.getTime() > Date.now();
     return `<main class="a-body fs">
       ${selettore('futsal')}
-      ${srv.attivo && srv.caricato && !io ? `<div class="a-card fs-iscriviti">
-        <span class="chip">FantaFutsal 2026/27</span>
-        <h3>Iscriviti con lo stesso account</h3>
-        <p class="small muted">Una squadra per account: ogni settimana scegli Porta, quattro di movimento e due in panchina. Vale per classifica, coppa e leghe con gli amici.</p>
-        <input class="field-input" id="fs-squadra" placeholder="Nome della tua squadra" maxlength="30" autocomplete="off">
-        <button class="a-btn big" id="fs-iscriviti">Iscriviti</button></div>` : ''}
+      ${nuovo ? `${comeSiGioca()}${iscrizione()}` : ''}
       ${io ? `<div class="fs-io">${crest({ color: io.colore, initials: io.iniziali })}<div><b>${esc(io.squadra)}</b><span>${(() => { const r = classificaSomma(srv.iscritti.map((x) => x.user_id), F.giocate(), FS.punti).find((x) => x.id === io.user_id); return r ? `${r.posto}º su ${srv.iscritti.length} · ${fmt(r.totale)} punti` : ''; })()}</span></div><a href="#/futsal/classifica">${icon('chev', 'ic sm')}</a></div>` : ''}
+      ${formazioneMancante() ? tile({ href: '#/futsal/formazione', lead: icon('clock'), leadKind: 'warn', title: `${n}ª giornata: manca la tua formazione`, sub: `Si chiude ${traQuanto(chiude)}. ${ZERO_PUNTI}` }) : ''}
       <div class="a-card fs-hero">
         <span class="chip">${n}ª giornata</span>
         <h3>${partite.length ? `${dateIt(partite[0].quando)} – ${dateIt(partite.at(-1).quando)}` : ''}</h3>
-        <p class="small muted">${chiude ? `Formazioni chiuse ${dateIt(chiude.toISOString())} alle ${timeIt(chiude.toISOString())}` : ''} · riposa ${esc(F.riposa(n).map(nomeSq).join(', '))}</p>
-        <a class="a-btn big" href="#/futsal/formazione" style="text-decoration:none">${icon('shirt', 'ic sm')}${mia ? 'Cambia la formazione' : 'Schiera la formazione'}</a>
+        <p class="small muted"><b>${esc(chiusuraDetta(chiude))}</b> · riposa ${esc(F.riposa(n).map(nomeSq).join(', '))}</p>
+        ${nuovo ? '<p class="small muted">Iscriviti qui sopra per schierare la formazione di questa giornata.</p>'
+    : `<a class="a-btn big" href="#/futsal/formazione" style="text-decoration:none">${icon('shirt', 'ic sm')}${mia ? (aperta ? 'Cambia la formazione' : 'Vedi la formazione') : aperta ? 'Schiera la formazione' : 'Vedi la giornata'}</a>`}
+        ${!mia && aperta && !nuovo ? `<p class="small muted" style="margin-top:8px">${ZERO_PUNTI}</p>` : ''}
         ${mia ? `<p class="small muted" style="margin-top:8px">${srv.attivo ? `Consegnata ${dateIt(FS.consegnataAlle(n))} alle ${timeIt(FS.consegnataAlle(n))}.` : controllaFormazione(espandi(mia)).length ? 'Formazione incompleta: finiscila prima della chiusura.' : 'Formazione pronta sul telefono.'}</p>` : ''}
       </div>
       ${sec('Le partite', `${n}ª giornata`)}
       <div class="a-card fs-list">${partite.map((p) => `<div class="fs-match">${stemma(p.casa)}<b>${esc(nomeSq(p.casa))}</b><span class="fs-ora">${timeIt(p.quando)}<small>${dateIt(p.quando)}</small></span><b class="r">${esc(nomeSq(p.ospite))}</b>${stemma(p.ospite)}</div>`).join('')}</div>
-      ${ultima ? `${sec('I migliori', `${ultima}ª giornata`)}
+      ${ultima ? `${sec(`I migliori della ${ultima}ª`, 'i giocatori che hanno fatto più punti')}
       <div class="a-card fs-list">${top.map(({ g, v }) => `<a class="vr" href="#/futsal/giornata/${ultima}">${ruoloChip(g.ruolo)}<span class="nm"><b>${esc(nomeG(g))}</b><span>${esc(nomeSq(g.club))} · ${esc(g.ruoloFsgc)}</span></span><span class="ev"></span>${voto(v)}</a>`).join('')}</div>` : ''}
       ${io && ultima && FS.formazioneDi(ultima) ? tile({ href: `#/futsal/formazione/${ultima}`, lead: icon('shirt'), title: `La tua ${ultima}ª: ${fmt(FS.risultato(ultima)?.totale)} punti`, sub: 'apri il campo con i punti di ognuno' }) : ''}
       ${mvp && mvp.totale > 0 ? `${sec('Migliore della giornata', `${ultima}ª giornata`)}
       <div class="a-card fs-list"><a class="vr" href="#/futsal/classifica">${crest({ color: FS.iscritto(mvp.id)?.colore, initials: FS.iscritto(mvp.id)?.iniziali })}<span class="nm"><b>${esc(FS.iscritto(mvp.id)?.squadra || '')}</b><span>il punteggio più alto del turno</span></span><span class="ev"></span><span class="fv">${fmt(mvp.totale)}</span></a></div>` : ''}
       ${sec('Il gioco')}
+      ${nuovo ? tile({ href: '#/futsal/regolamento', lead: icon('book'), title: 'Regolamento', sub: 'come si fanno i punti, classifica, coppa e leghe' }) : ''}
       ${tile({ href: '#/futsal/classifica', lead: icon('cup'), title: 'Classifica', sub: srv.attivo ? `${srv.iscritti.length} iscritti, somma dei punti` : 'si apre col server futsal' })}
       ${tile({ href: '#/futsal/coppa', lead: icon('flag'), title: 'Coppa', sub: 'gironi e tabellone, dalla 9ª giornata' })}
       ${tile({ href: '#/futsal/leghe', lead: icon('userplus'), title: 'Leghe con gli amici', sub: srv.leghe.length ? `${srv.leghe.length} ${srv.leghe.length === 1 ? 'lega' : 'leghe'}` : 'crea un gruppo o entra con un codice' })}
       ${tile({ href: `#/futsal/giornata/${ultima || 1}`, lead: icon('votes'), title: 'Giornate e voti', sub: `${F.giocate().length} giornate giocate, voti dai referti FSGC` })}
       ${tile({ href: '#/futsal/listone', lead: icon('users'), title: 'Listone', sub: `${F.GIOCATORI_FUTSAL.filter((g) => g.ruolo !== 'P').length} giocatori e 15 porte` })}
-      ${tile({ href: '#/futsal/regolamento', lead: icon('book'), title: 'Regolamento', sub: 'Porta, difensori, attaccanti: come si fanno i punti' })}
+      ${nuovo ? '' : tile({ href: '#/futsal/regolamento', lead: icon('book'), title: 'Regolamento', sub: 'come si fanno i punti, classifica, coppa e leghe' })}
     </main>`;
   },
   mount(root, ctx) {
     caricaE(ctx, '#/futsal');
-    root.querySelector('#fs-iscriviti')?.addEventListener('click', async (e) => {
-      const nome = root.querySelector('#fs-squadra').value.trim();
-      if (nome.length < 2) { ctx.toast('Scrivi il nome della squadra'); return; }
-      e.target.disabled = true;
-      try { await FS.iscriviti(nome); ctx.toast('Iscritto al FantaFutsal'); ctx.render(); } catch (err) { ctx.toast(err.message); e.target.disabled = false; }
-    });
+    montaIscrizione(root, ctx);
   },
 };
 
@@ -112,7 +164,7 @@ function migliori(n, quanti) {
 
 // ---- formazione
 // Bozza in memoria: { modulo, porta, D:[id..], A:[id..], pD, pA, capitano, vice }
-let bozza = null, provaSu = null;
+let bozza = null, provaSu = null, tentato = false;
 const vuota = () => ({ modulo: '2-2', porta: null, D: [null, null], A: [null, null], pD: null, pA: null, capitano: null, vice: null });
 const conRuolo = (id) => { const g = id && F.giocatore(id); return g ? { id, club: g.club, ruolo: g.ruolo } : null; };
 /** Dalla bozza alla forma che vogliono controllaFormazione e punteggioFormazione. */
@@ -165,7 +217,7 @@ export const futsalFormazione = {
     const n = Number(ctx.params.n) || F.giornataCorrente();
     const srv = FS.stato();
     const salvata = srv.attivo ? FS.formazioneDi(n) : leggi()[n];
-    if (bozzaDi !== n) { bozza = null; bozzaDi = n; }
+    if (bozzaDi !== n) { bozza = null; bozzaDi = n; tentato = false; }
     bozza ||= salvata ? (srv.attivo ? adatta(daServer(salvata)) : salvata) : vuota();
     const chiude = F.chiusura(n);
     const chiusa = !chiude || chiude.getTime() <= Date.now();
@@ -183,12 +235,21 @@ export const futsalFormazione = {
     const devoIscrivermi = srv.attivo && srv.caricato && !FS.io();
     const giocate = F.giocate();
     provaSu ||= giocate.at(-1);
+    // quante scelte mancano: si conta, invece di elencare errori a campo vuoto
+    const scelti = [bozza.porta, ...bozza.D, ...bozza.A, bozza.pD, bozza.pA].filter(Boolean).length;
+    const titolari = [...bozza.D, ...bozza.A];
+    const fasce = titolari.every(Boolean) ? `${sec('Capitano e vice', 'obbligatori')}
+      <div class="a-card fs-list fs-fasce-scelta">${titolari.map((id) => { const g = F.giocatore(id); return `<div class="vr"><span class="nm"><b>${esc(nomeG(g))}</b><span>${esc(nomeSq(g.club))}</span></span><button class="fs-fbtn${bozza.capitano === id ? ' on' : ''}" data-fc="${id}" ${chiusa ? 'disabled' : ''}>C</button><button class="fs-fbtn${bozza.vice === id ? ' on' : ''}" data-fv="${id}" ${chiusa ? 'disabled' : ''}>V</button></div>`; }).join('')}
+      <p class="small muted fs-nota" style="padding:0 14px 10px">Il capitano raddoppia i bonus e i malus. Se non gioca, la fascia passa al vice.</p></div>` : '';
     const prova = !chiusa && !errori.length && provaSu ? punteggioFormazione(f, (() => { const v = F.votiGiornata(provaSu); return { porta: v.porta.get(f.porta), giocatori: v.giocatori }; })()) : null;
     return `<main class="a-body fs">
       <div class="a-card fs-stato">
-        <div><b>${n}ª giornata</b><span>${chiude ? `${chiusa ? 'chiusa' : 'si chiude'} ${dateIt(chiude.toISOString())} alle ${timeIt(chiude.toISOString())}` : 'date non ancora fissate dalla FSGC'}</span></div>
+        <div><b>${n}ª giornata</b><span>${esc(chiusuraDetta(chiude))}</span></div>
         ${consegnata ? `<span class="fs-ok">${icon('check', 'ic sm')}consegnata ${dateIt(consegnata)} ${timeIt(consegnata)}</span>` : chiusa ? '<span class="fs-no">non consegnata</span>' : '<span class="fs-no">da consegnare</span>'}
       </div>
+      ${devoIscrivermi && !chiusa ? iscrizione('Per consegnare, iscriviti') : ''}
+      ${chiusa ? '' : `<div class="fs-conta"><b>Scelti ${scelti} su 7</b><span>${bozza.capitano ? 'capitano ✓' : 'capitano –'} · ${bozza.vice ? 'vice ✓' : 'vice –'}</span></div>
+      <p class="small muted fs-nota">Un solo giocatore per squadra, porta e riserve comprese. Chi riposa in questa giornata non si può scegliere.</p>`}
       ${chiusa ? '' : `<div class="seg seg-cls" role="tablist" aria-label="Modulo">${Object.keys(R.moduli).map((m) => `<button data-modulo="${m}" class="${bozza.modulo === m ? 'on' : ''}">${m}${m === R.bonusDifesa.modulo ? ' · difensivo' : ''}</button>`).join('')}</div>`}
       <div class="fs-campo">${CAMPO}
         <div class="fs-linea">${bozza.A.map((id, i) => giocatore('A', i, id)).join('')}</div>
@@ -196,29 +257,39 @@ export const futsalFormazione = {
         <div class="fs-linea">${inCampo('P:0', null, { porta: bozza.porta, punti: ris ? ris.righe[0].punti : null, modificabile: !chiusa })}</div>
       </div>
       ${ris ? `<div class="a-card fs-totale"><span>${ris.bonusDifesa?.preso ? `Bonus difesa +${fmt(ris.bonusDifesa.punti, 0)} · ` : ''}fantapunti</span><b>${fmt(ris.totale)}</b></div>` : ''}
-      <p class="small muted fs-nota">${chiusa ? 'Formazione chiusa: i punti arrivano dai referti FSGC.' : bozza.modulo === R.bonusDifesa.modulo ? `Bonus difesa +${fmt(R.bonusDifesa.punti, 0)} se Porta e tre difensori fanno in media almeno ${fmt(R.bonusDifesa.soglia)}.` : 'Tocca una maglia per sceglierla. Tocca di nuovo un titolare per farlo capitano (C) o vice (V).'}</p>
-      ${sec('In panchina', 'entra per un titolare del suo ruolo senza voto')}
+      <p class="small muted fs-nota">${chiusa ? 'Formazione chiusa: i punti arrivano dai referti FSGC.' : `Tocca un «+» per scegliere il giocatore.${bozza.modulo === R.bonusDifesa.modulo ? ` Con il 3-1: bonus +${fmt(R.bonusDifesa.punti, 0)} se porta e tre difensori fanno in media almeno ${fmt(R.bonusDifesa.soglia)}.` : ''}`}</p>
+      ${fasce}
+      ${sec('Riserve', 'entrano se un titolare del loro ruolo non è convocato')}
       <div class="a-card fs-list">${posto('pD', 0, bozza.pD, 'Difensore di riserva', chiusa)}${posto('pA', 0, bozza.pA, 'Attaccante di riserva', chiusa)}</div>
-      ${!chiusa && errori.length ? `<div class="a-card fs-err">${errori.map((e) => `<p>${icon('warn', 'ic sm')}${esc(e)}</p>`).join('')}</div>` : ''}
+      ${!chiusa && tentato && errori.length ? `<div class="a-card fs-err">${errori.map((e) => `<p>${icon('warn', 'ic sm')}${esc(e)}</p>`).join('')}</div>` : ''}
       ${chiusa ? '' : devoIscrivermi
     ? `<a class="a-btn big" href="#/futsal" style="text-decoration:none">Prima iscriviti al FantaFutsal</a>`
-    : `<button class="a-btn big" id="fs-salva" ${errori.length ? 'disabled' : ''}>${consegnata ? 'Aggiorna' : 'Consegna'} la formazione della ${n}ª</button>
-      ${srv.attivo ? '' : '<p class="small muted" style="text-align:center">Server futsal non ancora attivo: si salva solo su questo telefono.</p>'}`}
-      ${prova ? `${sec('Se l\'avessi schierata', `<select id="fs-prova" class="select">${giocate.map((g) => `<option value="${g}" ${g === provaSu ? 'selected' : ''}>${g}ª giornata</option>`).join('')}</select>`)}
+    : `<button class="a-btn big" id="fs-salva">${consegnata ? 'Aggiorna' : 'Consegna'} la formazione della ${n}ª</button>
+      <p class="small muted" style="text-align:center">${consegnata ? 'Puoi cambiarla fino alla chiusura.' : ZERO_PUNTI}${srv.attivo ? '' : ' Server futsal non ancora attivo: si salva solo su questo telefono.'}</p>`}
+      ${prova ? `${sec('Prova su una giornata già giocata', `<select id="fs-prova" class="select">${giocate.map((g) => `<option value="${g}" ${g === provaSu ? 'selected' : ''}>${g}ª giornata</option>`).join('')}</select>`)}
+      <p class="small muted fs-nota">Quanti punti avrebbe fatto questa formazione nella ${provaSu}ª. È solo una prova: non conta in classifica.</p>
       ${tabellaPunti(prova)}` : ''}
     </main>`;
   },
   mount(root, ctx) {
     caricaE(ctx, location.hash);
+    montaIscrizione(root, ctx);
     const main = root.querySelector('main');
     main.addEventListener('click', async (e) => {
       const m = e.target.closest('[data-modulo]');
       if (m) { bozza = adatta({ ...bozza, modulo: m.dataset.modulo }); pulisciFasce(); ctx.render(); return; }
       const s = e.target.closest('[data-slot]');
       if (s) { apriScelta(s.dataset.slot, ctx); return; }
+      const fc = e.target.closest('[data-fc]'), fv = e.target.closest('[data-fv]');
+      if (fc || fv) {
+        const id = (fc || fv).dataset[fc ? 'fc' : 'fv'], chi = fc ? 'capitano' : 'vice', altro = fc ? 'vice' : 'capitano';
+        bozza[chi] = id; if (bozza[altro] === id) bozza[altro] = null; ctx.render(); return;
+      }
       const b = e.target.closest('#fs-salva');
       if (!b) return;
       const n = Number(ctx.params.n) || F.giornataCorrente();
+      // gli errori si mostrano solo a chi prova a consegnare
+      if (controllaFormazione(espandi(bozza)).length) { tentato = true; ctx.toast('Mancano ancora delle scelte'); ctx.render(); return; }
       if (!FS.stato().attivo) { const t = leggi(); t[n] = bozza; scrivi(t); ctx.toast('Formazione salvata sul telefono'); ctx.go('futsal'); return; }
       b.disabled = true;
       try { await FS.consegna(n, perServer(bozza)); ctx.toast('Formazione consegnata'); ctx.go('futsal'); } catch (err) { ctx.toast(err.message); b.disabled = false; }
@@ -250,6 +321,21 @@ function tabellaPunti(r) {
   <div class="vr fs-tot"><span></span><span class="nm"><b>Totale</b></span><span class="ev"></span><span class="fv">${fmt(r.totale)}</span></div></div>`;
 }
 
+const presGol = (s) => `${s.presenze} pres. · ${s.gol} gol`;
+/** Media punti e gol subiti a partita di ogni porta, sulle giornate giocate. */
+function statPorte() {
+  const m = new Map(F.SQUADRE.map((s) => [s.id, { partite: 0, punti: 0, subiti: 0 }]));
+  for (const n of F.giocate()) {
+    for (const [club, v] of F.votiGiornata(n).porta) {
+      if (v.sv) continue;
+      const x = m.get(club); x.partite++; x.punti += v.totale;
+      const gs = v.voci.find((y) => /Gol subiti/.test(y.etichetta));
+      x.subiti += gs ? Number(gs.etichetta.split('× ')[1]) : 0;
+    }
+  }
+  for (const x of m.values()) { x.media = x.partite ? x.punti / x.partite : 0; x.subiti = x.partite ? x.subiti / x.partite : 0; }
+  return m;
+}
 /** Il foglio per scegliere chi va in un posto (o la fascia, se il posto e' gia' pieno). */
 function apriScelta(slot, ctx) {
   const [ruolo, i] = slot.split(':'); const idx = Number(i);
@@ -267,9 +353,10 @@ function apriScelta(slot, ctx) {
     ? `<div class="fs-fasce"><button class="a-btn sec" data-fascia="capitano">Capitano</button><button class="a-btn sec" data-fascia="vice">Vice</button><button class="a-btn sec" data-togli>Togli</button></div>` : '';
   let righe;
   if (ruolo === 'P') {
-    righe = F.SQUADRE.map((s) => {
+    const porte = statPorte();
+    righe = F.SQUADRE.map((s) => ({ s, x: porte.get(s.id) })).sort((a, b) => b.x.media - a.x.media).map(({ s, x }) => {
       const off = usati.has(s.id) || riposa.has(s.id);
-      return `<button class="vr" data-scegli="${s.id}" ${off ? 'disabled' : ''}>${stemma(s.id)}<span class="nm"><b>Porta ${esc(s.nome)}</b><span>${riposa.has(s.id) ? 'riposa in questa giornata' : usati.has(s.id) ? 'squadra già usata' : 'tutti i portieri'}</span></span><span class="ev"></span></button>`;
+      return `<button class="vr" data-scegli="${s.id}" ${off ? 'disabled' : ''}>${stemma(s.id)}<span class="nm"><b>Porta ${esc(s.nome)}</b><span>${riposa.has(s.id) ? 'riposa in questa giornata' : usati.has(s.id) ? 'squadra già usata' : `${fmt(x.subiti, 1)} gol subiti a partita`}</span></span><span class="ev"></span><span class="fv">${x.partite ? fmt(x.media) : '–'}</span></button>`;
     }).join('');
   } else {
     const r = ruolo === 'pD' ? 'D' : ruolo === 'pA' ? 'A' : ruolo;
@@ -278,10 +365,13 @@ function apriScelta(slot, ctx) {
       .sort((a, b) => (st.get(b.id)?.media || 0) - (st.get(a.id)?.media || 0))
       .map((g) => {
         const s = st.get(g.id), off = usati.has(g.club) || riposa.has(g.club);
-        return `<button class="vr" data-scegli="${g.id}" ${off ? 'disabled' : ''}>${stemma(g.club)}<span class="nm"><b>${esc(nomeG(g))}</b><span>${esc(nomeSq(g.club))} · ${esc(g.ruoloFsgc)}${riposa.has(g.club) ? ' · riposa' : usati.has(g.club) ? ' · squadra già usata' : ''}</span></span><span class="ev">${s ? `${s.presenze}p · ${s.gol}g` : ''}</span><span class="fv">${s ? fmt(s.media) : '–'}</span></button>`;
+        return `<button class="vr" data-scegli="${g.id}" ${off ? 'disabled' : ''}>${stemma(g.club)}<span class="nm"><b>${esc(nomeG(g))}</b><span>${esc(nomeSq(g.club))} · ${esc(g.ruoloFsgc)}${riposa.has(g.club) ? ' · riposa' : usati.has(g.club) ? ' · squadra già usata' : ''}</span></span><span class="ev">${s ? presGol(s) : ''}</span><span class="fv">${s ? fmt(s.media) : '–'}</span></button>`;
       }).join('');
   }
-  ctx.sheet(`<h3>${ruolo === 'P' ? 'Scegli la Porta' : 'Scegli il giocatore'}</h3>${fascia}<div class="fs-scelta">${righe}</div>`);
+  const spiega = ruolo === 'P'
+    ? '<p class="sheet-sub">Non si sceglie il portiere ma la <b>porta di una squadra</b>: prende i gol subiti e gli eventi di tutti i suoi portieri, perché il referto non dice chi ha giocato. A destra la media punti a partita.</p>'
+    : '<p class="sheet-sub">Ordinati per media punti a partita. In grigio chi non si può scegliere: squadra già usata o che riposa.</p>';
+  ctx.sheet(`<h3>${ruolo === 'P' ? 'Scegli la porta' : 'Scegli il giocatore'}</h3>${fascia}${spiega}<div class="fs-scelta">${righe}</div>`);
   const sh = document.getElementById('sheet');
   sh.onclick = (e) => {
     const b = e.target.closest('[data-scegli]'); if (b && !b.disabled) { metti(b.dataset.scegli); return; }
@@ -306,6 +396,7 @@ export const futsalGiornata = {
     const partite = F.PARTITE.filter((p) => p.g === n);
     return `<main class="a-body fs">
       <div class="chips">${giocate.map((g) => `<a class="chip${g === n ? ' on' : ''}" href="#/futsal/giornata/${g}">${g}ª</a>`).join('')}</div>
+      <div class="a-card fs-spiega"><b>Come nasce il voto</b><p class="small muted">${fmt(R.voto, 0)} a ogni convocato (anche se non entra in campo), +0,5 se la squadra vince e −0,5 se perde, poi gol, autogol e cartellini. La porta perde 0,5 per ogni gol subito, +3 se resta inviolata. <b>Tocca una partita</b> per vedere i voti.</p></div>
       ${partite.map((p) => {
         if (p.gc === null) return `<div class="a-card fs-list"><div class="fs-match">${stemma(p.casa)}<b>${esc(nomeSq(p.casa))}</b><span class="fs-ora">–<small>da giocare</small></span><b class="r">${esc(nomeSq(p.ospite))}</b>${stemma(p.ospite)}</div></div>`;
         const ref = F.referto(n, p.casa);
@@ -338,18 +429,19 @@ export const futsalListone = {
         const v = F.giocate().map((n) => F.votiGiornata(n).porta.get(s.id)).filter((x) => !x.sv);
         return { s, presenze: v.length, media: v.length ? v.reduce((a, x) => a + x.totale, 0) / v.length : 0 };
       }).sort((a, b) => b.media - a.media);
-      righe = porte.map(({ s, presenze, media }) => `<div class="vr">${stemma(s.id)}<span class="nm"><b>Porta ${esc(s.nome)}</b><span>${presenze} partite</span></span><span class="ev"></span><span class="fv">${fmt(media)}</span></div>`).join('');
+      const sub = statPorte();
+      righe = porte.map(({ s, presenze, media }) => `<div class="vr">${stemma(s.id)}<span class="nm"><b>Porta ${esc(s.nome)}</b><span>${presenze} partite · ${fmt(sub.get(s.id).subiti, 1)} gol subiti a partita</span></span><span class="ev"></span><span class="fv">${fmt(media)}</span></div>`).join('');
     } else {
       const q = filtro.q.toLowerCase();
       righe = F.GIOCATORI_FUTSAL.filter((g) => g.ruolo === filtro.ruolo && (!filtro.club || g.club === filtro.club) && (!q || `${g.nome} ${g.cognome}`.toLowerCase().includes(q)))
         .sort((a, b) => (st.get(b.id)?.media || 0) - (st.get(a.id)?.media || 0))
-        .map((g) => { const s = st.get(g.id); return `<div class="vr">${stemma(g.club)}<span class="nm"><b>${esc(g.nome)} ${esc(g.cognome)}</b><span>${esc(nomeSq(g.club))} · ${esc(g.ruoloFsgc)}${g.numero ? ` · n. ${g.numero}` : ''}</span></span><span class="ev">${s ? `${s.presenze}p · ${s.gol}g` : ''}</span><span class="fv">${s ? fmt(s.media) : '–'}</span></div>`; }).join('');
+        .map((g) => { const s = st.get(g.id); return `<div class="vr">${stemma(g.club)}<span class="nm"><b>${esc(g.nome)} ${esc(g.cognome)}</b><span>${esc(nomeSq(g.club))} · ${esc(g.ruoloFsgc)}${g.numero ? ` · n. ${g.numero}` : ''}</span></span><span class="ev">${s ? presGol(s) : ''}</span><span class="fv">${s ? fmt(s.media) : '–'}</span></div>`; }).join('');
     }
     return `<main class="a-body fs">
       <div class="topbar" style="padding-top:0"><input class="field-input" id="fs-q" placeholder="Cerca un giocatore" value="${esc(filtro.q)}" autocomplete="off" style="flex:1"></div>
       <div class="chips sticky">${[['P', 'Porte'], ['D', 'Difensori'], ['A', 'Attaccanti']].map(([r, l]) => `<button class="chip${filtro.ruolo === r ? ' on' : ''}" data-ruolo="${r}">${l}</button>`).join('')}
         <select id="fs-club" class="select" aria-label="Squadra"><option value="">Squadra</option>${F.SQUADRE.map((s) => `<option value="${s.id}" ${filtro.club === s.id ? 'selected' : ''}>${esc(s.nome)}</option>`).join('')}</select></div>
-      <p class="small muted fs-nota">Media dei punti nelle giornate in cui era in distinta · p = presenze · g = gol</p>
+      <p class="small muted fs-nota">A destra la media punti a partita. «Pres.» sono le partite in cui era convocato.</p>
       <div class="a-card fs-list">${righe || '<p class="small muted" style="padding:12px">Nessuno.</p>'}</div>
     </main>`;
   },
@@ -364,27 +456,37 @@ export const futsalListone = {
 
 // ---- regolamento
 export const futsalRegolamento = {
-  title: 'Regolamento futsal', appbar: 'futsal', sub: () => 'Regolamento futsal',
+  title: 'Regolamento futsal', appbar: 'futsal', sub: () => 'Come si gioca',
   render() {
     const row = (k, v) => `<tr><td>${k}</td><td class="num" style="text-align:right">${v}</td></tr>`;
     const s = (n) => (n > 0 ? `+${fmt(n)}` : fmt(n));
     return `<main class="a-body rules">
-      <div class="a-card"><p class="rule-art">COME SI GIOCA</p>
-        <p><b>Ogni giornata scegli una formazione</b> fra tutti i giocatori del campionato: niente asta, niente rosa. La stessa formazione vale per la classifica generale, la coppa e le tue leghe con gli amici.</p>
-        <p><b>Una Porta, quattro di movimento, due in panchina.</b> Al massimo un giocatore per squadra, Porta e panchina comprese.</p></div>
-      <h3>Ruoli</h3>
-      <table><tr><th>Ruolo</th><th>Chi è</th></tr>${row('P · Porta', 'tutti i portieri di una squadra')}${row('D · Difensore', 'Centrale, Laterale')}${row('A · Attaccante', 'Pivot, Universale')}</table>
-      <p>Il referto FSGC non dice quale portiere ha giocato: per questo si sceglie la Porta di una squadra, che prende i gol subiti e gli eventi di tutti i suoi portieri.</p>
-      <h3>Moduli</h3>
-      <table>${row('2-2', 'Porta, 2 D, 2 A')}${row('3-1 difensivo', 'Porta, 3 D, 1 A')}</table>
-      <p>Con il 3-1, se Porta e tre difensori fanno in media almeno ${fmt(R.bonusDifesa.soglia)}, la squadra prende <b>${s(R.bonusDifesa.punti)}</b>.</p>
-      <h3>Punteggi</h3>
-      <table><tr><th>Evento</th><th></th></tr>${row('In distinta', fmt(R.voto))}${row('Vittoria / sconfitta', `${s(R.esito.vittoria)} / ${fmt(R.esito.sconfitta)}`)}${row('Gol (anche su rigore)', s(R.gol))}${row('Autogol', fmt(R.autogol))}${row('Ammonizione', fmt(R.ammonizione))}${row('Espulsione', fmt(R.espulsione))}${row('Rigore sbagliato', fmt(R.rigoreSbagliato))}${row('Porta: gol subito', fmt(R.golSubito))}${row('Porta: inviolata', s(R.portaInviolata))}</table>
-      <p>Prende il voto chi è in distinta: la FSGC non registra chi entra in campo. Assist e rigori parati non contano, perché il referto non li riporta.</p>
-      <h3>Capitano e panchina</h3>
-      <p>Il capitano raddoppia bonus e malus, non il voto. Se non ha voto la fascia passa al vice. Un titolare senza voto è sostituito dal panchinaro del suo ruolo, che non prende la fascia.</p>
-      <h3>Tempi</h3>
-      <p>Le formazioni si chiudono 10 minuti prima della prima partita della giornata (di solito lunedì sera). La giornata va dal lunedì al giovedì; una squadra riposa ogni volta.</p>
+      <div class="a-card"><p class="rule-art">IN BREVE</p>
+        <p><b>Ogni settimana scegli 5 giocatori veri</b> del Campionato Sammarinese di Futsal: la porta di una squadra, 2 difensori e 2 attaccanti, più 2 riserve. Niente asta e niente rosa: ogni giornata scegli fra tutti.</p>
+        <p><b>Fai punti con quello che succede in campo</b>, letto dai referti ufficiali della FSGC: chi è convocato, il risultato, i gol, i cartellini.</p>
+        <p><b>La stessa formazione vale per tutto</b>: classifica generale, coppa e leghe con gli amici.</p></div>
+      <h3>La formazione</h3>
+      <p>Si consegna dalla pagina Formazione e si può cambiare quante volte vuoi fino alla chiusura: <b>10 minuti prima della prima partita della giornata</b> (di solito lunedì sera). Le giornate vanno dal lunedì al giovedì e ogni volta una squadra riposa.</p>
+      <p><b>Se non consegni, quella giornata vale 0 punti.</b> Non si riprende la formazione della settimana prima.</p>
+      <p><b>Un solo giocatore per squadra</b>, porta e riserve comprese: le 5 scelte più le 2 riserve vengono da 7 squadre diverse.</p>
+      <h3>I ruoli</h3>
+      <table><tr><th>Ruolo</th><th>Chi è</th></tr>${row('P · Porta', 'tutti i portieri di una squadra')}${row('D · Difensore', 'Centrale e Laterale')}${row('A · Attaccante', 'Pivot e Universale')}</table>
+      <p><b>Perché la porta e non il portiere.</b> Ogni squadra porta due o tre portieri, e il referto non dice chi ha giocato. Scegli quindi la porta di una squadra: prende i gol subiti e gli eventi di tutti i suoi portieri.</p>
+      <h3>I moduli</h3>
+      <table>${row('2-2', 'porta, 2 difensori, 2 attaccanti')}${row('3-1 difensivo', 'porta, 3 difensori, 1 attaccante')}</table>
+      <p>Con il 3-1, se porta e tre difensori fanno in media almeno ${fmt(R.bonusDifesa.soglia)}, la squadra prende un bonus di <b>${s(R.bonusDifesa.punti)}</b>.</p>
+      <h3>I punti</h3>
+      <table><tr><th>Evento</th><th></th></tr>${row('Convocato (anche se non entra)', fmt(R.voto))}${row('La sua squadra vince / perde', `${s(R.esito.vittoria)} / ${fmt(R.esito.sconfitta)}`)}${row('Gol (anche su rigore)', s(R.gol))}${row('Autogol', fmt(R.autogol))}${row('Ammonizione', fmt(R.ammonizione))}${row('Espulsione', fmt(R.espulsione))}${row('Rigore sbagliato', fmt(R.rigoreSbagliato))}${row('Porta: ogni gol subito', fmt(R.golSubito))}${row('Porta: nessun gol subito', s(R.portaInviolata))}</table>
+      <p><b>Convocato</b> vuol dire nell'elenco dei giocatori della partita sul referto (la «distinta»). La FSGC non registra chi entra in campo né i cambi, quindi il voto lo prende ogni convocato. Assist e rigori parati non contano: il referto non li riporta.</p>
+      <h3>Capitano, vice e riserve</h3>
+      <p><b>Capitano e vice sono obbligatori</b> e si scelgono fra i 4 di movimento. Il capitano raddoppia bonus e malus, non il voto. Se il capitano non è convocato la fascia passa al vice.</p>
+      <p>Un titolare non convocato è sostituito dalla <b>riserva del suo ruolo</b>, che non prende la fascia. Senza riserva, quel posto vale 0.</p>
+      <h3>Classifica</h3>
+      <p>Si sommano i punti di tutte le giornate: vince chi ne ha di più dopo la 30ª. A parità conta la media per giornata, poi la giornata migliore.</p>
+      <h3>Coppa</h3>
+      <p>Si gioca dalla ${COPPA.preliminari[0]}ª alla ${COPPA.finale}ª giornata con la stessa formazione, senza consegnare altro. Il sorteggio si fa alla chiusura della ${COPPA.preliminari[0]}ª: entra chi è iscritto in quel momento, servono almeno 8 squadre. Gironi con 3 punti a vittoria, poi eliminazione diretta con andata e ritorno e finale secca. Il formato cresce col numero di iscritti: con 50 o più ci sono anche i preliminari.</p>
+      <h3>Leghe con gli amici</h3>
+      <p>Una lega è un gruppo con la sua classifica, sulle stesse formazioni. Chi la crea sceglie se è <b>a somma di punti</b> (come la classifica generale) o <b>testa a testa</b>: ogni giornata contro un altro del gruppo, 3 punti a chi fa di più, 1 a testa se pari. Si entra con il codice della lega.</p>
     </main>`;
   },
 };
@@ -454,7 +556,7 @@ export const futsalLeghe = {
     const srv = FS.stato();
     if (!srv.caricato) return `<main class="a-body fs">${empty('Carico le leghe…')}</main>`;
     if (!srv.attivo) return nonAttivo();
-    if (!FS.io()) return `<main class="a-body fs">${empty('Prima iscriviti al FantaFutsal dalla home.', '<a class="a-btn" href="#/futsal" style="text-decoration:none">Vai alla home</a>')}</main>`;
+    if (!FS.io()) return `<main class="a-body fs">${iscrizione('Per creare o entrare in una lega, iscriviti')}<p class="small muted fs-nota">Una lega è un gruppo di amici con la sua classifica, sulle stesse formazioni della classifica generale.</p></main>`;
     return `<main class="a-body fs">
       ${srv.leghe.length ? `${sec('Le tue leghe')}<div class="a-card fs-list">${srv.leghe.map((l) => `<a class="vr" href="#/futsal/lega/${l.id}">${icon(l.tipo === 'testa' ? 'users' : 'cup')}<span class="nm"><b>${esc(l.nome)}</b><span>${l.tipo === 'testa' ? 'testa a testa' : 'a somma di punti'} · ${FS.membriDi(l.id).length} squadre</span></span><span class="ev"></span>${icon('chev', 'ic sm')}</a>`).join('')}</div>` : ''}
       ${sec('Crea una lega')}
@@ -468,6 +570,7 @@ export const futsalLeghe = {
   },
   mount(root, ctx) {
     caricaE(ctx, '#/futsal/leghe');
+    montaIscrizione(root, ctx);
     let tipo = 'somma';
     root.querySelector('#fs-ltipo')?.addEventListener('click', (e) => { const b = e.target.closest('[data-tipo]'); if (!b) return; tipo = b.dataset.tipo; root.querySelectorAll('#fs-ltipo button').forEach((x) => x.classList.toggle('on', x === b)); });
     root.querySelector('#fs-crea')?.addEventListener('click', async () => {

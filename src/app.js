@@ -8,7 +8,7 @@ import * as views from './views/index.js';
 import * as AV from './notifiche.js';
 import { VERSIONE } from './versione.js';
 import { apriNuovaPassword, segnaRecupero, recuperoInCorso } from './views/nuova-password.js';
-import { futsalAttivo, leggiInterruttore, selettore } from './views/futsal.js';
+import { futsalAttivo, leggiInterruttore, selettore, menuFutsal, formazioneMancante } from './views/futsal.js';
 
 const root = document.getElementById('app');
 let current = null; // { view, params }
@@ -24,7 +24,7 @@ const ROUTES = [
   ['admin', views.adminGiornata], ['admin/partita/:id', views.adminPartita], ['admin/contestazioni', views.adminContestazioni],
   ['admin/congela', views.adminCongela], ['admin/console', views.adminConsole], ['admin/registro', views.adminRegistro], ['mercato', views.mercato], ['asta', views.asta],
   // Il futsal (FUTSAL.md): nascosto finche' non si accende con ?futsal=1, vedi gate()
-  ['futsal', views.futsalHome], ['futsal/formazione', views.futsalFormazione], ['futsal/formazione/:n', views.futsalFormazione], ['futsal/giornata/:n', views.futsalGiornata],
+  ['futsal', views.futsalHome], ['futsal/formazione', views.futsalFormazione], ['futsal/formazione/:n', views.futsalFormazione], ['futsal/giornata', views.futsalGiornata], ['futsal/giornata/:n', views.futsalGiornata],
   ['futsal/listone', views.futsalListone], ['futsal/regolamento', views.futsalRegolamento],
   ['futsal/classifica', views.futsalClassifica], ['futsal/coppa', views.futsalCoppa], ['futsal/leghe', views.futsalLeghe], ['futsal/lega/:id', views.futsalLega],
   ['login', views.login], ['leghe', views.leghe], ['lega', views.lega], ['gestione', views.gestione], ['squadra', views.squadra], ['vice/:code', views.vice], ['setup', views.setup], ['offline', views.offline], ['sospeso', views.sospeso], ['benvenuto', views.onboarding], ['guida', views.guida],
@@ -103,7 +103,7 @@ function appbar(view, ctx) {
   const league = S.base.league;
   const kind = (typeof view.appbar === 'function' ? view.appbar(ctx) : view.appbar) || 'main';
   if (kind === 'none') return '';
-  if (kind === 'futsal') return `<header class="a-appbar"><button class="ib" data-open-drawer aria-label="Menu">${icon('menu')}</button><div class="t"><b>Fantatitano Futsal</b><span>${esc(view.sub?.(ctx) || view.title)}</span></div><a class="ib" href="#/futsal/regolamento" aria-label="Regolamento futsal">${mask('fischietto', 'ib-mi')}</a></header>`;
+  if (kind === 'futsal') return `<header class="a-appbar"><button class="ib" data-open-drawer aria-label="Menu">${icon('menu')}</button><div class="t"><b>Fantatitano Futsal</b><span>${esc(view.sub?.(ctx) || view.title)}</span></div><a class="fs-regole" href="#/futsal/regolamento">${mask('fischietto', 'ib-mi')}<span>Regole</span></a></header>`;
   if (kind === 'back') return `<header class="a-appbar"><button class="ib flip" data-back aria-label="Indietro">${icon('chev')}</button><div class="t"><b>${esc(league.name)}</b><span>${esc(view.sub?.(ctx) || view.title)}</span></div>${view.actions ? view.actions(ctx) : ''}</header>`;
   return `<header class="a-appbar"><button class="ib" data-open-drawer aria-label="Menu">${icon('menu')}</button><div class="t"><b>${esc(league.name)}</b><span>${esc(view.sub?.(ctx) || view.title)}</span></div><button class="ib" data-refresh aria-label="Aggiorna">${mask('pallone-scambio', 'ib-mi')}</button><a class="ib" href="#/regolamento" aria-label="Regolamento">${mask('fischietto', 'ib-mi')}</a><a class="ib" href="#/admin/contestazioni" aria-label="Contestazioni">${icon('bandierina')}${S.contestazioni().some((c) => c.status === 'open') ? '<i class="dot"></i>' : ''}</a></header>`;
 }
@@ -123,7 +123,8 @@ const NAV_FUTSAL = [['futsal', 'campo', 'Home'], ['futsal/formazione', 'maglia-1
   ['futsal/giornata', 'grafico', 'Voti'], ['futsal/listone', 'calendario', 'Listone']];
 function navFutsal(path) {
   const attiva = path.split('/').slice(0, 2).join('/');
-  return `<nav class="a-nav">${NAV_FUTSAL.map(([p, ic, l]) => `<a href="#/${p}" class="${attiva === p ? 'on' : ''}"><i class="np">${mask(ic)}</i><span>${l}</span></a>`).join('')}</nav>`;
+  const manca = formazioneMancante();
+  return `<nav class="a-nav">${NAV_FUTSAL.map(([p, ic, l]) => `<a href="#/${p}" class="${attiva === p ? 'on' : ''}"><i class="np">${mask(ic)}${p === 'futsal/formazione' && manca ? '<i class="dot"></i>' : ''}</i><span>${l}</span></a>`).join('')}</nav>`;
 }
 function nav(path) {
   if (path.startsWith('futsal')) return navFutsal(path);
@@ -192,6 +193,26 @@ function drawer() {
     </a>` : `<a class="d-lega" href="#/leghe"><i>${icon('cup')}</i>
       <span class="d-nl"><b>Nessuna lega</b><small>creane una o entra con un codice</small></span>${icon('chev', 'ic sm')}</a>`}
   </div>`;
+  // Dentro il futsal il menu e' il suo: le voci del calcio (lega, mercato,
+  // Giudice Dati) a chi gioca solo a futsal non dicono niente, e facevano
+  // pensare di essere finiti nella sezione sbagliata.
+  if (location.hash.startsWith('#/futsal')) {
+    const fs = menuFutsal();
+    return `<div class="a-drawer${drawerOpen ? ' on' : ''}"><div class="scrim" data-close-drawer></div><div class="panel">
+    <div class="d-head"><div class="d-io">${fs.stemma || stemma}
+      <span class="d-chi"><b>${esc(nome)}</b><span>${esc(fs.squadra || 'non ancora iscritto al FantaFutsal')}</span></span>
+      <button class="d-esci" data-logout aria-label="Esci dall'account" title="Esci">${icon('exit')}</button></div></div>
+    ${fs.iscritto ? `<div class="d-cta"><a class="a-btn" href="#/futsal/formazione" style="text-decoration:none">${icon('shirt', 'ic sm')}Schiera la formazione</a></div>` : `<div class="d-cta"><a class="a-btn" href="#/futsal" style="text-decoration:none">Iscriviti al FantaFutsal</a></div>`}
+    <div class="d-sec"><span class="chip">FantaFutsal</span></div>
+    ${item('#/futsal', 'home', 'Home futsal')}${item('#/futsal/regolamento', 'book', 'Come si gioca', 'regole e punteggi')}${item('#/futsal/classifica', 'cup', 'Classifica')}${item('#/futsal/coppa', 'flag', 'Coppa')}${item('#/futsal/leghe', 'userplus', 'Leghe con gli amici')}
+    <div class="d-sec"><span class="chip">Partite e giocatori</span></div>
+    ${item('#/futsal/giornata', 'votes', 'Giornate e voti')}${item('#/futsal/listone', 'users', 'Listone')}
+    <div class="d-sec"><span class="chip">Altro</span></div>
+    ${item('#/', 'globe', 'Torna al calcio', 'Fantatitano')}${item('#/impostazioni', 'gear', 'Impostazioni', 'account e privacy')}
+    <button class="d-esci-fondo" data-logout>${icon('exit', 'ic sm')}Esci dall'account</button>
+    <div class="d-foot">Versione ${VERSIONE}<br>Fantatitano Futsal</div>
+  </div></div>`;
+  }
   const leagueRow = leagues.length > 1 ? `<div class="d-sec"><span class="chip">Le mie leghe</span></div>${leagues.filter((l) => l.id !== cur).map((l) => `<button class="d-item" data-switch="${l.id}"><i>${icon('cup')}</i><span class="et">${esc(l.name)}</span><small>${esc(l.myRole)}</small></button>`).join('')}` : '';
   return `<div class="a-drawer${drawerOpen ? ' on' : ''}"><div class="scrim" data-close-drawer></div><div class="panel">
     ${head}${leagueRow}

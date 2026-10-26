@@ -277,6 +277,21 @@ Cosa ne ricaviamo:
 - Blocco giocatore per giocatore (§ 10-bis).
 - Albo d'oro (campioni di campionato e coppa per stagione).
 
+## 11-bis. Chi entra la prima volta (26/10/2026)
+
+Rifatto il giro da utente appena registrato, diciotto correzioni: il gioco
+spiegato in tre passi prima dell'iscrizione, un menu laterale solo del futsal,
+il conto alla rovescia della chiusura, «senza formazione 0 punti» detto
+dappertutto, il contatore «Scelti 3 su 7» al posto degli errori a campo vuoto,
+capitano e vice con i loro pulsanti, la porta spiegata nel foglio di scelta,
+«convocato» al posto di «in distinta», il regolamento con classifica, coppa e
+leghe, e il promemoria della formazione.
+
+Il promemoria sul telefono ha bisogno di due cose quando il futsal va in
+produzione: la migrazione `futsal-03-promemoria.sql` sul database e la
+funzione `promemoria` ridistribuita (`supabase functions deploy promemoria
+--no-verify-jwt`). Fino ad allora c'e' l'avviso dentro l'app.
+
 ## 12. Decisioni prese (25/10/2026)
 
 1. Formazione libera di giornata, nessuna rosa né asta.

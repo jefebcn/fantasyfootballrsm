@@ -2,27 +2,114 @@
  "7:cosmos:fiorentino": {
   "inizio": "2026-10-26T20:15:00+01:00",
   "url": "https://www.fsgc.sm/it/partita/cosmos-futsal-fiorentino-futsal/2123",
-  "osservazioni": []
+  "osservazioni": [
+   {
+    "quando": "2026-10-26T20:36:42+00:00",
+    "stato": "on_field",
+    "risultato": "0-0",
+    "distinte": [
+     0,
+     0
+    ],
+    "gol_eventi": 0,
+    "eventi": 0
+   }
+  ],
+  "ultimo_controllo": "2026-10-26T23:36:44+00:00"
  },
  "7:libertas:folgore": {
   "inizio": "2026-10-26T20:15:00+01:00",
   "url": "https://www.fsgc.sm/it/partita/libertas-futsal-folgore-futsal/2126",
-  "osservazioni": []
+  "osservazioni": [
+   {
+    "quando": "2026-10-26T20:36:45+00:00",
+    "stato": "on_field",
+    "risultato": "0-0",
+    "distinte": [
+     0,
+     0
+    ],
+    "gol_eventi": 0,
+    "eventi": 0
+   }
+  ],
+  "ultimo_controllo": "2026-10-26T23:36:46+00:00"
  },
  "7:faetano:trefiori": {
   "inizio": "2026-10-26T21:45:00+01:00",
   "url": "https://www.fsgc.sm/it/partita/faetano-futsal-tre-fiori-futsal/2124",
-  "osservazioni": []
+  "osservazioni": [
+   {
+    "quando": "2026-10-26T20:36:48+00:00",
+    "stato": "starting_soon",
+    "risultato": null,
+    "distinte": [
+     0,
+     0
+    ],
+    "gol_eventi": 0,
+    "eventi": 0
+   },
+   {
+    "quando": "2026-10-26T23:36:49+00:00",
+    "stato": "on_field",
+    "risultato": "0-0",
+    "distinte": [
+     0,
+     0
+    ],
+    "gol_eventi": 0,
+    "eventi": 0
+   }
+  ],
+  "ultimo_controllo": "2026-10-26T23:36:49+00:00"
  },
  "7:juvenes:murata": {
   "inizio": "2026-10-26T21:45:00+01:00",
   "url": "https://www.fsgc.sm/it/partita/juvenes-dogana-futsal-murata-futsal/2127",
-  "osservazioni": []
+  "osservazioni": [
+   {
+    "quando": "2026-10-26T20:36:51+00:00",
+    "stato": "starting_soon",
+    "risultato": null,
+    "distinte": [
+     0,
+     0
+    ],
+    "gol_eventi": 0,
+    "eventi": 0
+   },
+   {
+    "quando": "2026-10-26T23:36:52+00:00",
+    "stato": "on_field",
+    "risultato": "0-0",
+    "distinte": [
+     0,
+     0
+    ],
+    "gol_eventi": 0,
+    "eventi": 0
+   }
+  ],
+  "ultimo_controllo": "2026-10-26T23:36:52+00:00"
  },
  "7:domagnano:trepenne": {
   "inizio": "2026-10-26T22:00:00+01:00",
   "url": "https://www.fsgc.sm/it/partita/domagnano-futsal-tre-penne-futsal/2129",
-  "osservazioni": []
+  "osservazioni": [
+   {
+    "quando": "2026-10-26T23:36:55+00:00",
+    "stato": "on_field",
+    "risultato": "0-0",
+    "distinte": [
+     0,
+     0
+    ],
+    "gol_eventi": 0,
+    "eventi": 0
+   }
+  ],
+  "ultimo_controllo": "2026-10-26T23:36:55+00:00"
  },
  "7:cailungo:pennarossa": {
   "inizio": "2026-10-27T22:00:00+01:00",

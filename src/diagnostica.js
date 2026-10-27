@@ -26,6 +26,8 @@
  * In memoria e non su disco: se ne vanno chiudendo l'app, e nessuno deve
  * ricordarsi di pulirli.
  */
+import { VERSIONE } from './versione.js';
+
 const QUANTI = 12;
 const ultimi = [];
 
@@ -97,7 +99,7 @@ function manda(tipo, messaggio, dettaglio) {
 }
 
 async function spedisci(r) {
-  try { await invia({ ...r, versione: await versioneInCache() }); } catch { /* il rapporto non deve mai diventare un errore a sua volta */ }
+  try { await invia({ ...r, versione: versioneSegnalata(VERSIONE, await versioneInCache()) }); } catch { /* il rapporto non deve mai diventare un errore a sua volta */ }
 }
 
 /** Da app.js, quando il server e' raggiungibile: da qui in poi gli errori partono. */
@@ -172,6 +174,23 @@ export async function versioneInCache() {
     const nomi = await caches.keys();
     return nomi.find((n) => n.startsWith('fcs-')) || 'sconosciuta';
   } catch { return 'sconosciuta'; }
+}
+
+/**
+ * La versione da scrivere accanto a un errore: quella del codice che gira,
+ * e tra parentesi quella gia' scaricata se e' un'altra.
+ *
+ * La cache sola non bastava (Alex, 27/10: gli errori di Voti «tornati» su
+ * 4.2.231-233, che la correzione l'avevano gia'). Il service worker scarica la
+ * versione nuova e rinomina la cache, ma la pagina aperta resta quella di
+ * prima finche' non si tocca «Aggiorna» o si riapre l'app: l'errore arrivava
+ * dal codice vecchio con l'etichetta di quello nuovo. Lo diceva la colonna
+ * dell'errore, 1059, che nel codice corretto e' 1072.
+ */
+export function versioneSegnalata(inUso, inCache) {
+  const uso = `fcs-v${inUso}`;
+  if (!inCache || inCache === 'sconosciuta' || inCache === uso) return uso;
+  return `${uso} (pronta ${String(inCache).replace(/^fcs-v/, '')})`.slice(0, 40);
 }
 
 /** Il testo da incollare in un messaggio: cosa e dove, senza dati di nessuno. */

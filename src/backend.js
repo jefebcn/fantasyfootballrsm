@@ -664,6 +664,18 @@ export async function adminGiocoConteggi(giorni = 14) {
   if (error) return null;
   return data || [];
 }
+/** «Chi è?»: la classifica del mese, di tutti o di una lega (049). null se non c'e'. */
+export async function classificaGioco(mese = null, lega = null) {
+  if (!sb) return null;
+  const { data, error } = await sb.rpc('classifica_gioco', { p_mese: mese, p_lega: lega });
+  return error ? null : data || [];
+}
+/** «Chi è?»: la propria serie, la piu' lunga, vinte e giocate (049). */
+export async function mioGioco() {
+  if (!sb) return null;
+  const { data, error } = await sb.rpc('mio_gioco');
+  return error ? null : (data || [])[0] || null;
+}
 /** Un errore corretto si toglie dalla console, con tutte le sue righe (031). */
 export async function adminRisolviErrore(id) { return must(await sb.rpc('admin_risolvi_errore', { p_id: id })); }
 /** Gli errori degli ultimi giorni, per la console: i piu' frequenti prima. */

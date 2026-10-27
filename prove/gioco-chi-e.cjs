@@ -43,6 +43,10 @@ const ok = [], ko = []; const et = (c, t) => (c ? ok : ko).push(t);
   await p.screenshot({ path: `${USCITA}/gioco-0-home.png` });
   await p.click('.ce-home'); await w(900);
   et(await p.locator('.ce-sagoma').count() === 1, 'la carta porta al gioco');
+  // la prima volta si spiega perche' continuare a giocare
+  et((await p.textContent('#sheet')).includes('Perché giocare ogni giorno'), 'la prima volta si apre la scheda «perché giocare»');
+  await p.screenshot({ path: `${USCITA}/gioco-6-perche.png` });
+  await p.click('[data-chiudi]'); await w(400);
   const m = await p.evaluate(async () => {
     const G = await import('/src/gioco.js'); const S = await import('/src/state.js');
     const mi = G.misteroDel(G.oggi(S.now()), S.base.players, G.statistiche(S.base));
@@ -50,7 +54,7 @@ const ok = [], ko = []; const et = (c, t) => (c ? ok : ko).push(t);
     return { id: mi.id, nome: mi.lastName, altri: altri.map((x) => ({ id: x.id, nome: x.lastName })) };
   });
   et(await p.locator('.ce-sagoma').count() === 1, 'all\'inizio il giocatore e\' coperto');
-  et((await p.textContent('.ce-num b')).trim() === '#3', `il 29/10 e\' il #3 (${(await p.textContent('.ce-num b')).trim()})`);
+  et((await p.textContent('.ce-num b')).trim().startsWith('#3'), `il 29/10 e\' il #3 (${(await p.textContent('.ce-num b')).trim()})`);
   await p.screenshot({ path: `${USCITA}/gioco-1-inizio.png` });
 
   // due tentativi sbagliati, scritti e scelti dai suggerimenti
@@ -78,6 +82,21 @@ const ok = [], ko = []; const et = (c, t) => (c ? ok : ko).push(t);
   const testo = await p.evaluate(() => window.__condiviso);
   et(/^Chi è\? #3 · 3\/6/.test(testo || ''), `condivisione: ${JSON.stringify(testo)}`);
   et(testo && !testo.includes(m.nome), 'la condivisione non dice il nome');
+
+  // perche' continuare: punti, medaglie, classifica del mese
+  await w(800);
+  et((await p.textContent('.ce-stimolo')).includes('+4 punti'), `a fine partita i punti di oggi: ${await p.textContent('.ce-stimolo')}`);
+  et(await p.locator('.ce-med').count() === 3, 'tre medaglie');
+  const cl = await p.locator('.ce-classifica').textContent().catch(() => '');
+  et(/Alex/.test(cl) && /4\s*pt/.test(cl), `in classifica con 4 punti: ${cl.replace(/\s+/g, ' ')}`);
+  await p.locator('.ce-classifica').scrollIntoViewIfNeeded().catch(() => {}); await w(200);
+  await p.screenshot({ path: `${USCITA}/gioco-7-classifica.png` });
+  await p.click('[data-ambito="lega"]'); await w(900);
+  const cll = await p.locator('.ce-classifica').textContent().catch(() => '');
+  et(/Real Titano/.test(cll), `nella classifica della lega il nome della squadra: ${cll.replace(/\s+/g, ' ')}`);
+  await p.click('[data-info]'); await w(300);
+  et((await p.textContent('#sheet')).includes('Re del Titano'), 'il tasto ⓘ riapre la spiegazione');
+  await p.click('[data-chiudi]'); await w(300);
 
   // in Home la carta dice com'e' andata
   await p.evaluate(() => { location.hash = '#/'; }); await w(900);

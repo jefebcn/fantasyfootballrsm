@@ -3,7 +3,7 @@
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { misteroDel, statistiche, confronta, condivisione, serie, numero, oggi, TENTATIVI } from '../src/gioco.js';
+import { misteroDel, statistiche, confronta, condivisione, serie, numero, oggi, punti, prossimaMedaglia, TENTATIVI } from '../src/gioco.js';
 import { buildSeason } from '../src/data.js';
 
 const giorno = (i) => new Date(Date.parse('2026-10-27T12:00:00Z') + i * 864e5).toISOString().slice(0, 10);
@@ -72,4 +72,13 @@ test('giorno italiano e numero del gioco', () => {
   assert.equal(oggi(new Date('2026-10-27T23:30:00Z')), '2026-10-28');
   assert.equal(numero('2026-10-27'), 1);
   assert.equal(TENTATIVI, 6);
+});
+
+test('i punti del mese e la prossima medaglia', () => {
+  assert.deepEqual([1, 2, 6].map((t) => punti(t, true)), [6, 5, 1]);
+  assert.equal(punti(6, false), 0);
+  assert.equal(prossimaMedaglia(0).giorni, 3);
+  assert.equal(prossimaMedaglia(3).giorni, 7);
+  assert.equal(prossimaMedaglia(29).giorni, 30);
+  assert.equal(prossimaMedaglia(30), null);
 });

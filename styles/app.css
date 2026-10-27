@@ -2757,3 +2757,26 @@ a.crow .cls-chev{flex:none;color:var(--text-muted);margin-left:-4px}
 .adm-gioco th{font-size:11px;font-weight:600;color:var(--text-muted);text-align:left;padding:8px 6px;text-transform:uppercase;letter-spacing:.03em}
 .adm-gioco td{padding:8px 6px;border-top:1px solid var(--border);font-variant-numeric:tabular-nums;white-space:nowrap}
 .adm-gioco td small{color:var(--text-muted)}
+/* «Chi è?»: perche' continuare (049) */
+.ce-num b{display:flex;align-items:center;gap:8px}
+.ce-info{border:0;background:none;color:var(--text-muted);font:600 20px/1 var(--font-body);padding:4px;cursor:pointer;min-width:32px;min-height:32px}
+.ce-stimolo{margin:0;text-align:center;font-weight:600}
+.ce-medaglie{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.ce-med{display:flex;flex-direction:column;align-items:center;gap:2px;padding:10px 6px;border-radius:var(--r-md);background:var(--surface);
+  border:1px solid var(--border);text-align:center;opacity:.55;filter:grayscale(1)}
+.ce-med.on{opacity:1;filter:none;border-color:var(--c-oro-500)}
+.ce-med i{font-style:normal;font-size:26px}
+.ce-med b{font-size:12px;line-height:1.15}
+.ce-med small{font-size:11px;color:var(--text-muted)}
+.ce-re{margin:0;font-size:14px}
+.ce-classifica{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:4px}
+.ce-classifica li{display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:var(--r-md);background:var(--surface);border:1px solid var(--border)}
+.ce-classifica li.io{border-color:var(--c-oro-500)}
+.ce-classifica .pos{width:24px;font:800 16px var(--font-display);text-align:center}
+.ce-classifica .nm{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ce-classifica .nm small{color:var(--text-muted)}
+.ce-classifica .pt{font-size:13px;color:var(--text-muted)}
+.ce-classifica .pt b{font:800 16px var(--font-display);color:var(--text)}
+.ce-perche{display:flex;flex-direction:column;gap:12px;margin:8px 0 16px}
+.ce-perche p{margin:0;font-size:14px;line-height:1.45;color:var(--text-muted)}
+.ce-perche b{display:block;color:var(--text);font-size:15px;margin-bottom:2px}

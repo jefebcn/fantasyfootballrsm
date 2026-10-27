@@ -125,3 +125,18 @@ export function serie(storico, giorno) {
   return n;
 }
 
+
+/**
+ * I punti della classifica del mese (049): un giocatore indovinato al primo
+ * tentativo vale 6, al sesto 1; non indovinato 0. Gli stessi conti li fa
+ * il database, questi servono a dirli prima che arrivino.
+ */
+export const punti = (tentativi, vinto) => (vinto ? Math.max(0, 7 - tentativi) : 0);
+
+/** Le medaglie della serie: restano anche quando la serie si rompe. */
+export const MEDAGLIE = [
+  { giorni: 3, nome: 'Sul pezzo', icona: '🔥' },
+  { giorni: 7, nome: 'Settimana perfetta', icona: '⚡' },
+  { giorni: 30, nome: 'Leggenda del Titano', icona: '🏰' },
+];
+export const prossimaMedaglia = (serie) => MEDAGLIE.find((m) => m.giorni > serie) || null;

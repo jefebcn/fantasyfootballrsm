@@ -35,7 +35,14 @@ const ok = [], ko = []; const et = (c, t) => (c ? ok : ko).push(t);
   await p.click('[data-form="create"]'); await w(250);
   await p.fill('#lname', 'Lega Titano'); await p.fill('#team', 'Real Titano'); await p.click('#go-create'); await w(1300);
 
-  await p.evaluate(() => { location.hash = '#/gioco'; }); await w(900);
+  // in Home, sotto la formazione: la carta del gioco, da giocare
+  await p.evaluate(() => { location.hash = '#/'; }); await w(900);
+  et(await p.locator('.ce-home').count() === 1, 'in Home c\'e\' la carta del gioco');
+  et((await p.textContent('.ce-home')).includes('Gioca'), 'e invita a giocare');
+  await p.locator('.ce-home').scrollIntoViewIfNeeded(); await w(200);
+  await p.screenshot({ path: `${USCITA}/gioco-0-home.png` });
+  await p.click('.ce-home'); await w(900);
+  et(await p.locator('.ce-sagoma').count() === 1, 'la carta porta al gioco');
   const m = await p.evaluate(async () => {
     const G = await import('/src/gioco.js'); const S = await import('/src/state.js');
     const mi = G.misteroDel(G.oggi(S.now()), S.base.players, G.statistiche(S.base));
@@ -71,6 +78,13 @@ const ok = [], ko = []; const et = (c, t) => (c ? ok : ko).push(t);
   const testo = await p.evaluate(() => window.__condiviso);
   et(/^Chi è\? #3 · 3\/6/.test(testo || ''), `condivisione: ${JSON.stringify(testo)}`);
   et(testo && !testo.includes(m.nome), 'la condivisione non dice il nome');
+
+  // in Home la carta dice com'e' andata
+  await p.evaluate(() => { location.hash = '#/'; }); await w(900);
+  et((await p.textContent('.ce-home')).includes('Indovinato in 3'), 'in Home: indovinato in 3');
+  et((await p.textContent('.ce-home')).includes('Risultato'), 'e porta al risultato');
+  await p.locator('.ce-home').scrollIntoViewIfNeeded(); await w(200);
+  await p.screenshot({ path: `${USCITA}/gioco-4-home-dopo.png` });
 
   // riaperta, la partita e' ancora quella
   await p.reload({ waitUntil: 'load' }); await w(1200);

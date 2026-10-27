@@ -45,6 +45,21 @@ function suggerimenti(gia) {
     return `<button class="ce-sug" data-pick="${p.id}">${faccia(p, c)}<span class="nm"><b>${esc(p.firstName)} ${esc(p.lastName)}</b><span>${esc(c?.name || '')}</span></span></button>`; }).join('');
 }
 
+/**
+ * Come sta la partita di oggi, per la carta in Home: il numero, se e' gia'
+ * giocata, com'e' finita, la serie.
+ */
+export function partitaDiOggi() {
+  const giorno = oggi(S.now());
+  const mistero = misteroDel(giorno, S.base.players, dati());
+  if (!mistero) return null;
+  const storico = leggi();
+  const partita = storico[giorno] || { tentativi: [] };
+  const vinto = !!partita.vinto;
+  return { numero: numero(giorno), tentativi: partita.tentativi.length, vinto,
+    finito: vinto || partita.tentativi.length >= TENTATIVI, serie: serie(storico, giorno), mistero };
+}
+
 export const gioco = {
   title: 'Chi è?', sub: () => 'Chi è?',
   render() {

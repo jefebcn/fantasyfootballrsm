@@ -2737,3 +2737,16 @@ a.crow .cls-chev{flex:none;color:var(--text-muted);margin-left:-4px}
 .ce-sug .nm span{font-size:12px;color:var(--text-muted)}
 .ce-fine{display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center}
 .ce-niente{margin:4px 2px}
+/* La carta di «Chi è?» in Home: stessa card delle altre, il punto
+   interrogativo al posto dell'icona e il pulsante nel colore dell'azione. */
+.ce-home{display:flex;align-items:center;gap:12px;text-decoration:none;color:inherit}
+.ce-home-ico{flex:none;width:46px;height:46px;border-radius:50%;display:grid;place-items:center;
+  background:var(--primary);color:var(--on-primary,#fff);font:800 24px var(--font-display)}
+.ce-home-ico.si{background:var(--c-alloro-500);color:#fff}
+.ce-home-ico.no{background:var(--c-pietra-700,#4A5565);color:#fff;font-size:18px}
+.ce-home-txt{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.ce-home-txt b{font:400 18px/1.15 var(--font-tito);letter-spacing:.03em;text-transform:uppercase}
+.ce-home-txt b small{font:600 13px var(--font-display);color:var(--text-muted);letter-spacing:0}
+.ce-home-txt span{font-size:13px;color:var(--text-muted)}
+.ce-home-cta{flex:none;padding:8px 14px;border-radius:999px;background:var(--grad-oro);color:var(--on-accent);
+  font:800 13px var(--font-display);text-transform:uppercase;letter-spacing:.02em}

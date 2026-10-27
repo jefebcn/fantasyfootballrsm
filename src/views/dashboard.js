@@ -5,6 +5,7 @@ import * as N from '../notizie.js';
 import { esc, premioHtml, fmt, icon, logo, badge, crest, pic, tile, sec, dateIt, timeIt, plurale, freccia } from '../ui.js';
 import { movimenti, anteprimaClassifica } from '../engine.js';
 import { personaggio, scelto, figura } from '../personaggio.js';
+import { partitaDiOggi } from './gioco.js';
 
 const RULES = [
   ['Art. 7.4', 'Rigore parato', 'Vale +3,0 al portiere e −3,0 al tiratore. Sul palo o fuori: −3,0 al tiratore e nessun bonus al portiere.'],
@@ -237,6 +238,26 @@ function richiestaPromemoria() {
  * il banner porta alla pagina del consenso, una volta sola. Sparisce con
  * «Non gioco» o quando da questo telefono una richiesta e' gia' partita.
  */
+/**
+ * «Chi è?» in Home: il motivo per aprire l'app anche nei giorni senza
+ * partite. Sta subito sotto la formazione, che resta la prima cosa da fare;
+ * a partita giocata dice com'e' andata e la serie, e porta al risultato.
+ */
+function cartaGioco() {
+  const g = partitaDiOggi(); if (!g) return '';
+  const club = S.clubsById.get(g.mistero.clubId);
+  const volto = g.finito
+    ? `<span class="ce-home-ico ${g.vinto ? 'si' : 'no'}">${g.vinto ? icon('check') : '✕'}</span>`
+    : '<span class="ce-home-ico" aria-hidden="true">?</span>';
+  const testo = !g.tentativi
+    ? 'Il giocatore del giorno: indovinalo in 6 tentativi'
+    : !g.finito ? `In corso · ${g.tentativi} tentativ${g.tentativi === 1 ? 'o' : 'i'} su 6`
+      : g.vinto ? `Indovinato in ${g.tentativi}${g.serie > 1 ? ` · ${g.serie} giorni di fila` : ''}`
+        : `Era ${esc(g.mistero.lastName)} (${esc(club?.name || '')}) · domani un altro`;
+  const cta = !g.tentativi ? 'Gioca' : !g.finito ? 'Continua' : 'Risultato';
+  return `<a class="a-card ce-home" href="#/gioco">${volto}<span class="ce-home-txt"><b>Chi è? <small>#${g.numero}</small></b><span>${testo}</span></span><span class="ce-home-cta">${cta}</span></a>`;
+}
+
 function invitoCalciatori() {
   if (S.store.get().bannerCalciatori) return '';
   try { if (localStorage.getItem('ft.adesione')) return ''; } catch { /* niente */ }
@@ -625,6 +646,7 @@ export const dashboard = {
       ${noRoster && !S.legaPubblica() ? tile({ href: S.isLeagueAdmin() ? '#/lega' : '#/leghe', lead: icon('warn'), leadKind: 'warn',
           title: 'Rose non ancora assegnate',
           sub: S.isLeagueAdmin() ? "Generale o inserirle dalla gestione lega" : "Le assegna l'admin della lega dopo l'asta" }) : azione(ph, bloccato)}
+      ${cartaGioco()}
       ${richiestaPromemoria()}
       ${invitoCalciatori()}
       ${ultimiCinque(last, me)}

@@ -2619,7 +2619,7 @@ a.crow .cls-chev{flex:none;color:var(--text-muted);margin-left:-4px}
 .adm-dash{display:flex;flex-direction:column;gap:12px}
 .adm-dash > section{display:flex;flex-direction:column;gap:12px;min-width:0}
 .adm-dash > section:empty{display:none}
-.adm-dash .d-cfg{order:0}.adm-dash .d-kpi{order:1}.adm-dash .d-con{order:2}.adm-dash .d-err{order:3}.adm-dash .d-isc{order:4}
+.adm-dash .d-cfg{order:0}.adm-dash .d-kpi{order:1}.adm-dash .d-con{order:2}.adm-dash .d-gio{order:3}.adm-dash .d-err{order:4}.adm-dash .d-isc{order:5}
 @media (min-width:1100px){
   .app.largo{max-width:none;box-shadow:none}
   .app.largo > .a-nav{width:100%;max-width:640px;margin:0 auto;border-radius:16px 16px 0 0}
@@ -2644,6 +2644,7 @@ a.crow .cls-chev{flex:none;color:var(--text-muted);margin-left:-4px}
   .adm-dash .d-isc{grid-column:8 / -1;grid-row:2}
   .adm-dash .d-err{grid-column:1 / span 7;grid-row:3}
   .adm-dash .d-cfg{grid-column:8 / -1;grid-row:3}
+  .adm-dash .d-gio{grid-column:1 / span 7;grid-row:4}
   .adm-dash .adm-numeri{grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px}
   .adm-dash .adm-n{padding:20px 22px;gap:4px}
   .adm-dash .adm-n .et{font-size:12px}
@@ -2750,3 +2751,9 @@ a.crow .cls-chev{flex:none;color:var(--text-muted);margin-left:-4px}
 .ce-home-txt span{font-size:13px;color:var(--text-muted)}
 .ce-home-cta{flex:none;padding:8px 14px;border-radius:999px;background:var(--grad-oro);color:var(--on-accent);
   font:800 13px var(--font-display);text-transform:uppercase;letter-spacing:.02em}
+/* Admin: quanti giocano a «Chi è?» (048) */
+.adm-gioco{padding:6px 12px;overflow-x:auto}
+.adm-gioco table{width:100%;border-collapse:collapse;font-size:14px}
+.adm-gioco th{font-size:11px;font-weight:600;color:var(--text-muted);text-align:left;padding:8px 6px;text-transform:uppercase;letter-spacing:.03em}
+.adm-gioco td{padding:8px 6px;border-top:1px solid var(--border);font-variant-numeric:tabular-nums;white-space:nowrap}
+.adm-gioco td small{color:var(--text-muted)}

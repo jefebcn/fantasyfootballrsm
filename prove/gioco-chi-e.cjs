@@ -86,6 +86,17 @@ const ok = [], ko = []; const et = (c, t) => (c ? ok : ko).push(t);
   await p.locator('.ce-home').scrollIntoViewIfNeeded(); await w(200);
   await p.screenshot({ path: `${USCITA}/gioco-4-home-dopo.png` });
 
+  // al database va solo com'e' andata, e in admin si conta
+  const salvata = await p.evaluate(() => JSON.parse(localStorage.getItem('fcs:mock')).tables.gioco_partite || []);
+  et(salvata.length === 1 && salvata[0].tentativi === 3 && salvata[0].vinto === true, `salvata nel database: ${JSON.stringify(salvata)}`);
+  await p.evaluate(() => { const s = JSON.parse(localStorage.getItem('fcs:mock')); s.tables.profiles.find((x) => x.id === s.userId).is_admin = true; localStorage.setItem('fcs:mock', JSON.stringify(s)); });
+  await p.reload({ waitUntil: 'load' }); await w(1200);
+  await p.evaluate(() => { location.hash = '#/admin/console'; }); await w(1800);
+  const tab = await p.locator('.adm-gioco').textContent().catch(() => '');
+  et(/Giocano/.test(tab) && /\b1\b/.test(tab) && /100%/.test(tab), `in admin la tabella: ${tab.replace(/\s+/g, ' ').slice(0, 120)}`);
+  await p.locator('.adm-gioco').scrollIntoViewIfNeeded().catch(() => {}); await w(200);
+  await p.screenshot({ path: `${USCITA}/gioco-5-admin.png` });
+
   // riaperta, la partita e' ancora quella
   await p.reload({ waitUntil: 'load' }); await w(1200);
   await p.evaluate(() => { location.hash = '#/gioco'; }); await w(800);

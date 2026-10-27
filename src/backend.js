@@ -652,6 +652,18 @@ export async function segnalaErrore(r) {
     p_schermata: r.schermata || '', p_dettaglio: r.dettaglio || '', p_dispositivo: r.dispositivo || '' });
   return !error;
 }
+/** «Chi è?»: com'e' andata la partita di oggi, per i conteggi in admin (048). */
+export async function salvaPartitaGioco(giorno, tentativi, vinto) {
+  if (!sb) return false;
+  const { error } = await sb.rpc('salva_partita_gioco', { p_giorno: giorno, p_tentativi: tentativi, p_vinto: vinto });
+  return !error;
+}
+/** Quanti giocano a «Chi è?», giorno per giorno (048). null se la 048 non c'e'. */
+export async function adminGiocoConteggi(giorni = 14) {
+  const { data, error } = await sb.rpc('admin_gioco_conteggi', { p_giorni: giorni });
+  if (error) return null;
+  return data || [];
+}
 /** Un errore corretto si toglie dalla console, con tutte le sue righe (031). */
 export async function adminRisolviErrore(id) { return must(await sb.rpc('admin_risolvi_errore', { p_id: id })); }
 /** Gli errori degli ultimi giorni, per la console: i piu' frequenti prima. */

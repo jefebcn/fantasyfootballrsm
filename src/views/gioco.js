@@ -6,9 +6,9 @@ import { oggi, numero, misteroDel, statistiche, confronta, condivisione, serie, 
  * «Chi è?», la schermata. La logica (chi e' il giocatore del giorno, gli
  * indizi) sta in src/gioco.js.
  *
- * Per ora non c'e' nel menu: si apre da #/gioco, finche' Alex non decide di
- * lanciarlo. Le partite restano sul telefono (localStorage); la classifica
- * fra chi gioca arriva col database, in un secondo passo.
+ * Si apre dalla carta in Home (views/dashboard.js). La partita sta sul
+ * telefono (localStorage); al database va solo com'e' andata, per contare
+ * in admin quanti giocano (048). La classifica fra chi gioca e' il passo dopo.
  */
 
 const CHIAVE = 'fcs:gioco';
@@ -113,6 +113,8 @@ export const gioco = {
         partita.vinto = b.dataset.pick === mistero?.id;
         storico[giorno] = partita;
         scrivi(storico);
+        // ai conteggi dell'admin va solo com'e' andata, non i nomi scritti
+        S.salvaPartitaGioco(giorno, partita.tentativi.length, partita.vinto);
         q = '';
         ctx.render();
         if (partita.vinto || partita.tentativi.length < TENTATIVI) root.querySelector('#ce-q')?.focus();

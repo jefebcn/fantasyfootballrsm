@@ -53,6 +53,9 @@ const ok = [], ko = []; const et = (c, t) => (c ? ok : ko).push(t);
   // Alex, 12/10: il personaggio non deve coprire il logo caricato
   const logo = await p.evaluate(() => { const s = [...document.querySelectorAll('.mcard .side')].find((x) => /Haramball/.test(x.textContent));
     const i = s?.querySelector('.fig .fig-logo .crest.foto img'); if (!i) return null;
+    // fuori dallo schermo elementFromPoint non trova niente: prima la si porta in vista
+    // (dal 27/10 sopra la sfida c'e' la carta di «Chi è?» e la spinge giu')
+    s.scrollIntoView({ block: 'center' });
     const r = i.getBoundingClientRect(); const e = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2);
     return { visibile: r.width > 20, sopra: i === e || i.parentElement.contains(e) }; });
   et(logo && logo.visibile && logo.sopra, `e il logo caricato resta in vista, ai piedi del personaggio (${JSON.stringify(logo)})`);

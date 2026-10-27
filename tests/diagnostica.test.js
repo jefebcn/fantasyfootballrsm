@@ -7,7 +7,7 @@
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { dalNostroCodice, promessaEsterna } from '../src/diagnostica.js';
+import { dalNostroCodice, promessaEsterna, versioneSegnalata } from '../src/diagnostica.js';
 
 const SITO = 'https://fantatitano.site';
 
@@ -47,4 +47,12 @@ test("le promesse rifiutate dell'app partono", () => {
   assert.equal(promessaEsterna(nostra, SITO), false);
   assert.equal(promessaEsterna({ message: 'JWT expired' }, SITO), false);
   assert.equal(promessaEsterna(undefined, SITO), false);
+});
+
+test('la versione dell\'errore e\' quella che gira, non quella scaricata', () => {
+  // il caso vero: codice della 4.2.229 ancora aperto, cache gia' della 4.2.233
+  assert.equal(versioneSegnalata('4.2.229', 'fcs-v4.2.233'), 'fcs-v4.2.229 (pronta 4.2.233)');
+  assert.equal(versioneSegnalata('4.2.233', 'fcs-v4.2.233'), 'fcs-v4.2.233');
+  assert.equal(versioneSegnalata('4.2.233', 'sconosciuta'), 'fcs-v4.2.233');
+  assert.ok(versioneSegnalata('4.2.229', 'fcs-v4.2.233').length <= 40);
 });

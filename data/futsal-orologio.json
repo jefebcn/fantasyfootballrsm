@@ -24,9 +24,20 @@
     ],
     "gol_eventi": 0,
     "eventi": 0
+   },
+   {
+    "quando": "2026-10-27T17:36:57+00:00",
+    "stato": "finished",
+    "risultato": "2-1",
+    "distinte": [
+     11,
+     12
+    ],
+    "gol_eventi": 3,
+    "eventi": 7
    }
   ],
-  "ultimo_controllo": "2026-10-27T11:37:24+00:00"
+  "ultimo_controllo": "2026-10-27T17:36:57+00:00"
  },
  "7:libertas:folgore": {
   "inizio": "2026-10-26T20:15:00+01:00",
@@ -53,9 +64,20 @@
     ],
     "gol_eventi": 0,
     "eventi": 0
+   },
+   {
+    "quando": "2026-10-27T17:37:00+00:00",
+    "stato": "finished",
+    "risultato": "3-2",
+    "distinte": [
+     12,
+     13
+    ],
+    "gol_eventi": 5,
+    "eventi": 9
    }
   ],
-  "ultimo_controllo": "2026-10-27T11:37:26+00:00"
+  "ultimo_controllo": "2026-10-27T17:37:00+00:00"
  },
  "7:faetano:trefiori": {
   "inizio": "2026-10-26T21:45:00+01:00",
@@ -93,9 +115,20 @@
     ],
     "gol_eventi": 0,
     "eventi": 0
+   },
+   {
+    "quando": "2026-10-27T17:37:03+00:00",
+    "stato": "finished",
+    "risultato": "0-0",
+    "distinte": [
+     10,
+     10
+    ],
+    "gol_eventi": 0,
+    "eventi": 4
    }
   ],
-  "ultimo_controllo": "2026-10-27T11:37:29+00:00"
+  "ultimo_controllo": "2026-10-27T17:37:03+00:00"
  },
  "7:juvenes:murata": {
   "inizio": "2026-10-26T21:45:00+01:00",
@@ -133,9 +166,20 @@
     ],
     "gol_eventi": 0,
     "eventi": 0
+   },
+   {
+    "quando": "2026-10-27T17:37:05+00:00",
+    "stato": "finished",
+    "risultato": "1-3",
+    "distinte": [
+     11,
+     12
+    ],
+    "gol_eventi": 4,
+    "eventi": 6
    }
   ],
-  "ultimo_controllo": "2026-10-27T11:37:32+00:00"
+  "ultimo_controllo": "2026-10-27T17:37:05+00:00"
  },
  "7:domagnano:trepenne": {
   "inizio": "2026-10-26T22:00:00+01:00",
@@ -162,9 +206,20 @@
     ],
     "gol_eventi": 0,
     "eventi": 0
+   },
+   {
+    "quando": "2026-10-27T17:37:08+00:00",
+    "stato": "finished",
+    "risultato": "1-5",
+    "distinte": [
+     13,
+     12
+    ],
+    "gol_eventi": 6,
+    "eventi": 8
    }
   ],
-  "ultimo_controllo": "2026-10-27T11:37:35+00:00"
+  "ultimo_controllo": "2026-10-27T17:37:08+00:00"
  },
  "7:cailungo:pennarossa": {
   "inizio": "2026-10-27T22:00:00+01:00",

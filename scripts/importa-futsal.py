@@ -180,7 +180,11 @@ def main():
         except Exception as e:
             print(f'  [{i}/{len(giocate)}] {k}: ERRORE {e}', file=sys.stderr)
             continue
-        if not fsgc.finita(p['quando'], t['stato'], ora):
+        # La FSGC scrive «Concluso» ore prima di compilare il referto: la notte
+        # della 7ª le partite erano concluse 0-0, senza distinte ne' gol
+        # (data/futsal-orologio.json). Un referto senza distinte non e' finito.
+        vuoto = not (t['distinte'][0] and t['distinte'][1])
+        if vuoto or not fsgc.finita(p['quando'], t['stato'], ora):
             print(f'  [{i}/{len(giocate)}] {k}: in corso, aspetto il fischio finale')
             p['gc'] = p['go'] = None
             fatti.pop(k, None)

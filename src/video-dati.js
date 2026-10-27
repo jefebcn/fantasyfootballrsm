@@ -35,11 +35,19 @@ export const PARTITE = [
   [5, "pennarossa", "folgore", "8gCDlriA534", "2026-10-12"],
   [5, "sangiovanni", "trefiori", "qRAFyEaloCI", "2026-10-12"],
   [5, "virtus", "academy", "Mm97eyX3kzA", "2026-10-12"],
+  [6, "academy", "cosmos", "IOzV79tNBWM", "2026-10-26"],
+  [6, "fiorentino", "cailungo", "fad4EHDYdLQ", "2026-10-26"],
+  [6, "juvenes", "virtus", "XYAM_1RrncM", "2026-10-26"],
+  [6, "murata", "domagnano", "UJE-2h2RO4A", "2026-10-26"],
+  [6, "pennarossa", "sangiovanni", "59hx2I2lf_Q", "2026-10-26"],
+  [6, "trepenne", "trefiori", "Y7KNr1NqeT0", "2026-10-26"],
 ];
 export const VIDEO_CANALE = [
+  ["VtGD0mDThRM", "Campionato Sammarinese 2026-27, 6. giornata - VOTA LA PARATA PIÙ BELLA!", "2026-10-26"],
+  ["wNLVn570fSQ", "Campionato Sammarinese 2026-27, 6. giornata - VOTA IL GOL PIÙ BELLO!", "2026-10-26"],
+  ["htzYIak_1nM", "Campionato Sammarinese 2026-27, 6. giornata | HL Faetano - La Fiorita 0-0", "2026-10-26"],
+  ["GsqO3YEN00s", "Campionato Sammarinese 2026-27, 6. giornata | HL Libertas - Folgore 1-2", "2026-10-26"],
   ["k5vOVjOxYN0", "Special Cup 2026", "2026-10-20"],
   ["Hfp8sM-wZFQ", "Campionato Sammarinese 2026-27, 5. giornata - VOTA LA PARATA PIÙ BELLA!", "2026-10-12"],
   ["LMZO2mADpqg", "Campionato Sammarinese 2026-27, 5. giornata - VOTA IL GOL PIÙ BELLO!", "2026-10-12"],
-  ["zsomoTLWsfU", "Campionato Sammarinese 2026-27, 4. giornata - VOTA LA PARATA PIÙ BELLA!", "2026-09-21"],
-  ["ZElMKq4bydc", "Campionato Sammarinese 2026-27, 4. giornata - VOTA IL GOL PIÙ BELLO!", "2026-09-21"],
 ];

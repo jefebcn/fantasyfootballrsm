@@ -2744,6 +2744,15 @@ a.crow .cls-chev{flex:none;color:var(--text-muted);margin-left:-4px}
 .ce-home-ico{flex:none;width:46px;height:46px;border-radius:50%;display:grid;place-items:center;
   background:var(--primary);color:var(--on-primary,#fff);font:800 24px var(--font-display)}
 .ce-home-ico.si{background:var(--c-alloro-500);color:#fff}
+/* Da giocare: il punto interrogativo sul giallo del marchio, storto e con
+   l'ombra viola come i bollini delle storie, e un battito leggero che smette
+   appena si e' giocato (e per chi ha chiesto meno movimento). */
+.ce-home-ico.da-giocare{width:52px;height:52px;border-radius:16px;background:var(--c-lime,#D9F51F);color:#0D1530;
+  font:400 36px/1 var(--font-tito);transform:rotate(-8deg);box-shadow:4px 4px 0 var(--c-viola,#4B06FC);
+  animation:ce-battito 2.4s ease-in-out infinite}
+@keyframes ce-battito{0%,100%{transform:rotate(-8deg) scale(1)}50%{transform:rotate(-4deg) scale(1.08)}}
+@media (prefers-reduced-motion:reduce){.ce-home-ico.da-giocare{animation:none}}
+.ce-home.nuovo{border:1.5px solid color-mix(in srgb, var(--c-lime,#D9F51F) 55%, transparent)}
 .ce-home-ico.no{background:var(--c-pietra-700,#4A5565);color:#fff;font-size:18px}
 .ce-home-txt{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
 .ce-home-txt b{font:400 18px/1.15 var(--font-tito);letter-spacing:.03em;text-transform:uppercase}

@@ -240,22 +240,22 @@ function richiestaPromemoria() {
  */
 /**
  * «Chi è?» in Home: il motivo per aprire l'app anche nei giorni senza
- * partite. Sta subito sotto la formazione, che resta la prima cosa da fare;
- * a partita giocata dice com'e' andata e la serie, e porta al risultato.
+ * partite. Da giocare sta subito sotto la copertina, prima delle notizie,
+ * col punto interrogativo che pulsa (Alex, 27/10). Giocata, non deve piu'
+ * stare in mezzo (Alex: «appena uno completa il gioco quel banner si sposta
+ * piu' in basso e diventa piu' piccolino»): scende verso il fondo, su una
+ * riga, e dice com'e' andata. Il nome del giocatore non c'e' mai: chi non
+ * l'ha indovinato lo scopre nel gioco, se vuole.
  */
-function cartaGioco() {
+function cartaGioco(dove) {
   const g = partitaDiOggi(); if (!g) return '';
-  const club = S.clubsById.get(g.mistero.clubId);
-  const volto = g.finito
-    ? `<span class="ce-home-ico ${g.vinto ? 'si' : 'no'}">${g.vinto ? icon('check') : '✕'}</span>`
-    : '<span class="ce-home-ico" aria-hidden="true">?</span>';
-  const testo = !g.tentativi
-    ? 'Il giocatore del giorno: indovinalo in 6 tentativi'
-    : !g.finito ? `In corso · ${g.tentativi} tentativ${g.tentativi === 1 ? 'o' : 'i'} su 6`
-      : g.vinto ? `Indovinato in ${g.tentativi}${g.serie > 1 ? ` · ${g.serie} giorni di fila` : ''}`
-        : `Era ${esc(g.mistero.lastName)} (${esc(club?.name || '')}) · domani un altro`;
-  const cta = !g.tentativi ? 'Gioca' : !g.finito ? 'Continua' : 'Risultato';
-  return `<a class="a-card ce-home" href="#/gioco">${volto}<span class="ce-home-txt"><b>Chi è? <small>#${g.numero}</small></b><span>${testo}</span></span><span class="ce-home-cta">${cta}</span></a>`;
+  if ((dove === 'su') === g.finito) return '';
+  if (g.finito) {
+    const esito = g.vinto ? `Indovinato in ${g.tentativi}${g.serie > 1 ? ` · ${g.serie} di fila` : ''}` : 'Non indovinato · domani un altro';
+    return `<a class="a-card ce-home piccola" href="#/gioco"><span class="ce-home-ico ${g.vinto ? 'si' : 'no'}">${g.vinto ? icon('check') : '✕'}</span><span class="ce-home-txt"><b>Chi è? <small>#${g.numero}</small></b><span>${esito}</span></span>${icon('chev', 'ic sm')}</a>`;
+  }
+  const testo = !g.tentativi ? 'Il giocatore del giorno: indovinalo in 6 tentativi' : `In corso · ${g.tentativi} tentativ${g.tentativi === 1 ? 'o' : 'i'} su 6`;
+  return `<a class="a-card ce-home nuovo" href="#/gioco"><span class="ce-home-ico da-giocare" aria-hidden="true">?</span><span class="ce-home-txt"><b>Chi è? <small>#${g.numero}</small></b><span>${testo}</span></span><span class="ce-home-cta">${g.tentativi ? 'Continua' : 'Gioca'}</span></a>`;
 }
 
 function invitoCalciatori() {
@@ -636,6 +636,7 @@ export const dashboard = {
     return `<main class="a-body home">
       <div id="install-slot"></div>
       ${copertina(me, row, ph)}
+      ${cartaGioco('su')}
       ${invitoNegozio()}
       ${notiziaBreve()}
       ${invitoPubblica()}
@@ -646,7 +647,6 @@ export const dashboard = {
       ${noRoster && !S.legaPubblica() ? tile({ href: S.isLeagueAdmin() ? '#/lega' : '#/leghe', lead: icon('warn'), leadKind: 'warn',
           title: 'Rose non ancora assegnate',
           sub: S.isLeagueAdmin() ? "Generale o inserirle dalla gestione lega" : "Le assegna l'admin della lega dopo l'asta" }) : azione(ph, bloccato)}
-      ${cartaGioco()}
       ${richiestaPromemoria()}
       ${invitoCalciatori()}
       ${ultimiCinque(last, me)}
@@ -655,6 +655,7 @@ export const dashboard = {
       ${scambiDaDecidere()}
       ${daConsegnare()}
       ${classificaBreve(me)}
+      ${cartaGioco('giu')}
       ${highlights()}
       ${notizie()}
       ${sec('Dal regolamento')}

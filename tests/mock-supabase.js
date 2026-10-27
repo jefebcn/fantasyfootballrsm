@@ -398,6 +398,27 @@ export function createClient(_url, _key, opts) {
           else if (t >= r.tentativi) { r.tentativi = t; r.vinto = r.vinto || !!args.p_vinto; }
           persisti(); return { data: null, error: null };
         }
+        // 049: classifica del mese e serie, con gli stessi conti del database
+        if (name === 'classifica_gioco') {
+          const mese = String(args.p_mese || new Date().toISOString()).slice(0, 7);
+          const lega = args.p_lega || null;
+          const membri = lega ? T('league_members').filter((m) => m.league_id === lega) : null;
+          if (lega && !membri.some((m) => m.user_id === userId)) return { data: [], error: null };
+          const per = new Map();
+          for (const r of T('gioco_partite').filter((x) => x.giorno.slice(0, 7) === mese && (!membri || membri.some((m) => m.user_id === x.user_id)))) {
+            const x = per.get(r.user_id) || per.set(r.user_id, { user_id: r.user_id, punti: 0, vinte: 0, giocate: 0 }).get(r.user_id);
+            x.giocate++; if (r.vinto) { x.vinte++; x.punti += 7 - r.tentativi; }
+          }
+          const righe = [...per.values()].sort((a, b) => b.punti - a.punti || b.vinte - a.vinte);
+          return { data: righe.map((x, i) => ({ posizione: i + 1, punti: x.punti, vinte: x.vinte, giocate: x.giocate, io: x.user_id === userId,
+            nome: (membri && membri.find((m) => m.user_id === x.user_id)?.team_name) || T('profiles').find((p) => p.id === x.user_id)?.display_name || 'Giocatore' })), error: null };
+        }
+        if (name === 'mio_gioco') {
+          const v = T('gioco_partite').filter((x) => x.user_id === userId && x.vinto).map((x) => x.giorno).sort();
+          let max = 0, n = 0, prima = null;
+          for (const g of v) { n = prima && (Date.parse(g) - Date.parse(prima)) / 864e5 === 1 ? n + 1 : 1; max = Math.max(max, n); prima = g; }
+          return { data: [{ serie: n, serie_max: max, vinte: v.length, giocate: T('gioco_partite').filter((x) => x.user_id === userId).length }], error: null };
+        }
         if (name === 'admin_gioco_conteggi') {
           if (!amministro()) throw new Error('solo admin');
           const per = new Map();

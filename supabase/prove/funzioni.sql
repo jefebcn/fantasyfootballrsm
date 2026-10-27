@@ -2532,4 +2532,59 @@ reset role;
 select pg_temp.esige('e la 28 risulta consegnata', exists (select 1 from public.lineups where member_id = :'m_boz' and matchday = 28));
 select set_config('request.jwt.claims', '', false);
 
+-- «Chi è?» (048, 049): si salva solo com'e' andata, i tentativi solo in su,
+-- l'admin conta, la classifica e la serie si calcolano dal database.
+reset role;
+delete from public.gioco_partite where user_id in ('user_bea', 'user_cip');
+-- la storia di Bea: indovinato anche l'altro ieri (oltre ieri non si scrive
+-- dal telefono, quindi la si mette a mano)
+insert into public.gioco_partite (user_id, giorno, tentativi, vinto)
+  values ('user_bea', (now() at time zone 'Europe/Rome')::date - 2, 1, true);
+select pg_temp.entra('user_bea');
+set role authenticated;
+select public.salva_partita_gioco((now() at time zone 'Europe/Rome')::date - 1, 2, true);
+select public.salva_partita_gioco((now() at time zone 'Europe/Rome')::date, 3, true);
+select public.salva_partita_gioco((now() at time zone 'Europe/Rome')::date, 2, false);   -- indietro no
+select public.salva_partita_gioco((now() at time zone 'Europe/Rome')::date - 5, 1, true); -- troppo vecchio
+do $$ begin
+  perform * from public.gioco_partite;
+  raise exception 'FALLITA: gioco_partite non doveva leggersi';
+exception when others then
+  if sqlerrm like 'FALLITA%' then raise; end if;
+  raise notice 'ok  gioco_partite non si legge da fuori (%)', sqlerrm;
+end $$;
+do $$ begin
+  perform * from public.admin_gioco_conteggi(14);
+  raise exception 'FALLITA: i conteggi sono solo per l''admin';
+exception when others then
+  if sqlerrm like 'FALLITA%' then raise; end if;
+  raise notice 'ok  i conteggi del gioco sono solo per l''admin (%)', sqlerrm;
+end $$;
+select pg_temp.esige('la serie di Bea e'' 3, la piu'' lunga 3',
+  (select serie = 3 and serie_max = 3 and vinte = 3 and giocate = 3 from public.mio_gioco()));
+reset role;
+select pg_temp.esige('oggi resta a 3 tentativi, indovinato',
+  (select tentativi = 3 and vinto from public.gioco_partite where user_id = 'user_bea' and giorno = (now() at time zone 'Europe/Rome')::date));
+select pg_temp.esige('cinque giorni fa non si e'' scritto',
+  not exists (select 1 from public.gioco_partite where user_id = 'user_bea' and giorno = (now() at time zone 'Europe/Rome')::date - 5));
+-- Cip oggi non indovina: serie a zero, in classifica dopo Bea
+select pg_temp.entra('user_cip');
+set role authenticated;
+select public.salva_partita_gioco((now() at time zone 'Europe/Rome')::date, 6, false);
+select pg_temp.esige('Cip ha perso oggi: serie 0', (select serie = 0 from public.mio_gioco()));
+select pg_temp.esige('in classifica Bea e'' prima e Cip vede la sua riga',
+  (select string_agg(nome || ':' || punti || ':' || posizione || ':' || io, ',' order by posizione) from public.classifica_gioco())
+  like 'Bea:%:1:false%Cip:0:2:true%');
+select pg_temp.esige('i punti del mese di Bea: (7-1) + (7-2) + (7-3), se tutti nel mese',
+  (select punti between 4 and 15 from public.classifica_gioco() where nome = 'Bea'));
+reset role;
+update public.profiles set is_admin = true where id = 'user_alex';
+select pg_temp.entra('user_alex');
+set role authenticated;
+select pg_temp.esige('l''admin conta due giocatori oggi',
+  (select giocatori = 2 and vinti = 1 from public.admin_gioco_conteggi(14) where giorno = (now() at time zone 'Europe/Rome')::date));
+reset role;
+update public.profiles set is_admin = false where id = 'user_alex';
+select set_config('request.jwt.claims', '', false);
+
 select 'tutte le prove sulle funzioni sono passate' as esito;

@@ -1106,6 +1106,8 @@ export const segnalaErrore = (r) => (authKind() === 'supabase' ? remote.segnalaE
 export const caricaErrori = (giorni) => remote.caricaErrori(giorni);
 export const salvaPartitaGioco = (giorno, tentativi, vinto) => (authKind() === 'supabase' ? remote.salvaPartitaGioco(giorno, tentativi, vinto).catch(() => false) : Promise.resolve(false));
 export const adminGiocoConteggi = (giorni) => remote.adminGiocoConteggi(giorni);
+export const classificaGioco = (mese, lega) => (authKind() === 'supabase' ? remote.classificaGioco(mese, lega).catch(() => null) : Promise.resolve(null));
+export const mioGioco = () => (authKind() === 'supabase' ? remote.mioGioco().catch(() => null) : Promise.resolve(null));
 export const adminRisolviErrore = (id) => remote.adminRisolviErrore(id);
 export async function salvaSponsor(s) { const r = await remote.salvaSponsor(s, user.id); await refresh(); return r; }
 export async function eliminaSponsor(id) { await remote.eliminaSponsor(id); await refresh(); }

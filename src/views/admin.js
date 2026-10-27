@@ -1,6 +1,6 @@
 import * as S from '../state.js';
 import {} from '../engine.js';
-import { esc, icon, badge, roleChip, evTile, EV_LABEL, voteRow, dateIt, timeIt, plurale } from '../ui.js';
+import { esc, icon, badge, roleChip, evTile, EV_LABEL, voteRow, dateIt, timeIt, plurale, fmt } from '../ui.js';
 
 const STATUS = [['played', 'Giocata'], ['postponed', 'Rinviata'], ['suspended_before_45', 'Sospesa <45\''], ['suspended_after_45', 'Sospesa >45\''], ['awarded', 'A tavolino']];
 const guard = (ctx, fn) => { try { fn(); } catch (e) { ctx.toast(e.message); } };
@@ -397,6 +397,26 @@ function consegne(r) {
  *
  * undefined = non ancora chiesti; null = la 022 non c'e' ancora nel database.
  */
+/**
+ * «Chi è?» (048): quanti hanno giocato, giorno per giorno. Alex, 27/10: «in
+ * admin voglio tabella con scritto in quanti ci giocano».
+ */
+function gioco(righe) {
+  const titolo = (dx) => `<div class="a-sec"><b>Chi è?</b><span>${dx}</span></div>`;
+  if (righe === undefined) return '';
+  if (righe === null) return `${titolo('da attivare')}<p class="small muted" style="margin:0 2px">Serve la SQL <b>048</b>.</p>`;
+  if (!righe.length) return `${titolo('ultimi 14 giorni')}<p class="small muted" style="margin:0 2px">Ancora nessuno: le partite compaiono qui appena qualcuno gioca.</p>`;
+  const sette = righe.slice(0, 7);
+  const media = Math.round(sette.reduce((a, r) => a + r.giocatori, 0) / sette.length);
+  return `${titolo(`${plurale(media, 'persona', 'persone')} al giorno, in media`)}
+    <div class="a-card adm-gioco"><table>
+      <thead><tr><th>Giorno</th><th>Giocano</th><th>Indovinano</th><th>Tentativi</th></tr></thead>
+      <tbody>${righe.map((r) => `<tr><td>${esc(dateIt(`${r.giorno}T12:00:00`))}</td><td><b>${r.giocatori}</b></td>
+        <td>${r.vinti} <small>(${r.giocatori ? Math.round((r.vinti / r.giocatori) * 100) : 0}%)</small></td>
+        <td>${r.media_tentativi == null ? '—' : fmt(Number(r.media_tentativi))}</td></tr>`).join('')}</tbody>
+    </table></div>`;
+}
+
 function errori(lista) {
   const titolo = (dx) => `<div class="a-sec"><b>Errori sui telefoni</b><span>${dx}</span></div>`;
   if (lista === undefined) return '';
@@ -882,6 +902,7 @@ export const adminConsole = {
         <section class="d-cfg">${prudenza()}${riservatezza(cache.adesioni)}</section>
         <section class="d-kpi">${numeri(cache.numeri)}</section>
         <section class="d-con">${consegne(cache.numeri)}</section>
+        <section class="d-gio">${gioco(cache.gioco)}</section>
         <section class="d-err">${errori(cache.errori)}</section>
         <section class="d-isc">${andamento(cache.persone)}</section>
       </div>`;
@@ -911,6 +932,7 @@ export const adminConsole = {
         if (aTab === 'numeri' && !cache.numeri) { cache.numeri = await S.adminRiepilogo(); ctx.render(); }
         if (aTab === 'numeri' && cache.adesioni === undefined && S.isOwner()) { await ricaricaConsensi(); ctx.render(); }
         if (aTab === 'numeri' && cache.errori === undefined) { cache.errori = await S.caricaErrori(7); ctx.render(); }
+        if (aTab === 'numeri' && cache.gioco === undefined) { cache.gioco = await S.adminGiocoConteggi(14); ctx.render(); }
         // l'andamento si disegna sull'elenco delle persone: la scheda dei
         // numeri lo chiede una volta e poi resta in cache come le altre
         if (aTab === 'numeri' && !cache.persone) { cache.persone = await S.adminPersone(null, 100); ctx.render(); }

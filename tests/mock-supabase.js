@@ -388,6 +388,22 @@ export function createClient(_url, _key, opts) {
           if (!amministro()) throw new Error("Serve essere amministratore dell'app");
           return { data: T('da_confermare').filter((u) => !u.confermata), error: null };
         }
+        // 048: «Chi è?». Stesse regole della funzione vera: una riga per
+        // persona e giorno, i tentativi solo in su, l'admin legge i conteggi.
+        if (name === 'salva_partita_gioco') {
+          const t = Number(args.p_tentativi); const g = String(args.p_giorno || '');
+          if (!g || !(t >= 0 && t <= 6)) return { data: null, error: null };
+          const r = T('gioco_partite').find((x) => x.user_id === userId && x.giorno === g);
+          if (!r) T('gioco_partite').push({ user_id: userId, giorno: g, tentativi: t, vinto: !!args.p_vinto });
+          else if (t >= r.tentativi) { r.tentativi = t; r.vinto = r.vinto || !!args.p_vinto; }
+          persisti(); return { data: null, error: null };
+        }
+        if (name === 'admin_gioco_conteggi') {
+          if (!amministro()) throw new Error('solo admin');
+          const per = new Map();
+          for (const r of T('gioco_partite')) { const x = per.get(r.giorno) || per.set(r.giorno, { giorno: r.giorno, giocatori: 0, vinti: 0, somma: 0 }).get(r.giorno); x.giocatori++; if (r.vinto) { x.vinti++; x.somma += r.tentativi; } }
+          return { data: [...per.values()].sort((a, b) => (a.giorno < b.giorno ? 1 : -1)).map(({ somma, ...x }) => ({ ...x, media_tentativi: x.vinti ? Math.round((somma / x.vinti) * 10) / 10 : null })), error: null };
+        }
         if (name === 'admin_risolvi_errore') {
           if (!amministro()) throw new Error("Serve essere amministratore dell'app");
           const r = T('errori_app').find((e) => String(e.id) === String(args.p_id));

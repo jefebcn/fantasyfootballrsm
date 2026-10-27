@@ -1104,6 +1104,8 @@ export const sponsorTutti = () => sponsor.slice();
 /** Gli errori dei telefoni (022): li manda diagnostica.js, li legge la console. */
 export const segnalaErrore = (r) => (authKind() === 'supabase' ? remote.segnalaErrore(r) : Promise.resolve(false));
 export const caricaErrori = (giorni) => remote.caricaErrori(giorni);
+export const salvaPartitaGioco = (giorno, tentativi, vinto) => (authKind() === 'supabase' ? remote.salvaPartitaGioco(giorno, tentativi, vinto).catch(() => false) : Promise.resolve(false));
+export const adminGiocoConteggi = (giorni) => remote.adminGiocoConteggi(giorni);
 export const adminRisolviErrore = (id) => remote.adminRisolviErrore(id);
 export async function salvaSponsor(s) { const r = await remote.salvaSponsor(s, user.id); await refresh(); return r; }
 export async function eliminaSponsor(id) { await remote.eliminaSponsor(id); await refresh(); }

@@ -2699,3 +2699,41 @@ a.crow .cls-chev{flex:none;color:var(--text-muted);margin-left:-4px}
 .fx-quando{margin-top:4px}
 @media (min-width:700px){.fx-lista{display:grid;grid-template-columns:1fr 1fr}}
 .fd-giornata>span b{white-space:nowrap}
+
+/* «Chi è?», il giocatore del giorno (src/gioco.js, views/gioco.js).
+   Sei colonne di indizi devono stare in un telefono da 360: nome stretto a
+   sinistra, celle quadrate uguali, valore grande e freccia piccola sotto. */
+.ce{gap:12px}
+.ce-testa{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.ce-num{display:flex;flex-direction:column}
+.ce-num b{font:800 26px/1 var(--font-display)}
+.ce-num span{font-size:13px;color:var(--text-muted)}
+.ce-conti{display:flex;gap:14px;font-size:12px;color:var(--text-muted);text-align:center}
+.ce-conti span{display:flex;flex-direction:column}
+.ce-conti b{font:800 20px/1.1 var(--font-display);color:var(--text)}
+.ce-mistero{display:flex;align-items:center;gap:14px}
+.ce-mistero p{margin:0;font-size:14px;color:var(--text-muted)}
+.ce-sagoma{flex:none;width:64px;height:64px;border-radius:50%;display:grid;place-items:center;
+  background:var(--primary);color:var(--on-primary,#fff);font:800 34px var(--font-display)}
+.ce-rivela{display:flex;align-items:center;gap:14px}
+.ce-rivela>div{display:flex;flex-direction:column;min-width:0}
+.ce-rivela b{font:800 20px/1.15 var(--font-display)}
+.ce-griglia{display:flex;flex-direction:column;gap:5px}
+.ce-riga{display:grid;grid-template-columns:minmax(0,1.3fr) repeat(6,minmax(0,1fr));gap:4px;align-items:stretch}
+.ce-intesta span{font-size:9.5px;color:var(--text-muted);text-align:center;text-transform:uppercase;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ce-chi{font-size:12px;font-weight:600;align-self:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ce-c{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:44px;border-radius:var(--r-sm);
+  background:var(--c-pietra-700,#4A5565);color:#fff;font-family:var(--font-display);line-height:1.05}
+.ce-c b{font-size:14px}
+.ce-c i{font-style:normal;font-size:12px;opacity:.9}
+.ce-c.si{background:var(--c-alloro-500)}
+.ce-c.vicino{background:var(--c-oro-500);color:var(--c-pietra-900,#1B2433)}
+.ce-legenda .ce-c{display:inline-block;width:12px;height:12px;min-height:0;vertical-align:-1px;border-radius:3px}
+.ce-cerca{display:flex;flex-direction:column;gap:6px}
+.ce-sugs{display:flex;flex-direction:column;gap:4px}
+.ce-sug{display:flex;align-items:center;gap:10px;text-align:left;border:1px solid var(--border);border-radius:var(--r-md);
+  background:var(--surface);color:inherit;font:inherit;padding:6px 10px;cursor:pointer;min-height:52px}
+.ce-sug .nm{display:flex;flex-direction:column;min-width:0}
+.ce-sug .nm span{font-size:12px;color:var(--text-muted)}
+.ce-fine{display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center}
+.ce-niente{margin:4px 2px}

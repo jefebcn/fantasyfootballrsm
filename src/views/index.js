@@ -33,3 +33,4 @@ export { squadra } from './squadra.js';
 export { vice } from './vice.js';
 export { adesione } from './adesione.js';
 export { attestato } from './attestato.js';
+export { gioco } from './gioco.js';

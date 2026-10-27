@@ -101,7 +101,7 @@ const ok = [], ko = []; const et = (c, t) => (c ? ok : ko).push(t);
   // in Home la carta dice com'e' andata
   await p.evaluate(() => { location.hash = '#/'; }); await w(900);
   et((await p.textContent('.ce-home')).includes('Indovinato in 3'), 'in Home: indovinato in 3');
-  et((await p.textContent('.ce-home')).includes('Risultato'), 'e porta al risultato');
+  et(await p.locator('.ce-home.piccola[href="#/gioco"]').count() === 1, 'piccola, e porta al gioco');
   await p.locator('.ce-home').scrollIntoViewIfNeeded(); await w(200);
   await p.screenshot({ path: `${USCITA}/gioco-4-home-dopo.png` });
 
@@ -120,6 +120,29 @@ const ok = [], ko = []; const et = (c, t) => (c ? ok : ko).push(t);
   await p.reload({ waitUntil: 'load' }); await w(1200);
   await p.evaluate(() => { location.hash = '#/gioco'; }); await w(800);
   et(await p.locator('.ce-rivela').count() === 1, 'riaperta: la partita di oggi e\' gia\' finita');
+  // la Home, a partita finita: la carta scende e si fa piccola
+  await p.evaluate(() => { location.hash = '#/'; }); await w(900);
+  et(await p.locator('.ce-home.piccola').count() === 1 && await p.locator('.ce-home.nuovo').count() === 0, 'giocata: in Home la carta e\' piccola e non in cima');
+
+  // persa: il nome si vede solo se lo si chiede
+  await p.evaluate(async ({ mi, altri }) => {
+    const G = await import('/src/gioco.js'); const S = await import('/src/state.js');
+    const giorno = G.oggi(S.now());
+    const sei = S.base.players.filter((x) => x.isActive && !x.doppioneDi && x.id !== mi).slice(0, 6).map((x) => x.id);
+    const s = JSON.parse(localStorage.getItem('fcs:gioco') || '{}'); s[giorno] = { tentativi: sei, vinto: false };
+    localStorage.setItem('fcs:gioco', JSON.stringify(s));
+  }, { mi: m.id, altri: m.altri });
+  await p.evaluate(() => { location.hash = '#/'; }); await w(300);
+  await p.evaluate(() => { location.hash = '#/gioco'; }); await w(900);
+  et(await p.locator('[data-rivela]').count() === 1 && !(await p.textContent('main')).includes(m.nome + '\n'), 'persa: il nome non c\'e\', c\'e\' «Rivela il giocatore»');
+  et(!(await p.locator('.ce-perso').textContent()).includes(m.nome), 'e la carta non lo dice');
+  await p.screenshot({ path: `${USCITA}/gioco-8-perso.png` });
+  await p.click('[data-rivela]'); await w(400);
+  et((await p.textContent('.ce-rivela')).includes(m.nome), 'toccato «Rivela»: ecco chi era');
+  await p.evaluate(() => { location.hash = '#/'; }); await w(900);
+  et((await p.textContent('.ce-home.piccola')).includes('Non indovinato') && !(await p.textContent('.ce-home.piccola')).includes(m.nome), 'in Home: non indovinato, senza nome');
+  await p.locator('.ce-home.piccola').scrollIntoViewIfNeeded().catch(() => {}); await w(200);
+  await p.screenshot({ path: `${USCITA}/gioco-9-home-piccola.png` });
   et(errori.length === 0, `nessun errore JS ${errori.join(' | ')}`);
 
   for (const t of ok) console.log('  ok ', t);

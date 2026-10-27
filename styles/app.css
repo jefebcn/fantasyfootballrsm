@@ -2752,6 +2752,12 @@ a.crow .cls-chev{flex:none;color:var(--text-muted);margin-left:-4px}
   animation:ce-battito 2.4s ease-in-out infinite}
 @keyframes ce-battito{0%,100%{transform:rotate(-8deg) scale(1)}50%{transform:rotate(-4deg) scale(1.08)}}
 @media (prefers-reduced-motion:reduce){.ce-home-ico.da-giocare{animation:none}}
+.ce-home.piccola{padding:10px 14px;gap:10px}
+.ce-home.piccola .ce-home-ico{width:32px;height:32px;font-size:14px}
+.ce-home.piccola .ce-home-ico .ic{width:16px;height:16px}
+.ce-home.piccola .ce-home-txt{flex-direction:row;align-items:baseline;gap:8px;flex-wrap:wrap}
+.ce-home.piccola .ce-home-txt b{font-size:15px}
+.ce-home.piccola .ce-home-txt span{font-size:12.5px}
 .ce-home.nuovo{border:1.5px solid color-mix(in srgb, var(--c-lime,#D9F51F) 55%, transparent)}
 .ce-home-ico.no{background:var(--c-pietra-700,#4A5565);color:#fff;font-size:18px}
 .ce-home-txt{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
@@ -2789,3 +2795,7 @@ a.crow .cls-chev{flex:none;color:var(--text-muted);margin-left:-4px}
 .ce-perche{display:flex;flex-direction:column;gap:12px;margin:8px 0 16px}
 .ce-perche p{margin:0;font-size:14px;line-height:1.45;color:var(--text-muted)}
 .ce-perche b{display:block;color:var(--text);font-size:15px;margin-bottom:2px}
+.ce-perso>div{display:flex;flex-direction:column;gap:6px;min-width:0}
+.ce-perso b{font:800 18px/1.15 var(--font-display)}
+.ce-perso p{margin:0}
+.ce-perso .a-btn{height:42px;font-size:13px}

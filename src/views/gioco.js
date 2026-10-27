@@ -139,7 +139,11 @@ export const gioco = {
       <div class="ce-num"><b>#${numero(giorno)} <button class="ce-info" data-info aria-label="Perché giocare ogni giorno">ⓘ</button></b><span>Il giocatore del giorno</span></div>
       <div class="ce-conti"><span><b>${tentativi.length}/${TENTATIVI}</b> tentativi</span><span><b>${fiamma}</b> di fila</span></div>
     </div>`;
-    const volto = finito
+    // Chi non l'ha indovinato sceglie se scoprirlo (Alex, 27/10: «clicchi e
+    // c'e' scritto rivela il giocatore»): magari vuole chiederlo agli amici.
+    const volto = finito && !vinto && !partita.rivelato
+      ? `<div class="a-card ce-mistero ce-perso"><span class="ce-sagoma" aria-hidden="true">?</span><div><b>Non l'hai indovinato</b><p>Sei tentativi finiti. Vuoi sapere chi era?</p><button class="a-btn sec" data-rivela>Rivela il giocatore</button></div></div>`
+      : finito
       ? `<div class="a-card ce-rivela">${avatarGrande(mistero, club)}<div><span class="small muted">${vinto ? `Indovinato in ${tentativi.length}` : 'Era lui'}</span><b>${esc(mistero.firstName)} ${esc(mistero.lastName)}</b><span>${esc(club?.name || '')}</span></div></div>`
       : `<div class="a-card ce-mistero"><span class="ce-sagoma" aria-hidden="true">?</span><p>Un giocatore del Campionato Sammarinese. Scrivi un nome: per squadra, ruolo, età, quotazione, presenze e gol ti dico quanto ci sei vicino.</p></div>`;
     const griglia = righe.length ? `<div class="ce-griglia" role="table" aria-label="I tuoi tentativi">
@@ -169,6 +173,11 @@ export const gioco = {
     }
     root.querySelector('main').addEventListener('click', async (e) => {
       if (e.target.closest('[data-info]')) { ctx.sheet(spiegazione()); return; }
+      if (e.target.closest('[data-rivela]')) {
+        const giorno = oggi(S.now()); const storico = leggi();
+        if (storico[giorno]) { storico[giorno].rivelato = true; scrivi(storico); }
+        ctx.render(); return;
+      }
       const am = e.target.closest('[data-ambito]');
       if (am) { ambito = am.dataset.ambito; extra = { chiave: null, classifica: undefined, re: undefined, mio: extra.mio }; ctx.render(); return; }
       const b = e.target.closest('[data-pick]');

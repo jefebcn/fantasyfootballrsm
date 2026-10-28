@@ -1,7 +1,8 @@
 /**
  * Motore di punteggio del FantaFutsal.
  * Funzioni pure: nessuno stato, nessuna chiamata esterna.
- * Riferimenti: FUTSAL.md §§ 3-8 (regolamento deciso il 25/10/2026).
+ * Riferimenti: FUTSAL.md §§ 3-8 (voti) e § 13 (rosa, schemi e mercato in stile
+ * Dunkest, dal 29/10/2026).
  *
  * Il referto FSGC del futsal non dice chi e' entrato in campo: tutti i
  * convocati stanno sotto «Titolari» e i cambi non ci sono. Quindi prende il
@@ -10,7 +11,7 @@
  */
 
 export const REGOLE_FUTSAL = {
-  versione: '1.0.0',
+  versione: '2.0.0',
   voto: 6,
   esito: { vittoria: 0.5, pareggio: 0, sconfitta: -0.5 },
   gol: 3,
@@ -20,9 +21,19 @@ export const REGOLE_FUTSAL = {
   rigoreSbagliato: -3,
   golSubito: -0.5,
   portaInviolata: 3,
-  bonusDifesa: { punti: 2, soglia: 7.0, modulo: '3-1' },
-  moduli: { '2-2': { D: 2, A: 2 }, '3-1': { D: 3, A: 1 } },
-  panchina: ['D', 'A'],
+  bonusDifesa: { punti: 2, soglia: 7.0, schema: '3-1' },
+  // La rosa, come in Dunkest (FUTSAL.md § 13): la Porta fa da «coach», poi
+  // otto giocatori di movimento. In campo ne vanno quattro, uno e' il sesto
+  // uomo e gli altri tre stanno in panchina.
+  rosa: { D: 4, A: 4 },
+  schemi: { '1-3': { D: 1, A: 3 }, '2-2': { D: 2, A: 2 }, '3-1': { D: 3, A: 1 } },
+  perClub: 2,
+  capitano: 1.5,
+  sesto: 1,
+  panchina: 0.5,
+  budget: 70,
+  cambiGratis: 1,
+  malusCambio: 1,
 };
 
 /** Dal ruolo che la FSGC scrive in distinta al ruolo di gioco (§ 4). */
@@ -123,63 +134,90 @@ export function votoPorta(club, referti, clubDi, ruoloDi, R = REGOLE_FUTSAL) {
   return { sv: false, base, bonus, totale: r2(base + bonus), voci: [...voci, ...difesa, ...personali] };
 }
 
+/** Il ruolo di un posto della rosa: 'D' o 'A' (dal listone). */
+const nelRuolo = (x, r) => x && x.ruolo === r;
+
 /**
- * Controlla una formazione (§§ 3-4, 8).
- * f: { modulo, porta: club, titolari: [{id, club, ruolo}], panchina: [{id, club, ruolo}], capitano, vice }
- * Ritorna l'elenco dei problemi, vuoto se va bene.
+ * Controlla rosa e formazione (§§ 13.1-13.3).
+ * f: { porta: club, D: [{id, club, ruolo}] ×4, A: [...] ×4, schema, titolari: [id] ×4, sesto: id, capitano, vice }
+ * Ritorna l'elenco dei problemi, vuoto se va bene. I crediti si controllano a
+ * parte (src/futsal-valori.js), perche' dipendono dalla giornata.
  */
 export function controllaFormazione(f, R = REGOLE_FUTSAL) {
   const errori = [];
-  const m = R.moduli[f.modulo];
-  if (!m) return ['Modulo non valido'];
   if (!f.porta) errori.push('Manca la porta');
-  const per = (r) => (f.titolari || []).filter((x) => x?.ruolo === r).length;
-  for (const r of ['D', 'A']) if (per(r) !== m[r]) errori.push(`Servono ${m[r]} ${r === 'D' ? 'difensori' : 'attaccanti'} (ora ${per(r)})`);
-  const panchina = (f.panchina || []).filter(Boolean);
-  for (const r of R.panchina) if (panchina.filter((x) => x.ruolo === r).length !== 1) errori.push(`Manca ${r === 'D' ? 'il difensore' : 'l\'attaccante'} di riserva`);
-  const club = [f.porta, ...(f.titolari || []).map((x) => x?.club), ...panchina.map((x) => x.club)].filter(Boolean);
-  if (new Set(club).size !== club.length) errori.push('Al massimo un giocatore per squadra (porta e riserve comprese)');
-  const ids = (f.titolari || []).map((x) => x?.id);
-  if (!f.capitano || !ids.includes(f.capitano)) errori.push('Scegli il capitano fra i quattro titolari');
-  if (!f.vice || !ids.includes(f.vice)) errori.push('Scegli il vice fra i quattro titolari');
+  for (const r of ['D', 'A']) {
+    const n = (f[r] || []).filter((x) => nelRuolo(x, r)).length;
+    if (n !== R.rosa[r]) errori.push(`Servono ${R.rosa[r]} ${r === 'D' ? 'difensori' : 'attaccanti'} in rosa (ora ${n})`);
+  }
+  const rosa = [...(f.D || []), ...(f.A || [])].filter(Boolean);
+  const ids = rosa.map((x) => x.id);
+  if (new Set(ids).size !== ids.length) errori.push('Un giocatore compare due volte');
+  const club = new Map();
+  for (const c of [f.porta, ...rosa.map((x) => x.club)].filter(Boolean)) club.set(c, (club.get(c) || 0) + 1);
+  if ([...club.values()].some((n) => n > R.perClub)) errori.push(`Al massimo ${R.perClub} per squadra, Porta compresa`);
+  const s = R.schemi[f.schema];
+  if (!s) return [...errori, 'Schema non valido'];
+  const tit = (f.titolari || []).map((id) => rosa.find((x) => x.id === id));
+  if (tit.length !== 4 || tit.some((x) => !x)) errori.push('In campo vanno quattro giocatori della rosa');
+  else for (const r of ['D', 'A']) { const n = tit.filter((x) => x.ruolo === r).length; if (n !== s[r]) errori.push(`Con il ${f.schema} in campo vanno ${s[r]} ${r === 'D' ? (s[r] === 1 ? 'difensore' : 'difensori') : (s[r] === 1 ? 'attaccante' : 'attaccanti')}`); }
+  if (!f.sesto || !ids.includes(f.sesto) || (f.titolari || []).includes(f.sesto)) errori.push('Scegli il sesto uomo fra chi non è in campo');
+  if (!f.capitano || !(f.titolari || []).includes(f.capitano)) errori.push('Scegli il capitano fra i quattro in campo');
+  if (!f.vice || !(f.titolari || []).includes(f.vice)) errori.push('Scegli il vice fra i quattro in campo');
   else if (f.vice === f.capitano) errori.push('Capitano e vice devono essere due giocatori diversi');
   return errori;
 }
 
+/** La panchina: chi e' in rosa ma non in campo e non e' il sesto uomo, nell'ordine della rosa. */
+export const panchinaDi = (f) => [...(f.D || []), ...(f.A || [])].filter((x) => x && !(f.titolari || []).includes(x.id) && x.id !== f.sesto);
+
 /**
- * Punteggio di una formazione nella giornata (§§ 6-8).
- * voti: { porta: voto della Porta, giocatori: Map id -> voto } (da votoGiocatore/votoPorta).
- * Ritorna { totale, righe, bonusDifesa, capitano } con una riga per posto in campo.
+ * Punteggio di una formazione nella giornata (§§ 13.4-13.6).
+ * voti: { porta: voto della Porta, giocatori: Map id -> voto } (da votoGiocatore/votoPorta;
+ * chi riposa arriva con { riposo: true } e la sua media, src/futsal.js).
+ * opz.malus: i punti tolti per i cambi di mercato oltre quelli gratis.
+ * Ritorna { totale, righe, bonusDifesa, capitano, malus }: una riga per Porta,
+ * quattro in campo, sesto uomo e panchina, ognuna con peso e punti.
  */
-export function punteggioFormazione(f, voti, R = REGOLE_FUTSAL) {
+export function punteggioFormazione(f, voti, { malus = 0 } = {}, R = REGOLE_FUTSAL) {
   const sv = { sv: true, motivo: 'senza voto' };
   const di = (id) => voti.giocatori.get(id) || sv;
-  const panchinaLibera = [...(f.panchina || [])].filter(Boolean);
-  const righe = [{ posto: 'P', id: null, club: f.porta, voto: voti.porta || sv, entrato: null }];
-  for (const t of f.titolari) {
-    let voto = di(t.id), entrato = null;
+  const rosa = [...(f.D || []), ...(f.A || [])].filter(Boolean);
+  const chi = (id) => rosa.find((x) => x.id === id);
+  const panchina = panchinaDi(f);
+  const libera = panchina.filter((b) => !di(b.id).sv);
+  const righe = [{ posto: 'P', id: null, club: f.porta, voto: voti.porta || sv, peso: 1, entrato: null }];
+  for (const id of f.titolari) {
+    const t = chi(id);
+    let voto = di(id), entrato = null;
     if (voto.sv) {
-      // Il panchinaro del suo ruolo, se ha il voto (§ 8). Non eredita la fascia.
-      const i = panchinaLibera.findIndex((b) => b.ruolo === t.ruolo && !di(b.id).sv);
-      if (i >= 0) { entrato = panchinaLibera[i]; voto = di(entrato.id); panchinaLibera.splice(i, 1); }
+      // Il primo della panchina nello stesso ruolo, se ha il voto: entra al
+      // 100% e non porta la fascia. Il sesto uomo conta gia' per intero.
+      const i = libera.findIndex((b) => b.ruolo === t.ruolo);
+      if (i >= 0) { entrato = libera[i]; voto = di(entrato.id); libera.splice(i, 1); }
     }
-    righe.push({ posto: t.ruolo, id: t.id, club: t.club, voto, entrato });
+    righe.push({ posto: t.ruolo, id, club: t.club, voto, peso: 1, entrato });
   }
-  // Capitano, e se non ha voto il vice; chi entra dalla panchina non porta la fascia.
-  const conVoto = (id) => righe.find((r) => r.id === id && !r.entrato && !r.voto.sv);
-  const fascia = conVoto(f.capitano) ? f.capitano : conVoto(f.vice) ? f.vice : null;
+  const sesto = chi(f.sesto);
+  righe.push({ posto: 'S', id: f.sesto, club: sesto?.club, ruolo: sesto?.ruolo, voto: di(f.sesto), peso: R.sesto, entrato: null });
+  const entrati = new Set(righe.map((r) => r.entrato?.id).filter(Boolean));
+  for (const b of panchina) righe.push({ posto: 'B', id: b.id, club: b.club, ruolo: b.ruolo, voto: di(b.id), peso: entrati.has(b.id) ? 0 : R.panchina, entrato: null, usato: entrati.has(b.id) });
+  // Capitano, e se non gioca il vice. Chi riposa prende la media ma non la
+  // fascia, come in Dunkest; chi entra dalla panchina nemmeno.
+  const gioca = (id) => righe.find((r) => r.id === id && r.peso === 1 && !r.entrato && !r.voto.sv && !r.voto.riposo);
+  const fascia = gioca(f.capitano) ? f.capitano : gioca(f.vice) ? f.vice : null;
   let totale = 0;
   for (const r of righe) {
-    r.punti = r.voto.sv ? 0 : r.voto.totale;
-    if (fascia && r.id === fascia) { r.capitano = true; r.punti = r2(r.punti + r.voto.bonus); }
+    r.punti = r.voto.sv ? 0 : r2(r.voto.totale * r.peso);
+    if (fascia && r.id === fascia && r.posto !== 'S' && r.posto !== 'B') { r.capitano = true; r.punti = r2(r.voto.totale * R.capitano); }
     totale += r.punti;
   }
   let bonusDifesa = null;
-  if (f.modulo === R.bonusDifesa.modulo) {
+  if (f.schema === R.bonusDifesa.schema) {
     const quali = righe.filter((r) => r.posto === 'P' || r.posto === 'D');
     const media = r2(quali.reduce((s, r) => s + r.punti, 0) / quali.length);
     bonusDifesa = { media, preso: media >= R.bonusDifesa.soglia, punti: media >= R.bonusDifesa.soglia ? R.bonusDifesa.punti : 0 };
     totale += bonusDifesa.punti;
   }
-  return { totale: r2(totale), righe, bonusDifesa, capitano: fascia };
+  return { totale: r2(totale - malus), righe, bonusDifesa, capitano: fascia, malus };
 }

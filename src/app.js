@@ -24,9 +24,10 @@ const ROUTES = [
   ['admin', views.adminGiornata], ['admin/partita/:id', views.adminPartita], ['admin/contestazioni', views.adminContestazioni],
   ['admin/congela', views.adminCongela], ['admin/console', views.adminConsole], ['admin/registro', views.adminRegistro], ['mercato', views.mercato], ['asta', views.asta],
   // Il futsal (FUTSAL.md): nascosto finche' non si accende con ?futsal=1, vedi gate()
-  ['futsal', views.futsalHome], ['futsal/formazione', views.futsalFormazione], ['futsal/formazione/:n', views.futsalFormazione], ['futsal/giornata', views.futsalGiornata], ['futsal/giornata/:n', views.futsalGiornata],
-  ['futsal/listone', views.futsalListone], ['futsal/regolamento', views.futsalRegolamento],
-  ['futsal/classifica', views.futsalClassifica], ['futsal/coppa', views.futsalCoppa], ['futsal/leghe', views.futsalLeghe], ['futsal/lega/:id', views.futsalLega],
+  ['futsal', views.futsalHome], ['futsal/squadra', views.futsalSquadra], ['futsal/squadra/:n', views.futsalSquadra],
+  ['futsal/formazione', views.futsalFormazione], ['futsal/formazione/:n', views.futsalFormazione], ['futsal/giornata', views.futsalGiornata], ['futsal/giornata/:n', views.futsalGiornata],
+  ['futsal/statistiche', views.futsalStatistiche], ['futsal/giocatore/:id', views.futsalGiocatore], ['futsal/listone', views.futsalListone], ['futsal/regolamento', views.futsalRegolamento],
+  ['futsal/classifica', views.futsalClassifica], ['futsal/classifica/:vista', views.futsalClassifica], ['futsal/coppa', views.futsalCoppa], ['futsal/leghe', views.futsalLeghe], ['futsal/lega/:id', views.futsalLega],
   ['login', views.login], ['leghe', views.leghe], ['lega', views.lega], ['gestione', views.gestione], ['squadra', views.squadra], ['vice/:code', views.vice], ['setup', views.setup], ['offline', views.offline], ['sospeso', views.sospeso], ['benvenuto', views.onboarding], ['guida', views.guida],
 ];
 
@@ -119,12 +120,14 @@ function appbar(view, ctx) {
  * voce: cosi' resta attaccata all'icona qualunque sia la larghezza della
  * colonna, che cambia col telefono.
  */
-const NAV_FUTSAL = [['futsal', 'campo', 'Home'], ['futsal/formazione', 'maglia-10', 'Formazione'], ['futsal/classifica', 'coppa', 'Classifica'],
-  ['futsal/giornata', 'grafico', 'Voti'], ['futsal/listone', 'calendario', 'Listone']];
+// Le voci in basso come quelle di Dunkest: la squadra, le statistiche, il
+// calendario con i voti e le classifiche (FUTSAL.md § 13.10).
+const NAV_FUTSAL = [['futsal', 'campo', 'Home'], ['futsal/squadra', 'maglia-10', 'Squadra'], ['futsal/statistiche', 'grafico', 'Statistiche'],
+  ['futsal/giornata', 'calendario', 'Calendario'], ['futsal/classifica', 'coppa', 'Classifiche']];
 function navFutsal(path) {
   const attiva = path.split('/').slice(0, 2).join('/');
   const manca = formazioneMancante();
-  return `<nav class="a-nav">${NAV_FUTSAL.map(([p, ic, l]) => `<a href="#/${p}" class="${attiva === p ? 'on' : ''}"><i class="np">${mask(ic)}${p === 'futsal/formazione' && manca ? '<i class="dot"></i>' : ''}</i><span>${l}</span></a>`).join('')}</nav>`;
+  return `<nav class="a-nav">${NAV_FUTSAL.map(([p, ic, l]) => `<a href="#/${p}" class="${attiva === p ? 'on' : ''}"><i class="np">${mask(ic)}${p === 'futsal/squadra' && manca ? '<i class="dot"></i>' : ''}</i><span>${l}</span></a>`).join('')}</nav>`;
 }
 function nav(path) {
   if (path.startsWith('futsal')) return navFutsal(path);
@@ -202,11 +205,11 @@ function drawer() {
     <div class="d-head"><div class="d-io">${fs.stemma || stemma}
       <span class="d-chi"><b>${esc(nome)}</b><span>${esc(fs.squadra || 'non ancora iscritto al FantaFutsal')}</span></span>
       <button class="d-esci" data-logout aria-label="Esci dall'account" title="Esci">${icon('exit')}</button></div></div>
-    ${fs.iscritto ? `<div class="d-cta"><a class="a-btn" href="#/futsal/formazione" style="text-decoration:none">${icon('shirt', 'ic sm')}Schiera la formazione</a></div>` : `<div class="d-cta"><a class="a-btn" href="#/futsal" style="text-decoration:none">Iscriviti al FantaFutsal</a></div>`}
+    ${fs.iscritto ? `<div class="d-cta"><a class="a-btn" href="#/futsal/squadra" style="text-decoration:none">${icon('shirt', 'ic sm')}La mia squadra</a></div>` : `<div class="d-cta"><a class="a-btn" href="#/futsal" style="text-decoration:none">Crea la tua squadra</a></div>`}
     <div class="d-sec"><span class="chip">FantaFutsal</span></div>
-    ${item('#/futsal', 'home', 'Home futsal')}${item('#/futsal/regolamento', 'book', 'Come si gioca', 'regole e punteggi')}${item('#/futsal/classifica', 'cup', 'Classifica')}${item('#/futsal/coppa', 'flag', 'Coppa')}${item('#/futsal/leghe', 'userplus', 'Leghe con gli amici')}
+    ${item('#/futsal', 'home', 'Home futsal')}${item('#/futsal/regolamento', 'book', 'Regolamento', 'rosa, schemi, mercato e punti')}${item('#/futsal/classifica', 'cup', 'Classifiche', 'generale, Serie e tifosi')}${item('#/futsal/coppa', 'flag', 'Coppa Titano')}${item('#/futsal/leghe', 'userplus', 'Campionati con gli amici')}
     <div class="d-sec"><span class="chip">Partite e giocatori</span></div>
-    ${item('#/futsal/giornata', 'votes', 'Giornate e voti')}${item('#/futsal/listone', 'users', 'Listone')}
+    ${item('#/futsal/giornata', 'votes', 'Calendario e voti')}${item('#/futsal/statistiche', 'users', 'Statistiche', 'giocatori, porte e squadre')}
     <div class="d-sec"><span class="chip">Altro</span></div>
     ${item('#/', 'globe', 'Torna al calcio', 'Fantatitano')}${item('#/impostazioni', 'gear', 'Impostazioni', 'account e privacy')}
     <button class="d-esci-fondo" data-logout>${icon('exit', 'ic sm')}Esci dall'account</button>

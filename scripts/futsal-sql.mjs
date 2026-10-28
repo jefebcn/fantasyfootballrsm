@@ -4,6 +4,7 @@
  * confrontarlo col file senza scriverlo.
  */
 import { GIOCATORI_FUTSAL, GIORNATE, chiusura } from '../src/futsal.js';
+import { QUOTATI, quotazione, ultimaPronta } from '../src/futsal-valori.js';
 
 const q = (s) => `'${String(s).replace(/'/g, "''")}'`;
 
@@ -27,5 +28,28 @@ insert into public.futsal_lock (giornata, lock_at) values
 ${lock.join(',\n')}
 on conflict (giornata) do update set lock_at = excluded.lock_at, updated_at = now()
   where futsal_lock.lock_at is distinct from excluded.lock_at;
+`;
+}
+
+/**
+ * Il testo di supabase/migrations/futsal-05-quotazioni.sql: le quotazioni di
+ * ogni giornata fino all'ultima definitiva (src/futsal-valori.js). Il
+ * mercato del database (futsal-04) le usa per i crediti, e senza le righe
+ * di una giornata la tiene chiusa.
+ */
+export function sqlQuotazioni(fino = ultimaPronta()) {
+  const righe = [];
+  for (let n = 1; n <= fino; n++) for (const id of QUOTATI()) righe.push(`  (${n}, ${q(id)}, ${quotazione(id, n).toFixed(1)})`);
+  return `-- Le quotazioni del FantaFutsal, giornata per giornata (FUTSAL.md § 13).
+--
+-- GENERATO da scripts/genera-futsal-sql.mjs da src/futsal-valori.js: non si
+-- modifica a mano, si rigenera dopo ogni importazione dei referti. Arriva
+-- fino alla ${fino}ª giornata, l'ultima con le quotazioni definitive.
+-- Ripetibile: aggiorna i valori che cambiano (un referto corretto dalla FSGC).
+
+insert into public.futsal_quotazioni (giornata, id, valore) values
+${righe.join(',\n')}
+on conflict (giornata, id) do update set valore = excluded.valore
+  where futsal_quotazioni.valore is distinct from excluded.valore;
 `;
 }

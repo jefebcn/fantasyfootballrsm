@@ -13,6 +13,7 @@ import * as remote from './backend.js';
 import * as S from './state.js';
 import * as F from './futsal.js';
 import { punteggioFormazione } from './futsal-engine.js';
+import { bilancio } from './futsal-valori.js';
 
 const vuoto = () => ({ caricato: false, inCorso: false, attivo: true, errore: null, iscritti: [], formazioni: new Map(), leghe: [], membri: [] });
 let st = vuoto(), per = null;
@@ -48,13 +49,24 @@ export async function carica({ forza = false } = {}) {
 export const io = () => st.iscritti.find((x) => x.user_id === uid()) || null;
 export const iscritto = (id) => st.iscritti.find((x) => x.user_id === id);
 export const formazioneDi = (g, id = uid()) => st.formazioni.get(`${g}:${id}`)?.formazione || null;
+/**
+ * La squadra in vigore alla giornata g: l'ultima consegnata fino a g (la rosa
+ * resta da una giornata all'altra, FUTSAL.md § 13). Solo il formato nuovo:
+ * una formazione della prima versione (senza rosa) non vale piu'.
+ */
+export function inVigore(g, id = uid()) {
+  for (let k = g; k >= 1; k--) { const f = formazioneDi(k, id); if (f?.D) return f; }
+  return null;
+}
+/** Crediti, cambi e malus di un iscritto alla giornata g (src/futsal-valori.js). bozza: la rosa che si sta per consegnare. */
+export const bilancioDi = (g, id = uid(), bozza = undefined) => bilancio((k) => inVigore(k, id), g, bozza);
 export const consegnataAlle = (g, id = uid()) => st.formazioni.get(`${g}:${id}`)?.consegnata_at || null;
 
 const deve = (r) => { if (r.error) throw new Error(r.error.message); return r.data; };
 
-export async function iscriviti(squadra, colore = '#1B84C6') {
+export async function iscriviti(squadra, colore = '#1B84C6', clubCuore = null) {
   const iniziali = squadra.split(/\s+/).map((w) => w[0]).join('').slice(0, 3).toUpperCase();
-  deve(await remote.client().from('futsal_iscritti').insert({ user_id: uid(), squadra: squadra.trim(), colore, iniziali }));
+  deve(await remote.client().from('futsal_iscritti').insert({ user_id: uid(), squadra: squadra.trim(), colore, iniziali, ...(clubCuore ? { club_cuore: clubCuore } : {}) }));
   await carica({ forza: true });
 }
 
@@ -76,22 +88,38 @@ function votiDi(g) {
   if (!calcoli.has(`v${g}`)) calcoli.set(`v${g}`, F.votiGiornata(g));
   return calcoli.get(`v${g}`);
 }
-/** Dal formato del server a quello del motore. */
+/** Dal formato del server a quello del motore: i giocatori con squadra e ruolo dal listone. */
 export function perMotore(f) {
   const con = (id) => { const x = id && F.giocatore(id); return x ? { id, club: x.club, ruolo: x.ruolo } : null; };
-  return { modulo: f.modulo, porta: f.porta, capitano: f.capitano, vice: f.vice,
-    titolari: (f.titolari || []).map(con), panchina: (f.panchina || []).map(con) };
+  return { schema: f.schema, porta: f.porta, D: (f.D || []).map(con), A: (f.A || []).map(con),
+    titolari: f.titolari || [], sesto: f.sesto, capitano: f.capitano, vice: f.vice };
 }
-/** Il risultato di una formazione nella giornata, o null se la giornata non ha ancora referti. */
+/** Il risultato della squadra nella giornata, o null se la giornata non ha ancora referti o la squadra non c'era. */
 export function risultato(g, id = uid()) {
   if (!F.giocate().includes(g)) return null;
   const k = `r${g}:${id}`;
   if (!calcoli.has(k)) {
-    const f = formazioneDi(g, id);
+    const f = inVigore(g, id);
     const v = votiDi(g);
-    calcoli.set(k, f ? punteggioFormazione(perMotore(f), { porta: v.porta.get(f.porta), giocatori: v.giocatori }) : null);
+    calcoli.set(k, f ? punteggioFormazione(perMotore(f), { porta: v.porta.get(f.porta), giocatori: v.giocatori }, { malus: bilancioDi(g, id).malus }) : null);
   }
   return calcoli.get(k);
 }
-/** punti(g, id) per le competizioni (src/futsal-gare.js): 0 senza consegna, null senza referti. */
+/** punti(g, id) per le competizioni (src/futsal-gare.js): 0 senza squadra, null senza referti. */
 export const punti = (g, id) => (F.giocate().includes(g) ? risultato(g, id)?.totale ?? 0 : null);
+
+/** Quanti iscritti hanno in rosa ogni giocatore nella giornata g (il «POP» di Dunkest), su chi ha una squadra. */
+export function popolarita(g) {
+  const k = `pop${g}`;
+  if (!calcoli.has(k)) {
+    const conta = new Map(); let squadre = 0;
+    for (const x of st.iscritti) {
+      const f = inVigore(g, x.user_id);
+      if (!f) continue;
+      squadre++;
+      for (const id of [`P:${f.porta}`, ...f.D, ...f.A]) conta.set(id, (conta.get(id) || 0) + 1);
+    }
+    calcoli.set(k, { squadre, di: (id) => (squadre ? (conta.get(id) || 0) / squadre : 0) });
+  }
+  return calcoli.get(k);
+}

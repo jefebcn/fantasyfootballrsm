@@ -4,8 +4,9 @@
 --
 -- Come il calcio (009): la funzione promemoria, il giorno prima della
 -- chiusura, chiede al database chi avvisare. Qui sono gli iscritti al
--- FantaFutsal senza formazione per quella giornata, con un telefono iscritto
--- alle notifiche. Ognuno una volta sola per giornata e telefono: il segno lo
+-- FantaFutsal che non hanno ancora una squadra (la rosa resta da una
+-- giornata all'altra, futsal-04: chi l'ha gia' fatta gioca comunque), con un
+-- telefono iscritto alle notifiche. Ognuno una volta sola per giornata e telefono: il segno lo
 -- mette questa funzione nella stessa istruzione che restituisce l'elenco, cosi'
 -- due corse sovrapposte non spediscono due volte.
 --
@@ -29,7 +30,7 @@ language sql volatile security definer set search_path = public as $$
       from public.futsal_iscritti i
       join public.push_subscriptions s on s.user_id = i.user_id
      where s.failed_at is null
-       and not exists (select 1 from public.futsal_formazioni f where f.user_id = i.user_id and f.giornata = p_giornata)
+       and not exists (select 1 from public.futsal_formazioni f where f.user_id = i.user_id and f.giornata <= p_giornata)
   ), nuovi as (
     insert into public.futsal_promemoria_inviati (giornata, user_id, endpoint)
     select p_giornata, c.user_id, c.endpoint from candidati c

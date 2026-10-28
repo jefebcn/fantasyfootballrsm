@@ -2,9 +2,9 @@
  * La sezione Futsal (FUTSAL.md), sul ramo `futsal`.
  *
  * Due cose prima di tutto: spenta non si vede (niente selettore, e
- * #/futsal riporta a casa), accesa con ?futsal=1 si gira tutta. Poi una
- * formazione schierata a mano dal foglio di scelta, con capitano e vice, e
- * il suo punteggio provato sull'ultima giornata giocata.
+ * #/futsal riporta a casa), accesa con ?futsal=1 si gira tutta. Poi una rosa
+ * comprata al mercato senza il server futsal (resta sul telefono), con
+ * capitano e vice, e il suo punteggio provato sull'ultima giornata giocata.
  *
  * Gli screenshot finiscono in $USCITA.
  */
@@ -17,6 +17,7 @@ const ok = [], ko = []; const et = (c, t) => (c ? ok : ko).push(t);
 (async () => {
   const b = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium' }).catch(() => chromium.launch());
   const ctx = await b.newContext({ viewport: { width: 393, height: 852 }, deviceScaleFactor: 2, timezoneId: 'Europe/Rome', locale: 'it-IT', isMobile: true, hasTouch: true, serviceWorkers: 'block' });
+  await ctx.clock.setFixedTime(new Date(process.env.ORA || '2026-11-01T11:00:00+01:00'));
   await ctx.addInitScript(() => {
     window.__SUPABASE_JS__ = '/tests/mock-supabase.js';
     // questa prova gira come un database SENZA le migrazioni futsal: la
@@ -56,52 +57,44 @@ const ok = [], ko = []; const et = (c, t) => (c ? ok : ko).push(t);
   await foto('1-selettore-calcio');
   await p.click('.sport-sw a[href="#/futsal"]'); await w(700);
   const home = await p.evaluate(() => document.querySelector('main')?.innerText || '');
-  et(/giornata/i.test(home) && /Schiera la formazione/i.test(home), 'la home del futsal mostra giornata e formazione');
+  et(/giornata/i.test(home) && /mercato/i.test(home), 'la home del futsal mostra la giornata e il mercato');
   await foto('2-home', true);
 
-  // ---- formazione dal foglio di scelta
-  await p.evaluate(() => { location.hash = '#/futsal/formazione'; }); await w(600);
-  await foto('3-formazione-vuota');
-  const scegli = async (slot, n = 0) => {
+  // ---- la rosa sul telefono: Porta, 4 D, 4 A dal mercato (orologio a domenica 1/11: mercato aperto)
+  await p.evaluate(() => { location.hash = '#/futsal/squadra'; }); await w(700);
+  await foto('3-campo-vuoto');
+  const compra = async (slot, n) => {
     await p.click(`[data-slot="${slot}"]`); await w(350);
-    const bottoni = await p.$$('#sheet [data-scegli]:not([disabled])');
-    await bottoni[n].click(); await w(350);
+    const b2 = await p.$$('#sheet [data-compra]:not([disabled])');
+    await b2[Math.min(n, b2.length - 1)].click(); await w(300);
   };
-  await scegli('P:0', 2);
-  await p.click('[data-slot="D:0"]'); await w(350); await foto('4-foglio-scelta');
-  await (await p.$$('#sheet [data-scegli]:not([disabled])'))[0].click(); await w(350);
-  await scegli('D:1'); await scegli('A:0'); await scegli('A:1'); await scegli('pD:0'); await scegli('pA:0');
-  await p.click('[data-slot="A:0"]'); await w(300); await p.click('[data-fascia="capitano"]'); await w(300);
-  await p.click('[data-slot="D:0"]'); await w(300); await p.click('[data-fascia="vice"]'); await w(300);
+  await compra('P:0', 4);
+  for (const [i, n] of [[0, 5], [1, 15], [2, 25], [3, 35]]) await compra(`D:${i}`, n);
+  for (const [i, n] of [[0, 5], [1, 15], [2, 25], [3, 35]]) await compra(`A:${i}`, n);
+  await p.click('.fs-campo [data-slot="A:0"]'); await w(300); await p.click('#sheet [data-az="capitano"]'); await w(300);
+  await p.click('.fs-campo [data-slot="D:0"]'); await w(300); await p.click('#sheet [data-az="vice"]'); await w(300);
   const pronta = await p.evaluate(() => !document.querySelector('#fs-salva')?.disabled && !document.querySelector('.fs-err'));
-  et(pronta, 'formazione completa: si può salvare');
+  et(pronta, 'rosa completa e nei crediti: si può salvare');
   const prova = await p.evaluate(() => document.querySelector('.fs-tot .fv')?.textContent || '');
   et(/\d/.test(prova), `e si vede il punteggio sull'ultima giornata (${prova})`);
-  await foto('5-formazione-pronta', true);
+  await foto('4-campo-pronto', true);
+  await p.click('[data-schema="3-1"]'); await w(400);
+  et(/Bonus difesa/.test(await p.evaluate(() => document.querySelector('main').innerText)), 'con il 3-1 la prova mostra il bonus difesa');
+  await p.click('#fs-salva'); await w(900);
+  et(!!(await p.evaluate(() => JSON.parse(localStorage.getItem('fcs:futsal:squadre') || '{}')[8]?.D)), 'senza server la squadra resta sul telefono');
 
-  // 3-1: un difensore in piu', il bonus difesa nella prova
-  await p.click('[data-modulo="3-1"]'); await w(400);
-  await scegli('D:2');
-  await p.click('[data-slot="A:0"]'); await w(300); await p.click('[data-fascia="capitano"]'); await w(300);
-  const bonus = await p.evaluate(() => /Bonus difesa/.test(document.querySelector('main').innerText));
-  et(bonus, 'con il 3-1 la prova mostra il bonus difesa');
-  await foto('6-formazione-3-1', true);
-  await p.click('#fs-salva'); await w(2700);
-  et(/futsal$/.test(await p.evaluate(() => location.hash)), 'salvata, si torna alla home del futsal');
-
-  // ---- voti, listone, regolamento
+  // ---- calendario, statistiche, regolamento
   await p.evaluate(() => { location.hash = '#/futsal/giornata/6'; }); await w(700);
   await p.click('.fs-partita summary'); await w(300);
   const voti = await p.evaluate(() => document.querySelectorAll('.fs-partita[open] .vr').length);
   et(voti > 10, `una partita aperta mostra porte e giocatori (${voti} righe)`);
-  await foto('7-voti', true);
-  await p.evaluate(() => { location.hash = '#/futsal/listone'; }); await w(700);
-  await foto('8-listone');
-  await p.click('[data-ruolo="P"]'); await w(500);
-  et((await p.$$('.fs-list .vr')).length === 15, 'le porte in listone sono 15');
-  await foto('9-listone-porte');
+  await foto('5-voti');
+  await p.evaluate(() => { location.hash = '#/futsal/statistiche'; }); await w(700);
+  await p.click('[data-vista="porte"]'); await w(500);
+  et((await p.$$('.fs-tab tbody tr')).length === 15, 'le porte nelle statistiche sono 15');
+  await foto('6-statistiche-porte');
   await p.evaluate(() => { location.hash = '#/futsal/regolamento'; }); await w(600);
-  await foto('10-regolamento', true);
+  await foto('7-regolamento', true);
 
   et(!errori.length, `nessun errore in pagina${errori.length ? `: ${errori.join(' | ')}` : ''}`);
   await b.close();

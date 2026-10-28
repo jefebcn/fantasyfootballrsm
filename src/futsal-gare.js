@@ -97,6 +97,18 @@ export function calendarioTesta(membri, avvio, ultima = 30) {
 
 export const COPPA = { preliminari: [9, 14], gironi: [15, 20], finale: 27 };
 
+/**
+ * Le tre Serie (§ 13.8), come le Champions Series di Dunkest: classifiche a
+ * somma indipendenti su un blocco di giornate, con dentro tutti gli iscritti.
+ * Hanno il nome delle tre torri del Titano.
+ */
+export const SERIE = [
+  { id: 'guaita', nome: 'Serie Guaita', da: 8, a: 14 },
+  { id: 'cesta', nome: 'Serie Cesta', da: 15, a: 22 },
+  { id: 'montale', nome: 'Serie Montale', da: 23, a: 30 },
+];
+export const giornateSerie = (s) => Array.from({ length: s.a - s.da + 1 }, (_, i) => s.da + i);
+
 /** Sorteggio ripetibile: lo stesso seme da' a tutti i telefoni lo stesso ordine. */
 export function mescola(ids, seme) {
   let h = 1779033703;

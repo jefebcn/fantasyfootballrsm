@@ -47,39 +47,57 @@ test('porta inviolata +3', () => {
 const T = (id, ruolo, c) => ({ id, ruolo, club: c });
 const voto = (totale, bonus = 0) => ({ sv: false, base: totale - bonus, bonus, totale });
 const SV = { sv: true, motivo: 'non in distinta' };
+const riposo = (media) => ({ sv: false, riposo: true, base: media, bonus: 0, totale: media, voci: [] });
+// rosa: d1..d4, a1..a4 di otto squadre diverse; in campo d1 d2 a1 a2, sesto a3, panchina d3 d4 a4
 const base = () => ({
-  modulo: '2-2', porta: 'p',
-  titolari: [T('d1', 'D', 'c1'), T('d2', 'D', 'c2'), T('a1', 'A', 'c3'), T('a2', 'A', 'c4')],
-  panchina: [T('bd', 'D', 'c5'), T('ba', 'A', 'c6')], capitano: 'a1', vice: 'd1',
+  schema: '2-2', porta: 'p',
+  D: [T('d1', 'D', 'c1'), T('d2', 'D', 'c2'), T('d3', 'D', 'c3'), T('d4', 'D', 'c4')],
+  A: [T('a1', 'A', 'c5'), T('a2', 'A', 'c6'), T('a3', 'A', 'c7'), T('a4', 'A', 'c8')],
+  titolari: ['d1', 'd2', 'a1', 'a2'], sesto: 'a3', capitano: 'a1', vice: 'd1',
 });
+const tutti6 = (extra = {}) => ({ porta: voto(6), giocatori: new Map(['d1', 'd2', 'd3', 'd4', 'a1', 'a2', 'a3', 'a4'].map((id) => [id, extra[id] || voto(6)])) });
 
-test('formazione valida e i suoi errori', () => {
+test('rosa e formazione valide e i loro errori', () => {
   assert.deepEqual(controllaFormazione(base()), []);
-  const doppio = { ...base(), panchina: [T('bd', 'D', 'c1'), T('ba', 'A', 'c6')] };
-  assert.match(controllaFormazione(doppio).join(), /un giocatore per squadra/);
-  const modulo = { ...base(), modulo: '3-1' };
-  assert.match(controllaFormazione(modulo).join(), /Servono 3 difensori/);
+  const tre = { ...base(), porta: 'c1', D: [T('d1', 'D', 'c1'), T('d2', 'D', 'c1'), ...base().D.slice(2)] };
+  assert.match(controllaFormazione(tre).join(), /Al massimo 2 per squadra/);
+  assert.deepEqual(controllaFormazione({ ...base(), porta: 'c1' }), [], 'due della stessa squadra, Porta compresa, si puo\'');
+  assert.match(controllaFormazione({ ...base(), schema: '3-1' }).join(), /in campo vanno 3 difensori/);
   assert.match(controllaFormazione({ ...base(), vice: 'a1' }).join(), /diversi/);
+  assert.match(controllaFormazione({ ...base(), sesto: 'a1' }).join(), /sesto uomo/);
+  assert.match(controllaFormazione({ ...base(), A: base().A.slice(0, 3) }).join(), /Servono 4 attaccanti/);
+  assert.deepEqual(controllaFormazione({ ...base(), schema: '1-3', titolari: ['d1', 'a1', 'a2', 'a3'], sesto: 'a4' }), []);
 });
-test('capitano raddoppia solo bonus e malus', () => {
-  const voti = { porta: voto(6), giocatori: new Map([['d1', voto(6)], ['d2', voto(6)], ['a1', voto(9.5, 3)], ['a2', voto(6)]]) };
-  const r = punteggioFormazione(base(), voti);
+test('in campo e sesto uomo al 100%, panchina al 50%, capitano per 1,5', () => {
+  const r = punteggioFormazione(base(), tutti6({ a1: voto(10, 3) }));
   assert.equal(r.capitano, 'a1');
-  assert.equal(r.totale, 6 + 6 + 6 + 12.5 + 6);
+  // Porta 6 + d1 6 + d2 6 + a1 10×1,5 + a2 6 + sesto 6 + tre in panchina 3 ciascuno
+  assert.equal(r.totale, 6 + 6 + 6 + 15 + 6 + 6 + 9);
+  assert.deepEqual(r.righe.map((x) => x.posto), ['P', 'D', 'D', 'A', 'A', 'S', 'B', 'B', 'B']);
 });
-test('capitano senza voto: entra il panchinaro del ruolo e la fascia va al vice', () => {
-  const voti = { porta: voto(6), giocatori: new Map([['d1', voto(9, 3)], ['d2', voto(6)], ['a1', SV], ['a2', voto(6)], ['ba', voto(7, 1)]]) };
-  const r = punteggioFormazione(base(), voti);
+test('non convocato: entra il primo della panchina del suo ruolo, al 100%, e la fascia va al vice', () => {
+  const r = punteggioFormazione(base(), tutti6({ a1: SV, a4: voto(8) }));
   assert.equal(r.capitano, 'd1');
-  assert.equal(r.righe.find((x) => x.id === 'a1').entrato.id, 'ba');
-  assert.equal(r.totale, 6 + 12 + 6 + 7 + 6);
+  assert.equal(r.righe.find((x) => x.id === 'a1').entrato.id, 'a4');
+  assert.equal(r.righe.find((x) => x.id === 'a4' && x.posto === 'B').punti, 0, 'non conta due volte');
+  // Porta 6 + d1 9 (capitano) + d2 6 + a4 8 + a2 6 + sesto 6 + d3 3 + d4 3
+  assert.equal(r.totale, 6 + 9 + 6 + 8 + 6 + 6 + 3 + 3);
 });
-test('senza sostituto del ruolo il posto vale zero', () => {
-  const voti = { porta: voto(6), giocatori: new Map([['d1', SV], ['d2', voto(6)], ['a1', voto(6)], ['a2', voto(6)], ['bd', SV], ['ba', voto(8)]]) };
-  assert.equal(punteggioFormazione(base(), voti).totale, 24);
+test('il sesto uomo non sostituisce: conta gia\' per intero', () => {
+  const r = punteggioFormazione(base(), tutti6({ a1: SV, a4: SV }));
+  assert.equal(r.righe.find((x) => x.id === 'a1').entrato, null);
+  assert.equal(r.totale, 6 + 9 + 6 + 0 + 6 + 6 + 3 + 3 + 0);
+});
+test('chi riposa prende la media ma non la fascia', () => {
+  const r = punteggioFormazione(base(), tutti6({ a1: riposo(7) }));
+  assert.equal(r.capitano, 'd1');
+  assert.equal(r.righe.find((x) => x.id === 'a1').punti, 7);
+});
+test('il malus dei cambi si toglie dal totale', () => {
+  assert.equal(punteggioFormazione(base(), tutti6(), { malus: 2 }).totale, punteggioFormazione(base(), tutti6()).totale - 2);
 });
 test('bonus difesa con il 3-1: media di Porta e tre D almeno 7,0', () => {
-  const f = { ...base(), modulo: '3-1', titolari: [T('d1', 'D', 'c1'), T('d2', 'D', 'c2'), T('d3', 'D', 'c7'), T('a1', 'A', 'c3')], capitano: 'a1', vice: 'd1' };
+  const f = { ...base(), schema: '3-1', titolari: ['d1', 'd2', 'd3', 'a1'], capitano: 'a1', vice: 'd1' };
   const sopra = { porta: voto(7), giocatori: new Map([['d1', voto(7)], ['d2', voto(7)], ['d3', voto(7)], ['a1', voto(6)]]) };
   assert.deepEqual(punteggioFormazione(f, sopra).bonusDifesa, { media: 7, preso: true, punti: 2 });
   const sotto = { porta: voto(7), giocatori: new Map([['d1', voto(7)], ['d2', voto(7)], ['d3', voto(6.5)], ['a1', voto(6)]]) };
@@ -106,4 +124,12 @@ test('ogni ruolo FSGC ha un ruolo di gioco, ogni giocatore una squadra', () => {
 });
 test('una squadra riposa a ogni giornata', () => {
   for (const n of giocate()) assert.equal(riposa(n).length, 1, `giornata ${n}`);
+});
+test('a giornata conclusa chi riposa prende la sua media delle giornate prima', () => {
+  const n = giocate().find((k) => k > 1);
+  const club = riposa(n)[0];
+  const v = votiGiornata(n).porta.get(club);
+  assert.equal(v.riposo, true);
+  const prima = Array.from({ length: n - 1 }, (_, i) => votiGiornata(i + 1).porta.get(club)).filter((x) => !x.sv && !x.riposo);
+  assert.equal(v.totale, Math.round((prima.reduce((s, x) => s + x.totale, 0) / prima.length) * 100) / 100);
 });

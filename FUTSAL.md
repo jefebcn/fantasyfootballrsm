@@ -1,7 +1,13 @@
 # Fantatitano Futsal — bozza di regolamento
 
-Stato: **regolamento deciso il 25/10/2026, ramo `futsal`, non pubblicato.**
+Stato: **regolamento deciso il 25/10/2026, rifatto sul modello Dunkest il
+29/10/2026 (§ 13), ramo `futsal`, non pubblicato.**
 Nell'app la sezione esiste ma è nascosta (si apre solo con `?futsal=1`).
+
+> **Dal 29/10 valgono le regole del § 13** (rosa con crediti, schemi, sesto
+> uomo, panchina al 50%, mercato e quotazioni). Le sezioni 3, 4 e 8 qui
+> sotto raccontano la prima versione: dove dicono altro, vince il § 13. I
+> punteggi dei voti (§§ 5-7) restano quelli.
 
 ## 1. Da dove vengono le idee
 
@@ -294,6 +300,8 @@ funzione `promemoria` ridistribuita (`supabase functions deploy promemoria
 
 ## 12. Decisioni prese (25/10/2026)
 
+(I punti 1, 4 e 6 sono superati dal § 13 del 29/10.)
+
 1. Formazione libera di giornata, nessuna rosa né asta.
 2. Leghe private come gruppi sulle stesse formazioni (a somma o testa a testa).
 3. Tre ruoli: P (porta di squadra), D (Centrale, Laterale), A (Pivot, Universale).
@@ -301,3 +309,111 @@ funzione `promemoria` ridistribuita (`supabase functions deploy promemoria
 5. Gol +3, Porta −0,5 a gol subito, +3 se inviolata; assist e rigori parati fuori.
 6. Due panchinari (D e A), capitano con vice.
 7. Coppa a tre fasi dalla 9ª alla 27ª giornata.
+
+## 13. Il FantaFutsal sul modello Dunkest (29/10/2026)
+
+Richiesta di Alex: studiare Dunkest (fantabasket NBA, app iOS e
+fantasy.dunkest.com) con la skill di reverse engineering e strutturare il
+futsal allo stesso modo: statistiche, schemi, regolamento, tutto collegato.
+
+**Cosa si è studiato.** Il sito è un'app Flutter (`main.dart.js`, versione
+5.3.9): REA ha inventariato il pacchetto (il bundle Dart da 7,6 MB supera la
+memoria del suo analizzatore, quindi stringhe e indirizzi sono letti come
+testo). Le API pubbliche `fantaking-api.dunkest.com/api/v1` danno la
+configurazione del gioco (rosa 4 G / 4 F / 2 C + coach, 5 in campo e 5 in
+panchina, capitano ×1,5, 5 schemi, 3 per squadra, 95 crediti, −5 a cambio),
+il profilo giocatore (quotazione, media, plus, popolarità, «on fire»,
+infortunio), il trend per giornata e il dettaglio dei punti per statistica.
+Il regolamento completo sta su docs.dunkest.com; le schermate vere vengono
+dall'App Store. Di Dunkest si prende la **struttura**, non il marchio:
+colori, nomi e grafica restano di Fantatitano.
+
+| Dunkest | FantaFutsal |
+|---|---|
+| 10 giocatori + 1 coach, 95 crediti | 8 giocatori (4 D, 4 A) + 1 Porta, 70 crediti |
+| Coach: punti dal risultato della squadra | **Porta**: gol subiti, inviolata, esito ed eventi dei portieri |
+| 5 schemi (2-2-1, 1-2-2…) | 3 schemi: 1-3, 2-2, 3-1 (col bonus difesa) |
+| 5 in campo, sesto uomo 100%, panchina 50% | 4 in campo + Porta, sesto uomo 100%, panchina 50% |
+| Capitano ×1,5 | Capitano ×1,5, con il vice se non è convocato |
+| Max 3 per squadra NBA | Max 2 per squadra, Porta compresa |
+| Cambi tra i turni, a mano | Cambio automatico dalla panchina (la giornata si chiude tutta insieme) |
+| Squadra a riposo: media, niente capitano | Uguale |
+| Quotazioni con plusvalenze | Uguale, dalle prime 6 giornate |
+| Mercato tra le giornate, −5 a cambio | Mercato tra le giornate, 1 cambio gratis poi −1 |
+| Overall, Country, Favorite Team, 5 Champions Series, 2 Cup | Generale, Tifosi, 3 Serie (Guaita, Cesta, Montale), Coppa Titano |
+| Leghe private a somma o testa a testa, «Dunkest Team» se dispari | Uguale, la squadra in più affronta la media |
+| Statistiche: tabellone giocatori, difesa contro posizione | Tabella giocatori e porte, classifica vera con «vs D / vs A», leader |
+| Profilo: crediti, FPM, plus, pop, partite, forma | Uguale, più quotazione giornata per giornata |
+
+### 13.1 La rosa
+Porta di una squadra + 4 difensori + 4 attaccanti, con **70 crediti**, al
+massimo **2 della stessa squadra** (Porta compresa). La squadra **resta da
+una giornata all'altra**: vale l'ultima salvata. Prima di averla fatta,
+quella giornata vale 0.
+
+### 13.2 Schemi
+In campo la Porta e 4 giocatori: **1-3, 2-2 o 3-1**. Con il 3-1 resta il
+bonus difesa (+2 se Porta e tre D fanno in media almeno 7,0).
+
+### 13.3 Sesto uomo e panchina
+Dei 4 fuori, il **sesto uomo** conta al 100%, gli altri tre al **50%**.
+
+### 13.4 Capitano
+Capitano e vice fra i 4 in campo: il capitano vale **×1,5**. Se non è
+convocato (o riposa) la fascia passa al vice; chi riposa non la prende mai.
+
+### 13.5 Cambio automatico e riposo
+Chi è in campo e non è convocato è sostituito dal primo della panchina del
+suo ruolo che ha giocato: entra al 100% e non porta la fascia. Il sesto uomo
+non sostituisce (conta già per intero). A giornata conclusa chi **riposa**
+(o ha la partita rinviata, o senza referto dopo tre giorni) prende la sua
+**media** delle giornate prima, senza fascia e senza variazione di valore.
+
+### 13.6 Punti
+Gli stessi dei §§ 5-7 per giocatori e Porta.
+
+### 13.7 Quotazioni, crediti e mercato
+- Quotazione di partenza dalle giornate 1-6: media punti (tirata verso 6, o
+  5 per le porte, come con due partite in più) pesata sulle presenze;
+  fra 3 e 18 crediti, a mezzo credito. Oggi vanno da 3 a 13.
+- Dopo ogni giornata conclusa: variazione = (punti − atteso) × 0,1, al
+  massimo ±0,6, dove l'atteso è 4,5 + (valore − 3)/2 (3 + … per le porte).
+  Chi non è convocato fa 0; chi riposa non si muove.
+- **Patrimonio** = 70 + plusvalenze dei giocatori avuti in rosa;
+  **crediti residui** = patrimonio − valore della rosa oggi.
+- **Mercato**: aperto fra la fine di una giornata (referti arrivati) e
+  10 minuti prima della prima partita della successiva. Mentre aspetta i
+  referti si cambiano schema, titolari e capitano, ma non si compra.
+- Prima rosa: cambi illimitati e gratis. Poi **1 cambio gratis a giornata,
+  −1 punto per ogni altro**.
+- Il database controlla rosa, schema, crediti e mercato
+  (`futsal-04-rosa.sql`); le quotazioni gli arrivano da
+  `futsal-05-quotazioni.sql`, generato con `node scripts/genera-futsal-sql.mjs`
+  dopo ogni importazione.
+
+### 13.8 Campionati
+Con la stessa squadra, senza fare niente: **Generale**, **Tifosi** (chi ha la
+stessa squadra del cuore, scelta all'iscrizione), **Serie Guaita** (8ª–14ª),
+**Serie Cesta** (15ª–22ª), **Serie Montale** (23ª–30ª) e la **Coppa Titano**
+(§ 10.2). Più le leghe con gli amici (§ 10.2-bis).
+
+### 13.9 Statistiche e profilo
+Tabella giocatori ordinabile (CR, PLUS, PF, MPF, presenze, gol, cartellini,
+autogol, rigori sbagliati), tabella porte (gol subiti, inviolate, V-N-P),
+classifica vera del campionato con i fantapunti concessi a D e A, leader
+(punti, media, plusvalenza, in forma, gol, inviolate). Il profilo ha
+prossime partite, forma (ultime 3 e 5), fantapunti per giornata a colori,
+quotazione nel tempo e il dettaglio partita per partita.
+
+### 13.10 Nell'app
+Barra in basso: Home · Squadra · Statistiche · Calendario · Classifiche.
+La home ha la banda della squadra (giornata, mercato, crediti, cambi), i
+campionati principali, «I miei campionati», i leader e le partite.
+
+### 13.11 Da decidere con Alex
+1. Budget 70, max 2 per squadra, 1 cambio gratis e −1 a cambio: tarati sui
+   dati delle prime 6 giornate, da confermare.
+2. Il cambio automatico (Dunkest non ce l'ha): tenerlo?
+3. Al lancio: applicare `futsal-04-rosa.sql` e `futsal-05-quotazioni.sql`,
+   e far rigenerare/applicare le quotazioni dopo ogni importazione (oggi è a
+   mano, come futsal-02).

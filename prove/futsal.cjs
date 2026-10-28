@@ -50,6 +50,15 @@ const ok = [], ko = []; const et = (c, t) => (c ? ok : ko).push(t);
   et(!/futsal/.test(await p.evaluate(() => location.hash)), 'spento: #/futsal riporta a casa');
   await foto('0-spento');
 
+  // ---- un amministratore la vede da solo, senza ?futsal=1 (anteprima di Alex)
+  await p.evaluate(() => { const s = JSON.parse(localStorage.getItem('fcs:mock')); s.tables.profiles.find((x) => x.id === s.userId).is_admin = true; localStorage.setItem('fcs:mock', JSON.stringify(s)); });
+  // cambiare solo il pezzo dopo # non ricarica: serve un reload vero per rileggere il profilo
+  await p.evaluate(() => { location.hash = '#/leghe'; }); await p.reload({ waitUntil: 'load' }); await w(1500);
+  et(!!(await p.$('.sport-sw')), 'amministratore: il selettore Calcio/Futsal compare da solo');
+  await p.goto(`${BASE}/?futsal=0#/leghe`, { waitUntil: 'load' }); await w(1300);
+  et(!(await p.$('.sport-sw')), 'amministratore con ?futsal=0: la sezione si spegne');
+  await p.evaluate(() => { const s = JSON.parse(localStorage.getItem('fcs:mock')); s.tables.profiles.find((x) => x.id === s.userId).is_admin = false; localStorage.setItem('fcs:mock', JSON.stringify(s)); });
+
   // ---- acceso
   await p.goto(`${BASE}/?futsal=1#/leghe`, { waitUntil: 'load' }); await w(1300);
   et(!/futsal=/.test(await p.evaluate(() => location.search)), "l'interruttore si toglie dall'indirizzo");

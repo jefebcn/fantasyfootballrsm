@@ -10,6 +10,7 @@
  * capitoli. Senza il server futsal la squadra si salva sul telefono.
  */
 import { CLUBS } from '../data.js';
+import * as Stato from '../state.js';
 import { esc, fmt, icon, sec, tile, dateIt, timeIt, empty, crest } from '../ui.js';
 import * as F from '../futsal.js';
 import * as FS from '../futsal-server.js';
@@ -21,15 +22,24 @@ import { classificaSomma, classificaScontri, calendarioTesta, coppa, formatoCopp
 const CHIAVE = 'fcs:futsal';
 const LOCALI = 'fcs:futsal:squadre';
 
-/** L'interruttore che tiene nascosta la sezione a chi non la deve vedere. */
+/**
+ * L'interruttore che tiene nascosta la sezione a chi non la deve vedere.
+ * Gli amministratori dell'app la vedono da soli, per provarla dal vivo in
+ * anteprima (Alex, 29/10); gli altri solo con ?futsal=1. ?futsal=0 la spegne
+ * anche a un amministratore.
+ */
 export function futsalAttivo() {
-  try { return localStorage.getItem(CHIAVE) === '1'; } catch { return false; }
+  let v = null;
+  try { v = localStorage.getItem(CHIAVE); } catch { /* senza storage decide il profilo */ }
+  if (v === '1') return true;
+  if (v === '0') return false;
+  return Stato.isAdmin();
 }
 /** ?futsal=1 accende, ?futsal=0 spegne: da chiamare all'avvio. */
 export function leggiInterruttore() {
   const m = /[?&#]futsal=([01])\b/.exec(`${location.search}&${location.hash}`);
   if (!m) return;
-  try { if (m[1] === '1') localStorage.setItem(CHIAVE, '1'); else localStorage.removeItem(CHIAVE); } catch { /* senza storage resta spento */ }
+  try { localStorage.setItem(CHIAVE, m[1]); } catch { /* senza storage resta come dice il profilo */ }
 }
 
 /** Calcio | Futsal, in cima alle due home. */

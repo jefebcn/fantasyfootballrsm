@@ -193,6 +193,8 @@ export const formazione = {
     };
     const s = slotsByRole(d); const errors = validateLineup({ ...d, starters: d.starters.filter(Boolean), bench: d.bench.filter(Boolean) }, S.playersById);
     const saved = S.savedLineup(n, me.id);
+    // consegnata e mai toccata dopo: non serve confermarla di nuovo, e il tasto lo dice
+    const giaConfermata = !!saved && comeBozza({ ...saved, bench: saved.bench || [] }) === comeBozza(d);
     const rosa = S.rosaIncompletaPerSchierare(me.id);
     const fx = S.myFixture(n, me.id); const opp = fx ? S.managersById.get(fx.homeManagerId === me.id ? fx.awayManagerId : fx.homeManagerId) : null;
     // chi si e' appena mosso lampeggia un attimo: si vede dove e' finito
@@ -268,7 +270,9 @@ export const formazione = {
       <a class="a-btn sec" href="#/formazioni/${n}" style="text-decoration:none">${icon('users', 'ic sm')}Le formazioni degli altri</a>`
     : !locked && rosa
     ? `<a class="a-btn" id="completa-rosa" href="#/negozio" style="text-decoration:none">${icon('cart', 'ic sm')}Completa la rosa · ${rosa.ha}/${rosa.serve}</a>`
-    : `<button class="a-btn" id="confirm" ${locked || errors.length ? 'disabled' : ''}>${icon('check', 'ic sm')}${locked ? 'Formazione bloccata' : `Conferma formazione · ${d.starters.filter(Boolean).length}/11`}</button>`}
+    : !locked && giaConfermata
+    ? `<button class="a-btn sec gia-confermata" id="confirm" data-gia="1">${icon('check', 'ic sm')}Formazione già confermata</button>`
+    : `<button class="a-btn" id="confirm" ${locked || errors.length ? 'disabled' : ''}>${icon('check', 'ic sm')}${locked ? 'Formazione bloccata' : `${saved ? 'Conferma modifiche' : 'Conferma formazione'} · ${d.starters.filter(Boolean).length}/11`}</button>`}
       <p class="small muted" style="text-align:center">${b ? `La formazione della ${b.giornata}ª si apre quando la ${n}ª è finita.` : 'Tocca un titolare per cambiarlo o dargli la fascia: il capitano raddoppia bonus e malus (art. 6).'}</p>
     </main>`;
   },
@@ -383,6 +387,7 @@ export const formazione = {
       if (br) { const i = +br.dataset.bench; if (d.bench[i]) foglioPanchinaro(i, d.bench[i]); else foglioPostoPanca(Math.min(i, d.bench.length)); return; }
       const tr = e.target.closest('[data-trib]'); if (tr) { foglioTribuna(tr.dataset.trib); return; }
       if (e.target.closest('#completa-panchina')) { const msg = completa(); ctx.render(); ctx.toast(msg); return; }
+      if (e.target.closest('#confirm')?.dataset.gia) { ctx.toast(`Formazione già confermata · giornata ${n}`); return; }
       if (e.target.closest('#confirm')) {
         const errors = validateLineup({ ...d, starters: d.starters.filter(Boolean), bench: d.bench.filter(Boolean) }, S.playersById);
         if (errors.length) { ctx.toast(errors[0]); return; }

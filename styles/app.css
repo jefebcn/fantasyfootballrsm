@@ -2406,6 +2406,10 @@ a.crow .cls-chev{flex:none;color:var(--text-muted);margin-left:-4px}
 .a-btn:not(.sec):not(.danger):not(.ghost):not(.live):active:not([disabled]){transform:translate(3px,3px);box-shadow:1px 1px 0 var(--c-viola)}
 .a-btn:not(.sec):not(.danger):not(.ghost):not(.live)[disabled]{box-shadow:none}
 .a-btn.sec{font:400 17px/1 var(--font-tito);letter-spacing:.05em;border-radius:14px;color:var(--tito-ink);border-color:var(--tito-ink);text-decoration:none}
+.a-btn.sec.gia-confermata{color:var(--positive-ink);border-color:var(--positive-ink);border-width:2px}
+:root[data-theme="dark"] .a-btn.sec.gia-confermata{color:var(--c-lime);border-color:var(--c-lime)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .a-btn.sec.gia-confermata{color:var(--c-lime);border-color:var(--c-lime)}}
+.a-btn.sec.gia-confermata .ic{stroke-width:3}
 .a-btn.danger{font:400 17px/1 var(--font-tito);letter-spacing:.05em;border-radius:14px}
 .a-btn .ic{stroke-width:2.6}
 

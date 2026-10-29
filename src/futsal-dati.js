@@ -58,7 +58,7 @@ export const CALENDARIO = [
   [7,"juvenes","murata","2026-10-26T21:45:00+01:00","Stadio di Domagnano",1,3],
   [7,"domagnano","trepenne","2026-10-26T22:00:00+01:00","Multieventi Sport Domus",1,5],
   [7,"cailungo","pennarossa","2026-10-27T22:00:00+01:00","Palestra di Acquaviva",1,5],
-  [7,"virtus","sangiovanni","2026-10-28T22:00:00+01:00","Multieventi Sport Domus",null,null],
+  [7,"virtus","sangiovanni","2026-10-28T22:00:00+01:00","Multieventi Sport Domus",4,0],
   [8,"trefiori","trepenne","2026-11-03T20:15:00+01:00","Stadio di Domagnano",null,null],
   [8,"fiorentino","juvenes","2026-11-03T20:15:00+01:00","Stadio di Fiorentino",null,null],
   [8,"folgore","cosmos","2026-11-03T21:45:00+01:00","Stadio di Fiorentino",null,null],
@@ -478,4 +478,5 @@ export const REFERTI = [
   {g:7,casa:"faetano",ospite:"trefiori",distinte:[["f286", "f990", "f992", "f1207", "f171", "f292", "f987", "f986", "f720", "f991"], ["f163", "f222", "f81", "f1237", "f91", "f271", "f699", "f16", "f1239", "f3"]],eventi:[["f292", 58, "yellow"], ["f720", 57, "yellow"], ["f81", 35, "yellow"], ["f991", 32, "yellow"]]},
   {g:7,casa:"juvenes",ospite:"murata",distinte:[["f1218", "f190", "f326", "f159", "f39", "f334", "f965", "f244", "f177", "f146", "f241"], ["f958", "f960", "f1224", "f546", "f1226", "f1007", "f312", "f1223", "f27", "f969", "f212", "f1222"]],eventi:[["f546", 53, "goal"], ["f334", 50, "yellow"], ["f326", 47, "goal"], ["f1224", 39, "goal"], ["f960", 15, "goal"], ["f326", 14, "yellow"]]},
   {g:7,casa:"libertas",ospite:"folgore",distinte:[["f337", "f105", "f134", "f968", "f195", "f281", "f44", "f139", "f1220", "f270", "f96", "f595"], ["f174", "f353", "f152", "f170", "f147", "f1216", "f150", "f173", "f1051", "f1214", "f1215", "f494", "f252"]],eventi:[["f44", 59, "goal"], ["f1220", 52, "yellow"], ["f174", 51, "yellow"], ["f44", 48, "goal"], ["f270", 41, "yellow"], ["f44", 33, "goal"], ["f173", 32, "goal"], ["f44", 27, "yellow"], ["f1215", 25, "goal"]]},
+  {g:7,casa:"virtus",ospite:"sangiovanni",distinte:[["f474", "f64", "f264", "f984", "f145", "f985", "f983", "f363", "f1235", "f261", "f1233", "f1231", "f1232", "f994"], ["f423", "f1008", "f974", "f332", "f276", "f975", "f168", "f977", "f160", "f1227"]],eventi:[["f1235", 56, "goal"], ["f261", 54, "goal"], ["f261", 36, "goal"], ["f984", 34, "goal"], ["f160", 29, "yellow"], ["f264", 26, "yellow"]]},
 ];

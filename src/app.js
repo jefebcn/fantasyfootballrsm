@@ -8,7 +8,7 @@ import * as views from './views/index.js';
 import * as AV from './notifiche.js';
 import { VERSIONE } from './versione.js';
 import { apriNuovaPassword, segnaRecupero, recuperoInCorso } from './views/nuova-password.js';
-import { futsalAttivo, leggiInterruttore, selettore, menuFutsal, formazioneMancante, maskFs, temaFutsal, coloreBarra } from './views/futsal.js';
+import { futsalAttivo, leggiInterruttore, selettore, menuFutsal, formazioneMancante, maskFs, temaFutsal, coloreBarra, temaLuminoso } from './views/futsal.js';
 
 const root = document.getElementById('app');
 let current = null; // { view, params }
@@ -104,7 +104,7 @@ function appbar(view, ctx) {
   const league = S.base.league;
   const kind = (typeof view.appbar === 'function' ? view.appbar(ctx) : view.appbar) || 'main';
   if (kind === 'none') return '';
-  if (kind === 'futsal') return `<header class="a-appbar"><button class="ib" data-open-drawer aria-label="Menu">${icon('menu')}</button><div class="t"><b>Fanta<i>futsal</i></b><span>${esc(view.sub?.(ctx) || view.title)}</span></div><a class="fs-regole" href="#/futsal/regolamento">${mask('fischietto', 'ib-mi')}<span>Regole</span></a></header>`;
+  if (kind === 'futsal') return `<header class="a-appbar"><button class="ib" data-open-drawer aria-label="Menu">${maskFs('menu', 'ib-mi')}</button><div class="t"><b>Fanta<i>futsal</i></b><span>${esc(view.sub?.(ctx) || view.title)}</span></div><a class="fs-regole" href="#/futsal/regolamento">${maskFs('regolamento', 'ib-mi')}<span>Regole</span></a></header>`;
   if (kind === 'back') return `<header class="a-appbar"><button class="ib flip" data-back aria-label="Indietro">${icon('chev')}</button><div class="t"><b>${esc(league.name)}</b><span>${esc(view.sub?.(ctx) || view.title)}</span></div>${view.actions ? view.actions(ctx) : ''}</header>`;
   return `<header class="a-appbar"><button class="ib" data-open-drawer aria-label="Menu">${icon('menu')}</button><div class="t"><b>${esc(league.name)}</b><span>${esc(view.sub?.(ctx) || view.title)}</span></div><button class="ib" data-refresh aria-label="Aggiorna">${mask('pallone-scambio', 'ib-mi')}</button><a class="ib" href="#/regolamento" aria-label="Regolamento">${mask('fischietto', 'ib-mi')}</a><a class="ib" href="#/admin/contestazioni" aria-label="Contestazioni">${icon('bandierina')}${S.contestazioni().some((c) => c.status === 'open') ? '<i class="dot"></i>' : ''}</a></header>`;
 }
@@ -202,18 +202,23 @@ function drawer() {
   // pensare di essere finiti nella sezione sbagliata.
   if (location.hash.startsWith('#/futsal')) {
     const fs = menuFutsal();
-    return `<div class="a-drawer${drawerOpen ? ' on' : ''}"><div class="scrim" data-close-drawer></div><div class="panel">
-    <div class="d-head"><div class="d-io">${fs.stemma || stemma}
+    // Le voci del futsal con le icone del futsal (media/icone/futsal): il
+    // menu deve dire anche lui che si e' in un altro gioco.
+    const voce = (href, ic, label, small = '') => `<a class="d-item fs-voce${location.hash === href ? ' on' : ''}" href="${href}"><i>${maskFs(ic)}</i><span class="et">${label}</span>${small ? `<small>${small}</small>` : ''}</a>`;
+    return `<div class="a-drawer fs-drawer${drawerOpen ? ' on' : ''}"><div class="scrim" data-close-drawer></div><div class="panel">
+    <div class="d-head"><div class="fs-d-marchio">${maskFs('pallone')}<b>Fanta<i>futsal</i></b></div><div class="d-io">${fs.stemma || stemma}
       <span class="d-chi"><b>${esc(nome)}</b><span>${esc(fs.squadra || 'non ancora iscritto al FantaFutsal')}</span></span>
-      <button class="d-esci" data-logout aria-label="Esci dall'account" title="Esci">${icon('exit')}</button></div></div>
-    ${fs.iscritto ? `<div class="d-cta"><a class="a-btn" href="#/futsal/squadra" style="text-decoration:none">${icon('shirt', 'ic sm')}La mia squadra</a></div>` : `<div class="d-cta"><a class="a-btn" href="#/futsal" style="text-decoration:none">Crea la tua squadra</a></div>`}
-    <div class="d-sec"><span class="chip">FantaFutsal</span></div>
-    ${item('#/futsal', 'home', 'Home futsal')}${item('#/futsal/regolamento', 'book', 'Regolamento', 'rosa, schemi, mercato e punti')}${item('#/futsal/classifica', 'cup', 'Classifiche', 'generale, Serie e tifosi')}${item('#/futsal/coppa', 'flag', 'Coppa Titano')}${item('#/futsal/leghe', 'userplus', 'Campionati con gli amici')}
+      <button class="d-esci" data-logout aria-label="Esci dall'account" title="Esci">${maskFs('esci')}</button></div></div>
+    ${fs.iscritto ? `<div class="d-cta"><a class="a-btn" href="#/futsal/squadra" style="text-decoration:none">${maskFs('squadra')}La mia squadra</a></div>` : `<div class="d-cta"><a class="a-btn" href="#/futsal" style="text-decoration:none">Crea la tua squadra</a></div>`}
+    <div class="d-sec"><span class="chip">Il gioco</span></div>
+    ${voce('#/futsal', 'home', 'Home futsal')}${voce('#/futsal/squadra', 'squadra', 'La mia squadra', 'rosa, schema e mercato')}${voce('#/futsal/regolamento', 'regolamento', 'Regolamento', 'rosa, schemi, mercato e punti')}
+    <div class="d-sec"><span class="chip">Competizioni</span></div>
+    ${voce('#/futsal/classifica', 'classifiche', 'Classifiche', 'generale, Serie e tifosi')}${voce('#/futsal/coppa', 'coppa', 'Coppa Titano')}${voce('#/futsal/leghe', 'amici', 'Campionati con gli amici')}
     <div class="d-sec"><span class="chip">Partite e giocatori</span></div>
-    ${item('#/futsal/giornata', 'votes', 'Calendario e voti')}${item('#/futsal/statistiche', 'users', 'Statistiche', 'giocatori, porte e squadre')}
+    ${voce('#/futsal/giornata', 'calendario', 'Calendario e voti')}${voce('#/futsal/statistiche', 'statistiche', 'Statistiche', 'giocatori, porte e squadre')}
     <div class="d-sec"><span class="chip">Altro</span></div>
-    ${item('#/', 'globe', 'Torna al calcio', 'Fantatitano')}${item('#/impostazioni', 'gear', 'Impostazioni', 'account e privacy')}
-    <button class="d-esci-fondo" data-logout>${icon('exit', 'ic sm')}Esci dall'account</button>
+    ${voce('#/', 'calcio', 'Torna al calcio', 'Fantatitano')}${voce('#/impostazioni', 'impostazioni', 'Impostazioni', 'account e privacy')}
+    <button class="d-esci-fondo" data-logout>${maskFs('esci')}Esci dall'account</button>
     <div class="d-foot">Versione ${VERSIONE}<br>Fantatitano Futsal</div>
   </div></div>`;
   }
@@ -319,6 +324,7 @@ function sport(path, prevPath) {
   const meta = document.querySelector('meta[name=theme-color]');
   if (futsal) {
     r.dataset.sport = 'futsal'; r.dataset.fstema = temaFutsal();
+    if (temaLuminoso()) r.dataset.fsluce = ''; else delete r.dataset.fsluce;
     if (meta) meta.content = coloreBarra();
     if (!era && prevPath !== undefined) {
       const v = document.createElement('div');
@@ -326,7 +332,7 @@ function sport(path, prevPath) {
       v.innerHTML = `<b>${maskFs('pallone')}Futsal</b>`;
       document.body.appendChild(v); setTimeout(() => v.remove(), 800);
     }
-  } else if (era) { delete r.dataset.sport; applyTheme(); }
+  } else if (era) { delete r.dataset.sport; delete r.dataset.fsluce; applyTheme(); }
 }
 export function render() {
   const g = gate(resolve(location.hash).path); if (g !== null && g !== resolve(location.hash).path) { location.hash = `#/${g}`; return; }

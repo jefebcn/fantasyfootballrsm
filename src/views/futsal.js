@@ -55,8 +55,13 @@ const TEMA = 'fcs:futsal:tema';
 export const STILI = [
   ['palazzetto', 'Palazzetto', ['#FF6B1A', '#151A23', '#22D3B6'], '#1A202B'],
   ['parquet', 'Parquet', ['#D2591E', '#E2B279', '#11624F'], '#E26A2C'],
-  ['neon', 'Neon', ['#17E6CB', '#191337', '#FF3D9A'], '#2B1B73'],
+  ['neon', 'Neon', ['#17E6CB', '#191337', '#FF3D9A'], '#2B1B73', true],
+  ['arena', 'Arena', ['#2E7BFF', '#0E1120', '#FFE600'], '#0B1330', true],
+  ['retro', 'Retrò', ['#FF3DAE', '#5A1478', '#FF9A3D'], '#2B0B55', true],
+  ['carta', 'Carta', ['#111111', '#F2F0E9', '#FF4B2B'], '#111111', false],
 ];
+/** Gli stili «al neon» accendono gli aloni (data-fsluce, styles/futsal-tema.css). */
+export const temaLuminoso = () => !!STILI.find(([id]) => id === temaFutsal())?.[4];
 export function temaFutsal() {
   try { const t = localStorage.getItem(TEMA); if (STILI.some(([id]) => id === t)) return t; } catch { /* senza storage il primo */ }
   return STILI[0][0];
@@ -66,8 +71,9 @@ export const coloreBarra = () => STILI.find(([id]) => id === temaFutsal())[3];
 function scegliTema(t) {
   try { localStorage.setItem(TEMA, t); } catch { /* resta per questa volta */ }
   document.documentElement.dataset.fstema = t;
+  if (temaLuminoso()) document.documentElement.dataset.fsluce = ''; else delete document.documentElement.dataset.fsluce;
 }
-const stiliProva = () => `<div class="a-card fs-stili"><span>Stile<br>in prova</span><div>${STILI.map(([id, nome, c]) => `<button data-stile="${id}" class="${temaFutsal() === id ? 'on' : ''}"><i style="background:linear-gradient(90deg,${c.join(',')})"></i>${nome}</button>`).join('')}</div></div>`;
+const stiliProva = () => `<div class="a-card fs-stili"><span>Stile in prova · tocca per cambiare</span><div>${STILI.map(([id, nome, c]) => `<button data-stile="${id}" class="${temaFutsal() === id ? 'on' : ''}"><i style="background:linear-gradient(90deg,${c.join(',')})"></i>${nome}</button>`).join('')}</div></div>`;
 function montaStili(root, ctx) {
   root.querySelector('.fs-stili')?.addEventListener('click', (e) => { const b = e.target.closest('[data-stile]'); if (b) { scegliTema(b.dataset.stile); ctx.render(); } });
 }

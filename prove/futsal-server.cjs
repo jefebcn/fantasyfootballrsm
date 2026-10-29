@@ -206,6 +206,13 @@ const ok = [], ko = []; const et = (c, t) => (c ? ok : ko).push(t);
   et(/F3A9C1/.test(await testo()), 'la lega testa a testa ha il suo codice');
   await foto('28-lega');
 
+  // ---- il menu del futsal, con le sue icone
+  await vai('#/futsal/statistiche');
+  await p.click('[data-open-drawer]'); await w(500);
+  et((await p.$$('.fs-drawer .fs-voce')).length === 10, 'il menu del futsal ha le sue 10 voci con le icone del futsal');
+  await foto('29-menu');
+  await p.mouse.click(385, 420); await w(300); // lo sfondo scuro a destra del pannello
+
   et(!errori.length, `nessun errore in pagina${errori.length ? `: ${errori.join(' | ')}` : ''}`);
   await b.close();
   for (const t of ok) console.log(`  ok  ${t}`);

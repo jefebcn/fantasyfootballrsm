@@ -8,7 +8,7 @@ import * as views from './views/index.js';
 import * as AV from './notifiche.js';
 import { VERSIONE } from './versione.js';
 import { apriNuovaPassword, segnaRecupero, recuperoInCorso } from './views/nuova-password.js';
-import { futsalAttivo, leggiInterruttore, selettore, menuFutsal, formazioneMancante } from './views/futsal.js';
+import { futsalAttivo, leggiInterruttore, selettore, menuFutsal, formazioneMancante, maskFs, temaFutsal, coloreBarra } from './views/futsal.js';
 
 const root = document.getElementById('app');
 let current = null; // { view, params }
@@ -104,7 +104,7 @@ function appbar(view, ctx) {
   const league = S.base.league;
   const kind = (typeof view.appbar === 'function' ? view.appbar(ctx) : view.appbar) || 'main';
   if (kind === 'none') return '';
-  if (kind === 'futsal') return `<header class="a-appbar"><button class="ib" data-open-drawer aria-label="Menu">${icon('menu')}</button><div class="t"><b>Fantatitano Futsal</b><span>${esc(view.sub?.(ctx) || view.title)}</span></div><a class="fs-regole" href="#/futsal/regolamento">${mask('fischietto', 'ib-mi')}<span>Regole</span></a></header>`;
+  if (kind === 'futsal') return `<header class="a-appbar"><button class="ib" data-open-drawer aria-label="Menu">${icon('menu')}</button><div class="t"><b>Fanta<i>futsal</i></b><span>${esc(view.sub?.(ctx) || view.title)}</span></div><a class="fs-regole" href="#/futsal/regolamento">${mask('fischietto', 'ib-mi')}<span>Regole</span></a></header>`;
   if (kind === 'back') return `<header class="a-appbar"><button class="ib flip" data-back aria-label="Indietro">${icon('chev')}</button><div class="t"><b>${esc(league.name)}</b><span>${esc(view.sub?.(ctx) || view.title)}</span></div>${view.actions ? view.actions(ctx) : ''}</header>`;
   return `<header class="a-appbar"><button class="ib" data-open-drawer aria-label="Menu">${icon('menu')}</button><div class="t"><b>${esc(league.name)}</b><span>${esc(view.sub?.(ctx) || view.title)}</span></div><button class="ib" data-refresh aria-label="Aggiorna">${mask('pallone-scambio', 'ib-mi')}</button><a class="ib" href="#/regolamento" aria-label="Regolamento">${mask('fischietto', 'ib-mi')}</a><a class="ib" href="#/admin/contestazioni" aria-label="Contestazioni">${icon('bandierina')}${S.contestazioni().some((c) => c.status === 'open') ? '<i class="dot"></i>' : ''}</a></header>`;
 }
@@ -122,12 +122,13 @@ function appbar(view, ctx) {
  */
 // Le voci in basso come quelle di Dunkest: la squadra, le statistiche, il
 // calendario con i voti e le classifiche (FUTSAL.md § 13.10).
-const NAV_FUTSAL = [['futsal', 'campo', 'Home'], ['futsal/squadra', 'maglia-10', 'Squadra'], ['futsal/statistiche', 'grafico', 'Statistiche'],
-  ['futsal/giornata', 'calendario', 'Calendario'], ['futsal/classifica', 'coppa', 'Classifiche']];
+// Le icone sono quelle del futsal (media/icone/futsal), non le sagome del calcio.
+const NAV_FUTSAL = [['futsal', 'home', 'Home'], ['futsal/squadra', 'squadra', 'Squadra'], ['futsal/statistiche', 'statistiche', 'Statistiche'],
+  ['futsal/giornata', 'calendario', 'Calendario'], ['futsal/classifica', 'classifiche', 'Classifiche']];
 function navFutsal(path) {
   const attiva = path.split('/').slice(0, 2).join('/');
   const manca = formazioneMancante();
-  return `<nav class="a-nav">${NAV_FUTSAL.map(([p, ic, l]) => `<a href="#/${p}" class="${attiva === p ? 'on' : ''}"><i class="np">${mask(ic)}${p === 'futsal/squadra' && manca ? '<i class="dot"></i>' : ''}</i><span>${l}</span></a>`).join('')}</nav>`;
+  return `<nav class="a-nav">${NAV_FUTSAL.map(([p, ic, l]) => `<a href="#/${p}" class="${attiva === p ? 'on' : ''}"><i class="np">${maskFs(ic)}${p === 'futsal/squadra' && manca ? '<i class="dot"></i>' : ''}</i><span>${l}</span></a>`).join('')}</nav>`;
 }
 function nav(path) {
   if (path.startsWith('futsal')) return navFutsal(path);
@@ -306,6 +307,27 @@ function gate(path) {
   if (st === 'no-league' && path.startsWith('futsal')) return null;
   return target;
 }
+/**
+ * Dentro il futsal la radice porta data-sport="futsal" e lo stile scelto:
+ * styles/futsal-tema.css ridipinge tutta l'app da li'. Entrando dal calcio
+ * c'e' il velo col nome del gioco, perche' si capisca che si e' cambiato.
+ */
+function sport(path, prevPath) {
+  const r = document.documentElement;
+  const era = r.dataset.sport === 'futsal';
+  const futsal = path.startsWith('futsal');
+  const meta = document.querySelector('meta[name=theme-color]');
+  if (futsal) {
+    r.dataset.sport = 'futsal'; r.dataset.fstema = temaFutsal();
+    if (meta) meta.content = coloreBarra();
+    if (!era && prevPath !== undefined) {
+      const v = document.createElement('div');
+      v.className = 'fs-ingresso'; v.setAttribute('aria-hidden', 'true');
+      v.innerHTML = `<b>${maskFs('pallone')}Futsal</b>`;
+      document.body.appendChild(v); setTimeout(() => v.remove(), 800);
+    }
+  } else if (era) { delete r.dataset.sport; applyTheme(); }
+}
 export function render() {
   const g = gate(resolve(location.hash).path); if (g !== null && g !== resolve(location.hash).path) { location.hash = `#/${g}`; return; }
   const { view, params, path } = resolve(location.hash);
@@ -315,6 +337,7 @@ export function render() {
   if (prevPath !== undefined) { const m = root.querySelector('.a-body'); if (m) scrollMemo[prevPath] = m.scrollTop; }
   current = { view, params, path };
   document.title = `${view.title} · Fantatitano`;
+  sport(path, prevPath);
   // senza barra in basso e' il corpo a dover stare sopra la tacca del telefono:
   // con la barra ci pensa lei, e sommarli lascerebbe un vuoto in fondo.
   // Senza una lega la barra non c'e': Rosa, Calendario, Classifica e Voti

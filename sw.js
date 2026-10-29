@@ -1,7 +1,7 @@
 /* Service worker — shell in cache, aggiornamento in background. */
 const VERSION = 'fcs-v4.2.231';
 const SHELL = [
-  './', './index.html', './manifest.webmanifest', './styles/app.css', './styles/logo.css', './styles/font.css', './design/tokens/tokens.css',
+  './', './index.html', './manifest.webmanifest', './styles/app.css', './styles/futsal-tema.css', './styles/logo.css', './styles/font.css', './design/tokens/tokens.css',
   // I caratteri stanno in casa: nella cache ci vanno, se no senza rete si vede
   // il ripiego di sistema. Solo le varianti latin, le altre entrano al bisogno.
   './media/font/lato-400-latin.woff2', './media/font/lato-700-latin.woff2',

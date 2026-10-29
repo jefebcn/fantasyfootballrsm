@@ -42,10 +42,35 @@ export function leggiInterruttore() {
   try { localStorage.setItem(CHIAVE, m[1]); } catch { /* senza storage resta come dice il profilo */ }
 }
 
+/** Le icone disegnate per il futsal (media/icone/futsal), colorate dalla CSS come quelle del calcio. */
+export const maskFs = (name, cls = '') => `<i class="mi ${cls}" style="--m:url(/media/icone/futsal/${name}.svg)"></i>`;
+
 /** Calcio | Futsal, in cima alle due home. */
 export const selettore = (sport) => `<div class="seg seg-cls sport-sw" role="tablist" aria-label="Sport">
   <a role="tab" class="${sport === 'calcio' ? 'on' : ''}" href="#/">Calcio</a>
-  <a role="tab" class="${sport === 'futsal' ? 'on' : ''}" href="#/futsal">Futsal</a></div>`;
+  <a role="tab" class="${sport === 'futsal' ? 'on' : ''}" href="#/futsal">${maskFs('pallone')}Futsal</a></div>`;
+
+// ---- lo stile del futsal (styles/futsal-tema.css): tre in prova, si sceglie dalla home
+const TEMA = 'fcs:futsal:tema';
+export const STILI = [
+  ['palazzetto', 'Palazzetto', ['#FF6B1A', '#151A23', '#22D3B6'], '#1A202B'],
+  ['parquet', 'Parquet', ['#D2591E', '#E2B279', '#11624F'], '#E26A2C'],
+  ['neon', 'Neon', ['#17E6CB', '#191337', '#FF3D9A'], '#2B1B73'],
+];
+export function temaFutsal() {
+  try { const t = localStorage.getItem(TEMA); if (STILI.some(([id]) => id === t)) return t; } catch { /* senza storage il primo */ }
+  return STILI[0][0];
+}
+/** Il colore della barra del telefono per il tema del futsal. */
+export const coloreBarra = () => STILI.find(([id]) => id === temaFutsal())[3];
+function scegliTema(t) {
+  try { localStorage.setItem(TEMA, t); } catch { /* resta per questa volta */ }
+  document.documentElement.dataset.fstema = t;
+}
+const stiliProva = () => `<div class="a-card fs-stili"><span>Stile<br>in prova</span><div>${STILI.map(([id, nome, c]) => `<button data-stile="${id}" class="${temaFutsal() === id ? 'on' : ''}"><i style="background:linear-gradient(90deg,${c.join(',')})"></i>${nome}</button>`).join('')}</div></div>`;
+function montaStili(root, ctx) {
+  root.querySelector('.fs-stili')?.addEventListener('click', (e) => { const b = e.target.closest('[data-stile]'); if (b) { scegliTema(b.dataset.stile); ctx.render(); } });
+}
 
 // ---------------------------------------------------------------- piccoli pezzi
 const colore = new Map(CLUBS.map((c) => [c.id, c]));
@@ -197,6 +222,7 @@ export const futsalHome = {
     const rUltima = ultima && (io || !srv.attivo) ? risultatoDi(ultima) : null;
     return `<main class="a-body fs">
       ${selettore('futsal')}
+      ${stiliProva()}
       ${nuovo ? `${comeSiGioca()}${iscrizione()}` : ''}
       ${io || !srv.attivo ? `<a class="fs-banda" href="#/futsal/squadra">
         <div class="fs-banda-top">${io ? crest({ color: io.colore, initials: io.iniziali }) : stemma('cailungo')}<div><b>${esc(io?.squadra || 'La mia squadra')}</b><span>${io ? posto(ids, giocate) : 'sul telefono'}${rUltima ? ` · ${ultima}ª: ${fmt(rUltima.totale)} pt` : ''}</span></div>${icon('chev', 'ic sm')}</div>
@@ -219,7 +245,7 @@ export const futsalHome = {
       ${nuovo ? '' : comeSiGioca()}
     </main>`;
   },
-  mount(root, ctx) { caricaE(ctx); montaIscrizione(root, ctx); },
+  mount(root, ctx) { caricaE(ctx); montaIscrizione(root, ctx); montaStili(root, ctx); },
 };
 
 /** I leader della giornata: i migliori per punti e per plusvalenza. */
@@ -321,7 +347,7 @@ export const futsalSquadra = {
         <span><b>${bil.primo !== null && bil.primo < n ? bil.cambi : '∞'}</b>${bil.primo !== null && bil.primo < n ? `cambi${bil.malus ? ` · −${bil.malus} pt` : ''}` : 'cambi'}</span>
       </div>
       <p class="small muted fs-nota">${esc(m.testo)}.${m.aperto ? ` ${bil.primo !== null && bil.primo < n ? `${R.cambiGratis === 1 ? 'Un cambio gratis' : `${R.cambiGratis} cambi gratis`}, poi −${R.malusCambio} punto a cambio.` : 'Prima rosa: cambi illimitati e gratis.'}` : ' Puoi cambiare schema, chi va in campo, sesto uomo e capitano, ma non comprare o vendere.'}</p>
-      <div class="seg seg-cls fs-schemi" role="tablist" aria-label="Schema">${Object.keys(R.schemi).map((k) => `<button data-schema="${k}" class="${b.schema === k ? 'on' : ''}">${k}${k === R.bonusDifesa.schema ? ' · bonus difesa' : ''}</button>`).join('')}</div>
+      <div class="seg seg-cls fs-schemi" role="tablist" aria-label="Schema">${Object.keys(R.schemi).map((k) => `<button data-schema="${k}" class="${b.schema === k ? 'on' : ''}">${k}${k === R.bonusDifesa.schema ? ' bonus' : ''}</button>`).join('')}</div>
       <div class="fs-campo">${CAMPO}
         <div class="fs-linea">${linea('A', s.A)}</div>
         <div class="fs-linea">${linea('D', s.D)}</div>
@@ -569,7 +595,7 @@ export const futsalGiocatore = {
       <div class="a-card fs-prossime">${prossime.map((p) => { const casa = p.casa === club; const o = casa ? p.ospite : p.casa; return `<div><small>${p.quando ? `${dateIt(p.quando)}` : `${p.g}ª`}</small><small>${p.quando ? timeIt(p.quando) : ''}</small>${stemma(o)}<b>${casa ? 'vs' : '@'} ${esc(nomeSq(o))}</b></div>`; }).join('') || '<p class="small muted">Nessuna partita in calendario.</p>'}</div>
       ${sec('Forma')}
       <div class="a-card fs-forma"><span><b>${media(giocate.slice(-3)) == null ? '–' : fmt(media(giocate.slice(-3)))}</b>media ultime 3</span><span><b>${media(giocate.slice(-5)) == null ? '–' : fmt(media(giocate.slice(-5)))}</b>media ultime 5</span><span><b>${x.presenze}</b>${porta ? 'partite' : 'presenze'}</span></div>
-      ${sec('Fantapunti giornata per giornata')}<div class="a-card">${trend}<p class="small muted" style="margin:8px 0 0">Rosso sotto il 6, giallo fino a 9, verde da 9 in su. Grigio: riposo o partita non giocata.</p></div>
+      ${sec('Punti per giornata')}<div class="a-card">${trend}<p class="small muted" style="margin:8px 0 0">Rosso sotto il 6, giallo fino a 9, verde da 9 in su. Grigio: riposo o partita non giocata.</p></div>
       ${sec('Quotazione')}<div class="a-card">${linea}<p class="small muted" style="margin:6px 0 0">Si muove dopo ogni giornata: sale se fa più punti di quanti ne promette il suo prezzo, scende se ne fa meno.</p></div>
       ${porta ? (() => { const q = sp().get(club); return `${sec('Numeri')}<div class="a-card fs-forma"><span><b>${q.subiti}</b>gol subiti</span><span><b>${q.inviolate}</b>inviolate</span><span><b>${q.v}-${q.n}-${q.p}</b>V-N-P</span></div>`; })()
     : `${sec('Numeri')}<div class="a-card fs-forma"><span><b>${x.gol}</b>gol</span><span><b>${x.amm}</b>ammonizioni</span><span><b>${x.esp}</b>espulsioni</span><span><b>${x.autogol + x.rs}</b>autogol e rigori sbagliati</span></div>`}`

@@ -24,13 +24,15 @@ const ok = [], ko = []; const et = (c, t) => (c ? ok : ko).push(t);
   const b = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium' }).catch(() => chromium.launch());
   const ctx = await b.newContext({ viewport: { width: 393, height: 852 }, deviceScaleFactor: 2, timezoneId: 'Europe/Rome', locale: 'it-IT', isMobile: true, hasTouch: true, serviceWorkers: 'block' });
   await ctx.clock.setFixedTime(new Date(ORA));
-  await ctx.addInitScript(() => {
+  // FSTEMA=palazzetto|parquet|neon: lo stile del futsal (styles/futsal-tema.css)
+  await ctx.addInitScript((tema) => {
     window.__SUPABASE_JS__ = '/tests/mock-supabase.js';
     localStorage.setItem('fcs:auth', 'supabase');
     localStorage.setItem('fcs:prefs', JSON.stringify({ onboarded: true, guidaVista: true, theme: 'light' }));
     localStorage.setItem('fcs:supabase', JSON.stringify({ url: 'https://mock.supabase.co', key: 'mock-key-mock-key-mock' }));
     localStorage.setItem('fcs:futsal', '1');
-  });
+    if (tema) localStorage.setItem('fcs:futsal:tema', tema);
+  }, process.env.FSTEMA || '');
   const p = await ctx.newPage();
   const errori = []; p.on('pageerror', (e) => errori.push(e.message));
   const w = (ms = 500) => p.waitForTimeout(ms);

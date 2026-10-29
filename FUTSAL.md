@@ -417,3 +417,14 @@ campionati principali, «I miei campionati», i leader e le partite.
 3. Al lancio: applicare `futsal-04-rosa.sql` e `futsal-05-quotazioni.sql`,
    e far rigenerare/applicare le quotazioni dopo ogni importazione (oggi è a
    mano, come futsal-02).
+
+### 13.12 La grafica del futsal (29/10/2026)
+Dentro il futsal l'app è un'altra: la radice prende `data-sport="futsal"` e
+`styles/futsal-tema.css` ridefinisce variabili e forme, senza toccare il
+calcio. Fra sei stili provati dal vivo Alex ha scelto **i colori del «Carta»
+con la struttura dell'«Arena»**: carta chiara, inchiostro nero e un solo
+colore (rosso-arancio `#FF4B2B`), titoli e numeri in Teko; schede, campo e
+menu con gli angoli tagliati, tasti e linguette a parallelogramma, barretta
+inclinata nei titoli, barra rossa sopra la voce scelta in basso. Icone
+proprie in `media/icone/futsal` (barra in basso, menu, selettore), menu
+laterale proprio, velo nero col nome del gioco quando si arriva dal calcio.

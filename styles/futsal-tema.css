@@ -3,371 +3,170 @@
    l'icona del futsal la schermata deve essere separata»).
 
    Come funziona. Entrando in #/futsal app.js mette data-sport="futsal" sulla
-   radice, e data-fstema col tema scelto. Qui si ridefiniscono SOLO le
-   variabili (design/tokens/tokens.css): colori, sfondi, caratteri. I
-   componenti restano quelli, e cosi' tutto cambia insieme — barra in alto,
-   barra in basso, menu, fogli, tasti — senza toccare una riga del calcio.
+   radice. Qui si ridefiniscono le variabili (design/tokens/tokens.css) —
+   colori, sfondi, caratteri — e la forma di schede, tasti e barre: cambiano
+   insieme barra in alto, barra in basso, menu, fogli e tasti, senza toccare
+   una riga del calcio. Anche le variabili «del calcio» (--c-lime, --c-viola,
+   --font-tito) sono ridefinite: i tasti lime con l'ombra viola dello stile
+   di Tito qui diventano quelli del futsal.
 
-   Anche le variabili «del calcio» (--c-lime, --c-viola, --font-tito) sono
-   ridefinite: i tasti lime con l'ombra viola dello stile di Tito qui
-   diventano i tasti del futsal, con la loro forma.
-
-   Sei stili in prova, da scegliere guardandoli dal vivo:
-     palazzetto  scuro, arancione dei riflettori e verde acqua, numeri stretti
-     parquet     chiaro e caldo, legno e terracotta, carattere morbido
-     neon        notturno viola, ciano e magenta, numeri da tabellone
-   e tre che cambiano anche la STRUTTURA, non solo i colori (Alex, 29/10:
-   «uno stile diverso dei tre, ma anche tutta la struttura dell'app»):
-     arena       nero e blu elettrico, angoli tagliati, tasti a parallelogramma,
-                 la voce scelta in basso segnata da una barra di luce
-     retro       tramonto anni '80, schede di vetro molto tonde, barra in
-                 basso che galleggia, titolo al centro, solo icone
-     carta       chiaro come un giornale: bordi neri, niente ombre, titoli
-                 alti e stretti, tasti neri squadrati
+   LO STILE (scelto da Alex il 29/10 fra sei provati dal vivo): i colori del
+   «Carta» con la struttura dell'«Arena».
+     Carta  chiaro come un giornale sportivo: carta, inchiostro nero, un solo
+            colore (rosso-arancio), titoli alti e stretti (Teko), niente ombre
+     Arena  angoli tagliati a schede e campo, tasti e linguette a
+            parallelogramma, titoli di sezione con la barretta inclinata, la
+            voce scelta in basso segnata da una barra sopra l'icona
    ========================================================================== */
 
-@font-face{font-family:'Saira Condensed';font-style:normal;font-weight:600;font-display:swap;src:url('../media/font/saira-condensed-600-latin.woff2') format('woff2')}
-@font-face{font-family:'Saira Condensed';font-style:normal;font-weight:800;font-display:swap;src:url('../media/font/saira-condensed-800-latin.woff2') format('woff2')}
-@font-face{font-family:'Chakra Petch';font-style:normal;font-weight:600;font-display:swap;src:url('../media/font/chakra-petch-600-latin.woff2') format('woff2')}
-@font-face{font-family:'Chakra Petch';font-style:normal;font-weight:700;font-display:swap;src:url('../media/font/chakra-petch-700-latin.woff2') format('woff2')}
 @font-face{font-family:'Teko';font-style:normal;font-weight:300 700;font-display:swap;src:url('../media/font/teko-latin.woff2') format('woff2')}
-@font-face{font-family:'Orbitron';font-style:normal;font-weight:400 900;font-display:swap;src:url('../media/font/orbitron-latin.woff2') format('woff2')}
-@font-face{font-family:'Oxanium';font-style:normal;font-weight:200 800;font-display:swap;src:url('../media/font/oxanium-latin.woff2') format('woff2')}
-@font-face{font-family:'Bricolage Grotesque';font-style:normal;font-weight:200 800;font-display:swap;src:url('../media/font/bricolage-grotesque-latin.woff2') format('woff2')}
 
-/* I valori di partenza delle variabili del futsal: quelli di prima. */
+/* I valori di partenza delle variabili del futsal: styles/app.css le usa
+   nelle sue regole, quindi non devono mancare nemmeno fuori dal futsal. */
 :root{
-  --fs-scuro:#0D1733; --fs-scuro-2:#162657; --fs-grad-banda:linear-gradient(135deg,#162657,#0D1733);
-  --fs-evid:#FFC94D; --fs-on-evid:#0D1733;
-  --fs-campo:repeating-linear-gradient(90deg,rgba(0,0,0,.035) 0 9%,rgba(255,255,255,.05) 9% 18%),linear-gradient(180deg,#d9a86a,#c58d4f);
-  --fs-righe:rgba(255,255,255,.85);
-  --fp-r:#FADADB; --fp-r-ink:#7A1F23; --fp-g:#F4F7C9; --fp-g-ink:#4A4A0E; --fp-v:#C9F5DF; --fp-v-ink:#0E4A2D;
-  --fp-r-barra:#F3A7AB; --fp-g-barra:#E3EA7E; --fp-v-barra:#7FDDB0;
-}
-
-/* ---------------------------------------------------------------- comune */
-:root[data-sport="futsal"]{
-  --font-display:var(--fs-font);
-  --font-tito:var(--fs-font);
-  --font-data:var(--fs-font-num);
-  --c-lime:var(--primary);
-  --c-lime-600:var(--primary-hover);
-  --c-viola:var(--fs-secondo);
-  --c-viola-700:var(--fs-secondo);
-  --c-inchiostro:var(--on-primary);
-  --tito-ink:var(--primary-ink);
-  --accent:var(--fs-evid);
-  --on-accent:var(--fs-on-evid);
-}
-/* Lo sfondo: le righe di un campo, appena accennate, dietro a tutto. */
-[data-sport="futsal"] .app{background:var(--fs-sfondo,none),var(--bg)}
-[data-sport="futsal"] .a-body{background:transparent}
-
-/* I tasti del futsal: pillole piene, senza l'ombra a scalino di Tito. */
-[data-sport="futsal"] .a-btn:not(.sec):not(.danger):not(.ghost):not(.live){background:var(--primary);color:var(--on-primary);
-  font:800 17px/1 var(--fs-font);letter-spacing:.04em;text-transform:uppercase;border-radius:999px;
-  box-shadow:0 8px 20px -10px var(--primary)}
-[data-sport="futsal"] .a-btn:not(.sec):not(.danger):not(.ghost):not(.live):active:not([disabled]){transform:scale(.97);box-shadow:none}
-[data-sport="futsal"] .a-btn.sec{font:800 16px/1 var(--fs-font);text-transform:uppercase;border-radius:999px;color:var(--primary-ink);border-color:var(--primary-ink);background:transparent}
-[data-sport="futsal"] .seg-cls{background:var(--surface);border-radius:999px;padding:4px}
-[data-sport="futsal"] .seg-cls button{font:800 15px/1 var(--fs-font);border-radius:999px;color:var(--text-muted)}
-[data-sport="futsal"] .seg-cls button.on{background:var(--primary);color:var(--on-primary);box-shadow:none}
-[data-sport="futsal"] .chip{border-radius:999px}
-[data-sport="futsal"] .chip.on,[data-sport="futsal"] .fs a.chip.on{background:var(--fs-secondo);border-color:var(--fs-secondo);color:var(--on-secondo)}
-[data-sport="futsal"] .a-sec b{font:800 20px/1.1 var(--fs-font);letter-spacing:.02em}
-[data-sport="futsal"] .vr .fv,[data-sport="futsal"] .fp,[data-sport="futsal"] .fs-prezzo{font-family:var(--fs-font-num);font-variant-numeric:tabular-nums}
-
-/* La barra in alto: il nome del gioco grande, nel carattere del futsal. */
-[data-sport="futsal"] .a-appbar{background:var(--grad-header);border-bottom:2px solid var(--primary)}
-[data-sport="futsal"] .a-appbar .t b{font:800 22px/1 var(--fs-font);font-style:normal;letter-spacing:.02em;text-transform:uppercase}
-[data-sport="futsal"] .a-appbar .t b i{font-style:normal;color:var(--fs-titolo,var(--primary))}
-[data-sport="futsal"] .fs-regole{background:var(--primary);color:var(--on-primary)}
-[data-sport="futsal"] .fs-regole .mi{background-color:var(--on-primary)}
-
-/* La barra in basso: le icone disegnate per il futsal, la pastiglia del tema. */
-[data-sport="futsal"] .a-nav{background:var(--fs-nav,var(--surface));border-top:1px solid var(--border)}
-[data-sport="futsal"] .a-nav a.on .np{background:var(--primary)}
-[data-sport="futsal"] .a-nav a.on .np .mi{background-color:var(--on-primary)}
-[data-sport="futsal"] .a-nav a.on{color:var(--primary-ink)}
-[data-sport="futsal"] .a-nav span{font:600 11px var(--font-body)}
-
-/* Il menu laterale e i fogli che salgono prendono le superfici del tema. */
-[data-sport="futsal"] .d-head{background:var(--grad-header)}
-[data-sport="futsal"] .a-drawer .panel,[data-sport="futsal"] #sheet{background:var(--surface);color:var(--text)}
-
-/* Il campo e le maglie: ogni tema ha il suo parquet. */
-[data-sport="futsal"] .fs-campo{box-shadow:inset 0 0 0 2px var(--fs-righe),0 10px 30px -12px rgba(0,0,0,.5)}
-
-/* Il passaggio dal calcio al futsal: un velo del colore del tema col nome
-   del gioco, che si apre in mezzo secondo. */
-.fs-ingresso{position:fixed;inset:0;z-index:999;display:grid;place-items:center;pointer-events:none;
-  background:var(--fs-velo,var(--grad-header));color:#fff;animation:fs-velo .75s cubic-bezier(.7,0,.3,1) forwards}
-.fs-ingresso b{font:800 54px/1 var(--fs-font);letter-spacing:.04em;text-transform:uppercase;display:flex;align-items:center;gap:12px;animation:fs-nome .75s ease forwards}
-.fs-ingresso .mi{width:48px;height:48px;background-color:var(--fs-titolo,var(--primary));animation:fs-palla .75s ease forwards}
-@keyframes fs-velo{0%,45%{clip-path:circle(150% at 50% 50%)}100%{clip-path:circle(0% at 50% 50%)}}
-@keyframes fs-nome{0%{transform:scale(.8);opacity:0}30%{transform:scale(1);opacity:1}70%{opacity:1}100%{opacity:0}}
-@keyframes fs-palla{0%{transform:translateX(-120px) rotate(-360deg)}35%{transform:none}}
-@media (prefers-reduced-motion:reduce){.fs-ingresso{display:none}}
-
-/* Il pulsante Futsal nel selettore del calcio: gia' col colore del futsal. */
-.sport-sw a[href="#/futsal"]{display:flex;align-items:center;justify-content:center;gap:6px}
-.sport-sw a[href="#/futsal"] .mi{width:18px;height:18px}
-
-/* La scelta dello stile, finche' e' in prova */
-.fs-stili{display:flex;align-items:center;gap:8px;padding:8px 12px}
-.fs-stili>span{font:700 11px var(--font-body);text-transform:uppercase;letter-spacing:.06em;color:var(--text-muted)}
-.fs-stili>div{display:flex;gap:6px;flex:1}
-.fs-stili button{flex:1;border:2px solid var(--border);background:var(--surface-2);color:var(--text);border-radius:12px;padding:6px 4px;font:700 12px var(--font-body);cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px}
-.fs-stili button i{display:block;width:100%;height:10px;border-radius:5px}
-.fs-stili button.on{border-color:var(--primary)}
-
-/* ======================================================= 1 · PALAZZETTO */
-:root[data-sport="futsal"][data-fstema="palazzetto"]{
-  --fs-font:'Saira Condensed','Arial Narrow',sans-serif; --fs-font-num:'Saira Condensed','Arial Narrow',sans-serif;
-  --bg:#0B0E14; --surface:#151A23; --surface-2:#1B212C; --surface-sunk:#0F131A; --border:#252C38; --border-strong:#36404F;
-  --text:#EEF2F7; --text-muted:#8E9AAC; --text-invert:#0B0E14;
-  --primary:#FF6B1A; --primary-hover:#FF8540; --primary-soft:rgba(255,107,26,.16); --on-primary:#170A02; --primary-ink:#FF9A5C;
-  --fs-secondo:#22D3B6; --on-secondo:#04201B;
-  --positive:#2FCB8A; --positive-soft:rgba(47,203,138,.16); --positive-ink:#6FE3B1;
-  --negative:#FF5A5F; --negative-soft:rgba(255,90,95,.16); --negative-ink:#FF9A9D;
-  --warning:#F5B83D; --warning-soft:rgba(245,184,61,.16); --on-warning-soft:#F5C76B;
-  --accent-soft:rgba(255,210,63,.16); --on-accent-soft:#FFD23F; --accent-ink:#FFD23F;
-  --grad-header:linear-gradient(180deg,#1A202B 0%,#0D1118 100%);
-  --grad-hero:linear-gradient(160deg,#2A1406 0%,#0D1118 70%);
-  --sh-card:0 1px 2px rgba(0,0,0,.5),0 6px 18px rgba(0,0,0,.4);
-  --fs-scuro:#0F131A; --fs-scuro-2:#1C2330; --fs-grad-banda:linear-gradient(135deg,#2B1608 0%,#151A23 55%,#0F131A 100%);
-  --fs-evid:#FFD23F; --fs-on-evid:#1A1300;
-  --fs-campo:radial-gradient(ellipse at 50% 50%,rgba(255,255,255,.06),transparent 60%),linear-gradient(180deg,#1F4C7A 0%,#173B60 100%);
-  --fs-righe:rgba(255,255,255,.9);
-  --fs-nav:#10141B;
-  --fs-sfondo:radial-gradient(circle at 50% -10%,rgba(255,107,26,.18),transparent 45%);
-  --fp-r:rgba(255,90,95,.18); --fp-r-ink:#FF9A9D; --fp-g:rgba(255,210,63,.16); --fp-g-ink:#FFD86B; --fp-v:rgba(47,203,138,.18); --fp-v-ink:#6FE3B1;
-  --fp-r-barra:#E0565B; --fp-g-barra:#E5B935; --fp-v-barra:#2FCB8A;
-}
-
-/* ========================================================== 2 · PARQUET */
-:root[data-sport="futsal"][data-fstema="parquet"]{
-  --fs-font:'Bricolage Grotesque','Segoe UI',sans-serif; --fs-font-num:'Bricolage Grotesque','Segoe UI',sans-serif;
-  --fs-titolo:#3A2414;
-  --bg:#F3EBDF; --surface:#FFFCF7; --surface-2:#FAF4EA; --surface-sunk:#EDE2D2; --border:#E3D3BD; --border-strong:#D2BC9E;
-  --text:#2B1C10; --text-muted:#7E6A54; --text-invert:#FFFFFF;
-  --primary:#D2591E; --primary-hover:#B9481A; --primary-soft:#FBE3D3; --on-primary:#FFFFFF; --primary-ink:#A8410F;
-  --fs-secondo:#11624F; --on-secondo:#FFFFFF;
-  --positive:#1E8A5C; --positive-soft:#DDF1E6; --positive-ink:#13603F;
-  --negative:#C53B2F; --negative-soft:#F9E1DD; --negative-ink:#A12C22;
-  --accent-soft:#FBEFD2; --on-accent-soft:#8A5A06; --accent-ink:#8A5A06;
-  --grad-header:linear-gradient(180deg,#E26A2C 0%,#BC4A1B 100%);
-  --grad-hero:linear-gradient(180deg,#C4511D 0%,#7A2E10 100%);
-  --sh-card:0 1px 2px rgba(80,45,10,.08),0 6px 16px rgba(80,45,10,.08);
-  --fs-scuro:#3A2414; --fs-scuro-2:#4E321C; --fs-grad-banda:linear-gradient(135deg,#5A3519 0%,#3A2414 100%);
-  --fs-evid:#F2B640; --fs-on-evid:#2B1C10;
-  --fs-campo:repeating-linear-gradient(90deg,rgba(0,0,0,.04) 0 7%,rgba(255,255,255,.06) 7% 14%),linear-gradient(180deg,#E2B279 0%,#C98F55 100%);
-  --fs-righe:rgba(255,255,255,.92);
-  --fs-sfondo:repeating-linear-gradient(90deg,rgba(120,70,20,.035) 0 60px,transparent 60px 120px);
-  --fp-r:#F9DCD6; --fp-r-ink:#8E271D; --fp-g:#F8EBC8; --fp-g-ink:#6B4A05; --fp-v:#D7EFDF; --fp-v-ink:#145236;
-  --fp-r-barra:#E39B8F; --fp-g-barra:#E8C46A; --fp-v-barra:#7CC59B;
-}
-
-/* ============================================================= 3 · NEON */
-:root[data-sport="futsal"][data-fstema="neon"]{
-  --fs-font:'Chakra Petch','Arial Narrow',sans-serif; --fs-font-num:'Chakra Petch','Arial Narrow',sans-serif;
-  --bg:#0D0922; --surface:#191337; --surface-2:#211A47; --surface-sunk:#120D2B; --border:#2D2463; --border-strong:#3D3381;
-  --text:#F2EEFF; --text-muted:#A69ED0; --text-invert:#0D0922;
-  --primary:#17E6CB; --primary-hover:#55F0DB; --primary-soft:rgba(23,230,203,.14); --on-primary:#02211D; --primary-ink:#5FF3DF;
-  --fs-secondo:#FF3D9A; --on-secondo:#2A0016;
-  --positive:#3EE08F; --positive-soft:rgba(62,224,143,.15); --positive-ink:#7DF0B5;
-  --negative:#FF4D6D; --negative-soft:rgba(255,77,109,.16); --negative-ink:#FF95A8;
-  --warning:#FFC247; --warning-soft:rgba(255,194,71,.15); --on-warning-soft:#FFD27A;
-  --accent-soft:rgba(255,61,154,.16); --on-accent-soft:#FF8DC2; --accent-ink:#FF8DC2;
-  --grad-header:linear-gradient(180deg,#2B1B73 0%,#150E3A 100%);
-  --grad-hero:linear-gradient(160deg,#3B1D8F 0%,#150E3A 70%);
-  --sh-card:0 1px 2px rgba(0,0,0,.5),0 0 0 1px rgba(124,99,255,.12),0 8px 22px rgba(0,0,0,.45);
-  --fs-scuro:#120D2B; --fs-scuro-2:#251B5C; --fs-grad-banda:linear-gradient(135deg,#3A1A8C 0%,#1B1342 60%,#120D2B 100%);
-  --fs-evid:#FF3D9A; --fs-on-evid:#FFFFFF;
-  --fs-campo:radial-gradient(ellipse at 50% 50%,rgba(23,230,203,.10),transparent 60%),linear-gradient(180deg,#1E1650 0%,#140E38 100%);
-  --fs-righe:rgba(23,230,203,.85);
-  --fs-nav:#110C2A;
-  --fs-sfondo:radial-gradient(circle at 15% 0%,rgba(255,61,154,.16),transparent 40%),radial-gradient(circle at 90% 10%,rgba(23,230,203,.14),transparent 40%);
-  --fp-r:rgba(255,77,109,.18); --fp-r-ink:#FF95A8; --fp-g:rgba(255,194,71,.16); --fp-g-ink:#FFD27A; --fp-v:rgba(23,230,203,.16); --fp-v-ink:#5FF3DF;
-  --fp-r-barra:#FF4D6D; --fp-g-barra:#FFC247; --fp-v-barra:#17E6CB;
-}
-
-/* Le luci: negli stili «al neon» tasti, pastiglie, titoli e righe del campo
-   fanno alone. --fs-glow e' il colore dell'alone; senza, niente alone. */
-[data-sport="futsal"][data-fsluce] .a-btn:not(.sec):not(.danger):not(.ghost):not(.live){box-shadow:0 0 18px -2px var(--fs-glow),0 0 2px var(--fs-glow)}
-[data-sport="futsal"][data-fsluce] .seg-cls button.on,[data-sport="futsal"][data-fsluce] .a-nav a.on .np{box-shadow:0 0 14px -1px var(--fs-glow)}
-[data-sport="futsal"][data-fsluce] .a-appbar .t b i,[data-sport="futsal"][data-fsluce] .fs-ingresso b{text-shadow:0 0 12px var(--fs-glow)}
-[data-sport="futsal"][data-fsluce] .a-appbar{border-bottom-color:var(--primary);box-shadow:0 2px 18px -4px var(--fs-glow)}
-[data-sport="futsal"][data-fsluce] .fs-righe path,[data-sport="futsal"][data-fsluce] .fs-righe circle,[data-sport="futsal"][data-fsluce] .fs-righe rect{filter:drop-shadow(0 0 2px var(--fs-glow))}
-[data-sport="futsal"][data-fsluce] .fs-campo{box-shadow:inset 0 0 0 2px var(--fs-righe),0 0 26px -6px var(--fs-glow)}
-[data-sport="futsal"][data-fsluce] .d-item i{box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--primary) 45%,transparent)}
-[data-sport="futsal"][data-fsluce] .fs-mod-num b,[data-sport="futsal"][data-fsluce] .fs-cruscotto b,[data-sport="futsal"][data-fsluce] .fs-banda-num b{text-shadow:0 0 10px color-mix(in srgb,var(--fs-glow) 60%,transparent)}
-
-/* Il Neon fa alone. */
-:root[data-sport="futsal"][data-fstema="neon"]{--fs-glow:rgba(23,230,203,.75)}
-
-/* =========================================================== 4 · ARENA */
-:root[data-sport="futsal"][data-fstema="arena"]{
-  --fs-font:'Oxanium','Arial Narrow',sans-serif; --fs-font-num:'Oxanium','Arial Narrow',sans-serif;
-  --fs-glow:rgba(46,123,255,.85);
-  --bg:#05060B; --surface:#0E1120; --surface-2:#141830; --surface-sunk:#080A14; --border:#1F2747; --border-strong:#2E3A6A;
-  --text:#EDF1FF; --text-muted:#8C96C2; --text-invert:#05060B;
-  --primary:#2E7BFF; --primary-hover:#5A98FF; --primary-soft:rgba(46,123,255,.16); --on-primary:#FFFFFF; --primary-ink:#8DB6FF;
-  --fs-secondo:#FFE600; --on-secondo:#1A1600;
-  --positive:#22E38A; --positive-soft:rgba(34,227,138,.15); --positive-ink:#6FF0B4;
-  --negative:#FF4560; --negative-soft:rgba(255,69,96,.16); --negative-ink:#FF8F9F;
-  --warning:#FFE600; --warning-soft:rgba(255,230,0,.13); --on-warning-soft:#FFEE55;
-  --accent-soft:rgba(255,230,0,.14); --on-accent-soft:#FFEE55; --accent-ink:#FFEE55;
-  --grad-header:linear-gradient(180deg,#0B1330 0%,#05060B 100%);
-  --grad-hero:linear-gradient(160deg,#0D2A7A 0%,#05060B 70%);
-  --sh-card:none;
-  --fs-scuro:#080A14; --fs-scuro-2:#121A3A; --fs-grad-banda:linear-gradient(115deg,#0F2A80 0%,#0B1124 55%,#080A14 100%);
-  --fs-evid:#FFE600; --fs-on-evid:#141200;
-  --fs-campo:radial-gradient(ellipse at 50% 50%,rgba(46,123,255,.18),transparent 62%),linear-gradient(180deg,#0A1230 0%,#060A1C 100%);
-  --fs-righe:rgba(110,165,255,.95);
-  --fs-nav:#080A14;
-  --fs-sfondo:linear-gradient(115deg,transparent 0 46%,rgba(46,123,255,.08) 46% 47%,transparent 47% 100%),radial-gradient(circle at 50% -10%,rgba(46,123,255,.22),transparent 45%);
-  --fp-r:rgba(255,69,96,.18); --fp-r-ink:#FF8F9F; --fp-g:rgba(255,230,0,.15); --fp-g-ink:#FFEE55; --fp-v:rgba(34,227,138,.16); --fp-v-ink:#6FF0B4;
-  --fp-r-barra:#FF4560; --fp-g-barra:#FFE600; --fp-v-barra:#2E7BFF;
-  --taglio:polygon(0 0,calc(100% - 14px) 0,100% 14px,100% 100%,14px 100%,0 calc(100% - 14px));
-}
-/* angoli tagliati a schede, liste, tabelle; bordo sottile al posto dell'ombra */
-[data-fstema="arena"][data-sport="futsal"] :is(.a-card,.fs-list,.fs-tab-wrap,.fs-lead,.fs-banda,.fs-cruscotto,.fs-mod-top,.fs-mod-num,.fs-passo,.fs-crea){border-radius:0;clip-path:var(--taglio);box-shadow:none;outline:1px solid var(--border);outline-offset:-1px}
-[data-fstema="arena"][data-sport="futsal"] .fs-campo{border-radius:0;clip-path:polygon(0 0,calc(100% - 22px) 0,100% 22px,100% 100%,22px 100%,0 calc(100% - 22px))}
-[data-fstema="arena"][data-sport="futsal"] .fs-panca{border-radius:0}
-/* tasti e schede in cima a parallelogramma */
-[data-fstema="arena"][data-sport="futsal"] .a-btn:not(.sec):not(.danger):not(.ghost):not(.live),[data-fstema="arena"][data-sport="futsal"] .a-btn.sec{border-radius:0;clip-path:polygon(12px 0,100% 0,calc(100% - 12px) 100%,0 100%);box-shadow:none}
-[data-fstema="arena"][data-sport="futsal"] .seg-cls{border-radius:0;background:transparent;gap:6px;padding:0}
-[data-fstema="arena"][data-sport="futsal"] .seg-cls button,[data-fstema="arena"][data-sport="futsal"] .seg-cls a{border-radius:0;clip-path:polygon(10px 0,100% 0,calc(100% - 10px) 100%,0 100%);background:var(--surface);padding-left:12px;padding-right:12px}
-[data-fstema="arena"][data-sport="futsal"] .seg-cls .on{background:var(--primary);color:var(--on-primary)}
-[data-fstema="arena"][data-sport="futsal"] .a-body .chip{border-radius:0;clip-path:polygon(8px 0,100% 0,calc(100% - 8px) 100%,0 100%);padding-left:14px;padding-right:14px}
-/* titoli di sezione con la barretta inclinata */
-[data-fstema="arena"][data-sport="futsal"] .a-sec b::before{content:"";display:inline-block;width:7px;height:.9em;margin-right:9px;background:var(--primary);transform:skewX(-18deg);vertical-align:-1px;box-shadow:0 0 10px var(--fs-glow)}
-/* barra in alto: titolo grande allineato a sinistra, sottotitolo spaziato */
-[data-fstema="arena"][data-sport="futsal"] .a-appbar .t b{font-size:26px;letter-spacing:.06em}
-[data-fstema="arena"][data-sport="futsal"] .a-appbar .t span{letter-spacing:.14em;text-transform:uppercase;font-size:10px}
-[data-fstema="arena"][data-sport="futsal"] .fs-regole{border-radius:0;clip-path:polygon(8px 0,100% 0,calc(100% - 8px) 100%,0 100%)}
-/* barra in basso: niente pastiglia, una barra di luce sopra la voce scelta */
-[data-fstema="arena"][data-sport="futsal"] .a-nav a.on .np{background:transparent;box-shadow:none}
-[data-fstema="arena"][data-sport="futsal"] .a-nav a.on .np .mi{background-color:var(--primary);filter:drop-shadow(0 0 6px var(--fs-glow))}
-[data-fstema="arena"][data-sport="futsal"] .a-nav a.on::before{content:"";position:absolute;top:0;left:22%;right:22%;height:3px;background:var(--primary);box-shadow:0 0 12px var(--fs-glow)}
-[data-fstema="arena"][data-sport="futsal"] .a-nav span{text-transform:uppercase;letter-spacing:.08em;font-size:9.5px}
-[data-fstema="arena"][data-sport="futsal"] .a-drawer .d-item{border-radius:0;clip-path:polygon(0 0,calc(100% - 10px) 0,100% 10px,100% 100%,0 100%)}
-
-/* =========================================================== 5 · RETRO */
-:root[data-sport="futsal"][data-fstema="retro"]{
-  --fs-font:'Orbitron','Arial',sans-serif; --fs-font-num:'Orbitron','Arial',sans-serif;
-  --fs-glow:rgba(255,61,174,.8);
-  --bg:#1A0833; --surface:rgba(52,20,92,.62); --surface-2:rgba(64,26,110,.7); --surface-sunk:rgba(20,6,40,.55); --border:rgba(255,140,220,.16); --border-strong:rgba(255,140,220,.3);
-  --text:#FFEFFB; --text-muted:#D3A9E6; --text-invert:#140726;
-  --primary:#FF3DAE; --primary-hover:#FF6CC4; --primary-soft:rgba(255,61,174,.18); --on-primary:#FFFFFF; --primary-ink:#FF9AD6;
-  --fs-secondo:#FF9A3D; --on-secondo:#2A1100;
-  --positive:#3DFFB0; --positive-soft:rgba(61,255,176,.14); --positive-ink:#8CFFD0;
-  --negative:#FF4D5E; --negative-soft:rgba(255,77,94,.16); --negative-ink:#FF96A1;
-  --warning:#FFC23D; --warning-soft:rgba(255,194,61,.15); --on-warning-soft:#FFD37A;
-  --accent-soft:rgba(255,154,61,.16); --on-accent-soft:#FFB877; --accent-ink:#FFB877;
-  --grad-header:transparent;
-  --grad-hero:linear-gradient(180deg,#FF3DAE 0%,#7A1FA8 45%,#1B0833 100%);
-  --sh-card:0 10px 30px -12px rgba(0,0,0,.6);
-  --fs-scuro:rgba(24,7,48,.85); --fs-scuro-2:#2E1257; --fs-grad-banda:linear-gradient(135deg,#FF3DAE 0%,#7A1FA8 55%,#3B0F6B 100%);
-  --fs-evid:#FF9A3D; --fs-on-evid:#2A1100;
-  --fs-campo:linear-gradient(transparent 0 calc(100% - 1px),rgba(255,61,174,.2) calc(100% - 1px)) 0 0/100% 22px,linear-gradient(90deg,transparent 0 calc(100% - 1px),rgba(255,61,174,.2) calc(100% - 1px)) 0 0/22px 100%,linear-gradient(180deg,#2A0F52 0%,#160628 100%);
-  --fs-righe:rgba(255,154,61,.95);
-  --fs-nav:rgba(40,12,74,.88);
-  --fs-velo:linear-gradient(180deg,#2B0B55 0%,#5A1478 55%,#B8246E 100%);
-  --fs-sfondo:radial-gradient(ellipse at 50% 108%,rgba(255,154,61,.55),transparent 38%),linear-gradient(180deg,#2B0B55 0%,#5A1478 55%,#B8246E 100%);
-  --fp-r:rgba(255,77,94,.22); --fp-r-ink:#FFB0B8; --fp-g:rgba(255,154,61,.2); --fp-g-ink:#FFC48F; --fp-v:rgba(61,255,176,.18); --fp-v-ink:#9CFFD8;
-  --fp-r-barra:#FF4D5E; --fp-g-barra:#FF9A3D; --fp-v-barra:#3DFFB0;
-}
-/* schede di vetro, molto tonde, sopra il cielo al tramonto */
-[data-fstema="retro"][data-sport="futsal"] .app{background:var(--fs-sfondo) fixed,#1A0833}
-[data-fstema="retro"][data-sport="futsal"] :is(.a-card,.fs-list,.fs-tab-wrap,.fs-lead,.fs-banda,.fs-cruscotto,.fs-mod-num,.fs-passo,.fs-crea){border-radius:24px;backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border:1px solid var(--border)}
-[data-fstema="retro"][data-sport="futsal"] .fs-campo{border-radius:28px}
-[data-fstema="retro"][data-sport="futsal"] .fs-panca{border-radius:0 0 28px 28px}
-[data-fstema="retro"][data-sport="futsal"] .fs-tab th{background:rgba(20,6,40,.85)}
-[data-fstema="retro"][data-sport="futsal"] .fs-tab .fs-tab-n,[data-fstema="retro"][data-sport="futsal"] .fs-tab .fs-tab-g{background:#2A0F52}
-/* barra in alto trasparente, titolo al centro */
-[data-fstema="retro"][data-sport="futsal"] .a-appbar{background:transparent;border-bottom:0;box-shadow:none}
-[data-fstema="retro"][data-sport="futsal"] .a-appbar .t{text-align:center;align-items:center}
-[data-fstema="retro"][data-sport="futsal"] .a-appbar .t b{font-size:18px;letter-spacing:.12em}
-/* tasti a sfumatura rosa-arancio */
-[data-fstema="retro"][data-sport="futsal"] .a-btn:not(.sec):not(.danger):not(.ghost):not(.live),[data-fstema="retro"][data-sport="futsal"] .seg-cls .on,[data-fstema="retro"][data-sport="futsal"] .a-nav a.on .np{background:linear-gradient(90deg,#FF3DAE,#FF9A3D);color:#fff}
-[data-fstema="retro"][data-sport="futsal"] .seg-cls{background:rgba(20,6,40,.5);backdrop-filter:blur(10px)}
-/* barra in basso che galleggia, solo icone (la scritta solo per quella scelta) */
-[data-fstema="retro"][data-sport="futsal"] .a-nav{margin:0 14px calc(10px + var(--riserva-basso));height:62px;border-radius:31px;border:1px solid var(--border-strong);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);box-shadow:0 10px 30px -8px rgba(0,0,0,.6),0 0 22px -8px var(--fs-glow);padding-bottom:0}
-[data-fstema="retro"][data-sport="futsal"] .a-nav::after{display:none}
-[data-fstema="retro"][data-sport="futsal"] .a-nav a span{display:none}
-[data-fstema="retro"][data-sport="futsal"] .a-nav a.on span{display:block;font-size:9px;letter-spacing:.08em;text-transform:uppercase}
-[data-fstema="retro"][data-sport="futsal"] .a-nav a.on .np .mi{background-color:#fff}
-[data-fstema="retro"][data-sport="futsal"] .a-drawer .panel{background:linear-gradient(180deg,#2B0B55,#5A1478 70%,#8E1E70)}
-[data-fstema="retro"][data-sport="futsal"] .a-drawer .d-head{background:transparent}
-[data-fstema="retro"][data-sport="futsal"] #sheet{background:#2A0F52}
-
-/* =========================================================== 6 · CARTA */
-:root[data-sport="futsal"][data-fstema="carta"]{
-  --fs-font:'Teko','Arial Narrow',sans-serif; --fs-font-num:'Teko','Arial Narrow',sans-serif;
-  --bg:#F2F0E9; --surface:#FFFFFF; --surface-2:#FAF9F5; --surface-sunk:#EAE7DD; --border:#111111; --border-strong:#111111;
-  --text:#111111; --text-muted:#5D5A52; --text-invert:#FFFFFF;
-  --primary:#FF4B2B; --primary-hover:#E63A1B; --primary-soft:#FFE1DA; --on-primary:#FFFFFF; --primary-ink:#C8320F;
-  --fs-secondo:#111111; --on-secondo:#FFFFFF;
-  --positive:#0E8A4F; --positive-soft:#D9F2E4; --positive-ink:#0A6B3D;
-  --negative:#D9261C; --negative-soft:#FBE0DD; --negative-ink:#B01E15;
-  --accent-soft:#FFF1C9; --on-accent-soft:#7A5600; --accent-ink:#7A5600;
-  --grad-header:#111111;
-  --grad-hero:#111111;
-  --sh-card:none;
   --fs-scuro:#111111; --fs-scuro-2:#2A2A2A; --fs-grad-banda:#111111;
   --fs-evid:#FF4B2B; --fs-on-evid:#FFFFFF;
   --fs-campo:linear-gradient(180deg,#1C8A55 0%,#157246 100%);
   --fs-righe:rgba(255,255,255,.95);
-  --fs-nav:#FFFFFF;
-  --fs-sfondo:none;
-  --fs-titolo:#FF4B2B;
   --fp-r:#FFE1DA; --fp-r-ink:#B01E15; --fp-g:#FFF1C9; --fp-g-ink:#6B4A00; --fp-v:#D9F2E4; --fp-v-ink:#0A6B3D;
   --fp-r-barra:#FF4B2B; --fp-g-barra:#F2C230; --fp-v-barra:#111111;
 }
-/* bordi neri netti e niente ombre: come un giornale sportivo */
-[data-fstema="carta"][data-sport="futsal"] :is(.a-card,.fs-list,.fs-tab-wrap,.fs-lead,.fs-mod-num,.fs-crea){border-radius:4px;border:2px solid #111;box-shadow:none}
-[data-fstema="carta"][data-sport="futsal"] :is(.fs-banda,.fs-cruscotto,.fs-mod-top,.fs-passo){border-radius:4px;box-shadow:none}
-[data-fstema="carta"][data-sport="futsal"] .fs-campo{border-radius:4px;border:2px solid #111;box-shadow:none}
-[data-fstema="carta"][data-sport="futsal"] .fs-panca{border-radius:0 0 4px 4px}
-[data-fstema="carta"][data-sport="futsal"] .vr{border-top:1px solid #DDD9CC}
-/* titoli alti e stretti, con la riga sotto */
-[data-fstema="carta"][data-sport="futsal"] .a-sec{border-bottom:3px solid #111;padding-bottom:2px}
-[data-fstema="carta"][data-sport="futsal"] .a-sec b{font:600 30px/1 var(--fs-font);letter-spacing:.01em}
-[data-fstema="carta"][data-sport="futsal"] .a-appbar{border-bottom:4px solid var(--primary)}
-[data-fstema="carta"][data-sport="futsal"] .a-appbar .t b{font:600 32px/.9 var(--fs-font);letter-spacing:.02em}
-/* tasti neri squadrati, la scelta in rosso */
-[data-fstema="carta"][data-sport="futsal"] .a-btn:not(.sec):not(.danger):not(.ghost):not(.live){background:#111;color:#fff;border-radius:4px;box-shadow:4px 4px 0 var(--primary);font:600 22px/1 var(--fs-font)}
-[data-fstema="carta"][data-sport="futsal"] .a-btn.sec{border-radius:4px;border:2px solid #111;color:#111;font:600 20px/1 var(--fs-font)}
-[data-fstema="carta"][data-sport="futsal"] .seg-cls{border-radius:4px;border:2px solid #111;padding:0;background:#fff}
-[data-fstema="carta"][data-sport="futsal"] .seg-cls button,[data-fstema="carta"][data-sport="futsal"] .seg-cls a{border-radius:0;font:600 19px/1 var(--fs-font)}
-[data-fstema="carta"][data-sport="futsal"] .seg-cls .on{background:#111;color:#fff}
-[data-fstema="carta"][data-sport="futsal"] .chip{border-radius:4px;border:2px solid #111}
-[data-fstema="carta"][data-sport="futsal"] .fs-regole{border-radius:4px;background:var(--primary)}
-/* barra in basso bianca, riga nera sopra, la voce scelta in un riquadro nero */
-[data-fstema="carta"][data-sport="futsal"] .a-nav{border-top:3px solid #111;box-shadow:none}
-[data-fstema="carta"][data-sport="futsal"] .a-nav a.on .np{background:#111;border-radius:4px}
-[data-fstema="carta"][data-sport="futsal"] .a-nav a.on .np .mi{background-color:#fff}
-[data-fstema="carta"][data-sport="futsal"] .a-nav a.on{color:#111}
-[data-fstema="carta"][data-sport="futsal"] .a-nav span{font:600 15px/1 var(--fs-font);letter-spacing:.03em;text-transform:uppercase}
-[data-fstema="carta"][data-sport="futsal"] .a-drawer .d-item{border-radius:4px;border:2px solid #111;background:#fff}
-[data-fstema="carta"][data-sport="futsal"] .d-item i{background:#111;color:#fff;border-radius:4px}
-[data-fstema="carta"][data-sport="futsal"] .fs-ingresso{background:#111}
-[data-fstema="carta"][data-sport="futsal"] .fs-tab th{background:#111;color:#fff}
 
-/* Il menu del futsal: il marchio in cima, la voce in cui sei evidenziata. */
+/* ---------------------------------------------------------------- colori */
+:root[data-sport="futsal"]{
+  --fs-font:'Teko','Arial Narrow',sans-serif;
+  --inchiostro:#111111;
+  --rosso:#FF4B2B;
+  --bg:#F2F0E9; --surface:#FFFFFF; --surface-2:#FAF9F5; --surface-sunk:#EAE7DD; --border:#DDD9CC; --border-strong:#111111;
+  --text:#111111; --text-muted:#5D5A52; --text-invert:#FFFFFF;
+  --primary:#FF4B2B; --primary-hover:#E63A1B; --primary-soft:#FFE1DA; --on-primary:#FFFFFF; --primary-ink:#C8320F;
+  --positive:#0E8A4F; --positive-soft:#D9F2E4; --positive-ink:#0A6B3D;
+  --negative:#D9261C; --negative-soft:#FBE0DD; --negative-ink:#B01E15;
+  --accent:#FF4B2B; --on-accent:#FFFFFF; --accent-soft:#FFF1C9; --on-accent-soft:#7A5600; --accent-ink:#7A5600;
+  --grad-header:#111111; --grad-hero:#111111;
+  --sh-card:none;
+  --font-display:var(--fs-font); --font-tito:var(--fs-font); --font-data:var(--fs-font);
+  --c-lime:var(--rosso); --c-lime-600:var(--primary-hover); --c-viola:var(--inchiostro); --c-viola-700:var(--inchiostro);
+  --c-inchiostro:#FFFFFF; --tito-ink:var(--inchiostro);
+  /* gli angoli tagliati (Arena): piccoli per le schede, grandi per il campo */
+  --taglio:polygon(0 0,calc(100% - 14px) 0,100% 14px,100% 100%,14px 100%,0 calc(100% - 14px));
+  --taglio-campo:polygon(0 0,calc(100% - 24px) 0,100% 24px,100% 100%,24px 100%,0 calc(100% - 24px));
+  --obliquo:polygon(12px 0,100% 0,calc(100% - 12px) 100%,0 100%);
+  /* il bordo nero dove l'angolo e' tagliato: una riga in diagonale disegnata
+     nei due angoli, perche' il bordo vero lo taglia via il clip-path */
+  --spigoli:linear-gradient(to bottom left,transparent calc(50% - 1.5px),var(--inchiostro) calc(50% - 1.5px) calc(50% + 1.5px),transparent calc(50% + 1.5px)) top right/14px 14px no-repeat border-box,
+            linear-gradient(to top right,transparent calc(50% - 1.5px),var(--inchiostro) calc(50% - 1.5px) calc(50% + 1.5px),transparent calc(50% + 1.5px)) bottom left/14px 14px no-repeat border-box;
+}
+[data-sport="futsal"] .app{background:var(--bg)}
+[data-sport="futsal"] .a-body{background:transparent}
+
+/* --------------------------------------------- schede: bordo nero, angoli tagliati */
+[data-sport="futsal"] :is(.a-card,.fs-list,.fs-tab-wrap,.fs-lead,.fs-mod-num,.fs-crea,.fs-prossime,.fs-forma){
+  border-radius:0;border:2px solid var(--inchiostro);box-shadow:none;clip-path:var(--taglio);
+  background:var(--spigoli),var(--surface)}
+[data-sport="futsal"] .fs-crea{background:var(--spigoli),#FFF1C9}
+[data-sport="futsal"] :is(.fs-banda,.fs-cruscotto,.fs-mod-top,.fs-passo){border-radius:0;box-shadow:none;clip-path:var(--taglio);background:var(--inchiostro)}
+[data-sport="futsal"] .vr{border-top:1px solid var(--border)}
+[data-sport="futsal"] .fs-tab th{background:var(--inchiostro);color:#fff}
+[data-sport="futsal"] .fs-tab th.giu,[data-sport="futsal"] .fs-tab th.su{color:var(--rosso)}
+[data-sport="futsal"] .fs-tab .fs-tab-n,[data-sport="futsal"] .fs-tab .fs-tab-g{background:#fff}
+[data-sport="futsal"] .fs-tab th.fs-tab-n,[data-sport="futsal"] .fs-tab th.fs-tab-g{background:var(--inchiostro)}
+
+/* il campo: verde classico, righe bianche, angoli tagliati grandi */
+[data-sport="futsal"] .fs-campo{border-radius:0;clip-path:var(--taglio-campo);box-shadow:inset 0 0 0 3px var(--inchiostro)}
+[data-sport="futsal"] .fs-panca{border-radius:0;clip-path:polygon(0 0,100% 0,100% 100%,24px 100%,0 calc(100% - 24px));background:var(--inchiostro)}
+
+/* --------------------------------------------- tasti, linguette e filtri a parallelogramma */
+[data-sport="futsal"] .a-btn:not(.sec):not(.danger):not(.ghost):not(.live){background:var(--rosso);color:#fff;border-radius:0;clip-path:var(--obliquo);
+  box-shadow:none;font:600 24px/1 var(--fs-font);letter-spacing:.03em;text-transform:uppercase;padding-left:22px;padding-right:22px}
+[data-sport="futsal"] .a-btn:not(.sec):not(.danger):not(.ghost):not(.live):active:not([disabled]){transform:translateY(1px);background:var(--primary-hover)}
+[data-sport="futsal"] .a-btn:not(.sec):not(.danger):not(.ghost):not(.live)[disabled]{background:var(--inchiostro);opacity:1;color:#fff}
+[data-sport="futsal"] .a-btn.sec,[data-sport="futsal"] .a-btn.ghost{background:var(--inchiostro);color:#fff;border:0;border-radius:0;clip-path:var(--obliquo);
+  font:600 21px/1 var(--fs-font);letter-spacing:.03em;text-transform:uppercase}
+[data-sport="futsal"] .seg-cls{border-radius:0;background:transparent;gap:6px;padding:0;box-shadow:none}
+[data-sport="futsal"] .seg-cls button,[data-sport="futsal"] .seg-cls a{border-radius:0;clip-path:polygon(10px 0,100% 0,calc(100% - 10px) 100%,0 100%);
+  background:#E3DFD3;color:var(--inchiostro);font:600 20px/1 var(--fs-font);letter-spacing:.03em;text-transform:uppercase;padding-left:12px;padding-right:12px;box-shadow:none}
+[data-sport="futsal"] .seg-cls .on{background:var(--inchiostro);color:#fff;box-shadow:none}
+[data-sport="futsal"] .fs-stab button{font-size:18px;padding-left:9px;padding-right:9px}
+[data-sport="futsal"] .a-body .chips .chip{border-radius:0;border:0;clip-path:polygon(8px 0,100% 0,calc(100% - 8px) 100%,0 100%);background:#E3DFD3;color:var(--inchiostro);
+  font:600 18px/1 var(--fs-font);letter-spacing:.02em;padding-left:14px;padding-right:14px}
+[data-sport="futsal"] .a-body .chips .chip.on,[data-sport="futsal"] .fs a.chip.on{background:var(--inchiostro);color:#fff}
+[data-sport="futsal"] .sport-sw a.on{background:var(--rosso);color:#fff}
+[data-sport="futsal"] .sport-sw a.on .mi{background-color:#fff}
+
+/* --------------------------------------------- titoli e numeri */
+[data-sport="futsal"] .a-sec b{font:600 30px/1 var(--fs-font);letter-spacing:.01em;text-transform:uppercase}
+[data-sport="futsal"] .a-sec b::before{content:"";display:inline-block;width:8px;height:.72em;margin-right:10px;background:var(--rosso);transform:skewX(-18deg);vertical-align:1px}
+[data-sport="futsal"] .vr .fv,[data-sport="futsal"] .fp,[data-sport="futsal"] .fs-prezzo{font-family:var(--fs-font);font-size:20px;font-weight:600;font-variant-numeric:tabular-nums}
+[data-sport="futsal"] .fp{border-radius:0;clip-path:polygon(5px 0,100% 0,calc(100% - 5px) 100%,0 100%);padding:3px 9px}
+[data-sport="futsal"] :is(.fs-banda-num,.fs-cruscotto,.fs-mod-num,.fs-forma,.fs-posto) b{font-family:var(--fs-font);font-weight:600;font-size:26px}
+
+/* --------------------------------------------- barra in alto: nera, titolo grande a sinistra */
+[data-sport="futsal"] .a-appbar{background:var(--inchiostro);border-bottom:4px solid var(--rosso)}
+[data-sport="futsal"] .a-appbar .t b{font:600 34px/.9 var(--fs-font);font-style:normal;letter-spacing:.03em;text-transform:uppercase}
+[data-sport="futsal"] .a-appbar .t b i{font-style:normal;color:var(--rosso)}
+[data-sport="futsal"] .a-appbar .t span{letter-spacing:.14em;text-transform:uppercase;font-size:10px;color:#BDB9AE}
+[data-sport="futsal"] .fs-regole{background:var(--rosso);color:#fff;border-radius:0;clip-path:polygon(8px 0,100% 0,calc(100% - 8px) 100%,0 100%);padding-left:14px;padding-right:16px}
+[data-sport="futsal"] .fs-regole .mi{background-color:#fff}
+
+/* --------------------------------------------- barra in basso: bianca, riga nera, barra rossa sulla voce scelta */
+[data-sport="futsal"] .a-nav{background:#fff;border-top:3px solid var(--inchiostro);box-shadow:none}
+[data-sport="futsal"] .a-nav a.on .np{background:transparent;box-shadow:none}
+[data-sport="futsal"] .a-nav a .np .mi{background-color:#8A867B}
+[data-sport="futsal"] .a-nav a.on .np .mi{background-color:var(--rosso)}
+[data-sport="futsal"] .a-nav a.on::before{content:"";position:absolute;top:-3px;left:18%;right:18%;height:5px;background:var(--rosso);transform:skewX(-20deg)}
+[data-sport="futsal"] .a-nav a{color:#8A867B}
+[data-sport="futsal"] .a-nav a.on{color:var(--inchiostro)}
+[data-sport="futsal"] .a-nav span{font:600 14px/1 var(--fs-font);letter-spacing:.02em;text-transform:uppercase}
+
+/* --------------------------------------------- menu laterale e fogli */
+[data-sport="futsal"] .d-head{background:var(--inchiostro);border-radius:0;border-bottom:4px solid var(--rosso)}
+[data-sport="futsal"] .a-drawer .panel{background:var(--bg);border-radius:0;clip-path:polygon(0 0,100% 0,100% calc(100% - 28px),calc(100% - 28px) 100%,0 100%)}
+[data-sport="futsal"] #sheet{background:var(--bg);color:var(--text)}
+[data-sport="futsal"] .a-drawer .d-item{border-radius:0;border:2px solid var(--inchiostro);clip-path:polygon(0 0,calc(100% - 12px) 0,100% 12px,100% 100%,0 100%);
+  background:linear-gradient(to bottom left,transparent calc(50% - 1.5px),var(--inchiostro) calc(50% - 1.5px) calc(50% + 1.5px),transparent calc(50% + 1.5px)) top right/12px 12px no-repeat border-box,#fff}
+[data-sport="futsal"] .a-drawer .d-item .et{font:600 22px/1 var(--fs-font);letter-spacing:.02em;text-transform:uppercase}
+[data-sport="futsal"] .d-item > i{background:var(--inchiostro);border-radius:0;clip-path:polygon(0 0,100% 0,100% 100%,6px 100%,0 calc(100% - 6px))}
+[data-sport="futsal"] .fs-drawer .d-item i .mi{width:22px;height:22px;background:#fff;clip-path:none}
+[data-sport="futsal"] .fs-drawer .d-item.on{border-color:var(--rosso);outline:0}
+[data-sport="futsal"] .fs-drawer .d-item.on > i{background:var(--rosso)}
+[data-sport="futsal"] .fs-drawer .d-item small{display:none}
+[data-sport="futsal"] .fs-drawer .d-sec .chip{background:transparent;border:0;color:var(--rosso);font:600 16px/1 var(--fs-font);letter-spacing:.08em;padding-left:0}
+[data-sport="futsal"] .fs-drawer .d-cta .a-btn .mi,[data-sport="futsal"] .fs-drawer .d-esci .mi,[data-sport="futsal"] .fs-drawer .d-esci-fondo .mi{width:20px;height:20px;background-color:currentColor}
+[data-sport="futsal"] .d-esci-fondo{border-radius:0;clip-path:var(--obliquo)}
 .fs-d-marchio{display:flex;align-items:center;gap:8px;margin-bottom:2px}
-.fs-d-marchio .mi{width:22px;height:22px;background-color:var(--primary)}
-.fs-d-marchio b{font:800 20px/1 var(--fs-font,var(--font-display));letter-spacing:.04em;text-transform:uppercase;color:#fff}
-.fs-d-marchio b i{font-style:normal;color:var(--fs-titolo,var(--primary))}
-[data-sport="futsal"] .fs-drawer .d-item i .mi{width:22px;height:22px;background:var(--primary);border-radius:0}
-[data-fstema="carta"][data-sport="futsal"] .fs-drawer .d-item i .mi{background:#fff}
-[data-sport="futsal"] .fs-drawer .d-item.on{outline:2px solid var(--primary);outline-offset:-2px}
-[data-sport="futsal"] .fs-drawer .d-cta .a-btn .mi{width:20px;height:20px;background-color:currentColor}
-[data-sport="futsal"] .fs-drawer .d-esci .mi,[data-sport="futsal"] .fs-drawer .d-esci-fondo .mi{width:20px;height:20px;background-color:currentColor}
-[data-sport="futsal"] .fs-drawer .d-sec .chip{background:var(--primary-soft);color:var(--primary-ink);border-color:transparent}
-.fs-stili{flex-direction:column;align-items:stretch}
-.fs-stili>div{display:grid;grid-template-columns:repeat(3,1fr)}
-[data-fstema="arena"][data-sport="futsal"] .fs-stab button{font-size:13px;padding-left:9px;padding-right:9px}
-[data-fstema="retro"][data-sport="futsal"] .fs-stab button{font-size:12px;padding-left:6px;padding-right:6px}
+.fs-d-marchio .mi{width:24px;height:24px;background-color:#FF4B2B}
+.fs-d-marchio b{font:600 30px/1 var(--fs-font,var(--font-display));letter-spacing:.03em;text-transform:uppercase;color:#fff}
+.fs-d-marchio b i{font-style:normal;color:#FF4B2B}
+
+/* --------------------------------------------- le maglie e i segni sul campo */
+[data-sport="futsal"] .fs-carta b{background:var(--inchiostro);border-radius:0;font-weight:600}
+[data-sport="futsal"] .fs-carta small{background:#fff;border-radius:0}
+[data-sport="futsal"] .fs-cap{background:var(--rosso);color:#fff;border-color:#fff}
+[data-sport="futsal"] .fs-peso{border-radius:0;clip-path:polygon(4px 0,100% 0,calc(100% - 4px) 100%,0 100%);border:0;padding:0 6px}
+[data-sport="futsal"] .fs-carta.sesto .fs-peso{background:var(--rosso);color:#fff}
+[data-sport="futsal"] .fs-panca .fs-carta.sesto{outline-color:var(--rosso);border-radius:0}
+
+/* --------------------------------------------- il passaggio dal calcio al futsal:
+   un velo nero col nome del gioco e una riga rossa, che scorre via in mezzo secondo */
+.fs-ingresso{position:fixed;inset:0;z-index:999;display:grid;place-items:center;pointer-events:none;
+  background:#111;color:#fff;animation:fs-velo .75s cubic-bezier(.7,0,.3,1) forwards}
+.fs-ingresso b{font:600 76px/1 'Teko','Arial Narrow',sans-serif;letter-spacing:.04em;text-transform:uppercase;display:flex;align-items:center;gap:12px;animation:fs-nome .75s ease forwards}
+.fs-ingresso .mi{width:56px;height:56px;background-color:#FF4B2B;animation:fs-palla .75s ease forwards}
+.fs-ingresso::after{content:"";position:absolute;left:0;right:0;top:58%;height:8px;background:#FF4B2B;transform:skewY(-4deg) scaleX(0);transform-origin:left;animation:fs-riga .75s ease forwards}
+@keyframes fs-velo{0%,45%{clip-path:polygon(0 0,100% 0,100% 100%,0 100%)}100%{clip-path:polygon(100% 0,100% 0,100% 100%,100% 100%)}}
+@keyframes fs-nome{0%{transform:translateX(-30px);opacity:0}30%{transform:none;opacity:1}70%{opacity:1}100%{opacity:0}}
+@keyframes fs-palla{0%{transform:translateX(-120px) rotate(-360deg)}35%{transform:none}}
+@keyframes fs-riga{0%{transform:skewY(-4deg) scaleX(0)}40%{transform:skewY(-4deg) scaleX(1)}}
+@media (prefers-reduced-motion:reduce){.fs-ingresso{display:none}}
+
+/* Il pulsante Futsal nel selettore del calcio, col suo pallone. */
+.sport-sw a[href="#/futsal"]{display:flex;align-items:center;justify-content:center;gap:6px}
+.sport-sw a[href="#/futsal"] .mi{width:18px;height:18px}
+
+/* il regolamento: capitoli col titolo grande, tabelle nel carattere del testo */
+[data-sport="futsal"] .fs-cap-r summary{font:600 26px/1 var(--fs-font);text-transform:uppercase;letter-spacing:.01em}
+[data-sport="futsal"] .rules td.num,[data-sport="futsal"] .rules td{font-family:var(--font-body);font-size:14px}
+[data-sport="futsal"] .rule-art{font:600 18px/1 var(--fs-font);letter-spacing:.06em;color:var(--rosso)}
+/* le etichette dentro le schede restano nel carattere del testo, nere e diritte */
+[data-sport="futsal"] :is(.fs-iscriviti,.fs-hero) .chip{background:var(--inchiostro);color:#fff;border:0;border-radius:0}

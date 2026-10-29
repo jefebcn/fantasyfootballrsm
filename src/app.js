@@ -8,7 +8,7 @@ import * as views from './views/index.js';
 import * as AV from './notifiche.js';
 import { VERSIONE } from './versione.js';
 import { apriNuovaPassword, segnaRecupero, recuperoInCorso } from './views/nuova-password.js';
-import { futsalAttivo, leggiInterruttore, selettore, menuFutsal, formazioneMancante, maskFs, temaFutsal, coloreBarra, temaLuminoso } from './views/futsal.js';
+import { futsalAttivo, leggiInterruttore, selettore, menuFutsal, formazioneMancante, maskFs, COLORE_BARRA } from './views/futsal.js';
 
 const root = document.getElementById('app');
 let current = null; // { view, params }
@@ -313,8 +313,8 @@ function gate(path) {
   return target;
 }
 /**
- * Dentro il futsal la radice porta data-sport="futsal" e lo stile scelto:
- * styles/futsal-tema.css ridipinge tutta l'app da li'. Entrando dal calcio
+ * Dentro il futsal la radice porta data-sport="futsal": styles/futsal-tema.css
+ * ridipinge tutta l'app da li'. Entrando dal calcio
  * c'e' il velo col nome del gioco, perche' si capisca che si e' cambiato.
  */
 function sport(path, prevPath) {
@@ -323,16 +323,15 @@ function sport(path, prevPath) {
   const futsal = path.startsWith('futsal');
   const meta = document.querySelector('meta[name=theme-color]');
   if (futsal) {
-    r.dataset.sport = 'futsal'; r.dataset.fstema = temaFutsal();
-    if (temaLuminoso()) r.dataset.fsluce = ''; else delete r.dataset.fsluce;
-    if (meta) meta.content = coloreBarra();
+    r.dataset.sport = 'futsal';
+    if (meta) meta.content = COLORE_BARRA;
     if (!era && prevPath !== undefined) {
       const v = document.createElement('div');
       v.className = 'fs-ingresso'; v.setAttribute('aria-hidden', 'true');
       v.innerHTML = `<b>${maskFs('pallone')}Futsal</b>`;
       document.body.appendChild(v); setTimeout(() => v.remove(), 800);
     }
-  } else if (era) { delete r.dataset.sport; delete r.dataset.fsluce; applyTheme(); }
+  } else if (era) { delete r.dataset.sport; applyTheme(); }
 }
 export function render() {
   const g = gate(resolve(location.hash).path); if (g !== null && g !== resolve(location.hash).path) { location.hash = `#/${g}`; return; }

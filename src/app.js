@@ -9,6 +9,7 @@ import * as AV from './notifiche.js';
 import { VERSIONE } from './versione.js';
 import { apriNuovaPassword, segnaRecupero, recuperoInCorso } from './views/nuova-password.js';
 import { futsalAttivo, leggiInterruttore, selettore, menuFutsal, formazioneMancante, maskFs, COLORE_BARRA } from './views/futsal.js';
+import { logoFs, caricaFs } from './futsal-grafica.js';
 
 const root = document.getElementById('app');
 let current = null; // { view, params }
@@ -206,7 +207,7 @@ function drawer() {
     // menu deve dire anche lui che si e' in un altro gioco.
     const voce = (href, ic, label, small = '') => `<a class="d-item fs-voce${location.hash === href ? ' on' : ''}" href="${href}"><i>${maskFs(ic)}</i><span class="et">${label}</span>${small ? `<small>${small}</small>` : ''}</a>`;
     return `<div class="a-drawer fs-drawer${drawerOpen ? ' on' : ''}"><div class="scrim" data-close-drawer></div><div class="panel">
-    <div class="d-head"><div class="fs-d-marchio">${maskFs('pallone')}<b>Fanta<i>futsal</i></b></div><div class="d-io">${fs.stemma || stemma}
+    <div class="d-head">${logoFs('menu')}<div class="d-io">${fs.stemma || stemma}
       <span class="d-chi"><b>${esc(nome)}</b><span>${esc(fs.squadra || 'non ancora iscritto al FantaFutsal')}</span></span>
       <button class="d-esci" data-logout aria-label="Esci dall'account" title="Esci">${maskFs('esci')}</button></div></div>
     ${fs.iscritto ? `<div class="d-cta"><a class="a-btn" href="#/futsal/squadra" style="text-decoration:none">${maskFs('squadra')}La mia squadra</a></div>` : `<div class="d-cta"><a class="a-btn" href="#/futsal" style="text-decoration:none">Crea la tua squadra</a></div>`}
@@ -328,7 +329,7 @@ function sport(path, prevPath) {
     if (!era && prevPath !== undefined) {
       const v = document.createElement('div');
       v.className = 'fs-ingresso'; v.setAttribute('aria-hidden', 'true');
-      v.innerHTML = `<b>${maskFs('pallone')}Futsal</b>`;
+      v.innerHTML = logoFs('velo');
       document.body.appendChild(v); setTimeout(() => v.remove(), 800);
     }
   } else if (era) { delete r.dataset.sport; applyTheme(); }
@@ -597,7 +598,12 @@ async function boot() {
   // Il ritorno dal link «Password dimenticata?» porta type=recovery: va letto
   // PRIMA di S.init(), che consuma il frammento coi token e lo ripulisce.
   if (/(^|[#?&])type=recovery(&|$)/.test(`${location.hash}&${location.search}`)) segnaRecupero();
-  root.innerHTML = `<div class="app">${splash()}</div>`;
+  // Chi apre direttamente un indirizzo del futsal vede l'attesa del futsal,
+  // non quella del calcio: e' un altro gioco fin dal primo istante.
+  if (location.hash.startsWith('#/futsal')) {
+    document.documentElement.dataset.sport = 'futsal';
+    root.innerHTML = `<div class="app"><div class="splash fs-splash">${logoFs('velo')}${caricaFs('')}</div></div>`;
+  } else root.innerHTML = `<div class="app">${splash()}</div>`;
   await S.init();
   // Da qui gli errori del telefono partono verso la console (022). Quelli
   // successi durante l'avvio erano in attesa, e partono adesso.

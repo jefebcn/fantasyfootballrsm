@@ -428,3 +428,9 @@ menu con gli angoli tagliati, tasti e linguette a parallelogramma, barretta
 inclinata nei titoli, barra rossa sopra la voce scelta in basso. Icone
 proprie in `media/icone/futsal` (barra in basso, menu, selettore), menu
 laterale proprio, velo nero col nome del gioco quando si arriva dal calcio.
+Poi (29/10): maglie disegnate (colore della squadra, fascia inclinata, numero
+in Teko, cognome sulle spalle nelle maglie grandi; la Porta a maniche lunghe
+con le righe), il marchio «Fantafutsal» (src/futsal-grafica.js), l'attesa col
+pallone che rimbalza (anche all'avvio diretto su #/futsal) e le animazioni
+del mercato: la maglia comprata entra in campo con l'anello rosso, i crediti
+scorrono e la differenza vola via, al salvataggio il timbro «Squadra salvata».

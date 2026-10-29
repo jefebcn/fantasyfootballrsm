@@ -18,6 +18,8 @@ interrotto, così un'interruzione non costa il lavoro già fatto.
     python3 scripts/importa-fsgc.py
 """
 import json, re, subprocess, sys, time, unicodedata, pathlib
+from datetime import datetime
+from zoneinfo import ZoneInfo
 
 BASE = 'https://www.fsgc.sm'
 CAMPIONATO = f'{BASE}/it/campionato/campionato-sammarinese/1'
@@ -40,6 +42,17 @@ RUOLI = {'Portiere': 'P', 'Difensore': 'D', 'Centrocampista': 'C', 'Attaccante':
 #   Piscitella: «Giammario» per Transfermarkt, «Gianmario» per la FSGC (17/10,
 #   segnalato da un utente: era in vendita due volte, i voti al doppione).
 STESSA_PERSONA = {'piscitella-gianmario': 'virtus_14'}
+
+
+ROMA = ZoneInfo('Europe/Rome')
+
+
+def ora_italiana(anno, mese, giorno, hhmm):
+    """L'orario del calendario FSGC e' quello di San Marino: col fuso di quel
+    giorno. Prima era «+02:00» fisso, giusto solo d'estate: dal 25/10, con
+    l'ora solare, ogni partita risultava un'ora prima e la formazione si
+    chiudeva alle 20:05 per una partita delle 21:15."""
+    return datetime.strptime(f'{anno}-{mese}-{giorno} {hhmm}', '%Y-%m-%d %H:%M').replace(tzinfo=ROMA).isoformat()
 
 
 def prendi(url):
@@ -95,8 +108,7 @@ def calendario():
                 continue
             ris = re.match(r'^(\d+)\s*-\s*(\d+)$', c[2].strip())
             quando = re.match(r'(\d{2})/(\d{2})/(\d{4})\s+(\d{2}:\d{2})', c[0])
-            iso = (f'{quando.group(3)}-{quando.group(2)}-{quando.group(1)}T{quando.group(4)}:00+02:00'
-                   if quando else None)
+            iso = ora_italiana(quando.group(3), quando.group(2), quando.group(1), quando.group(4)) if quando else None
             a = tr.select_one('a[href*="/it/partita/"]')
             fuori.append({'g': g, 'casa': casa, 'ospite': osp, 'quando': iso,
                           'stadio': None if c[4] in ('TBD', '') else c[4],

@@ -1422,7 +1422,11 @@ export function saveLineup(n, managerId, lineup) {
   if (rosa) throw new Error(`Nella lega pubblica la formazione si consegna con la rosa completa: hai ${rosa.ha} giocatori su ${rosa.serve}. Completala dal Negozio.`);
   const fuori = fuoriRosa(managerId, [...lineup.starters, ...lineup.bench]);
   if (fuori.length) { const p = playersById.get(fuori[0]); throw new Error(`${p ? p.name : fuori[0]} non è più nella tua rosa: sostituiscilo e conferma di nuovo`); }
-  const rec = { ...lineup, submittedAt: now().toISOString() }; L.lineups[`${n}:${managerId}`] = rec; notify();
+  const rec = { ...lineup, submittedAt: now().toISOString() }; L.lineups[`${n}:${managerId}`] = rec;
+  // 050: nella lega pubblica vale anche per le giornate dopo ancora aperte
+  // (le scrive il database; qui si vede subito, senza ricaricare)
+  if (legaPubblica()) for (const md of base.matchdays) if (md.number > n && new Date(md.lockAt) > now()) L.lineups[`${md.number}:${managerId}`] = { ...rec };
+  notify();
   return remote.upsertLineup(base.league.id, managerId, n, rec).catch((e) => { onError(e); refresh(); });
 }
 /**

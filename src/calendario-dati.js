@@ -56,7 +56,7 @@ export const CALENDARIO = [
   [6,"fiorentino","cailungo","2026-10-24T15:00:00+02:00","Stadio di Acquaviva",1,1],
   [6,"libertas","folgore","2026-10-25T15:00:00+01:00","Stadio di Montecchio",1,2],
   [6,"faetano","lafiorita","2026-10-25T15:00:00+01:00","Stadio di Acquaviva",0,0],
-  [7,"cailungo","juvenes","2026-10-30T21:15:00+01:00","Stadio di Fiorentino",null,null],
+  [7,"cailungo","juvenes","2026-10-30T21:15:00+01:00","Stadio di Fiorentino",1,1],
   [7,"pennarossa","academy","2026-10-31T15:00:00+01:00","Stadio di Montecchio",null,null],
   [7,"domagnano","virtus","2026-10-31T15:00:00+01:00","Stadio di Acquaviva",null,null],
   [7,"trefiori","murata","2026-10-31T15:00:00+01:00","Stadio di Fiorentino",null,null],

@@ -273,7 +273,7 @@ export const formazione = {
     : !locked && giaConfermata
     ? `<button class="a-btn sec gia-confermata" id="confirm" data-gia="1">${icon('check', 'ic sm')}Formazione già confermata</button>`
     : `<button class="a-btn" id="confirm" ${locked || errors.length ? 'disabled' : ''}>${icon('check', 'ic sm')}${locked ? 'Formazione bloccata' : `${saved ? 'Conferma modifiche' : 'Conferma formazione'} · ${d.starters.filter(Boolean).length}/11`}</button>`}
-      <p class="small muted" style="text-align:center">${b ? `La formazione della ${b.giornata}ª si apre quando la ${n}ª è finita.` : 'Tocca un titolare per cambiarlo o dargli la fascia: il capitano raddoppia bonus e malus (art. 6).'}</p>
+      <p class="small muted" style="text-align:center">${b ? `La formazione della ${b.giornata}ª si apre quando la ${n}ª è finita.` : `${S.legaPubblica() && saved && !locked ? '<b>Resta valida anche per le prossime giornate</b>: la riconfermi solo se la cambi. ' : ''}Tocca un titolare per cambiarlo o dargli la fascia: il capitano raddoppia bonus e malus (art. 6).`}</p>
     </main>`;
   },
   mount(root, ctx) {

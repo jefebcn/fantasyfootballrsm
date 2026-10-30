@@ -2150,6 +2150,46 @@ select pg_temp.esige('ma quella di una giornata gia'' cominciata resta',
   exists (select 1 from public.lineups where member_id = :'m_pub1' and matchday = 30));
 delete from public.lineups where member_id = :'m_pub1' and matchday in (29, 30);
 delete from public.matchday_locks where matchday in (29, 30);
+-- 050: nella lega pubblica la formazione consegnata vale per le giornate dopo
+insert into public.matchday_locks (matchday, lock_at) values
+  (26, now() - interval '2 days'), (27, now() + interval '1 day'), (28, now() + interval '2 days'),
+  (29, now() + interval '3 days'), (30, now() - interval '1 day')
+  on conflict (matchday) do update set lock_at = excluded.lock_at;
+delete from public.lineups where member_id = :'m_pub1' and matchday >= 26;
+select pg_temp.entra('user_pub1');
+set role authenticated;
+select public.compra_giocatore(:'aperta', 'prova_d3');
+reset role;
+insert into public.lineups (league_id, member_id, matchday, lineup) values
+  (:'aperta', :'m_pub1', 26, '{"formation":"4-4-2","starters":["vecchia"],"bench":[]}'),
+  (:'aperta', :'m_pub1', 27, '{"formation":"4-4-2","starters":["prova_d3"],"bench":[]}');
+select pg_temp.esige('consegnata la 27, vale anche per la 28 e la 29 (050)',
+  (select count(*) from public.lineups where member_id = :'m_pub1' and matchday in (28, 29)
+      and lineup -> 'starters' = '["prova_d3"]') = 2);
+select pg_temp.esige('ma non per una giornata gia'' chiusa',
+  not exists (select 1 from public.lineups where member_id = :'m_pub1' and matchday = 30));
+update public.lineups set lineup = '{"formation":"4-3-3","starters":["prova_d3"],"bench":[]}'
+ where member_id = :'m_pub1' and matchday = 28;
+select pg_temp.esige('cambiata la 28, cambia anche la 29',
+  (select lineup ->> 'formation' from public.lineups where member_id = :'m_pub1' and matchday = 29) = '4-3-3');
+select pg_temp.esige('e la 27 resta com''era',
+  (select lineup ->> 'formation' from public.lineups where member_id = :'m_pub1' and matchday = 27) = '4-4-2');
+select pg_temp.esige('e quella chiusa prima non si tocca',
+  (select lineup -> 'starters' from public.lineups where member_id = :'m_pub1' and matchday = 26) = '["vecchia"]');
+select pg_temp.entra('user_pub1');
+set role authenticated;
+select (public.vendi_giocatore(:'aperta', 'prova_d3') ->> 'formazioni_tolte')::int as tolte \gset
+reset role;
+select pg_temp.esige('vendendo un giocatore schierato vanno riconfermate tutte quelle da giocare (tolte ' || :tolte || ', restano ' || coalesce((select string_agg(matchday::text, ',') from public.lineups where member_id = :'m_pub1'), '-') || ')',
+  :tolte = 3 and not exists (select 1 from public.lineups where member_id = :'m_pub1' and matchday in (27, 28, 29)));
+select id as m_lega_bea from public.league_members where league_id = :'lega' and user_id = 'user_bea' \gset
+delete from public.lineups where member_id = :'m_lega_bea' and matchday >= 26;
+insert into public.lineups (league_id, member_id, matchday, lineup) values
+  (:'lega', :'m_lega_bea', 27, '{"formation":"4-4-2","starters":[],"bench":[]}');
+select pg_temp.esige('nella lega fra amici ogni giornata si consegna',
+  not exists (select 1 from public.lineups where member_id = :'m_lega_bea' and matchday > 27));
+delete from public.lineups where member_id in (:'m_pub1', :'m_lega_bea') and matchday >= 26;
+delete from public.matchday_locks where matchday between 26 and 30;
 -- user_pub1 qui e' il proprietario: la prova di chi non lo e' la fa user_bea
 select pg_temp.entra('user_bea');
 set role authenticated;

@@ -182,6 +182,12 @@ const ok = [], ko = []; const et = (c, t) => (c ? ok : ko).push(t);
   et(/Prossime partite/i.test(await testo()) && (await p.$$('.fs-trend span')).length >= 6, 'il profilo ha prossime partite e fantapunti per giornata');
   await foto('18-profilo', true);
   await p.click('[data-tab="partite"]'); await w(400); await foto('19-profilo-partite');
+  // le distinte: dalla partita del profilo si aprono quelle del referto
+  await p.click('.fs-log [data-partita]'); await w(450);
+  const dist = await p.evaluate(() => ({ righe: document.querySelectorAll('#sheet .fs-dist').length, evid: !!document.querySelector('#sheet .fs-evid') }));
+  et(dist.righe >= 20 && dist.evid, `una partita del profilo apre le due distinte complete, col giocatore evidenziato (${dist.righe} righe)`);
+  await foto('19b-distinte');
+  await p.mouse.click(200, 60); await w(300);
   await vai('#/futsal/giocatore/P%3Apennarossa'); await foto('20-profilo-porta');
 
   // ---- classifiche

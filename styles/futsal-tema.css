@@ -221,3 +221,23 @@
 @keyframes fs-timbra{0%{transform:rotate(-4deg) scale(2.2);opacity:0}18%{transform:rotate(-4deg) scale(1);opacity:1}80%{opacity:1}100%{opacity:0;transform:rotate(-4deg) scale(.96)}}
 @keyframes fs-timbro-fondo{0%,80%{opacity:1}100%{opacity:0}}
 @media (prefers-reduced-motion:reduce){.fs-carta.arrivo .fs-mg,.fs-carta.arrivo::after,.fs-carica-palla,.fs-carica-palla .mi{animation:none}.fs-timbro>div{animation-duration:.01s}}
+
+/* --------------------------------------------- le distinte del referto */
+.fs-dist-testa{display:flex;align-items:center;gap:8px;padding:10px 14px 6px;background:var(--surface-2,#FAF9F5)}
+.fs-dist-testa b{font:600 22px/1 var(--fs-font,var(--font-display));text-transform:uppercase;letter-spacing:.02em;flex:1}
+.fs-dist-testa span{font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.06em}
+.vr.fs-dist{grid-template-columns:30px 1fr auto auto}
+.fs-dist-n{font:600 22px/1 var(--fs-font,var(--font-display));text-align:center;color:var(--text-muted)}
+.vr.fs-evid{background:#FFE1DA;box-shadow:inset 4px 0 0 #FF4B2B}
+.fs-ev{display:inline-grid;place-items:center;font:600 13px/1 var(--fs-font,var(--font-display));font-style:normal;padding:2px 5px;border-radius:0;letter-spacing:.02em}
+.fs-ev.gol{background:#111;color:#fff;text-transform:uppercase}
+.fs-ev.ag{background:#FBE0DD;color:#B01E15}
+.fs-ev.rs{background:#FFF1C9;color:#6B4A00}
+.fs-ev.amm,.fs-ev.esp{width:10px;height:14px;padding:0;border-radius:2px}
+.fs-ev.amm{background:#F2C230}.fs-ev.esp{background:#D9261C}
+.fs-distinte{border:2px solid #111;max-height:62vh;overflow:auto}
+.fs-log button.vr{font:inherit;color:inherit;text-align:left;cursor:pointer}
+.fs-log button.vr .nm b::after{content:" ›";color:#FF4B2B}
+.fs-distinte a.vr{text-decoration:none;color:inherit}
+.vr .ev i.fs-ev{width:auto;height:auto;min-width:0}
+.vr .ev i.fs-ev.amm,.vr .ev i.fs-ev.esp{width:10px;height:14px}

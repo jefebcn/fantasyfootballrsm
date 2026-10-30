@@ -603,9 +603,11 @@ export const futsalGiocatore = {
       const p = F.PARTITE.find((q) => q.g === t.g && (q.casa === club || q.ospite === club));
       const contro = p ? (p.casa === club ? `vs ${nomeSq(p.ospite)}` : `@ ${nomeSq(p.casa)}`) : 'riposa';
       const ris = p && p.gc != null ? ` ${p.gc}–${p.go}` : '';
-      const voci = v.sv ? v.motivo : v.voci.map((y) => `${y.etichetta} ${y.valore > 0 ? '+' : ''}${fmt(y.valore)}`).join(' · ');
+      const motivo = v.motivo === 'non in distinta' ? 'non convocato: non è nella distinta FSGC' : v.motivo;
+      const voci = v.sv ? motivo : v.voci.map((y) => `${y.etichetta} ${y.valore > 0 ? '+' : ''}${fmt(y.valore)}`).join(' · ');
       const pl = t.g > V.VALORI.base ? V.plus(id, t.g) : null;
-      return `<div class="vr"><span class="fs-gg">${t.g}ª</span><span class="nm"><b>${esc(contro)}${ris}</b><span>${esc(voci)}</span></span><span class="ev">${pl ? `<small class="fs-pl ${pl > 0 ? 'su' : 'giu'}">${piu(pl)}</small>` : ''}</span>${v.sv ? '<span class="fv sv">S.V.</span>' : punti(v.totale)}</div>`;
+      const apri = p && F.referto(t.g, p.casa) ? ` data-partita="${t.g}|${p.casa}"` : '';
+      return `<${apri ? 'button' : 'div'} class="vr"${apri}><span class="fs-gg">${t.g}ª</span><span class="nm"><b>${esc(contro)}${ris}</b><span>${esc(voci)}</span></span><span class="ev">${pl ? `<small class="fs-pl ${pl > 0 ? 'su' : 'giu'}">${piu(pl)}</small>` : ''}</span>${v.sv ? '<span class="fv sv">S.V.</span>' : punti(v.totale)}</${apri ? 'button' : 'div'}>`;
     }).join('');
     return `<main class="a-body fs">
       <div class="fs-modale fs-prof">
@@ -622,12 +624,16 @@ export const futsalGiocatore = {
       ${sec('Quotazione')}<div class="a-card">${linea}<p class="small muted" style="margin:6px 0 0">Si muove dopo ogni giornata: sale se fa più punti di quanti ne promette il suo prezzo, scende se ne fa meno.</p></div>
       ${porta ? (() => { const q = sp().get(club); return `${sec('Numeri')}<div class="a-card fs-forma"><span><b>${q.subiti}</b>gol subiti</span><span><b>${q.inviolate}</b>inviolate</span><span><b>${q.v}-${q.n}-${q.p}</b>V-N-P</span></div>`; })()
     : `${sec('Numeri')}<div class="a-card fs-forma"><span><b>${x.gol}</b>gol</span><span><b>${x.amm}</b>ammonizioni</span><span><b>${x.esp}</b>espulsioni</span><span><b>${x.autogol + x.rs}</b>autogol e rigori sbagliati</span></div>`}`
-    : `<div class="a-card fs-list fs-log">${log || '<p class="small muted" style="padding:12px">Nessuna partita.</p>'}</div>`}
+    : `<p class="small muted fs-nota">Tocca una partita per vedere le due distinte del referto FSGC.</p><div class="a-card fs-list fs-log">${log || '<p class="small muted" style="padding:12px">Nessuna partita.</p>'}</div>`}
     </main>`;
   },
   mount(root, ctx) {
     caricaE(ctx);
-    root.querySelector('main').addEventListener('click', (e) => { const t = e.target.closest('[data-tab]'); if (t) { schedaProf = t.dataset.tab; ctx.render(); } });
+    root.querySelector('main').addEventListener('click', (e) => {
+      const t = e.target.closest('[data-tab]'); if (t) { schedaProf = t.dataset.tab; ctx.render(); return; }
+      const pa = e.target.closest('[data-partita]');
+      if (pa) { const [g, casa] = pa.dataset.partita.split('|'); apriPartita(Number(g), casa, V.ePorta(ctx.params.id) ? null : ctx.params.id, ctx); }
+    });
   },
 };
 
@@ -693,29 +699,56 @@ export const futsalStatistiche = {
 export const futsalListone = futsalStatistiche;
 
 // ---------------------------------------------------------------- calendario e voti
+/**
+ * Le due distinte di una partita, come le pubblica la FSGC: tutti i
+ * convocati in ordine di numero, col ruolo, gli eventi del referto e il voto.
+ * evid: un giocatore da evidenziare (chi apre la partita dal suo profilo).
+ */
+function distinte(n, casa, evid = null) {
+  const p = F.PARTITE.find((x) => x.g === n && x.casa === casa);
+  const ref = F.referto(n, casa);
+  if (!p || !ref) return '<p class="small muted" style="padding:12px">Il referto di questa partita non c\'e\' ancora.</p>';
+  const voti = F.votiGiornata(n);
+  const voto = (v) => (!v || v.sv ? '<span class="fv sv">S.V.</span>' : punti(v.totale));
+  const segni = (id) => {
+    const e = ref.eventi.filter((x) => x[0] === id), c = (t) => e.filter((x) => x[2] === t).length;
+    const g = c('goal'), ag = c('own_goal'), am = c('yellow'), es = c('red'), rs = c('pen_missed');
+    return `${g ? `<i class="fs-ev gol">${g > 1 ? `${g}×` : ''}gol</i>` : ''}${ag ? '<i class="fs-ev ag">AG</i>' : ''}${am ? '<i class="fs-ev amm"></i>' : ''}${es ? '<i class="fs-ev esp"></i>' : ''}${rs ? '<i class="fs-ev rs">RS</i>' : ''}`;
+  };
+  const lato = (club, i) => {
+    const ids = [...(ref.distinte[i] || [])].sort((a, b) => (Number(F.giocatore(a)?.numero) || 99) - (Number(F.giocatore(b)?.numero) || 99));
+    const porta = voti.porta.get(club);
+    return `<div class="fs-dist-testa">${stemma(club)}<b>${esc(nomeSq(club))}</b><span>${ids.length} in distinta</span></div>
+      <a class="vr fs-dist" href="${profilo(V.idPorta(club))}"><span class="fs-dist-n">P</span><span class="nm"><b>Porta ${esc(nomeSq(club))}</b><span>${esc(porta.voci.slice(2).map((v) => v.etichetta).join(' · ') || 'tutti i portieri')}</span></span><span class="ev"></span>${voto(porta)}</a>
+      ${ids.map((id) => { const g = F.giocatore(id); if (!g) return ''; return `<a class="vr fs-dist${id === evid ? ' fs-evid' : ''}" href="${profilo(id)}"><span class="fs-dist-n">${esc(g.numero ?? '')}</span><span class="nm"><b>${esc(g.cognome)} ${esc(g.nome)}</b><span>${esc(g.ruoloFsgc)}</span></span><span class="ev">${segni(id)}</span>${g.ruolo === 'P' ? '<span class="fv sv">–</span>' : voto(voti.giocatori.get(id))}</a>`; }).join('')}`;
+  };
+  return `${lato(p.casa, 0)}<div class="fs-div"></div>${lato(p.ospite, 1)}`;
+}
+/** La partita in un foglio, con le due distinte: dal profilo di un giocatore. */
+function apriPartita(n, casa, evid, ctx) {
+  const p = F.PARTITE.find((x) => x.g === n && x.casa === casa);
+  if (!p) return;
+  const dentro = evid && F.referto(n, casa)?.distinte.some((d) => d.includes(evid));
+  ctx.sheet(`<h3>${n}ª giornata · ${esc(nomeSq(p.casa))} ${p.gc ?? ''}–${p.go ?? ''} ${esc(nomeSq(p.ospite))}</h3>
+    <p class="sheet-sub">${p.quando ? `${dateIt(p.quando)} alle ${timeIt(p.quando)} · ` : ''}le distinte del referto FSGC.${evid && !dentro ? ` <b>${esc(nomeId(evid))} non è in nessuna delle due: non era convocato.</b>` : ''}</p>
+    <div class="fs-list fs-distinte">${distinte(n, casa, evid)}</div>`);
+}
+
 export const futsalGiornata = {
   title: 'Calendario futsal', appbar: 'futsal', sub: (ctx) => `Calendario · ${ctx.params.n || F.giocate().at(-1) || 1}ª giornata`,
   render(ctx) {
     const giocate = F.giocate();
     const n = Number(ctx.params.n) || giocate.at(-1) || 1;
-    const voti = F.votiGiornata(n);
     const partite = F.PARTITE.filter((p) => p.g === n);
     const tutte = [...new Set(F.PARTITE.map((p) => p.g))].sort((a, b) => a - b);
-    const voto = (v) => (v.sv ? '<span class="fv sv">S.V.</span>' : punti(v.totale));
     return `<main class="a-body fs">
       <div class="chips fs-gchips">${tutte.map((g) => `<a class="chip${g === n ? ' on' : ''}${giocate.includes(g) ? '' : ' futura'}" href="#/futsal/giornata/${g}">${g}ª</a>`).join('')}</div>
-      <div class="a-card fs-spiega"><b>Come nasce il voto</b><p class="small muted">${fmt(R.voto, 0)} a ogni convocato (anche se non entra in campo), +0,5 se la squadra vince e −0,5 se perde, poi gol, autogol e cartellini. La Porta perde 0,5 per ogni gol subito, +3 se resta inviolata. <b>Tocca una partita</b> per i voti, un giocatore per il suo profilo.</p></div>
+      <div class="a-card fs-spiega"><b>Come nasce il voto</b><p class="small muted">${fmt(R.voto, 0)} a ogni convocato (anche se non entra in campo), +0,5 se la squadra vince e −0,5 se perde, poi gol, autogol e cartellini. La Porta perde 0,5 per ogni gol subito, +3 se resta inviolata. <b>Tocca una partita</b> per le due distinte complete, con numeri, eventi e voti; tocca un giocatore per il suo profilo.</p></div>
       ${partite.map((p) => {
     const ref = F.referto(n, p.casa);
     if (!ref) return `<div class="a-card fs-list"><div class="fs-match">${stemma(p.casa)}<b>${esc(nomeSq(p.casa))}</b><span class="fs-ora">${p.quando ? timeIt(p.quando) : '–'}<small>${p.quando ? dateIt(p.quando) : 'da fissare'}</small></span><b class="r">${esc(nomeSq(p.ospite))}</b>${stemma(p.ospite)}</div></div>`;
-    const lato = (club, i) => {
-      const porta = voti.porta.get(club);
-      const gioc = (ref.distinte[i] || []).map((id) => ({ g: F.giocatore(id), v: voti.giocatori.get(id) })).filter(({ g, v }) => g && v && !v.sv).sort((a, b) => b.v.totale - a.v.totale);
-      return `<a class="vr" href="${profilo(V.idPorta(club))}">${ruoloChip('P')}<span class="nm"><b>Porta ${esc(nomeSq(club))}</b><span>${esc(porta.voci.slice(2).map((v) => v.etichetta).join(' · '))}</span></span><span class="ev"></span>${voto(porta)}</a>
-        ${gioc.map(({ g, v }) => `<a class="vr" href="${profilo(g.id)}">${ruoloChip(g.ruolo)}<span class="nm"><b>${esc(nomeG(g))}</b><span>${esc(v.voci.slice(2).map((x) => x.etichetta).join(' · ') || g.ruoloFsgc)}</span></span><span class="ev"></span>${voto(v)}</a>`).join('')}`;
-    };
     return `<details class="a-card fs-list fs-partita"><summary>${stemma(p.casa)}<b>${esc(nomeSq(p.casa))}</b><span class="fs-ris">${p.gc} – ${p.go}</span><b class="r">${esc(nomeSq(p.ospite))}</b>${stemma(p.ospite)}</summary>
-          ${lato(p.casa, 0)}<div class="fs-div"></div>${lato(p.ospite, 1)}</details>`;
+          ${distinte(n, p.casa)}</details>`;
   }).join('')}
       <p class="small muted" style="text-align:center">Riposa: ${esc(F.riposa(n).map(nomeSq).join(', '))}${F.conclusa(n) ? ' · chi riposa prende la sua media' : ''}</p>
     </main>`;

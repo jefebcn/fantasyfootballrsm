@@ -304,9 +304,11 @@ const ok = [], ko = []; const et = (c, t) => (c ? ok : ko).push(t);
     await new Promise((r) => setTimeout(r, 300));
     const prima = !!S.savedLineup(n, S.me().id);
     const esito = await S.vendiGiocatore(lu.starters[0]);
-    return { prima, tolte: esito?.formazioni_tolte, dopo: !!S.savedLineup(n, S.me().id) };
+    // 050: nella lega pubblica la formazione valeva per tutte le giornate aperte, e si tolgono tutte
+    const aperte = S.base.matchdays.filter((m) => new Date(m.lockAt) > new Date()).map((m) => m.number);
+    return { prima, tolte: esito?.formazioni_tolte, aperte: aperte.length, dopo: aperte.some((k) => !!S.savedLineup(k, S.me().id)) };
   });
-  et(venduto.prima && venduto.tolte === 1 && !venduto.dopo, `vendendo un titolare la formazione salvata si toglie e va riconfermata (${JSON.stringify(venduto)})`);
+  et(venduto.prima && venduto.tolte === venduto.aperte && !venduto.dopo, `vendendo un titolare la formazione salvata si toglie da tutte le giornate aperte e va riconfermata (${JSON.stringify(venduto)})`);
 
   // La bozza della formazione era gia' aperta col giocatore venduto dentro:
   // tornandoci non deve piu' esserci (15/10, Android: "Il giocatore

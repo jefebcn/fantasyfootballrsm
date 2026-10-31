@@ -1,5 +1,5 @@
 import * as S from '../state.js';
-import { esc, avatarGrande, faccia } from '../ui.js';
+import { esc, avatarGrande, faccia, ROLE_NAME, ROLE_ORDER } from '../ui.js';
 import { oggi, numero, misteroDel, statistiche, confronta, condivisione, serie, punti, MEDAGLIE, prossimaMedaglia, TENTATIVI } from '../gioco.js';
 
 /**
@@ -26,6 +26,11 @@ let stat = null, statDi = null;
 const dati = () => { if (statDi !== S.base) { stat = statistiche(S.base); statDi = S.base; } return stat; };
 
 let q = '';
+// La lista per chi non conosce i cognomi (Alex, 31/10: «una lista dei nomi e
+// filtri sulle squadre e sui ruoli, cosi' diventa piu' abbordabile»): scelto
+// un ruolo o una squadra si vedono tutti i giocatori, il nome scritto filtra
+// ancora.
+let filtroRuolo = ''; let filtroClub = '';
 // classifica e serie dal database: si chiedono una volta per giorno e per
 // classifica scelta (tutti o lega), e si richiedono dopo ogni partita finita
 let extra = { chiave: null, classifica: undefined, re: undefined, mio: undefined };
@@ -94,15 +99,30 @@ function cella(x) {
 
 function suggerimenti(gia) {
   const t = piano(q);
-  if (t.length < 2) return '';
+  const filtri = !!(filtroRuolo || filtroClub);
+  if (t.length < 2 && !filtri) return '';
   const presi = new Set(gia);
+  const club = (p) => S.clubsById.get(p.clubId)?.name || '';
   const lista = S.base.players
-    .filter((p) => p.isActive && !p.doppioneDi && !presi.has(p.id) && (piano(p.lastName).includes(t) || piano(`${p.firstName} ${p.lastName}`).includes(t)))
-    .sort((a, b) => (piano(a.lastName).startsWith(t) ? 0 : 1) - (piano(b.lastName).startsWith(t) ? 0 : 1) || b.quotation - a.quotation)
-    .slice(0, 6);
+    .filter((p) => p.isActive && !p.doppioneDi && !presi.has(p.id)
+      && (!filtroRuolo || p.role === filtroRuolo) && (!filtroClub || p.clubId === filtroClub)
+      && (t.length < 2 || piano(p.lastName).includes(t) || piano(`${p.firstName} ${p.lastName}`).includes(t)))
+    .sort(filtri && t.length < 2
+      ? (a, b) => club(a).localeCompare(club(b)) || ROLE_ORDER.indexOf(a.role) - ROLE_ORDER.indexOf(b.role) || a.lastName.localeCompare(b.lastName)
+      : (a, b) => (piano(a.lastName).startsWith(t) ? 0 : 1) - (piano(b.lastName).startsWith(t) ? 0 : 1) || b.quotation - a.quotation)
+    .slice(0, filtri ? 80 : 6);
   if (!lista.length) return '<p class="small muted ce-niente">Nessun giocatore con questo nome.</p>';
-  return lista.map((p) => { const c = S.clubsById.get(p.clubId);
-    return `<button class="ce-sug" data-pick="${p.id}">${faccia(p, c)}<span class="nm"><b>${esc(p.firstName)} ${esc(p.lastName)}</b><span>${esc(c?.name || '')}</span></span></button>`; }).join('');
+  return `${filtri ? `<p class="small muted ce-quanti">${lista.length} giocatori: tocca quello che pensi sia.</p>` : ''}${lista.map((p) => { const c = S.clubsById.get(p.clubId);
+    return `<button class="ce-sug" data-pick="${p.id}">${faccia(p, c)}<span class="nm"><b>${esc(p.firstName)} ${esc(p.lastName)}</b><span>${esc(c?.name || '')}</span></span></button>`; }).join('')}`;
+}
+
+function filtri() {
+  const club = [...new Set(S.base.players.filter((p) => p.isActive && !p.doppioneDi).map((p) => p.clubId))]
+    .map((id) => S.clubsById.get(id)).filter(Boolean).sort((a, b) => a.name.localeCompare(b.name));
+  return `<div class="ce-filtri"><span class="small muted">Non ricordi il nome? Scegli dalla lista</span>
+    <div class="chips" role="group" aria-label="Ruolo">${ROLE_ORDER.map((r) => `<button class="chip${filtroRuolo === r ? ' on' : ''}" data-ruolo="${r}" aria-pressed="${filtroRuolo === r}">${ROLE_NAME[r]}</button>`).join('')}</div>
+    <div class="chips" role="group" aria-label="Squadra">${club.map((c) => `<button class="chip${filtroClub === c.id ? ' on' : ''}" data-club="${esc(c.id)}" aria-pressed="${filtroClub === c.id}">${esc(c.name)}</button>`).join('')}</div>
+  </div>`;
 }
 
 /**
@@ -145,14 +165,14 @@ export const gioco = {
       ? `<div class="a-card ce-mistero ce-perso"><span class="ce-sagoma" aria-hidden="true">?</span><div><b>Non l'hai indovinato</b><p>Sei tentativi finiti. Vuoi sapere chi era?</p><button class="a-btn sec" data-rivela>Rivela il giocatore</button></div></div>`
       : finito
       ? `<div class="a-card ce-rivela">${avatarGrande(mistero, club)}<div><span class="small muted">${vinto ? `Indovinato in ${tentativi.length}` : 'Era lui'}</span><b>${esc(mistero.firstName)} ${esc(mistero.lastName)}</b><span>${esc(club?.name || '')}</span></div></div>`
-      : `<div class="a-card ce-mistero"><span class="ce-sagoma" aria-hidden="true">?</span><p>Un giocatore del Campionato Sammarinese. Scrivi un nome: per squadra, ruolo, età, quotazione, presenze e gol ti dico quanto ci sei vicino.</p></div>`;
+      : `<div class="a-card ce-mistero"><span class="ce-sagoma" aria-hidden="true">?</span><p>Un giocatore del Campionato Sammarinese. Scrivi un nome o sceglilo dalla lista: per squadra, ruolo, età, quotazione, presenze e gol ti dico quanto ci sei vicino.</p></div>`;
     const griglia = righe.length ? `<div class="ce-griglia" role="table" aria-label="I tuoi tentativi">
       <div class="ce-riga ce-intesta" role="row"><span></span>${Object.values(NOMI).map((n) => `<span role="columnheader">${n}</span>`).join('')}</div>
       ${righe.map(({ p, r }) => `<div class="ce-riga" role="row"><span class="ce-chi">${esc(p.lastName)}</span>${r.map(cella).join('')}</div>`).join('')}
     </div>` : '';
     const sotto = finito
       ? `<div class="ce-fine"><button class="a-btn" id="ce-condividi">Condividi il risultato</button><p class="small muted">Domani un giocatore nuovo, dalla mezzanotte.</p></div>`
-      : `<div class="ce-cerca"><input class="field-input" id="ce-q" placeholder="Scrivi un cognome" value="${esc(q)}" autocomplete="off" autocapitalize="words" enterkeyhint="search"><div class="ce-sugs" id="ce-sugs">${suggerimenti(partita.tentativi)}</div></div>`;
+      : `<div class="ce-cerca"><input class="field-input" id="ce-q" placeholder="Scrivi un cognome" value="${esc(q)}" autocomplete="off" autocapitalize="words" enterkeyhint="search">${filtri()}<div class="ce-sugs" id="ce-sugs">${suggerimenti(partita.tentativi)}</div></div>`;
     const legenda = `<p class="small muted ce-legenda"><span class="ce-c si"></span> giusto · <span class="ce-c vicino"></span> vicino (età ±2, quotazione ±3, presenze e gol ±1) · ↑↓ il giocatore del giorno ne ha di più o di meno</p>`;
     const pr = premi(giorno, fiamma, finito, vinto, tentativi.length);
     return `<main class="a-body ce">${testa}${volto}${griglia}${sotto}${pr.stimolo}${pr.resto}${legenda}</main>`;
@@ -163,6 +183,8 @@ export const gioco = {
     if (!gia) { try { localStorage.setItem(VISTA, '1'); } catch { /* niente */ } ctx.sheet(spiegazione()); }
     const foglio = document.getElementById('sheet');
     if (foglio && !foglio.dataset.giocoChiudi) { foglio.dataset.giocoChiudi = '1'; foglio.addEventListener('click', (e) => { if (e.target.closest('[data-chiudi]')) ctx.sheet(null); }); }
+    // il ruolo e la squadra scelti restano in vista nella loro fila
+    for (const c of root.querySelectorAll('.ce-filtri .chip.on')) c.parentElement.scrollLeft = c.offsetLeft - c.parentElement.offsetLeft - 16;
     const inp = root.querySelector('#ce-q');
     if (inp) {
       inp.oninput = () => {
@@ -178,6 +200,10 @@ export const gioco = {
         if (storico[giorno]) { storico[giorno].rivelato = true; scrivi(storico); }
         ctx.render(); return;
       }
+      const fr = e.target.closest('[data-ruolo]');
+      if (fr) { filtroRuolo = filtroRuolo === fr.dataset.ruolo ? '' : fr.dataset.ruolo; ctx.render(); return; }
+      const fc = e.target.closest('[data-club]');
+      if (fc) { filtroClub = filtroClub === fc.dataset.club ? '' : fc.dataset.club; ctx.render(); return; }
       const am = e.target.closest('[data-ambito]');
       if (am) { ambito = am.dataset.ambito; extra = { chiave: null, classifica: undefined, re: undefined, mio: extra.mio }; ctx.render(); return; }
       const b = e.target.closest('[data-pick]');

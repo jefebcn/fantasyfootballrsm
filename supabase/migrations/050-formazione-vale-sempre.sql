@@ -56,6 +56,8 @@ create trigger formazione_in_avanti after insert or update of lineup on public.l
 -- giocatori tutti in rosa e la rosa completa, le stesse regole della
 -- consegna (028, 037). Si riempiono solo le giornate vuote: chi ha gia'
 -- consegnato una giornata aperta non perde niente, l'ultima e' quella.
+-- Vale gia' dalla 7a (Alex, 31/10), cominciata col lock del 30/10: chi
+-- aveva consegnato la 6a e non la 7a la ritrova anche li'.
 select set_config('fantatitano.senza_avanti', 'on', false);
 with ultime as (
   select distinct on (li.league_id, li.member_id) li.league_id, li.member_id, li.matchday, li.lineup, li.submitted_at
@@ -73,6 +75,7 @@ with ultime as (
 )
 insert into public.lineups (league_id, member_id, matchday, lineup, submitted_at)
 select b.league_id, b.member_id, k.matchday, b.lineup, b.submitted_at
-  from buone b join public.matchday_locks k on k.matchday > b.matchday and k.lock_at > now()
+  from buone b join public.matchday_locks k
+    on k.matchday > b.matchday and (k.lock_at > now() or k.matchday >= 7)
 on conflict (league_id, member_id, matchday) do nothing;
 select set_config('fantatitano.senza_avanti', '', false);

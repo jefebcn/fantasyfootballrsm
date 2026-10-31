@@ -142,6 +142,8 @@ export function translate(error) {
   if (m.includes('signups not allowed')) return 'Le registrazioni sono chiuse su questo progetto.';
   if (m.includes('more than one relationship') || m.includes('pgrst201')) return 'Il database ha più di un collegamento fra queste tabelle e la richiesta è ambigua: va indicata la chiave da usare.';
   if (m.includes('failed to fetch') || m.includes('networkerror')) return 'Nessuna connessione al server.';
+  // la formazione dopo il lock (004): il database la rifiuta con la regola di sicurezza
+  if (m.includes('row-level security') && m.includes('"lineups"')) return 'La consegna per questa giornata è chiusa: la formazione non è stata salvata.';
   if (m.includes('invalid input syntax for type uuid')) return 'Il database non è pronto per Clerk: esegui la migrazione 001-identita-esterna.sql nell\'SQL Editor.';
   if (!external && (m.includes('jwt expired') || m.includes('pgrst301') || m.includes('pgrst303'))) return 'La sessione è scaduta: chiudi e riapri l\'app. Se succede ancora, esci e rientra dal Profilo.';
   if (m.includes('jwt') || m.includes('jwks') || m.includes('invalid claim')) return 'Token non accettato da Supabase: controlla l\'integrazione Clerk in Authentication → Third-Party Auth e che il claim "role" valga "authenticated".';

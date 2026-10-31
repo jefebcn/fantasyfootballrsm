@@ -2742,6 +2742,10 @@ a.crow .cls-chev{flex:none;color:var(--text-muted);margin-left:-4px}
 .ce-sug .nm span{font-size:12px;color:var(--text-muted)}
 .ce-fine{display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center}
 .ce-niente{margin:4px 2px}
+.ce-filtri{display:flex;flex-direction:column;gap:6px;margin-top:2px}
+.ce-filtri .chip{min-height:34px;font-size:13px;padding:0 12px}
+.ce-sug .nm{flex:1}
+.ce-quanti{margin:2px 2px 0}
 /* La carta di «Chi è?» in Home: stessa card delle altre, il punto
    interrogativo al posto dell'icona e il pulsante nel colore dell'azione. */
 .ce-home{display:flex;align-items:center;gap:12px;text-decoration:none;color:inherit}

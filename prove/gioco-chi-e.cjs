@@ -51,17 +51,29 @@ const ok = [], ko = []; const et = (c, t) => (c ? ok : ko).push(t);
     const G = await import('/src/gioco.js'); const S = await import('/src/state.js');
     const mi = G.misteroDel(G.oggi(S.now()), S.base.players, G.statistiche(S.base));
     const altri = S.base.players.filter((x) => x.isActive && !x.doppioneDi && x.id !== mi.id && x.clubId !== mi.clubId).slice(0, 2);
-    return { id: mi.id, nome: mi.lastName, altri: altri.map((x) => ({ id: x.id, nome: x.lastName })) };
+    return { id: mi.id, nome: mi.lastName, altri: altri.map((x) => ({ id: x.id, nome: x.lastName, ruolo: x.role, club: x.clubId })) };
   });
   et(await p.locator('.ce-sagoma').count() === 1, 'all\'inizio il giocatore e\' coperto');
   et((await p.textContent('.ce-num b')).trim().startsWith('#3'), `il 29/10 e\' il #3 (${(await p.textContent('.ce-num b')).trim()})`);
   await p.screenshot({ path: `${USCITA}/gioco-1-inizio.png` });
 
-  // due tentativi sbagliati, scritti e scelti dai suggerimenti
-  for (const x of m.altri) {
-    await p.fill('#ce-q', x.nome.slice(0, 4)); await w(250);
-    await p.click(`[data-pick="${x.id}"]`); await w(400);
-  }
+  // due tentativi sbagliati: il primo scritto e scelto dai suggerimenti...
+  await p.fill('#ce-q', m.altri[0].nome.slice(0, 4)); await w(250);
+  await p.click(`[data-pick="${m.altri[0].id}"]`); await w(400);
+  // ...il secondo dalla lista, con i filtri di ruolo e squadra (Alex, 31/10)
+  const x = m.altri[1];
+  await p.click(`[data-ruolo="${x.ruolo}"]`); await w(300);
+  await p.click(`[data-club="${x.club}"]`); await w(300);
+  const lista = await p.evaluate(async () => {
+    const S = await import('/src/state.js');
+    return [...document.querySelectorAll('#ce-sugs [data-pick]')].map((b) => S.playersById.get(b.dataset.pick)).map((g) => `${g.role}:${g.clubId}`);
+  });
+  et(lista.length > 0 && lista.every((v) => v === `${x.ruolo}:${x.club}`), `con ruolo e squadra la lista mostra solo quelli (${lista.length})`);
+  await p.screenshot({ path: `${USCITA}/gioco-1b-lista.png` });
+  await p.click(`[data-pick="${x.id}"]`); await w(400);
+  await p.click(`[data-ruolo="${x.ruolo}"]`); await w(200);
+  await p.click(`[data-club="${x.club}"]`); await w(200);
+  et(await p.locator('#ce-sugs [data-pick]').count() === 0, 'tolti i filtri, senza nome scritto la lista sparisce');
   const righe = await p.locator('.ce-riga:not(.ce-intesta)').count();
   et(righe === 2, `due tentativi, due righe (${righe})`);
   et(await p.locator('.ce-riga:not(.ce-intesta) .ce-c').count() === 12, 'sei indizi per riga');

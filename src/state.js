@@ -208,7 +208,7 @@ async function loadAll() {
     const n = refertiDaAggiornare().length;
     if (n) avvisoCambiati = n;
   }
-  if (prof?.is_judge && !lockGiaSincronizzati && !lockInCorso && lockDisallineati().length) {
+  if (prof?.is_judge && !lockGiaSincronizzati && !lockInCorso && lockDisallineati().length && await codiceAggiornato()) {
     // Il segno di "fatto" va messo DOPO che e' riuscita, non prima: segnandolo
     // prima, un errore di rete lasciava il calendario disallineato per tutta la
     // sessione senza piu' riprovare. `lockInCorso` evita solo la sovrapposizione
@@ -1181,10 +1181,28 @@ export function rendicontoSponsor(id) {
     // La percentuale di tocco su zero viste non e' zero: non esiste.
     ctr: viste ? somma(righe, 'tocchi') / viste : null };
 }
+/**
+ * Il calendario dei lock che il telefono manda al database e' quello del suo
+ * codice. Il 30/10 il telefono del Giudice girava ancora con gli orari a
+ * +02:00 fissi (prima della correzione del fuso): aprendo l'app ha rimesso la
+ * chiusura della 7a alle 20:05 invece delle 21:05, e chi ha provato a
+ * consegnare in quell'ora e' stato rifiutato dal database. Quindi si allinea
+ * solo con il codice piu' recente: se il service worker trova una versione
+ * nuova, o non riesce a controllare (niente rete), non si manda niente.
+ */
+async function codiceAggiornato() {
+  try {
+    const reg = await globalThis.navigator?.serviceWorker?.getRegistration?.();
+    if (!reg) return true;                     // niente service worker: il codice e' quello del sito
+    await reg.update();
+    return !(reg.installing || reg.waiting);
+  } catch { return false; }
+}
 let refertiGiaCaricati = false; let refertiInCorso = false; let avvisoReferti = null;
 let cambiatiDetti = false; let avvisoCambiati = 0;
 export async function sincronizzaLock({ forza = false } = {}) {
   if (!isJudge()) throw new Error('Solo il Giudice Dati può aggiornare il calendario dei lock');
+  if (!(await codiceAggiornato())) throw new Error("C'è una versione nuova dell'app: chiudila e riaprila, poi allinea il calendario");
   const da = forza ? calendarioLock() : lockDisallineati();
   if (!da.length) return 0;
   const n = await remote.syncMatchdayLocks(forza ? calendarioLock() : da);

@@ -61,7 +61,7 @@ export const CALENDARIO = [
   [7,"domagnano","virtus","2026-10-31T15:00:00+01:00","Stadio di Acquaviva",0,1],
   [7,"trefiori","murata","2026-10-31T15:00:00+01:00","Stadio di Fiorentino",1,0],
   [7,"lafiorita","libertas","2026-10-31T15:00:00+01:00","Stadio di Domagnano",1,0],
-  [7,"folgore","trepenne","2026-11-01T15:00:00+01:00","Stadio di Montecchio",null,null],
+  [7,"folgore","trepenne","2026-11-01T15:00:00+01:00","Stadio di Montecchio",1,1],
   [7,"cosmos","fiorentino","2026-11-01T15:00:00+01:00","Stadio di Fiorentino",2,0],
   [7,"sangiovanni","faetano","2026-11-01T15:00:00+01:00","Stadio di Domagnano",2,1],
   [8,"folgore","virtus","2026-11-07T15:00:00+01:00","Stadio di Montecchio",null,null],

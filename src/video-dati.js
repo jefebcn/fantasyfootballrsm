@@ -43,6 +43,8 @@ export const PARTITE = [
   [6, "trepenne", "trefiori", "Y7KNr1NqeT0", "2026-10-26"],
 ];
 export const VIDEO_CANALE = [
+  ["WsiKpXcomog", "Campionato Sammarinese 2026-27, 7. giornata | HL Tre Fiori - Murata 1-0", "2026-11-02"],
+  ["QQYAw-l0F60", "Campionato Sammarinese 2026-27, 7. giornata | HL Domagnano - Virtus 0-1", "2026-11-02"],
   ["OV3BER83kl4", "Campionato Sammarinese 2026-27, 7. giornata | HL Pennarossa - San Marino Academy 1-1", "2026-11-02"],
   ["rJPnB59H7Kw", "Campionato Sammarinese 2026-27, 7. giornata | HL Cailungo - Juvenes Dogana 1-1", "2026-11-02"],
   ["N43E81Impgc", "Coppa Titano 2026-27, Ottavi di finale (ritorno) | HL Virtus - Murata 3-0", "2026-10-29"],
@@ -53,6 +55,4 @@ export const VIDEO_CANALE = [
   ["_UhWox108gU", "Coppa Titano 2026-27, Ottavi di finale (ritorno) | HL Juvenes Dogana - Tre Penne 1-3", "2026-10-29"],
   ["hJhma9wq-Ec", "Coppa Titano 2026-27, Ottavi di finale (ritorno) | HL Cosmos - San Giovanni 1-1", "2026-10-29"],
   ["VtGD0mDThRM", "Campionato Sammarinese 2026-27, 6. giornata - VOTA LA PARATA PIÙ BELLA!", "2026-10-26"],
-  ["wNLVn570fSQ", "Campionato Sammarinese 2026-27, 6. giornata - VOTA IL GOL PIÙ BELLO!", "2026-10-26"],
-  ["htzYIak_1nM", "Campionato Sammarinese 2026-27, 6. giornata | HL Faetano - La Fiorita 0-0", "2026-10-26"],
 ];

@@ -324,6 +324,36 @@ const quando = (iso) => (iso ? `${dateIt(iso)} ${timeIt(iso)}` : '—');
  * massimo, le piu' recenti — e per le iscrizioni degli ultimi quattordici
  * giorni e' esattamente la parte giusta.
  */
+/**
+ * CHI APRE L'APP (051). Alex, 04/11: «dobbiamo trovare un modo per il quale
+ * la gente continui a tornare». Il login non lo diceva: chi resta collegato
+ * non lo rifa' mai. Qui conta chi apre l'app, un giorno per persona, e quanti
+ * di quelli della settimana prima sono tornati: e' il numero che dice se
+ * notifiche e gioco quotidiano funzionano.
+ */
+function accessi(r) {
+  const titolo = (dx) => `<div class="a-sec"><b>Chi apre l'app</b><span>${dx}</span></div>`;
+  if (r === undefined) return '';
+  if (r === null) return `${titolo('da attivare')}<p class="small muted" style="margin:0 2px">Serve la SQL <b>051</b>, da eseguire una volta nell'SQL Editor.</p>`;
+  const giorni = [...(r.giorni || [])].reverse();          // dal piu' vecchio a oggi, come le iscrizioni
+  const max = Math.max(1, ...giorni.map((g) => g.persone));
+  const et = (g) => { const d = new Date(`${g}T12:00:00`); return `${d.getDate()}/${d.getMonth() + 1}`; };
+  const ritorno = r.prima ? `${Math.round((r.tornati / r.prima) * 100)}%` : '—';
+  const dal = r.dal ? `si conta dal ${dateIt(`${r.dal}T12:00:00`)}` : 'si comincia a contare da adesso';
+  const q = [
+    ['Oggi', r.oggi, 'persone diverse'],
+    ['Ultimi 7 giorni', r.sette, 'persone diverse'],
+    ['Ultimi 30 giorni', r.trenta, 'persone diverse'],
+    ['Tornano', ritorno, r.prima ? `${r.tornati} su ${r.prima} della settimana prima` : 'serve una settimana di dati'],
+  ];
+  return `${titolo(dal)}
+    <div class="adm-numeri">${q.map(([e, v, s]) => `<div class="adm-n"><span class="et">${e}</span><b>${v ?? '—'}</b><span class="sotto">${esc(s)}</span></div>`).join('')}</div>
+    <div class="a-card adm-graf accessi">${giorni.map((g, i) => `<span class="col" title="${et(g.giorno)}: ${g.persone}">
+      <i style="height:${Math.round((g.persone / max) * 100)}%"></i><small>${i === 0 || i === giorni.length - 1 ? et(g.giorno) : ''}</small>
+      ${g.persone ? `<b>${g.persone}</b>` : ''}</span>`).join('')}</div>
+    <p class="small muted" style="margin:-4px 2px 0">Una persona conta una volta al giorno, da qualsiasi telefono. Si salva solo il giorno: niente ora, schermate o telefono.</p>`;
+}
+
 function andamento(persone) {
   if (!persone) return '';
   const GIORNI = 14;
@@ -901,6 +931,7 @@ export const adminConsole = {
       corpo = `<div class="adm-dash">
         <section class="d-cfg">${prudenza()}${riservatezza(cache.adesioni)}</section>
         <section class="d-kpi">${numeri(cache.numeri)}</section>
+        <section class="d-acc">${accessi(cache.accessi)}</section>
         <section class="d-con">${consegne(cache.numeri)}</section>
         <section class="d-gio">${gioco(cache.gioco)}</section>
         <section class="d-err">${errori(cache.errori)}</section>
@@ -933,6 +964,7 @@ export const adminConsole = {
         if (aTab === 'numeri' && cache.adesioni === undefined && S.isOwner()) { await ricaricaConsensi(); ctx.render(); }
         if (aTab === 'numeri' && cache.errori === undefined) { cache.errori = await S.caricaErrori(7); ctx.render(); }
         if (aTab === 'numeri' && cache.gioco === undefined) { cache.gioco = await S.adminGiocoConteggi(14); ctx.render(); }
+        if (aTab === 'numeri' && cache.accessi === undefined) { cache.accessi = await S.adminAccessi(14); ctx.render(); }
         // l'andamento si disegna sull'elenco delle persone: la scheda dei
         // numeri lo chiede una volta e poi resta in cache come le altre
         if (aTab === 'numeri' && !cache.persone) { cache.persone = await S.adminPersone(null, 100); ctx.render(); }

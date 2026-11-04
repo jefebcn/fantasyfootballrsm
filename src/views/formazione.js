@@ -3,6 +3,7 @@ import { validateLineup, votoUfficio } from '../engine.js';
 import { esc, roleChip, faccia, ROLE_NAME, badge, icon, avatar, dateIt, timeIt, fmt, voteRow, sec } from '../ui.js';
 import { schedeRosa } from './rosa.js';
 import * as M from '../formazione-mosse.js';
+import { chiediDopoIlSalvataggio } from './chiedi-avvisi.js';
 
 let draft = null; let draftFor = null;
 function ensureDraft() {
@@ -391,7 +392,7 @@ export const formazione = {
       if (e.target.closest('#confirm')) {
         const errors = validateLineup({ ...d, starters: d.starters.filter(Boolean), bench: d.bench.filter(Boolean) }, S.playersById);
         if (errors.length) { ctx.toast(errors[0]); return; }
-        try { S.saveLineup(n, me.id, { ...d, bench: d.bench.filter(Boolean) }); tolti = []; clearTimeout(attesaBozza); bozzaSalvata = comeBozza(d); ctx.toast(`Formazione salvata · giornata ${n}`); }
+        try { S.saveLineup(n, me.id, { ...d, bench: d.bench.filter(Boolean) }); tolti = []; clearTimeout(attesaBozza); bozzaSalvata = comeBozza(d); ctx.toast(`Formazione salvata · giornata ${n}`); chiediDopoIlSalvataggio(ctx); }
         catch (err) { ctx.toast(err.message); ctx.render(); }
       }
     });

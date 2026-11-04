@@ -6,6 +6,8 @@ import { esc, premioHtml, fmt, icon, logo, badge, crest, pic, tile, sec, dateIt,
 import { movimenti, anteprimaClassifica } from '../engine.js';
 import { personaggio, scelto, figura } from '../personaggio.js';
 import { partitaDiOggi } from './gioco.js';
+import { INVITO_CALCIATORI } from '../config.js';
+import { riquadroRichiesta, rispondi } from './chiedi-avvisi.js';
 
 const RULES = [
   ['Art. 7.4', 'Rigore parato', 'Vale +3,0 al portiere e −3,0 al tiratore. Sul palo o fuori: −3,0 al tiratore e nessun bonus al portiere.'],
@@ -202,35 +204,7 @@ function corrente(f, n, me, riposo, bloccato = null) {
  * chiede solo dal «Sì».
  */
 function richiestaPromemoria() {
-  const d = S.store.get();
-  const come = AV.comeChiedere({ avvisi: d.avvisi, chiesto: d.pushChiesto, consegnato: S.haConsegnato(),
-    permesso: AV.permesso(), supportate: AV.supportate(), configurato: AV.pushConfigurato(),
-    ios: AV.suiOS(), installata: AV.installata(), browser: AV.browserIOS() });
-  if (!come) return '';
-  // iPhone nel browser: prima la schermata Home, se no il «Sì» non c'e'
-  if (come === 'installa' || come === 'apri-browser') {
-    const passi = come === 'apri-browser'
-      ? ['Sei dentro un\'altra app (Instagram, Facebook): tocca <b>⋯</b> in alto e <b>Apri nel browser</b>.',
-        `Lì tocca <b>Condividi</b>: ${esc(AV.doveCondividi().replace(/^./, (c) => c.toLowerCase()))}`, 'Scegli <b>Aggiungi alla schermata Home</b>.',
-        'Apri Fantatitano dall\'icona sulla Home: qui ti chiedo il permesso.']
-      : [`Tocca <b>Condividi</b>: ${esc(AV.doveCondividi().replace(/^./, (c) => c.toLowerCase()))}`, 'Scegli <b>Aggiungi alla schermata Home</b>.',
-        'Apri Fantatitano dall\'icona sulla Home: qui ti chiedo il permesso.'];
-    return `<div class="a-card chiedi-push ios" data-come="${come}">
-    <i class="cp-ico">${icon('bell')}</i>
-    <div class="cp-txt"><b>Vuoi un promemoria prima della scadenza?</b>
-      <span>Su iPhone le notifiche arrivano solo con Fantatitano sulla <b>schermata Home</b>. Ci vogliono dieci secondi:</span>
-      <ol class="cp-passi">${passi.map((x) => `<li>${x}</li>`).join('')}</ol>
-      <div class="cp-btn"><button class="a-btn sec" data-push="no">Non ora</button></div>
-    </div>
-  </div>`;
-  }
-  return `<div class="a-card chiedi-push">
-    <i class="cp-ico">${icon('bell')}</i>
-    <div class="cp-txt"><b>Vuoi un promemoria prima della scadenza?</b>
-      <span>Una notifica sul telefono quando manca poco al lock e non hai ancora schierato. Solo quella.</span>
-      <div class="cp-btn"><button class="a-btn" data-push="si">Sì, attiva</button><button class="a-btn sec" data-push="no">Non ora</button></div>
-    </div>
-  </div>`;
+  return riquadroRichiesta();
 }
 
 /**
@@ -259,7 +233,7 @@ function cartaGioco(dove) {
 }
 
 function invitoCalciatori() {
-  if (S.store.get().bannerCalciatori) return '';
+  if (!INVITO_CALCIATORI || S.store.get().bannerCalciatori) return '';
   try { if (localStorage.getItem('ft.adesione')) return ''; } catch { /* niente */ }
   return `<div class="a-card invito-calc">
     <i class="cp-ico cp-logo">${logo()}</i>
@@ -698,25 +672,8 @@ export const dashboard = {
       if (e.target.closest('[data-calc="si"]')) { S.contaBannerUnaVolta('ci_gioco'); location.hash = '#/giocatori'; return; }
       if (e.target.closest('[data-calc="no"]')) { S.contaBannerUnaVolta('non_gioco'); S.store.set({ bannerCalciatori: true }); ctx.toast('Va bene, non lo mostro più'); }
     });
-    root.querySelector('.chiedi-push')?.addEventListener('click', async (e) => {
-      const b = e.target.closest('[data-push]'); if (!b) return;
-      const unNo = () => { const c = S.store.get().pushChiesto; S.store.set({ pushChiesto: { volte: (c?.volte || 0) + 1, ultima: Date.now() } }); };
-      if (b.dataset.push === 'no') { unNo(); ctx.toast('Va bene. Se cambi idea: Impostazioni → Preferenze notifiche'); return; }
-      b.disabled = true;
-      const esito = await AV.chiediPermesso();
-      if (esito === 'granted') {
-        S.store.set({ avvisi: true });   // ridisegna: col permesso dato il riquadro sparisce
-        // l'iscrizione aspetta il service worker: se tarda, l'avviso non resta appeso
-        const iscritto = await Promise.race([S.iscriviAvvisi().catch(() => false),
-          new Promise((r) => { setTimeout(() => r(false), 8000); })]);
-        ctx.toast(iscritto ? 'Promemoria attivo su questo telefono' : 'Notifiche consentite: il promemoria arriva ad app aperta');
-      } else if (esito === 'denied') {
-        ctx.toast('Va bene, niente notifiche. Si riattivano dalle impostazioni del telefono');
-      } else {
-        // finestra chiusa senza scegliere: vale come un «non ora», non si richiede subito
-        unNo();
-      }
-      ctx.render();
+    root.querySelector('.chiedi-push')?.addEventListener('click', (e) => {
+      const b = e.target.closest('[data-push]'); if (b) rispondi(b, ctx, () => ctx.render());
     });
     // Chiudere la giornata e' definitivo (art. 9.2), quindi si chiede conferma
     // e si aspetta il server prima di dire che e' fatta: se il database

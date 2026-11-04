@@ -83,15 +83,16 @@ export async function init() {
     if (authKind() === 'clerk') {
       user = await clerk.init();
       await remote.init({ accessToken: clerk.token });
-      clerk.onChange(async (u) => { const was = user?.id; user = u; if (u?.id !== was) { await loadAll(); notify(); } });
+      clerk.onChange(async (u) => { const was = user?.id; user = u; if (u?.id !== was) { await loadAll(); notify(); segnaAccesso(); } });
     } else {
       user = await remote.init();
-      remote.onAuth(async (u) => { const was = user?.id; user = u; if (u?.id !== was) { await loadAll(); notify(); } });
+      remote.onAuth(async (u) => { const was = user?.id; user = u; if (u?.id !== was) { await loadAll(); notify(); segnaAccesso(); } });
     }
     ready = true;
     if (user && !prefs.onboarded) { prefs.onboarded = true; persistPrefs(); }
     await loadAll();
     programmaAlLock();
+    segnaAccesso();
     // app iPhone: il codice del dispositivo puo' cambiare, si risalva a ogni avvio
     if (user && AV.nativa()) AV.nativoPronto().then(() => AV.permesso() === 'granted' && iscriviAvvisi()).catch(() => {});
   } catch (e) {
@@ -1068,6 +1069,28 @@ export function contaBannerUnaVolta(evento) {
   });
 }
 export const caricaConteggiBanner = () => remote.caricaConteggiBanner();
+/*
+ * Chi apre l'app (051, Alex 04/11: capire se la gente torna). Un giorno per
+ * persona: il telefono si ricorda di averlo gia' detto oggi e chiama il
+ * server al massimo una volta al giorno. Se lo ricorda solo quando il server
+ * l'ha segnato: senza la 051, o con la rete giu', riprova alla prossima
+ * apertura. Il giorno e' quello italiano, come nel database.
+ */
+let accessoInCorso = false;
+const giornoItalia = () => new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Rome', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date());
+export function segnaAccesso() {
+  if (!user || accessoInCorso) return;
+  const k = `ft.accesso.${user.id}`; const oggi = giornoItalia();
+  try { if (localStorage.getItem(k) === oggi) return; } catch { /* senza memoria si chiede lo stesso: il server tiene una riga al giorno */ }
+  accessoInCorso = true;
+  remote.segnaAccesso().then((ok) => {
+    accessoInCorso = false;
+    if (ok) try { localStorage.setItem(k, oggi); } catch { /* domani lo richiede, pazienza */ }
+  });
+}
+// Un'app lasciata aperta e ripresa il giorno dopo e' un'apertura nuova.
+if (typeof document !== 'undefined') document.addEventListener('visibilitychange', () => { if (!document.hidden) segnaAccesso(); });
+export const adminAccessi = (giorni) => remote.adminAccessi(giorni);
 export const verificaRegistro = () => remote.verificaRegistro();
 export const testoConsenso = (v) => remote.testoConsenso(v);
 export const caricaProva = (id) => remote.caricaProva(id);

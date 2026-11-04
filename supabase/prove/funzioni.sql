@@ -2627,4 +2627,65 @@ reset role;
 update public.profiles set is_admin = false where id = 'user_alex';
 select set_config('request.jwt.claims', '', false);
 
+-- Chi apre l'app (051): un giorno per persona, solo per se', l'admin conta,
+-- e il profilo cancellato si porta via i suoi giorni.
+reset role;
+delete from public.accessi where user_id in ('user_bea', 'user_cip', 'user_via');
+-- Bea c'era anche la settimana scorsa: e' una che torna
+insert into public.accessi (user_id, giorno)
+  values ('user_bea', (now() at time zone 'Europe/Rome')::date - 9),
+         ('user_bea', (now() at time zone 'Europe/Rome')::date - 500);
+select pg_temp.entra('user_bea');
+set role authenticated;
+select public.segna_accesso();
+select public.segna_accesso();   -- due aperture lo stesso giorno: una riga
+do $$ begin
+  perform * from public.accessi;
+  raise exception 'FALLITA: accessi non doveva leggersi';
+exception when others then
+  if sqlerrm like 'FALLITA%' then raise; end if;
+  raise notice 'ok  accessi non si legge da fuori (%)', sqlerrm;
+end $$;
+do $$ begin
+  perform public.admin_accessi(14);
+  raise exception 'FALLITA: i conteggi degli accessi sono solo per l''admin';
+exception when others then
+  if sqlerrm like 'FALLITA%' then raise; end if;
+  raise notice 'ok  i conteggi degli accessi sono solo per l''admin (%)', sqlerrm;
+end $$;
+select pg_temp.entra('user_cip');
+set role authenticated;
+select public.segna_accesso();
+reset role;
+select pg_temp.esige('Bea oggi conta una volta sola',
+  (select count(*) = 1 from public.accessi where user_id = 'user_bea' and giorno = (now() at time zone 'Europe/Rome')::date));
+select pg_temp.esige('il giorno di 500 giorni fa se n''e'' andato da solo',
+  not exists (select 1 from public.accessi where user_id = 'user_bea' and giorno < (now() at time zone 'Europe/Rome')::date - 400));
+select set_config('request.jwt.claims', '', false);
+set role anon;
+do $$ begin
+  perform public.segna_accesso();
+  raise exception 'FALLITA: senza account non si segna niente';
+exception when others then
+  if sqlerrm like 'FALLITA%' then raise; end if;
+  raise notice 'ok  senza account segna_accesso non si chiama (%)', sqlerrm;
+end $$;
+reset role;
+update public.profiles set is_admin = true where id = 'user_alex';
+select pg_temp.entra('user_alex');
+set role authenticated;
+select pg_temp.esige('l''admin vede 2 persone oggi, 2 in 7 giorni, 1 della settimana prima tornata',
+  (select (r ->> 'oggi')::int = 2 and (r ->> 'sette')::int = 2 and (r ->> 'prima')::int = 1 and (r ->> 'tornati')::int = 1
+            and jsonb_array_length(r -> 'giorni') = 14 and (r -> 'giorni' -> 0 ->> 'persone')::int = 2
+     from public.admin_accessi(14) r));
+reset role;
+update public.profiles set is_admin = false where id = 'user_alex';
+-- il profilo cancellato si porta via i suoi giorni
+insert into public.profiles (id, display_name) values ('user_via', 'Via') on conflict (id) do nothing;
+insert into public.accessi (user_id, giorno) values ('user_via', (now() at time zone 'Europe/Rome')::date);
+delete from public.profiles where id = 'user_via';
+select pg_temp.esige('cancellato il profilo, i suoi giorni non ci sono piu''',
+  not exists (select 1 from public.accessi where user_id = 'user_via'));
+select set_config('request.jwt.claims', '', false);
+
 select 'tutte le prove sulle funzioni sono passate' as esito;

@@ -435,6 +435,22 @@ export function createClient(_url, _key, opts) {
           for (const g of v) { n = prima && (Date.parse(g) - Date.parse(prima)) / 864e5 === 1 ? n + 1 : 1; max = Math.max(max, n); prima = g; }
           return { data: [{ serie: n, serie_max: max, vinte: v.length, giocate: T('gioco_partite').filter((x) => x.user_id === userId).length }], error: null };
         }
+        // 051: chi apre l'app, un giorno per persona; l'admin legge i conteggi
+        if (name === 'segna_accesso') {
+          const g = new Date().toISOString().slice(0, 10);
+          if (!T('accessi').some((x) => x.user_id === userId && x.giorno === g)) T('accessi').push({ user_id: userId, giorno: g });
+          persisti(); return { data: null, error: null };
+        }
+        if (name === 'admin_accessi') {
+          if (!amministro()) throw new Error('solo admin');
+          const n = Math.max(1, Math.min(Number(args.p_giorni) || 14, 90));
+          const giorno = (k) => new Date(Date.now() - k * 864e5).toISOString().slice(0, 10);
+          const persone = (da, a) => new Set(T('accessi').filter((x) => x.giorno >= giorno(da) && x.giorno <= giorno(a)).map((x) => x.user_id));
+          const sette = persone(6, 0); const prima = persone(13, 7);
+          return { data: { oggi: persone(0, 0).size, sette: sette.size, trenta: persone(29, 0).size, prima: prima.size,
+            tornati: [...prima].filter((u) => sette.has(u)).length, dal: T('accessi').map((x) => x.giorno).sort()[0] || null,
+            giorni: Array.from({ length: n }, (_, k) => ({ giorno: giorno(k), persone: persone(k, k).size })) }, error: null };
+        }
         if (name === 'admin_gioco_conteggi') {
           if (!amministro()) throw new Error('solo admin');
           const per = new Map();

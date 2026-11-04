@@ -666,6 +666,20 @@ export async function adminGiocoConteggi(giorni = 14) {
   if (error) return null;
   return data || [];
 }
+/**
+ * Chi apre l'app (051): segna oggi per chi e' dentro. Una richiesta persa non
+ * e' un errore da mostrare: true solo se il server l'ha segnato.
+ */
+export function segnaAccesso() {
+  if (!sb) return Promise.resolve(false);
+  return sb.rpc('segna_accesso').then(({ error }) => !error, () => false);
+}
+/** Quanti aprono l'app, per l'admin (051). null se la 051 non c'e'. */
+export async function adminAccessi(giorni = 14) {
+  const { data, error } = await sb.rpc('admin_accessi', { p_giorni: giorni });
+  if (error) return null;
+  return data || null;
+}
 /** «Chi è?»: la classifica del mese, di tutti o di una lega (049). null se non c'e'. */
 export async function classificaGioco(mese = null, lega = null) {
   if (!sb) return null;

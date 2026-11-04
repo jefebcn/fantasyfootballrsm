@@ -2,6 +2,8 @@
 #
 # scripts/gol-in-diretta.py guarda ogni minuto le partite in corso sulla FSGC
 # e a ogni gol fa la storia; scripts/pubblica-storia.mjs la mette su Instagram.
+# Con --avvisa il gol diventa anche una notifica per chi ha il marcatore fra
+# i titolari (052): parte anche quando STORIE_GOL e' in prova, non se e' «off».
 #
 # L'INTERRUTTORE e' la variabile del repository STORIE_GOL (Settings → Secrets
 # and variables → Actions → Variables):
@@ -77,7 +79,12 @@ jobs:
           SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
           IG_USER_ID: ${{ secrets.IG_USER_ID }}
           IG_TOKEN: ${{ secrets.IG_TOKEN }}
-        run: python3 scripts/gol-in-diretta.py --uscita diretta --dati-db --pubblica --anche-vecchi --per 19200
+          # la notifica «Gol di X!» a chi ha il marcatore in formazione (052):
+          # la spedisce la funzione del promemoria, con gli stessi secret
+          SUPABASE_FUNCTIONS_URL: ${{ secrets.SUPABASE_FUNCTIONS_URL }}
+          PROMEMORIA_TOKEN: ${{ secrets.PROMEMORIA_TOKEN }}
+          PROMEMORIA_FUNZIONE: ${{ secrets.PROMEMORIA_FUNZIONE }}
+        run: python3 scripts/gol-in-diretta.py --uscita diretta --dati-db --pubblica --avvisa --anche-vecchi --per 19200
 
       - name: Le storie fatte
         if: always() && steps.finestra.outputs.si == 'si'

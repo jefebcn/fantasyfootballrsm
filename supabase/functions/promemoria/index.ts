@@ -167,6 +167,84 @@ const gestisci = async (req: Request): Promise<Response> => {
   } : null;
   let iphoneSaltati = 0;
 
+  // GLI ALTRI AVVISI (052, Alex 04/11: far tornare la gente). Con un corpo
+  // JSON la funzione non fa il promemoria ma uno di questi:
+  //   { tipo: 'gol', tag, giocatore, giornata, minuto }   da scripts/gol-in-diretta.py
+  //   { tipo: 'fine-giornata', giornata }                 da scripts/avvisi.mjs
+  // Le liste le fa il database, che segna l'avviso mentre lo restituisce:
+  // chiamare due volte non spedisce due volte.
+  const richiesta = req.method === 'POST'
+    ? await req.json().catch(() => null) as Record<string, unknown> | null
+    : null;
+  if (richiesta && (richiesta.tipo === 'gol' || richiesta.tipo === 'fine-giornata')) {
+    const giornata = Number(richiesta.giornata);
+    if (!Number.isInteger(giornata) || giornata < 1) return Response.json({ errore: 'giornata mancante' }, { status: 400 });
+    type Riga = { endpoint: string; p256dh: string; auth: string; team_name: string; league_name: string;
+      capitano?: boolean; nome?: string; club?: string | null; leghe?: number };
+    let righe: Riga[] = []; let tag = '';
+    if (richiesta.tipo === 'gol') {
+      tag = `gol-${String(richiesta.tag || '')}`;
+      const giocatore = String(richiesta.giocatore || '');
+      if (tag === 'gol-' || !giocatore) return Response.json({ errore: 'tag o giocatore mancanti' }, { status: 400 });
+      const { data, error } = await sb.rpc('avvisi_gol', { p_tag: tag, p_giocatore: giocatore, p_giornata: giornata });
+      if (error) return Response.json({ errore: error.message }, { status: 500 });
+      righe = data ?? [];
+    } else {
+      tag = `giornata-${giornata}`;
+      const { data, error } = await sb.rpc('avvisi_fine_giornata', { p_giornata: giornata });
+      if (error) return Response.json({ errore: error.message }, { status: 500 });
+      righe = data ?? [];
+    }
+    const minuto = Number(richiesta.minuto);
+    const tipo = richiesta.tipo;
+    const testo = (r: Riga) => {
+      if (tipo === 'gol') {
+        // «Cremonini L.» -> «Cremonini»: l'iniziale in coda in una notifica e' rumore
+        const nome = String(r.nome || '').replace(/\s+[A-ZÀ-Ý]\.$/u, '') || 'un tuo giocatore';
+        const quando = Number.isFinite(minuto) && minuto > 0 ? `al ${minuto}'` : 'adesso';
+        return {
+          titolo: `⚽ Gol di ${nome}!`,
+          corpo: r.capitano
+            ? `Ha segnato ${quando}${r.club ? ` per il ${r.club}` : ''}. È il capitano di ${r.team_name}.`
+            : `Ha segnato ${quando}${r.club ? ` per il ${r.club}` : ''}. Ce l'hai in formazione con ${r.team_name}.`,
+          tag, url: './#/',
+        };
+      }
+      return {
+        titolo: `Giornata ${giornata} finita`,
+        corpo: (r.leghe ?? 1) > 1
+          ? `Sono pronti i punti di ${r.team_name} e delle tue altre squadre. Guarda dove sei in classifica.`
+          : `Sono pronti i punti di ${r.team_name} in ${r.league_name}. Guarda dove sei in classifica.`,
+        tag, url: './#/',
+      };
+    };
+    let spedite = 0; const morti: string[] = []; const daRimettere: string[] = [];
+    for (const r of righe) {
+      const avviso = testo(r);
+      if (r.endpoint.startsWith('apns:')) {
+        if (!apns) { iphoneSaltati++; daRimettere.push(r.endpoint); continue; }
+        const esito = await spedisciApns(apns, r.endpoint.slice(5), avviso).catch(() => 'riprova');
+        if (esito === 'ok') spedite++; else if (esito === 'morto') morti.push(r.endpoint); else daRimettere.push(r.endpoint);
+        continue;
+      }
+      try {
+        await webpush.sendNotification({ endpoint: r.endpoint, keys: { p256dh: r.p256dh, auth: r.auth } }, JSON.stringify(avviso));
+        spedite++;
+      } catch (err) {
+        const code = (err as { statusCode?: number }).statusCode;
+        if (code === 404 || code === 410) morti.push(r.endpoint); else daRimettere.push(r.endpoint);
+      }
+    }
+    let rimessi = 0;
+    if (daRimettere.length) {
+      const { data: n } = await sb.rpc('avvisi_da_rifare', { p_tag: tag, p_endpoints: daRimettere });
+      rimessi = Number(n ?? 0);
+    }
+    if (morti.length) await sb.from('push_subscriptions').update({ failed_at: new Date().toISOString() }).in('endpoint', morti);
+    return Response.json({ tipo, tag, spedite, scaduti: morti.length, da_rifare: rimessi,
+      ...(iphoneSaltati ? { iphone_senza_chiave_apns: iphoneSaltati } : {}) });
+  }
+
   // Quali giornate hanno il lock nel giorno che viene? Le date stanno su
   // matchday_locks, cioe' la stessa fonte che regola i permessi: se qui si
   // usasse un'altra formula tornerebbe lo scarto di otto giorni.

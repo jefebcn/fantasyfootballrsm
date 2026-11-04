@@ -2688,4 +2688,64 @@ select pg_temp.esige('cancellato il profilo, i suoi giorni non ci sono piu''',
   not exists (select 1 from public.accessi where user_id = 'user_via'));
 select set_config('request.jwt.claims', '', false);
 
+-- Le notifiche del gol e della giornata finita (052): a chi ha il giocatore
+-- fra i titolari, una volta sola per telefono, il capitano detto, e solo
+-- dal service role.
+reset role;
+select set_config('request.jwt.claims', '', false);
+insert into public.profiles (id, display_name) values ('user_gol', 'Golea'), ('user_gol2', 'Panca') on conflict (id) do nothing;
+select pg_temp.entra('user_gol');
+select public.create_league('Lega Gol', 'LGL', 'Gol FC', '#123456', 'GF') as lega_gol \gset
+reset role;
+select id as m_gol from public.league_members where league_id = :'lega_gol' and user_id = 'user_gol' \gset
+select pg_temp.formazione(:'m_gol', '4-4-2')::text as f_gol \gset
+select (:'f_gol'::jsonb -> 'starters' ->> 10) as bomber, (:'f_gol'::jsonb -> 'starters' ->> 0) as portiere \gset
+-- il bomber e' il capitano di Golea
+insert into public.lineups (league_id, member_id, matchday, lineup)
+  values (:'lega_gol', :'m_gol', 29, :'f_gol'::jsonb || jsonb_build_object('captainId', :'bomber'));
+delete from public.avvisi_inviati;
+delete from public.push_subscriptions where user_id in ('user_gol', 'user_gol2');
+insert into public.push_subscriptions (endpoint, user_id, p256dh, auth) values
+  ('https://push/gol-telefono', 'user_gol', 'k1', 'a1'),
+  ('https://push/gol-morto', 'user_gol', 'k2', 'a2'),
+  ('https://push/panca', 'user_gol2', 'k3', 'a3');
+update public.push_subscriptions set failed_at = now() where endpoint = 'https://push/gol-morto';
+select count(*)::int as gol1 from public.avvisi_gol('29-a-b-a-1', :'bomber', 29) \gset
+select pg_temp.esige('il gol del bomber avvisa il telefono vivo di chi lo schiera, non quello morto ne'' gli altri', :gol1 = 1);
+select pg_temp.esige('e dice che e'' il capitano',
+  (select bool_and(capitano) from public.avvisi_gol('29-a-b-a-2', :'bomber', 29)));
+select count(*)::int as gol_bis from public.avvisi_gol('29-a-b-a-1', :'bomber', 29) \gset
+select pg_temp.esige('lo stesso gol non si avvisa due volte', :gol_bis = 0);
+select count(*)::int as gol_altra from public.avvisi_gol('28-a-b-a-1', :'bomber', 28) \gset
+select pg_temp.esige('nelle giornate senza formazione non si avvisa', :gol_altra = 0);
+select count(*)::int as gol_fuori from public.avvisi_gol('29-a-b-a-3', 'nessuno_99', 29) \gset
+select pg_temp.esige('chi non e'' fra i titolari non fa partire avvisi', :gol_fuori = 0);
+select pg_temp.esige('il portiere non e'' il capitano',
+  (select not bool_or(capitano) from public.avvisi_gol('29-a-b-b-1', :'portiere', 29)));
+select public.avvisi_da_rifare('29-a-b-a-1', array['https://push/gol-telefono']) as rifare \gset
+select pg_temp.esige('un invio fallito si toglie e si riprova', :rifare = 1
+  and (select count(*) from public.avvisi_gol('29-a-b-a-1', :'bomber', 29)) = 1);
+select count(*)::int as fine1 from public.avvisi_fine_giornata(29) \gset
+select pg_temp.esige('a giornata finita si avvisa chi aveva la formazione', :fine1 = 1);
+select count(*)::int as fine2 from public.avvisi_fine_giornata(29) \gset
+select pg_temp.esige('una volta sola', :fine2 = 0);
+select pg_temp.entra('user_gol');
+set role authenticated;
+do $$ begin
+  perform * from public.avvisi_gol('x', 'y', 1);
+  raise exception 'FALLITA: gli avvisi li chiede solo il service role';
+exception when others then
+  if sqlerrm like 'FALLITA%' then raise; end if;
+  raise notice 'ok  avvisi_gol non si chiama dall''app (%)', sqlerrm;
+end $$;
+do $$ begin
+  perform * from public.avvisi_inviati;
+  raise exception 'FALLITA: avvisi_inviati non doveva leggersi';
+exception when others then
+  if sqlerrm like 'FALLITA%' then raise; end if;
+  raise notice 'ok  avvisi_inviati non si legge da fuori (%)', sqlerrm;
+end $$;
+reset role;
+select set_config('request.jwt.claims', '', false);
+
 select 'tutte le prove sulle funzioni sono passate' as esito;

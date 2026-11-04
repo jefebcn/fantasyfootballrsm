@@ -121,3 +121,23 @@ jobs:
               echo "::error::Risposta inattesa: HTTP $stato."
               exit 1 ;;
           esac
+
+  # «Giornata N finita» (052): quando tutti i referti della giornata ci sono,
+  # chi aveva una formazione riceve l'avviso che i punti sono pronti.
+  # scripts/avvisi.mjs guarda calendario e referti del repository (gli stessi
+  # con cui l'app calcola i punti) e chiama la stessa funzione col tipo
+  # «fine-giornata». Il database segna chi l'ha gia' ricevuto: girare ogni
+  # ora non manda doppioni. Senza i secret non fa niente e lo dice.
+  fine-giornata:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Avviso di fine giornata
+        env:
+          SUPABASE_FUNCTIONS_URL: ${{ secrets.SUPABASE_FUNCTIONS_URL }}
+          PROMEMORIA_TOKEN: ${{ secrets.PROMEMORIA_TOKEN }}
+          PROMEMORIA_FUNZIONE: ${{ secrets.PROMEMORIA_FUNZIONE }}
+        run: node scripts/avvisi.mjs --spedisci

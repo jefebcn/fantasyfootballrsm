@@ -91,6 +91,13 @@ export const TITOLARE = {
 export const LEGALI_AGGIORNATE = '2026-11-04';
 /** Eta' minima per iscriversi. */
 export const ETA_MINIMA = 14;
+/**
+ * Il banner «Giochi nel campionato sammarinese?» in Home, che chiede ai
+ * calciatori se va bene comparire (044). Spento per ora (Alex, 04/11:
+ * «elimina per il momento la richiesta dei calciatori»): la pagina
+ * #/giocatori resta, il banner torna mettendo true.
+ */
+export const INVITO_CALCIATORI = false;
 
 /**
  * Chiave PUBBLICA VAPID per le notifiche a telefono chiuso. E' pubblica per

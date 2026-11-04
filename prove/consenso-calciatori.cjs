@@ -6,8 +6,8 @@
  *   resta su questo telefono.
  * - La console: la richiesta arriva «da verificare»; scelto il giocatore e
  *   premuto «Verificato via Instagram», ha il bollino «Ha aderito».
- * - La Home: il banner «Giochi nel campionato?», che con «Non gioco» sparisce
- *   e non torna.
+ * - La Home: il banner «Giochi nel campionato?» e' spento (INVITO_CALCIATORI)
+ *   e non compare.
  */
 const { chromium } = require('playwright');
 const BASE = process.env.BASE || 'http://localhost:4173';
@@ -66,15 +66,12 @@ const ok = [], ko = []; const et = (c, t) => (c ? ok : ko).push(t);
   await p.click('[data-form="create"]'); await w(250);
   await p.fill('#lname', 'Torneo Titano'); await p.fill('#team', 'Hasta El Roxy'); await p.click('#go-create'); await w(1400);
 
-  // --- IL BANNER IN HOME
+  // --- IL BANNER IN HOME: spento per ora (Alex, 04/11, INVITO_CALCIATORI in
+  // src/config.js). La pagina #/giocatori resta e si conta lo stesso.
   await p.evaluate(() => { location.hash = '#/'; }); await w(1200);
-  et(!!(await p.$('.invito-calc')), 'in Home c\'è il banner «Giochi nel campionato?»');
-  await p.click('.invito-calc [data-calc="no"]'); await w(500);
-  et(!(await p.$('.invito-calc')), '«Non gioco» lo toglie');
-  await p.reload({ waitUntil: 'load' }); await w(1500);
-  et(!(await p.$('.invito-calc')), 'e non torna riaprendo l\'app');
+  et(!(await p.$('.invito-calc')), 'in Home il banner «Giochi nel campionato?» non c\'è (spento)');
   const conti = await p.evaluate(() => Object.fromEntries((JSON.parse(localStorage.getItem('fcs:mock')).tables.banner_conteggi || []).map((r) => [r.evento, r.n])));
-  et(conti.visto === 1 && conti.non_gioco === 1 && conti.pagina === 1 && !conti.ci_gioco, `il banner si conta una volta per telefono: visto, «Non gioco», pagina (${JSON.stringify(conti)})`);
+  et(!conti.visto && conti.pagina === 1, `si conta solo la pagina, il banner spento no (${JSON.stringify(conti)})`);
 
   await p.evaluate(() => {
     const s = JSON.parse(localStorage.getItem('fcs:mock'));
@@ -86,7 +83,7 @@ const ok = [], ko = []; const et = (c, t) => (c ? ok : ko).push(t);
   await p.waitForFunction(() => /Mario Rossi/.test(document.body.innerText), null, { timeout: 8000 }).catch(() => {});
   const c1 = await p.evaluate(() => document.body.innerText);
   et(/Da verificare/.test(c1) && c1.includes(codice), 'la richiesta arriva in console, da verificare, col suo codice');
-  et(/1\s*l'hanno visto/.test(c1) && /non hanno scelto/.test(c1) && /aperta da 1 telefoni/.test(c1), 'in console la statistica del banner');
+  et(/0\s*l'hanno visto/.test(c1) && /non hanno scelto/.test(c1) && /aperta da 1 telefoni/.test(c1), 'in console la statistica del banner');
   et(/Minorenne · genitore Anna Rossi/.test(c1) && /Sponsor sì/.test(c1), 'con minorenne, genitore e sponsor in vista');
   const pid = await p.evaluate(() => document.querySelector('[data-ades-gioc]')?.value);
   et(/^virtus_/.test(pid || ''), `propone i giocatori della sua squadra (${pid})`);

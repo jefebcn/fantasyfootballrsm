@@ -3,8 +3,10 @@ import { avatar } from './avatar.js';
 import { tintaLeggibile, coloreSicuro } from './colore.js';
 export { avatar } from './avatar.js';
 import { esc, premioHtml } from './ui-esc.js';
+import { t, locale, lingua } from './lingua.js';
 export { esc, premioHtml };
-export const fmt = (n, min = 1) => (n == null ? 'S.V.' : Number(n).toLocaleString('it-IT', { minimumFractionDigits: min, maximumFractionDigits: 2 }));
+export { t, lingua } from './lingua.js';
+export const fmt = (n, min = 1) => (n == null ? 'S.V.' : Number(n).toLocaleString(locale(), { minimumFractionDigits: min, maximumFractionDigits: 2 }));
 export const signed = (n) => (n > 0 ? '+' : n < 0 ? '−' : '') + fmt(Math.abs(n));
 /** ▲2 / ▼1 / = rispetto a prima della giornata in corso (null: niente freccia). */
 export function freccia(d) {
@@ -36,10 +38,13 @@ export const marchio = (cls = '') => `<i class="marchio ${cls}" role="img" aria-
  * plurale fisso va bene e resta com'e'.
  */
 export const plurale = (n, uno, molti) => `${n} ${n === 1 ? uno : molti}`;
-export const ROLE_NAME = { P: 'Portieri', D: 'Difensori', C: 'Centrocampisti', A: 'Attaccanti' };
+// Tradotti alla lettura (src/lingua.js): ROLE_NAME.P resta «Portieri» in
+// italiano e diventa «Arqueros» in spagnolo, senza toccare chi lo usa.
+const ROLE_NAME_IT = { P: 'Portieri', D: 'Difensori', C: 'Centrocampisti', A: 'Attaccanti' };
+export const ROLE_NAME = new Proxy(ROLE_NAME_IT, { get: (o, k) => (typeof k === 'string' && k in o ? t(o[k]) : o[k]) });
 export const ROLE_ORDER = ['P', 'D', 'C', 'A'];
-const DAYS = ['dom', 'lun', 'mar', 'mer', 'gio', 'ven', 'sab'];
-export const dateIt = (iso) => { const d = new Date(iso); return `${DAYS[d.getDay()]} ${d.getDate()}/${d.getMonth() + 1}`; };
+const DAYS = { it: ['dom', 'lun', 'mar', 'mer', 'gio', 'ven', 'sab'], es: ['dom', 'lun', 'mar', 'mié', 'jue', 'vie', 'sáb'] };
+export const dateIt = (iso) => { const d = new Date(iso); return `${(DAYS[lingua()] || DAYS.it)[d.getDay()]} ${d.getDate()}/${d.getMonth() + 1}`; };
 export const timeIt = (iso) => { const d = new Date(iso); return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`; };
 export const dateTimeIt = (iso) => `${dateIt(iso)} ${timeIt(iso)}`;
 export const initials = (p) => (p.lastName || p.name || '??').replace(/[^A-Za-zÀ-ÿ]/g, '').slice(0, 2).toUpperCase();

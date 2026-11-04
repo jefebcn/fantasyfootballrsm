@@ -215,3 +215,22 @@ Servono altri tre secret (`APNS_KEY`, `APNS_KEY_ID`, `APNS_TEAM_ID`): come si
 ottengono è in `IOS.md`, passo 3. Senza, gli iPhone si saltano, il promemoria
 resta in coda per il giro dopo e la risposta lo dice
 (`iphone_senza_chiave_apns`); le notifiche web partono come sempre.
+
+## Gli altri avvisi: il gol e la giornata finita (052)
+
+Dal 4 novembre la stessa funzione spedisce anche:
+
+- **«⚽ Gol di X!»** a chi ha il marcatore fra i titolari della giornata (il
+  capitano lo dice). Lo chiede `scripts/gol-in-diretta.py --avvisa`, dentro
+  l'azione delle storie dei gol, appena la FSGC scrive il gol. Gli autogol no.
+- **«Giornata N finita»** a chi aveva una formazione, quando ci sono tutti i
+  referti. Lo chiede `scripts/avvisi.mjs`, nel lavoro `fine-giornata`
+  dell'azione oraria del promemoria. Senza punteggi: li calcola l'app.
+
+La chiamata e' un POST con un corpo JSON (`{ "tipo": "gol", ... }` o
+`{ "tipo": "fine-giornata", "giornata": 8 }`); senza corpo resta il
+promemoria di sempre. Gli stessi secret, nessuno nuovo.
+
+**Prima di ridistribuire la funzione** va eseguita la SQL `052` (le liste
+`avvisi_gol`, `avvisi_fine_giornata` e il registro `avvisi_inviati`, che
+impedisce i doppioni). Poi si ridistribuisce `promemoria` come al punto 3.

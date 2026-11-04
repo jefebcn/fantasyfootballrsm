@@ -29,7 +29,7 @@ function apriAvvisi(ctx) {
     const motivo = AV.motivoNonSupportate();
     ctx.sheet(`<h3>Preferenze notifiche</h3>
       <button class="setting" data-avvisi="${on ? 'off' : 'on'}"><i class="ico">${icon('bell')}</i>
-        <span class="txt"><b>Promemoria della formazione</b><span>Un avviso quando manca poco al lock e non hai ancora schierato</span></span>
+        <span class="txt"><b>Notifiche di Fantatitano</b><span>Il gol di un tuo titolare, la giornata finita coi punti pronti e il promemoria quando manca poco al lock e non hai ancora schierato</span></span>
         <span class="sw${on ? ' on' : ''}"></span></button>
       ${on && perm === 'default' ? `<button class="a-btn" data-avvisi="permesso" style="margin-top:10px">Consenti le notifiche</button>` : ''}
       ${perm === 'denied' ? `<p class="auth-hint">Le notifiche sono bloccate dalle impostazioni del telefono per questo sito: vanno riattivate da lì.</p>` : ''}

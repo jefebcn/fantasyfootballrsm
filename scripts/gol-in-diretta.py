@@ -15,7 +15,10 @@ Con --dati-db i dati del database (aderenti, possesso) si rileggono ogni mezz'or
     python3 scripts/gol-in-diretta.py --dati db.json --uscita /tmp/gol
     python3 scripts/gol-in-diretta.py --dati-db --pubblica --per 19000    (su GitHub)
 
-Righe che scrive: STORIA, PUBBLICATA/PROVA/GIA' FATTA/TETTO (dalla
+Con --avvisa ogni gol nuovo (non gli autogol) diventa anche una notifica per
+chi ha il marcatore fra i titolari (052, Alex 04/11).
+
+Righe che scrive: STORIA, AVVISO, PUBBLICATA/PROVA/GIA' FATTA/TETTO (dalla
 pubblicazione), ANNULLATO (un gol sparito dalla pagina), ATTESA (punteggio
 cambiato ma marcatore non ancora scritto), ERRORE, FINE.
 """
@@ -39,6 +42,27 @@ def dice(*a):
     print(*a, flush=True)
 
 
+def avvisa_gol(tag, giocatore, giornata, minuto):
+    """La notifica «Gol di X!» a chi ha il marcatore fra i titolari della
+    giornata (052). La spedisce la funzione del promemoria, che chiede al
+    database chi avvisare e segna l'avviso: lo stesso gol non parte due volte
+    neanche se il turno riparte. Senza URL o token non fa niente e lo dice."""
+    import os, urllib.request
+    url = ''.join(os.environ.get('SUPABASE_FUNCTIONS_URL', '').split()).rstrip('/')
+    token = ''.join(os.environ.get('PROMEMORIA_TOKEN', '').split())
+    nome = ''.join(os.environ.get('PROMEMORIA_FUNZIONE', '').split()) or 'promemoria'
+    if not url or not token:
+        return f'AVVISO saltato {tag}: SUPABASE_FUNCTIONS_URL o PROMEMORIA_TOKEN mancanti'
+    corpo = json.dumps({'tipo': 'gol', 'tag': tag, 'giocatore': giocatore, 'giornata': giornata, 'minuto': minuto}).encode()
+    req = urllib.request.Request(f'{url}/{nome}', data=corpo, method='POST',
+                                 headers={'x-promemoria-token': token, 'content-type': 'application/json'})
+    try:
+        with urllib.request.urlopen(req, timeout=30) as r:
+            return f'AVVISO {tag} {r.status} {r.read().decode()[:200]}'
+    except Exception as e:
+        return f'AVVISO ERRORE {tag}: {e}'
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('--uscita', default=str(RADICE / 'social' / 'gol' / 'diretta'))
@@ -47,6 +71,7 @@ def main():
     ap.add_argument('--anche-vecchi', action='store_true', help='fa la storia anche dei gol gia\' segnati alla partenza')
     ap.add_argument('--dati-db', action='store_true', help='rilegge aderenti e possesso dal database (scripts/dati-storie.mjs)')
     ap.add_argument('--pubblica', action='store_true')
+    ap.add_argument('--avvisa', action='store_true', help='notifica il gol a chi ha il marcatore fra i titolari (052)')
     ap.add_argument('--per', type=int, default=0, help='secondi, poi esce: su GitHub il turno dopo prende il posto')
     a = ap.parse_args()
     avvio = time.time()
@@ -92,12 +117,13 @@ def main():
             # corso (24/10, Murata-Domagnano: il 2-1 scritto al 68', poi al 67')
             # e con loro nella chiave la correzione sembrava un gol nuovo, con
             # una seconda storia. Il minuto e il marcatore restano nella storia.
-            gol, conta = {}, {}
+            gol, conta, dettagli = {}, {}, {}
             for m, pid, tipo in sorted((m, pid, tipo) for pid, m, tipo in t['eventi'] if tipo in ('goal', 'own_goal')):
                 suo = pid.rsplit('_', 1)[0]
                 sq = suo if tipo == 'goal' else (c['ospite'] if suo == c['casa'] else c['casa'])
                 conta[sq] = conta.get(sq, 0) + 1
                 gol[f"{chiave}-{sq}-{conta[sq]}"] = f"{chiave}-{m}-{pid}"
+                dettagli[f"{chiave}-{sq}-{conta[sq]}"] = (pid, m, tipo)
             visti = stato['visti'].setdefault(chiave, [])
             for v in [v for v in visti if v not in gol]:
                 dice('ANNULLATO', v)
@@ -110,6 +136,11 @@ def main():
             if segnati > len(gol) and f"{chiave}-{segnati}" not in stato['attese']:
                 stato['attese'].append(f"{chiave}-{segnati}")
                 dice('ATTESA', chiave, f"{c['gc']}-{c['go']}", 'marcatore non ancora scritto')
+            if nuovi and a.avvisa:
+                for x in nuovi:
+                    pid, m, tipo = dettagli[x]
+                    if tipo == 'goal':      # l'autogol no: non si festeggia un malus
+                        dice(avvisa_gol(x, pid, c['g'], m))
             if nuovi:
                 f = uscita / f'{chiave}.json'
                 f.write_text(json.dumps(ref, ensure_ascii=False))

@@ -11,8 +11,8 @@ export const signed = (n) => (n > 0 ? '+' : n < 0 ? '−' : '') + fmt(Math.abs(n
 /** ▲2 / ▼1 / = rispetto a prima della giornata in corso (null: niente freccia). */
 export function freccia(d) {
   if (d === null || d === undefined) return '';
-  if (d === 0) return '<i class="mv pari" aria-label="posizione invariata">=</i>';
-  return `<i class="mv ${d > 0 ? 'su' : 'giu'}" aria-label="${d > 0 ? `sale di ${d}` : `scende di ${-d}`}">${d > 0 ? '▲' : '▼'}${Math.abs(d)}</i>`;
+  if (d === 0) return `<i class="mv pari" aria-label="${t('posizione invariata')}">=</i>`;
+  return `<i class="mv ${d > 0 ? 'su' : 'giu'}" aria-label="${d > 0 ? t('sale di {n}', { n: d }) : t('scende di {n}', { n: -d })}">${d > 0 ? '▲' : '▼'}${Math.abs(d)}</i>`;
 }
 export const icon = (name, cls = 'ic') => `<svg class="${cls}"><use href="#i-${name}"/></svg>`;
 /** Il logo originale: una maschera colorata con il colore corrente (styles/logo.css). */
@@ -51,12 +51,12 @@ export const initials = (p) => (p.lastName || p.name || '??').replace(/[^A-Za-z�
 
 export function badge(status, extra = '') {
   const map = {
-    frozen: ['badge--froz', 'lock', 'Congelato', extra || 'mar 20:00'],
-    provisional: ['badge--prov', 'clock', 'Provvisorio', extra || 'contestazioni fino a mar 18:00'],
-    live: ['badge--live', null, 'Live in corso', extra],
-    open: ['badge--open', 'clock', 'Aperta', extra],
-    scheduled: ['badge--open', 'clock', 'In programma', extra],
-    partial: ['badge--prov', 'clock', 'Giocata', extra || 'voti non ancora inseriti'],
+    frozen: ['badge--froz', 'lock', t('Congelato'), extra || t('mar 20:00')],
+    provisional: ['badge--prov', 'clock', t('Provvisorio'), extra || t('contestazioni fino a mar 18:00')],
+    live: ['badge--live', null, t('Live in corso'), extra],
+    open: ['badge--open', 'clock', t('Aperta'), extra],
+    scheduled: ['badge--open', 'clock', t('In programma'), extra],
+    partial: ['badge--prov', 'clock', t('Giocata'), extra || t('voti non ancora inseriti')],
   };
   const [cls, ic, label, small] = map[status] || map.scheduled;
   return `<span class="badge ${cls}">${ic ? icon(ic) : '<i class="pulse"></i>'}${label}${small ? ` <small>· ${esc(small)}</small>` : ''}</span>`;
@@ -103,24 +103,35 @@ const EV = {
   pen_saved: ['rigore-parato', 'Rigore parato'],
 };
 const EV_TESTO = { pen_won: ['R+', 'ev-k'], pen_conceded: ['R−', 'ev-r'], assist_set: ['A↑', 'ev-a'] };
-export const EV_LABEL = { goal: 'Gol', assist: 'Assist', yellow: 'Ammonizione', second_yellow: '2ª ammonizione', red_direct: 'Rosso diretto', own_goal: 'Autogol', pen_missed: 'Rigore sbagliato', pen_saved: 'Rigore parato', pen_won: 'Rigore procurato', pen_conceded: 'Rigore causato', assist_set: 'Assist da fermo' };
+// Tradotti alla lettura, come ROLE_NAME.
+const EV_LABEL_IT = { goal: 'Gol', assist: 'Assist', yellow: 'Ammonizione', second_yellow: '2ª ammonizione', red_direct: 'Rosso diretto', own_goal: 'Autogol', pen_missed: 'Rigore sbagliato', pen_saved: 'Rigore parato', pen_won: 'Rigore procurato', pen_conceded: 'Rigore causato', assist_set: 'Assist da fermo' };
+export const EV_LABEL = new Proxy(EV_LABEL_IT, { get: (o, k) => (typeof k === 'string' && k in o ? t(o[k]) : o[k]) });
 export function evTile(type) {
   const e = EV[type];
-  if (e) return `<i class="evi" title="${e[1]}">${pic(e[0])}</i>`;
-  const t = EV_TESTO[type];
-  return t ? `<i class="${t[1]}" style="display:inline-grid;place-items:center;width:20px;height:20px;border-radius:5px;font-style:normal;font-size:10px;font-weight:700">${t[0]}</i>` : '';
+  if (e) return `<i class="evi" title="${t(e[1])}">${pic(e[0])}</i>`;
+  const tx = EV_TESTO[type];
+  return tx ? `<i class="${tx[1]}" style="display:inline-grid;place-items:center;width:20px;height:20px;border-radius:5px;font-style:normal;font-size:10px;font-weight:700">${tx[0]}</i>` : '';
 }
 export function evTiles(events) { return events.map((e) => evTile(e.type)).join(''); }
 
+// Le voci del fantavoto arrivano dal motore in italiano (engine.js:
+// «Gol × 2», «meno di 15' senza eventi», «vittoria · 90'»): si traducono
+// qui, dove finiscono a schermo; numeri, minuti e articoli restano come sono.
+const voceVoto = (s) => {
+  const x = /^(.*) × (\d+)$/.exec(s); if (x) return `${t(x[1])} × ${x[2]}`;
+  const m = /^meno di (\d+)' senza eventi$/.exec(s); if (m) return t("meno di {n}' senza eventi", { n: m[1] });
+  return t(s);
+};
+const notaVoto = (s) => String(s).split(' · ').map((x) => (/^(\d+'|art\. [\d.]+)$/.test(x) ? x : voceVoto(x))).join(' · ');
 /** Riga voto con breakdown (tap per espandere). */
 export function voteRow(player, club, rating, { expanded = false, captain = false, minutes = null, extra = '' } = {}) {
   const sv = !rating || rating.isSV;
   const min = minutes ?? rating?.minutes;
   const fv = sv ? `<span class="fv sv">S.V.</span>` : `<span class="fv${captain ? ' cap' : ''}">${fmt(rating.fantaVote)}</span>`;
   const lines = sv
-    ? `<div><span>${esc(rating?.svReason || 'non entrato')}<em>art. 4 / 10</em></span><span>S.V.</span></div>`
-    : rating.breakdown.map((l) => `<div><span>${esc(l.label)}${l.note ? `<em>${esc(l.note)}</em>` : ''}</span><span class="${l.value > 0 && l.label !== 'Voto base' ? 'pos' : l.value < 0 ? 'neg' : ''}">${l.label === 'Voto base' ? fmt(l.value) : signed(l.value)}</span></div>`).join('')
-      + `<div class="tot"><span>Fantavoto</span><span>${fmt(rating.fantaVote)}</span></div>`;
+    ? `<div><span>${esc(rating?.svReason ? voceVoto(rating.svReason) : t('non entrato'))}<em>art. 4 / 10</em></span><span>S.V.</span></div>`
+    : rating.breakdown.map((l) => `<div><span>${esc(voceVoto(l.label))}${l.note ? `<em>${esc(notaVoto(l.note))}</em>` : ''}</span><span class="${l.value > 0 && l.label !== 'Voto base' ? 'pos' : l.value < 0 ? 'neg' : ''}">${l.label === 'Voto base' ? fmt(l.value) : signed(l.value)}</span></div>`).join('')
+      + `<div class="tot"><span>${t('Fantavoto')}</span><span>${fmt(rating.fantaVote)}</span></div>`;
   return `<button class="vr" data-toggle>${roleChip(player.role)}<span class="nm"><b>${esc(player.name)}</b><span>${esc(club?.name || '')}${min ? ` · ${min}'` : ''}</span></span><span class="ev">${rating?.events ? evTiles(rating.events) : ''}</span>${fv}</button>
   <div class="vb${expanded ? ' on' : ''}">${lines}${extra}</div>`;
 }
@@ -138,8 +149,8 @@ export function matchCard(r, managers, { meta = '', badgeHtml = '' } = {}) {
   const side = (m) => `<div class="side">${crest(m)}<b>${esc(m.teamName)}</b><span class="own">${esc(m.owner)}</span></div>`;
   const head = (badgeHtml || meta) ? `<div class="mhead">${badgeHtml}<span class="when">${esc(meta)}</span></div>` : '';
   const foot = r.played
-    ? `<div class="mfoot"><span>${fmt(r.homeScore)}</span><em>${r.forfait ? 'a tavolino · art. 8.4' : 'fantapunti'}</em><span>${fmt(r.awayScore)}</span></div>
-       <div class="mcta">${r.status === 'frozen' ? '' : pic('live', 'menu', 'mini')}${r.status === 'frozen' ? 'Vedi la partita' : 'Segui il Live'}${icon('chev', 'ic sm')}</div>`
+    ? `<div class="mfoot"><span>${fmt(r.homeScore)}</span><em>${r.forfait ? t('a tavolino · art. 8.4') : t('fantapunti')}</em><span>${fmt(r.awayScore)}</span></div>
+       <div class="mcta">${r.status === 'frozen' ? '' : pic('live', 'menu', 'mini')}${r.status === 'frozen' ? t('Vedi la partita') : t('Segui il Live')}${icon('chev', 'ic sm')}</div>`
     : '';
   const body = `<div class="mrow">${side(h)}<span class="score${r.played ? '' : ' vs'}">${r.played ? `${r.homeGoals} – ${r.awayGoals}` : 'VS'}</span>${side(a)}</div>`;
   // Anche prima del fischio la card apre lo scontro: il pre-match a tutto
@@ -160,6 +171,7 @@ export const LIVELLI_RECLUTATORE = [
 export const livelloReclutatore = (n) => LIVELLI_RECLUTATORE.find((l) => (n || 0) >= l.da) || null;
 export function badgeReclutatore(n, { conNumero = false } = {}) {
   const l = livelloReclutatore(n); if (!l) return '';
-  return `<span class="recl ${l.cls}" title="${l.nome}: ${n === 1 ? 'un amico portato' : `${n} amici portati`}">${icon('userplus', 'ic sm')}${conNumero ? `${l.nome} · ${n}` : n}</span>`;
+  const nome = t(l.nome);
+  return `<span class="recl ${l.cls}" title="${nome}: ${n === 1 ? t('un amico portato') : t('{n} amici portati', { n })}">${icon('userplus', 'ic sm')}${conNumero ? `${nome} · ${n}` : n}</span>`;
 }
 export const sec = (title, right = '') => `<div class="a-sec"><b>${title}</b>${right ? `<span>${right}</span>` : ''}</div>`;

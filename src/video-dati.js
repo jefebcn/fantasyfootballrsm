@@ -43,6 +43,7 @@ export const PARTITE = [
   [6, "trepenne", "trefiori", "Y7KNr1NqeT0", "2026-10-26"],
 ];
 export const VIDEO_CANALE = [
+  ["6a68S-svtBc", "UWNL 2027 | San Marino, reazione al sorteggio", "2026-11-03"],
   ["YXJRHAGc15A", "UEFA Women's Nations League 2027 - draw | intervista a Giulia Domenichetti", "2026-11-03"],
   ["0ig3Z8IU7g4", "Campionato Sammarinese 2026-27, 7. giornata - VOTA LA PARATA PIÙ BELLA!", "2026-11-02"],
   ["zLWoJcaMaME", "Campionato Sammarinese 2026-27, 7. giornata - VOTA IL GOL PIÙ BELLO!", "2026-11-02"],
@@ -54,5 +55,4 @@ export const VIDEO_CANALE = [
   ["QQYAw-l0F60", "Campionato Sammarinese 2026-27, 7. giornata | HL Domagnano - Virtus 0-1", "2026-11-02"],
   ["OV3BER83kl4", "Campionato Sammarinese 2026-27, 7. giornata | HL Pennarossa - San Marino Academy 1-1", "2026-11-02"],
   ["rJPnB59H7Kw", "Campionato Sammarinese 2026-27, 7. giornata | HL Cailungo - Juvenes Dogana 1-1", "2026-11-02"],
-  ["N43E81Impgc", "Coppa Titano 2026-27, Ottavi di finale (ritorno) | HL Virtus - Murata 3-0", "2026-10-29"],
 ];

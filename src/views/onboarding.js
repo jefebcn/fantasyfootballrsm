@@ -1,5 +1,5 @@
 import * as S from '../state.js';
-import { icon, logo, marchio } from '../ui.js';
+import { icon, logo, marchio, t } from '../ui.js';
 import { prepareLogin } from './auth.js';
 
 /**
@@ -25,8 +25,11 @@ const SLIDES = [
     // quello del logo — due volte lo stesso nome, in due modi diversi, nella
     // prima schermata che si vede dell'app.
     marchio: true,
-    body: `<p>Il fantacalcio delle sedici squadre di San Marino: asta, rosa, formazione ogni settimana, scontro diretto.</p>
-           <p>Qui il voto non è un'opinione: <b>lo scrive la partita</b>. Gol, assist, porta inviolata, cartellini — quello che c'è nel referto, e nient'altro.</p>`,
+    // un paragrafo per voce, tradotti quando si disegna la schermata
+    body: [
+      'Il fantacalcio delle sedici squadre di San Marino: asta, rosa, formazione ogni settimana, scontro diretto.',
+      'Qui il voto non è un\'opinione: <b>lo scrive la partita</b>. Gol, assist, porta inviolata, cartellini — quello che c\'è nel referto, e nient\'altro.',
+    ],
   },
   {
     eyebrow: 'Come funziona',
@@ -54,25 +57,25 @@ export const onboarding = {
         <span class="intro-veil"></span>
       </div>
       <div class="intro-top">
-        ${slide ? `<button class="intro-back" data-prev aria-label="Indietro">${icon('chev', 'ic flip')}</button>` : '<span></span>'}
+        ${slide ? `<button class="intro-back" data-prev aria-label="${t('Indietro')}">${icon('chev', 'ic flip')}</button>` : '<span></span>'}
         ${s.marchio ? '<span></span>' : logo('intro-mark')}
-        <button class="intro-skip" data-skip>Salta</button>
+        <button class="intro-skip" data-skip>${t('Salta')}</button>
       </div>
       <div class="intro-body">
         ${s.marchio
     // La corona in cima sparisce quando sotto c'e' il marchio intero: due
     // corone nella stessa schermata sono una di troppo.
     ? `<div class="intro-marchio">${marchio()}</div>`
-    : `<span class="intro-eyebrow">${s.eyebrow}</span><h1>${s.title}</h1>`}
-        ${s.body || ''}
-        ${s.points ? `<ul class="intro-points">${s.points.map(([ic, t, d], i) => `<li style="--i:${i}"><i>${icon(ic)}</i><div><b>${t}</b><span>${d}</span></div></li>`).join('')}</ul>` : ''}
+    : `<span class="intro-eyebrow">${t(s.eyebrow)}</span><h1>${t(s.title)}</h1>`}
+        ${s.body ? s.body.map((p) => `<p>${t(p)}</p>`).join('\n           ') : ''}
+        ${s.points ? `<ul class="intro-points">${s.points.map(([ic, tit, d], i) => `<li style="--i:${i}"><i>${icon(ic)}</i><div><b>${t(tit)}</b><span>${t(d)}</span></div></li>`).join('')}</ul>` : ''}
       </div>
       <div class="intro-foot">
         <div class="intro-dots">${SLIDES.map((_, i) => `<i class="${i === slide ? 'on' : ''}"></i>`).join('')}</div>
         ${last
-          ? `<button class="a-btn intro-cta" data-signup>${icon('userplus', 'ic sm')}Registrati</button>
-             <button class="intro-link" data-signin>Ho già un account · Accedi</button>`
-          : `<button class="a-btn intro-cta" data-next>Avanti ${icon('chev', 'ic sm')}</button>`}
+          ? `<button class="a-btn intro-cta" data-signup>${icon('userplus', 'ic sm')}${t('Registrati')}</button>
+             <button class="intro-link" data-signin>${t('Ho già un account · Accedi')}</button>`
+          : `<button class="a-btn intro-cta" data-next>${t('Avanti')} ${icon('chev', 'ic sm')}</button>`}
       </div>
     </main>`;
   },

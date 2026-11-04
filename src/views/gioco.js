@@ -1,5 +1,5 @@
 import * as S from '../state.js';
-import { esc, avatarGrande, faccia, ROLE_NAME, ROLE_ORDER } from '../ui.js';
+import { esc, avatarGrande, faccia, ROLE_NAME, ROLE_ORDER, t } from '../ui.js';
 import { oggi, numero, misteroDel, statistiche, confronta, condivisione, serie, punti, MEDAGLIE, prossimaMedaglia, TENTATIVI } from '../gioco.js';
 
 /**
@@ -41,37 +41,38 @@ const mesePrima = (giorno) => { const [a, m] = giorno.split('-').map(Number); re
 const legaId = () => (S.appState() === 'ready' ? S.base.league?.id || null : null);
 
 function spiegazione() {
-  return `<h3>Perché giocare ogni giorno</h3>
+  return `<h3>${t('Perché giocare ogni giorno')}</h3>
     <div class="ce-perche">
-      <p><b>🎯 Punti</b>Indovinato al 1° tentativo vale 6 punti, al 2° 5, fino a 1 punto al 6°. Si sommano per tutto il mese.</p>
-      <p><b>🏆 Classifica del mese</b>Quella di tutti e quella della tua lega, sfida gli amici. Ogni 1° del mese si riparte da zero.</p>
-      <p><b>👑 Re del Titano</b>Chi chiude il mese al primo posto è il Re del Titano: la corona accanto al nome per tutto il mese dopo, e il nome nella storia di Fantatitano su Instagram.</p>
-      <p><b>🔥 Serie e medaglie</b>Indovina più giorni di fila: ${MEDAGLIE.map((m) => `${m.icona} ${m.giorni} giorni «${m.nome}»`).join(', ')}. Le medaglie restano anche se la serie si rompe.</p>
+      <p>${t('<b>🎯 Punti</b>Indovinato al 1° tentativo vale 6 punti, al 2° 5, fino a 1 punto al 6°. Si sommano per tutto il mese.')}</p>
+      <p>${t('<b>🏆 Classifica del mese</b>Quella di tutti e quella della tua lega, sfida gli amici. Ogni 1° del mese si riparte da zero.')}</p>
+      <p>${t('<b>👑 Re del Titano</b>Chi chiude il mese al primo posto è il Re del Titano: la corona accanto al nome per tutto il mese dopo, e il nome nella storia di Fantatitano su Instagram.')}</p>
+      <p>${t('<b>🔥 Serie e medaglie</b>Indovina più giorni di fila: {medaglie}. Le medaglie restano anche se la serie si rompe.', { medaglie: MEDAGLIE.map((m) => t('{icona} {n} giorni «{nome}»', { icona: m.icona, n: m.giorni, nome: t(m.nome) })).join(', ') })}</p>
     </div>
-    <button class="a-btn" data-chiudi>Ho capito, si gioca</button>`;
+    <button class="a-btn" data-chiudi>${t('Ho capito, si gioca')}</button>`;
 }
 
 function premi(giorno, serieQui, finito, vinto, nTent) {
   const mio = extra.mio;
   const migliore = Math.max(mio?.serie_max || 0, serieQui);
-  const medaglie = `<div class="ce-medaglie">${MEDAGLIE.map((m) => `<span class="ce-med${migliore >= m.giorni ? ' on' : ''}" title="${esc(m.nome)}"><i aria-hidden="true">${m.icona}</i><b>${esc(m.nome)}</b><small>${migliore >= m.giorni ? 'presa' : `${m.giorni} di fila`}</small></span>`).join('')}</div>`;
+  const medaglie = `<div class="ce-medaglie">${MEDAGLIE.map((m) => `<span class="ce-med${migliore >= m.giorni ? ' on' : ''}" title="${esc(t(m.nome))}"><i aria-hidden="true">${m.icona}</i><b>${esc(t(m.nome))}</b><small>${migliore >= m.giorni ? t('presa') : t('{n} di fila', { n: m.giorni })}</small></span>`).join('')}</div>`;
   const prossima = prossimaMedaglia(serieQui);
+  const verso = prossima ? { giorni: prossima.giorni, icona: prossima.icona, nome: esc(t(prossima.nome)) } : null;
   const stimolo = finito
-    ? `<p class="ce-stimolo">${vinto ? `+${punti(nTent, true)} punti oggi. ` : ''}${prossima ? `${vinto ? `Domani fai ${serieQui + 1} di fila` : 'Domani riparti'}: a ${prossima.giorni} prendi ${prossima.icona} «${esc(prossima.nome)}».` : 'Sei una leggenda: tieni la serie!'}</p>`
+    ? `<p class="ce-stimolo">${vinto ? `${t('+{n} punti oggi.', { n: punti(nTent, true) })} ` : ''}${prossima ? (vinto ? t('Domani fai {n} di fila: a {giorni} prendi {icona} «{nome}».', { n: serieQui + 1, ...verso }) : t('Domani riparti: a {giorni} prendi {icona} «{nome}».', verso)) : t('Sei una leggenda: tieni la serie!')}</p>`
     : '';
   const [, mm] = giorno.split('-').map(Number);
   let tabella;
-  if (extra.classifica === undefined) tabella = '<p class="small muted">Carico la classifica…</p>';
-  else if (extra.classifica === null) tabella = '<p class="small muted">La classifica si vede con un account, a gioco online.</p>';
-  else if (!extra.classifica.length) tabella = `<p class="small muted">${ambito === 'lega' ? 'Nessuno della tua lega' : 'Nessuno'} ha ancora giocato questo mese: il primo posto è libero.</p>`;
+  if (extra.classifica === undefined) tabella = `<p class="small muted">${t('Carico la classifica…')}</p>`;
+  else if (extra.classifica === null) tabella = `<p class="small muted">${t('La classifica si vede con un account, a gioco online.')}</p>`;
+  else if (!extra.classifica.length) tabella = `<p class="small muted">${ambito === 'lega' ? t('Nessuno della tua lega ha ancora giocato questo mese: il primo posto è libero.') : t('Nessuno ha ancora giocato questo mese: il primo posto è libero.')}</p>`;
   else {
-    tabella = `<ol class="ce-classifica">${extra.classifica.map((r) => `<li class="${r.io ? 'io' : ''}"><span class="pos">${r.posizione}</span><span class="nm">${esc(r.nome)}${extra.re && extra.re === r.nome ? ' <i aria-label="Re del Titano">👑</i>' : ''}${r.io ? ' <small>tu</small>' : ''}</span><span class="pt"><b>${r.punti}</b> pt</span></li>`).join('')}</ol>`;
+    tabella = `<ol class="ce-classifica">${extra.classifica.map((r) => `<li class="${r.io ? 'io' : ''}"><span class="pos">${r.posizione}</span><span class="nm">${esc(r.nome)}${extra.re && extra.re === r.nome ? ` <i aria-label="${t('Re del Titano')}">👑</i>` : ''}${r.io ? ` <small>${t('tu')}</small>` : ''}</span><span class="pt"><b>${r.punti}</b> pt</span></li>`).join('')}</ol>`;
   }
-  const scelta = legaId() ? `<div class="chips"><button class="chip${ambito === 'tutti' ? ' on' : ''}" data-ambito="tutti">Tutti</button><button class="chip${ambito === 'lega' ? ' on' : ''}" data-ambito="lega">La mia lega</button></div>` : '';
-  const re = extra.re ? `<p class="ce-re">👑 Re del Titano di ${MESI[(mm + 10) % 12]}: <b>${esc(extra.re)}</b></p>` : '';
+  const scelta = legaId() ? `<div class="chips"><button class="chip${ambito === 'tutti' ? ' on' : ''}" data-ambito="tutti">${t('Tutti')}</button><button class="chip${ambito === 'lega' ? ' on' : ''}" data-ambito="lega">${t('La mia lega')}</button></div>` : '';
+  const re = extra.re ? `<p class="ce-re">${t('👑 Re del Titano di {mese}: <b>{nome}</b>', { mese: t(MESI[(mm + 10) % 12]), nome: esc(extra.re) })}</p>` : '';
   return { stimolo, resto: `
-    <div class="a-sec"><b>Medaglie</b><span>serie più lunga: ${migliore}</span></div>${medaglie}
-    <div class="a-sec"><b>Classifica di ${MESI[mm - 1]}</b><span>punti del mese</span></div>${scelta}${re}${tabella}` };
+    <div class="a-sec"><b>${t('Medaglie')}</b><span>${t('serie più lunga: {n}', { n: migliore })}</span></div>${medaglie}
+    <div class="a-sec"><b>${t('Classifica di {mese}', { mese: t(MESI[mm - 1]) })}</b><span>${t('punti del mese')}</span></div>${scelta}${re}${tabella}` };
 }
 
 async function caricaPremi(ctx) {
@@ -93,35 +94,35 @@ const ESITO = { si: 'giusto', vicino: 'vicino', no: 'sbagliato' };
 function cella(x) {
   const v = x.chiave === 'squadra' ? S.clubsById.get(x.valore)?.shortName || x.valore : x.valore;
   const freccia = x.verso === 'su' ? '↑' : x.verso === 'giu' ? '↓' : '';
-  const detto = `${NOMI[x.chiave]} ${v}: ${ESITO[x.esito]}${x.verso === 'su' ? ', il giocatore del giorno ne ha di più' : x.verso === 'giu' ? ', il giocatore del giorno ne ha di meno' : ''}`;
+  const detto = `${t(NOMI[x.chiave])} ${v}: ${t(ESITO[x.esito])}${x.verso === 'su' ? t(', il giocatore del giorno ne ha di più') : x.verso === 'giu' ? t(', il giocatore del giorno ne ha di meno') : ''}`;
   return `<span class="ce-c ${x.esito}" role="img" aria-label="${esc(detto)}"><b>${esc(v)}</b>${freccia ? `<i aria-hidden="true">${freccia}</i>` : ''}</span>`;
 }
 
 function suggerimenti(gia) {
-  const t = piano(q);
+  const cercato = piano(q);
   const filtri = !!(filtroRuolo || filtroClub);
-  if (t.length < 2 && !filtri) return '';
+  if (cercato.length < 2 && !filtri) return '';
   const presi = new Set(gia);
   const club = (p) => S.clubsById.get(p.clubId)?.name || '';
   const lista = S.base.players
     .filter((p) => p.isActive && !p.doppioneDi && !presi.has(p.id)
       && (!filtroRuolo || p.role === filtroRuolo) && (!filtroClub || p.clubId === filtroClub)
-      && (t.length < 2 || piano(p.lastName).includes(t) || piano(`${p.firstName} ${p.lastName}`).includes(t)))
-    .sort(filtri && t.length < 2
+      && (cercato.length < 2 || piano(p.lastName).includes(cercato) || piano(`${p.firstName} ${p.lastName}`).includes(cercato)))
+    .sort(filtri && cercato.length < 2
       ? (a, b) => club(a).localeCompare(club(b)) || ROLE_ORDER.indexOf(a.role) - ROLE_ORDER.indexOf(b.role) || a.lastName.localeCompare(b.lastName)
-      : (a, b) => (piano(a.lastName).startsWith(t) ? 0 : 1) - (piano(b.lastName).startsWith(t) ? 0 : 1) || b.quotation - a.quotation)
+      : (a, b) => (piano(a.lastName).startsWith(cercato) ? 0 : 1) - (piano(b.lastName).startsWith(cercato) ? 0 : 1) || b.quotation - a.quotation)
     .slice(0, filtri ? 80 : 6);
-  if (!lista.length) return '<p class="small muted ce-niente">Nessun giocatore con questo nome.</p>';
-  return `${filtri ? `<p class="small muted ce-quanti">${lista.length} giocatori: tocca quello che pensi sia.</p>` : ''}${lista.map((p) => { const c = S.clubsById.get(p.clubId);
+  if (!lista.length) return `<p class="small muted ce-niente">${t('Nessun giocatore con questo nome.')}</p>`;
+  return `${filtri ? `<p class="small muted ce-quanti">${t('{n} giocatori: tocca quello che pensi sia.', { n: lista.length })}</p>` : ''}${lista.map((p) => { const c = S.clubsById.get(p.clubId);
     return `<button class="ce-sug" data-pick="${p.id}">${faccia(p, c)}<span class="nm"><b>${esc(p.firstName)} ${esc(p.lastName)}</b><span>${esc(c?.name || '')}</span></span></button>`; }).join('')}`;
 }
 
 function filtri() {
   const club = [...new Set(S.base.players.filter((p) => p.isActive && !p.doppioneDi).map((p) => p.clubId))]
     .map((id) => S.clubsById.get(id)).filter(Boolean).sort((a, b) => a.name.localeCompare(b.name));
-  return `<div class="ce-filtri"><span class="small muted">Non ricordi il nome? Scegli dalla lista</span>
-    <div class="chips" role="group" aria-label="Ruolo">${ROLE_ORDER.map((r) => `<button class="chip${filtroRuolo === r ? ' on' : ''}" data-ruolo="${r}" aria-pressed="${filtroRuolo === r}">${ROLE_NAME[r]}</button>`).join('')}</div>
-    <div class="chips" role="group" aria-label="Squadra">${club.map((c) => `<button class="chip${filtroClub === c.id ? ' on' : ''}" data-club="${esc(c.id)}" aria-pressed="${filtroClub === c.id}">${esc(c.name)}</button>`).join('')}</div>
+  return `<div class="ce-filtri"><span class="small muted">${t('Non ricordi il nome? Scegli dalla lista')}</span>
+    <div class="chips" role="group" aria-label="${t('Ruolo')}">${ROLE_ORDER.map((r) => `<button class="chip${filtroRuolo === r ? ' on' : ''}" data-ruolo="${r}" aria-pressed="${filtroRuolo === r}">${ROLE_NAME[r]}</button>`).join('')}</div>
+    <div class="chips" role="group" aria-label="${t('Squadra')}">${club.map((c) => `<button class="chip${filtroClub === c.id ? ' on' : ''}" data-club="${esc(c.id)}" aria-pressed="${filtroClub === c.id}">${esc(c.name)}</button>`).join('')}</div>
   </div>`;
 }
 
@@ -141,11 +142,11 @@ export function partitaDiOggi() {
 }
 
 export const gioco = {
-  title: 'Chi è?', sub: () => 'Chi è?',
+  title: 'Chi è?', sub: () => t('Chi è?'),
   render() {
     const giorno = oggi(S.now());
     const mistero = misteroDel(giorno, S.base.players, dati());
-    if (!mistero) return '<main class="a-body"><div class="empty"><p>Il gioco parte a stagione iniziata: torna dopo le prime giornate.</p></div></main>';
+    if (!mistero) return `<main class="a-body"><div class="empty"><p>${t('Il gioco parte a stagione iniziata: torna dopo le prime giornate.')}</p></div></main>`;
     const storico = leggi();
     const partita = storico[giorno] || { tentativi: [] };
     const tentativi = partita.tentativi.map((id) => S.playersById.get(id)).filter(Boolean);
@@ -156,24 +157,24 @@ export const gioco = {
     const fiamma = serie(storico, giorno);
 
     const testa = `<div class="a-card ce-testa">
-      <div class="ce-num"><b>#${numero(giorno)} <button class="ce-info" data-info aria-label="Perché giocare ogni giorno">ⓘ</button></b><span>Il giocatore del giorno</span></div>
-      <div class="ce-conti"><span><b>${tentativi.length}/${TENTATIVI}</b> tentativi</span><span><b>${fiamma}</b> di fila</span></div>
+      <div class="ce-num"><b>#${numero(giorno)} <button class="ce-info" data-info aria-label="${t('Perché giocare ogni giorno')}">ⓘ</button></b><span>${t('Il giocatore del giorno')}</span></div>
+      <div class="ce-conti"><span>${t('{n} tentativi', { n: `<b>${tentativi.length}/${TENTATIVI}</b>` })}</span><span>${t('{n} di fila', { n: `<b>${fiamma}</b>` })}</span></div>
     </div>`;
     // Chi non l'ha indovinato sceglie se scoprirlo (Alex, 27/10: «clicchi e
     // c'e' scritto rivela il giocatore»): magari vuole chiederlo agli amici.
     const volto = finito && !vinto && !partita.rivelato
-      ? `<div class="a-card ce-mistero ce-perso"><span class="ce-sagoma" aria-hidden="true">?</span><div><b>Non l'hai indovinato</b><p>Sei tentativi finiti. Vuoi sapere chi era?</p><button class="a-btn sec" data-rivela>Rivela il giocatore</button></div></div>`
+      ? `<div class="a-card ce-mistero ce-perso"><span class="ce-sagoma" aria-hidden="true">?</span><div><b>${t('Non l\'hai indovinato')}</b><p>${t('Sei tentativi finiti. Vuoi sapere chi era?')}</p><button class="a-btn sec" data-rivela>${t('Rivela il giocatore')}</button></div></div>`
       : finito
-      ? `<div class="a-card ce-rivela">${avatarGrande(mistero, club)}<div><span class="small muted">${vinto ? `Indovinato in ${tentativi.length}` : 'Era lui'}</span><b>${esc(mistero.firstName)} ${esc(mistero.lastName)}</b><span>${esc(club?.name || '')}</span></div></div>`
-      : `<div class="a-card ce-mistero"><span class="ce-sagoma" aria-hidden="true">?</span><p>Un giocatore del Campionato Sammarinese. Scrivi un nome o sceglilo dalla lista: per squadra, ruolo, età, quotazione, presenze e gol ti dico quanto ci sei vicino.</p></div>`;
-    const griglia = righe.length ? `<div class="ce-griglia" role="table" aria-label="I tuoi tentativi">
-      <div class="ce-riga ce-intesta" role="row"><span></span>${Object.values(NOMI).map((n) => `<span role="columnheader">${n}</span>`).join('')}</div>
+      ? `<div class="a-card ce-rivela">${avatarGrande(mistero, club)}<div><span class="small muted">${vinto ? t('Indovinato in {n}', { n: tentativi.length }) : t('Era lui')}</span><b>${esc(mistero.firstName)} ${esc(mistero.lastName)}</b><span>${esc(club?.name || '')}</span></div></div>`
+      : `<div class="a-card ce-mistero"><span class="ce-sagoma" aria-hidden="true">?</span><p>${t('Un giocatore del Campionato Sammarinese. Scrivi un nome o sceglilo dalla lista: per squadra, ruolo, età, quotazione, presenze e gol ti dico quanto ci sei vicino.')}</p></div>`;
+    const griglia = righe.length ? `<div class="ce-griglia" role="table" aria-label="${t('I tuoi tentativi')}">
+      <div class="ce-riga ce-intesta" role="row"><span></span>${Object.values(NOMI).map((n) => `<span role="columnheader">${t(n)}</span>`).join('')}</div>
       ${righe.map(({ p, r }) => `<div class="ce-riga" role="row"><span class="ce-chi">${esc(p.lastName)}</span>${r.map(cella).join('')}</div>`).join('')}
     </div>` : '';
     const sotto = finito
-      ? `<div class="ce-fine"><button class="a-btn" id="ce-condividi">Condividi il risultato</button><p class="small muted">Domani un giocatore nuovo, dalla mezzanotte.</p></div>`
-      : `<div class="ce-cerca"><input class="field-input" id="ce-q" placeholder="Scrivi un cognome" value="${esc(q)}" autocomplete="off" autocapitalize="words" enterkeyhint="search">${filtri()}<div class="ce-sugs" id="ce-sugs">${suggerimenti(partita.tentativi)}</div></div>`;
-    const legenda = `<p class="small muted ce-legenda"><span class="ce-c si"></span> giusto · <span class="ce-c vicino"></span> vicino (età ±2, quotazione ±3, presenze e gol ±1) · ↑↓ il giocatore del giorno ne ha di più o di meno</p>`;
+      ? `<div class="ce-fine"><button class="a-btn" id="ce-condividi">${t('Condividi il risultato')}</button><p class="small muted">${t('Domani un giocatore nuovo, dalla mezzanotte.')}</p></div>`
+      : `<div class="ce-cerca"><input class="field-input" id="ce-q" placeholder="${t('Scrivi un cognome')}" value="${esc(q)}" autocomplete="off" autocapitalize="words" enterkeyhint="search">${filtri()}<div class="ce-sugs" id="ce-sugs">${suggerimenti(partita.tentativi)}</div></div>`;
+    const legenda = `<p class="small muted ce-legenda">${t('<span class="ce-c si"></span> giusto · <span class="ce-c vicino"></span> vicino (età ±2, quotazione ±3, presenze e gol ±1) · ↑↓ il giocatore del giorno ne ha di più o di meno')}</p>`;
     const pr = premi(giorno, fiamma, finito, vinto, tentativi.length);
     return `<main class="a-body ce">${testa}${volto}${griglia}${sotto}${pr.stimolo}${pr.resto}${legenda}</main>`;
   },
@@ -231,7 +232,7 @@ export const gioco = {
         if (!partita || !mistero) return;
         const righe = partita.tentativi.map((id) => S.playersById.get(id)).filter(Boolean).map((p) => confronta(p, mistero, dati()));
         const text = condivisione(giorno, righe, !!partita.vinto);
-        if (navigator.share) { try { await navigator.share({ text }); } catch { /* annullato */ } } else { try { await navigator.clipboard.writeText(text); ctx.toast('Risultato copiato'); } catch { ctx.toast('Copia non riuscita'); } }
+        if (navigator.share) { try { await navigator.share({ text }); } catch { /* annullato */ } } else { try { await navigator.clipboard.writeText(text); ctx.toast(t('Risultato copiato')); } catch { ctx.toast(t('Copia non riuscita')); } }
       }
     });
   },

@@ -1,5 +1,5 @@
 import * as S from '../state.js';
-import { esc, icon, logo, marchio } from '../ui.js';
+import { esc, icon, logo, marchio, t } from '../ui.js';
 import { ETA_MINIMA } from '../config.js';
 import { erroreRegole } from '../password.js';
 
@@ -15,7 +15,7 @@ let scritti = {};
 
 let pendingTab = null;
 /** Consente a un'altra vista di aprire l'accesso già sulla scheda giusta. */
-export function prepareLogin(t) { pendingTab = t; }
+export function prepareLogin(scheda) { pendingTab = scheda; }
 export function resetLogin() { tab = pendingTab || 'in'; pendingTab = null; pending = null; busy = false; notice = null; }
 const valid = (e) => /.+@.+\..+/.test(e);
 const field = (id, label, attrs = '') => `<label class="lbl" for="${id}">${label}</label><input class="field-input" id="${id}" ${attrs}>`;
@@ -28,7 +28,7 @@ const campo = (id, ph, attrs = '', extra = '') => `<div class="campo">${extra}<i
  * nominava. Le pagine sono quelle statiche, perche' chi non ha un account non
  * arriva alle rotte interne dell'app.
  */
-const legale = () => `<p class="nota legale">Creando l'account confermi di avere almeno ${ETA_MINIMA} anni e accetti i <a href="termini.html" target="_blank" rel="noopener">Termini</a> e l'<a href="privacy.html" target="_blank" rel="noopener">Informativa privacy</a>.</p>`;
+const legale = () => `<p class="nota legale">${t('Creando l\'account confermi di avere almeno {eta} anni e accetti i <a href="termini.html" target="_blank" rel="noopener">Termini</a> e l\'<a href="privacy.html" target="_blank" rel="noopener">Informativa privacy</a>.', { eta: ETA_MINIMA })}</p>`;
 
 const RICORDA = 'fcs:email';
 const emailRicordata = () => { try { return localStorage.getItem(RICORDA) || ''; } catch { return ''; } };
@@ -39,10 +39,10 @@ export const login = {
     if (S.authKind() === 'clerk') return `<main class="a-body auth">
       <div class="auth-hero">${logo('auth-mark')}
         <h1>Fanta<em>titano</em></h1>
-        <p>Voto Titano — il fantacalcio del Titano, senza pagelle.</p></div>
+        <p>${t('Voto Titano — il fantacalcio del Titano, senza pagelle.')}</p></div>
       <div class="a-card auth-card clerk-card"><div id="clerk-slot"><div class="skel" style="height:280px"></div></div></div>
     </main>`;
-    const titolo = pending ? 'Controlla la posta' : tab === 'up' ? 'Registrati' : tab === 'link' ? 'Entra col link' : 'Accedi';
+    const titolo = pending ? t('Controlla la posta') : tab === 'up' ? t('Registrati') : tab === 'link' ? t('Entra col link') : t('Accedi');
     return `<main class="a-body auth2">
       <div class="sfondo">
         <img src="media/sfondo-accesso.jpg" alt="" fetchpriority="high" decoding="async">
@@ -54,13 +54,13 @@ export const login = {
         ${/* Chi arriva da un link d'invito deve sapere perche' gli si chiede
               un account prima della lega, e che il codice non lo deve
               ricopiare: se no pensa di aver sbagliato link. */
-    !pending && S.invitoInSospeso() ? `<div class="avviso ok invito">${icon('check', 'ic sm')}<span>Ti hanno invitato in una lega (codice <b>${esc(S.invitoInSospeso())}</b>). Entra col tuo account o creane uno: il codice lo tengo io, e dopo ti porto dentro.</span></div>` : ''}
+    !pending && S.invitoInSospeso() ? `<div class="avviso ok invito">${icon('check', 'ic sm')}<span>${t('Ti hanno invitato in una lega (codice <b>{codice}</b>). Entra col tuo account o creane uno: il codice lo tengo io, e dopo ti porto dentro.', { codice: esc(S.invitoInSospeso()) })}</span></div>` : ''}
         ${notice ? `<div class="avviso ${notice.kind}">${icon(notice.kind === 'ok' ? 'check' : 'warn', 'ic sm')}<span>${esc(notice.text)}</span></div>` : ''}
         ${pending ? pendingPanel() : tab === 'link' ? linkPanel() : credentialsPanel()}
         ${pending ? '' : socialBlock()}
         ${pending ? '' : `<p class="passa">${tab === 'up'
-          ? 'Hai già un account? <button data-tab="in">Accedi</button>'
-          : 'Non hai ancora un account? <button data-tab="up">Registrati</button>'}</p>`}
+          ? t('Hai già un account? <button data-tab="in">Accedi</button>')
+          : t('Non hai ancora un account? <button data-tab="up">Registrati</button>')}</p>`}
       </div>
     </main>`;
   },
@@ -70,23 +70,23 @@ export const login = {
     if (slot) { slot.innerHTML = ''; S.clerkMount(slot, 'sign-in'); return; }
     const val = (s) => root.querySelector(s)?.value.trim() || '';
     const setBusy = (on, label) => { busy = on; const b = root.querySelector('#primary'); if (b) { b.disabled = on; b.dataset.label ||= b.textContent; b.textContent = on ? label : b.dataset.label; } };
-    const fail = (e) => { scritti = { email: val('#email'), name: val('#name') }; notice = { kind: 'err', text: e.message || String(e) }; ctx.render(); };
+    const fail = (e) => { scritti = { email: val('#email'), name: val('#name') }; notice = { kind: 'err', text: t(e.message || String(e)) }; ctx.render(); };
 
     root.querySelector('main').addEventListener('click', async (e) => {
-      const t = e.target.closest('[data-tab]'); if (t) { tab = t.dataset.tab; notice = null; ctx.render(); return; }
+      const tb = e.target.closest('[data-tab]'); if (tb) { tab = tb.dataset.tab; notice = null; ctx.render(); return; }
       const sp = e.target.closest('[data-provider]');
       if (sp) { notice = null; sp.disabled = true; try { await S.signInWithProvider(sp.dataset.provider); } catch (err) { sp.disabled = false; fail(err); } return; }
       if (e.target.closest('#again')) { pending = null; notice = null; ctx.render(); return; }
       if (e.target.closest('#resend')) {
-        try { pending.kind === 'confirm' ? await S.resendConfirmation(pending.email) : await S.signInLink(pending.email); notice = { kind: 'ok', text: 'E-mail rimandata.' }; ctx.render(); } catch (err) { fail(err); }
+        try { pending.kind === 'confirm' ? await S.resendConfirmation(pending.email) : await S.signInLink(pending.email); notice = { kind: 'ok', text: t('E-mail rimandata.') }; ctx.render(); } catch (err) { fail(err); }
         return;
       }
       const occhio = e.target.closest('#vedi');
-      if (occhio) { const c = root.querySelector('#password'); if (c) { const visibile = c.type === 'text'; c.type = visibile ? 'password' : 'text'; occhio.setAttribute('aria-label', visibile ? 'Mostra la password' : 'Nascondi la password'); } return; }
+      if (occhio) { const c = root.querySelector('#password'); if (c) { const visibile = c.type === 'text'; c.type = visibile ? 'password' : 'text'; occhio.setAttribute('aria-label', visibile ? t('Mostra la password') : t('Nascondi la password')); } return; }
       if (e.target.closest('#vailink')) { tab = 'link'; notice = null; ctx.render(); return; }
       if (e.target.closest('#forgot')) {
         const email = val('#email'); if (!valid(email)) { fail(new Error('Scrivi prima la tua e-mail.')); return; }
-        try { await S.resetPassword(email); scritti = { email }; notice = { kind: 'ok', text: `Link mandato a ${email}. Aprilo e scegli subito la password nuova: l'app te la chiede appena entri. Il link vale una volta sola.` }; ctx.render(); } catch (err) { fail(err); }
+        try { await S.resetPassword(email); scritti = { email }; notice = { kind: 'ok', text: t('Link mandato a {email}. Aprilo e scegli subito la password nuova: l\'app te la chiede appena entri. Il link vale una volta sola.', { email }) }; ctx.render(); } catch (err) { fail(err); }
         return;
       }
       if (!e.target.closest('#primary') || busy) return;
@@ -94,7 +94,7 @@ export const login = {
       if (pending) {                                       // verifica del codice a 6 cifre
         const code = val('#otp').replace(/\s/g, '');
         if (code.length < 6) { fail(new Error('Il codice ha 6 cifre.')); return; }
-        setBusy(true, 'Verifico…'); try { await S.verifyCode(pending.email, code); pending = null; notice = null; } catch (err) { setBusy(false); fail(err); }
+        setBusy(true, t('Verifico…')); try { await S.verifyCode(pending.email, code); pending = null; notice = null; } catch (err) { setBusy(false); fail(err); }
         return;
       }
       const email = val('#email');
@@ -106,7 +106,7 @@ export const login = {
       } catch { /* modalità privata */ }
 
       if (tab === 'link') {
-        setBusy(true, 'Invio…');
+        setBusy(true, t('Invio…'));
         try { await S.signInLink(email); pending = { email, kind: 'link' }; notice = null; ctx.render(); } catch (err) { setBusy(false); fail(err); }
         return;
       }
@@ -115,20 +115,20 @@ export const login = {
       // all'iscrizione le regole intere del server (src/password.js), qui e non dopo un giro a vuoto
       if (tab === 'up' && erroreRegole(password)) { fail(new Error(erroreRegole(password))); return; }
       if (tab === 'in') {
-        setBusy(true, 'Accedo…'); try { await S.signInPassword(email, password); } catch (err) { setBusy(false); fail(err); }
+        setBusy(true, t('Accedo…')); try { await S.signInPassword(email, password); } catch (err) { setBusy(false); fail(err); }
         return;
       }
       const name = val('#name') || email.split('@')[0];
-      setBusy(true, 'Creo l\'account…');
+      setBusy(true, t('Creo l\'account…'));
       try {
         const r = await S.signUpPassword(email, password, name);
         if (r.giaIscritto) {
           tab = 'in'; emailGia = email; busy = false;
-          notice = { kind: 'ok', text: `Con ${email} c'è già un account Fantatitano: non serve crearne un altro. Accedi qui con la tua password; se non la ricordi tocca «Password dimenticata?».` };
+          notice = { kind: 'ok', text: t('Con {email} c\'è già un account Fantatitano: non serve crearne un altro. Accedi qui con la tua password; se non la ricordi tocca «Password dimenticata?».', { email }) };
           ctx.render();
           return;
         }
-        if (r.needsConfirmation) { pending = { email, kind: 'confirm' }; notice = { kind: 'ok', text: 'Account creato: manca solo la conferma.' }; ctx.render(); }
+        if (r.needsConfirmation) { pending = { email, kind: 'confirm' }; notice = { kind: 'ok', text: t('Account creato: manca solo la conferma.') }; ctx.render(); }
       } catch (err) { setBusy(false); fail(err); }
     });
     root.querySelector('main').addEventListener('keydown', (e) => { if (e.key === 'Enter') root.querySelector('#primary')?.click(); });
@@ -139,47 +139,47 @@ const PROVIDER = { google: ['google', 'Continua con Google'], apple: ['apple', '
 function socialBlock() {
   const list = S.oauthProviders();
   if (!list.length) return '';
-  return `<div class="oppure"><span>oppure accedi con</span></div>
-    <div class="tondi">${list.map((k) => `<button class="tondo" data-provider="${k}" aria-label="${PROVIDER[k][1]}">${icon(PROVIDER[k][0], 'ic')}</button>`).join('')}</div>`;
+  return `<div class="oppure"><span>${t('oppure accedi con')}</span></div>
+    <div class="tondi">${list.map((k) => `<button class="tondo" data-provider="${k}" aria-label="${t(PROVIDER[k][1])}">${icon(PROVIDER[k][0], 'ic')}</button>`).join('')}</div>`;
 }
 function credentialsPanel() {
   const up = tab === 'up';
-  return `${campo('email', 'E-mail', `type="email" autocomplete="email" inputmode="email" value="${esc(scritti.email || (up ? '' : (emailGia || emailRicordata())))}"`)}
-    ${up ? campo('name', 'Come ti chiami', `autocomplete="name" maxlength="24" value="${esc(scritti.name || '')}"`) : ''}
-    ${campo('password', up ? 'Password: 6 caratteri, lettere e numeri' : 'Password',
+  return `${campo('email', t('E-mail'), `type="email" autocomplete="email" inputmode="email" value="${esc(scritti.email || (up ? '' : (emailGia || emailRicordata())))}"`)}
+    ${up ? campo('name', t('Come ti chiami'), `autocomplete="name" maxlength="24" value="${esc(scritti.name || '')}"`) : ''}
+    ${campo('password', up ? t('Password: 6 caratteri, lettere e numeri') : t('Password'),
       `type="password" autocomplete="${up ? 'new-password' : 'current-password'}"`,
-      `<button type="button" class="occhio" id="vedi" aria-label="Mostra la password">${icon('eye', 'ic sm')}</button>`)}
+      `<button type="button" class="occhio" id="vedi" aria-label="${t('Mostra la password')}">${icon('eye', 'ic sm')}</button>`)}
     <div class="riga">
-      ${up ? '<span></span>' : `<label class="ricorda"><input type="checkbox" id="ricorda" ${emailRicordata() ? 'checked' : ''}>Ricorda la mia e-mail</label>`}
-      <button class="sottile" id="${up ? 'vailink' : 'forgot'}">${up ? 'Entra senza password' : 'Password dimenticata?'}</button>
+      ${up ? '<span></span>' : `<label class="ricorda"><input type="checkbox" id="ricorda" ${emailRicordata() ? 'checked' : ''}>${t('Ricorda la mia e-mail')}</label>`}
+      <button class="sottile" id="${up ? 'vailink' : 'forgot'}">${up ? t('Entra senza password') : t('Password dimenticata?')}</button>
     </div>
-    <button class="a-btn oro" id="primary">${up ? 'Crea account' : 'Accedi'}</button>
-    ${up ? legale() : '<button class="sottile centro" data-tab="link">Entra senza password, con un link</button>'}`;
+    <button class="a-btn oro" id="primary">${up ? t('Crea account') : t('Accedi')}</button>
+    ${up ? legale() : `<button class="sottile centro" data-tab="link">${t('Entra senza password, con un link')}</button>`}`;
 }
 function linkPanel() {
-  return `${campo('email', 'E-mail', `type="email" autocomplete="email" inputmode="email" value="${esc(scritti.email || emailRicordata())}"`)}
-    <button class="a-btn oro" id="primary">Mandami il link</button>
-    <p class="nota">Senza password: ricevi un'e-mail, tocchi il link e sei dentro. Se non hai un account, viene creato al primo accesso.</p>
+  return `${campo('email', t('E-mail'), `type="email" autocomplete="email" inputmode="email" value="${esc(scritti.email || emailRicordata())}"`)}
+    <button class="a-btn oro" id="primary">${t('Mandami il link')}</button>
+    <p class="nota">${t('Senza password: ricevi un\'e-mail, tocchi il link e sei dentro. Se non hai un account, viene creato al primo accesso.')}</p>
     ${legale()}
-    <button class="sottile centro" data-tab="in">Torna all'accesso con password</button>`;
+    <button class="sottile centro" data-tab="in">${t('Torna all\'accesso con password')}</button>`;
 }
 function pendingPanel() {
   const conferma = pending.kind === 'confirm';
-  return `<b class="auth-sent">${conferma ? 'Conferma la tua e-mail' : 'Controlla la posta'}</b>
-    <p class="auth-hint">Abbiamo scritto a <b>${esc(pending.email)}</b>.
-      <b>Apri il link dentro l'e-mail</b>: ${conferma ? "l'account si attiva e rientri da qui." : 'si apre direttamente l\'app.'}</p>
-    <p class="auth-hint">La manda <b>no-reply@fantatitano.site</b>. Non la vedi? Su Gmail guarda nelle schede <b>Aggiornamenti</b> e <b>Promozioni</b>, poi nello <b>spam</b>.</p>
-    <div class="auth-links"><button id="resend">Rimanda l'e-mail</button><button id="again">Usa un'altra e-mail</button></div>
+  return `<b class="auth-sent">${conferma ? t('Conferma la tua e-mail') : t('Controlla la posta')}</b>
+    <p class="auth-hint">${t('Abbiamo scritto a <b>{email}</b>.', { email: esc(pending.email) })}
+      ${t('<b>Apri il link dentro l\'e-mail</b>: {poi}', { poi: conferma ? t("l'account si attiva e rientri da qui.") : t('si apre direttamente l\'app.') })}</p>
+    <p class="auth-hint">${t('La manda <b>no-reply@fantatitano.site</b>. Non la vedi? Su Gmail guarda nelle schede <b>Aggiornamenti</b> e <b>Promozioni</b>, poi nello <b>spam</b>.')}</p>
+    <div class="auth-links"><button id="resend">${t('Rimanda l\'e-mail')}</button><button id="again">${t('Usa un\'altra e-mail')}</button></div>
     <details class="auth-more">
-      <summary>Non è arrivata niente?</summary>
+      <summary>${t('Non è arrivata niente?')}</summary>
       <ul class="auth-list">
-        <li>Cerca <b>fantatitano</b> nella casella: la trovi anche se è finita in un'altra scheda.</li>
-        <li>Le e-mail di servizio sono <b>poche all'ora</b>: se hai già premuto «Rimanda» più volte, aspetta un'ora prima di riprovare.</li>
-        <li>Chiedi all'organizzatore della lega di disattivare la conferma via e-mail: si entra subito, senza posta.</li>
+        <li>${t('Cerca <b>fantatitano</b> nella casella: la trovi anche se è finita in un\'altra scheda.')}</li>
+        <li>${t('Le e-mail di servizio sono <b>poche all\'ora</b>: se hai già premuto «Rimanda» più volte, aspetta un\'ora prima di riprovare.')}</li>
+        <li>${t('Chiedi all\'organizzatore della lega di disattivare la conferma via e-mail: si entra subito, senza posta.')}</li>
       </ul>
       <hr class="sep">
-      <p class="auth-hint"><b>Solo se</b> l'e-mail contiene un codice a 6 cifre, scrivilo qui. Molte e-mail contengono solo il link: in quel caso questo campo non serve.</p>
-      ${field('otp', 'Codice a 6 cifre', 'inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="123456"')}
-      <button class="a-btn ghost" id="primary">${icon('check', 'ic sm')}Entra con il codice</button>
+      <p class="auth-hint">${t('<b>Solo se</b> l\'e-mail contiene un codice a 6 cifre, scrivilo qui. Molte e-mail contengono solo il link: in quel caso questo campo non serve.')}</p>
+      ${field('otp', t('Codice a 6 cifre'), 'inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="123456"')}
+      <button class="a-btn ghost" id="primary">${icon('check', 'ic sm')}${t('Entra con il codice')}</button>
     </details>`;
 }

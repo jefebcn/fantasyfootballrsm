@@ -12,6 +12,8 @@
  * indizi di un tentativo, il riquadro da condividere. La schermata e'
  * views/gioco.js.
  */
+import { t } from './lingua.js';
+
 export const TENTATIVI = 6;
 /** Il primo giorno del gioco: il «Chi è? #1». */
 export const LANCIO = '2026-10-27';
@@ -109,7 +111,7 @@ const QUADRATO = { si: '🟩', vicino: '🟨', no: '⬛' };
  * nessun nome, cosi' chi lo riceve puo' ancora giocare.
  */
 export function condivisione(giorno, righe, vinto) {
-  const testa = `Chi è? #${numero(giorno)} · ${vinto ? `${righe.length}/${TENTATIVI}` : `X/${TENTATIVI}`}`;
+  const testa = t('Chi è? #{n} · {esito}', { n: numero(giorno), esito: vinto ? `${righe.length}/${TENTATIVI}` : `X/${TENTATIVI}` });
   return [testa, ...righe.map((r) => r.map((x) => QUADRATO[x.esito]).join('')), 'fantatitano.site'].join('\n');
 }
 

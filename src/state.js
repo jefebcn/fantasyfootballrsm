@@ -11,6 +11,7 @@ import { computeRating, computeLineupResult, computeStandings, defaultLineup, va
 import * as remote from './backend.js';
 import * as clerk from './auth-clerk.js';
 import * as AV from './notifiche.js';
+import { t } from './lingua.js';
 
 const PREFS_KEY = 'fcs:prefs';
 export const base = buildSeason();
@@ -1458,11 +1459,11 @@ export function saveLineup(n, managerId, lineup) {
   // schermata vale solo per quella schermata, e qui ci si arriva anche da un
   // collegamento diretto.
   const b = schieramentoBloccato();
-  if (b && n === b.giornata) throw new Error(`La ${b.inGioco}ª giornata è ancora in corso: la formazione della ${n}ª si apre quando finisce`);
+  if (b && n === b.giornata) throw new Error(t('La {g}ª giornata è ancora in corso: la formazione della {n}ª si apre quando finisce', { g: b.inGioco, n }));
   const rosa = rosaIncompletaPerSchierare(managerId);
-  if (rosa) throw new Error(`Nella lega pubblica la formazione si consegna con la rosa completa: hai ${rosa.ha} giocatori su ${rosa.serve}. Completala dal Negozio.`);
+  if (rosa) throw new Error(t('Nella lega pubblica la formazione si consegna con la rosa completa: hai {ha} giocatori su {serve}. Completala dal Negozio.', { ha: rosa.ha, serve: rosa.serve }));
   const fuori = fuoriRosa(managerId, [...lineup.starters, ...lineup.bench]);
-  if (fuori.length) { const p = playersById.get(fuori[0]); throw new Error(`${p ? p.name : fuori[0]} non è più nella tua rosa: sostituiscilo e conferma di nuovo`); }
+  if (fuori.length) { const p = playersById.get(fuori[0]); throw new Error(t('{nome} non è più nella tua rosa: sostituiscilo e conferma di nuovo', { nome: p ? p.name : fuori[0] })); }
   const rec = { ...lineup, submittedAt: now().toISOString() }; L.lineups[`${n}:${managerId}`] = rec;
   // 050: nella lega pubblica vale anche per le giornate dopo ancora aperte
   // (le scrive il database; qui si vede subito, senza ricaricare)

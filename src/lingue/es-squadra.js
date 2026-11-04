@@ -183,7 +183,7 @@ export const SQUADRA = {
   'hai già {n} {ruolo}': 'ya tienes {n} {ruolo}',
   'crediti finiti': 'sin créditos',
   'riserva crediti': 'reserva de créditos',
-  'in rosa': 'en el plantel',
+  'in rosa': 'plantel',
   '<b>{nome} aperto</b> fino a {quando}: togli e compra liberamente. Poi la rosa torna bloccata.': '<b>{nome} abierto</b> hasta {quando}: saca y compra libremente. Después el plantel vuelve a quedar bloqueado.',
   'Puoi cambiare la rosa fino a {quando}{comincia}. Poi resta quella per tutta la stagione.': 'Puedes cambiar el plantel hasta {quando}{comincia}. Después queda ese para toda la temporada.',
   'l\'inizio della tua prima giornata': 'el inicio de tu primera fecha',
@@ -236,4 +236,8 @@ export const SQUADRA = {
   'Confronta con un altro {ruolo}': 'Comparar con otro {ruolo}',
   'Storico giornate': 'Historial de fechas',
   'Nessuna giornata giocata.': 'Ninguna fecha jugada.',
+  // errori della formazione che nascono in src/state.js (saveLineup)
+  'La {g}ª giornata è ancora in corso: la formazione della {n}ª si apre quando finisce': 'La fecha {g} todavía está en juego: la alineación de la fecha {n} se abre cuando termine',
+  'Nella lega pubblica la formazione si consegna con la rosa completa: hai {ha} giocatori su {serve}. Completala dal Negozio.': 'En la liga pública la alineación se entrega con el plantel completo: tienes {ha} jugadores de {serve}. Complétalo en la Tienda.',
+  '{nome} non è più nella tua rosa: sostituiscilo e conferma di nuovo': '{nome} ya no está en tu plantel: reemplázalo y confirma de nuevo',
 };

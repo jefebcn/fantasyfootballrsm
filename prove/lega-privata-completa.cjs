@@ -50,7 +50,8 @@ function votoAtteso(pid, ruolo) {
   const esce = r.cambi.find(([, fuori]) => fuori === pid);
   if (esce && esce[2] < 60) return null;
   const ev = r.eventi.filter(([p]) => p === pid);
-  if (ev.some(([, , t]) => t.startsWith('red'))) return null;
+  // espulso, col rosso diretto o col secondo giallo (dal 5/11 il referto li distingue)
+  if (ev.some(([, , t]) => t.startsWith('red') || t === 'second_yellow')) return null;
   const golDi = (lato) => r.eventi.filter(([p, , t]) => (t === 'goal' && (p.replace(/_\d+$/, '') === lato))
     || (t === 'own_goal' && (p.replace(/_\d+$/, '') !== lato))).length;
   const fatti = golDi(club), subiti = golDi(casa ? r.ospite : r.casa);

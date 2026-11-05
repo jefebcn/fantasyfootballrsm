@@ -439,6 +439,29 @@ def main():
     scrivi(cal, fatti, tutti_mancanti, idx['doppioni'])
 
 
+def doppie_ammonizioni(eventi):
+    """
+    La FSGC scrive ogni espulsione allo stesso modo («Espulsione», red_card):
+    non dice se e' un rosso diretto o il secondo giallo. Se l'espulso era gia'
+    stato ammonito nella stessa partita, e' una doppia ammonizione (art. 6 del
+    regolamento: -0,5 il giallo e -1 l'espulsione, -1,5 in tutto), non un rosso
+    diretto (-2). Segnalato il 5/11 su De Lucia (Domagnano-Virtus, 7a giornata):
+    dal video era doppio giallo e l'app gli aveva dato -2.
+    Se nel referto i gialli prima dell'espulsione fossero due, se ne tiene uno:
+    il secondo e' gia' l'espulsione.
+    """
+    out = [list(e) for e in eventi]
+    for e in out:
+        if e[2] != 'red_direct':
+            continue
+        gialli = [x for x in out if x[0] == e[0] and x[2] == 'yellow' and x[1] <= e[1]]
+        if gialli:
+            e[2] = 'second_yellow'
+            for x in sorted(gialli, key=lambda x: x[1])[1:]:
+                x[2] = None
+    return [e for e in out if e[2]]
+
+
 def scrivi(cal, fatti, mancanti=None, doppioni=None):
     righe = []
     for p in cal:
@@ -465,7 +488,7 @@ def scrivi(cal, fatti, mancanti=None, doppioni=None):
         g, casa, ospite = k.split(':')
         voci.append('  {g:%s,casa:%s,ospite:%s,arbitro:%s,titolari:%s,eventi:%s,cambi:%s}' % (
             g, json.dumps(casa), json.dumps(ospite), json.dumps(t['arbitro']),
-            json.dumps(t['titolari']), json.dumps(t['eventi']), json.dumps(t['cambi'])))
+            json.dumps(t['titolari']), json.dumps(doppie_ammonizioni(t['eventi'])), json.dumps(t['cambi'])))
     (RADICE / 'src' / 'eventi-dati.js').write_text(
         '/**\n'
         ' * Tabellini veri del Campionato Sammarinese: formazioni, marcatori, assist,\n'

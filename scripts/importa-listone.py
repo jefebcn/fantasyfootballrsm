@@ -33,6 +33,21 @@ RUOLI = {
     'Esterno di destra': 'C', 'Esterno di sinistra': 'C', 'Portiere ': 'P',
 }
 
+# Le particelle stanno col cognome: «Umberto De Lucia» e' De Lucia, non Lucia
+# (Alex, 5/11: l'app scriveva «Lucia U.»). Vale per De, Di, Del, Della, La, Van...
+PARTICELLE = {'de', 'del', 'della', 'delle', 'dei', 'degli', 'di', 'da', 'dal', 'dalla',
+              'la', 'lo', 'le', 'van', 'von', 'der', 'den', 'dos', 'das', 'du'}
+
+
+def dividi_nome(completo):
+    """(nome, cognome) da «Nome Secondo Particella Cognome»."""
+    parti = completo.split()
+    i = len(parti) - 1
+    while i > 1 and parti[i - 1].lower() in PARTICELLE:
+        i -= 1
+    return (' '.join(parti[:i]) or parti[-1]), ' '.join(parti[i:])
+
+
 def prendi(url):
     """
     Via curl e non urllib: rispetta da sé proxy e certificati dell'ambiente.
@@ -166,8 +181,7 @@ def scrivi_modulo(dati):
     quota(tutti)
     righe = []
     for g in sorted(tutti, key=lambda g: (g['clubId'], 'PDCA'.index(g['ruolo']), -g['quotazione'], g['nome'])):
-        parti = g['nome'].split()
-        nome, cognome = (' '.join(parti[:-1]) or parti[-1]), parti[-1]
+        nome, cognome = dividi_nome(g['nome'])
         righe.append('  [%s,%s,%s,%s,%d,%s]' % (
             json.dumps(g['clubId']), json.dumps(nome), json.dumps(cognome),
             json.dumps(g['ruolo']), g['quotazione'], json.dumps(g['eta'])))

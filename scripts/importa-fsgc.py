@@ -462,6 +462,48 @@ def doppie_ammonizioni(eventi):
     return [e for e in out if e[2]]
 
 
+TIPI_EVENTO = {'goal', 'assist', 'yellow', 'second_yellow', 'red_direct', 'own_goal', 'pen_missed', 'pen_saved'}
+
+
+def leggi_eccezioni():
+    """Le correzioni a mano ai tabellini (data/eccezioni-referti.json)."""
+    f = RADICE / 'data' / 'eccezioni-referti.json'
+    return json.loads(f.read_text(encoding='utf-8')).get('eccezioni', []) if f.exists() else []
+
+
+def applica_eccezioni(chiave, eventi, eccezioni):
+    """
+    Le eccezioni di questa partita ('g:casa:ospite') applicate agli eventi.
+    Restituisce (eventi, voci non applicate): una voce che non trova il suo
+    evento non si perde in silenzio, chi chiama la segnala.
+    """
+    out = [list(e) for e in eventi]
+    mancate = []
+    for x in eccezioni:
+        if f"{x['giornata']}:{x['casa']}:{x['ospite']}" != chiave:
+            continue
+        az, chi, minuto, tipo = x.get('azione'), x['giocatore'], int(x['minuto']), x['evento']
+        if tipo not in TIPI_EVENTO:
+            mancate.append(x); continue
+        if az == 'aggiungi':
+            out.insert(0, [chi, minuto, tipo]); continue
+        if az == 'cambia':
+            # l'evento di quel giocatore a quel minuto: se ce n'e' piu' d'uno, un cartellino
+            cand = [e for e in out if e[0] == chi and e[1] == minuto]
+            cart = [e for e in cand if e[2] in ('yellow', 'second_yellow', 'red_direct')]
+            bersaglio = (cart or cand or [None])[0]
+            if bersaglio is None:
+                mancate.append(x); continue
+            bersaglio[2] = tipo; continue
+        if az == 'togli':
+            trovati = [e for e in out if e[0] == chi and e[1] == minuto and e[2] == tipo]
+            if not trovati:
+                mancate.append(x); continue
+            out.remove(trovati[0]); continue
+        mancate.append(x)
+    return out, mancate
+
+
 def scrivi(cal, fatti, mancanti=None, doppioni=None):
     righe = []
     for p in cal:
@@ -484,11 +526,19 @@ def scrivi(cal, fatti, mancanti=None, doppioni=None):
     print(f'\nscritto src/calendario-dati.js — {len(cal)} partite, {giornate} giornate')
 
     voci = []
+    eccezioni = leggi_eccezioni()
     for k, t in sorted(fatti.items(), key=lambda x: (int(x[0].split(':')[0]), x[0])):
         g, casa, ospite = k.split(':')
+        eventi, mancate = applica_eccezioni(k, doppie_ammonizioni(t['eventi']), eccezioni)
+        for x in mancate:
+            print(f"  ATTENZIONE: eccezione non applicata in {k}: {json.dumps(x, ensure_ascii=False)}", file=sys.stderr)
         voci.append('  {g:%s,casa:%s,ospite:%s,arbitro:%s,titolari:%s,eventi:%s,cambi:%s}' % (
             g, json.dumps(casa), json.dumps(ospite), json.dumps(t['arbitro']),
-            json.dumps(t['titolari']), json.dumps(doppie_ammonizioni(t['eventi'])), json.dumps(t['cambi'])))
+            json.dumps(t['titolari']), json.dumps(eventi), json.dumps(t['cambi'])))
+    giocate = set(fatti)
+    for x in eccezioni:
+        if f"{x['giornata']}:{x['casa']}:{x['ospite']}" not in giocate:
+            print(f"  ATTENZIONE: eccezione per una partita senza tabellino: {json.dumps(x, ensure_ascii=False)}", file=sys.stderr)
     (RADICE / 'src' / 'eventi-dati.js').write_text(
         '/**\n'
         ' * Tabellini veri del Campionato Sammarinese: formazioni, marcatori, assist,\n'

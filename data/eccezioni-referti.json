@@ -1,0 +1,22 @@
+{
+  "_come": [
+    "Correzioni a mano ai tabellini della FSGC, che l'import non cancella (Alex, 5/11).",
+    "L'import riscarica i referti a ogni giro: una correzione fatta altrove sparirebbe. Qui resta,",
+    "e si applica ogni volta che scripts/importa-fsgc.py scrive src/eventi-dati.js.",
+    "",
+    "Ogni voce: giornata, casa, ospite (id delle squadre), giocatore (id, es. virtus_5),",
+    "minuto, evento (goal, assist, yellow, second_yellow, red_direct, own_goal, pen_missed, pen_saved),",
+    "azione: 'cambia' (l'evento di quel giocatore a quel minuto diventa 'evento'),",
+    "        'aggiungi' (nuovo evento), 'togli' (via l'evento 'evento' di quel giocatore a quel minuto),",
+    "nota: perche' (chi l'ha segnalato, da dove si vede: video, comunicato ufficiale).",
+    "",
+    "Esempio: un giocatore gia' ammonito espulso con rosso diretto, che l'import conta",
+    "come doppia ammonizione perche' il referto scrive solo «Espulsione»:",
+    "{\"giornata\": 9, \"casa\": \"folgore\", \"ospite\": \"virtus\", \"giocatore\": \"virtus_5\", \"minuto\": 70,",
+    " \"evento\": \"red_direct\", \"azione\": \"cambia\", \"nota\": \"rosso diretto dopo il giallo, CU n. 21\"}",
+    "",
+    "Se una voce non trova il suo evento l'import lo scrive (ATTENZIONE) e la prova",
+    "tests/eccezioni-referti.test.js fallisce: niente correzioni perse in silenzio."
+  ],
+  "eccezioni": []
+}

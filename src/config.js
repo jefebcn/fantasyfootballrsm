@@ -114,4 +114,4 @@ export const VAPID_PUBBLICA = 'BLrGGXQUEc9KX2oOtPO5ygNu5Z1tcDKmCLMMBX7Dq9IcR4qFw
 
 /** Lingue dell'interfaccia. Per ora l'app parla solo italiano: quando ne
  *  arriverà un'altra basta aggiungerla qui. */
-export const LINGUE = [['it', 'Italiano']];
+export const LINGUE = [['it', 'Italiano'], ['es', 'Español']];

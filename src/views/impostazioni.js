@@ -1,5 +1,5 @@
 import * as S from '../state.js';
-import { esc, icon, pic } from '../ui.js';
+import { esc, icon, pic, t, lingua } from '../ui.js';
 import { tintaLeggibile } from '../colore.js';
 import { applyTheme } from '../app.js';
 import { CONTATTO, LINGUE } from '../config.js';
@@ -120,7 +120,7 @@ export const impostazioni = {
 
     const generale = group('Generale', `
       ${row('book', 'Come si gioca', 'La guida di TITO in tre passi', 'guida')}
-      ${row('globe', 'Impostazione lingua', LINGUE.find(([k]) => k === (d.lingua || 'it'))?.[1] || 'Italiano', 'lingua')}
+      ${row('globe', t('Impostazione lingua'), LINGUE.find(([k]) => k === lingua())?.[1] || 'Italiano', 'lingua')}
       ${row('bell', 'Preferenze notifiche', avvisiSottotitolo(d), 'avvisi')}
       ${row('chat', 'Contattaci', CONTATTO || 'Indirizzo non ancora impostato', 'contatto')}
       ${row('gear', 'Impostazioni avanzate', 'Tema, lega, server e diagnostica', 'avanzate')}`);
@@ -155,7 +155,7 @@ export const impostazioni = {
       // Privacy, ne' Lingua, ne' il server, ne' il caricamento delle giornate.
       // Con il tema su "Sistema" l'attributo non c'e' e sembrava tutto a posto,
       // ed e' per questo che non salta all'occhio.
-      const t = e.target.closest('button[data-theme]'); if (t) { S.store.set({ theme: t.dataset.theme }); applyTheme(); return; }
+      const tema = e.target.closest('button[data-theme]'); if (tema) { S.store.set({ theme: tema.dataset.theme }); applyTheme(); return; }
       const a = e.target.closest('[data-act]'); if (!a) return;
       const act = a.dataset.act;
       if (act === 'logout') { await S.signOut(); ctx.go('login'); return; }
@@ -238,8 +238,17 @@ export const impostazioni = {
       if (act === 'archiviazione') { ctx.go('archiviazione'); return; }
       if (act === 'licenze') { ctx.go('licenze'); return; }
       if (act === 'lingua') {
-        ctx.sheet(`<h3>Lingua</h3>${LINGUE.map(([k, l]) => `<button class="setting" data-lingua="${k}"><i class="ico">${icon('check')}</i><span class="txt"><b>${l}</b></span></button>`).join('')}
-          <p class="auth-hint">Per ora l'app parla solo italiano. Non è una scelta definitiva: quando ci sarà una seconda lingua comparirà qui.</p>`);
+        // Cambiare lingua ricarica l'app (src/lingua.js): i testi si scrivono
+        // una volta sola, e ricaricare e' l'unico modo di riscriverli tutti.
+        ctx.sheet(`<h3>${t('Lingua')}</h3>${LINGUE.map(([k, l]) => `<button class="setting${k === lingua() ? ' on' : ''}" data-lingua="${k}" aria-pressed="${k === lingua()}"><i class="ico">${k === lingua() ? icon('check') : ''}</i><span class="txt"><b>${l}</b></span></button>`).join('')}
+          <p class="auth-hint">${t('La lingua dell\'app. Cambiandola l\'app si ricarica.')} ${lingua() === 'it' ? '' : t('Alcune parti (regolamento, privacy e termini, notizie) sono ancora in italiano.')}</p>`);
+        const sh = document.getElementById('sheet');
+        if (sh) sh.onclick = (e) => {
+          const b = e.target.closest('[data-lingua]'); if (!b) return;
+          if (b.dataset.lingua === lingua()) { ctx.sheet(null); return; }
+          S.store.set({ lingua: b.dataset.lingua });
+          location.reload();
+        };
         return;
       }
       if (act === 'contatto') {

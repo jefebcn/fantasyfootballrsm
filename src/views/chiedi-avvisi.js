@@ -13,7 +13,7 @@
  */
 import * as S from '../state.js';
 import * as AV from '../notifiche.js';
-import { esc, icon } from '../ui.js';
+import { esc, icon, t } from '../ui.js';
 
 const TITOLO = 'Vuoi le notifiche di Fantatitano?';
 const COSA = 'Ti avvisiamo quando i tuoi giocatori segnano, il lunedì con i punti della tua squadra e prima che si chiuda la formazione.';
@@ -33,22 +33,22 @@ export function corpoRichiesta(come = comeChiedereOra()) {
   if (come === 'installa' || come === 'apri-browser') {
     const condividi = esc(AV.doveCondividi().replace(/^./, (c) => c.toLowerCase()));
     const passi = come === 'apri-browser'
-      ? ['Sei dentro un\'altra app (Instagram, Facebook): tocca <b>⋯</b> in alto e <b>Apri nel browser</b>.',
-        `Lì tocca <b>Condividi</b>: ${condividi}`, 'Scegli <b>Aggiungi alla schermata Home</b>.',
-        'Apri Fantatitano dall\'icona sulla Home: qui ti chiedo il permesso.']
-      : [`Tocca <b>Condividi</b>: ${condividi}`, 'Scegli <b>Aggiungi alla schermata Home</b>.',
-        'Apri Fantatitano dall\'icona sulla Home: qui ti chiedo il permesso.'];
+      ? [t('Sei dentro un\'altra app (Instagram, Facebook): tocca <b>⋯</b> in alto e <b>Apri nel browser</b>.'),
+        t('Lì tocca <b>Condividi</b>: {dove}', { dove: condividi }), t('Scegli <b>Aggiungi alla schermata Home</b>.'),
+        t('Apri Fantatitano dall\'icona sulla Home: qui ti chiedo il permesso.')]
+      : [t('Tocca <b>Condividi</b>: {dove}', { dove: condividi }), t('Scegli <b>Aggiungi alla schermata Home</b>.'),
+        t('Apri Fantatitano dall\'icona sulla Home: qui ti chiedo il permesso.')];
     return `<i class="cp-ico">${icon('bell')}</i>
-    <div class="cp-txt"><b>${TITOLO}</b>
-      <span>${COSA} Su iPhone arrivano solo con Fantatitano sulla <b>schermata Home</b>. Ci vogliono dieci secondi:</span>
+    <div class="cp-txt"><b>${t(TITOLO)}</b>
+      <span>${t(COSA)} ${t('Su iPhone arrivano solo con Fantatitano sulla <b>schermata Home</b>. Ci vogliono dieci secondi:')}</span>
       <ol class="cp-passi">${passi.map((x) => `<li>${x}</li>`).join('')}</ol>
-      <div class="cp-btn"><button class="a-btn sec" data-push="no">Non ora</button></div>
+      <div class="cp-btn"><button class="a-btn sec" data-push="no">${t('Non ora')}</button></div>
     </div>`;
   }
   return `<i class="cp-ico">${icon('bell')}</i>
-    <div class="cp-txt"><b>${TITOLO}</b>
-      <span>${COSA} Niente altro.</span>
-      <div class="cp-btn"><button class="a-btn" data-push="si">Sì, attiva</button><button class="a-btn sec" data-push="no">Non ora</button></div>
+    <div class="cp-txt"><b>${t(TITOLO)}</b>
+      <span>${t(COSA)} ${t('Niente altro.')}</span>
+      <div class="cp-btn"><button class="a-btn" data-push="si">${t('Sì, attiva')}</button><button class="a-btn sec" data-push="no">${t('Non ora')}</button></div>
     </div>`;
 }
 
@@ -65,7 +65,7 @@ export function riquadroRichiesta() {
  */
 export async function rispondi(b, ctx, fatto = () => {}) {
   const unNo = () => { const c = S.store.get().pushChiesto; S.store.set({ pushChiesto: { volte: (c?.volte || 0) + 1, ultima: Date.now() } }); };
-  if (b.dataset.push === 'no') { unNo(); ctx.toast('Va bene. Se cambi idea: Impostazioni → Preferenze notifiche'); fatto(); return; }
+  if (b.dataset.push === 'no') { unNo(); ctx.toast(t('Va bene. Se cambi idea: Impostazioni → Preferenze notifiche')); fatto(); return; }
   b.disabled = true;
   const esito = await AV.chiediPermesso();
   if (esito === 'granted') {
@@ -74,10 +74,10 @@ export async function rispondi(b, ctx, fatto = () => {}) {
     // l'iscrizione aspetta il service worker: se tarda, l'avviso non resta appeso
     const iscritto = await Promise.race([S.iscriviAvvisi().catch(() => false),
       new Promise((r) => { setTimeout(() => r(false), 8000); })]);
-    ctx.toast(iscritto ? 'Notifiche attive su questo telefono' : 'Notifiche consentite: arrivano ad app aperta');
+    ctx.toast(iscritto ? t('Notifiche attive su questo telefono') : t('Notifiche consentite: arrivano ad app aperta'));
     return;
   } else if (esito === 'denied') {
-    ctx.toast('Va bene, niente notifiche. Si riattivano dalle impostazioni del telefono');
+    ctx.toast(t('Va bene, niente notifiche. Si riattivano dalle impostazioni del telefono'));
   } else {
     // finestra chiusa senza scegliere: vale come un «non ora», non si richiede subito
     unNo();

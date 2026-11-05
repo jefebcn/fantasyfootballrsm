@@ -2,7 +2,8 @@ import * as S from '../state.js';
 import { videoGiornata, giornateConVideo } from '../video.js';
 import * as AV from '../notifiche.js';
 import * as N from '../notizie.js';
-import { esc, premioHtml, fmt, icon, logo, badge, crest, pic, tile, sec, dateIt, timeIt, plurale, freccia } from '../ui.js';
+import { esc, premioHtml, fmt, icon, logo, badge, crest, pic, tile, sec, dateIt, timeIt, plurale, freccia, t, lingua } from '../ui.js';
+import { locale } from '../lingua.js';
 import { movimenti, anteprimaClassifica } from '../engine.js';
 import { personaggio, scelto, figura } from '../personaggio.js';
 import { partitaDiOggi } from './gioco.js';
@@ -41,8 +42,8 @@ function lockDaSistemare() {
   if (!S.isJudge()) return '';
   const n = S.lockDaSistemare(); if (!n) return '';
   return tile({ href: '#/impostazioni/avanzate', lead: icon('warn'), leadKind: 'warn',
-    title: 'Calendario dei lock da allineare',
-    sub: `${n} giornate: il server chiude le formazioni in un giorno diverso da quello che vedi qui.` });
+    title: t('Calendario dei lock da allineare'),
+    sub: t('{n} giornate: il server chiude le formazioni in un giorno diverso da quello che vedi qui.', { n }) });
 }
 
 /**
@@ -53,19 +54,19 @@ function lockDaSistemare() {
 function scambiDaDecidere() {
   const q = S.scambiDaDecidere(); if (!q.length) return '';
   const uno = q.length === 1;
-  const chi = S.managersById.get(q[0].da)?.teamName || 'una squadra';
+  const chi = S.managersById.get(q[0].da)?.teamName || t('una squadra');
   return tile({ href: '#/scambi', lead: icon('undo'), leadKind: 'accent',
-    title: uno ? 'Una proposta di scambio' : `${q.length} proposte di scambio`,
-    sub: uno ? `${chi} aspetta la tua risposta.` : 'Aspettano la tua risposta.' });
+    title: uno ? t('Una proposta di scambio') : t('{n} proposte di scambio', { n: q.length }),
+    sub: uno ? t('{chi} aspetta la tua risposta.', { chi }) : t('Aspettano la tua risposta.') });
 }
 
 function daConsegnare() {
   const p = S.promemoriaFormazione(); if (!p) return '';
   const ore = Math.floor(p.ore);
-  const quando = ore >= 24 ? `${Math.floor(ore / 24)}g ${ore % 24}h` : ore >= 1 ? `${ore} ore` : 'meno di un\'ora';
+  const quando = ore >= 24 ? t('{g}g {h}h', { g: Math.floor(ore / 24), h: ore % 24 }) : ore >= 1 ? t('{n} ore', { n: ore }) : t('meno di un\'ora');
   return tile({ href: '#/rosa/formazione', lead: icon('clock'), leadKind: 'warn',
-    title: `Giornata ${p.giornata}: manca la formazione`,
-    sub: `Si chiude fra ${quando}. Senza consegna la partita è persa 0-3 a tavolino (art. 8.4).` });
+    title: t('Giornata {n}: manca la formazione', { n: p.giornata }),
+    sub: t('Si chiude fra {quando}. Senza consegna la partita è persa 0-3 a tavolino (art. 8.4).', { quando }) });
 }
 
 function azione(ph, bloccato = null) {
@@ -75,10 +76,10 @@ function azione(ph, bloccato = null) {
   // scheda direbbe la stessa cosa e porterebbe allo stesso posto.
   if (bloccato && bloccato.inGioco === ph.matchday) return '';
   return tile({ href: `#/voti/${ph.matchday}`, lead: icon('votes'), leadKind: 'warn',
-    title: `Voti della giornata ${ph.matchday}`,
-    sub: st === 'live' ? 'Punteggi in arrivo mano a mano che il Giudice inserisce gli eventi'
-      : 'Punteggi provvisori: puoi segnalare un errore fino a martedì',
-    badgeHtml: badge(st, st === 'provisional' ? 'fino a mar 18:00' : '') });
+    title: t('Voti della giornata {n}', { n: ph.matchday }),
+    sub: st === 'live' ? t('Punteggi in arrivo mano a mano che il Giudice inserisce gli eventi')
+      : t('Punteggi provvisori: puoi segnalare un errore fino a martedì'),
+    badgeHtml: badge(st, st === 'provisional' ? t('fino a mar 18:00') : '') });
 }
 
 /**
@@ -95,7 +96,7 @@ function manca(lockAt) {
   const left = Math.max(0, new Date(lockAt) - S.now());
   if (!left) return '';
   const g = Math.floor(left / 86400000), h = Math.floor((left % 86400000) / 3600000);
-  return g ? `${g}g ${h}h` : `${h}h ${Math.floor((left % 3600000) / 60000)}m`;
+  return g ? t('{g}g {h}h', { g, h }) : t('{h}h {m}m', { h, m: Math.floor((left % 3600000) / 60000) });
 }
 
 const lato = (m) => `<div class="side">${figura(m, 'fig-sfida') || crest(m)}<b>${esc(m.teamName)}</b><span class="own">${esc(m.owner)}</span></div>`;
@@ -108,17 +109,19 @@ const lato = (m) => `<div class="side">${figura(m, 'fig-sfida') || crest(m)}<b>$
 function conclusa(r) {
   if (!r) return '';
   const h = S.managersById.get(r.homeManagerId), a = S.managersById.get(r.awayManagerId);
-  return sec('Giornata precedente', `${r.matchday}ª giornata`) + `<div class="mcard fin">
+  return sec(t('Giornata precedente'), t('{n}ª giornata', { n: r.matchday })) + `<div class="mcard fin">
     <div class="mrow">${lato(h)}<span class="score pill">${r.homeGoals} – ${r.awayGoals}</span>${lato(a)}</div>
-    <div class="mfoot"><span>${fmt(r.homeScore)}</span><em>fantapunti</em><span>${fmt(r.awayScore)}</span></div>
+    <div class="mfoot"><span>${fmt(r.homeScore)}</span><em>${t('fantapunti')}</em><span>${fmt(r.awayScore)}</span></div>
     <div class="mcta2">
-      <button data-share="${r.id}">${icon('share', 'ic sm')}Condividi</button>
-      <a href="#/live/${r.id}">Voti, pagelle e altro${icon('chev', 'ic sm')}</a>
+      <button data-share="${r.id}">${icon('share', 'ic sm')}${t('Condividi')}</button>
+      <a href="#/live/${r.id}">${t('Voti, pagelle e altro')}${icon('chev', 'ic sm')}</a>
     </div></div>`;
 }
 
 /** Perche' la formazione della prossima non si puo' ancora consegnare. */
-const attesaProssima = (b) => `${b.mancanti === 1 ? 'Manca una partita' : `Mancano ${b.mancanti} partite su ${b.partite}`}: la formazione della ${b.giornata}ª si apre a giornata finita`;
+const attesaProssima = (b) => (b.mancanti === 1
+  ? t('Manca una partita: la formazione della {g}ª si apre a giornata finita', { g: b.giornata })
+  : t('Mancano {n} partite su {tot}: la formazione della {g}ª si apre a giornata finita', { n: b.mancanti, tot: b.partite, g: b.giornata }));
 
 /**
  * La giornata in corso: contro chi si gioca, quanto manca al lock, l'invio
@@ -126,8 +129,8 @@ const attesaProssima = (b) => `${b.mancanti === 1 ? 'Manca una partita' : `Manca
  * giornata giocata, quindi tra il lunedì e il sabato non si sapeva più con chi.
  */
 function corrente(f, n, me, riposo, bloccato = null) {
-  if (riposo) return sec('Giornata corrente', `${n}ª giornata`)
-    + tile({ href: '#/calendario', lead: icon('cal'), title: 'Turno di riposo', sub: 'In questa giornata non hai avversarie' });
+  if (riposo) return sec(t('Giornata corrente'), t('{n}ª giornata', { n }))
+    + tile({ href: '#/calendario', lead: icon('cal'), title: t('Turno di riposo'), sub: t('In questa giornata non hai avversarie') });
   if (!f) return '';
   const h = S.managersById.get(f.homeManagerId), a = S.managersById.get(f.awayManagerId);
   const md = S.matchday(n); const st = S.matchdayStatus(n);
@@ -146,19 +149,19 @@ function corrente(f, n, me, riposo, bloccato = null) {
   // #chiudi-giornata invece di tre id uguali con un gestore che ne agganciava
   // uno.
   const cta = aperta
-    ? tasto('#/rosa/formazione', saved ? 'Modifica la formazione' : 'Inserisci formazione')
-    : tasto(`#/voti/${n}`, 'Voti della giornata');
+    ? tasto('#/rosa/formazione', saved ? t('Modifica la formazione') : t('Inserisci formazione'))
+    : tasto(`#/voti/${n}`, t('Voti della giornata'));
   const nota = aperta
-    ? (saved ? `Formazione salvata ${dateIt(saved.submittedAt)} · si chiude ${dateIt(md.lockAt)} alle ${timeIt(md.lockAt)}`
-      : `Si chiude ${dateIt(md.lockAt)} alle ${timeIt(md.lockAt)}`)
+    ? (saved ? t('Formazione salvata {data} · si chiude {giorno} alle {ora}', { data: dateIt(saved.submittedAt), giorno: dateIt(md.lockAt), ora: timeIt(md.lockAt) })
+      : t('Si chiude {giorno} alle {ora}', { giorno: dateIt(md.lockAt), ora: timeIt(md.lockAt) }))
     : bloccato ? attesaProssima(bloccato) : '';
   // Il tocco sulle due squadre apre il pre-match a tutto campo — la stessa
   // pagina del link "Probabili e altro", che da solo non si vedeva.
-  return sec('Giornata corrente', `${n}ª giornata`) + `<div class="mcard">
-    <a class="mrow tocca" href="#/live/${f.id}" aria-label="Apri lo scontro">${lato(h)}${centro}${lato(a)}</a>
+  return sec(t('Giornata corrente'), t('{n}ª giornata', { n })) + `<div class="mcard">
+    <a class="mrow tocca" href="#/live/${f.id}" aria-label="${t('Apri lo scontro')}">${lato(h)}${centro}${lato(a)}</a>
     ${nota ? `<p class="mnota">${esc(nota)}</p>` : ''}
     <div class="mact">${cta}</div>
-    <a class="mcta" href="#/live/${f.id}">${pic('probabili-formazioni', 'lega', 'mini')}Probabili e altro${icon('chev', 'ic sm')}</a>
+    <a class="mcta" href="#/live/${f.id}">${pic('probabili-formazioni', 'lega', 'mini')}${t('Probabili e altro')}${icon('chev', 'ic sm')}</a>
   </div>`;
 }
 
@@ -225,11 +228,12 @@ function cartaGioco(dove) {
   const g = partitaDiOggi(); if (!g) return '';
   if ((dove === 'su') === g.finito) return '';
   if (g.finito) {
-    const esito = g.vinto ? `Indovinato in ${g.tentativi}${g.serie > 1 ? ` · ${g.serie} di fila` : ''}` : 'Non indovinato · domani un altro';
-    return `<a class="a-card ce-home piccola" href="#/gioco"><span class="ce-home-ico ${g.vinto ? 'si' : 'no'}">${g.vinto ? icon('check') : '✕'}</span><span class="ce-home-txt"><b>Chi è? <small>#${g.numero}</small></b><span>${esito}</span></span>${icon('chev', 'ic sm')}</a>`;
+    const esito = g.vinto ? `${t('Indovinato in {n}', { n: g.tentativi })}${g.serie > 1 ? ` · ${t('{n} di fila', { n: g.serie })}` : ''}` : t('Non indovinato · domani un altro');
+    return `<a class="a-card ce-home piccola" href="#/gioco"><span class="ce-home-ico ${g.vinto ? 'si' : 'no'}">${g.vinto ? icon('check') : '✕'}</span><span class="ce-home-txt"><b>${t('Chi è?')} <small>#${g.numero}</small></b><span>${esito}</span></span>${icon('chev', 'ic sm')}</a>`;
   }
-  const testo = !g.tentativi ? 'Il giocatore del giorno: indovinalo in 6 tentativi' : `In corso · ${g.tentativi} tentativ${g.tentativi === 1 ? 'o' : 'i'} su 6`;
-  return `<a class="a-card ce-home nuovo" href="#/gioco"><span class="ce-home-ico da-giocare" aria-hidden="true">?</span><span class="ce-home-txt"><b>Chi è? <small>#${g.numero}</small></b><span>${testo}</span></span><span class="ce-home-cta">${g.tentativi ? 'Continua' : 'Gioca'}</span></a>`;
+  const testo = !g.tentativi ? t('Il giocatore del giorno: indovinalo in 6 tentativi')
+    : g.tentativi === 1 ? t('In corso · 1 tentativo su 6') : t('In corso · {n} tentativi su 6', { n: g.tentativi });
+  return `<a class="a-card ce-home nuovo" href="#/gioco"><span class="ce-home-ico da-giocare" aria-hidden="true">?</span><span class="ce-home-txt"><b>${t('Chi è?')} <small>#${g.numero}</small></b><span>${testo}</span></span><span class="ce-home-cta">${g.tentativi ? t('Continua') : t('Gioca')}</span></a>`;
 }
 
 function invitoCalciatori() {
@@ -237,9 +241,9 @@ function invitoCalciatori() {
   try { if (localStorage.getItem('ft.adesione')) return ''; } catch { /* niente */ }
   return `<div class="a-card invito-calc">
     <i class="cp-ico cp-logo">${logo()}</i>
-    <div class="cp-txt"><b>Giochi nel campionato sammarinese?</b>
-      <span>Allora sei già nel listone di Fantatitano, con nome e statistiche. Dicci se ti va bene comparire, oppure se preferisci di no: bastano due minuti.</span>
-      <div class="cp-btn"><button class="a-btn" data-calc="si">Ci gioco</button><button class="a-btn sec" data-calc="no">Non gioco</button></div>
+    <div class="cp-txt"><b>${t('Giochi nel campionato sammarinese?')}</b>
+      <span>${t('Allora sei già nel listone di Fantatitano, con nome e statistiche. Dicci se ti va bene comparire, oppure se preferisci di no: bastano due minuti.')}</span>
+      <div class="cp-btn"><button class="a-btn" data-calc="si">${t('Ci gioco')}</button><button class="a-btn sec" data-calc="no">${t('Non gioco')}</button></div>
     </div>
   </div>`;
 }
@@ -252,7 +256,7 @@ function fasciaSponsor() {
   // gira nel telefono di chiunque apra l'app.
   const link = INDIRIZZO_OK.test(sp.link || '') ? sp.link : '';
   const logo = INDIRIZZO_OK.test(sp.logo || '') ? sp.logo : '';
-  const dentro = `<span class="spon-tag">Sponsor</span>
+  const dentro = `<span class="spon-tag">${t('Sponsor')}</span>
     ${logo ? `<img class="spon-logo" src="${esc(logo)}" alt="${esc(sp.nome)}" loading="lazy">`
     : `<span class="spon-logo vuoto">${esc(sp.nome.slice(0, 2).toUpperCase())}</span>`}
     <span class="spon-txt"><b>${esc(sp.nome)}</b>${sp.claim ? `<span>${esc(sp.claim)}</span>` : ''}</span>
@@ -277,29 +281,30 @@ function invitoNegozio() {
   // 039: la finestra di riparazione si annuncia a tutti, anche a rosa completa.
   if (n.completa && n.riparazione) {
     return tile({ href: '#/negozio', lead: icon('cart'), leadKind: 'accent',
-      title: `${n.riparazione.nome} aperto`,
-      sub: `Fino a ${n.riparazione.fine.toLocaleDateString('it-IT', { weekday: 'short', day: 'numeric', month: 'numeric' })}: togli e compra liberamente` });
+      // il nome lo scrive il proprietario; tradotto solo quello di riserva
+      title: t('{nome} aperto', { nome: n.riparazione.nome === 'Mercato di riparazione' ? t('Mercato di riparazione') : n.riparazione.nome }),
+      sub: t('Fino a {data}: togli e compra liberamente', { data: n.riparazione.fine.toLocaleDateString(locale(), { weekday: 'short', day: 'numeric', month: 'numeric' }) }) });
   }
   if (n.completa) return '';
   const quando = n.chiude
-    ? `${n.chiude.toLocaleDateString('it-IT', { weekday: 'short', day: 'numeric', month: 'numeric' })} ${String(n.chiude.getHours()).padStart(2, '0')}:${String(n.chiude.getMinutes()).padStart(2, '0')}`
+    ? `${n.chiude.toLocaleDateString(locale(), { weekday: 'short', day: 'numeric', month: 'numeric' })} ${String(n.chiude.getHours()).padStart(2, '0')}:${String(n.chiude.getMinutes()).padStart(2, '0')}`
     : null;
   if (n.scoperto) {
     return tile({ href: '#/negozio', lead: icon('cart'), leadKind: 'warn',
-      title: `Rosa bloccata: mancano ${n.scoperto} crediti`,
-      sub: 'Per completarla togli un giocatore caro dal Negozio: ti tornano i crediti che l\'avevi pagato.' });
+      title: t('Rosa bloccata: mancano {n} crediti', { n: n.scoperto }),
+      sub: t('Per completarla togli un giocatore caro dal Negozio: ti tornano i crediti che l\'avevi pagato.') });
   }
   if (!n.aperto) {
     // 037: finestra passata, ma la rosa a meta' si puo' ancora completare —
     // ed e' l'unico modo di tornare a consegnare la formazione.
     return tile({ href: '#/negozio', lead: icon('cart'), leadKind: 'warn',
-      title: `Rosa incompleta: ${n.mancanti} da prendere`,
-      sub: 'Senza rosa completa la formazione non si consegna. Completala dal Negozio.' });
+      title: t('Rosa incompleta: {n} da prendere', { n: n.mancanti }),
+      sub: t('Senza rosa completa la formazione non si consegna. Completala dal Negozio.') });
   }
   return `<a class="negozio-cta" href="#/negozio" data-negozio>
     <i>${icon('cart')}</i>
-    <span class="txt"><b>Costruisci la tua rosa</b>
-      <span>${n.mancanti === 25 ? 'Scegli i tuoi 25 giocatori' : `Manca${n.mancanti === 1 ? '' : 'no'} ${plurale(n.mancanti, 'giocatore', 'giocatori')}`} · ${plurale(n.crediti, 'credito', 'crediti')}${quando ? ` · fino a ${quando}` : ''}</span></span>
+    <span class="txt"><b>${t('Costruisci la tua rosa')}</b>
+      <span>${n.mancanti === 25 ? t('Scegli i tuoi 25 giocatori') : n.mancanti === 1 ? t('Manca 1 giocatore') : t('Mancano {n} giocatori', { n: n.mancanti })} · ${plurale(n.crediti, t('credito'), t('crediti'))}${quando ? ` · ${t('fino a {quando}', { quando })}` : ''}</span></span>
     <span class="chev">${icon('chev', 'ic sm')}</span></a>`;
 }
 
@@ -314,33 +319,33 @@ function invitoPubblica() {
     const premio = primo(S.premi());
     const squadre = S.base.managers.length;
     if (premio) {
-      return fascia('#/classifica', `Montepremi: ${premioHtml(premio.premio)}`,
-        'Sei in gara per il montepremi finale',
-        `${squadre} ${squadre === 1 ? 'squadra' : 'squadre'} · vince chi fa più punti`);
+      return fascia('#/classifica', t('Montepremi: {premio}', { premio: premioHtml(premio.premio) }),
+        t('Sei in gara per il montepremi finale'),
+        `${plurale(squadre, t('squadra'), t('squadre'))} · ${t('vince chi fa più punti')}`);
     }
     if (!S.isLeagueAdmin()) return '';
-    return fascia('#/classifica', 'Montepremi da definire',
-      'Mettilo in palio tu: lo vedranno tutti qui',
-      'lega pubblica · aperta a tutti senza codice');
+    return fascia('#/classifica', t('Montepremi da definire'),
+      t('Mettilo in palio tu: lo vedranno tutti qui'),
+      t('lega pubblica · aperta a tutti senza codice'));
   }
 
   const l = S.pubblicaInVetrina();
   if (!l) return '';
   const premio = primo(l.premi);
-  const squadre = `${l.membri} ${l.membri === 1 ? 'squadra' : 'squadre'}`;
+  const squadre = plurale(l.membri, t('squadra'), t('squadre'));
   // Iscritto ma con la lega privata davanti: il banner non invita a entrare
   // dove sei già, ti ci porta. data-vai lo raccoglie il mount qui sotto e
   // cambia lega.
   if (l.dentro) {
-    return fascia('#/leghe', premio ? `Montepremi: ${premioHtml(premio.premio)}` : 'La tua lega pubblica',
-      premio ? 'Sei in gara per il montepremi finale' : 'Ci sei dentro: vai a giocare',
-      `${esc(l.name)} · ${squadre} · tocca per andarci`, ` data-vai="${esc(l.id)}"`);
+    return fascia('#/leghe', premio ? t('Montepremi: {premio}', { premio: premioHtml(premio.premio) }) : t('La tua lega pubblica'),
+      premio ? t('Sei in gara per il montepremi finale') : t('Ci sei dentro: vai a giocare'),
+      t('{lega} · {squadre} · tocca per andarci', { lega: esc(l.name), squadre }), ` data-vai="${esc(l.id)}"`);
   }
   // data-entra: chi tocca il banner vuole entrare in questa lega, non vedere
   // l'elenco delle leghe.
-  return fascia('#/leghe', premio ? `In palio: ${premioHtml(premio.premio)}` : 'Lega pubblica aperta a tutti',
-    premio ? 'Entra e competi per il montepremi finale' : 'Entra: ognuno si fa la sua rosa',
-    `${esc(l.name)} · ${squadre} · senza codice`,
+  return fascia('#/leghe', premio ? t('In palio: {premio}', { premio: premioHtml(premio.premio) }) : t('Lega pubblica aperta a tutti'),
+    premio ? t('Entra e competi per il montepremi finale') : t('Entra: ognuno si fa la sua rosa'),
+    t('{lega} · {squadre} · senza codice', { lega: esc(l.name), squadre }),
     ` data-entra="${esc(l.id)}"`);
 }
 
@@ -364,14 +369,14 @@ function daCalcolare(ph, bloccato = null) {
   if (bloccato && bloccato.inGioco === ph.matchday) return '';
   const q = S.giornataDaChiudere(ph.matchday);
   if (!q) return '';
-  return sec('Da calcolare', `${q.giornata}ª giornata`) + `<div class="mcard">
+  return sec(t('Da calcolare'), t('{n}ª giornata', { n: q.giornata })) + `<div class="mcard">
     <p class="mnota">${q.presto
-    ? `Si calcola da ${dateIt(q.da)} alle ${timeIt(q.da)}: prima la FSGC completa i referti, con cambi e cartellini`
+    ? t('Si calcola da {giorno} alle {ora}: prima la FSGC completa i referti, con cambi e cartellini', { giorno: dateIt(q.da), ora: timeIt(q.da) })
     : q.pronta
-      ? `Tutte le ${q.partite} partite hanno gli eventi: da qui i punteggi diventano definitivi`
-      : `Mancano gli eventi di ${q.mancanti} partite su ${q.partite}`}</p>
-    <div class="mact"><button class="a-btn big" id="chiudi-giornata"${q.pronta ? '' : ' disabled'}>${icon('lock', 'ic sm')}Calcola la giornata</button></div>
-    <a class="mcta" href="#/voti/${q.giornata}">${pic('voti', 'menu', 'mini')}Voti della ${q.giornata}ª${icon('chev', 'ic sm')}</a>
+      ? t('Tutte le {n} partite hanno gli eventi: da qui i punteggi diventano definitivi', { n: q.partite })
+      : t('Mancano gli eventi di {n} partite su {tot}', { n: q.mancanti, tot: q.partite })}</p>
+    <div class="mact"><button class="a-btn big" id="chiudi-giornata"${q.pronta ? '' : ' disabled'}>${icon('lock', 'ic sm')}${t('Calcola la giornata')}</button></div>
+    <a class="mcta" href="#/voti/${q.giornata}">${pic('voti', 'menu', 'mini')}${t('Voti della {n}ª', { n: q.giornata })}${icon('chev', 'ic sm')}</a>
   </div>`;
 }
 
@@ -389,36 +394,39 @@ function correntePunti(n, me, bloccato = null) {
   const cls = S.standings(); const mio = cls.find((r) => r.managerId === me.id);
   const punti = aperta ? null : S.puntiGiornata(n, me.id);
   const cta = aperta
-    ? tasto('#/rosa/formazione', saved ? 'Modifica la formazione' : 'Inserisci formazione')
-    : tasto(`#/voti/${n}`, 'Voti della giornata');
+    ? tasto('#/rosa/formazione', saved ? t('Modifica la formazione') : t('Inserisci formazione'))
+    : tasto(`#/voti/${n}`, t('Voti della giornata'));
   const nota = aperta
     ? (saved
-      ? `Formazione salvata ${dateIt(saved.submittedAt)} · si chiude ${dateIt(md.lockAt)} alle ${timeIt(md.lockAt)}`
-      : `Si chiude ${dateIt(md.lockAt)} alle ${timeIt(md.lockAt)} — senza consegna questa giornata vale zero`)
+      ? t('Formazione salvata {data} · si chiude {giorno} alle {ora}', { data: dateIt(saved.submittedAt), giorno: dateIt(md.lockAt), ora: timeIt(md.lockAt) })
+      : t('Si chiude {giorno} alle {ora} — senza consegna questa giornata vale zero', { giorno: dateIt(md.lockAt), ora: timeIt(md.lockAt) }))
     : bloccato ? attesaProssima(bloccato) : '';
-  return sec('Giornata corrente', `${n}ª giornata`) + `<div class="mcard">
+  return sec(t('Giornata corrente'), t('{n}ª giornata', { n })) + `<div class="mcard">
     <div class="mrow punti">
-      <span class="pblocco"><b>${punti === null ? '—' : fmt(punti)}</b><span>${punti === null ? 'da giocare' : 'punti in giornata'}</span></span>
-      <span class="pblocco"><b>${mio ? mio.position : '–'}</b><span>posto su ${cls.length}</span></span>
-      <span class="pblocco"><b>${mio ? fmt(mio.punti) : '0'}</b><span>punti totali</span></span>
+      <span class="pblocco"><b>${punti === null ? '—' : fmt(punti)}</b><span>${punti === null ? t('da giocare') : t('punti in giornata')}</span></span>
+      <span class="pblocco"><b>${mio ? mio.position : '–'}</b><span>${t('posto su {n}', { n: cls.length })}</span></span>
+      <span class="pblocco"><b>${mio ? fmt(mio.punti) : '0'}</b><span>${t('punti totali')}</span></span>
     </div>
     ${nota ? `<p class="mnota">${esc(nota)}</p>` : ''}
     <div class="mact">${cta}</div>
-    <a class="mcta" href="#/classifica">${pic('classifica', 'lega', 'mini')}Classifica e premi${icon('chev', 'ic sm')}</a>
+    <a class="mcta" href="#/classifica">${pic('classifica', 'lega', 'mini')}${t('Classifica e premi')}${icon('chev', 'ic sm')}</a>
   </div>`;
 }
+
+/** Le lettere dell'esito in spagnolo: ganado, perdido, empate. */
+const LETTERA_ES = { v: 'G', p: 'P', n: 'E' };
 
 /** Gli ultimi cinque incontri di lega: avversaria, esito e risultato. */
 function ultimiCinque(last, me) {
   if (!last.length) return '';
-  return sec('Ultimi 5 incontri', last.length < 5 ? `${last.length} giocate` : '') + `<div class="a-card last5">
+  return sec(t('Ultimi 5 incontri'), last.length < 5 ? t('{n} giocate', { n: last.length }) : '') + `<div class="a-card last5">
     ${last.map((r) => {
     const home = r.homeManagerId === me.id;
     const opp = S.managersById.get(home ? r.awayManagerId : r.homeManagerId);
     const gf = home ? r.homeGoals : r.awayGoals, gs = home ? r.awayGoals : r.homeGoals;
     const k = gf > gs ? 'v' : gf < gs ? 'p' : 'n';
-    return `<a class="l5" href="#/live/${r.id}"><i class="${k}">${k.toUpperCase()}</i>${crest(opp, 'sm')}
-      <span class="nm"><b>${esc(opp.teamName)}</b><span>${home ? 'in casa' : 'in trasferta'} · giornata ${r.matchday}</span></span>
+    return `<a class="l5" href="#/live/${r.id}"><i class="${k}">${lingua() === 'es' ? LETTERA_ES[k] : k.toUpperCase()}</i>${crest(opp, 'sm')}
+      <span class="nm"><b>${esc(opp.teamName)}</b><span>${home ? t('in casa') : t('in trasferta')} · ${t('giornata {n}', { n: r.matchday })}</span></span>
       <span class="sc"><b>${gf}–${gs}</b><span>${fmt(home ? r.homeScore : r.awayScore)}–${fmt(home ? r.awayScore : r.homeScore)}</span></span>
       ${icon('chev', 'ic sm')}</a>`;
   }).join('')}</div>`;
@@ -437,8 +445,8 @@ function highlights() {
     const riga = ({ m, v }) => { const h = S.clubsById.get(m.homeClubId), a = S.clubsById.get(m.awayClubId);
       return `<a class="vh" href="#/video" data-apri-video="${esc(v.id)}"><span class="vh-p">${icon('play', 'ic sm')}</span>
         <span class="vh-t"><b>${esc(h.name)} — ${esc(a.name)}</b>${m.status === 'played' ? `<span>${m.homeGoals} – ${m.awayGoals}</span>` : ''}</span></a>`; };
-    return sec('Highlights', `${k}ª giornata`) + `<div class="a-card vhs">${l.slice(0, 4).map(riga).join('')}
-      <a class="vh tutti" href="#/video"><span class="vh-t"><b>Tutti i video${l.length > 4 ? ` (${l.length})` : ''}</b></span>${icon('chev', 'ic sm')}</a></div>`;
+    return sec(t('Highlights'), t('{n}ª giornata', { n: k })) + `<div class="a-card vhs">${l.slice(0, 4).map(riga).join('')}
+      <a class="vh tutti" href="#/video"><span class="vh-t"><b>${t('Tutti i video')}${l.length > 4 ? ` (${l.length})` : ''}</b></span>${icon('chev', 'ic sm')}</a></div>`;
   }
   return '';
 }
@@ -449,10 +457,10 @@ function prossimePartite(ph) {
   if (!ms.length) { n = ph.next; ms = cerca(n); }
   if (!ms.length) return '';
   const cl = (id) => S.clubsById.get(id);
-  return sec('Prossime partite', `${n}ª giornata`) + `<div class="upcoming">${ms.slice(0, 6).map((m) => {
+  return sec(t('Prossime partite'), t('{n}ª giornata', { n })) + `<div class="upcoming">${ms.slice(0, 6).map((m) => {
     const h = cl(m.homeClubId), a = cl(m.awayClubId); const k = m.kickoffAt ? new Date(m.kickoffAt) : null;
     return `<a class="up" href="#/calendario/${n}">
-      <span class="when">${k ? `${dateIt(k)} · ${timeIt(k)}` : `${n}ª giornata`}</span>
+      <span class="when">${k ? `${dateIt(k)} · ${timeIt(k)}` : t('{n}ª giornata', { n })}</span>
       <span class="teams">
         <span class="t">${crest({ color: h.color, initials: h.shortName }, 'sm')}<b>${esc(h.name)}</b></span>
         <em>VS</em>
@@ -484,33 +492,33 @@ export function anteprimaClassificaHtml({ st, prima, aPunti, meId, squadra, n })
   const scrivi = (v) => (aPunti ? fmt(v) : String(v));
   const { partita, righe } = anteprimaClassifica(st, (r) => (aPunti ? r.punti : r.points), meId);
   const mosse = movimenti(prima, st);
-  return sec('Classifica', `${n >= 1 ? `${n}ª giornata · ` : ''}${st.length} squadre`) + `<a class="a-card lead" href="#/classifica">
+  return sec(t('Classifica'), `${n >= 1 ? `${t('{n}ª giornata', { n })} · ` : ''}${t('{n} squadre', { n: st.length })}`) + `<a class="a-card lead" href="#/classifica">
     ${righe.map((r) => { const m = squadra(r.managerId); const d = mosse.get(r.managerId);
-      const sotto = !partita ? '<span class="gap">punti</span>'
-        : r.distacco === 0 ? '<span class="gap testa">in testa</span>'
-          : `<span class="gap" aria-label="a ${scrivi(r.distacco)} dal primo">−${scrivi(r.distacco)}</span>`;
+      const sotto = !partita ? `<span class="gap">${t('punti')}</span>`
+        : r.distacco === 0 ? `<span class="gap testa">${t('in testa')}</span>`
+          : `<span class="gap" aria-label="${t('a {d} dal primo', { d: scrivi(r.distacco) })}">−${scrivi(r.distacco)}</span>`;
       return `<span class="lrow${r.io ? ' io' : ''}">
         <span class="lpos"><i class="pos${r.podio ? ` m${r.podio}` : ''}">${r.position}</i>${d ? freccia(d) : ''}</span>${crest(m, 'sm')}
-        <span class="nm"><span class="lnm"><b>${esc(m.teamName)}</b>${r.io ? '<em class="tu">tu</em>' : ''}</span><span class="own">${esc(m.owner)}</span>
+        <span class="nm"><span class="lnm"><b>${esc(m.teamName)}</b>${r.io ? `<em class="tu">${t('tu')}</em>` : ''}</span><span class="own">${esc(m.owner)}</span>
           ${partita ? `<span class="lbar"><i style="width:${Math.round(r.quota * 100)}%"></i></span>` : ''}</span>
         <span class="pt"><b>${scrivi(r.valore)}</b>${sotto}</span></span>`; }).join('')}
-    <span class="lcta">Classifica completa${icon('chev', 'ic sm')}</span></a>`;
+    <span class="lcta">${t('Classifica completa')}${icon('chev', 'ic sm')}</span></a>`;
 }
 
 /** Notizie vere del campionato: la prima in grande, le altre in riga. */
 const quando = (iso) => {
   if (!iso) return '';
   const d = new Date(iso); const ore = (Date.now() - d) / 3600000;
-  if (ore < 1) return 'poco fa';
-  if (ore < 24) return `${Math.round(ore)} h fa`;
-  if (ore < 48) return 'ieri';
+  if (ore < 1) return t('poco fa');
+  if (ore < 24) return t('{n} h fa', { n: Math.round(ore) });
+  if (ore < 48) return t('ieri');
   return dateIt(d);
 };
 
 /** L'ultima notizia su una riga sola, appena sotto le statistiche. */
 function notiziaBreve() {
   const n = N.disponibili()[0]; if (!n) return '';
-  return `<a class="nflash" href="${esc(n.link)}" target="_blank" rel="noopener noreferrer">
+  return `<a class="nflash" href="${esc(n.link)}" target="_blank" rel="noopener noreferrer" data-it-ok>
     <span class="tag">${esc(quando(n.data) || N.fonte())}</span><b>${esc(n.titolo)}</b></a>`;
 }
 
@@ -519,14 +527,14 @@ function notizie() {
   const list = N.disponibili().slice(1); if (!list.length) return '';
   const meta = (n) => `${esc(quando(n.data))}${n.data ? ' · ' : ''}${esc(N.fonte())}`;
   const [prima, ...altre] = list.slice(0, 5);
-  const grande = `<a class="nbig" href="${esc(prima.link)}" target="_blank" rel="noopener noreferrer">
+  const grande = `<a class="nbig" href="${esc(prima.link)}" target="_blank" rel="noopener noreferrer" data-it-ok>
     ${prima.foto ? `<span class="ph"><img src="${esc(prima.foto)}" alt="" decoding="async"></span>` : ''}
     <span class="tx"><b>${esc(prima.titolo)}</b>${prima.sommario ? `<span>${esc(prima.sommario)}</span>` : ''}<em>${meta(prima)}</em></span></a>`;
-  const righe = altre.map((n) => `<a class="ni" href="${esc(n.link)}" target="_blank" rel="noopener noreferrer">
+  const righe = altre.map((n) => `<a class="ni" href="${esc(n.link)}" target="_blank" rel="noopener noreferrer" data-it-ok>
     ${n.fotoMini || n.foto ? `<span class="th"><img src="${esc(n.fotoMini || n.foto)}" alt="" loading="lazy" decoding="async"></span>` : ''}
     <span class="tx"><b>${esc(n.titolo)}</b><em>${meta(n)}</em></span></a>`).join('');
-  return sec('Notizie', esc(N.fonte())) + grande + `<div class="news">${righe}
-    <a class="lcta" href="https://www.sanmarinortv.sm/sport/calcio-sammarinese-c15" target="_blank" rel="noopener noreferrer">Tutte le notizie su ${esc(N.fonte())}${icon('out', 'ic sm')}</a></div>`;
+  return sec(t('Notizie'), esc(N.fonte())) + grande + `<div class="news">${righe}
+    <a class="lcta" href="https://www.sanmarinortv.sm/sport/calcio-sammarinese-c15" target="_blank" rel="noopener noreferrer">${t('Tutte le notizie su {fonte}', { fonte: esc(N.fonte()) })}${icon('out', 'ic sm')}</a></div>`;
 }
 
 /**
@@ -546,15 +554,15 @@ function copertina(me, row, ph) {
     // al suo posto la media, che dice come stai andando e non solo quanto hai
     // accumulato — con due giornate in meno un totale basso non vuol dire
     // niente.
-    ? [[fmt(row.punti), 'Punti'], [row.played, 'Giornate'], [fmt(row.media || 0), 'Media']]
-    : [[row.points, 'Punti'], [row.played, 'Partite'], [fmt(row.fantapunti), 'Fantapunti']];
+    ? [[fmt(row.punti), t('Punti')], [row.played, t('Giornate')], [fmt(row.media || 0), t('Media')]]
+    : [[row.points, t('Punti')], [row.played, t('Partite')], [fmt(row.fantapunti), t('Fantapunti')]];
   return `<div class="a-herowrap">
     <div class="a-hero${foto ? ' foto' : ''}">
       ${foto ? '<span class="sfondo"><img src="media/sfondo-titano.jpg" alt="" fetchpriority="high"><i></i></span>' : logo('tw')}
       <a class="hero-league" href="#/leghe">
         <span><b>${esc(S.base.league.name)}</b>
-        <small>${S.base.managers.length} ${S.base.managers.length === 1 ? 'squadra' : 'squadre'} · ${ph.next}ª giornata</small></span>${icon('chev', 'ic sm')}</a>
-      <a class="hero-stemma${scelto(me) ? ' pers' : ''}" href="#/squadra" aria-label="Modifica stemma e personaggio">
+        <small>${plurale(S.base.managers.length, t('squadra'), t('squadre'))} · ${t('{n}ª giornata', { n: ph.next })}</small></span>${icon('chev', 'ic sm')}</a>
+      <a class="hero-stemma${scelto(me) ? ' pers' : ''}" href="#/squadra" aria-label="${t('Modifica stemma e personaggio')}">
         ${scelto(me) ? personaggio(scelto(me)) : crest(me, 'hero')}</a>
       <div class="hero-chi">
         <h2>${esc(me.teamName)}</h2>
@@ -562,13 +570,13 @@ function copertina(me, row, ph) {
         <a class="hero-marchio" href="#/regolamento">${logo()}<span>Voto Titano</span></a>
       </div>
       <div class="a-stats">
-        <div><b>${row.position}<sup>ª</sup></b><span>Posizione</span></div>
+        <div><b>${row.position}<sup>ª</sup></b><span>${t('Posizione')}</span></div>
         ${numeri.map(([n, l]) => `<div><b>${n}</b><span>${l}</span></div>`).join('')}
       </div>
       <div class="hero-azioni">
-        <a href="#/scheda">${icon('share', 'ic sm')}<span>Condividi</span></a>
-        <a href="#/squadra">${icon('shirt', 'ic sm')}<span>La mia squadra</span></a>
-        <a href="#/mercato">${icon('cart', 'ic sm')}<span>Mercato</span></a>
+        <a href="#/scheda">${icon('share', 'ic sm')}<span>${t('Condividi')}</span></a>
+        <a href="#/squadra">${icon('shirt', 'ic sm')}<span>${t('La mia squadra')}</span></a>
+        <a href="#/mercato">${icon('cart', 'ic sm')}<span>${t('Mercato')}</span></a>
       </div>
     </div>
   </div>`;
@@ -578,7 +586,7 @@ export const dashboard = {
   title: 'Home',
   render() {
     const me = S.me(); const ph = S.weekPhase();
-    if (!me) return `<main class="a-body"><div class="empty">${logo()}<p>Non fai parte di questa lega.</p><a class="a-btn" href="#/leghe" style="text-decoration:none">Le mie leghe</a></div></main>`;
+    if (!me) return `<main class="a-body"><div class="empty">${logo()}<p>${t('Non fai parte di questa lega.')}</p><a class="a-btn" href="#/leghe" style="text-decoration:none">${t('Le mie leghe')}</a></div></main>`;
     const st = S.standings(); const row = st.find((r) => r.managerId === me.id) || { position: '–', points: 0, punti: 0, played: 0, fantapunti: 0 };
     const noRoster = S.rosterIds(me.id).length === 0;
     // Le mie giocate finora: l'ultima e' la "giornata precedente", le cinque in
@@ -619,8 +627,8 @@ export const dashboard = {
       ${daCalcolare(ph, bloccato)}
       ${S.aPunti() ? correntePunti(Math.min(30, nCur), me, bloccato) : corrente(cur, nCur, me, riposo, bloccato)}
       ${noRoster && !S.legaPubblica() ? tile({ href: S.isLeagueAdmin() ? '#/lega' : '#/leghe', lead: icon('warn'), leadKind: 'warn',
-          title: 'Rose non ancora assegnate',
-          sub: S.isLeagueAdmin() ? "Generale o inserirle dalla gestione lega" : "Le assegna l'admin della lega dopo l'asta" }) : azione(ph, bloccato)}
+          title: t('Rose non ancora assegnate'),
+          sub: S.isLeagueAdmin() ? t('Generale o inserirle dalla gestione lega') : t("Le assegna l'admin della lega dopo l'asta") }) : azione(ph, bloccato)}
       ${richiestaPromemoria()}
       ${invitoCalciatori()}
       ${ultimiCinque(last, me)}
@@ -632,8 +640,8 @@ export const dashboard = {
       ${cartaGioco('giu')}
       ${highlights()}
       ${notizie()}
-      ${sec('Dal regolamento')}
-      <div class="rule"><span class="art">${art}</span><p><b>${titolo}.</b> ${testo}</p></div>
+      ${sec(t('Dal regolamento'))}
+      <div class="rule"><span class="art">${art}</span><p><b>${t(titolo)}.</b> ${t(testo)}</p></div>
     </main>`;
   },
   mount(root, ctx) {
@@ -659,9 +667,9 @@ export const dashboard = {
       // la scheda del promemoria dice gia' gli stessi passi, e meglio
       if (!window.__installPrompt && root.querySelector('.chiedi-push.ios')) return;
       const ios = !window.__installPrompt;
-      slot.innerHTML = `<div class="install">${logo()}<div style="flex:1"><b>Installa l'app</b>${ios
-        ? 'Tocca <b>Condividi</b> in basso, poi <b>Aggiungi alla schermata Home</b>: si apre a tutto schermo e arrivano le notifiche.'
-        : 'Sulla schermata Home si apre a tutto schermo.'}</div>${ios ? '' : '<button class="ok" id="inst-ok">Installa</button>'}<button class="no" id="inst-no">✕</button></div>`;
+      slot.innerHTML = `<div class="install">${logo()}<div style="flex:1"><b>${t('Installa l\'app')}</b>${ios
+        ? t('Tocca <b>Condividi</b> in basso, poi <b>Aggiungi alla schermata Home</b>: si apre a tutto schermo e arrivano le notifiche.')
+        : t('Sulla schermata Home si apre a tutto schermo.')}</div>${ios ? '' : `<button class="ok" id="inst-ok">${t('Installa')}</button>`}<button class="no" id="inst-no">✕</button></div>`;
       const ok = slot.querySelector('#inst-ok');
       if (ok) ok.onclick = async () => { const p = window.__installPrompt; if (!p) return; p.prompt(); await p.userChoice; window.__installPrompt = null; slot.innerHTML = ''; };
       slot.querySelector('#inst-no').onclick = () => { S.store.set({ installedDismissed: true }); slot.innerHTML = ''; };
@@ -670,7 +678,7 @@ export const dashboard = {
     if (root.querySelector('.invito-calc')) S.contaBannerUnaVolta('visto');
     root.querySelector('.invito-calc')?.addEventListener('click', (e) => {
       if (e.target.closest('[data-calc="si"]')) { S.contaBannerUnaVolta('ci_gioco'); location.hash = '#/giocatori'; return; }
-      if (e.target.closest('[data-calc="no"]')) { S.contaBannerUnaVolta('non_gioco'); S.store.set({ bannerCalciatori: true }); ctx.toast('Va bene, non lo mostro più'); }
+      if (e.target.closest('[data-calc="no"]')) { S.contaBannerUnaVolta('non_gioco'); S.store.set({ bannerCalciatori: true }); ctx.toast(t('Va bene, non lo mostro più')); }
     });
     root.querySelector('.chiedi-push')?.addEventListener('click', (e) => {
       const b = e.target.closest('[data-push]'); if (b) rispondi(b, ctx, () => ctx.render());
@@ -681,10 +689,10 @@ export const dashboard = {
     const ch = root.querySelector('#chiudi-giornata');
     if (ch) ch.onclick = async () => {
       const q = S.giornataDaChiudere(); if (!q) return;
-      if (!confirm(`Calcolare la giornata ${q.giornata}? I punteggi diventano definitivi e non si rettificano piu'.`)) return;
+      if (!confirm(t('Calcolare la giornata {n}? I punteggi diventano definitivi e non si rettificano piu\'.', { n: q.giornata }))) return;
       ch.disabled = true;
-      try { await S.chiudiGiornata(q.giornata); ctx.toast(`Giornata ${q.giornata} calcolata`); }
-      catch (e) { ctx.toast(e.message || 'Non e\' stato possibile calcolare la giornata'); ch.disabled = false; }
+      try { await S.chiudiGiornata(q.giornata); ctx.toast(t('Giornata {n} calcolata', { n: q.giornata })); }
+      catch (e) { ctx.toast(e.message || t('Non e\' stato possibile calcolare la giornata')); ch.disabled = false; }
       ctx.render();
     };
 
@@ -694,9 +702,9 @@ export const dashboard = {
       const f = S.fixture(e.currentTarget.dataset.share); if (!f) return;
       const r = S.fixtureResult(f); const me = S.me(); const home = r.homeManagerId === me.id;
       const opp = S.managersById.get(home ? r.awayManagerId : r.homeManagerId);
-      const text = `${me.teamName} ${home ? r.homeGoals : r.awayGoals}–${home ? r.awayGoals : r.homeGoals} ${opp.teamName}`
-        + ` · giornata ${r.matchday} · ${fmt(home ? r.homeScore : r.awayScore)} fantapunti (Voto Titano)`
-        + ` — ${S.linkInvito()}`;
+      const text = t('{squadra} {gf}–{gs} {avversaria} · giornata {n} · {punti} fantapunti (Voto Titano) — {link}', {
+        squadra: me.teamName, gf: home ? r.homeGoals : r.awayGoals, gs: home ? r.awayGoals : r.homeGoals, avversaria: opp.teamName,
+        n: r.matchday, punti: fmt(home ? r.homeScore : r.awayScore), link: S.linkInvito() });
       if (navigator.share) { try { await navigator.share({ title: 'Fantatitano', text }); } catch { /* annullato */ } }
       else window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank', 'noopener');
     });
@@ -712,7 +720,7 @@ export const dashboard = {
     root.querySelector('[data-vai]')?.addEventListener('click', async (e) => {
       e.preventDefault();
       const id = e.currentTarget.dataset.vai;
-      try { await S.switchLeague(id); ctx.go(''); } catch (err) { ctx.toast(err.message || 'Non ci sono riuscito'); }
+      try { await S.switchLeague(id); ctx.go(''); } catch (err) { ctx.toast(err.message || t('Non ci sono riuscito')); }
     });
     // LO SPONSOR SI CONTA QUI, non dentro render(): render() gira anche per
     // disegnare una lista che e' cambiata, e conterebbe viste che nessuno ha

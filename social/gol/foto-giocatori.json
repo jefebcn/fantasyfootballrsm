@@ -65,6 +65,14 @@
  ],
  "trepenne_24": [
   {
+   "id": 2436,
+   "foto": "https://www.fsgc.sm/cdn/news/coppa-titano-il-tre-penne-la-spunta-in-rimonta-pareggio-al-miele-per-il-cosmos/2436/1200x670.jpg",
+   "credito": "©FSGC/Novelli",
+   "centro": 0.66,
+   "nota": "Pieri di spalle col 9, al tiro: il gol del 2-1",
+   "didascalia": "Il gol del 2-1 di Pieri, su assist di Peluso"
+  },
+  {
    "id": 2331,
    "foto": "https://www.fsgc.sm/cdn/news/campionato-tre-penne-e-virtus-salgono-ancora-prima-vittoria-per-il-san-giovanni/2331/1200x670.jpg",
    "credito": "©FSGC/Pierini",
@@ -101,6 +109,36 @@
    "centro": 0.6,
    "nota": "Gjoni al tiro, maglia verde",
    "didascalia": "la rete di Gjoni ha deciso la supersfida in favore della Virtus"
+  }
+ ],
+ "trefiori_13": [
+  {
+   "id": 2318,
+   "foto": "https://www.fsgc.sm/cdn/news/coppa-titano-2026-2027-ci-siamo-/2318/1200x670.jpg",
+   "credito": "©FSGC/Montanari",
+   "centro": 0.7,
+   "nota": "Cuzzilla di spalle col nome e il 18, maglia granata",
+   "didascalia": "Il Tre Fiori di Danilo Girolomoni è atteso dal derby con il Fiorentino"
+  }
+ ],
+ "trefiori_5": [
+  {
+   "id": 2429,
+   "foto": "https://www.fsgc.sm/cdn/news/campionato-tre-penne-fermato-sul-pari-e-agganciato-in-vetta-dalla-virtus/2429/1200x670.jpg",
+   "credito": "©FSGC/Montanari",
+   "centro": 0.72,
+   "nota": "Pesaresi a destra, maglia granata, contro Pieri",
+   "didascalia": "Pieri (a sinistra) contro Pesaresi: il big match tra Tre Penne e Tre Fiori finisce 0-0"
+  }
+ ],
+ "cosmos_14": [
+  {
+   "id": 2321,
+   "foto": "https://www.fsgc.sm/cdn/news/coppa-titano-solo-vittorie-nelle-prime-quattro-sfide-degli-ottavi/2321/1200x670.jpg",
+   "credito": "©FSGC/Montanari",
+   "centro": 0.45,
+   "nota": "Tomassini al centro che esulta, maglia verde scuro",
+   "didascalia": "Esulta David Tomassini (Cosmos, al centro): suo il gol decisivo per battere 1-0 il San Giovanni"
   }
  ]
 }

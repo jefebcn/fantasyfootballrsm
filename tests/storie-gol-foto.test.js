@@ -49,6 +49,9 @@ test('ogni foto degli elenchi ha credito FSGC, indirizzo e taglio', () => {
         assert.match(x.credito, /^©(FSGC\/)?\S/, `${k}: credito`);
         assert.match(x.foto, /^https:\/\//, `${k}: indirizzo`);
         assert.ok(x.centro >= 0 && x.centro <= 1, `${k}: centro`);
+        // solo calcio della prima squadra: il Murata del futsal ha lo stesso nome e altri giocatori
+        const slug = x.foto.match(/\/cdn\/news\/([^/]+)\//)?.[1];
+        if (slug) assert.match(slug, /^(campionato|coppa-titano|supercoppa)/, `${k}: articolo ${slug}`);
       }
     }
   }

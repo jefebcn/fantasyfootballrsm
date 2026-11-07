@@ -4,7 +4,8 @@
   "il giocatore nominato e riconosciuto. centro: dove tagliare la foto in verticale (0 sinistra, 1 destra).",
   "Una foto si puo' riusare: un giocatore ne ha una o due. Le didascalie FSGC spesso raccontano la partita",
   "e non dicono chi c'e' nella foto: per questo niente scelta automatica dalle didascalie.",
-  "Per le squadre solo foto di gruppo: un giocatore solo in primo piano col nome di un compagno sotto sembrerebbe il marcatore."
+  "Per le squadre solo foto di gruppo: un giocatore solo in primo piano col nome di un compagno sotto sembrerebbe il marcatore.",
+  "Solo calcio: niente foto di articoli futsal, femminile o giovanili (le squadre hanno lo stesso nome ma giocatori diversi)."
  ],
  "fiorentino": [
   {
@@ -58,6 +59,14 @@
  ],
  "cosmos": [
   {
+   "id": 2321,
+   "foto": "https://www.fsgc.sm/cdn/news/coppa-titano-solo-vittorie-nelle-prime-quattro-sfide-degli-ottavi/2321/1200x670.jpg",
+   "credito": "©FSGC/Montanari",
+   "centro": 0.45,
+   "nota": "il Cosmos esulta, maglie verde scuro",
+   "didascalia": "Esulta David Tomassini (Cosmos, al centro): suo il gol decisivo per battere 1-0 il San Giovanni"
+  },
+  {
    "id": 2327,
    "foto": "https://www.fsgc.sm/cdn/news/campionato-cosmos-senza-freni-folgore-punteggio-pieno/2327/1200x670.jpg",
    "credito": "©FSGC/Montanari",
@@ -74,6 +83,24 @@
    "centro": 0.45,
    "nota": "la panchina e i giocatori della Folgore, maglie bianche",
    "didascalia": "la Folgore si mette tutti alle spalle dopo sei turni di Campionato Sammarinese 2026-27"
+  }
+ ],
+ "trefiori": [
+  {
+   "id": 2303,
+   "foto": "https://www.fsgc.sm/cdn/news/supercoppa-la-fiorita-rimonta-due-gol-ma-ai-rigori-trionfa-il-tre-fiori/2303/1200x670.jpg",
+   "credito": "©FSGC/Onofri",
+   "centro": 0.45,
+   "nota": "la festa della Supercoppa, maglie gialloblu",
+   "didascalia": "La gioia di Matteo Prandelli con la Supercoppa Sammarinese 2026 che va al Tre Fiori"
+  },
+  {
+   "id": 2318,
+   "foto": "https://www.fsgc.sm/cdn/news/coppa-titano-2026-2027-ci-siamo-/2318/1200x670.jpg",
+   "credito": "©FSGC/Montanari",
+   "centro": 0.6,
+   "nota": "due giocatori del Tre Fiori esultano, maglie granata",
+   "didascalia": "Il Tre Fiori di Danilo Girolomoni è atteso dal derby con il Fiorentino"
   }
  ]
 }

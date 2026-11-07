@@ -1,0 +1,106 @@
+{
+ "_come": [
+  "Foto FSGC scelte a mano per le storie dei gol (Alex, 7/11): ogni foto guardata, maglia di questa stagione,",
+  "il giocatore nominato e riconosciuto. centro: dove tagliare la foto in verticale (0 sinistra, 1 destra).",
+  "Una foto si puo' riusare: un giocatore ne ha una o due. Le didascalie FSGC spesso raccontano la partita",
+  "e non dicono chi c'e' nella foto: per questo niente scelta automatica dalle didascalie."
+ ],
+ "domagnano_23": [
+  {
+   "id": 2430,
+   "foto": "https://www.fsgc.sm/cdn/news/campionato-pareggi-con-gol-nelle-due-sfide-del-sabato/2430/1200x670.jpg",
+   "credito": "©FSGC/Palmieri",
+   "centro": 0.46,
+   "nota": "Babboni, il 9 giallorosso al centro",
+   "didascalia": "Palumbo (Murata, a sinistra) a duello con Babboni (Domagnano)"
+  }
+ ],
+ "virtus_14": [
+  {
+   "id": 2306,
+   "foto": "https://www.fsgc.sm/cdn/news/campionato-parte-la-caccia-al-tre-fiori-subito-virtus-la-fiorita/2306/1200x670.jpg",
+   "credito": "©FSGC/Izzo",
+   "centro": 0.33,
+   "nota": "Piscitella di spalle, 93 col nome sulla maglia",
+   "didascalia": "Virtus e La Fiorita daranno vita al primo big match dell'anno"
+  }
+ ],
+ "folgore_9": [
+  {
+   "id": 2442,
+   "foto": "https://www.fsgc.sm/cdn/news/campionato-scontro-dalta-quota-tra-folgore-e-tre-penne/2442/1200x670.jpg",
+   "credito": "©FSGC/Palmieri",
+   "centro": 0.45,
+   "nota": "Brolli in maglia bianca al centro",
+   "didascalia": "Christian Brolli, capitano della Folgore, in azione durante la sfida di coppa con la Libertas"
+  }
+ ],
+ "folgore_23": [
+  {
+   "id": 2397,
+   "foto": "https://www.fsgc.sm/cdn/news/campionato-folgore-e-fiorita-in-scioltezza-la-libertas-gela-il-cailungo-al-93/2397/1200x670.jpg",
+   "credito": "©FSGC/Novelli",
+   "centro": 0.5,
+   "nota": "Augusto Garcia Rufer che esulta, maglia rossa",
+   "didascalia": "L'esultanza alla Dan Ndoye di Augusto Garcia Rufer, salito a quattro reti in campionato"
+  }
+ ],
+ "trepenne_14": [
+  {
+   "id": 2348,
+   "foto": "https://www.fsgc.sm/cdn/news/campionato-il-tre-penne-fatica-ma-resta-in-vetta-primo-hurr-per-il-cailungo/2348/1200x670.jpg",
+   "credito": "©FSGC/Onofri",
+   "centro": 0.5,
+   "nota": "Ceccaroli, 11 nero, festeggia coi tifosi",
+   "didascalia": "Ceccaroli festeggia coi propri tifosi la rete del 2-0 Tre Penne"
+  },
+  {
+   "id": 2395,
+   "foto": "https://www.fsgc.sm/cdn/news/campionato-le-due-capolista-in-campo-agli-estremi-del-week-end/2395/1200x670.jpg",
+   "credito": "©FSGC/Onofri",
+   "centro": 0.53,
+   "nota": "il rigore di Ceccaroli",
+   "didascalia": "Il rigore di Ceccaroli che ha sigillato l'ultimo successo del Tre Penne"
+  }
+ ],
+ "trepenne_24": [
+  {
+   "id": 2331,
+   "foto": "https://www.fsgc.sm/cdn/news/campionato-tre-penne-e-virtus-salgono-ancora-prima-vittoria-per-il-san-giovanni/2331/1200x670.jpg",
+   "credito": "©FSGC/Pierini",
+   "centro": 0.3,
+   "nota": "Pieri a sinistra, maglia nera",
+   "didascalia": "Riccardo Pieri (a sinistra) in azione contro Maurizio Parisi durante Cailungo-Tre Penne"
+  }
+ ],
+ "murata_18": [
+  {
+   "id": 2317,
+   "foto": "https://www.fsgc.sm/cdn/news/campionato-hassler-show-e-il-murata-vince-dopo-quasi-un-anno-lacademy-blocca-la-fiorita/2317/1200x670.jpg",
+   "credito": "©FSGC/Onofri",
+   "centro": 0.62,
+   "nota": "Hassler esulta, maglia rosa",
+   "didascalia": "Luca Hassler è l'assoluto protagonista del pomeriggio: l'attaccante del Murata segna tre gol nel 4-1 al Pennarossa"
+  }
+ ],
+ "trefiori_15": [
+  {
+   "id": 2310,
+   "foto": "https://www.fsgc.sm/cdn/news/campionato-il-tre-fiori-riparte-in-quinta-reti-inviolate-ad-acquaviva/2310/1200x670.jpg",
+   "credito": "©FSGC/Novelli",
+   "centro": 0.42,
+   "nota": "Federico Benedettini, 20 gialloblu",
+   "didascalia": "Federico Benedettini ha griffato una doppietta nel 5-2 del Tre Fiori sul Pennarossa"
+  }
+ ],
+ "virtus_23": [
+  {
+   "id": 2344,
+   "foto": "https://www.fsgc.sm/cdn/news/campionato-virtus-la-rimonta-sul-tre-fiori-vale-una-notte-al-comando/2344/1200x670.jpg",
+   "credito": "©FSGC/Palmieri",
+   "centro": 0.6,
+   "nota": "Gjoni al tiro, maglia verde",
+   "didascalia": "la rete di Gjoni ha deciso la supersfida in favore della Virtus"
+  }
+ ]
+}

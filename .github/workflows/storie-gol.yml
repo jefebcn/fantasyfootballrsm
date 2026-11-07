@@ -84,7 +84,7 @@ jobs:
           SUPABASE_FUNCTIONS_URL: ${{ secrets.SUPABASE_FUNCTIONS_URL }}
           PROMEMORIA_TOKEN: ${{ secrets.PROMEMORIA_TOKEN }}
           PROMEMORIA_FUNZIONE: ${{ secrets.PROMEMORIA_FUNZIONE }}
-        run: python3 scripts/gol-in-diretta.py --uscita diretta --dati-db --pubblica --avvisa --anche-vecchi --per 19200
+        run: python3 scripts/gol-in-diretta.py --uscita diretta --dati-db --pubblica --avvisa --foto --anche-vecchi --per 19200
 
       - name: Le storie fatte
         if: always() && steps.finestra.outputs.si == 'si'

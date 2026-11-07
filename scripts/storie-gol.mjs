@@ -16,7 +16,7 @@ import { chromium } from 'playwright';
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { resolve, dirname, join } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
-import { storieDellaGiornata, golDelReferto, fattiDelGol, htmlStoria, modelloPer } from '../social/gol/storia-gol.mjs';
+import { storieDellaGiornata, golDelReferto, fattiDelGol, htmlStoria, htmlFoto, modelloPer } from '../social/gol/storia-gol.mjs';
 
 const RADICE = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const arg = (k, d = null) => { const i = process.argv.indexOf(`--${k}`); return i > 0 ? process.argv[i + 1] : d; };
@@ -32,7 +32,13 @@ const dati = { aderenti: new Set(d.aderenti || []), possesso: d.possesso || {}, 
 const solo = arg('solo')?.split(',');
 const modello = arg('modello');
 
-let storie = referto ? golDelReferto(referto).map((_, k) => fattiDelGol(referto, k, dati)) : storieDellaGiornata(g, dati);
+// --foto-map: { idStoria: { file, credito, centro } } da scripts/foto_gol.py.
+// Le storie con la foto hanno il marcatore per tutti (Alex, 7/11).
+const fotoMap = arg('foto-map') ? JSON.parse(readFileSync(arg('foto-map'), 'utf8')) : {};
+let storie = referto ? golDelReferto(referto).map((_, k) => {
+  const s = fattiDelGol(referto, k, dati);
+  return fotoMap[s.id] ? fattiDelGol(referto, k, { ...dati, tutti: true }) : s;
+}) : storieDellaGiornata(g, dati);
 if (solo) storie = storie.filter((s) => solo.includes(s.id));
 if (referto) storie = storie.map((s, i) => ({ ...s, n: Number(arg('n', 0)) + i }));
 mkdirSync(uscita, { recursive: true });
@@ -44,14 +50,15 @@ const ARGS = ['--allow-file-access-from-files'];
 const b = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium', args: ARGS }).catch(() => chromium.launch({ args: ARGS }));
 const p = await b.newPage({ viewport: { width: 1080, height: 1920 } });
 for (const s of storie) {
-  const m = modello || modelloPer(s);
+  const foto = fotoMap[s.id];
+  const m = foto ? 'foto' : modello || modelloPer(s);
   // L'HTML sta accanto al JPG e prende font e sfondo dal progetto con un
   // indirizzo file:// assoluto: cosi' si apre anche a mano per ritoccarlo.
   const html = join(uscita, `${s.id}.html`);
-  writeFileSync(html, htmlStoria(s, m, pathToFileURL(RADICE).href));
+  writeFileSync(html, foto ? htmlFoto(s, foto, pathToFileURL(RADICE).href) : htmlStoria(s, m, pathToFileURL(RADICE).href));
   await p.goto(pathToFileURL(html).href, { waitUntil: 'load' });
   await p.waitForSelector('body[data-pronto]', { timeout: 30000 });
   await p.screenshot({ path: join(uscita, `${s.id}.jpg`), type: 'jpeg', quality: 90 });
-  console.log(`STORIA ${join(uscita, `${s.id}.jpg`)}  [${m}]  ${s.nominabile ? s.marcatore : '(squadra)'}`);
+  console.log(`STORIA ${join(uscita, `${s.id}.jpg`)}  [${m}]  ${foto ? `${s.sigla} · foto ${foto.tipo || ''} ${foto.credito}` : s.nominabile ? s.marcatore : '(squadra)'}`);
 }
 await b.close();

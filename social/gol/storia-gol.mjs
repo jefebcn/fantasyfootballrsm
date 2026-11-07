@@ -66,6 +66,8 @@ function marcatoriPrima(g) {
 }
 
 const nome = (pid) => { const p = GIOCATORI.get(pid); return p ? `${p.firstName} ${p.lastName}` : pid; };
+/** «D. Babboni»: l'iniziale e il cognome, come nei tabellini. */
+export const sigla = (pid) => { const p = GIOCATORI.get(pid); return p ? `${p.firstName ? p.firstName[0] + '. ' : ''}${p.lastName}` : pid; };
 const ord = (n) => `${n}°`;
 
 /**
@@ -73,7 +75,7 @@ const ord = (n) => `${n}°`;
  * un peso: quelli rari (primo gol, tripletta, allo scadere) contano di piu'
  * e finiscono in cima alla storia.
  */
-export function fattiDelGol(r, k, { aderenti = new Set(), possesso = {}, squadre = 0 } = {}) {
+export function fattiDelGol(r, k, { aderenti = new Set(), possesso = {}, squadre = 0, tutti = false } = {}) {
   const gol = golDelReferto(r);
   const x = gol[k];
   const club = CLUB.get(x.squadra);
@@ -114,8 +116,10 @@ export function fattiDelGol(r, k, { aderenti = new Set(), possesso = {}, squadre
     f(3, `${m}-${s}`, `alla ${n}ª contro ${CLUB.get(avv).name}`, 'precedente');
   }
 
-  // --- il giocatore, solo se ha detto «ci sto»
-  if (nominabile) {
+  // --- il giocatore, solo se ha detto «ci sto». Con `tutti` (le storie con la
+  // foto, Alex 7/11) il marcatore e' un dato del referto come il minuto: entra
+  // per tutti, come «D. Babboni», e con lui i suoi numeri.
+  if (nominabile || (tutti && !x.autogol)) {
     const nelMatch = gol.slice(0, k + 1).filter((y) => y.pid === x.pid && !y.autogol).length;
     if (nelMatch === 2) f(8, 'DOPPIETTA', 'secondo gol in questa partita', 'match');
     if (nelMatch >= 3) f(10, 'TRIPLETTA', `${nelMatch} gol in questa partita`, 'match');
@@ -128,13 +132,14 @@ export function fattiDelGol(r, k, { aderenti = new Set(), possesso = {}, squadre
     // Il numero conta quando e' grande: «1 squadra lo ha in rosa» non dice niente.
     const n = possesso[x.pid] || 0;
     if (squadre && n >= 5) f(n >= 20 ? 7 : 5, n, 'squadre di Fantatitano lo hanno in rosa', 'fanta');
-    if (x.assist && aderenti.has(x.assist)) f(3, 'ASSIST', nome(x.assist), 'assist');
+    if (x.assist && (tutti || aderenti.has(x.assist))) f(3, 'ASSIST', tutti ? sigla(x.assist) : nome(x.assist), 'assist');
   }
 
   return {
     id: `${r.g}-${r.casa}-${r.ospite}-${x.minuto}-${x.pid}`,
     g: r.g, minuto: x.minuto, autogol: x.autogol, nominabile,
     marcatore: nominabile ? nome(x.pid) : null,
+    sigla: sigla(x.pid),
     ruolo: nominabile ? GIOCATORI.get(x.pid)?.role : null,
     squadra: club, avversaria: CLUB.get(avv),
     casa: CLUB.get(r.casa), ospite: CLUB.get(r.ospite), punteggio: dopo,
@@ -337,6 +342,66 @@ body{font-family:Lato,sans-serif;color:#fff;background:#04173B;position:relative
 .piede{text-align:center;font:700 30px Lato;opacity:.9;text-shadow:0 2px 10px rgba(0,0,0,.6)}.piede b{color:#D9F51F}
 </style></head><body><img class="sfondo" src="${radice}/social/gol/sfondi/${sfondo}.jpg" alt="">${tinta}<div class="velo"></div>${figura}
 <div class="wrap">${testa}${corpo}${piede}</div>${RIDIPINGI}</body></html>`;
+}
+
+/**
+ * LA STORIA CON LA FOTO (Alex, 7/11): dietro una foto vera della FSGC — il
+ * marcatore se c'e', se no la sua squadra — col credito «Foto ©FSGC/...»
+ * scritto sull'immagine; sopra l'etichetta della giornata e del minuto, «GOL
+ * DEL DOMAGNANO», e sotto le righe dei numeri: il risultato, il marcatore
+ * («D. Babboni», un dato come il minuto), i fatti del gol. Lo stile e' quello
+ * delle storie e delle copertine con foto della settimana.
+ *
+ * foto: { file (percorso o indirizzo), credito, centro (0-1, dove tagliare) }
+ */
+export function htmlFoto(storia, foto, radice = '../..') {
+  const fatti = scegli(storia, 4);
+  const fanta = fatti.find((x) => x.chiave === 'fanta');
+  const righe = fatti.filter((x) => x !== fanta).slice(0, 3);
+  const [gc, go] = storia.punteggio;
+  const art = (ARTICOLO[storia.squadra.id] || 'del ').trim().toUpperCase();
+  const tempo = storia.minuto > 90 ? 'in pieno recupero' : storia.minuto > 45 ? 'secondo tempo' : 'primo tempo';
+  const maiusc = (t) => t.charAt(0).toUpperCase() + t.slice(1);
+  const chi = storia.autogol ? `Autogol di ${esc(storia.sigla)}` : `Marcatore: ${esc(storia.sigla)}`;
+  const nomeSq = storia.squadra.name.toUpperCase();
+  const grande = nomeSq.length > 12 ? 118 : nomeSq.length > 9 ? 140 : 160;
+  const src = /^https?:/.test(foto.file) ? foto.file : new URL(foto.file, 'file:///').href;
+  const centro = Math.round((foto.centro ?? 0.5) * 100);
+  return `<!doctype html><html lang="it"><head><meta charset="utf-8"><style>
+@font-face{font-family:Anton;src:url(${radice}/media/font/anton-400-latin.woff2)}
+@font-face{font-family:Lato;font-weight:700;src:url(${radice}/media/font/lato-700-latin.woff2)}
+@font-face{font-family:Lato;font-weight:900;src:url(${radice}/media/font/lato-900-latin.woff2)}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:1080px;height:1920px;overflow:hidden}
+body{font-family:Lato,sans-serif;color:#fff;background:#0A0A0C;position:relative}
+.foto{position:absolute;left:0;top:0;width:1080px;height:1400px;object-fit:cover;object-position:${centro}% 25%}
+.velo{position:absolute;inset:0;background:linear-gradient(180deg,rgba(10,10,12,.62) 0,rgba(10,10,12,0) 330px,rgba(10,10,12,0) 640px,rgba(10,10,12,.55) 900px,#0A0A0C 1330px)}
+.testa{position:absolute;left:60px;top:96px;display:flex;align-items:center;gap:14px;font:400 58px/1 Anton;letter-spacing:.01em;text-shadow:0 2px 14px rgba(0,0,0,.5)}
+.testa img{width:66px;filter:brightness(0) saturate(100%) invert(91%) sepia(62%) saturate(758%) hue-rotate(20deg)}
+.testa i{font-style:normal;color:#D9F51F}
+.giu{position:absolute;left:60px;right:60px;bottom:74px;display:flex;flex-direction:column}
+.eti{align-self:flex-start;background:#D9F51F;color:#0A0A0C;font:900 32px/1 Lato;letter-spacing:.02em;padding:14px 22px;border-radius:12px;text-transform:uppercase}
+h1{font:400 150px/.95 Anton;margin-top:26px;text-shadow:0 6px 30px rgba(0,0,0,.45)}
+h2{font:400 ${grande}px/.95 Anton;color:#D9F51F;margin-top:4px}
+.sotto{font:700 38px/1.2 Lato;color:#CDCADE;margin:22px 0 26px}
+.riga{display:flex;align-items:center;justify-content:space-between;gap:24px;background:#1C192C;border-radius:16px;padding:0 30px;height:64px;margin-bottom:12px;font:700 32px/1 Lato}
+.riga b{font:400 42px/1 Anton;color:#D9F51F;white-space:nowrap}
+.ris{justify-content:center;gap:28px;font:900 30px/1 Lato;text-transform:uppercase}
+.ris b{background:#0A0A0C;padding:8px 22px;border-radius:12px;font-size:40px}
+.pill{align-self:center;margin-top:16px;background:#4B06FC;border-radius:999px;padding:16px 40px;font:400 44px/1 Anton;text-transform:uppercase}
+.piede{display:flex;justify-content:space-between;margin-top:22px;font:700 26px Lato;color:#9692AA}
+</style></head><body><img class="foto" src="${esc(src)}" alt=""><div class="velo"></div>
+<div class="testa"><img src="${radice}/media/logo-mask.png" alt=""><span>FANTA<i>TITANO</i></span></div>
+<div class="giu"><div class="eti">${storia.g}ª giornata · ${storia.minuto}'</div>
+<h1>GOL ${esc(art)}</h1><h2>${esc(nomeSq)}</h2>
+<div class="sotto">${esc(storia.casa.name)}–${esc(storia.ospite.name)}, ${tempo}</div>
+<div class="riga ris"><span>${esc(storia.casa.name)}</span><b>${gc}-${go}</b><span>${esc(storia.ospite.name)}</span></div>
+<div class="riga"><span>${chi}</span><b>${storia.minuto}'</b></div>
+${righe.map((x) => `<div class="riga"><span>${esc(maiusc(x.testo))}</span><b>${esc(x.valore)}</b></div>`).join('\n')}
+${fanta ? `<div class="pill">In rosa in ${esc(fanta.valore)} squadre Fantatitano</div>` : ''}
+<div class="piede"><span>Foto ${esc(foto.credito)}</span><span>fantatitano.site</span></div></div>
+<script>(async()=>{await document.fonts.ready;await Promise.all([...document.images].map((i)=>i.decode().catch(()=>{})));document.body.dataset.pronto='1';})();<\/script>
+</body></html>`;
 }
 
 /** Tutte le storie di una giornata gia' giocata, nell'ordine dei gol. */

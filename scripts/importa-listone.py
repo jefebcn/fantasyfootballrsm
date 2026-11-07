@@ -39,10 +39,17 @@ PARTICELLE = {'de', 'del', 'della', 'delle', 'dei', 'degli', 'di', 'da', 'dal', 
               'la', 'lo', 'le', 'van', 'von', 'der', 'den', 'dos', 'das', 'du'}
 
 
+# Cognomi doppi senza particella, che dal nome completo non si riconoscono:
+# «Azael Garcia Rufer» e' Garcia Rufer (storie dei gol, 7/11: usciva «A. Rufer»).
+COGNOMI_DOPPI = {'garcia rufer'}
+
+
 def dividi_nome(completo):
     """(nome, cognome) da «Nome Secondo Particella Cognome»."""
     parti = completo.split()
     i = len(parti) - 1
+    if i > 1 and ' '.join(parti[-2:]).lower() in COGNOMI_DOPPI:
+        i -= 1
     while i > 1 and parti[i - 1].lower() in PARTICELLE:
         i -= 1
     return (' '.join(parti[:i]) or parti[-1]), ' '.join(parti[i:])

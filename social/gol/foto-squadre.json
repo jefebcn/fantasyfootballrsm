@@ -1,0 +1,79 @@
+{
+ "_come": [
+  "Foto FSGC scelte a mano per le storie dei gol (Alex, 7/11): ogni foto guardata, maglia di questa stagione,",
+  "il giocatore nominato e riconosciuto. centro: dove tagliare la foto in verticale (0 sinistra, 1 destra).",
+  "Una foto si puo' riusare: un giocatore ne ha una o due. Le didascalie FSGC spesso raccontano la partita",
+  "e non dicono chi c'e' nella foto: per questo niente scelta automatica dalle didascalie.",
+  "Per le squadre solo foto di gruppo: un giocatore solo in primo piano col nome di un compagno sotto sembrerebbe il marcatore."
+ ],
+ "fiorentino": [
+  {
+   "id": 2398,
+   "foto": "https://www.fsgc.sm/cdn/news/campionato-van-nek-salva-il-tre-fiori-fiorentino-versione-maxi/2398/1200x670.jpg",
+   "credito": "©FSGC/Pierini",
+   "centro": 0.5,
+   "nota": "esultanza del Fiorentino, maglie azzurre",
+   "didascalia": "Esulta il Fiorentino: i Rossoblù rifilano ben sei gol al Faetano"
+  }
+ ],
+ "lafiorita": [
+  {
+   "id": 2345,
+   "foto": "https://www.fsgc.sm/cdn/news/campionato-folgore-nuova-capolista-la-fiorita-passa-con-due-autoreti/2345/1200x670.jpg",
+   "credito": "©FSGC/Montanari",
+   "centro": 0.5,
+   "nota": "la gioia della Fiorita, maglie bianche",
+   "didascalia": "La gioia della Fiorita: la squadra di Selva batte in rimonta il Domagnano per 2-1"
+  }
+ ],
+ "libertas": [
+  {
+   "id": 2316,
+   "foto": "https://www.fsgc.sm/cdn/news/campionato-osayande-trascina-la-libertas-folgore-di-misura/2316/1200x670.jpg",
+   "credito": "©FSGC/MovieByDaniels",
+   "centro": 0.5,
+   "nota": "la Libertas granata esulta",
+   "didascalia": "la doppietta di Osayande regala il primo successo alla Libertas"
+  }
+ ],
+ "juvenes": [
+  {
+   "id": 2307,
+   "foto": "https://www.fsgc.sm/cdn/news/campionato-goleade-per-folgore-e-juvenes-dogana-domagnano-di-misura-/2307/1200x670.jpg",
+   "credito": "©FSGC/Ronconi",
+   "centro": 0.62,
+   "nota": "la gioia della Juvenes Dogana, maglie nere",
+   "didascalia": "La gioia della Juvenes Dogana che si impone per 4-0 sul Faetano"
+  }
+ ],
+ "trepenne": [
+  {
+   "id": 2308,
+   "foto": "https://www.fsgc.sm/cdn/news/campionato-tre-penne-ok-con-qualche-brivido-la-libertas-ferma-il-cosmos-al-90/2308/1200x670.jpg",
+   "credito": "©FSGC/Pierini",
+   "centro": 0.5,
+   "nota": "Loiodice e Kamouni festeggiano, maglie nere",
+   "didascalia": "Loiodice e Kamouni - oggi entrambi a segno - festeggiano: il Tre Penne vince 3-2 con il San Giovanni"
+  }
+ ],
+ "cosmos": [
+  {
+   "id": 2327,
+   "foto": "https://www.fsgc.sm/cdn/news/campionato-cosmos-senza-freni-folgore-punteggio-pieno/2327/1200x670.jpg",
+   "credito": "©FSGC/Montanari",
+   "centro": 0.55,
+   "nota": "due giocatori del Cosmos, maglie gialloverdi",
+   "didascalia": "doppiette per Guidotti e Cremonini nella goleada del Cosmos, inaugurata da Lisi (in foto)"
+  }
+ ],
+ "folgore": [
+  {
+   "id": 2432,
+   "foto": "https://www.fsgc.sm/cdn/news/campionato-i-piazzati-di-pancotti-per-il-primato-solitario-della-folgore/2432/1200x670.jpg",
+   "credito": "©FSGC/Novelli",
+   "centro": 0.45,
+   "nota": "la panchina e i giocatori della Folgore, maglie bianche",
+   "didascalia": "la Folgore si mette tutti alle spalle dopo sei turni di Campionato Sammarinese 2026-27"
+  }
+ ]
+}

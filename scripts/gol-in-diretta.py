@@ -73,6 +73,7 @@ def main():
     ap.add_argument('--pubblica', action='store_true')
     ap.add_argument('--avvisa', action='store_true', help='notifica il gol a chi ha il marcatore fra i titolari (052)')
     ap.add_argument('--per', type=int, default=0, help='secondi, poi esce: su GitHub il turno dopo prende il posto')
+    ap.add_argument('--foto', action='store_true', help='storie con la foto FSGC del marcatore o della squadra (scripts/foto_gol.py)')
     a = ap.parse_args()
     avvio = time.time()
     letti_db = 0
@@ -81,6 +82,17 @@ def main():
     stato_f = uscita / 'stato.json'
     stato = json.loads(stato_f.read_text()) if stato_f.exists() else {'visti': {}, 'n': 0, 'attese': []}
     idx = fsgc.indice_giocatori()
+    # Le foto (Alex, 7/11): quelle scelte a mano in social/gol/foto-giocatori.json
+    # e foto-squadre.json. Se qualcosa va storto si va avanti con la grafica di
+    # prima: una storia senza foto e' meglio di nessuna storia.
+    FG, giocatori, articoli = None, {}, []
+    if a.foto:
+        try:
+            spec_f = importlib.util.spec_from_file_location('foto_gol', RADICE / 'scripts' / 'foto_gol.py')
+            FG = importlib.util.module_from_spec(spec_f); spec_f.loader.exec_module(FG)
+            giocatori = FG.giocatori()
+        except Exception as e:
+            dice('ERRORE foto:', e); FG = None
     primo = True
     while True:
         ora = time.time()
@@ -147,6 +159,22 @@ def main():
                 chi = {gol[x]: x for x in nuovi}      # id della storia -> chiave stabile
                 cmd = ['node', str(RADICE / 'scripts' / 'storie-gol.mjs'), '--referto', str(f), '--solo', ','.join(chi),
                        '--n', str(stato['n']), '--uscita', str(uscita)] + (['--dati', a.dati] if a.dati else [])
+                if FG:
+                    mappa = {}
+                    for x in nuovi:
+                        pid, m, tipo = dettagli[x]
+                        sq = x.split('-')[-2]          # la squadra che ha segnato (l'autogol vale per l'altra)
+                        try:
+                            sc = FG.foto_per(pid, articoli, giocatori) if tipo == 'goal' else FG.foto_squadra(sq, articoli, giocatori)
+                            if sc:
+                                mappa[gol[x]] = {'file': FG.scarica(sc, uscita), 'credito': sc['credito'],
+                                                 'centro': sc.get('centro', 0.5), 'tipo': sc['tipo']}
+                        except Exception as e:
+                            dice('ERRORE foto', x, e)
+                    if mappa:
+                        mf = uscita / f'{chiave}-foto.json'
+                        mf.write_text(json.dumps(mappa, ensure_ascii=False))
+                        cmd += ['--foto-map', str(mf)]
                 r = subprocess.run(cmd, capture_output=True, text=True)
                 for riga in r.stdout.splitlines():
                     if not riga.startswith('STORIA'):

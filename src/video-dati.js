@@ -43,6 +43,9 @@ export const PARTITE = [
   [6, "trepenne", "trefiori", "Y7KNr1NqeT0", "2026-10-26"],
 ];
 export const VIDEO_CANALE = [
+  ["sxWSICds1NE", "Campionato Sammarinese 2026-27, 8. giornata | HL Cailungo - Tre Fiori 2-2", "2026-11-09"],
+  ["YpRGfv-E4cc", "Campionato Sammarinese 2026-27, 8. giornata | HL Fiorentino - Libertas 1-1", "2026-11-09"],
+  ["9aDWwYmOtcM", "Campionato Sammarinese 2026-27, 8. giornata | HL La Fiorita - Cosmos 2-1", "2026-11-09"],
   ["BDNPyDjjJ5U", "Campionato Sammarinese 2026-27, 8. giornata | HL Faetano - Domagnano 0-2", "2026-11-09"],
   ["qSkkYtepGTg", "Campionato Sammarinese 2026-27, 8. giornata | HL Juvenes Dogana - Pennarossa 1-0", "2026-11-09"],
   ["4uXdry0XwjU", "Campionato Sammarinese 2026-27, 8. giornata | HL Folgore - Virtus 2-0", "2026-11-09"],
@@ -52,7 +55,4 @@ export const VIDEO_CANALE = [
   ["zLWoJcaMaME", "Campionato Sammarinese 2026-27, 7. giornata - VOTA IL GOL PIÙ BELLO!", "2026-11-02"],
   ["fbyaWcnNwSE", "Campionato Sammarinese 2026-27, 7. giornata | HL San Giovanni - Faetano 2-1", "2026-11-02"],
   ["oBbtU0DB9nU", "Campionato Sammarinese 2026-27, 7. giornata | HL Cosmos - Fiorentino 2-0", "2026-11-02"],
-  ["gXnb7oZnbIc", "Campionato Sammarinese 2026-27, 7. giornata | HL La Fiorita - Libertas 1-0", "2026-11-02"],
-  ["aQj45qElSIo", "Campionato Sammarinese 2026-27, 7. giornata | HL Folgore - Tre Penne 1-1", "2026-11-02"],
-  ["WsiKpXcomog", "Campionato Sammarinese 2026-27, 7. giornata | HL Tre Fiori - Murata 1-0", "2026-11-02"],
 ];

@@ -43,6 +43,8 @@ export const PARTITE = [
   [6, "trepenne", "trefiori", "Y7KNr1NqeT0", "2026-10-26"],
 ];
 export const VIDEO_CANALE = [
+  ["BDNPyDjjJ5U", "Campionato Sammarinese 2026-27, 8. giornata | HL Faetano - Domagnano 0-2", "2026-11-09"],
+  ["qSkkYtepGTg", "Campionato Sammarinese 2026-27, 8. giornata | HL Juvenes Dogana - Pennarossa 1-0", "2026-11-09"],
   ["4uXdry0XwjU", "Campionato Sammarinese 2026-27, 8. giornata | HL Folgore - Virtus 2-0", "2026-11-09"],
   ["6a68S-svtBc", "UWNL 2027 | San Marino, reazione al sorteggio", "2026-11-03"],
   ["YXJRHAGc15A", "UEFA Women's Nations League 2027 - draw | intervista a Giulia Domenichetti", "2026-11-03"],
@@ -53,6 +55,4 @@ export const VIDEO_CANALE = [
   ["gXnb7oZnbIc", "Campionato Sammarinese 2026-27, 7. giornata | HL La Fiorita - Libertas 1-0", "2026-11-02"],
   ["aQj45qElSIo", "Campionato Sammarinese 2026-27, 7. giornata | HL Folgore - Tre Penne 1-1", "2026-11-02"],
   ["WsiKpXcomog", "Campionato Sammarinese 2026-27, 7. giornata | HL Tre Fiori - Murata 1-0", "2026-11-02"],
-  ["QQYAw-l0F60", "Campionato Sammarinese 2026-27, 7. giornata | HL Domagnano - Virtus 0-1", "2026-11-02"],
-  ["OV3BER83kl4", "Campionato Sammarinese 2026-27, 7. giornata | HL Pennarossa - San Marino Academy 1-1", "2026-11-02"],
 ];

@@ -43,6 +43,8 @@ export const PARTITE = [
   [6, "trepenne", "trefiori", "Y7KNr1NqeT0", "2026-10-26"],
 ];
 export const VIDEO_CANALE = [
+  ["XObQoRpSnj0", "Campionato Sammarinese 2026-27, 8. giornata | HL Tre Penne - Murata 3-0", "2026-11-09"],
+  ["CHhA-yRAmrY", "Campionato Sammarinese 2026-27, 8. giornata | HL San Marino Academy - San Giovanni 0-0", "2026-11-09"],
   ["sxWSICds1NE", "Campionato Sammarinese 2026-27, 8. giornata | HL Cailungo - Tre Fiori 2-2", "2026-11-09"],
   ["YpRGfv-E4cc", "Campionato Sammarinese 2026-27, 8. giornata | HL Fiorentino - Libertas 1-1", "2026-11-09"],
   ["9aDWwYmOtcM", "Campionato Sammarinese 2026-27, 8. giornata | HL La Fiorita - Cosmos 2-1", "2026-11-09"],
@@ -53,6 +55,4 @@ export const VIDEO_CANALE = [
   ["YXJRHAGc15A", "UEFA Women's Nations League 2027 - draw | intervista a Giulia Domenichetti", "2026-11-03"],
   ["0ig3Z8IU7g4", "Campionato Sammarinese 2026-27, 7. giornata - VOTA LA PARATA PIÙ BELLA!", "2026-11-02"],
   ["zLWoJcaMaME", "Campionato Sammarinese 2026-27, 7. giornata - VOTA IL GOL PIÙ BELLO!", "2026-11-02"],
-  ["fbyaWcnNwSE", "Campionato Sammarinese 2026-27, 7. giornata | HL San Giovanni - Faetano 2-1", "2026-11-02"],
-  ["oBbtU0DB9nU", "Campionato Sammarinese 2026-27, 7. giornata | HL Cosmos - Fiorentino 2-0", "2026-11-02"],
 ];

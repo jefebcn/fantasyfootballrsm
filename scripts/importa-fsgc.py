@@ -573,6 +573,10 @@ def scrivi(cal, fatti, mancanti=None, doppioni=None):
         parole = [w.capitalize() for w in re.split(r'[-_\s]+', v['slug']) if w]
         cognome = parole[-1] if len(parole) > 1 else parole[0]
         primo = ' '.join(parole[:-1]) or parole[0]
+        # La FSGC scrive a volte «cognome-nome» («molinari-nicola», «sahud-scutella-
+        # mathias»): dal solo indirizzo non si capisce. Dove serve, nome e cognome
+        # giusti stanno in data/extra.json e vincono (Alex, 10/11).
+        primo, cognome = v.get('nome') or primo, v.get('cognome') or cognome
         # un doppione di un giocatore del listone (vedi indice_giocatori) resta
         # al suo posto, col quinto campo che dice chi e' davvero: l'app non lo
         # mette fra quelli da comprare
@@ -580,7 +584,8 @@ def scrivi(cal, fatti, mancanti=None, doppioni=None):
         extra.append('  [%s,%s,%s,%s%s]' % (json.dumps(v['club']), json.dumps(primo),
                                             json.dumps(cognome), json.dumps(v.get('ruolo') or 'C'),
                                             ',' + json.dumps(vero) if vero else ''))
-        elenco_extra.append({'slug': nome, 'club': v['club'], 'ruolo': v.get('ruolo') or 'C'})
+        elenco_extra.append({'slug': nome, 'club': v['club'], 'ruolo': v.get('ruolo') or 'C',
+                             **({'nome': v['nome'], 'cognome': v['cognome']} if v.get('nome') and v.get('cognome') else {})})
     (RADICE / 'src' / 'listone-extra.js').write_text(
         '/**\n'
         ' * Tesserati presenti nei tabellini FSGC ma assenti dalle rose di\n'

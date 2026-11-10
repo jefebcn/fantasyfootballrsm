@@ -100,6 +100,24 @@
    "centro": 0.45,
    "nota": "la panchina e i giocatori della Folgore, maglie bianche",
    "didascalia": "la Folgore si mette tutti alle spalle dopo sei turni di Campionato Sammarinese 2026-27"
+  },
+  {
+   "id": 55637615812,
+   "foto": "https://drive.google.com/uc?export=download&id=1TBY8UE-E5o_qlP_TRMSPRD_WtNFbjj8a",
+   "credito": "©FSGC/Montanari",
+   "centro": 0.55,
+   "nota": "Sahud Scutella e Azael Garcia Rufer si abbracciano, maglia bianca",
+   "didascalia": "Folgore - Virtus — Montecchio, 7 novembre 2026",
+   "pagina": "https://www.flickr.com/photos/153298317@N08/55637615812/"
+  },
+  {
+   "id": 55638696081,
+   "foto": "https://drive.google.com/uc?export=download&id=16oyGFVkpHOf15D5Vg40AhVbH--cJJNKA",
+   "credito": "©FSGC/Montanari",
+   "centro": 0.52,
+   "nota": "Fabbri, Sahud Scutella e Azael Garcia Rufer, maglia bianca",
+   "didascalia": "Folgore - Virtus — Montecchio, 7 novembre 2026",
+   "pagina": "https://www.flickr.com/photos/153298317@N08/55638696081/"
   }
  ],
  "trefiori": [
@@ -189,6 +207,37 @@
    "nota": "due giocatori della Virtus esultano, maglia rosa da trasferta",
    "didascalia": "Domagnano - Virtus — Acquaviva, 31 ottobre 2026",
    "pagina": "https://www.flickr.com/photos/153298317@N08/55623409476/"
+  }
+ ],
+ "domagnano": [
+  {
+   "id": 55638623946,
+   "foto": "https://drive.google.com/uc?export=download&id=1u27yj_B4nbcdLRbuaC2rQVjMw2KKB12J",
+   "credito": "©FSGC",
+   "centro": 0.57,
+   "nota": "il Domagnano esulta, maglia bianca da trasferta",
+   "didascalia": "Faetano - Domagnano — Domagnano, 7 novembre 2026",
+   "pagina": "https://www.flickr.com/photos/153298317@N08/55638623946/"
+  },
+  {
+   "id": 55638703001,
+   "foto": "https://drive.google.com/uc?export=download&id=1S5Rio11l1hzBzlqDh98P8aAPaf5Q05tX",
+   "credito": "©FSGC",
+   "centro": 0.62,
+   "nota": "il Domagnano esulta, maglia bianca da trasferta",
+   "didascalia": "Faetano - Domagnano — Domagnano, 7 novembre 2026",
+   "pagina": "https://www.flickr.com/photos/153298317@N08/55638703001/"
+  }
+ ],
+ "faetano": [
+  {
+   "id": 55637718487,
+   "foto": "https://drive.google.com/uc?export=download&id=1o3F4liUgu04HX8a1lRkIssnyT5X5SzY_",
+   "credito": "©FSGC",
+   "centro": 0.82,
+   "nota": "Elia e Renzi S. del Faetano, gialloblu",
+   "didascalia": "Faetano - Domagnano — Domagnano, 7 novembre 2026",
+   "pagina": "https://www.flickr.com/photos/153298317@N08/55637718487/"
   }
  ]
 }

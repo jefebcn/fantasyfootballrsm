@@ -159,6 +159,15 @@
    "centro": 0.53,
    "nota": "Azael Garcia Rufer esulta dopo il gol su punizione, maglia bianca da trasferta (nebbia)",
    "didascalia": "Esulta Azael Garcia Rufer: suo il gran gol su punizione che vale il vantaggio della Folgore"
+  },
+  {
+   "id": 55638696081,
+   "foto": "https://drive.google.com/uc?export=download&id=16oyGFVkpHOf15D5Vg40AhVbH--cJJNKA",
+   "credito": "©FSGC/Montanari",
+   "centro": 0.76,
+   "nota": "Azael Garcia Rufer di spalle, 23 «GARCIA RUFER AZ»",
+   "didascalia": "Folgore - Virtus — Montecchio, 7 novembre 2026",
+   "pagina": "https://www.flickr.com/photos/153298317@N08/55638696081/"
   }
  ],
  "cailungo_10": [
@@ -300,6 +309,15 @@
    "nota": "Guglielmi di spalle, 41 col nome",
    "didascalia": "Domagnano - Virtus — Acquaviva, 31 ottobre 2026",
    "pagina": "https://www.flickr.com/photos/153298317@N08/55623548793/"
+  },
+  {
+   "id": 55638704581,
+   "foto": "https://drive.google.com/uc?export=download&id=1CuT7mO4HCcxyXvydu_OrOIKgEiw5Ckwb",
+   "credito": "©FSGC",
+   "centro": 0.12,
+   "nota": "Guglielmi di spalle, 41 col nome (maglia bianca)",
+   "didascalia": "Faetano - Domagnano — Domagnano, 7 novembre 2026",
+   "pagina": "https://www.flickr.com/photos/153298317@N08/55638704581/"
   }
  ],
  "domagnano_17": [
@@ -311,6 +329,28 @@
    "nota": "Ferraro di spalle, 17 col nome",
    "didascalia": "Domagnano - Virtus — Acquaviva, 31 ottobre 2026",
    "pagina": "https://www.flickr.com/photos/153298317@N08/55623409401/"
+  }
+ ],
+ "faetano_18": [
+  {
+   "id": 55638704581,
+   "foto": "https://drive.google.com/uc?export=download&id=1D3gctZLSfLQSJeZ1aiuWWGwg50DgkdjL",
+   "credito": "©FSGC",
+   "centro": 0.85,
+   "nota": "Renzi S. di spalle, 44 col nome",
+   "didascalia": "Faetano - Domagnano — Domagnano, 7 novembre 2026",
+   "pagina": "https://www.flickr.com/photos/153298317@N08/55638704581/"
+  }
+ ],
+ "folgore_27": [
+  {
+   "id": 55638696081,
+   "foto": "https://drive.google.com/uc?export=download&id=16oyGFVkpHOf15D5Vg40AhVbH--cJJNKA",
+   "credito": "©FSGC/Montanari",
+   "centro": 0.45,
+   "nota": "Sahud Scutella di spalle, 20 «M. SAHUD»",
+   "didascalia": "Folgore - Virtus — Montecchio, 7 novembre 2026",
+   "pagina": "https://www.flickr.com/photos/153298317@N08/55638696081/"
   }
  ]
 }

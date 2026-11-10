@@ -293,7 +293,7 @@ export const formazione = {
       <div class="moduli spenti" aria-hidden="true">${S.rules().modules.map((m) => `<span class="chip mod${m === d.formation ? ' on' : ''}">${m}</span>`).join('')}</div>`
     : `<p class="small muted nota">${t('Si cambia a ogni giornata: {n} moduli, la rosa li copre tutti.', { n: S.rules().modules.length })}</p>
       <div class="moduli" data-modules>${S.rules().modules.map((m) => `<button class="chip mod${m === d.formation ? ' on' : ''}" data-mod="${m}" ${locked ? 'disabled' : ''}>${m}</button>`).join('')}</div>`}
-      <div class="pitch-wrap"><div class="pitch">${CAMPO}${line('P')}${line('D')}${line('C')}${line('A')}</div></div>
+      <div class="pitch-wrap"><div class="pitch${!locked ? ' con-avv' : ''}">${CAMPO}${line('P')}${line('D')}${line('C')}${line('A')}</div></div>
       ${!locked && !b ? `<p class="small muted nota fm-nota">${t('<b>FM</b> è la fantamedia: la media dei fantavoti nelle partite giocate fin qui. <span class="fm-su">Verde</span> da 7 in su, <span class="fm-giu">rossa</span> sotto il 6.')} ${t('Sotto, la partita della giornata: <b>vs</b> in casa, <b>@</b> fuori.')}</p>` : ''}
       <div class="a-sec"><b>${t('Panchina')}</b><span class="copertura">${editabile ? M.RUOLI.map((r) => `<i class="${ruoliPanca.has(r) ? '' : 'manca'}" title="${ruoliPanca.has(r) ? t('{ruolo} in panchina', { ruolo: uno(r) }) : t('nessun {ruolo} in panchina', { ruolo: uno(r) })}">${r}</i>`).join('') : ''}${bench.filter(Boolean).length}/7</span></div>
       <p class="small muted nota">${t('L\'ordine conta: al posto di un titolare senza voto entra il <b>primo panchinaro dello stesso ruolo</b> (art. 8.2).')}${editabile ? ` ${t('Tocca un panchinaro per mandarlo in campo.')}` : ''}</p>

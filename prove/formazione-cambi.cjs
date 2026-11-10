@@ -47,6 +47,10 @@ const ok = [], ko = []; const et = (c, t) => (c ? ok : ko).push(t);
   const fm = await p.evaluate(() => [...document.querySelectorAll('.slot .fm')].map((x) => x.innerText));
   et(fm.length === 11 && fm.every((x) => /^FM (\d+,\d{2}|–)$/.test(x)), `sotto ogni titolare la fantamedia (${fm.slice(0, 3).join(', ')}…)`);
   et(await p.evaluate(() => [...document.querySelectorAll('[data-bench]:not(.vuota) .nm > span')].every((x) => /FM /.test(x.innerText))), 'e accanto a ogni panchinaro');
+  // con chi gioca (storia «Dite la vostra», 10/11): sotto ogni titolare la partita della giornata
+  const avv = await p.evaluate(() => [...document.querySelectorAll('.slot .avv')].map((x) => x.innerText));
+  et(avv.length === 11 && avv.every((x) => /^(vs|@) [A-Z]{3}$|^riposa$/.test(x)), `sotto ogni titolare con chi gioca (${avv.slice(0, 3).join(', ')}…)`);
+  et(await p.evaluate(() => [...document.querySelectorAll('[data-bench]:not(.vuota) .nm > span')].every((x) => /^(vs .+ (in casa|fuori)|riposa) · FM /.test(x.innerText))), 'e in panchina, per esteso');
 
   // ---- 1. dal campo: un panchinaro si sceglie e lo scambio e' in un tocco
   const prima = await stato();

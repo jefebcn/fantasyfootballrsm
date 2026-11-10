@@ -42,7 +42,9 @@
  {
   "slug": "Tjakko-Van-Nek",
   "club": "trefiori",
-  "ruolo": "C"
+  "ruolo": "C",
+  "nome": "Tjakko",
+  "cognome": "Van Nek"
  },
  {
   "slug": "bernardi-tommaso-leon",
@@ -72,12 +74,16 @@
  {
   "slug": "grandoni-giacomo",
   "club": "academy",
-  "ruolo": "C"
+  "ruolo": "C",
+  "nome": "Giacomo",
+  "cognome": "Grandoni"
  },
  {
   "slug": "molinari-nicola",
   "club": "academy",
-  "ruolo": "C"
+  "ruolo": "C",
+  "nome": "Nicola",
+  "cognome": "Molinari"
  },
  {
   "slug": "montali-gabriele",
@@ -87,7 +93,9 @@
  {
   "slug": "mularoni-alessandro",
   "club": "academy",
-  "ruolo": "C"
+  "ruolo": "C",
+  "nome": "Alessandro",
+  "cognome": "Mularoni"
  },
  {
   "slug": "osayande-aigbogun-osagie",
@@ -107,7 +115,9 @@
  {
   "slug": "raimondi-andrea",
   "club": "murata",
-  "ruolo": "C"
+  "ruolo": "C",
+  "nome": "Andrea",
+  "cognome": "Raimondi"
  },
  {
   "slug": "rinaldi-danilo-ezequiel",
@@ -142,12 +152,16 @@
  {
   "slug": "bakalyar-yuriy",
   "club": "juvenes",
-  "ruolo": "D"
+  "ruolo": "D",
+  "nome": "Yuriy",
+  "cognome": "Bakalyar"
  },
  {
   "slug": "sahud-scutella-mathias",
   "club": "folgore",
-  "ruolo": "C"
+  "ruolo": "C",
+  "nome": "Mathias",
+  "cognome": "Sahud Scutella"
  },
  {
   "slug": "Francesco-Onano",

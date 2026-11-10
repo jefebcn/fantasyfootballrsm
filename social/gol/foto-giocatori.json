@@ -352,5 +352,71 @@
    "didascalia": "Folgore - Virtus — Montecchio, 7 novembre 2026",
    "pagina": "https://www.flickr.com/photos/153298317@N08/55638696081/"
   }
+ ],
+ "sangiovanni_12": [
+  {
+   "id": 55642247256,
+   "foto": "https://drive.google.com/uc?export=download&id=1cP3qFfVcpTqmG8J0G9c6rmYrXmF7Cuqe",
+   "credito": "©FSGC/Novelli",
+   "centro": 0.82,
+   "nota": "Labudiak di spalle",
+   "didascalia": "San Marino Academy - San Giovanni — Fiorentino, 8 novembre 2026",
+   "pagina": "https://www.flickr.com/photos/153298317@N08/55642247256/"
+  }
+ ],
+ "sangiovanni_19": [
+  {
+   "id": 55642247541,
+   "foto": "https://drive.google.com/uc?export=download&id=1iG18HH7lxC90B-xqAfkZGqepISveYZvg",
+   "credito": "©FSGC/Novelli",
+   "centro": 0.25,
+   "nota": "Chiaruzzi di spalle",
+   "didascalia": "San Marino Academy - San Giovanni — Fiorentino, 8 novembre 2026",
+   "pagina": "https://www.flickr.com/photos/153298317@N08/55642247541/"
+  }
+ ],
+ "sangiovanni_4": [
+  {
+   "id": 55642247796,
+   "foto": "https://drive.google.com/uc?export=download&id=1_sRRPZui5X8u77GiP_HRR0-i6pPWlk-H",
+   "credito": "©FSGC/Novelli",
+   "centro": 0.45,
+   "nota": "Giambalvo di spalle",
+   "didascalia": "San Marino Academy - San Giovanni — Fiorentino, 8 novembre 2026",
+   "pagina": "https://www.flickr.com/photos/153298317@N08/55642247796/"
+  }
+ ],
+ "sangiovanni_22": [
+  {
+   "id": 55642247871,
+   "foto": "https://drive.google.com/uc?export=download&id=1y8N0VfXp2fjY89AgrL8I3C1yDkLT9Mbh",
+   "credito": "©FSGC/Novelli",
+   "centro": 0.67,
+   "nota": "Klyvchuk di spalle",
+   "didascalia": "San Marino Academy - San Giovanni — Fiorentino, 8 novembre 2026",
+   "pagina": "https://www.flickr.com/photos/153298317@N08/55642247871/"
+  }
+ ],
+ "murata_20": [
+  {
+   "id": 55640886249,
+   "foto": "https://drive.google.com/uc?export=download&id=1FU9m8JxCsEyPL-JBN0RSVmAmTyLtu8ZP",
+   "credito": "©FSGC/Onofri",
+   "centro": 0.7,
+   "nota": "Ruocco di spalle, 70",
+   "didascalia": "Tre Penne - Murata — Montecchio, 8 novembre 2026",
+   "pagina": "https://www.flickr.com/photos/153298317@N08/55640886249/"
+  }
+ ],
+ "murata_16": [
+  {
+   "id": 55640888199,
+   "foto": "https://drive.google.com/uc?export=download&id=1dm320bT4vapw9vzcH_Dcq6rx4gzcAFEu",
+   "credito": "©FSGC/Onofri",
+   "centro": 0.42,
+   "nota": "Scarcella di spalle",
+   "didascalia": "Tre Penne - Murata — Montecchio, 8 novembre 2026",
+   "pagina": "https://www.flickr.com/photos/153298317@N08/55640888199/"
+  }
  ]
 }

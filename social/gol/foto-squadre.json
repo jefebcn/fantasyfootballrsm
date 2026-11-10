@@ -15,6 +15,15 @@
    "centro": 0.5,
    "nota": "esultanza del Fiorentino, maglie azzurre",
    "didascalia": "Esulta il Fiorentino: i Rossoblù rifilano ben sei gol al Faetano"
+  },
+  {
+   "id": 55640890219,
+   "foto": "https://drive.google.com/uc?export=download&id=1P9re8O2MuiffVZyGIm8jTC4jhYgb9yKW",
+   "credito": "©FSGC/Onofri",
+   "centro": 0.42,
+   "nota": "il Fiorentino schierato, maglia blaugrana a righe",
+   "didascalia": "Fiorentino - Libertas — Acquaviva, 8 novembre 2026",
+   "pagina": "https://www.flickr.com/photos/153298317@N08/55640890219/"
   }
  ],
  "lafiorita": [
@@ -35,6 +44,15 @@
    "centro": 0.5,
    "nota": "la Libertas granata esulta",
    "didascalia": "la doppietta di Osayande regala il primo successo alla Libertas"
+  },
+  {
+   "id": 55641097300,
+   "foto": "https://drive.google.com/uc?export=download&id=1-fRB_3b16WSJCrg28yhMhNIr1Vlhvk26",
+   "credito": "©FSGC/Onofri",
+   "centro": 0.68,
+   "nota": "la Libertas schierata, maglia bianca",
+   "didascalia": "Fiorentino - Libertas — Acquaviva, 8 novembre 2026",
+   "pagina": "https://www.flickr.com/photos/153298317@N08/55641097300/"
   }
  ],
  "juvenes": [
@@ -118,6 +136,15 @@
    "nota": "Fabbri, Sahud Scutella e Azael Garcia Rufer, maglia bianca",
    "didascalia": "Folgore - Virtus — Montecchio, 7 novembre 2026",
    "pagina": "https://www.flickr.com/photos/153298317@N08/55638696081/"
+  },
+  {
+   "id": 55637615812,
+   "foto": "https://drive.google.com/uc?export=download&id=1v8FxH1Yn51cEjpVBStFp-oNvuWsiLrB2",
+   "credito": "©FSGC/Montanari",
+   "centro": 0.62,
+   "nota": "Sahud Scutella e Garcia Rufer abbracciati, maglie bianche, nebbia",
+   "didascalia": "Folgore - Virtus — Montecchio, 7 novembre 2026",
+   "pagina": "https://www.flickr.com/photos/153298317@N08/55637615812/"
   }
  ],
  "trefiori": [
@@ -238,6 +265,28 @@
    "nota": "Elia e Renzi S. del Faetano, gialloblu",
    "didascalia": "Faetano - Domagnano — Domagnano, 7 novembre 2026",
    "pagina": "https://www.flickr.com/photos/153298317@N08/55637718487/"
+  }
+ ],
+ "sangiovanni": [
+  {
+   "id": 55642247871,
+   "foto": "https://drive.google.com/uc?export=download&id=1y8N0VfXp2fjY89AgrL8I3C1yDkLT9Mbh",
+   "credito": "©FSGC/Novelli",
+   "centro": 0.5,
+   "nota": "Klyvchuk e Giambalvo del San Giovanni, rossonera",
+   "didascalia": "San Marino Academy - San Giovanni — Fiorentino, 8 novembre 2026",
+   "pagina": "https://www.flickr.com/photos/153298317@N08/55642247871/"
+  }
+ ],
+ "murata": [
+  {
+   "id": 55640886249,
+   "foto": "https://drive.google.com/uc?export=download&id=1FU9m8JxCsEyPL-JBN0RSVmAmTyLtu8ZP",
+   "credito": "©FSGC/Onofri",
+   "centro": 0.72,
+   "nota": "Ruocco (70) e Raimondi (55) del Murata",
+   "didascalia": "Tre Penne - Murata — Montecchio, 8 novembre 2026",
+   "pagina": "https://www.flickr.com/photos/153298317@N08/55640886249/"
   }
  ]
 }

@@ -38,7 +38,8 @@ x = f.foto_per(${JSON.stringify(pid)}, None, f.giocatori())
 print(json.dumps(x and {'tipo': x['tipo'], 'credito': x['credito']}))`], { encoding: 'utf8' }));
   assert.deepEqual(py('domagnano_23'), { tipo: 'giocatore', credito: '©FSGC/Palmieri' });
   assert.equal(py('libertas_2')?.tipo, 'squadra');
-  assert.equal(py('murata_2'), null, 'il Murata non ha una foto di gruppo: niente foto');
+  assert.equal(py('murata_2')?.tipo, 'squadra');
+  assert.equal(py('nessuno_1'), null, 'squadra senza foto di gruppo: niente foto');
 });
 
 test('ogni foto degli elenchi ha credito FSGC, indirizzo e taglio', () => {

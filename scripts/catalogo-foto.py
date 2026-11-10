@@ -18,10 +18,10 @@ RADICE = pathlib.Path(__file__).resolve().parent.parent
 UA = {'User-Agent': 'Mozilla/5.0 (Fantatitano; foto FSGC con credito)'}
 # le maglie viste nelle foto di questa stagione: aiutano a riconoscere le squadre nella galleria
 MAGLIE = {
-    'domagnano': 'giallorossa a righe, nera e lime fuori', 'virtus': 'verde, rosa fuori (come il Murata: guarda la didascalia)', 'murata': 'rosa', 'trepenne': 'nera',
+    'domagnano': 'giallorossa a righe, nera e lime fuori', 'virtus': 'verde, rosa fuori (come il Murata: guarda la didascalia)', 'murata': 'rosa, bianconera a righe fuori', 'trepenne': 'nera',
     'folgore': 'rossa in casa, bianca fuori', 'fiorentino': 'azzurra', 'lafiorita': 'gialla, bianca fuori',
-    'libertas': 'granata', 'cosmos': 'gialloverde', 'trefiori': 'gialloblu', 'academy': 'blu scuro con stemma SM',
-    'juvenes': 'biancorossa a righe, nera fuori',
+    'libertas': 'granata', 'cosmos': 'gialloverde', 'trefiori': 'gialloblu', 'academy': 'blu scuro con stemma SM, bianca fuori',
+    'juvenes': 'biancorossa a righe, nera fuori', 'cailungo': 'nera', 'pennarossa': 'rossa',
 }
 
 

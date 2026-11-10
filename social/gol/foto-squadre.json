@@ -53,6 +53,15 @@
    "centro": 0.45,
    "nota": "tre giocatori della Juvenes Dogana esultano, maglia biancorossa a righe (casa)",
    "didascalia": "Colagiovanni ed Aprea a segno nell'1-1 tra Cailungo e Juvenes Dogana"
+  },
+  {
+   "id": 55623024453,
+   "foto": "https://drive.google.com/uc?export=download&id=1cCh-xnaAKDHJzYlyRK_z0nzLy8oe-e0d",
+   "credito": "©FSGC/MovieByDaniels",
+   "centro": 0.6,
+   "nota": "la Juvenes Dogana schierata, biancorossa a righe",
+   "didascalia": "Cailungo - Juvenes Dogana — Fiorentino, 30 ottobre 2026",
+   "pagina": "https://www.flickr.com/photos/153298317@N08/55623024453/"
   }
  ],
  "trepenne": [
@@ -109,6 +118,77 @@
    "centro": 0.6,
    "nota": "due giocatori del Tre Fiori esultano, maglie granata",
    "didascalia": "Il Tre Fiori di Danilo Girolomoni è atteso dal derby con il Fiorentino"
+  },
+  {
+   "id": 55623521664,
+   "foto": "https://drive.google.com/uc?export=download&id=1rmQW33PM3aXeWx3n_DfQa-i2ZnvoGzNv",
+   "credito": "©FSGC/Novelli",
+   "centro": 0.5,
+   "nota": "il Tre Fiori esulta, gialloblu",
+   "didascalia": "Tre Fiori - Murata — Fiorentino, 31 ottobre 2026",
+   "pagina": "https://www.flickr.com/photos/153298317@N08/55623521664/"
+  }
+ ],
+ "cailungo": [
+  {
+   "id": 55622881886,
+   "foto": "https://drive.google.com/uc?export=download&id=11NdkyvYbyD2cmO4M29JlE19kG7nrH6Pj",
+   "credito": "©FSGC/MovieByDaniels",
+   "centro": 0.42,
+   "nota": "il Cailungo schierato prima della partita, maglia nera",
+   "didascalia": "Cailungo - Juvenes Dogana — Fiorentino, 30 ottobre 2026",
+   "pagina": "https://www.flickr.com/photos/153298317@N08/55622881886/"
+  },
+  {
+   "id": 55622882191,
+   "foto": "https://drive.google.com/uc?export=download&id=1qf_AqEHyEzCwO8cQ-5BRYxV_zWf011d5",
+   "credito": "©FSGC/MovieByDaniels",
+   "centro": 0.5,
+   "nota": "il Cailungo schierato, maglia nera",
+   "didascalia": "Cailungo - Juvenes Dogana — Fiorentino, 30 ottobre 2026",
+   "pagina": "https://www.flickr.com/photos/153298317@N08/55622882191/"
+  }
+ ],
+ "academy": [
+  {
+   "id": 55623413936,
+   "foto": "https://drive.google.com/uc?export=download&id=1Td-zqq9nrx5qd3LrSmIImPWrKpizCalZ",
+   "credito": "©FSGC/Montanari",
+   "centro": 0.75,
+   "nota": "l'Academy esulta, maglia bianca da trasferta",
+   "didascalia": "Pennarossa - San Marino Academy — Montecchio, 31 ottobre 2026",
+   "pagina": "https://www.flickr.com/photos/153298317@N08/55623413936/"
+  }
+ ],
+ "pennarossa": [
+  {
+   "id": 55623400833,
+   "foto": "https://drive.google.com/uc?export=download&id=1yugqP74WYww9WVUbs4T2EQ0sRsgeY9O1",
+   "credito": "©FSGC/Montanari",
+   "centro": 0.6,
+   "nota": "il Pennarossa esulta, maglia rossa",
+   "didascalia": "Pennarossa - San Marino Academy — Montecchio, 31 ottobre 2026",
+   "pagina": "https://www.flickr.com/photos/153298317@N08/55623400833/"
+  }
+ ],
+ "virtus": [
+  {
+   "id": 55623262296,
+   "foto": "https://drive.google.com/uc?export=download&id=1LXhc8UCT34ilu5Hy9TL5QZbBWobT2JWn",
+   "credito": "©FSGC/Montanari",
+   "centro": 0.53,
+   "nota": "la Virtus esulta, maglia rosa da trasferta",
+   "didascalia": "Domagnano - Virtus — Acquaviva, 31 ottobre 2026",
+   "pagina": "https://www.flickr.com/photos/153298317@N08/55623262296/"
+  },
+  {
+   "id": 55623409476,
+   "foto": "https://drive.google.com/uc?export=download&id=1qVDPgF8TohP20fc9zBQxcEdwuKKCwa1P",
+   "credito": "©FSGC/Montanari",
+   "centro": 0.5,
+   "nota": "due giocatori della Virtus esultano, maglia rosa da trasferta",
+   "didascalia": "Domagnano - Virtus — Acquaviva, 31 ottobre 2026",
+   "pagina": "https://www.flickr.com/photos/153298317@N08/55623409476/"
   }
  ]
 }

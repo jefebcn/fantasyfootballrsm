@@ -66,7 +66,7 @@ function benchRow(id, i, bench, locked, voto = '', lampo = new Set()) {
   const su = i > 0 && bench[i - 1]; const giu = i < 6 && bench[i + 1];
   return `<div class="br${lampo.has(id) ? ' appena' : ''}" data-bench="${i}"><span class="n">${i + 1}</span>
     ${faccia(p, clubOf(id))}
-    <span class="nm"><b>${esc(p.name)}${!locked && S.squalifica(id) ? ` <i class="squal">${t('SQUALIFICATO')}</i>` : ''}</b><span>${locked ? '' : `${fmTesto(id)} · `}${t('{club} · quot. {q}', { club: esc(clubOf(id).name), q: p.quotation })}</span></span>
+    <span class="nm"><b>${esc(p.name)}${!locked && S.squalifica(id) ? ` <i class="squal">${t('SQUALIFICATO')}</i>` : ''}</b><span>${locked ? '' : `${avvTesto(id)}${fmTesto(id)} · `}${t('{club} · quot. {q}', { club: esc(clubOf(id).name), q: p.quotation })}</span></span>
     ${voto}
     <span class="primo${primo ? '' : ' no'}"${primo ? ` title="${t('Primo {ruolo} della panchina: entra lui se un {ruolo} titolare non prende voto', { ruolo: lingua() === 'it' ? ROLE_NAME[p.role].slice(0, -1).toLowerCase() : uno(p.role) })}"` : ' aria-hidden="true"'}>${primo ? `1º ${p.role}` : ''}</span>
     ${locked ? '' : `<span class="acts"><button class="rm" data-up="${i}" aria-label="${t('Sposta su {nome}', { nome: esc(p.name) })}" ${su ? '' : 'disabled'}>${icon('up', 'ic sm')}</button><button class="rm" data-down="${i}" aria-label="${t('Sposta giù {nome}', { nome: esc(p.name) })}" ${giu ? '' : 'disabled'}>${icon('down', 'ic sm')}</button></span>`}</div>`;
@@ -87,6 +87,31 @@ const fmClasse = (m) => (m == null ? 'fm-nd' : m >= 7 ? 'fm-su' : m < 6 ? 'fm-gi
 const fmNum = (m) => (m == null ? '–' : fmt(m, 2));
 const fmChip = (id) => { const r = fmDi(id); return `<i class="fm ${fmClasse(r.media)}" title="${r.media == null ? t('Nessun voto finora') : t('Fantamedia in {partite}', { partite: plurale(r.presenze, t('partita'), t('partite')) })}">FM ${fmNum(r.media)}</i>`; };
 const fmTesto = (id) => { const r = fmDi(id); return r.media == null ? '<span class="fm-t fm-nd">FM –</span>' : `<span class="fm-t ${fmClasse(r.media)}">FM ${fmNum(r.media)}</span> ${t('in {n}', { n: r.presenze })}`; };
+/**
+ * CON CHI GIOCA. Dalle risposte alla storia «Dite la vostra» (10/11): «inserire
+ * le partite che devono affrontare i giocatori nella sezione della formazione».
+ * Per ogni giocatore la partita della sua squadra nella giornata da schierare:
+ * «vs FOL» in casa, «@ FOL» fuori. Senza partita (riposo, rinvio) «riposa».
+ * La giornata la fissa il render (nAvv), cosi' panchina e fogli dicono lo stesso.
+ */
+let nAvv = 0;
+export function avversario(id, n = nAvv) {
+  const c = P(id)?.clubId; if (!c || !n) return null;
+  const m = S.matchesOf(n).find((x) => x.homeClubId === c || x.awayClubId === c);
+  if (!m) return { riposo: true };
+  const casa = m.homeClubId === c; const club = S.clubsById.get(casa ? m.awayClubId : m.homeClubId);
+  return club ? { casa, club } : null;
+}
+const avvChip = (id) => {
+  const a = avversario(id); if (!a) return '';
+  if (a.riposo) return `<i class="avv riposo">${t('riposa')}</i>`;
+  return `<i class="avv" title="${esc(t(a.casa ? 'In casa contro {club}' : 'In trasferta contro {club}', { club: a.club.name }))}">${a.casa ? 'vs' : '@'} ${esc(a.club.shortName)}</i>`;
+};
+const avvTesto = (id) => {
+  const a = avversario(id); if (!a) return '';
+  if (a.riposo) return `<span class="avv-t">${t('riposa')}</span> · `;
+  return `<span class="avv-t">${esc(t(a.casa ? 'vs {club} in casa' : 'vs {club} fuori', { club: a.club.name }))}</span> · `;
+};
 /** Chi scegliere prima: chi ha la fantamedia piu' alta, poi la quotazione. */
 const perFm = (a, b) => ((fmDi(b).media ?? -1) - (fmDi(a).media ?? -1)) || perQuot(a, b);
 const slotsByRole = (d) => M.posti(d, ruoloDi);
@@ -177,7 +202,7 @@ export const formazione = {
     // quella schermata.
     const me = S.me();
     const b = S.schieramentoBloccato();
-    const n = b ? b.inGioco : S.giornataDaSchierare(); const md = S.matchday(n); const st = S.matchdayStatus(n);
+    const n = b ? b.inGioco : S.giornataDaSchierare(); nAvv = n; const md = S.matchday(n); const st = S.matchdayStatus(n);
     const locked = st !== 'open' && st !== 'scheduled';
     const d = b ? S.lineupFor(n, me.id) : (() => { const x = ensureDraft(); if (!locked) togliCeduti(x, me.id); normalize(x); return x; })();
     if (locked || b) tolti = [];
@@ -209,7 +234,7 @@ export const formazione = {
     // chi si e' appena mosso lampeggia un attimo: si vede dove e' finito
     const lampo = appena; appena = new Set();
     const slot = (id, role, i) => id
-      ? `<div class="slot${lampo.has(id) ? ' appena' : ''}" data-slot="${role}:${i}"><span class="av faccia">${d.captainId === id ? '<span class="cap">C</span>' : d.viceCaptainId === id ? '<span class="cap">V</span>' : ''}${avatar(P(id), S.clubsById.get(P(id).clubId))}${roleChip(role)}${voto(id)}${!locked && S.squalifica(id, n) ? `<span class="squal-x" title="${t('Squalificato')}">${t('SQ')}</span>` : ''}</span><b>${esc(P(id).lastName)}</b>${!locked ? fmChip(id) : ''}</div>`
+      ? `<div class="slot${lampo.has(id) ? ' appena' : ''}" data-slot="${role}:${i}"><span class="av faccia">${d.captainId === id ? '<span class="cap">C</span>' : d.viceCaptainId === id ? '<span class="cap">V</span>' : ''}${avatar(P(id), S.clubsById.get(P(id).clubId))}${roleChip(role)}${voto(id)}${!locked && S.squalifica(id, n) ? `<span class="squal-x" title="${t('Squalificato')}">${t('SQ')}</span>` : ''}</span><b>${esc(P(id).lastName)}</b>${!locked ? `${fmChip(id)}${avvChip(id)}` : ''}</div>`
       : `<div class="slot vuoto" data-slot="${role}:${i}"><span class="av">+</span><b>${tronco(role)}</b></div>`;
     const line = (role) => `<div class="line" data-line="${role.toLowerCase()}">${s[role].map((id, i) => slot(id, role, i)).join('')}</div>`;
     const bench = Array.from({ length: 7 }, (_, i) => d.bench[i] || null);
@@ -268,8 +293,8 @@ export const formazione = {
       <div class="moduli spenti" aria-hidden="true">${S.rules().modules.map((m) => `<span class="chip mod${m === d.formation ? ' on' : ''}">${m}</span>`).join('')}</div>`
     : `<p class="small muted nota">${t('Si cambia a ogni giornata: {n} moduli, la rosa li copre tutti.', { n: S.rules().modules.length })}</p>
       <div class="moduli" data-modules>${S.rules().modules.map((m) => `<button class="chip mod${m === d.formation ? ' on' : ''}" data-mod="${m}" ${locked ? 'disabled' : ''}>${m}</button>`).join('')}</div>`}
-      <div class="pitch-wrap"><div class="pitch">${CAMPO}${line('P')}${line('D')}${line('C')}${line('A')}</div></div>
-      ${!locked && !b ? `<p class="small muted nota fm-nota">${t('<b>FM</b> è la fantamedia: la media dei fantavoti nelle partite giocate fin qui. <span class="fm-su">Verde</span> da 7 in su, <span class="fm-giu">rossa</span> sotto il 6.')}</p>` : ''}
+      <div class="pitch-wrap"><div class="pitch${!locked ? ' con-avv' : ''}">${CAMPO}${line('P')}${line('D')}${line('C')}${line('A')}</div></div>
+      ${!locked && !b ? `<p class="small muted nota fm-nota">${t('<b>FM</b> è la fantamedia: la media dei fantavoti nelle partite giocate fin qui. <span class="fm-su">Verde</span> da 7 in su, <span class="fm-giu">rossa</span> sotto il 6.')} ${t('Sotto, la partita della giornata: <b>vs</b> in casa, <b>@</b> fuori.')}</p>` : ''}
       <div class="a-sec"><b>${t('Panchina')}</b><span class="copertura">${editabile ? M.RUOLI.map((r) => `<i class="${ruoliPanca.has(r) ? '' : 'manca'}" title="${ruoliPanca.has(r) ? t('{ruolo} in panchina', { ruolo: uno(r) }) : t('nessun {ruolo} in panchina', { ruolo: uno(r) })}">${r}</i>`).join('') : ''}${bench.filter(Boolean).length}/7</span></div>
       <p class="small muted nota">${t('L\'ordine conta: al posto di un titolare senza voto entra il <b>primo panchinaro dello stesso ruolo</b> (art. 8.2).')}${editabile ? ` ${t('Tocca un panchinaro per mandarlo in campo.')}` : ''}</p>
       <div class="bench">${bench.map((id, i) => benchRow(id, i, bench, locked, grezzo(id), lampo)).join('')}</div>
@@ -307,7 +332,7 @@ export const formazione = {
     // Prima chi stava in panchina compariva spento («gia' schierato») e per
     // cambiare un titolare bisognava toglierlo e poi scegliere: due passi, e se
     // ci si fermava a meta' il posto restava vuoto.
-    const riga = (id, mossa, tag = '', cls = '') => `<button ${mossa}>${faccia(P(id), clubOf(id))}<span><b>${nome(id)}</b><span>${fmTesto(id)} · ${t('{club} · quot. {q}', { club: esc(clubOf(id).name), q: P(id).quotation })}${sq(id) ? ` · <b class="squal-t">${t('squalificato')}</b>` : ''}</span></span>${tag ? `<span class="tag ${cls}">${tag}</span>` : '<span></span>'}</button>`;
+    const riga = (id, mossa, tag = '', cls = '') => `<button ${mossa}>${faccia(P(id), clubOf(id))}<span><b>${nome(id)}</b><span>${avvTesto(id)}${fmTesto(id)} · ${t('{club} · quot. {q}', { club: esc(clubOf(id).name), q: P(id).quotation })}${sq(id) ? ` · <b class="squal-t">${t('squalificato')}</b>` : ''}</span></span>${tag ? `<span class="tag ${cls}">${tag}</span>` : '<span></span>'}</button>`;
     const libero = (mossa, r) => `<button ${mossa}><span class="av-ph">+</span><span><b>${t('Posto libero')}</b><span>${t('manca un {ruolo}', { ruolo: uno(r) })}</span></span><span class="tag vuoto">${t('libero')}</span></button>`;
     const gruppo = (titolo, righe) => (righe.length ? `<p class="pl-gruppo">${titolo}</p><div class="plist cambio">${righe.join('')}</div>` : '');
     const testa = (id, sotto) => `<div class="cambio-testa">${faccia(P(id), clubOf(id))}<span><b>${nome(id)}</b><span>${sotto}</span></span></div>`;

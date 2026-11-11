@@ -740,6 +740,14 @@ hr.sep{border:0;border-top:1px solid var(--border);margin:4px 0}
 .slot .fm.fm-su{background:#1E8E4E}
 .slot .fm.fm-giu{background:#B4363A}
 .slot .fm.fm-nd{opacity:.7}
+/* con chi gioca (storia «Dite la vostra», 10/11): sotto la fantamedia, piu' piccolo */
+.slot .avv{font:600 9px/1 var(--font-data);font-style:normal;color:rgba(255,255,255,.92);background:rgba(9,32,20,.5);border-radius:5px;padding:2px 5px;white-space:nowrap}
+.slot .avv.riposo{opacity:.7}
+/* Con la partita sotto ogni giocatore la riga cresce di 16px: il campo si allunga
+   quanto basta perche' le figure della riga sotto (alte fino a 81px) non coprano
+   le scritte di quella sopra (Alex, 10/11: «non deve esserci sovrapposizione»). */
+.pitch.con-avv{aspect-ratio:auto;min-height:0;gap:30px;justify-content:flex-start}
+.avv-t{font-weight:600}
 .tribuna .fm{font:700 10px/1 var(--font-data);font-style:normal;color:var(--text-muted);padding:2px 5px;border-radius:5px}
 .tribuna .fm.fm-su{background:rgba(30,142,78,.16);color:#1E8E4E}
 .tribuna .fm.fm-giu{background:rgba(180,54,58,.14);color:#C2414A}

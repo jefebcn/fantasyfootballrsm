@@ -398,13 +398,18 @@ hr.sep{border:0;border-top:1px solid var(--border);margin:4px 0}
 .a-herowrap{margin:-12px -16px 0;overflow:hidden}
 .a-hero{position:relative;display:flex;flex-direction:column;gap:14px;padding:14px 16px 16px;
   color:#fff;background:var(--grad-hero);overflow:hidden}
-.a-hero.foto{background:#04173B}
+/* Alex, 12/11: «troppo scuro, fa addormentare la vista». Sotto la foto un blu
+   piu' acceso (royal, come il primario) che scende verso il viola del marchio,
+   e il Titano un po' piu' luminoso. Il colore in cima al gradiente e' lo
+   stesso con cui finisce il velo della foto: niente stacco a 210px. */
+.a-hero.foto{background:linear-gradient(180deg,#2B45B5 0,#2B45B5 200px,#3A5FD0 360px,#4558E0 75%,#5340E6 100%)}
+.a-hero.foto .sfondo img{filter:brightness(1.75) saturate(1.15)}
 .a-hero .tw{position:absolute;right:-26px;top:-20px;width:220px;height:220px;opacity:.08;color:#fff}
 .a-hero .sfondo{position:absolute;left:0;right:0;top:0;height:210px;z-index:0;overflow:hidden}
 .a-hero .sfondo img{display:block;width:100%;height:100%;object-fit:cover;object-position:center bottom}
 /* il velo: un filo in cima per la targa della lega, e in fondo si fonde col blu */
 .a-hero .sfondo i{position:absolute;inset:0;
-  background:linear-gradient(180deg,rgba(4,23,59,.35) 0%,rgba(4,23,59,0) 34%,rgba(4,23,59,0) 70%,#04173B 100%)}
+  background:linear-gradient(180deg,rgba(43,69,181,.15) 0%,rgba(43,69,181,0) 34%,rgba(43,69,181,0) 60%,#2B45B5 100%)}
 .a-hero > :not(.sfondo):not(.tw){position:relative;z-index:1}
 
 .a-hero .hero-league{align-self:center;display:inline-flex;align-items:center;gap:8px;max-width:100%;

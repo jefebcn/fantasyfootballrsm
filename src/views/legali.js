@@ -91,12 +91,14 @@ export const privacy = {
     ['Quello che fai nella lega:', 'contestazioni aperte e, per il Giudice Dati, il registro delle modifiche ai voti. Servono a poter ricostruire come è venuto fuori un punteggio.'],
     ['Gli errori dell\'app:', 'se l\'app va in errore sul tuo telefono, manda un rapporto tecnico: il messaggio d\'errore, la versione dell\'app, la schermata (senza quale giocatore o partita stavi guardando) e il tipo di telefono, per esempio «Android · Chrome». <b>Niente che dica chi sei</b>: nessun account, nessun identificativo del telefono, e un indirizzo e-mail finito per caso dentro un messaggio viene cancellato prima di salvarlo. Sta sugli stessi server del resto, lo legge solo chi gestisce l\'app per correggere i difetti, e si cancella da solo dopo 30 giorni.'],
     ['Quando apri l\'app:', 'si segna il <b>giorno</b> in cui l\'hai aperta, una volta sola anche se la apri dieci volte. Niente ora, niente schermate, niente telefono né indirizzo IP. Serve solo a contare quante persone usano l\'app e se tornano, lo vede solo chi la gestisce, si cancella da solo dopo 400 giorni e se ne va subito se cancelli l\'account.'],
+    ['Gli ordini dello shop:', 'se compri qualcosa nello shop: nome e cognome, un recapito (telefono, e-mail o profilo Instagram), l\'indirizzo se chiedi la spedizione, taglia, quantità e note. Servono solo a consegnarti l\'ordine e a contattarti per il pagamento, che non passa dall\'app. Li vede solo chi gestisce l\'app.'],
     ['Chi ti ha invitato:', 'se ti iscrivi dal link di un altro giocatore, il tuo profilo si segna chi te l\'ha mandato. Serve solo a contare gli amici che ha portato (il badge «Reclutatore»): <b>agli altri si vede il numero, mai chi sono gli amici</b>. Vale solo per un account nuovo e non si cambia.'],
     'Non ci sono profilazione, tracciatori di terze parti né cookie di marketing. Nessun dato viene venduto o ceduto.',
     ['Lo spazio sponsor:', 'in home può comparire uno spazio comprato, dichiarato con la targhetta «Sponsor». <b>Non viene scelto in base a chi sei</b>: dipende solo dalla lega in cui stai guardando — è quello di tutta l\'app, uguale per tutti, oppure quello che un\'azienda ha comprato per quella lega, uguale per tutti quelli che ci giocano. Di quello spazio si contano due numeri al giorno — quante volte è comparso e quante è stato toccato — e basta: nessun identificativo, nessun indirizzo IP, nessuna riga che ti riguardi. Non si può risalire a te perché non c\'è niente da cui risalire.'],
   ])}
       ${blocco('Su quale base', [
     ['Contratto:', 'account, squadra, rose, formazioni e punteggi. Sono quello che ti serve per giocare: senza, l\'app non può darti il servizio che hai chiesto iscrivendoti.'],
+    ['Contratto, anche:', 'gli ordini dello shop: senza nome, recapito e indirizzo non si può consegnare quello che hai comprato.'],
     ['Legittimo interesse:', 'il registro delle modifiche del Giudice Dati, i log tecnici del server e i rapporti d\'errore dell\'app, per tenere in piedi il servizio, correggerne i difetti e poter dimostrare come è stato calcolato un voto contestato. E chi ti ha invitato, per riconoscere a chi porta amici il badge «Reclutatore». E il giorno in cui apri l\'app, per capire se il servizio funziona e migliorarlo.'],
     ['Consenso:', 'solo per quello che scegli tu, come caricare una foto come stemma. Lo puoi togliere quando vuoi rimuovendo la foto.'],
   ])}
@@ -110,6 +112,7 @@ export const privacy = {
       ${blocco('Dove sta e per quanto', [
     rigaDove(),
     ['Per quanto:', 'finché la tua squadra esiste in una lega. Eliminata la lega o il tuo profilo, i dati vanno via con loro. Il registro delle modifiche ai voti resta finché resta la lega, in forma anonima rispetto a chi non ne fa più parte.'],
+    ['Gli ordini dello shop:', 'restano finché servono a consegnarli e per quanto chiede la legge sulle vendite; se cancelli l\'account se ne vanno con lui.'],
     'Il listone, il calendario e i tabellini del campionato non sono dati personali tuoi: arrivano dai referti pubblici della FSGC.',
     '<b>Se giochi nel campionato:</b> nome e prestazioni dei calciatori compaiono per descrivere le partite. Dalla pagina <a href="#/giocatori">Per i calciatori</a> (fantatitano.site/#/giocatori) puoi dirci che sei d\'accordo, anche per iniziative con sponsor (una scelta a parte, facoltativa), oppure chiedere di non comparire: diventi «Giocatore», con ruolo e squadra. Per quel «sì» la base è il tuo consenso, che puoi ritirare quando vuoi; sotto i 18 anni serve anche un genitore. Vale solo dopo che abbiamo verificato che sei tu, con un codice che ci mandi dal tuo Instagram o che ci conferma la tua società.',
     '<b>Cosa teniamo di quella richiesta:</b> la scelta, nome, squadra, il profilo Instagram se lo dai, se sei maggiorenne (e il nome del genitore), un contatto se lo lasci, data e ora, l\'indirizzo IP e il tipo di dispositivo da cui hai inviato, la versione del testo che hai letto, come l\'abbiamo verificata e lo screenshot del messaggio di verifica. Ogni passaggio (invio, verifica, ritiro) resta in un registro che non si modifica. Serve a dimostrare, se qualcuno lo chiede, che il consenso c\'è ed è tuo. Lo legge solo chi gestisce l\'app. Lo teniamo finché il consenso vale e per 2 anni dopo un ritiro.',
@@ -217,6 +220,7 @@ export const cancella = {
     'Il <b>profilo</b>: indirizzo e-mail e nome.',
     'Le tue <b>squadre in ogni lega</b>, con rose, formazioni consegnate e contestazioni aperte.',
     'Gli <b>indirizzi per le notifiche</b> dei tuoi dispositivi.',
+    'I tuoi <b>ordini dello shop</b>, con i dati di consegna.',
     'Le <b>leghe dove eri rimasto solo</b>: senza di te sarebbero vuote, e una lega vuota non la riapre nessuno.',
   ])}
       ${blocco('Cosa resta, e perché non è una dimenticanza', [

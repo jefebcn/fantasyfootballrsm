@@ -666,6 +666,20 @@ export async function adminGiocoConteggi(giorni = 14) {
   if (error) return null;
   return data || [];
 }
+/** Lo shop (056): l'ordine di chi e' dentro. Il totale lo calcola il database. */
+export async function shopOrdina(o) {
+  return must(await sb.rpc('shop_ordina', { p_articolo: o.articolo, p_taglia: o.taglia, p_quantita: o.quantita, p_consegna: o.consegna,
+    p_nome: o.nome, p_contatto: o.contatto, p_indirizzo: o.indirizzo || null, p_note: o.note || null }));
+}
+/** I propri ordini (056). null se la 056 non c'e'. */
+export async function shopMieiOrdini() {
+  const { data, error } = await sb.rpc('shop_miei_ordini');
+  if (error) return null;
+  return data || [];
+}
+/** Tutti gli ordini, per l'admin (056): quelli aperti, o tutti. */
+export async function adminShopOrdini(tutti = false) { return must(await sb.rpc('admin_shop_ordini', { p_tutti: tutti })) || []; }
+export async function adminShopStato(id, stato) { return must(await sb.rpc('admin_shop_stato', { p_id: id, p_stato: stato })); }
 /**
  * Chi apre l'app (051): segna oggi per chi e' dentro. Una richiesta persa non
  * e' un errore da mostrare: true solo se il server l'ha segnato.

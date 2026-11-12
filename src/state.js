@@ -1130,6 +1130,13 @@ export const segnalaErrore = (r) => (authKind() === 'supabase' ? remote.segnalaE
 export const caricaErrori = (giorni) => remote.caricaErrori(giorni);
 export const salvaPartitaGioco = (giorno, tentativi, vinto) => (authKind() === 'supabase' ? remote.salvaPartitaGioco(giorno, tentativi, vinto).catch(() => false) : Promise.resolve(false));
 export const adminGiocoConteggi = (giorni) => remote.adminGiocoConteggi(giorni);
+// Lo shop (056). Si ordina solo con un account vero sul server: in prova
+// (senza server) la pagina si vede ma il tasto non c'e'.
+export const shopDisponibile = () => !!(remote.config() && user);
+export const shopOrdina = (o) => remote.shopOrdina(o);
+export const shopMieiOrdini = () => (shopDisponibile() ? remote.shopMieiOrdini().catch(() => null) : Promise.resolve(null));
+export const adminShopOrdini = (tutti) => remote.adminShopOrdini(tutti);
+export const adminShopStato = (id, stato) => remote.adminShopStato(id, stato);
 export const classificaGioco = (mese, lega) => (authKind() === 'supabase' ? remote.classificaGioco(mese, lega).catch(() => null) : Promise.resolve(null));
 export const mioGioco = () => (authKind() === 'supabase' ? remote.mioGioco().catch(() => null) : Promise.resolve(null));
 export const adminRisolviErrore = (id) => remote.adminRisolviErrore(id);

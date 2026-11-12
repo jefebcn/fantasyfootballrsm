@@ -298,7 +298,8 @@ export const adminRegistro = {
  * chiavi del database su ogni telefono. Si manda un link per reimpostarla e
  * se la rifa' la persona — che e' anche l'unico modo in cui resta sua.
  */
-let aTab = 'numeri';        // 'numeri' | 'formazioni' | 'persone' | 'squadre' | 'leghe' | 'sponsor'
+let aTab = 'numeri';        // 'numeri' | 'formazioni' | 'persone' | 'squadre' | 'leghe' | 'sponsor' | 'shop'
+let shopTutti = false;      // scheda Shop: solo gli ordini aperti, o anche consegnati e annullati
 let soloDaSistemare = true;  // scheda Formazioni: solo le squadre con qualcosa da fare
 // Le richieste dei calciatori, il registro dei passaggi e la sua verifica
 // arrivano insieme: l'attestato e il CSV li usano tutti e tre.
@@ -905,6 +906,36 @@ function formazioni(r) {
   </div>`;
 }
 
+/**
+ * Gli ordini dello shop (056, Alex 12/11). Si scrive a chi ha ordinato al
+ * recapito che ha lasciato, si concorda il pagamento, poi si segna lo stato:
+ * nuovo -> pagato -> spedito o consegnato (al ritiro allo stadio), o annullato.
+ */
+const SHOP_STATI = { nuovo: ['attesa', 'Nuovo'], pagato: ['verificato', 'Pagato'], spedito: ['verificato', 'Spedito'], consegnato: ['verificato', 'Consegnato'], annullato: ['ritirato', 'Annullato'] };
+const SHOP_PROSSIMI = { nuovo: ['pagato', 'annullato'], pagato: ['spedito', 'consegnato', 'annullato'], spedito: ['consegnato'], consegnato: [], annullato: ['nuovo'] };
+const centEuro = (c) => `${(c / 100).toFixed(2).replace('.', ',')} €`;
+function shopOrdini(r) {
+  if (r === undefined) return '<div class="a-card"><p class="small muted" style="margin:0">Sto leggendo gli ordini…</p></div>';
+  if (r === 'assente') return '<div class="a-card"><p class="small" style="margin:0">Gli ordini non si possono ancora salvare: manca la migrazione <code>056-shop.sql</code> sul database.</p></div>';
+  if (r && r.errore) return `<div class="a-card"><p class="small" style="margin:0">${esc(r.errore)}</p></div>`;
+  const aperti = r.filter((o) => o.stato !== 'consegnato' && o.stato !== 'annullato');
+  const daIncassare = r.filter((o) => o.stato === 'nuovo').reduce((n, o) => n + o.totale_cent, 0);
+  return `<div class="a-card"><b>Ordini dello shop</b>
+    <div class="ades-stat"><span><b>${r.filter((o) => o.stato === 'nuovo').length}</b> nuovi</span><span><b>${aperti.length}</b> aperti</span><span><b>${centEuro(daIncassare)}</b> da incassare</span></div>
+    <div class="chips" style="margin:8px 0"><button class="chip${shopTutti ? '' : ' on'}" data-shop-filtro="aperti">Aperti</button><button class="chip${shopTutti ? ' on' : ''}" data-shop-filtro="tutti">Tutti</button></div>
+    ${r.length ? r.map((o) => {
+    const [cl, lab] = SHOP_STATI[o.stato] || ['attesa', o.stato];
+    return `<div class="adm-ades"><div class="riga1"><b>n. ${o.id} · ${o.quantita} × Top ${esc(o.taglia)}</b><span class="stato-ades ${cl}">${esc(lab)}</span></div>
+      <span class="small">${esc(o.nome)} · <b>${esc(o.contatto)}</b>${o.email ? ` · ${esc(o.email)}` : ''}</span>
+      <span class="small muted">${o.consegna === 'ritiro' ? 'Ritiro allo stadio' : `Spedizione: ${esc(o.indirizzo || '')}`} · ${centEuro(o.totale_cent)} · ${timeIt(o.creato_at)} ${dateIt(o.creato_at)}</span>
+      ${o.note ? `<span class="small muted">«${esc(o.note)}»</span>` : ''}
+      ${(SHOP_PROSSIMI[o.stato] || []).length ? `<div class="azioni">${SHOP_PROSSIMI[o.stato].map((st) => `<button class="chip" data-shop-stato="${o.id}|${st}">${st === 'nuovo' ? 'Riapri' : `Segna ${SHOP_STATI[st][1].toLowerCase()}`}</button>`).join('')}</div>` : ''}
+    </div>`;
+  }).join('') : `<p class="small muted" style="margin:0">${shopTutti ? 'Nessun ordine, per ora.' : 'Nessun ordine aperto.'}</p>`}
+  </div>
+  <p class="small muted">Ad ogni ordine nuovo arriva anche un'e-mail, se l'avviso dei nuovi iscritti è configurato. Il pagamento si concorda con chi ha ordinato; l'e-mail dell'account la vede intera solo il proprietario dell'app.</p>`;
+}
+
 export const adminConsole = {
   title: 'Console', appbar: 'back', sub: () => 'Amministrazione dell\'app',
   // Dal computer la console si apre in largo (Alex, 23/10: «la dashboard da
@@ -922,7 +953,8 @@ export const adminConsole = {
       <button class="${aTab === 'persone' ? 'on' : ''}" data-atab="persone">Persone</button>
       <button class="${aTab === 'squadre' ? 'on' : ''}" data-atab="squadre">Squadre</button>
       <button class="${aTab === 'leghe' ? 'on' : ''}" data-atab="leghe">Leghe</button>
-      <button class="${aTab === 'sponsor' ? 'on' : ''}" data-atab="sponsor">Sponsor</button></div></div>`;
+      <button class="${aTab === 'sponsor' ? 'on' : ''}" data-atab="sponsor">Sponsor</button>
+      <button class="${aTab === 'shop' ? 'on' : ''}" data-atab="shop">Shop</button></div></div>`;
     let corpo = '';
     // Sul telefono i blocchi restano in colonna, nell'ordine di sempre (lo
     // dice il CSS con `order`); dal computer diventano un cruscotto: i numeri
@@ -946,6 +978,7 @@ export const adminConsole = {
       corpo = `<input class="field-input" id="adm-cerca" placeholder="Cerca per squadra, fantallenatore o lega" value="${esc(cerca)}" autocomplete="off">
         ${squadre(cache.squadre)}`;
     } else if (aTab === 'sponsor') corpo = sponsor();
+    else if (aTab === 'shop') corpo = shopOrdini(cache.shop);
     else corpo = leghe(cache.leghe);
     return `<main class="a-body adm-console">${barra}
       ${aTab === 'numeri' ? `<div class="a-sec adm-titolo"><b>Come va</b><span>adesso · ${timeIt(new Date().toISOString())}</span></div>` : ''}
@@ -982,6 +1015,11 @@ export const adminConsole = {
           ctx.render();
         }
         if (aTab === 'squadre' && !cache.squadre) { cache.squadre = await S.adminSquadre(cerca, 100); ctx.render(); }
+        // senza la 056 la funzione non c'e': lo si dice, non e' un errore
+        if (aTab === 'shop' && cache.shop === undefined) {
+          try { cache.shop = await S.adminShopOrdini(shopTutti); } catch (e) { cache.shop = /admin_shop_ordini|function|schema cache/i.test(e.message || '') ? 'assente' : { errore: e.message }; }
+          ctx.render();
+        }
         // I conteggi (018): una volta per apertura della console. Se la
         // migrazione non c'e' ancora tornano vuoti e la scheda funziona lo
         // stesso — si vede "nessuna vista", non un errore.
@@ -1018,6 +1056,16 @@ export const adminConsole = {
     root.querySelector('main').addEventListener('click', async (e) => {
       const t = e.target.closest('[data-atab]');
       if (t) { aTab = t.dataset.atab; if (aTab === 'formazioni') cache.formazioni = undefined; ctx.render(); return; }
+      const sf = e.target.closest('[data-shop-filtro]');
+      if (sf) { shopTutti = sf.dataset.shopFiltro === 'tutti'; cache.shop = undefined; ctx.render(); return; }
+      const ss = e.target.closest('[data-shop-stato]');
+      if (ss) {
+        const [id, stato] = ss.dataset.shopStato.split('|');
+        if (stato === 'annullato' && !confirm(`Annullare l'ordine n. ${id}?`)) return;
+        ss.disabled = true;
+        try { await S.adminShopStato(Number(id), stato); cache.shop = await S.adminShopOrdini(shopTutti); ctx.render(); } catch (err) { ctx.toast(err.message || 'Non è stato possibile'); ss.disabled = false; }
+        return;
+      }
       const ff = e.target.closest('[data-form-filtro]');
       if (ff) { soloDaSistemare = ff.dataset.formFiltro === 'da'; ctx.render(); return; }
       const fc = e.target.closest('[data-form-conf]');

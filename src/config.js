@@ -88,7 +88,7 @@ export const TITOLARE = {
   rappresentanteUE: '',
 };
 /** Data dell'ultima revisione dei testi legali, in ISO. */
-export const LEGALI_AGGIORNATE = '2026-11-04';
+export const LEGALI_AGGIORNATE = '2026-11-12';
 /** Eta' minima per iscriversi. */
 export const ETA_MINIMA = 14;
 /**

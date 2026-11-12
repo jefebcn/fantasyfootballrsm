@@ -457,6 +457,36 @@ export function createClient(_url, _key, opts) {
           for (const r of T('gioco_partite')) { const x = per.get(r.giorno) || per.set(r.giorno, { giorno: r.giorno, giocatori: 0, vinti: 0, somma: 0 }).get(r.giorno); x.giocatori++; if (r.vinto) { x.vinti++; x.somma += r.tentativi; } }
           return { data: [...per.values()].sort((a, b) => (a.giorno < b.giorno ? 1 : -1)).map(({ somma, ...x }) => ({ ...x, media_tentativi: x.vinti ? Math.round((somma / x.vinti) * 10) / 10 : null })), error: null };
         }
+        // 056: lo shop. Stessi conti della funzione vera: il prezzo lo decide
+        // il server, la spedizione si paga una volta, l'admin cambia lo stato.
+        if (name === 'shop_ordina') {
+          const prezzi = { 'top-fantatitano': 1800 };
+          const prezzo = prezzi[args.p_articolo]; const q = Number(args.p_quantita) || 1;
+          if (!userId) throw new Error("Per ordinare devi aver fatto l'accesso.");
+          if (!prezzo) throw new Error('Articolo non disponibile.');
+          if (!['S', 'M', 'L', 'XL'].includes(args.p_taglia) || !(q >= 1 && q <= 5) || !['spedizione', 'ritiro'].includes(args.p_consegna)) throw new Error('Ordine non valido.');
+          if (String(args.p_nome || '').trim().length < 2 || String(args.p_contatto || '').trim().length < 3) throw new Error('Mancano il nome o il recapito.');
+          if (args.p_consegna === 'spedizione' && String(args.p_indirizzo || '').trim().length < 8) throw new Error("Per la spedizione serve l'indirizzo.");
+          const sped = args.p_consegna === 'spedizione' ? 200 : 0;
+          const id = T('shop_ordini').length + 1;
+          T('shop_ordini').push({ id, creato_at: now(), user_id: userId, articolo: args.p_articolo, taglia: args.p_taglia, quantita: q, consegna: args.p_consegna,
+            nome: args.p_nome, contatto: args.p_contatto, indirizzo: args.p_consegna === 'spedizione' ? args.p_indirizzo : null, note: args.p_note || null,
+            totale_cent: prezzo * q + sped, stato: 'nuovo' });
+          persisti(); return { data: id, error: null };
+        }
+        if (name === 'shop_miei_ordini') {
+          return { data: T('shop_ordini').filter((o) => o.user_id === userId).sort((a, b) => b.id - a.id)
+            .map(({ id, creato_at, articolo, taglia, quantita, consegna, totale_cent, stato }) => ({ id, creato_at, articolo, taglia, quantita, consegna, totale_cent, stato })), error: null };
+        }
+        if (name === 'admin_shop_ordini') {
+          if (!amministro()) throw new Error('solo admin');
+          return { data: T('shop_ordini').filter((o) => args.p_tutti || !['consegnato', 'annullato'].includes(o.stato)).sort((a, b) => b.id - a.id).map((o) => ({ ...o, email: null })), error: null };
+        }
+        if (name === 'admin_shop_stato') {
+          if (!amministro()) throw new Error('solo admin');
+          const o = T('shop_ordini').find((x) => x.id === Number(args.p_id)); if (o) o.stato = args.p_stato;
+          persisti(); return { data: null, error: null };
+        }
         if (name === 'admin_risolvi_errore') {
           if (!amministro()) throw new Error("Serve essere amministratore dell'app");
           const r = T('errori_app').find((e) => String(e.id) === String(args.p_id));

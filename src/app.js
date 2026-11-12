@@ -22,7 +22,7 @@ const ROUTES = [
   ['video', views.video], ['regolamento', views.regolamento], ['regole', views.regole], ['scheda', views.scheda], ['impostazioni', views.impostazioni], ['impostazioni/avanzate', views.avanzate], ['scambi', views.scambi], ['privacy', views.privacy], ['termini', views.termini], ['archiviazione', views.archiviazione], ['licenze', views.licenze], ['cancella-account', views.cancella], ['giocatori', views.adesione], ['consenso/:id', views.attestato],
   ['admin', views.adminGiornata], ['admin/partita/:id', views.adminPartita], ['admin/contestazioni', views.adminContestazioni],
   ['admin/congela', views.adminCongela], ['admin/console', views.adminConsole], ['admin/registro', views.adminRegistro], ['mercato', views.mercato], ['asta', views.asta],
-  ['login', views.login], ['leghe', views.leghe], ['lega', views.lega], ['gestione', views.gestione], ['squadra', views.squadra], ['vice/:code', views.vice], ['setup', views.setup], ['offline', views.offline], ['sospeso', views.sospeso], ['benvenuto', views.onboarding], ['guida', views.guida], ['gioco', views.gioco],
+  ['login', views.login], ['leghe', views.leghe], ['lega', views.lega], ['gestione', views.gestione], ['squadra', views.squadra], ['vice/:code', views.vice], ['setup', views.setup], ['offline', views.offline], ['sospeso', views.sospeso], ['benvenuto', views.onboarding], ['guida', views.guida], ['gioco', views.gioco], ['shop', views.shop],
 ];
 
 function resolve(hash) {
@@ -194,7 +194,7 @@ function drawer() {
       : `<a class="a-btn" href="#/rosa/formazione" style="text-decoration:none">${icon('shirt', 'ic sm')}${t('Schiera la formazione')}</a>`;
   })()}</div>` : ''}
     ${vociInstalla()}
-    ${item('#/gestione', { l: 'impostazioni' }, t('Gestione lega'), t('tutte le sezioni'))}${item('#/squadra', { l: 'la-mia-squadra' }, t('La mia squadra'), t('stemma, maglia e nomi'))}
+    ${item('#/gestione', { l: 'impostazioni' }, t('Gestione lega'), t('tutte le sezioni'))}${item('#/squadra', { l: 'la-mia-squadra' }, t('La mia squadra'), t('stemma, maglia e nomi'))}${/* Lo shop (Alex, 12/11) */ item('#/shop', 'cart', t('Shop'), t('il top Fantatitano'))}
     ${/* Le impostazioni erano l'ultima riga del menu, senza icona, sotto due
           schermate di voci: Alex, l'8 ottobre, non le ha trovate. Stanno qui,
           in cima, con la guida di TITO accanto. */
@@ -228,7 +228,7 @@ const STATE_ROUTE = { unconfigured: 'setup', offline: 'offline', anonymous: 'log
 // A chi e' sospeso restano le impostazioni e le pagine che ci stanno dentro:
 // da li' si scaricano i propri dati e si cancella l'account, che sono diritti
 // e non si sospendono insieme al resto.
-const ALLOWED = { 'no-league': ['leghe', 'guida', 'impostazioni', 'impostazioni/avanzate', 'admin/console'], anonymous: ['login', 'benvenuto'],
+const ALLOWED = { 'no-league': ['leghe', 'guida', 'impostazioni', 'impostazioni/avanzate', 'admin/console', 'shop'], anonymous: ['login', 'benvenuto'],
   sospeso: ['impostazioni', 'impostazioni/avanzate', 'privacy', 'termini', 'archiviazione', 'licenze', 'cancella-account'] };
 // Le pagine legali si leggono SEMPRE: senza account, senza collegamento,
 // anche prima di configurare il server. Un'informativa raggiungibile solo a

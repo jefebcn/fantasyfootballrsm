@@ -14,5 +14,6 @@ import { HOME } from './es-home.js';
 import { SQUADRA } from './es-squadra.js';
 import { VOTI } from './es-voti.js';
 import { CAMPIONATO } from './es-campionato.js';
+import { SHOP } from './es-shop.js';
 
-export const ES = { ...BASE, ...ACCESSO, ...HOME, ...SQUADRA, ...VOTI, ...CAMPIONATO };
+export const ES = { ...BASE, ...ACCESSO, ...HOME, ...SQUADRA, ...VOTI, ...CAMPIONATO, ...SHOP };

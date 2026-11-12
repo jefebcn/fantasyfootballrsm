@@ -391,25 +391,27 @@ hr.sep{border:0;border-top:1px solid var(--border);margin:4px 0}
 .a-league{display:none}
 .a-league .ic{color:var(--text-muted)}
 /* LA COPERTINA della Home (dashboard.js, copertina()).
-   In alto il Titano di notte con le tre torri, una fascia alta 210px; la
+   In alto il Titano con le tre torri, una fascia alta 300px (vedi sotto); la
    squadra comincia dove finisce il crinale, sul blu scuro che continua sotto
    la foto: stemma e nome al centro, i numeri e le azioni dentro la copertina
    invece che in una card che ci risale sopra. */
 .a-herowrap{margin:-12px -16px 0;overflow:hidden}
 .a-hero{position:relative;display:flex;flex-direction:column;gap:14px;padding:14px 16px 16px;
   color:#fff;background:var(--grad-hero);overflow:hidden}
-/* Alex, 12/11: «troppo scuro, fa addormentare la vista». Sotto la foto un blu
-   piu' acceso (royal, come il primario) che scende verso il viola del marchio,
-   e il Titano un po' piu' luminoso. Il colore in cima al gradiente e' lo
-   stesso con cui finisce il velo della foto: niente stacco a 210px. */
-.a-hero.foto{background:linear-gradient(180deg,#2B45B5 0,#2B45B5 200px,#3A5FD0 360px,#4558E0 75%,#5340E6 100%)}
-.a-hero.foto .sfondo img{filter:brightness(1.75) saturate(1.15)}
+/* Alex, 12/11: «troppo scuro, fa addormentare la vista». Il Titano di giorno,
+   al tramonto (media/sfondo-titano.jpg, disegnato da Alex), in una fascia piu'
+   alta (300px) perche' le tre torri si vedano tutte sotto la targa della lega;
+   sotto, un blu royal che scende verso il viola del marchio. Il colore in cima
+   al gradiente e' quello con cui finisce il velo della foto: niente stacco. */
+.a-hero.foto{background:linear-gradient(180deg,#2B45B5 0,#2B45B5 290px,#3A5FD0 440px,#4558E0 78%,#5340E6 100%)}
+.a-hero.foto .sfondo{height:300px}
+.a-hero.foto .sfondo img{object-position:center 40%}
 .a-hero .tw{position:absolute;right:-26px;top:-20px;width:220px;height:220px;opacity:.08;color:#fff}
 .a-hero .sfondo{position:absolute;left:0;right:0;top:0;height:210px;z-index:0;overflow:hidden}
 .a-hero .sfondo img{display:block;width:100%;height:100%;object-fit:cover;object-position:center bottom}
 /* il velo: un filo in cima per la targa della lega, e in fondo si fonde col blu */
 .a-hero .sfondo i{position:absolute;inset:0;
-  background:linear-gradient(180deg,rgba(43,69,181,.15) 0%,rgba(43,69,181,0) 34%,rgba(43,69,181,0) 60%,#2B45B5 100%)}
+  background:linear-gradient(180deg,rgba(43,69,181,.2) 0%,rgba(43,69,181,0) 22%,rgba(43,69,181,0) 58%,#2B45B5 100%)}
 .a-hero > :not(.sfondo):not(.tw){position:relative;z-index:1}
 
 .a-hero .hero-league{align-self:center;display:inline-flex;align-items:center;gap:8px;max-width:100%;
@@ -425,7 +427,7 @@ hr.sep{border:0;border-top:1px solid var(--border);margin:4px 0}
    un anello lime, il segno della lega. Il personaggio, se scelto, al posto
    suo e un po' piu' alto. */
 .a-hero .hero-stemma{align-self:center;display:block;text-decoration:none;filter:drop-shadow(0 10px 18px rgba(0,0,0,.45))}
-.a-hero.foto .hero-stemma{margin-top:86px}
+.a-hero.foto .hero-stemma{margin-top:150px}
 .a-hero .hero-stemma .crest.hero{width:108px;height:108px;font-size:30px;border:4px solid #04173B;box-shadow:0 0 0 3px var(--c-lime)}
 .a-hero .hero-stemma.pers{height:150px}
 .a-hero .hero-stemma.pers .pers{max-height:150px;width:auto;margin:0 auto}

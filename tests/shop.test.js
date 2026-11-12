@@ -24,7 +24,7 @@ test('prezzi e taglie dell\'app sono gli stessi del database', () => {
   for (const a of ARTICOLI) {
     assert.match(sql, new RegExp(`when '${a.id}' then ${a.prezzoCent}\\b`), `prezzo di ${a.id}`);
   }
-  assert.match(sql, new RegExp(`shop_spedizione\\(\\) returns int\\s+language sql immutable as \\$\\$ select ${SPEDIZIONE_CENT} \\$\\$`));
+  assert.match(sql, new RegExp(`shop_spedizione\\(\\) returns int\\s+language sql immutable set search_path = '' as \\$\\$ select ${SPEDIZIONE_CENT} \\$\\$`));
   assert.match(sql, new RegExp(`taglia in \\(${TAGLIE.map((t) => `'${t}'`).join(', ')}\\)`));
 });
 

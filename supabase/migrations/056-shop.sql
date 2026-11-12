@@ -52,13 +52,13 @@ revoke all on table public.shop_ordini from public, anon, authenticated;
 -- Il catalogo: un articolo per riga. Prezzi in centesimi. Lo stesso elenco sta
 -- in src/shop.js per mostrarlo; qui decide quanto si paga.
 create or replace function public.shop_prezzo(p_articolo text) returns int
-language sql immutable as $$
+language sql immutable set search_path = '' as $$
   select case p_articolo
     when 'top-fantatitano' then 1800
     else null end
 $$;
 create or replace function public.shop_spedizione() returns int
-language sql immutable as $$ select 200 $$;
+language sql immutable set search_path = '' as $$ select 200 $$;
 
 create or replace function public.shop_ordina(
   p_articolo text, p_taglia text, p_quantita int, p_consegna text,

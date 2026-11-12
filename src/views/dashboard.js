@@ -9,6 +9,7 @@ import { personaggio, scelto, figura } from '../personaggio.js';
 import { partitaDiOggi } from './gioco.js';
 import { INVITO_CALCIATORI } from '../config.js';
 import { riquadroRichiesta, rispondi } from './chiedi-avvisi.js';
+import { eNotte } from '../sole.js';
 
 const RULES = [
   ['Art. 7.4', 'Rigore parato', 'Vale +3,0 al portiere e −3,0 al tiratore. Sul palo o fuori: −3,0 al tiratore e nessun bonus al portiere.'],
@@ -549,6 +550,9 @@ function notizie() {
  */
 function copertina(me, row, ph) {
   const foto = S.store.get().sfondoFoto;
+  // Dopo il tramonto il Titano di notte (Alex, 12/11): si decide a ogni
+  // disegno della home, senza timer.
+  const notte = foto && eNotte();
   const numeri = S.aPunti()
     // A punti "Punti" e "Fantapunti" sarebbero lo stesso numero due volte:
     // al suo posto la media, che dice come stai andando e non solo quanto hai
@@ -557,8 +561,8 @@ function copertina(me, row, ph) {
     ? [[fmt(row.punti), t('Punti')], [row.played, t('Giornate')], [fmt(row.media || 0), t('Media')]]
     : [[row.points, t('Punti')], [row.played, t('Partite')], [fmt(row.fantapunti), t('Fantapunti')]];
   return `<div class="a-herowrap">
-    <div class="a-hero${foto ? ' foto' : ''}">
-      ${foto ? '<span class="sfondo"><img src="media/sfondo-titano.jpg" alt="" fetchpriority="high"><i></i></span>' : logo('tw')}
+    <div class="a-hero${foto ? ' foto' : ''}${notte ? ' notte' : ''}">
+      ${foto ? `<span class="sfondo"><img src="media/sfondo-titano${notte ? '-notte' : ''}.jpg" alt="" fetchpriority="high"><i></i></span>` : logo('tw')}
       <a class="hero-league" href="#/leghe">
         <span><b>${esc(S.base.league.name)}</b>
         <small>${plurale(S.base.managers.length, t('squadra'), t('squadre'))} · ${t('{n}ª giornata', { n: ph.next })}</small></span>${icon('chev', 'ic sm')}</a>

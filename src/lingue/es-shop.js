@@ -50,6 +50,10 @@ export const SHOP = {
   'Ordine n. {id} ricevuto': 'Pedido n.º {id} recibido',
   'Ti scriviamo al recapito che hai lasciato per confermarlo e per il pagamento. Totale: {totale}.':
     'Te escribimos al contacto que dejaste para confirmarlo y para el pago. Total: {totale}.',
+  'ritiro gratis allo stadio': 'retiro gratis en el estadio',
+  Scopri: 'Descubrir',
+  'Nascondi per ora': 'Ocultar por ahora',
+  'Ok, lo shop resta nel menu': 'Ok, la tienda queda en el menú',
   'Scegli la taglia.': 'Elige el talle.',
   'Scrivi nome e cognome.': 'Escribe nombre y apellido.',
   'Lascia un recapito: telefono, e-mail o Instagram.': 'Deja un contacto: teléfono, e-mail o Instagram.',

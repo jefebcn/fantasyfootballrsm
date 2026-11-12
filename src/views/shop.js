@@ -139,7 +139,7 @@ export const shop = {
       try {
         const id = await S.shopOrdina({ articolo: a.id, taglia: s.taglia, quantita: s.quantita, consegna: s.consegna,
           nome: s.nome.trim(), contatto: s.contatto.trim(), indirizzo: s.consegna === 'spedizione' ? s.indirizzo.trim() : null, note: s.note.trim() });
-        scrivi({ nome: s.nome.trim(), contatto: s.contatto.trim(), indirizzo: s.indirizzo.trim() });
+        scrivi({ ...leggi(), nome: s.nome.trim(), contatto: s.contatto.trim(), indirizzo: s.indirizzo.trim(), ordinato: Date.now() });
         fatto = { id, articolo: a.id, totale: totaleCent(a, s.quantita, s.consegna) };
         s.note = ''; s.taglia = ''; s.quantita = 1;
         riuscito = true;

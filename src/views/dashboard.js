@@ -10,6 +10,7 @@ import { partitaDiOggi } from './gioco.js';
 import { INVITO_CALCIATORI } from '../config.js';
 import { riquadroRichiesta, rispondi } from './chiedi-avvisi.js';
 import { eNotte } from '../sole.js';
+import { ARTICOLI, euro } from '../shop.js';
 
 const RULES = [
   ['Art. 7.4', 'Rigore parato', 'Vale +3,0 al portiere e −3,0 al tiratore. Sul palo o fuori: −3,0 al tiratore e nessun bonus al portiere.'],
@@ -235,6 +236,31 @@ function cartaGioco(dove) {
   const testo = !g.tentativi ? t('Il giocatore del giorno: indovinalo in 6 tentativi')
     : g.tentativi === 1 ? t('In corso · 1 tentativo su 6') : t('In corso · {n} tentativi su 6', { n: g.tentativi });
   return `<a class="a-card ce-home nuovo" href="#/gioco"><span class="ce-home-ico da-giocare" aria-hidden="true">?</span><span class="ce-home-txt"><b>${t('Chi è?')} <small>#${g.numero}</small></b><span>${testo}</span></span><span class="ce-home-cta">${g.tentativi ? t('Continua') : t('Gioca')}</span></a>`;
+}
+
+/**
+ * LO SHOP IN HOME (Alex, 12/11: «metti lo shop anche nella home, vedi tu
+ * come impostare tutto a livello di ui/ux»). Un banner solo, con la foto del
+ * top: sotto la giornata in corso e non in cima, perche' la Home serve prima
+ * di tutto a giocare e un annuncio sopra la propria partita stanca subito.
+ * Si chiude con la ✕ e torna dopo tre settimane; chi ha gia' ordinato non lo
+ * rivede (lo shop resta sempre nel menu).
+ */
+const SHOP_PAUSA = 21 * 86400000;
+function bannerShop() {
+  let s = {};
+  try { s = JSON.parse(localStorage.getItem('fcs:shop')) || {}; } catch { /* niente */ }
+  if (s.ordinato || (s.nascosto && Date.now() - s.nascosto < SHOP_PAUSA)) return '';
+  const a = ARTICOLI[0]; if (!a) return '';
+  return `<div class="shop-banner">
+    <a class="sb-link" href="#/shop">
+      <span class="sb-txt"><span class="sb-tag">${t('Shop')}</span><b>${esc(t(a.nome))}</b>
+        <span class="sb-sub">${euro(a.prezzoCent)} · ${t('ritiro gratis allo stadio')}</span>
+        <span class="sb-cta">${t('Scopri')}${icon('chev', 'ic sm')}</span></span>
+      <img src="media/shop/top-mini.webp" alt="" width="240" height="300" loading="lazy" decoding="async">
+    </a>
+    <button class="sb-chiudi" data-shop-nascondi aria-label="${t('Nascondi per ora')}">✕</button>
+  </div>`;
 }
 
 function invitoCalciatori() {
@@ -633,6 +659,7 @@ export const dashboard = {
       ${noRoster && !S.legaPubblica() ? tile({ href: S.isLeagueAdmin() ? '#/lega' : '#/leghe', lead: icon('warn'), leadKind: 'warn',
           title: t('Rose non ancora assegnate'),
           sub: S.isLeagueAdmin() ? t('Generale o inserirle dalla gestione lega') : t("Le assegna l'admin della lega dopo l'asta") }) : azione(ph, bloccato)}
+      ${bannerShop()}
       ${richiestaPromemoria()}
       ${invitoCalciatori()}
       ${ultimiCinque(last, me)}
@@ -679,6 +706,10 @@ export const dashboard = {
       slot.querySelector('#inst-no').onclick = () => { S.store.set({ installedDismissed: true }); slot.innerHTML = ''; };
     };
     show(); document.addEventListener('installable', show, { once: true });
+    root.querySelector('[data-shop-nascondi]')?.addEventListener('click', (e) => {
+      try { const v = JSON.parse(localStorage.getItem('fcs:shop')) || {}; v.nascosto = Date.now(); localStorage.setItem('fcs:shop', JSON.stringify(v)); } catch { /* privato: sparisce fino al prossimo giro */ }
+      e.currentTarget.closest('.shop-banner')?.remove(); ctx.toast(t('Ok, lo shop resta nel menu'));
+    });
     if (root.querySelector('.invito-calc')) S.contaBannerUnaVolta('visto');
     root.querySelector('.invito-calc')?.addEventListener('click', (e) => {
       if (e.target.closest('[data-calc="si"]')) { S.contaBannerUnaVolta('ci_gioco'); location.hash = '#/giocatori'; return; }

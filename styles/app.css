@@ -2884,3 +2884,18 @@ a.crow .cls-chev{flex:none;color:var(--text-muted);margin-left:-4px}
 .shop-stato{flex:none;font-size:12px;font-weight:700;padding:4px 10px;border-radius:999px;background:var(--surface-sunk)}
 .shop-stato.pagato,.shop-stato.spedito,.shop-stato.consegnato{background:var(--c-lime);color:#04173B}
 .shop-stato.annullato{opacity:.6}
+
+/* Lo shop in Home (Alex, 12/11): un banner col top, sotto la giornata in corso */
+.shop-banner{position:relative}
+.shop-banner .sb-link{display:flex;align-items:stretch;min-height:132px;border-radius:var(--r-md);overflow:hidden;text-decoration:none;color:#fff;
+  background:linear-gradient(120deg,#3A1FB8 0%,#5340E6 55%,#6B55F0 100%);box-shadow:var(--sh-card)}
+.shop-banner .sb-txt{flex:1;min-width:0;display:flex;flex-direction:column;justify-content:center;gap:3px;padding:14px 8px 14px 16px}
+.shop-banner .sb-tag{align-self:flex-start;font:800 11px/1 var(--font-body);letter-spacing:.1em;text-transform:uppercase;background:var(--c-lime);color:#04173B;padding:4px 8px;border-radius:6px;transform:rotate(-2deg);margin-bottom:4px}
+.shop-banner b{font:italic 900 19px/1.1 var(--font-display);text-transform:uppercase}
+.shop-banner .sb-sub{font-size:13px;opacity:.88}
+.shop-banner .sb-cta{display:inline-flex;align-items:center;gap:2px;margin-top:6px;font-weight:700;font-size:13px;color:var(--c-lime)}
+.shop-banner .sb-cta .ic{width:14px;height:14px}
+.shop-banner img{flex:none;width:106px;height:auto;object-fit:cover;align-self:stretch;
+  -webkit-mask-image:linear-gradient(90deg,transparent 0,#000 22%);mask-image:linear-gradient(90deg,transparent 0,#000 22%)}
+.shop-banner .sb-chiudi{position:absolute;top:6px;right:6px;width:28px;height:28px;border-radius:50%;border:0;background:rgba(4,23,59,.55);color:#fff;font-size:13px;line-height:28px;padding:0;cursor:pointer}
+.shop-banner .sb-link:active{transform:scale(.99)}

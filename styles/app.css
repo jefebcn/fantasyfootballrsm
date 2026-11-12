@@ -406,6 +406,12 @@ hr.sep{border:0;border-top:1px solid var(--border);margin:4px 0}
 .a-hero.foto{background:linear-gradient(180deg,#2B45B5 0,#2B45B5 290px,#3A5FD0 440px,#4558E0 78%,#5340E6 100%)}
 .a-hero.foto .sfondo{height:300px}
 .a-hero.foto .sfondo img{object-position:center 40%}
+/* Dopo il tramonto (src/sole.js) il Titano di notte, schiarito perche' non
+   torni il «fa addormentare la vista»: il velo sfuma in un blu notte e il
+   gradiente risale comunque verso il viola del marchio. */
+.a-hero.foto.notte{background:linear-gradient(180deg,#14287A 0,#14287A 290px,#2A3FB0 440px,#3E48D2 78%,#5340E6 100%)}
+.a-hero.foto.notte .sfondo img{object-position:66% 30%;filter:brightness(1.6) saturate(1.15)}
+.a-hero.foto.notte .sfondo i{background:linear-gradient(180deg,rgba(20,40,122,.2) 0%,rgba(20,40,122,0) 22%,rgba(20,40,122,0) 58%,#14287A 100%)}
 .a-hero .tw{position:absolute;right:-26px;top:-20px;width:220px;height:220px;opacity:.08;color:#fff}
 .a-hero .sfondo{position:absolute;left:0;right:0;top:0;height:210px;z-index:0;overflow:hidden}
 .a-hero .sfondo img{display:block;width:100%;height:100%;object-fit:cover;object-position:center bottom}

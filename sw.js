@@ -1,12 +1,12 @@
 /* Service worker — shell in cache, aggiornamento in background. */
-const VERSION = 'fcs-v4.2.287';
+const VERSION = 'fcs-v4.2.288';
 const SHELL = [
   './', './index.html', './manifest.webmanifest', './styles/app.css', './styles/logo.css', './styles/font.css', './design/tokens/tokens.css',
   // I caratteri stanno in casa: nella cache ci vanno, se no senza rete si vede
   // il ripiego di sistema. Solo le varianti latin, le altre entrano al bisogno.
   './media/font/lato-400-latin.woff2', './media/font/lato-700-latin.woff2',
   './media/font/lato-900-latin.woff2', './media/font/lato-900i-latin.woff2', './media/font/ibm-plex-mono-500-latin.woff2', './media/font/anton-400-latin.woff2',
-  './src/app.js', './src/state.js', './src/data.js', './src/engine.js', './src/chiusura.js', './src/formazione-mosse.js', './src/ui.js', './src/ui-esc.js', './src/avatar.js', './src/maglia.js', './src/personaggio.js', './src/reclutatori.js', './src/sprite.js', './src/config.js', './src/versione.js', './src/backend.js', './src/auth-clerk.js',
+  './src/app.js', './src/state.js', './src/data.js', './src/engine.js', './src/chiusura.js', './src/formazione-mosse.js', './src/ui.js', './src/ui-esc.js', './src/avatar.js', './src/maglia.js', './src/personaggio.js', './src/reclutatori.js', './src/sprite.js', './src/sole.js', './src/config.js', './src/versione.js', './src/backend.js', './src/auth-clerk.js',
   './src/views/index.js', './src/views/dashboard.js', './src/views/rosa.js', './src/views/formazione.js', './src/views/chiedi-avvisi.js', './src/lingua.js', './src/lingue/es.js', './src/lingue/es-base.js', './src/lingue/es-accesso.js', './src/lingue/es-home.js', './src/lingue/es-squadra.js', './src/lingue/es-voti.js', './src/lingue/es-campionato.js', './src/views/calendario.js',
   './src/views/classifica.js', './src/views/voti.js', './src/views/live.js', './src/views/formazione-di.js', './src/views/listone.js', './src/views/giocatore.js',
   './src/views/regolamento.js', './src/views/scheda.js', './src/views/impostazioni.js', './src/views/formazioni.js', './src/views/nuova-password.js', './src/password.js', './src/views/mercato.js', './src/views/admin.js', './src/views/auth.js', './src/views/leghe.js', './src/views/lega.js', './src/views/setup.js', './src/views/onboarding.js', './src/views/guida.js', './src/views/gestione.js', './src/views/squadra.js', './src/views/vice.js', './src/views/legali.js', './src/views/adesione.js', './src/views/attestato.js', './src/views/gioco.js', './src/gioco.js', './src/notifiche.js', './src/schermo.js', './vendor/supabase-js.js', './src/views/asta.js', './src/views/video.js', './src/video.js', './src/video-dati.js', './src/views/regole.js', './src/views/scambi.js', './src/views/confronto.js',
@@ -29,6 +29,7 @@ const SHELL = [
   './media/sfondo-accesso.jpg',
   // La maglia sta in copertina: e' la prima immagine della dashboard.
   './media/maglia-base.webp', './media/sfondo-home.jpg', './media/sfondo-titano.jpg',
+  './media/sfondo-titano-notte.jpg',
 ];
 /**
  * Il guscio si riscarica dalla RETE, non dalla cache del browser.

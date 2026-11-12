@@ -419,6 +419,17 @@ hr.sep{border:0;border-top:1px solid var(--border);margin:4px 0}
 .a-hero .sfondo i{position:absolute;inset:0;
   background:linear-gradient(180deg,rgba(43,69,181,.2) 0%,rgba(43,69,181,0) 22%,rgba(43,69,181,0) 58%,#2B45B5 100%)}
 .a-hero > :not(.sfondo):not(.tw){position:relative;z-index:1}
+/* Alex, 12/11: sotto i numeri la copertina sfuma nel fondo della pagina, senza
+   lo stacco netto. Solo col tema scuro: in chiaro i bottoni bianchi finirebbero
+   su un fondo chiaro. */
+:root[data-theme="dark"] .a-hero.foto{padding-bottom:30px}
+:root[data-theme="dark"] .a-hero.foto::after{content:"";position:absolute;left:0;right:0;bottom:0;height:150px;z-index:0;pointer-events:none;
+  background:linear-gradient(180deg,rgba(0,0,0,0) 0%,color-mix(in srgb,var(--bg) 35%,transparent) 45%,color-mix(in srgb,var(--bg) 80%,transparent) 78%,var(--bg) 100%)}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]) .a-hero.foto{padding-bottom:30px}
+  :root:not([data-theme="light"]) .a-hero.foto::after{content:"";position:absolute;left:0;right:0;bottom:0;height:150px;z-index:0;pointer-events:none;
+    background:linear-gradient(180deg,rgba(0,0,0,0) 0%,color-mix(in srgb,var(--bg) 35%,transparent) 45%,color-mix(in srgb,var(--bg) 80%,transparent) 78%,var(--bg) 100%)}
+}
 
 .a-hero .hero-league{align-self:center;display:inline-flex;align-items:center;gap:8px;max-width:100%;
   padding:7px 10px 7px 14px;border-radius:999px;color:#fff;text-decoration:none;

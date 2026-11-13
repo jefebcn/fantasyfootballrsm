@@ -89,6 +89,11 @@ def smonta(titolo, quando='', cal=None):
         if not m:
             return None
         casa, ospite = m.group(1), m.group(2)
+    # Dalla 6ª (26/10) anche i titoli con la giornata hanno «HL» davanti alla
+    # casa: «6. giornata | HL Libertas - Folgore 1-2». Senza toglierlo la casa
+    # diventava «HL Libertas», non si riconosceva, e il video finiva fra «Dal
+    # canale»: la sezione video e' rimasta ferma alla 6ª fino al 13/11.
+    casa = re.sub(r'^\s*HL\s+', '', casa, flags=re.I)
     # in coda al nome dell'ospite c'e' spesso il risultato: "Pennarossa 6-1"
     ospite = re.sub(r'\s+\d+\s*[-–]\s*\d+\s*$', '', ospite)
     a, b = CLUB.get(chiave(casa)), CLUB.get(chiave(ospite))
@@ -149,6 +154,15 @@ def main():
             # senza far rumore.
             for r in json.loads(re.sub(r',(\s*])', r'\1', m.group(1))):
                 vecchie[(r[0], r[1], r[2])] = r
+        # I video gia' messi fra «Dal canale» si rileggono: se prima un titolo
+        # non si capiva e ora si', la partita si recupera anche quando il
+        # video e' gia' uscito dal feed (che tiene solo gli ultimi 15).
+        m = re.search(r'export const VIDEO_CANALE = (\[.*?\]);', t, re.S)
+        if m:
+            for vid, titolo, quando in json.loads(re.sub(r',(\s*])', r'\1', m.group(1))):
+                q = smonta(titolo, quando, cal)
+                if q:
+                    vecchie.setdefault((q[0], q[1], q[2]), [q[0], q[1], q[2], vid, quando])
     for r in partite:
         vecchie[(r[0], r[1], r[2])] = r
     unite = sorted(vecchie.values(), key=lambda r: (r[0], r[1]))

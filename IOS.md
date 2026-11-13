@@ -1,8 +1,8 @@
 # Pubblicare Fantatitano sull'App Store
 
-La strada completa, in ordine. Il resto è già nel repository. Il giorno del
-Mac in prestito è il **passo 7**: tutto quello che viene prima si fa da iPhone
-o dal computer, così sul Mac si sta due-tre ore e non un pomeriggio.
+La strada completa, in ordine. Il resto è già nel repository. Xcode ce l'hai
+già (13/11): il lavoro sul Mac è il **passo 7**, e tutto quello che viene prima
+si fa da iPhone o dal browser.
 
 **Chi fa cosa.** Da San Marino Apple non accetta l'iscrizione al programma
 sviluppatori, quindi l'account lo intesta **l'amico** (cittadino croato, UE).
@@ -100,6 +100,9 @@ a destra, se hai più team).
 
 ## 2. Il Team ID — **TU**, poi **IO**
 
+**Fatto il 14/11**: Team ID `8VQ5WP5Y4L`. Il file dei link è scritto e il
+Team è già impostato nel progetto Xcode (in *Signing* lo trovi già scelto).
+
 Dopo l'invito: [developer.apple.com/account](https://developer.apple.com/account)
 → **Membership details** → **Team ID** (10 lettere e numeri). È quello del
 team dell'amico.
@@ -170,17 +173,17 @@ nella scheda.
 La build non c'è ancora: il bottone «Invia per la revisione» resta spento
 fino al passo 7. Va bene così.
 
-## 5. Il Mac in prestito — **chi lo presta**, il giorno prima
+## 5. Il tuo Mac — **TU**, un controllo di 10 minuti
 
-Da controllare e preparare **prima**, perché sono le cose lente:
+Xcode c'è già. Controlla che sia quello giusto:
 
 1. **macOS 15.6 o più recente** (Mela → Informazioni su questo Mac). Da
    aprile 2026 Apple accetta solo app fatte con **Xcode 26**, che su macOS
    più vecchi non si installa. Qualsiasi Mac con chip Apple (M1 o più nuovi)
    va bene; un Intel vecchio potrebbe non arrivarci.
-2. **Xcode** dall'App Store del Mac: pesa più di 10 GB, ci mette ore. Una
-   volta installato va **aperto una volta**: chiede di installare i
-   componenti iOS (*iOS platform*), si dice sì e si aspetta.
+2. **Xcode 26 o più recente**: Xcode → *About Xcode*. Se è più vecchio,
+   aggiornalo dall'App Store del Mac (sono ore: lancialo la sera). Aprilo una
+   volta e, se chiede di installare i componenti iOS (*iOS platform*), di' sì.
 3. **Almeno 40 GB liberi** sul disco.
 4. **Node.js** versione LTS da [nodejs.org](https://nodejs.org) (il
    pacchetto .pkg, cinque minuti). Si può fare anche il giorno stesso.
@@ -200,7 +203,7 @@ rifiuta al primo giro. Serve un account **apposta**:
    Questo passaggio lo prepariamo insieme quando l'account esiste.
 3. Scrivi e-mail e password nelle note per il revisore (passo 9).
 
-## 7. Il giorno del Mac — **TU**, 2-3 ore
+## 7. La build sul Mac — **TU**, 1-2 ore
 
 Apri il **Terminale** sul Mac (Cmd+Spazio, scrivi «Terminale»):
 
@@ -246,6 +249,7 @@ Apple: per provarle così serve il secret `APNS_SANDBOX` = `1` su Supabase, da
 
 | Messaggio | Cosa fare |
 |---|---|
+| *The file "capacitor.config.json" couldn't be opened* (con *config.xml*, *public* e *Command Ld failed*) | manca `npx cap sync ios`, o è partito da un'altra cartella: da GitHub Desktop **Repository → Open in Terminal**, rilancialo, poi in Xcode **Product → Clean Build Folder** e ▶ (successo ad Alex il 14/11) |
 | *No account for team* / *Signing requires a development team* | punto 1 e 2: account in Xcode e Team scelto |
 | *Failed to register bundle identifier* | il Bundle ID è già registrato su un altro account: dimmelo |
 | *You do not have permission to create certificates* | nell'invito del passo 1b manca la spunta «Accesso a Certificati, Identificatori e Profili»: l'amico la aggiunge da Utenti e accesso |
@@ -330,7 +334,7 @@ Center e si rimanda.
 | 1. Account Apple Developer | AMICO | 1-2 giorni di attesa |
 | 1b. Invito di Alex come Admin | AMICO, poi TU | 5 minuti |
 | 2-4. Team ID, chiave notifiche, scheda | TU (+ IO) | 1 ora in tutto |
-| 5. Preparare il Mac | chi lo presta | la sera prima |
+| 5. Controllare Xcode | TU | 10 minuti |
 | 6. Account di prova | insieme | 20 minuti |
 | 7. Build e upload | TU sul Mac | 2-3 ore |
 | 8. TestFlight | TU | 20 minuti |

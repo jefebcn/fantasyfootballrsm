@@ -246,6 +246,7 @@ Apple: per provarle così serve il secret `APNS_SANDBOX` = `1` su Supabase, da
 
 | Messaggio | Cosa fare |
 |---|---|
+| *The file "capacitor.config.json" couldn't be opened* (con *config.xml*, *public* e *Command Ld failed*) | manca `npx cap sync ios`, o è partito da un'altra cartella: da GitHub Desktop **Repository → Open in Terminal**, rilancialo, poi in Xcode **Product → Clean Build Folder** e ▶ (successo ad Alex il 14/11) |
 | *No account for team* / *Signing requires a development team* | punto 1 e 2: account in Xcode e Team scelto |
 | *Failed to register bundle identifier* | il Bundle ID è già registrato su un altro account: dimmelo |
 | *You do not have permission to create certificates* | nell'invito del passo 1b manca la spunta «Accesso a Certificati, Identificatori e Profili»: l'amico la aggiunge da Utenti e accesso |

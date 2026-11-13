@@ -65,13 +65,14 @@ DENTRO L'APP
 • Confronto diretto fra due giocatori, numeri alla mano
 • Gli highlights delle partite dal canale della Federazione
 • Il promemoria della formazione con le notifiche, se lo vuoi
+• Lo shop: il top Fantatitano, con ritiro allo stadio o spedizione
 
 SENZA PUBBLICITÀ CHE TI INSEGUE
 Nessuna profilazione, nessun tracciatore di terze parti, nessun cookie di marketing. In home può comparire uno spazio sponsor, dichiarato come tale e uguale per tutti: non viene scelto in base a chi sei.
 
 Fantatitano non è affiliato alla Federazione Sammarinese Giuoco Calcio né alle società del campionato, e non ne rappresenta le posizioni. Calendario, risultati e tabellini arrivano dai referti pubblici della Federazione.
 
-L'app si usa gratis, senza acquisti. Serve un account con e-mail e nome: si cancella da dentro l'app (Profilo, poi «Elimina account»).
+Il gioco è gratis e non ha acquisti in-app. Nello shop si può ordinare il top Fantatitano: il pagamento si concorda dopo, fuori dall'app. Serve un account con e-mail e nome: si cancella da dentro l'app (Profilo, poi «Elimina account»).
 ```
 
 ## Gli indirizzi
@@ -88,7 +89,9 @@ L'app si usa gratis, senza acquisti. Serve un account con e-mail e nome: si canc
 - **Categoria principale**: Sport. **Secondaria**: Intrattenimento. Non
   «Giochi»: in quella categoria Apple fa più domande e la scheda finisce
   fra videogiochi che non c'entrano.
-- **Prezzo**: Gratis. Nessun acquisto in-app.
+- **Prezzo**: Gratis. Nessun acquisto in-app. Lo shop vende un capo
+  d'abbigliamento, cioè un bene fisico: per Apple quello si paga fuori
+  dall'acquisto in-app (regola 3.1.3(e)), ed è così che funziona.
 - **Disponibilità**: tutti i paesi (San Marino usa l'App Store italiano).
 - **Dispositivi**: solo iPhone. Il progetto Xcode è impostato così, quindi
   Apple non chiede gli screenshot per iPad.
@@ -120,14 +123,18 @@ a cosa serve, se è **collegato** alla persona, se serve a **tracciarla**
 | Dato in App Store Connect | Collegato alla persona | Scopo |
 |---|---|---|
 | Informazioni di contatto → **Indirizzo e-mail** | Sì | Funzionalità dell'app (l'account) |
-| Informazioni di contatto → **Nome** | Sì | Funzionalità dell'app (il nome che vedono gli altri della lega) |
+| Informazioni di contatto → **Nome** | Sì | Funzionalità dell'app (il nome che vedono gli altri della lega; il nome per la consegna di un ordine dello shop) |
+| Informazioni di contatto → **Indirizzo fisico** | Sì | Funzionalità dell'app (la spedizione di un ordine dello shop, solo se la scegli) |
+| Informazioni di contatto → **Numero di telefono** | Sì | Funzionalità dell'app (il recapito per un ordine dello shop, se lasci un numero) |
+| Acquisti → **Cronologia acquisti** | Sì | Funzionalità dell'app (gli ordini dello shop: articolo, taglia, stato) |
 | Contenuti dell'utente → **Foto o video** | Sì | Funzionalità dell'app (lo stemma, solo se lo carichi) |
 | Contenuti dell'utente → **Altri contenuti dell'utente** | Sì | Funzionalità dell'app (squadra, rosa, formazioni, contestazioni) |
 | Identificatori → **ID utente** | Sì | Funzionalità dell'app (chi ha invitato chi, per il badge «Reclutatore») |
 | Diagnostica → **Dati sui crash** e **Altri dati diagnostici** | **No** | Funzionalità dell'app (correggere i difetti: nessun identificativo) |
 
-Tutto il resto: **non raccolto**. Niente posizione, dati finanziari, salute,
-contatti, cronologia, acquisti, dati d'uso per pubblicità.
+Tutto il resto: **non raccolto**. Niente posizione, dati finanziari (carte,
+conti: lo shop non incassa nell'app), salute, rubrica, cronologia di
+navigazione, dati d'uso per pubblicità.
 
 Il codice per le notifiche (il «token» del telefono) Apple non lo considera un
 dato da dichiarare quando serve solo a mandare le notifiche dell'app stessa.
@@ -159,7 +166,9 @@ apposta (IOS.md, passo 6) e scrivi qui sotto e-mail e password.
 **Note** (da incollare, sono in inglese perché le legge un revisore Apple):
 
 ```
-Fantatitano is a free fantasy football game for the San Marino football league (Campionato Sammarinese). There are no purchases and no real-money prizes.
+Fantatitano is a free fantasy football game for the San Marino football league (Campionato Sammarinese). There are no in-app purchases and no real-money prizes.
+
+Shop: the "Shop" section (side menu) lets users order a physical item, a Fantatitano top, for pickup at the stadium or delivery. No payment happens in the app: it is arranged afterwards, outside the app. As a physical good it falls under guideline 3.1.3(e), so in-app purchase does not apply.
 
 Demo account: the credentials above are already in a league with a full squad, so you can open the lineup screen (bottom bar: "Rosa" -> "Formazione"), player scores ("Voti") and the standings ("Classifica").
 

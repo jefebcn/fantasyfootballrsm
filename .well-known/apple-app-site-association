@@ -1,0 +1,21 @@
+{
+  "applinks": {
+    "details": [
+      {
+        "appIDs": [
+          "8VQ5WP5Y4L.site.fantatitano.app"
+        ],
+        "components": [
+          {
+            "/": "/*"
+          }
+        ]
+      }
+    ]
+  },
+  "webcredentials": {
+    "apps": [
+      "8VQ5WP5Y4L.site.fantatitano.app"
+    ]
+  }
+}

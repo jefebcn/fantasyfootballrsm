@@ -100,6 +100,9 @@ a destra, se hai più team).
 
 ## 2. Il Team ID — **TU**, poi **IO**
 
+**Fatto il 14/11**: Team ID `8VQ5WP5Y4L`. Il file dei link è scritto e il
+Team è già impostato nel progetto Xcode (in *Signing* lo trovi già scelto).
+
 Dopo l'invito: [developer.apple.com/account](https://developer.apple.com/account)
 → **Membership details** → **Team ID** (10 lettere e numeri). È quello del
 team dell'amico.

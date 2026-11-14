@@ -72,7 +72,7 @@ export const CALENDARIO = [
   [9,"faetano","murata","2026-11-09T21:45:00+01:00","Stadio di Domagnano",2,5],
   [9,"cailungo","trefiori","2026-11-09T22:00:00+01:00","Multieventi Sport Domus",3,3],
   [9,"cosmos","lafiorita","2026-11-10T22:00:00+01:00","Palestra di Acquaviva",1,6],
-  [9,"trepenne","fiorentino","2026-11-12T22:00:00+01:00","Palestra di Acquaviva",null,null],
+  [9,"trepenne","fiorentino","2026-11-12T22:00:00+01:00","Palestra di Acquaviva",5,1],
   [10,"murata","cosmos","2026-11-16T20:15:00+01:00","Stadio di Fiorentino",null,null],
   [10,"trepenne","cailungo","2026-11-16T20:15:00+01:00","Stadio di Domagnano",null,null],
   [10,"folgore","sangiovanni","2026-11-16T21:45:00+01:00","Stadio di Domagnano",null,null],
@@ -491,5 +491,6 @@ export const REFERTI = [
   {g:9,casa:"faetano",ospite:"murata",distinte:[["f286", "f990", "f992", "f180", "f1207", "f171", "f987", "f991"], ["f958", "f960", "f221", "f1224", "f546", "f1226", "f1007", "f312", "f1223", "f27", "f1222"]],eventi:[["f1226", 58, "goal"], ["f960", 44, "yellow"], ["f221", 35, "goal"], ["f546", 25, "goal"], ["f546", 13, "goal"], ["f987", 11, "yellow"], ["f1207", 9, "goal"], ["f990", 7, "goal"], ["f1224", 4, "goal"]]},
   {g:9,casa:"juvenes",ospite:"pennarossa",distinte:[["f1218", "f190", "f326", "f159", "f39", "f334", "f244", "f177", "f146", "f241"], ["f316", "f49", "f142", "f83", "f272", "f80", "f220", "f93", "f29", "f125", "f228"]],eventi:[["f125", 53, "yellow"], ["f326", 51, "goal"], ["f39", 30, "goal"], ["f190", 28, "yellow"], ["f326", 23, "goal"], ["f272", 19, "goal"], ["f241", 13, "yellow"], ["f83", 12, "goal"]]},
   {g:9,casa:"sangiovanni",ospite:"libertas",distinte:[["f423", "f1008", "f315", "f974", "f332", "f276", "f975", "f977", "f1227"], ["f337", "f105", "f134", "f968", "f195", "f281", "f44", "f139", "f1220", "f104", "f270", "f96", "f595", "f1221"]],eventi:[["f1227", 61, "goal"], ["f1227", 37, "yellow"], ["f281", 33, "goal"], ["f1227", 16, "goal"], ["f281", 8, "goal"], ["f281", 4, "goal"]]},
+  {g:9,casa:"trepenne",ospite:"fiorentino",distinte:[["f1230", "f1229", "f149", "f199", "f1042", "f198", "f223", "f398", "f302", "f495"], ["f1208", "f1210", "f1211", "f1213", "f1209", "f258", "f340", "f1212", "f377", "f35", "f328", "f385"]],eventi:[["f1213", 60, "yellow"], ["f223", 59, "yellow"], ["f1042", 50, "goal"], ["f149", 39, "goal"], ["f340", 26, "red"], ["f340", 24, "yellow"], ["f1230", 17, "goal"], ["f1212", 11, "goal"], ["f149", 9, "goal"], ["f223", 4, "goal"]]},
   {g:9,casa:"virtus",ospite:"folgore",distinte:[["f474", "f64", "f264", "f984", "f145", "f985", "f983", "f363", "f1235", "f261", "f1231", "f1232", "f994"], ["f174", "f353", "f152", "f170", "f147", "f150", "f173", "f1051", "f1215", "f494", "f252"]],eventi:[["f147", 59, "goal"], ["f152", 53, "yellow"], ["f261", 48, "goal"], ["f1215", 22, "goal"]]},
 ];

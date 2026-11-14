@@ -138,10 +138,9 @@ Le notifiche nell'app iPhone passano da Apple, che vuole una chiave.
    | `APNS_KEY_ID` | il Key ID |
    | `APNS_TEAM_ID` | il Team ID del passo 2 |
 
-5. **Ridistribuisci la funzione** `promemoria`: il codice nuovo (quello che
-   sa parlare con Apple) è in `supabase/functions/promemoria/index.ts`. Dal
-   pannello: Edge Functions → promemoria → *Code* → incolla il file → Deploy.
-   Da terminale: `supabase functions deploy promemoria --no-verify-jwt`.
+5. **Non serve ridistribuire la funzione**: Supabase rende i secret
+   disponibili subito, e la funzione online (`promemoria-`) sa già parlare
+   con Apple. **Fatto il 14/11.**
 
 Finché i secret non ci sono, gli iPhone dell'app vengono saltati (e rimessi
 in coda) e le notifiche web partono come oggi: niente si rompe.

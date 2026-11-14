@@ -88,7 +88,14 @@ export const TITOLARE = {
   rappresentanteUE: '',
 };
 /** Data dell'ultima revisione dei testi legali, in ISO. */
-export const LEGALI_AGGIORNATE = '2026-11-12';
+export const LEGALI_AGGIORNATE = '2026-11-14';
+/**
+ * «Accedi con Apple» SUL SITO (nell'app iPhone va da solo, col foglio nativo).
+ * Il giro web di Supabase vuole il «Secret Key (for OAuth)» del provider
+ * Apple: un JWT firmato con la chiave .p8 (scripts/apple-secret.mjs) che
+ * SCADE OGNI 6 MESI. Si accende quando il secret c'e', e se scade si rifa'.
+ */
+export const APPLE_WEB = false;
 /** Eta' minima per iscriversi. */
 export const ETA_MINIMA = 14;
 /**

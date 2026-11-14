@@ -11,6 +11,7 @@ import { computeRating, computeLineupResult, computeStandings, defaultLineup, va
 import * as remote from './backend.js';
 import * as clerk from './auth-clerk.js';
 import * as AV from './notifiche.js';
+import { appleMostrabile, appleNativo, accediNativo, annullato } from './apple.js';
 import { t } from './lingua.js';
 
 const PREFS_KEY = 'fcs:prefs';
@@ -340,7 +341,17 @@ export async function signInPassword(email, password) { await remote.signInPassw
 export async function signUpPassword(email, password, displayName) { const r = await remote.signUpPassword(email, password, displayName, ritornoConInvito()); if (!r.needsConfirmation && !r.giaIscritto) await adopt(); return r; }
 export async function resendConfirmation(email) { await remote.resendConfirmation(email, ritornoConInvito()); }
 export async function signInLink(email) { await remote.signInLink(email, ritornoConInvito()); }
-export const oauthProviders = () => { const p = remote.enabledProviders(); return ['google', 'apple'].filter((k) => p[k]); };
+// Apple ha il suo pulsante (appleDisponibile): qui restano gli altri
+export const oauthProviders = () => { const p = remote.enabledProviders(); return ['google'].filter((k) => p[k]); };
+export const appleDisponibile = () => appleMostrabile(!!remote.enabledProviders().apple);
+/** Accedi con Apple: il foglio nativo nell'app iPhone, il giro OAuth sul sito. */
+export async function signInWithApple() {
+  if (!appleNativo()) { await remote.signInOAuth('apple', returnUrl()); return null; }
+  const r = await accediNativo();
+  await remote.signInAppleToken(r);
+  return adopt();
+}
+export { annullato as appleAnnullato };
 export const clerkMount = (el, kind) => clerk.mount(el, kind);
 export const clerkUnmount = (el) => clerk.unmount(el);
 export const clerkProfile = () => clerk.openProfile();
@@ -351,7 +362,7 @@ export async function updatePassword(password) { await remote.updatePassword(pas
 /**
  * Il nome è stato ricavato dall'indirizzo invece che dichiarato?
  * Succede con Apple: chi sceglie «Nascondi la mia e-mail» arriva con un
- * indirizzo tipo pq7jh9h827@privaterelay.appleid.com, e il nome passa solo
+ * indirizzo tipo abc123xyz@privaterelay.appleid.com, e il nome passa solo
  * alla primissima autorizzazione. Senza chiederlo, in lega comparirebbe la
  * sigla dell'indirizzo.
  */

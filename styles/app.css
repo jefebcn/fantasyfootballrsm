@@ -1910,6 +1910,15 @@ button,a{-webkit-tap-highlight-color:transparent}
 .auth2 .tondo:active{transform:scale(.96)}
 .auth2 .tondo .ic{width:26px;height:26px;color:#111}
 .auth2 .tondo[data-provider="apple"] .ic{color:#000}
+/* «Accedi con Apple» (linee guida Apple): bianco su sfondo scuro, logo e scritta
+   neri, carattere di sistema, alto 48 come gli altri pulsanti, angoli uguali */
+.auth2 .btn-apple{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;height:48px;border:0;border-radius:12px;background:#fff;color:#000;
+  font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Helvetica Neue",Arial,sans-serif;font-size:17px;font-weight:600;letter-spacing:-.01em;cursor:pointer}
+.auth2 .btn-apple .ic{width:19px;height:19px;color:#000;margin-top:-3px}
+.auth2 .btn-apple:active{transform:scale(.98)}
+.auth2 .btn-apple:disabled{opacity:.6}
+.auth2 .apple-nota{margin:8px 2px 0;font-size:11.5px;line-height:1.45;color:rgba(255,255,255,.66)}
+.auth2 .apple-nota a{color:inherit;text-decoration:underline}
 
 .auth2 .passa{text-align:center;font:500 13px var(--font-body);color:rgba(255,255,255,.75);margin:6px 0 0}
 .auth2 .passa button{border:0;background:transparent;color:var(--c-oro-400);font:800 13px var(--font-body);cursor:pointer;padding:0 2px}

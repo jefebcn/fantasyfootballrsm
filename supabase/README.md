@@ -608,7 +608,7 @@ Chi entra con Apple può **nascondere l'e-mail**: arriva un indirizzo
 
 Il **nome però Apple lo passa solo alla primissima autorizzazione**, e chi nasconde l'e-mail
 spesso non lo passa affatto. Prima, in quel caso, l'app ripiegava sulla parte iniziale
-dell'indirizzo: in classifica sarebbe comparso `pq7jh9h827`. Ora `nomeDaCompletare()`
+dell'indirizzo: in classifica sarebbe comparso `abc123xyz`. Ora `nomeDaCompletare()`
 riconosce un nome ricavato dall'indirizzo e la schermata della lega — passaggio obbligato per
 chiunque — chiede «Come ti chiami» prima di far creare o entrare in una lega. Chi arriva con
 un nome vero non vede quel campo.

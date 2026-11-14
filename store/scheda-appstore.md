@@ -11,8 +11,14 @@ Le immagini stanno in `store/ios/`:
 - Sette screenshot 1290×2796, il formato iPhone 6,9" che Apple chiede. Si
   rigenerano con `LARGO=430 ALTO=932 FUORI=store/ios node scripts/schermate-store.cjs`.
 
+- Otto screenshot 1206×2622 in `store/ios-6.3/`, per la casella «iPhone con
+  Dynamic Island (display medio)» che App Store Connect chiede dal 2026.
+  Si rigenerano con `LARGO=402 ALTO=874 FUORI=store/ios-6.3 node scripts/schermate-store.cjs`
+  (poi si toglie `grafica-1024x500.jpg`, che serve solo a Google Play).
+
 L'ordine in cui caricarli: `la-giornata`, `la-formazione`, `i-voti`,
-`il-voto-titano`, `la-classifica`, `il-negozio`, `gli-highlights`.
+`il-voto-titano`, `la-classifica`, `il-negozio`, `gli-highlights` (e in
+`store/ios-6.3/` per ultimo anche `lo-scontro`).
 
 ---
 

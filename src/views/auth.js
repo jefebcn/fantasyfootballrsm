@@ -74,6 +74,12 @@ export const login = {
 
     root.querySelector('main').addEventListener('click', async (e) => {
       const tb = e.target.closest('[data-tab]'); if (tb) { tab = tb.dataset.tab; notice = null; ctx.render(); return; }
+      const ap = e.target.closest('#apple');
+      if (ap) {
+        notice = null; ap.disabled = true;
+        try { await S.signInWithApple(); } catch (err) { ap.disabled = false; if (!S.appleAnnullato(err)) fail(err); }
+        return;
+      }
       const sp = e.target.closest('[data-provider]');
       if (sp) { notice = null; sp.disabled = true; try { await S.signInWithProvider(sp.dataset.provider); } catch (err) { sp.disabled = false; fail(err); } return; }
       if (e.target.closest('#again')) { pending = null; notice = null; ctx.render(); return; }
@@ -142,9 +148,23 @@ function socialBlock() {
   return `<div class="oppure"><span>${t('oppure accedi con')}</span></div>
     <div class="tondi">${list.map((k) => `<button class="tondo" data-provider="${k}" aria-label="${t(PROVIDER[k][1])}">${icon(PROVIDER[k][0], 'ic')}</button>`).join('')}</div>`;
 }
+/**
+ * «Accedi con Apple» in cima, prima dell'e-mail (Alex, 14/11). Come vogliono
+ * le linee guida di Apple: logo e scritta di Apple, alto quanto gli altri
+ * pulsanti, bianco su sfondo scuro, e almeno in evidenza quanto gli altri modi
+ * di entrare. Con Apple non si sceglie fra accedere e registrarsi: se l'account
+ * non c'e' lo si crea, quindi la riga sui termini sta anche qui.
+ */
+function appleBlock() {
+  if (!S.appleDisponibile()) return '';
+  const up = tab === 'up';
+  return `<button type="button" class="btn-apple" id="apple">${icon('apple', 'ic')}<span>${up ? t('Registrati con Apple') : t('Accedi con Apple')}</span></button>
+    <p class="nota apple-nota">${t('Se hai già un account con la tua e-mail, condividila con Apple (non «Nascondi la mia e-mail») e ritrovi le tue leghe. Continuando confermi di avere almeno {eta} anni e accetti i <a href="termini.html" target="_blank" rel="noopener">Termini</a> e l\'<a href="privacy.html" target="_blank" rel="noopener">Informativa privacy</a>.', { eta: ETA_MINIMA })}</p>
+    <div class="oppure"><span>${t('oppure con l\'e-mail')}</span></div>`;
+}
 function credentialsPanel() {
   const up = tab === 'up';
-  return `${campo('email', t('E-mail'), `type="email" autocomplete="email" inputmode="email" value="${esc(scritti.email || (up ? '' : (emailGia || emailRicordata())))}"`)}
+  return `${appleBlock()}${campo('email', t('E-mail'), `type="email" autocomplete="email" inputmode="email" value="${esc(scritti.email || (up ? '' : (emailGia || emailRicordata())))}"`)}
     ${up ? campo('name', t('Come ti chiami'), `autocomplete="name" maxlength="24" value="${esc(scritti.name || '')}"`) : ''}
     ${campo('password', up ? t('Password: 6 caratteri, lettere e numeri') : t('Password'),
       `type="password" autocomplete="${up ? 'new-password' : 'current-password'}"`,
@@ -157,7 +177,7 @@ function credentialsPanel() {
     ${up ? legale() : `<button class="sottile centro" data-tab="link">${t('Entra senza password, con un link')}</button>`}`;
 }
 function linkPanel() {
-  return `${campo('email', t('E-mail'), `type="email" autocomplete="email" inputmode="email" value="${esc(scritti.email || emailRicordata())}"`)}
+  return `${appleBlock()}${campo('email', t('E-mail'), `type="email" autocomplete="email" inputmode="email" value="${esc(scritti.email || emailRicordata())}"`)}
     <button class="a-btn oro" id="primary">${t('Mandami il link')}</button>
     <p class="nota">${t('Senza password: ricevi un\'e-mail, tocchi il link e sei dentro. Se non hai un account, viene creato al primo accesso.')}</p>
     ${legale()}

@@ -326,6 +326,59 @@ Center e si rimanda.
   trasferimento si aggiornano i secret delle notifiche (nuova chiave del
   nuovo team) e il file dei link (passo 2).
 
+## 12. «Accedi con Apple» (dalla versione 1.1, 14/11)
+
+**Già fatto (Apple e Supabase):** capability Sign In with Apple su
+`site.fantatitano.app`; Services ID `site.fantatitano.web` per il sito
+(domini `fantatitano.site` e quello di Supabase, ritorno su
+`…supabase.co/auth/v1/callback`); chiave Sign in with Apple con Key ID
+`4AQX3MQX53` (il file .p8 lo tiene Alex); su Supabase il provider Apple è
+acceso con Client IDs `site.fantatitano.app,site.fantatitano.web`.
+
+**Come funziona**
+
+| Dove | Strada | Serve il secret? |
+|---|---|---|
+| App iPhone 1.1 | foglio nativo di Apple (`ios/App/App/AccediConApple.swift`) → gettone → Supabase `signInWithIdToken` | **no** |
+| App iPhone 1.0 | il pulsante non compare | — |
+| Sito | giro OAuth di Supabase con il Services ID | **sì**, e si accende con `APPLE_WEB` in `src/config.js` |
+
+Stesso account in tutti e due i casi. Se l'e-mail che Apple manda è già di
+un account Fantatitano confermato, Supabase **aggiunge Apple a quell'account**
+(stesso profilo, stesse leghe): nessun doppione. L'unica eccezione è chi
+sceglie «Nascondi la mia e-mail»: Apple inventa un indirizzo, e per Supabase
+è un account nuovo. Lo dice la riga sotto il pulsante.
+
+**Il secret per il sito — TU, sul Mac, 2 minuti, ogni 6 mesi**
+
+1. Terminale nella cartella `fantasyfootballrsm` (GitHub Desktop → Repository → Open in Terminal).
+2. `node scripts/apple-secret.mjs ~/Downloads/AuthKey_4AQX3MQX53.p8`
+   (il percorso giusto del tuo file .p8: puoi trascinarlo nella finestra).
+3. Esce una riga lunga (tre pezzi separati da punti) e la data di scadenza.
+4. Supabase → Authentication → Sign In / Providers → **Apple** →
+   **Secret Key (for OAuth)** → incolla la riga → **Save**.
+5. Dimmelo: accendo `APPLE_WEB` e il pulsante compare anche sul sito.
+
+Il .p8 non si carica da nessuna parte e la riga non si incolla in chat: solo
+su Supabase. **Apple non accetta un secret che duri più di 6 mesi**: prima
+della scadenza (la stampa lo script) si rifà dal punto 2. Se scade, sul sito
+l'accesso con Apple dà errore; nell'app continua a funzionare.
+
+**La build 1.1 — TU, sul Mac**
+
+1. GitHub Desktop → Fetch origin → Pull.
+2. Terminale: `npx cap sync ios`, poi `npx cap open ios`.
+3. Xcode → target App → Signing & Capabilities: deve esserci **Sign In with
+   Apple** (arriva dal progetto). Versione `1.1`, build `2` (già impostate).
+4. Prova nel simulatore o sul telefono: Accedi → **Accedi con Apple**.
+5. Any iOS Device → Product → Archive → Distribute App → App Store Connect.
+
+Finché la 1.0 è in revisione la 1.1 si può **caricare** ma non **inviare**:
+si invia dopo l'esito della 1.0 (App Store Connect → **+ Versione** → 1.1).
+Nelle note per il revisore aggiungere: *"Version 1.1 adds Sign in with
+Apple on the login screen (native AuthenticationServices). The demo account
+above still works with e-mail and password."*
+
 ## Tempi in breve
 
 | Passo | Chi | Tempo |

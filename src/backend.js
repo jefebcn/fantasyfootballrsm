@@ -154,6 +154,21 @@ const must = ({ data, error }) => { if (error) throw new Error(translate(error))
 // ---------------------------------------------------------------- auth
 const authCall = async (promise) => { const { data, error } = await promise; if (error) throw new Error(translate(error)); return data; };
 
+/**
+ * Accedi con Apple dall'app (src/apple.js): il gettone firmato da Apple.
+ * Se l'e-mail che Apple manda e' gia' di un account Fantatitano confermato,
+ * Supabase aggiunge Apple a QUELL'account (stesso id, stesse leghe): nessun
+ * doppione. Fa eccezione chi sceglie «Nascondi la mia e-mail»: per Supabase
+ * e' un indirizzo nuovo, quindi un account nuovo.
+ * Il nome Apple lo manda solo al primo accesso: lo si tiene per il profilo.
+ */
+let nomeInArrivo = '';
+export async function signInAppleToken({ token, nonce, nome }) {
+  nomeInArrivo = nome || '';
+  const data = await authCall(sb.auth.signInWithIdToken({ provider: 'apple', token, nonce }));
+  if (nome && !data.user?.user_metadata?.full_name) sb.auth.updateUser({ data: { full_name: nome } }).catch(() => {});
+  return data;
+}
 export async function signInPassword(email, password) { return authCall(sb.auth.signInWithPassword({ email, password })); }
 export async function signUpPassword(email, password, displayName, redirectTo) {
   const data = await authCall(sb.auth.signUp({ email, password, options: { data: { display_name: displayName }, emailRedirectTo: redirectTo } }));
@@ -249,7 +264,7 @@ export async function ensureProfile(user) {
     if (!data?.session) throw new Error(SESSIONE_PERSA);
   }
   const m = user.user_metadata || {};
-  const name = m.display_name || m.full_name || m.name
+  const name = m.display_name || m.full_name || m.name || nomeInArrivo
     || [m.given_name, m.family_name].filter(Boolean).join(' ')
     || (user.email || '').split('@')[0];
   const { error } = await sb.from('profiles').upsert({ id: user.id, display_name: name }, { onConflict: 'id', ignoreDuplicates: true });

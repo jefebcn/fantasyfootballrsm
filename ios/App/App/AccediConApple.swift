@@ -1,6 +1,7 @@
 import UIKit
 import Capacitor
 import AuthenticationServices
+import StoreKit
 
 /**
  * «Accedi con Apple» nativo (Alex, 14/11).
@@ -17,6 +18,7 @@ import AuthenticationServices
 class FantaBridgeViewController: CAPBridgeViewController {
     override open func capacitorDidLoad() {
         bridge?.registerPluginInstance(AccediConApplePlugin())
+        bridge?.registerPluginInstance(FantaNativoPlugin())
     }
 }
 
@@ -78,5 +80,51 @@ public class AccediConApplePlugin: CAPPlugin, CAPBridgedPlugin,
         chiamata = nil
         let annullato = (error as? ASAuthorizationError)?.code == .canceled
         call.reject(annullato ? "Annullato." : error.localizedDescription, annullato ? "CANCELED" : "FAILED")
+    }
+}
+
+/**
+ * Le piccole cose da app vera (Alex, 15/11): la vibrazione quando si conferma
+ * la formazione o arriva un ordine, e la richiesta di recensione dell'App
+ * Store al momento giusto (src/nativo.js decide quando; iOS decide se
+ * mostrarla davvero, al massimo tre volte l'anno).
+ */
+@objc(FantaNativoPlugin)
+public class FantaNativoPlugin: CAPPlugin, CAPBridgedPlugin {
+    public let identifier = "FantaNativoPlugin"
+    public let jsName = "FantaNativo"
+    public let pluginMethods: [CAPPluginMethod] = [
+        CAPPluginMethod(name: "vibra", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "recensione", returnType: CAPPluginReturnPromise)
+    ]
+
+    /// { tipo: "leggera" | "media" | "successo" | "errore" }
+    @objc func vibra(_ call: CAPPluginCall) {
+        let tipo = call.getString("tipo") ?? "leggera"
+        DispatchQueue.main.async {
+            switch tipo {
+            case "successo": UINotificationFeedbackGenerator().notificationOccurred(.success)
+            case "errore": UINotificationFeedbackGenerator().notificationOccurred(.error)
+            case "media": UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+            default: UIImpactFeedbackGenerator(style: .light).impactOccurred()
+            }
+            call.resolve()
+        }
+    }
+
+    @objc func recensione(_ call: CAPPluginCall) {
+        DispatchQueue.main.async {
+            guard let scena = self.bridge?.webView?.window?.windowScene
+                ?? UIApplication.shared.connectedScenes.compactMap({ $0 as? UIWindowScene }).first else {
+                call.reject("Nessuna finestra attiva.")
+                return
+            }
+            if #available(iOS 16.0, *) {
+                AppStore.requestReview(in: scena)
+            } else {
+                SKStoreReviewController.requestReview(in: scena)
+            }
+            call.resolve()
+        }
     }
 }

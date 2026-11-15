@@ -4,6 +4,7 @@ import { esc, roleChip, faccia, ROLE_NAME, badge, icon, avatar, dateIt, timeIt, 
 import { schedeRosa } from './rosa.js';
 import * as M from '../formazione-mosse.js';
 import { chiediDopoIlSalvataggio } from './chiedi-avvisi.js';
+import { vibra, formazioneConfermata } from '../nativo.js';
 
 let draft = null; let draftFor = null;
 // la formazione com'era all'apertura (gia' sistemata) o all'ultima conferma: per formazioneInSospeso
@@ -442,8 +443,8 @@ export const formazione = {
       if (e.target.closest('#confirm')?.dataset.gia) { ctx.toast(t('Formazione già confermata · giornata {n}', { n })); return; }
       if (e.target.closest('#confirm')) {
         const errors = validateLineup({ ...d, starters: d.starters.filter(Boolean), bench: d.bench.filter(Boolean) }, S.playersById);
-        if (errors.length) { ctx.toast(errors[0]); return; }
-        try { S.saveLineup(n, me.id, { ...d, bench: d.bench.filter(Boolean) }); tolti = []; clearTimeout(attesaBozza); bozzaSalvata = comeBozza(d); base = bozzaSalvata; ctx.toast(t('Formazione salvata · giornata {n}', { n })); chiediDopoIlSalvataggio(ctx); }
+        if (errors.length) { vibra('errore'); ctx.toast(errors[0]); return; }
+        try { S.saveLineup(n, me.id, { ...d, bench: d.bench.filter(Boolean) }); tolti = []; clearTimeout(attesaBozza); bozzaSalvata = comeBozza(d); base = bozzaSalvata; vibra('successo'); ctx.toast(t('Formazione salvata · giornata {n}', { n })); chiediDopoIlSalvataggio(ctx); formazioneConfermata(); }
         catch (err) { ctx.toast(err.message); ctx.render(); }
       }
     });

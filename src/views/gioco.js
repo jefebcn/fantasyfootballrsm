@@ -1,6 +1,7 @@
 import * as S from '../state.js';
 import { esc, avatarGrande, faccia, ROLE_NAME, ROLE_ORDER, t } from '../ui.js';
 import { oggi, numero, misteroDel, statistiche, confronta, condivisione, serie, punti, MEDAGLIE, prossimaMedaglia, TENTATIVI } from '../gioco.js';
+import { vibra } from '../nativo.js';
 
 /**
  * «Chi è?», la schermata. La logica (chi e' il giocatore del giorno, gli
@@ -216,6 +217,7 @@ export const gioco = {
         partita.tentativi.push(b.dataset.pick);
         const mistero = misteroDel(giorno, S.base.players, dati());
         partita.vinto = b.dataset.pick === mistero?.id;
+        vibra(partita.vinto ? 'successo' : 'leggera');
         storico[giorno] = partita;
         scrivi(storico);
         // ai conteggi dell'admin va solo com'e' andata, non i nomi scritti

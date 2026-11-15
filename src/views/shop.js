@@ -1,6 +1,7 @@
 import * as S from '../state.js';
 import { esc, icon, t } from '../ui.js';
 import { ARTICOLI, MAX_QUANTITA, SPEDIZIONE_CENT, STATI, euro, totaleCent, articolo } from '../shop.js';
+import { vibra } from '../nativo.js';
 
 /**
  * LO SHOP (Alex, 12/11: «vorrei implementare una sezione shop, al momento per
@@ -140,6 +141,7 @@ export const shop = {
         const id = await S.shopOrdina({ articolo: a.id, taglia: s.taglia, quantita: s.quantita, consegna: s.consegna,
           nome: s.nome.trim(), contatto: s.contatto.trim(), indirizzo: s.consegna === 'spedizione' ? s.indirizzo.trim() : null, note: s.note.trim() });
         scrivi({ ...leggi(), nome: s.nome.trim(), contatto: s.contatto.trim(), indirizzo: s.indirizzo.trim(), ordinato: Date.now() });
+        vibra('successo');
         fatto = { id, articolo: a.id, totale: totaleCent(a, s.quantita, s.consegna) };
         s.note = ''; s.taglia = ''; s.quantita = 1;
         riuscito = true;

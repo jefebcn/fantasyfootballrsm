@@ -7,6 +7,15 @@
         ],
         "components": [
           {
+            "/": "/link",
+            "exclude": true,
+            "comment": "il link in bio resta nel browser"
+          },
+          {
+            "/": "/link.html",
+            "exclude": true
+          },
+          {
             "/": "/*"
           }
         ]

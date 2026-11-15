@@ -210,6 +210,10 @@ export const impostazioni = {
           const b = ev.target.closest('[data-conferma]'); if (!b) return;
           if (b.dataset.conferma === 'no') { ctx.sheet(''); return; }
           try {
+            // entrato con Apple: prima si chiude l'accesso presso Apple
+            try { await S.revocaAppleSeServe(); } catch (e) {
+              if (S.appleAnnullato(e)) { ctx.toast('Per cancellare l\'account conferma con Apple'); return; }
+            }
             const esito = await S.eliminaProfilo();
             ctx.toast(esito || 'Profilo cancellato');
             await S.signOut();

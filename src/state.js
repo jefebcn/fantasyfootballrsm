@@ -352,6 +352,17 @@ export async function signInWithApple() {
   return adopt();
 }
 export { annullato as appleAnnullato };
+/**
+ * Prima di cancellare un account entrato con Apple (regola 5.1.1(v)): nell'app
+ * il foglio di Apple conferma, e il server chiude l'accesso presso Apple.
+ * Se la persona chiude il foglio si ferma tutto (errore 'CANCELED'); ogni
+ * altro intoppo non blocca la cancellazione.
+ */
+export async function revocaAppleSeServe() {
+  if (!remote.conApple(user) || !appleNativo()) return { revocato: false, motivo: 'non serve' };
+  const r = await accediNativo();
+  return remote.revocaApple(r.codice);
+}
 export const clerkMount = (el, kind) => clerk.mount(el, kind);
 export const clerkUnmount = (el) => clerk.unmount(el);
 export const clerkProfile = () => clerk.openProfile();

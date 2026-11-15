@@ -181,6 +181,17 @@ export async function notificaDiProva() {
   }
   return data;
 }
+/**
+ * Chiude l'accesso Apple prima di cancellare l'account (supabase/functions/
+ * apple-revoca). Non lancia mai: la cancellazione deve andare avanti comunque.
+ */
+export async function revocaApple(codice) {
+  try {
+    const { data } = await sb.functions.invoke('apple-revoca', { body: { codice } });
+    return data || { revocato: false };
+  } catch (e) { return { revocato: false, motivo: e?.message }; }
+}
+export const conApple = (u) => !!(u?.app_metadata?.providers || []).includes('apple') || !!(u?.identities || []).some((i) => i.provider === 'apple');
 export async function signInPassword(email, password) { return authCall(sb.auth.signInWithPassword({ email, password })); }
 export async function signUpPassword(email, password, displayName, redirectTo) {
   const data = await authCall(sb.auth.signUp({ email, password, options: { data: { display_name: displayName }, emailRedirectTo: redirectTo } }));

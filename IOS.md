@@ -364,6 +364,22 @@ su Supabase. **Apple non accetta un secret che duri più di 6 mesi**: prima
 della scadenza (la stampa lo script) si rifà dal punto 2. Se scade, sul sito
 l'accesso con Apple dà errore; nell'app continua a funzionare.
 
+**Cancellazione dell'account con Apple — TU, su Supabase, 3 minuti**
+
+Apple chiede che, quando un utente entrato con Apple cancella l'account,
+l'app chiuda anche l'accesso presso Apple (regola 5.1.1(v)). Nell'app 1.1 la
+cancellazione chiede di nuovo il foglio di Apple, e la funzione
+`apple-revoca` (già pubblicata) fa il resto. Le servono due secret, in
+Supabase → Edge Functions → **Secrets**:
+
+| Nome | Valore |
+|---|---|
+| `APPLE_SIWA_KEY` | tutto il testo del file `AuthKey_4AQX3MQX53.p8`, righe BEGIN/END comprese — **lo incolli tu** |
+| `APPLE_SIWA_KEY_ID` | `4AQX3MQX53` |
+
+(Il Team ID lo prende da `APNS_TEAM_ID`, che c'è già.) Senza questi due la
+cancellazione funziona lo stesso, ma l'accesso presso Apple resta aperto.
+
 **La build 1.1 — TU, sul Mac**
 
 1. GitHub Desktop → Fetch origin → Pull.

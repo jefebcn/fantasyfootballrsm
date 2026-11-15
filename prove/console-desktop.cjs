@@ -24,7 +24,11 @@ const ok = [], ko = []; const et = (c, t) => (c ? ok : ko).push(t);
   await p.click('[data-form="create"]'); await p.fill('#lname', 'Lega Prova'); await p.fill('#team', 'Alex FC'); await p.click('#go-create'); await w(1500);
   await p.evaluate(() => { const s = JSON.parse(localStorage.getItem('fcs:mock')); Object.assign(s.tables.profiles.find((x) => x.id === s.userId), { is_admin: true, is_owner: true }); localStorage.setItem('fcs:mock', JSON.stringify(s)); });
   await p.reload({ waitUntil: 'load' }); await w(1500);
-  await p.evaluate(() => { location.hash = '#/admin/console'; }); await w(2000);
+  await p.evaluate(() => { location.hash = '#/admin/console'; }); await w(800);
+  // la console carica i numeri dal server: sulle macchine lente di GitHub 2 secondi
+  // fissi non bastavano (15/11, «getComputedStyle: parameter 1 is not of type Element»)
+  await p.waitForSelector('.adm-dash .adm-n b', { timeout: 20000 }).catch(() => {});
+  await w(400);
 
   const misure = () => p.evaluate(() => {
     const r = (s) => document.querySelector(s)?.getBoundingClientRect();

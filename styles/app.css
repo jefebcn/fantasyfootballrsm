@@ -403,21 +403,27 @@ hr.sep{border:0;border-top:1px solid var(--border);margin:4px 0}
    alta (300px) perche' le tre torri si vedano tutte sotto la targa della lega;
    sotto, un blu royal che scende verso il viola del marchio. Il colore in cima
    al gradiente e' quello con cui finisce il velo della foto: niente stacco. */
-.a-hero.foto{background:linear-gradient(180deg,#2B45B5 0,#2B45B5 290px,#3A5FD0 440px,#4558E0 78%,#5340E6 100%)}
-.a-hero.foto .sfondo{height:300px}
-.a-hero.foto .sfondo img{object-position:center 40%}
+/* Alex, 15/11 (screenshot da iPhone): «immagine di sfondo pare coperta,
+   personaggio minuscolo». La fascia della foto ora segue la larghezza dello
+   schermo (--fh) invece di 300px fissi, cosi' il Titano si vede quasi intero
+   (prima i lati erano tagliati); il velo copre solo l'ultimo quarto; e il
+   personaggio (--ph) cresce con lo schermo e si appoggia ai piedi del crinale. */
+.a-hero.foto{--fh:min(74vw,340px);--ph:min(50vw,230px);
+  background:linear-gradient(180deg,#2B45B5 0,#2B45B5 calc(var(--fh) - 10px),#3A5FD0 calc(var(--fh) + 140px),#4558E0 80%,#5340E6 100%)}
+.a-hero.foto .sfondo{height:var(--fh)}
+.a-hero.foto .sfondo img{object-position:center 35%}
 /* Dopo il tramonto (src/sole.js) il Titano di notte, schiarito perche' non
    torni il «fa addormentare la vista»: il velo sfuma in un blu notte e il
    gradiente risale comunque verso il viola del marchio. */
-.a-hero.foto.notte{background:linear-gradient(180deg,#14287A 0,#14287A 290px,#2A3FB0 440px,#3E48D2 78%,#5340E6 100%)}
+.a-hero.foto.notte{background:linear-gradient(180deg,#14287A 0,#14287A calc(var(--fh) - 10px),#2A3FB0 calc(var(--fh) + 140px),#3E48D2 80%,#5340E6 100%)}
 .a-hero.foto.notte .sfondo img{object-position:66% 30%;filter:brightness(1.6) saturate(1.15)}
-.a-hero.foto.notte .sfondo i{background:linear-gradient(180deg,rgba(20,40,122,.2) 0%,rgba(20,40,122,0) 22%,rgba(20,40,122,0) 58%,#14287A 100%)}
+.a-hero.foto.notte .sfondo i{background:linear-gradient(180deg,rgba(20,40,122,.2) 0%,rgba(20,40,122,0) 20%,rgba(20,40,122,0) 74%,#14287A 100%)}
 .a-hero .tw{position:absolute;right:-26px;top:-20px;width:220px;height:220px;opacity:.08;color:#fff}
 .a-hero .sfondo{position:absolute;left:0;right:0;top:0;height:210px;z-index:0;overflow:hidden}
 .a-hero .sfondo img{display:block;width:100%;height:100%;object-fit:cover;object-position:center bottom}
 /* il velo: un filo in cima per la targa della lega, e in fondo si fonde col blu */
 .a-hero .sfondo i{position:absolute;inset:0;
-  background:linear-gradient(180deg,rgba(43,69,181,.2) 0%,rgba(43,69,181,0) 22%,rgba(43,69,181,0) 58%,#2B45B5 100%)}
+  background:linear-gradient(180deg,rgba(43,69,181,.2) 0%,rgba(43,69,181,0) 20%,rgba(43,69,181,0) 74%,#2B45B5 100%)}
 .a-hero > :not(.sfondo):not(.tw){position:relative;z-index:1}
 /* Alex, 12/11: sotto i numeri la copertina sfuma nel fondo della pagina, senza
    lo stacco netto. Solo col tema scuro: in chiaro i bottoni bianchi finirebbero
@@ -444,7 +450,9 @@ hr.sep{border:0;border-top:1px solid var(--border);margin:4px 0}
    un anello lime, il segno della lega. Il personaggio, se scelto, al posto
    suo e un po' piu' alto. */
 .a-hero .hero-stemma{align-self:center;display:block;text-decoration:none;filter:drop-shadow(0 10px 18px rgba(0,0,0,.45))}
-.a-hero.foto .hero-stemma{margin-top:150px}
+.a-hero.foto .hero-stemma{margin-top:max(40px,calc(var(--fh) - 64px - 84px))}
+.a-hero.foto .hero-stemma.pers{margin-top:max(20px,calc(var(--fh) - 14px - var(--ph)));height:var(--ph)}
+.a-hero.foto .hero-stemma.pers .pers{max-height:var(--ph)}
 .a-hero .hero-stemma .crest.hero{width:108px;height:108px;font-size:30px;border:4px solid #04173B;box-shadow:0 0 0 3px var(--c-lime)}
 .a-hero .hero-stemma.pers{height:150px}
 .a-hero .hero-stemma.pers .pers{max-height:150px;width:auto;margin:0 auto}
@@ -773,11 +781,16 @@ hr.sep{border:0;border-top:1px solid var(--border);margin:4px 0}
 .pitch.con-avv{aspect-ratio:auto;min-height:0;gap:30px;justify-content:flex-start}
 .avv-t{font-weight:600}
 .tribuna .fm{font:700 10px/1 var(--font-data);font-style:normal;color:var(--text-muted);padding:2px 5px;border-radius:5px}
-.tribuna .fm.fm-su{background:rgba(30,142,78,.16);color:#1E8E4E}
-.tribuna .fm.fm-giu{background:rgba(180,54,58,.14);color:#C2414A}
+/* Verde e rosso dei fantavoti leggibili su tutti e due i temi (audit-ux,
+   15/11: contrasto 2,9-3,8 contro 4,5): piu' scuri in chiaro, piu' chiari in scuro. */
+:root{--fm-su:#13703B;--fm-giu:#A82A30}
+:root[data-theme="dark"]{--fm-su:#5BD493;--fm-giu:#FF8A8E}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--fm-su:#5BD493;--fm-giu:#FF8A8E}}
+.tribuna .fm.fm-su{background:color-mix(in srgb,var(--fm-su) 14%,transparent);color:var(--fm-su)}
+.tribuna .fm.fm-giu{background:color-mix(in srgb,var(--fm-giu) 13%,transparent);color:var(--fm-giu)}
 .fm-t{font-weight:700;color:var(--text)}
-.fm-t.fm-su,.fm-nota .fm-su{color:#1E9E57}
-.fm-t.fm-giu,.fm-nota .fm-giu{color:#D04A50}
+.fm-t.fm-su,.fm-nota .fm-su{color:var(--fm-su)}
+.fm-t.fm-giu,.fm-nota .fm-giu{color:var(--fm-giu)}
 .fm-t.fm-nd{font-weight:500;color:var(--text-muted)}
 .fm-nota{margin-top:8px}
 /* "vuoto", non "empty": .empty e' lo stile degli SCHERMI vuoti (padding 40px,
@@ -2906,5 +2919,7 @@ a.crow .cls-chev{flex:none;color:var(--text-muted);margin-left:-4px}
 .shop-banner .sb-cta .ic{width:14px;height:14px}
 .shop-banner img{flex:none;width:106px;height:auto;object-fit:cover;align-self:stretch;
   -webkit-mask-image:linear-gradient(90deg,transparent 0,#000 22%);mask-image:linear-gradient(90deg,transparent 0,#000 22%)}
-.shop-banner .sb-chiudi{position:absolute;top:6px;right:6px;width:28px;height:28px;border-radius:50%;border:0;background:rgba(4,23,59,.55);color:#fff;font-size:13px;line-height:28px;padding:0;cursor:pointer}
+/* il cerchio resta di 28px, ma il tocco ne prende 44 (audit-ux: «tocco piccolo») */
+.shop-banner .sb-chiudi{position:absolute;top:0;right:0;width:44px;height:44px;border:0;background:none;padding:0;cursor:pointer;display:grid;place-items:center}
+.shop-banner .sb-chiudi span{display:grid;place-items:center;width:28px;height:28px;border-radius:50%;background:rgba(4,23,59,.72);color:#fff;font-size:13px;line-height:1}
 .shop-banner .sb-link:active{transform:scale(.99)}

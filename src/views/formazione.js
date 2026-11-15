@@ -4,11 +4,14 @@ import { esc, roleChip, faccia, ROLE_NAME, badge, icon, avatar, dateIt, timeIt, 
 import { schedeRosa } from './rosa.js';
 import * as M from '../formazione-mosse.js';
 import { chiediDopoIlSalvataggio } from './chiedi-avvisi.js';
+import { vibra, formazioneConfermata } from '../nativo.js';
 
 let draft = null; let draftFor = null;
+// la formazione com'era all'apertura (gia' sistemata) o all'ultima conferma: per formazioneInSospeso
+let base = null;
 function ensureDraft() {
   const n = S.giornataDaSchierare(); const me = S.me();
-  if (!draft || draftFor !== `${n}:${me.id}`) { const l = S.lineupFor(n, me.id); draft = { formation: l.formation, starters: [...l.starters], bench: [...l.bench], captainId: l.captainId, viceCaptainId: l.viceCaptainId }; draftFor = `${n}:${me.id}`; tolti = []; bozzaSalvata = comeBozza(draft); }
+  if (!draft || draftFor !== `${n}:${me.id}`) { const l = S.lineupFor(n, me.id); draft = { formation: l.formation, starters: [...l.starters], bench: [...l.bench], captainId: l.captainId, viceCaptainId: l.viceCaptainId }; draftFor = `${n}:${me.id}`; tolti = []; bozzaSalvata = comeBozza(draft); base = null; }
   return draft;
 }
 /**
@@ -26,6 +29,14 @@ function programmaBozza(n, managerId, d) {
   if (corpo === bozzaSalvata) return;
   clearTimeout(attesaBozza);
   attesaBozza = setTimeout(() => { bozzaSalvata = corpo; S.salvaBozza(n, managerId, JSON.parse(corpo)); }, 1500);
+}
+/**
+ * Ci sono modifiche alla formazione non ancora confermate? L'aggiornamento
+ * silenzioso dell'app (app.js) ricarica la pagina, e la formazione in
+ * preparazione vive solo qui in memoria: con modifiche in sospeso aspetta.
+ */
+export function formazioneInSospeso() {
+  return !!draft && base !== null && comeBozza(draft) !== base;
 }
 const P = (id) => S.playersById.get(id);
 /** Chi non e' piu' in rosa esce dalla formazione da preparare: la bozza resta
@@ -204,7 +215,7 @@ export const formazione = {
     const b = S.schieramentoBloccato();
     const n = b ? b.inGioco : S.giornataDaSchierare(); nAvv = n; const md = S.matchday(n); const st = S.matchdayStatus(n);
     const locked = st !== 'open' && st !== 'scheduled';
-    const d = b ? S.lineupFor(n, me.id) : (() => { const x = ensureDraft(); if (!locked) togliCeduti(x, me.id); normalize(x); return x; })();
+    const d = b ? S.lineupFor(n, me.id) : (() => { const x = ensureDraft(); if (!locked) togliCeduti(x, me.id); normalize(x); if (base === null) base = comeBozza(x); return x; })();
     if (locked || b) tolti = [];
     // I voti ci sono solo a giornata cominciata, e arrivano una partita per
     // volta: chi non ha ancora giocato semplicemente non ce l'ha.
@@ -432,8 +443,8 @@ export const formazione = {
       if (e.target.closest('#confirm')?.dataset.gia) { ctx.toast(t('Formazione già confermata · giornata {n}', { n })); return; }
       if (e.target.closest('#confirm')) {
         const errors = validateLineup({ ...d, starters: d.starters.filter(Boolean), bench: d.bench.filter(Boolean) }, S.playersById);
-        if (errors.length) { ctx.toast(errors[0]); return; }
-        try { S.saveLineup(n, me.id, { ...d, bench: d.bench.filter(Boolean) }); tolti = []; clearTimeout(attesaBozza); bozzaSalvata = comeBozza(d); ctx.toast(t('Formazione salvata · giornata {n}', { n })); chiediDopoIlSalvataggio(ctx); }
+        if (errors.length) { vibra('errore'); ctx.toast(errors[0]); return; }
+        try { S.saveLineup(n, me.id, { ...d, bench: d.bench.filter(Boolean) }); tolti = []; clearTimeout(attesaBozza); bozzaSalvata = comeBozza(d); base = bozzaSalvata; vibra('successo'); ctx.toast(t('Formazione salvata · giornata {n}', { n })); chiediDopoIlSalvataggio(ctx); formazioneConfermata(); }
         catch (err) { ctx.toast(err.message); ctx.render(); }
       }
     });

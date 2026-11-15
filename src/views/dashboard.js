@@ -259,7 +259,7 @@ function bannerShop() {
         <span class="sb-cta">${t('Scopri')}${icon('chev', 'ic sm')}</span></span>
       <img src="media/shop/top-mini.webp" alt="" width="240" height="300" loading="lazy" decoding="async">
     </a>
-    <button class="sb-chiudi" data-shop-nascondi aria-label="${t('Nascondi per ora')}">✕</button>
+    <button class="sb-chiudi" data-shop-nascondi aria-label="${t('Nascondi per ora')}"><span>✕</span></button>
   </div>`;
 }
 

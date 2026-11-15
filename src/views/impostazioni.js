@@ -35,7 +35,7 @@ function apriAvvisi(ctx) {
       ${perm === 'denied' ? `<p class="auth-hint">Le notifiche sono bloccate dalle impostazioni del telefono per questo sito: vanno riattivate da lì.</p>` : ''}
       ${motivo === 'ios-nel-browser' ? `<p class="auth-hint avvisi-ios"><b>Su iPhone le notifiche funzionano solo con l'app installata.</b> Tocca <b>Condividi</b> (${esc(AV.doveCondividi().replace(/^Il quadrato/, 'il quadrato').replace(/\.$/, ''))}), poi <b>Aggiungi alla schermata Home</b>, e apri l'app da lì: qui comparirà il bottone per consentirle.</p>` : ''}
       ${motivo === 'browser-senza' ? `<p class="auth-hint">Questo browser non supporta le notifiche: da qui l'avviso arriva solo ad app aperta.</p>` : ''}
-      ${on && perm === 'granted' && !AV.nativa() ? `<button class="a-btn sec" data-avvisi="prova" style="margin-top:10px">Mandami un avviso di prova</button>` : ''}
+      ${on && perm === 'granted' ? `<button class="a-btn sec" data-avvisi="prova" style="margin-top:10px">Mandami una notifica di prova</button>` : ''}
       <p class="auth-hint"><b>Ad app aperta</b> l'avviso arriva${perm === 'granted' ? '' : ' appena dai il permesso'}: si controlla ogni volta che apri la dashboard, e ne arriva uno solo per giornata.</p>
       <p class="auth-hint"><b>A telefono chiuso</b> ${!AV.pushConfigurato()
     ? 'servono le notifiche push, e la chiave non è ancora configurata. Il codice c\'è tutto — i passi che restano sono nelle istruzioni del promemoria — ma finché la chiave manca questa parte è spenta, e preferiamo dirlo che lasciartelo scoprire.'
@@ -50,11 +50,20 @@ function apriAvvisi(ctx) {
       if (v === 'prova') {
         // Una prova vera, non un finto "ok": se le notifiche non funzionano su
         // questo telefono e' meglio saperlo adesso che la settimana del lock.
-        const fatta = await AV.avvisaFormazione(
-          { giornata: 0, ore: 24 },
-          { giaAvvisato: null, segna: () => {} },
-        );
-        ctx.toast(fatta ? 'Avviso mandato: guarda le notifiche' : 'Non è stato possibile mostrare la notifica');
+        // Dal 15/11 passa dal SERVER, come i promemoria veri (anche nell'app
+        // iPhone): se arriva questa, arrivano anche quelle a telefono chiuso.
+        // Senza iscrizione sul server resta la prova locale di prima.
+        b.disabled = true;
+        try {
+          const r = await S.notificaDiProva();
+          if (r?.spedite) ctx.toast(r.spedite > 1 ? `Notifica mandata a ${r.spedite} dispositivi: guarda il telefono` : 'Notifica mandata: guarda il telefono');
+          else if (r?.dispositivi) ctx.toast('Il server non è riuscito a spedirla: riprova fra poco');
+          else {
+            const fatta = await AV.avvisaFormazione({ giornata: 0, ore: 24 }, { giaAvvisato: null, segna: () => {} });
+            ctx.toast(fatta ? 'Avviso mostrato qui. A telefono chiuso: spegni e riaccendi le notifiche qui sopra' : 'Questo dispositivo non risulta iscritto alle notifiche');
+          }
+        } catch (err) { ctx.toast(err.message || 'Non riesco a mandare la prova'); }
+        b.disabled = false;
         return;
       }
       if (v === 'permesso') {
@@ -201,6 +210,10 @@ export const impostazioni = {
           const b = ev.target.closest('[data-conferma]'); if (!b) return;
           if (b.dataset.conferma === 'no') { ctx.sheet(''); return; }
           try {
+            // entrato con Apple: prima si chiude l'accesso presso Apple
+            try { await S.revocaAppleSeServe(); } catch (e) {
+              if (S.appleAnnullato(e)) { ctx.toast('Per cancellare l\'account conferma con Apple'); return; }
+            }
             const esito = await S.eliminaProfilo();
             ctx.toast(esito || 'Profilo cancellato');
             await S.signOut();

@@ -96,6 +96,9 @@ export const LEGALI_AGGIORNATE = '2026-11-14';
  * SCADE OGNI 6 MESI. Si accende quando il secret c'e', e se scade si rifa'.
  */
 export const APPLE_WEB = false;
+/** Lo slug della funzione che spedisce le notifiche (supabase/functions/promemoria):
+ *  Supabase l'ha fissato alla creazione col trattino in fondo, e non si cambia. */
+export const FUNZIONE_AVVISI = 'promemoria-';
 /** Eta' minima per iscriversi. */
 export const ETA_MINIMA = 14;
 /**

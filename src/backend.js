@@ -2,7 +2,7 @@
  * Adattatore Supabase. Caricato solo se configurato: la modalità locale non tocca la rete.
  * Ogni funzione ritorna dati già nel formato usato da state.js.
  */
-import { SUPABASE_URL, SUPABASE_ANON_KEY, SUPABASE_JS, SUPABASE_TIMEOUT_MS } from './config.js';
+import { SUPABASE_URL, SUPABASE_ANON_KEY, SUPABASE_JS, SUPABASE_TIMEOUT_MS, FUNZIONE_AVVISI } from './config.js';
 
 let sb = null; let cfg = null; let providers = {}; let external = false; let settings = null;
 export function config() {
@@ -169,6 +169,29 @@ export async function signInAppleToken({ token, nonce, nome }) {
   if (nome && !data.user?.user_metadata?.full_name) sb.auth.updateUser({ data: { full_name: nome } }).catch(() => {});
   return data;
 }
+/**
+ * Una notifica vera ai propri dispositivi (Alex, 15/11): passa dal server e da
+ * Apple o dal browser, come i promemoria. -> { dispositivi, spedite, esiti }
+ */
+export async function notificaDiProva() {
+  const { data, error } = await sb.functions.invoke(FUNZIONE_AVVISI, { headers: { 'x-prova': '1' }, body: { tipo: 'prova' } });
+  if (error) {
+    const dettaglio = await error.context?.json?.().catch(() => null);
+    throw new Error(dettaglio?.errore || translate(error));
+  }
+  return data;
+}
+/**
+ * Chiude l'accesso Apple prima di cancellare l'account (supabase/functions/
+ * apple-revoca). Non lancia mai: la cancellazione deve andare avanti comunque.
+ */
+export async function revocaApple(codice) {
+  try {
+    const { data } = await sb.functions.invoke('apple-revoca', { body: { codice } });
+    return data || { revocato: false };
+  } catch (e) { return { revocato: false, motivo: e?.message }; }
+}
+export const conApple = (u) => !!(u?.app_metadata?.providers || []).includes('apple') || !!(u?.identities || []).some((i) => i.provider === 'apple');
 export async function signInPassword(email, password) { return authCall(sb.auth.signInWithPassword({ email, password })); }
 export async function signUpPassword(email, password, displayName, redirectTo) {
   const data = await authCall(sb.auth.signUp({ email, password, options: { data: { display_name: displayName }, emailRedirectTo: redirectTo } }));

@@ -364,6 +364,22 @@ su Supabase. **Apple non accetta un secret che duri più di 6 mesi**: prima
 della scadenza (la stampa lo script) si rifà dal punto 2. Se scade, sul sito
 l'accesso con Apple dà errore; nell'app continua a funzionare.
 
+**Cancellazione dell'account con Apple — TU, su Supabase, 3 minuti**
+
+Apple chiede che, quando un utente entrato con Apple cancella l'account,
+l'app chiuda anche l'accesso presso Apple (regola 5.1.1(v)). Nell'app 1.1 la
+cancellazione chiede di nuovo il foglio di Apple, e la funzione
+`apple-revoca` (già pubblicata) fa il resto. Le servono due secret, in
+Supabase → Edge Functions → **Secrets**:
+
+| Nome | Valore |
+|---|---|
+| `APPLE_SIWA_KEY` | tutto il testo del file `AuthKey_4AQX3MQX53.p8`, righe BEGIN/END comprese — **lo incolli tu** |
+| `APPLE_SIWA_KEY_ID` | `4AQX3MQX53` |
+
+(Il Team ID lo prende da `APNS_TEAM_ID`, che c'è già.) Senza questi due la
+cancellazione funziona lo stesso, ma l'accesso presso Apple resta aperto.
+
 **La build 1.1 — TU, sul Mac**
 
 1. GitHub Desktop → Fetch origin → Pull.
@@ -378,6 +394,36 @@ si invia dopo l'esito della 1.0 (App Store Connect → **+ Versione** → 1.1).
 Nelle note per il revisore aggiungere: *"Version 1.1 adds Sign in with
 Apple on the login screen (native AuthenticationServices). The demo account
 above still works with e-mail and password."*
+
+## 13. Il widget per la schermata Home (dalla 1.1, 15/11) — TU in Xcode, 10 minuti
+
+Mostra la prossima giornata: quanto manca alla chiusura della formazione e le
+partite; durante la giornata dice «In campo». Toccandolo si apre l'app sulla
+formazione. Legge `https://fantatitano.site/widget.json`, un file pubblico
+fatto a ogni pubblicazione del sito (`scripts/widget-dati.mjs`): niente
+account, niente chiavi.
+
+Il codice è pronto in `ios/widget/FantaWidget.swift`. Il «target» del widget
+invece si crea da Xcode (a mano nel progetto sarebbe fragile):
+
+1. GitHub Desktop → **Fetch origin** → **Pull**, poi `npx cap sync ios` e
+   `npx cap open ios`.
+2. Xcode → **File → New → Target…** → iOS → **Widget Extension** → Next.
+3. Product Name **`FantaWidget`**, Team quello solito. **Togli** le spunte
+   «Include Live Activity», «Include Control» e «Include Configuration App
+   Intent». **Finish**. Se chiede di attivare lo schema: **Activate**.
+4. Nella colonna a sinistra compare la cartella **FantaWidget**: tasto destro
+   su **FantaWidgetBundle.swift** → **Delete** → **Move to Trash**.
+5. Terminale, nella cartella del progetto:
+   `cp ios/widget/FantaWidget.swift ios/App/FantaWidget/FantaWidget.swift`
+6. Target **FantaWidget** → **General** → **Minimum Deployments**: **iOS 17.0**.
+   In **Signing & Capabilities**: Automatically manage signing, stesso Team.
+7. Schema **App** (in alto) → ▶ sul simulatore. Sulla schermata Home tieni
+   premuto → **Modifica** → **Aggiungi widget** → Fantatitano.
+8. GitHub Desktop: fai **Commit** e **Push** del progetto (Xcode ha cambiato
+   `project.pbxproj`): se no al prossimo Pull si incastra.
+
+Poi la build 1.1 si archivia come sempre: il widget viaggia dentro l'app.
 
 ## Tempi in breve
 

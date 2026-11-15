@@ -71,6 +71,13 @@ async function spedisciApns(a: Apns, dispositivo: string, n: { titolo: string; c
   return r.status === 410 || motivo === 'BadDeviceToken' || motivo === 'Unregistered' ? 'morto' : 'riprova';
 }
 
+/** La prova parte dall'app (fantatitano.site): il browser chiede prima il permesso. */
+const CORS = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-prova',
+  'Access-Control-Allow-Methods': 'POST, OPTIONS',
+};
+
 const gestisci = async (req: Request): Promise<Response> => {
   // Due guasti diversi, e per mesi rispondevano la stessa identica cosa.
   // Il 17 settembre l'azione pianificata ha preso 401 e dal registro non si
@@ -87,7 +94,12 @@ const gestisci = async (req: Request): Promise<Response> => {
       { status: 500 },
     );
   }
-  if (req.headers.get('x-promemoria-token')?.trim() !== atteso) {
+  // LA PROVA (Alex, 15/11): «Mandami una notifica di prova» dalle
+  // impostazioni dell'app. Niente token: serve il gettone di chi ha fatto
+  // l'accesso, e la notifica va SOLO ai suoi dispositivi. Prova il giro vero
+  // (server -> Apple o il browser -> telefono), non un avviso locale.
+  const prova = req.method === 'POST' && req.headers.get('x-prova') === '1';
+  if (!prova && req.headers.get('x-promemoria-token')?.trim() !== atteso) {
     return new Response('token non valido', { status: 401 });
   }
 
@@ -166,6 +178,40 @@ const gestisci = async (req: Request): Promise<Response> => {
     host: Deno.env.get('APNS_SANDBOX')?.trim() === '1' ? 'api.sandbox.push.apple.com' : 'api.push.apple.com',
   } : null;
   let iphoneSaltati = 0;
+
+  if (prova) {
+    const jwt = (req.headers.get('authorization') || '').replace(/^Bearer\s+/i, '');
+    const { data: u, error: eu } = await sb.auth.getUser(jwt);
+    if (eu || !u?.user) return Response.json({ errore: 'Serve aver fatto l\'accesso.' }, { status: 401, headers: CORS });
+    const { data: miei, error: em } = await sb.from('push_subscriptions')
+      .select('endpoint, p256dh, auth').eq('user_id', u.user.id).is('failed_at', null);
+    if (em) return Response.json({ errore: em.message }, { status: 500, headers: CORS });
+    const avviso = {
+      titolo: 'Notifiche attive ✓',
+      corpo: 'È una prova: quando manca la formazione o segna un tuo titolare, ti avviso così.',
+      tag: 'prova', url: './#/',
+    };
+    let spedite = 0; const morti: string[] = []; const esiti: string[] = [];
+    for (const s of miei ?? []) {
+      if (s.endpoint.startsWith('apns:')) {
+        if (!apns) { iphoneSaltati++; esiti.push('iphone: chiave APNs mancante'); continue; }
+        const esito = await spedisciApns(apns, s.endpoint.slice(5), avviso).catch(() => 'riprova');
+        esiti.push(`iphone: ${esito}`);
+        if (esito === 'ok') spedite++; else if (esito === 'morto') morti.push(s.endpoint);
+        continue;
+      }
+      try {
+        await webpush.sendNotification({ endpoint: s.endpoint, keys: { p256dh: s.p256dh, auth: s.auth } }, JSON.stringify(avviso));
+        spedite++; esiti.push('web: ok');
+      } catch (err) {
+        const code = (err as { statusCode?: number }).statusCode;
+        esiti.push(`web: ${code || 'errore'}`);
+        if (code === 404 || code === 410) morti.push(s.endpoint);
+      }
+    }
+    if (morti.length) await sb.from('push_subscriptions').update({ failed_at: new Date().toISOString() }).in('endpoint', morti);
+    return Response.json({ dispositivi: (miei ?? []).length, spedite, esiti }, { headers: CORS });
+  }
 
   // GLI ALTRI AVVISI (052, Alex 04/11: far tornare la gente). Con un corpo
   // JSON la funzione non fa il promemoria ma uno di questi:
@@ -333,6 +379,7 @@ const gestisci = async (req: Request): Promise<Response> => {
  * dice i percorsi dei file del runtime e non serve a chi legge il registro.
  */
 Deno.serve(async (req) => {
+  if (req.method === 'OPTIONS') return new Response(null, { status: 204, headers: CORS });
   try {
     return await gestisci(req);
   } catch (err) {

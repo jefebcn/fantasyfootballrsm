@@ -88,8 +88,9 @@ const ok = [], ko = []; const et = (c, t) => (c ? ok : ko).push(t);
   et(chiamate.includes('PushNotifications.register'), 'poi il telefono si registra presso Apple');
   const righe = await p.evaluate(() => (JSON.parse(localStorage.getItem('fcs:mock') || '{}').tables?.push_subscriptions || []));
   et(righe.some((r) => r.endpoint === 'apns:f0ca1e5babe'), `il codice del telefono e' salvato come apns:… (${righe.map((r) => r.endpoint).join(', ') || 'nessuna riga'})`);
-  const foglio = await p.evaluate(() => document.body.innerText);
-  et(!/Mandami un avviso di prova/.test(foglio), 'niente «avviso di prova» locale: nell\'app le notifiche arrivano da Apple');
+  // dal 15/11 la prova passa dal server (e da Apple), quindi c'e' anche nell'app
+  const prova = await p.evaluate(() => document.querySelector('#sheet [data-avvisi="prova"]')?.textContent.trim() || '');
+  et(/Mandami una notifica di prova/.test(prova), 'c\'è «Mandami una notifica di prova», che passa dal server come i promemoria');
 
   // tocco su una notifica -> formazione
   await p.evaluate(() => (window.__ascolti['PushNotifications.pushNotificationActionPerformed'] || []).forEach((cb) => cb({ notification: { data: { url: './#/rosa/formazione' } } })));

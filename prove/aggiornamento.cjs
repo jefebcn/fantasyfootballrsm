@@ -1,6 +1,7 @@
 /**
- * "Nuova versione pronta": quando il service worker nuovo prende il controllo,
- * l'app lo dice con un bottone. Non ricarica da sola.
+ * L'aggiornamento: dal 15/11 entra da solo, in un momento tranquillo (cambio
+ * di schermata, app in secondo piano), al massimo una volta ogni 10 minuti;
+ * oltre quel limite torna la barra «Nuova versione pronta» col bottone.
  *
  * Nasce dall'app installata sull'iPhone di Alex, che e' rimasta quella del
  * giorno prima per un giorno intero: sulla schermata Home una PWA resta
@@ -40,13 +41,31 @@ const ok = [], ko = []; const et = (c, t) => (c ? ok : ko).push(t);
   await p.evaluate(() => navigator.serviceWorker.dispatchEvent(new Event('controllerchange'))); await w(200);
   et((await barra()) === '', 'il primo passaggio di controllo e\' la prima installazione: silenzio');
 
+  // dal 15/11 l'aggiornamento entra da solo: niente barra, si ricarica al primo cambio di schermata
+  await p.evaluate(() => { try { localStorage.removeItem('fcs:ricarica-auto'); } catch {} });
   await p.evaluate(() => navigator.serviceWorker.dispatchEvent(new Event('controllerchange'))); await w(200);
-  const testo = await barra();
-  et(/Nuova versione pronta/.test(testo), `il secondo e\' un aggiornamento: compare la barra ("${testo.split('\n')[0]}")`);
-  et(/Aggiorna/i.test(testo), 'con il bottone "Aggiorna"');
+  et((await barra()) === '', 'il secondo e\' un aggiornamento: nessuna barra «Aggiorna»');
 
-  await p.evaluate(() => navigator.serviceWorker.dispatchEvent(new Event('controllerchange'))); await w(200);
-  et((await p.evaluate(() => document.querySelectorAll('#aggiorna').length)) === 1, 'un altro passaggio non ne aggiunge una seconda');
+  // con un campo in uso non si ricarica: si aspetta
+  const t0 = await p.evaluate(() => performance.timeOrigin);
+  await p.evaluate(() => { const i = document.createElement('input'); i.id = 'prova-campo'; document.body.appendChild(i); i.focus(); location.hash = '#/rosa'; }); await w(900);
+  et((await p.evaluate(() => performance.timeOrigin)) === t0, 'mentre si scrive in un campo non ricarica');
+  await p.evaluate(() => { document.getElementById('prova-campo')?.remove(); });
+
+  // cambio di schermata in un momento tranquillo: ricarica da sola, sulla schermata nuova
+  await Promise.all([p.waitForEvent('load'), p.evaluate(() => { location.hash = '#/classifica'; })]); await w(900);
+  const t1 = await p.evaluate(() => performance.timeOrigin);
+  et(t1 > t0, 'al cambio di schermata ricarica da sola');
+  et((await p.evaluate(() => location.hash)) === '#/classifica', 'e resta sulla schermata scelta');
+  et((await barra()) === '', 'senza barre dopo la ricarica');
+
+  // un altro aggiornamento entro 10 minuti: niente seconda ricarica (il vecchio ciclo infinito), torna il bottone
+  await p.evaluate(() => navigator.serviceWorker.dispatchEvent(new Event('controllerchange'))); await w(100);
+  await p.evaluate(() => navigator.serviceWorker.dispatchEvent(new Event('controllerchange'))); await w(100);
+  await p.evaluate(() => { location.hash = '#/'; }); await w(900);
+  et((await p.evaluate(() => performance.timeOrigin)) === t1, 'entro 10 minuti non ricarica una seconda volta');
+  const testo = await barra();
+  et(/Nuova versione pronta/.test(testo) && /Aggiorna/i.test(testo), `oltre il limite torna la barra col bottone ("${testo.split('\n')[0]}")`);
 
   // non copre la navigazione ne' esce dallo schermo
   const geo = await p.evaluate(() => {
@@ -62,6 +81,13 @@ const ok = [], ko = []; const et = (c, t) => (c ? ok : ko).push(t);
   await Promise.all([p.waitForEvent('load'), p.click('#aggiorna button')]); await w(600);
   const dopo = await p.evaluate(() => performance.timeOrigin);
   et(dopo > prima, 'il bottone ricarica la pagina');
+  // la formazione modificata e non confermata vive solo in memoria: con quella in sospeso niente ricarica
+  await p.evaluate(() => { location.hash = '#/rosa/formazione'; }); await w(1200);
+  const sospesa = () => p.evaluate(async () => (await import('/src/views/formazione.js')).formazioneInSospeso());
+  et((await sospesa()) === false, 'formazione appena aperta: niente in sospeso (la ricarica puo\' entrare)');
+  const modulo = p.getByRole('button', { name: '3-5-2' });
+  if (await modulo.count()) { await modulo.first().click(); await w(400); et((await sospesa()) === true, 'modulo cambiato e non confermato: in sospeso, la ricarica aspetta'); }
+  et((await p.evaluate(async () => (await import('/src/app.js')).momentoTranquillo())) === false || !(await modulo.count()), 'e il momento non e\' tranquillo');
   et(errori.length === 0, `nessun errore JS${errori.length ? ' — ' + errori[0] : ''}`);
 
   await b.close();

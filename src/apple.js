@@ -63,7 +63,7 @@ export async function accediNativo() {
   const nonce = nuovoNonce();
   const r = await P.accedi({ nonce: await impronta(nonce) });
   if (!r?.identityToken) throw Object.assign(new Error('Apple non ha restituito il gettone d\'accesso.'), { code: 'NO_TOKEN' });
-  return { token: r.identityToken, nonce, nome: nomeDa(r) };
+  return { token: r.identityToken, nonce, nome: nomeDa(r), codice: r.authorizationCode || '' };
 }
 
 /** Annullato dalla persona: non e' un errore da mostrare. */

@@ -8,6 +8,7 @@ import * as views from './views/index.js';
 import * as AV from './notifiche.js';
 import { VERSIONE } from './versione.js';
 import { apriNuovaPassword, segnaRecupero, recuperoInCorso } from './views/nuova-password.js';
+import { formazioneInSospeso } from './views/formazione.js';
 
 const root = document.getElementById('app');
 let current = null; // { view, params }
@@ -54,6 +55,55 @@ export function mostraAggiornamento() {
   b.innerHTML = `<div><b>${t('Nuova versione pronta')}</b><span>${t('Tocca per usarla adesso; se no entra alla prossima apertura.')}</span></div><button type="button">${t('Aggiorna')}</button>`;
   b.querySelector('button').onclick = () => location.reload();
   document.body.appendChild(b);
+}
+/**
+ * L'AGGIORNAMENTO ENTRA DA SOLO (Alex, 15/11, con l'app sull'App Store:
+ * «eviterei che alle persone compaia la scritta Aggiorna... che gli venga
+ * fatto in autonomia»). Quando il codice nuovo e' pronto, la pagina si
+ * ricarica in un momento in cui nessuno se ne accorge:
+ *  - appena l'app va in secondo piano: al ritorno e' gia' quella nuova;
+ *  - al primo cambio di schermata: la schermata nuova arriva col codice nuovo;
+ *  - dopo un minuto senza toccare niente.
+ * Mai mentre si scrive in un campo, con un foglio aperto o con una
+ * formazione modificata e non confermata (quella vive solo in memoria).
+ *
+ * Il ciclo infinito di una volta (vedi registraServiceWorker): al massimo UNA
+ * ricarica automatica ogni 10 minuti, contata in localStorage, che
+ * sopravvive alla ricarica. Se il limite scatta, o la memoria non c'e', torna
+ * la barra col bottone: un bottone non puo' andare in ciclo.
+ */
+const RICARICA = 'fcs:ricarica-auto';
+const LIMITE_RICARICA = 10 * 60 * 1000;
+let daAggiornare = false;
+let ultimoTocco = Date.now();
+export function momentoTranquillo() {
+  const a = document.activeElement;
+  if (a && /^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName)) return false;
+  if (document.getElementById('sheet')?.classList.contains('on')) return false;
+  try { if (formazioneInSospeso()) return false; } catch { /* formazione non aperta */ }
+  return true;
+}
+export function aggiornaInSilenzio() {
+  if (!daAggiornare || !momentoTranquillo()) return false;
+  let ultima = 0;
+  try {
+    ultima = Number(localStorage.getItem(RICARICA)) || 0;
+    if (Date.now() - ultima < LIMITE_RICARICA) throw new Error('troppo presto');
+    localStorage.setItem(RICARICA, String(Date.now()));
+  } catch { daAggiornare = false; mostraAggiornamento(); return false; }
+  daAggiornare = false;
+  location.reload();
+  return true;
+}
+function preparaAggiornamento() {
+  daAggiornare = true;
+  if (document.hidden) aggiornaInSilenzio();
+}
+if (typeof window !== 'undefined') {
+  for (const ev of ['pointerdown', 'keydown', 'scroll']) addEventListener(ev, () => { ultimoTocco = Date.now(); }, { passive: true, capture: true });
+  document.addEventListener('visibilitychange', () => { if (document.hidden) aggiornaInSilenzio(); });
+  addEventListener('hashchange', () => { if (daAggiornare) aggiornaInSilenzio(); });
+  setInterval(() => { if (daAggiornare && Date.now() - ultimoTocco > 60 * 1000) aggiornaInSilenzio(); }, 15 * 1000);
 }
 export function sheet(html) {
   const sc = document.getElementById('sheet-scrim'), sh = document.getElementById('sheet');
@@ -556,7 +606,7 @@ async function boot() {
  * vecchia senza che nulla lo segnalasse.
  */
 function registraServiceWorker() {
-  // NIENTE ricarica automatica quando arriva un service worker nuovo.
+  // LA RICARICA AUTOMATICA DI UNA VOLTA, e perche' quella di oggi e' diversa.
   //
   // C'era, e poteva bloccare l'app. La guardia che doveva impedire il ciclo
   // infinito era una variabile della pagina: dopo location.reload() la pagina e'
@@ -573,16 +623,18 @@ function registraServiceWorker() {
   // schermata Home resta sospesa in memoria e torna su com'era, senza
   // ricaricare. Alex ha cercato per un quarto d'ora un bottone che c'era da
   // un'ora, perche' la sua app era ancora quella del giorno prima. Quindi
-  // quando il service worker nuovo prende il controllo si AVVISA — un
-  // bottone, non una ricarica: e' la persona a decidere quando, e un bottone
-  // non puo' andare in ciclo.
+  // quando il service worker nuovo prende il controllo si avvisava con un
+  // bottone. Dal 15/11 (app sull'App Store) si ricarica da sola in un momento
+  // tranquillo (aggiornaInSilenzio, sopra), con la guardia che mancava allora:
+  // in localStorage, quindi sopravvive alla ricarica, e al massimo una ogni
+  // 10 minuti. Oltre quel limite torna il bottone.
   if ('serviceWorker' in navigator) {
     // Al primo accesso il controllo passa da "nessuno" al primo service
     // worker: non e' un aggiornamento e non si dice niente.
     let avevaControllo = !!navigator.serviceWorker.controller;
     navigator.serviceWorker.addEventListener('controllerchange', () => {
       if (!avevaControllo) { avevaControllo = true; return; }
-      mostraAggiornamento();
+      preparaAggiornamento();
     });
     navigator.serviceWorker.register('./sw.js').then((reg) => {
       // Il controllo automatico del browser non e' garantito quando serve:

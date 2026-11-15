@@ -1262,6 +1262,7 @@ export async function sincronizzaLock({ forza = false } = {}) {
  * domanda, tenuta separata da chi la mostra.
  */
 /** Iscrive o disiscrive questo dispositivo dalle push. */
+export async function notificaDiProva() { return remote.notificaDiProva(); }
 export async function iscriviAvvisi() {
   const sub = await AV.iscriviPush();
   if (!sub || !user) return false;

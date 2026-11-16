@@ -10,7 +10,7 @@ import vm from 'node:vm';
 const html = readFileSync('link.html', 'utf8');
 
 /** Esegue lo script della pagina con un documento finto e restituisce window. */
-function pagina({ ua = 'iPhone', widget = null } = {}) {
+function pagina({ ua = 'Mozilla/5.0 (Linux; Android 14)', widget = null } = {}) {
   const el = {};
   const nodo = (id) => (el[id] ||= {
     id, hidden: false, textContent: '', href: '', attrs: {}, parentNode: { appendChild() {}, parentNode: { appendChild() {} } },
@@ -20,7 +20,7 @@ function pagina({ ua = 'iPhone', widget = null } = {}) {
     .map(([, id, voce, href], i) => Object.assign(nodo(id || `v${i}`), { attrs: { 'data-voce': voce, href } }));
   const window = {};
   const ctx = {
-    window, navigator: { userAgent: ua }, setInterval() {}, Date, Math,
+    window, navigator: { userAgent: ua, maxTouchPoints: 0 }, setInterval() {}, Date, Math,
     document: { getElementById: nodo, querySelectorAll: () => voci },
     fetch: () => Promise.resolve(widget ? { ok: true, json: () => widget } : { ok: false }),
   };
@@ -84,4 +84,15 @@ test('link: va online come /link e resta nel browser anche con l\'app installata
 test('link: niente strumenti di terzi nella pagina', () => {
   const esterni = [...html.matchAll(/<(?:script|link)[^>]+(?:src|href)="(https?:[^"]+)"/g)].map((m) => m[1]);
   assert.deepEqual(esterni, []);
+});
+
+test('link: sull\'iPhone niente sito, tutto porta all\'App Store', async () => {
+  const CAL2 = [G(9, '2099-11-20T20:05:00.000Z', ['2099-11-20T20:15:00.000Z'])];
+  const { voci, el } = pagina({ ua: 'Mozilla/5.0 (iPhone; CPU iPhone OS 26_0 like Mac OS X)', widget: { giornate: CAL2 } });
+  await new Promise((r) => setTimeout(r, 0));
+  const nascoste = voci.filter((a) => a.parentNode.hidden).map((a) => a.attrs['data-voce']);
+  assert.deepEqual(nascoste.sort(), ['gioca', 'guida', 'lega', 'video']);
+  assert.match(el.ora.attrs.href, /^https:\/\/apps\.apple\.com\//, 'la formazione si fa nell\'app');
+  assert.match(el['ora-s'].textContent, /nell'app/);
+  assert.equal(el['ios-t'].textContent, "Apri l'app Fantatitano");
 });

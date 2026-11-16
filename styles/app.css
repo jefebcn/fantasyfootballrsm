@@ -2923,3 +2923,10 @@ a.crow .cls-chev{flex:none;color:var(--text-muted);margin-left:-4px}
 .shop-banner .sb-chiudi{position:absolute;top:0;right:0;width:44px;height:44px;border:0;background:none;padding:0;cursor:pointer;display:grid;place-items:center}
 .shop-banner .sb-chiudi span{display:grid;place-items:center;width:28px;height:28px;border-radius:50%;background:rgba(4,23,59,.72);color:#fff;font-size:13px;line-height:1}
 .shop-banner .sb-link:active{transform:scale(.99)}
+
+/* Gli stemmi di fantasia delle squadre del campionato (media/stemmi):
+   immagini SVG, niente cerchio ne' bordo attorno. */
+.stemma{display:block;flex:none;width:31px;height:34px;object-fit:contain}
+.stemma.md{width:42px;height:46px}
+.stemma.xs{display:inline-block;width:17px;height:19px;vertical-align:-4px;margin:0 6px 0 0}
+b > .stemma.xs:last-child{margin:0 0 0 6px}

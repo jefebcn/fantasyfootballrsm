@@ -1,5 +1,5 @@
 import * as S from '../state.js';
-import { esc, premioHtml, fmt, badge, crest, empty, icon, dateIt, timeIt, freccia, t, lingua } from '../ui.js';
+import { esc, premioHtml, fmt, badge, crest, stemmaClub, empty, icon, dateIt, timeIt, freccia, t, lingua } from '../ui.js';
 import { movimenti, conversionParams } from '../engine.js';
 
 let vista = 'classifica';
@@ -27,7 +27,7 @@ function campionato() {
   return `${nota}
     <div class="a-sec"><b>${t('Campionato Sammarinese')}</b><span>${c.inCorso ? t('{g}ª in corso', { g: c.inCorso.giornata }) : t('dopo la {n}ª giornata', { n: c.ultima })}</span></div>
     <div class="cls camp">${c.righe.map((r) => `<div class="crow">
-      <i class="pos">${r.pos}</i>${crest({ color: r.club.color, initials: r.club.shortName }, 'sm')}
+      <i class="pos">${r.pos}</i>${stemmaClub(r.club)}
       <span class="nm"><b>${esc(r.club.name)}</b><span>${t('{g} G · {v}V {n}N {p}P · {gf}–{gs}', { g: r.g, v: r.v, n: r.n, p: r.p, gf: r.gf, gs: r.gs })}</span>${r.forma.length ? `<span class="forma">${forma(r.forma)}</span>` : ''}</span>
       <span class="pt"><b>${r.pt}</b><span>${t('punti')}</span></span></div>`).join('')}</div>
     <p class="tie">${t('Risultati della FSGC · 3 punti la vittoria, 1 il pareggio · a pari punti: differenza reti, poi gol fatti.')}</p>`;

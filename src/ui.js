@@ -87,6 +87,15 @@ export const crest = (m, cls = '') => {
 };
 
 /**
+ * Lo stemma di una squadra del campionato: e' di fantasia, disegnato da
+ * Fantatitano (media/stemmi, si rifa' con strumenti/stemmi/genera.mjs).
+ * Senza id si torna al cerchio con la sigla.
+ */
+export const stemmaClub = (club, cls = '') => (club?.id
+  ? `<img class="stemma ${cls}" src="./media/stemmi/${encodeURIComponent(club.id)}-mini.svg" alt="" width="31" height="34" decoding="async">`
+  : crest({ color: club?.color, initials: club?.shortName }, cls));
+
+/**
  * Icona-maschera: la sagoma arriva da un PNG, il colore dalla CSS. Serve dove
  * l'icona deve cambiare colore — la barra in basso, che colorando la voce
  * attiva dice dove sei. Un PNG già colorato non potrebbe farlo.

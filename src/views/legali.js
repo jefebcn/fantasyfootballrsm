@@ -134,6 +134,9 @@ export const privacy = {
       ${blocco('Se questa pagina cambia', [
     'Le modifiche importanti vengono scritte qui con la data in fondo. Se cambiasse qualcosa di sostanziale — un fornitore nuovo, un trattamento nuovo — lo trovi segnalato nell\'app, non solo in questa pagina.',
   ])}
+      ${blocco('Gli stemmi delle squadre', [
+    'Gli stemmi delle squadre del campionato che vedi nell\'app sono disegni di fantasia fatti da Fantatitano: non sono gli stemmi ufficiali delle società.',
+  ])}
       ${disclaimer}
       ${piede()}
     </main>`;

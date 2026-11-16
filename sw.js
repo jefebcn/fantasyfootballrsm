@@ -1,5 +1,5 @@
 /* Service worker — shell in cache, aggiornamento in background. */
-const VERSION = 'fcs-v4.2.299';
+const VERSION = 'fcs-v4.2.300';
 const SHELL = [
   './', './index.html', './manifest.webmanifest', './styles/app.css', './styles/logo.css', './styles/font.css', './design/tokens/tokens.css',
   // I caratteri stanno in casa: nella cache ci vanno, se no senza rete si vede
@@ -30,6 +30,8 @@ const SHELL = [
   // La maglia sta in copertina: e' la prima immagine della dashboard.
   './media/maglia-base.webp', './media/sfondo-home.jpg', './media/sfondo-titano.jpg',
   './media/sfondo-titano-notte.jpg',
+  // Gli stemmi delle squadre: compaiono in home (prossime partite) e in classifica.
+  './media/stemmi/trefiori-mini.svg', './media/stemmi/lafiorita-mini.svg', './media/stemmi/virtus-mini.svg', './media/stemmi/trepenne-mini.svg', './media/stemmi/folgore-mini.svg', './media/stemmi/cosmos-mini.svg', './media/stemmi/murata-mini.svg', './media/stemmi/libertas-mini.svg', './media/stemmi/juvenes-mini.svg', './media/stemmi/fiorentino-mini.svg', './media/stemmi/faetano-mini.svg', './media/stemmi/domagnano-mini.svg', './media/stemmi/pennarossa-mini.svg', './media/stemmi/cailungo-mini.svg', './media/stemmi/sangiovanni-mini.svg', './media/stemmi/academy-mini.svg',
 ];
 /**
  * Il guscio si riscarica dalla RETE, non dalla cache del browser.

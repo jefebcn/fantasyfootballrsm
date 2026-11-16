@@ -2,7 +2,7 @@ import * as S from '../state.js';
 import { videoGiornata, giornateConVideo } from '../video.js';
 import * as AV from '../notifiche.js';
 import * as N from '../notizie.js';
-import { esc, premioHtml, fmt, icon, logo, badge, crest, pic, tile, sec, dateIt, timeIt, plurale, freccia, t, lingua } from '../ui.js';
+import { esc, premioHtml, fmt, icon, logo, badge, crest, stemmaClub, pic, tile, sec, dateIt, timeIt, plurale, freccia, t, lingua } from '../ui.js';
 import { locale } from '../lingua.js';
 import { movimenti, anteprimaClassifica } from '../engine.js';
 import { personaggio, scelto, figura } from '../personaggio.js';
@@ -489,9 +489,9 @@ function prossimePartite(ph) {
     return `<a class="up" href="#/calendario/${n}">
       <span class="when">${k ? `${dateIt(k)} · ${timeIt(k)}` : t('{n}ª giornata', { n })}</span>
       <span class="teams">
-        <span class="t">${crest({ color: h.color, initials: h.shortName }, 'sm')}<b>${esc(h.name)}</b></span>
+        <span class="t">${stemmaClub(h, 'md')}<b>${esc(h.name)}</b></span>
         <em>VS</em>
-        <span class="t">${crest({ color: a.color, initials: a.shortName }, 'sm')}<b>${esc(a.name)}</b></span>
+        <span class="t">${stemmaClub(a, 'md')}<b>${esc(a.name)}</b></span>
       </span>
       ${m.venue ? `<span class="where">${esc(m.venue)}</span>` : ''}</a>`;
   }).join('')}</div>`;

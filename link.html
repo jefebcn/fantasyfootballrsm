@@ -28,6 +28,9 @@
   OGNI LINK porta utm_source=instagram&utm_medium=bio&utm_content=<voce>: si
   vede quale voce porta gente. In bio va fantatitano.site/link.
 
+  SULL'IPHONE (16/11) niente sito: la prima voce e «Apri l'app» vanno
+  all'App Store (che apre l'app se c'e'), le voci del sito spariscono.
+
   Niente strumenti di terzi (la pagina sui cookie dice che non ce ne sono).
 -->
 <style>
@@ -79,7 +82,7 @@
       <span class="freccia">›</span></a></li>
     <li><a class="voce" id="ios" data-voce="app-store" href="https://apps.apple.com/it/app/fantatitano/id6834601552">
       <span class="ico"><img src="icons/icon-192.png" alt=""></span>
-      <span class="t"><b>Scarica l'app per iPhone</b><small>Gratis sull'App Store</small></span>
+      <span class="t"><b id="ios-t">Scarica l'app per iPhone</b><small id="ios-s">Gratis sull'App Store</small></span>
       <span class="freccia">›</span></a></li>
     <li><a class="voce" data-voce="gioca" href="./#/">
       <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="m12 7 4 3-1.5 4.5h-5L8 10z"/></svg></span>
@@ -118,8 +121,20 @@
   }
   function tutti() { [].forEach.call(document.querySelectorAll('a.voce'), segna); }
 
-  // Android non ha l'app: «Gioca dal sito» sale al secondo posto
   var ua = navigator.userAgent || '';
+  // Sull'iPhone c'e' l'app vera (Alex, 16/11: «non dobbiamo reindirizzare le
+  // persone sul sito ma sulle app»): tutto porta all'App Store, che apre l'app
+  // se e' gia' installata. Le voci del sito spariscono.
+  var APP = 'https://apps.apple.com/it/app/fantatitano/id6834601552';
+  var IOS = /iPhone|iPad|iPod/i.test(ua) || (/Macintosh/i.test(ua) && (navigator.maxTouchPoints || 0) > 1);
+  if (IOS) {
+    [].forEach.call(document.querySelectorAll('a.voce'), function (a) {
+      if (/^(gioca|lega|video|guida)$/.test(a.getAttribute('data-voce'))) a.parentNode.hidden = true;
+    });
+    document.getElementById('ios-t').textContent = 'Apri l\'app Fantatitano';
+    document.getElementById('ios-s').textContent = 'Se non ce l\'hai: gratis sull\'App Store';
+  }
+  // Android l'app non ce l'ha ancora: «Gioca dal sito» sale al secondo posto
   if (/Android/i.test(ua)) {
     var ios = document.getElementById('ios').parentNode; ios.parentNode.appendChild(ios);
     document.getElementById('gioca-t').textContent = 'Gioca gratis: si apre nel browser';
@@ -137,9 +152,9 @@
 
   function prima(o) {
     var a = document.getElementById('ora');
-    a.setAttribute('href', o.href); a.setAttribute('data-voce', o.voce);
+    a.setAttribute('href', IOS ? APP : o.href); a.setAttribute('data-voce', o.voce);
     document.getElementById('ora-t').textContent = o.t;
-    document.getElementById('ora-s').textContent = o.s;
+    document.getElementById('ora-s').textContent = o.s + (IOS ? ' · nell\'app' : '');
     var c = document.getElementById('ora-c');
     if (o.c) { c.textContent = o.c; c.hidden = false; } else c.hidden = true;
   }

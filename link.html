@@ -102,8 +102,7 @@
       <span class="freccia">›</span></a></li>
   </ul>
   <footer>
-    <a href="https://www.instagram.com/fantatitano/">@fantatitano</a> · <a href="assistenza.html">Assistenza</a> · <a href="privacy.html">Privacy</a><br>
-    Non affiliato alla FSGC né alle società del campionato.
+    <a href="https://www.instagram.com/fantatitano/">@fantatitano</a> · <a href="assistenza.html">Assistenza</a> · <a href="privacy.html">Privacy</a> · <a href="termini.html">Termini</a>
   </footer>
 </div>
 <script>
@@ -124,12 +123,13 @@
   var ua = navigator.userAgent || '';
   // Sull'iPhone c'e' l'app vera (Alex, 16/11: «non dobbiamo reindirizzare le
   // persone sul sito ma sulle app»): tutto porta all'App Store, che apre l'app
-  // se e' gia' installata. Le voci del sito spariscono.
+  // se e' gia' installata. Spariscono «Gioca dal sito» e «Crea una lega», che
+  // sull'iPhone si fanno nell'app; video e regole restano (Alex, 17/11).
   var APP = 'https://apps.apple.com/it/app/fantatitano/id6834601552';
   var IOS = /iPhone|iPad|iPod/i.test(ua) || (/Macintosh/i.test(ua) && (navigator.maxTouchPoints || 0) > 1);
   if (IOS) {
     [].forEach.call(document.querySelectorAll('a.voce'), function (a) {
-      if (/^(gioca|lega|video|guida)$/.test(a.getAttribute('data-voce'))) a.parentNode.hidden = true;
+      if (/^(gioca|lega)$/.test(a.getAttribute('data-voce'))) a.parentNode.hidden = true;
     });
     document.getElementById('ios-t').textContent = 'Apri l\'app Fantatitano';
     document.getElementById('ios-s').textContent = 'Se non ce l\'hai: gratis sull\'App Store';

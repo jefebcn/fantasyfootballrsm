@@ -86,12 +86,12 @@ test('link: niente strumenti di terzi nella pagina', () => {
   assert.deepEqual(esterni, []);
 });
 
-test('link: sull\'iPhone niente sito, tutto porta all\'App Store', async () => {
+test('link: sull\'iPhone la formazione va all\'App Store, restano video e regole', async () => {
   const CAL2 = [G(9, '2099-11-20T20:05:00.000Z', ['2099-11-20T20:15:00.000Z'])];
   const { voci, el } = pagina({ ua: 'Mozilla/5.0 (iPhone; CPU iPhone OS 26_0 like Mac OS X)', widget: { giornate: CAL2 } });
   await new Promise((r) => setTimeout(r, 0));
   const nascoste = voci.filter((a) => a.parentNode.hidden).map((a) => a.attrs['data-voce']);
-  assert.deepEqual(nascoste.sort(), ['gioca', 'guida', 'lega', 'video']);
+  assert.deepEqual(nascoste.sort(), ['gioca', 'lega'], 'video e regole restano anche sull\'iPhone');
   assert.match(el.ora.attrs.href, /^https:\/\/apps\.apple\.com\//, 'la formazione si fa nell\'app');
   assert.match(el['ora-s'].textContent, /nell'app/);
   assert.equal(el['ios-t'].textContent, "Apri l'app Fantatitano");

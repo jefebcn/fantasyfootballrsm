@@ -30,6 +30,8 @@ const SHELL = [
   './media/sfondo-accesso.jpg',
   // La maglia sta in copertina: e' la prima immagine della dashboard.
   './media/maglia-base.webp', './media/sfondo-home.jpg', './media/sfondo-titano.jpg',
+  // Gli stemmi delle squadre: compaiono in home (prossime partite) e in classifica.
+  './media/stemmi/trefiori-mini.webp', './media/stemmi/lafiorita-mini.webp', './media/stemmi/virtus-mini.webp', './media/stemmi/trepenne-mini.webp', './media/stemmi/folgore-mini.webp', './media/stemmi/cosmos-mini.webp', './media/stemmi/murata-mini.webp', './media/stemmi/libertas-mini.webp', './media/stemmi/juvenes-mini.webp', './media/stemmi/fiorentino-mini.webp', './media/stemmi/faetano-mini.webp', './media/stemmi/domagnano-mini.webp', './media/stemmi/pennarossa-mini.webp', './media/stemmi/cailungo-mini.webp', './media/stemmi/sangiovanni-mini.webp', './media/stemmi/academy-mini.webp',
 ];
 /**
  * Il guscio si riscarica dalla RETE, non dalla cache del browser.

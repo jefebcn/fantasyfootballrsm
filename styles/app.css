@@ -2713,6 +2713,8 @@ a.crow .cls-chev{flex:none;color:var(--text-muted);margin-left:-4px}
 .fs-list{padding:0;overflow:hidden}
 .fs-list>.vr:first-child,.fs-list>summary+.vr{border-top:0}
 .fs-crest{width:30px;height:30px;font-size:10px;border-width:2px;flex:none}
+/* lo stemma Fantatitano al posto del tondo: stessa altezza, non si deforma */
+.fs-stemma.fs-crest{display:block;width:30px;height:33px;object-fit:contain;border:0;background:none;border-radius:0}
 .fs-match{display:grid;grid-template-columns:auto 1fr auto 1fr auto;align-items:center;gap:8px;padding:10px 12px;border-top:1px solid var(--border);font-size:13.5px}
 .fs-match:first-child{border-top:0}
 .fs-match b{font-weight:600;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -2922,6 +2924,7 @@ div.fs-carta{cursor:default}
 .fs-tab .fs-tab-g b{font-weight:600;overflow:hidden;text-overflow:ellipsis}
 .fs-tab .fs-tab-g small{font-size:10.5px;color:var(--text-muted)}
 .fs-tab .fs-crest{width:24px;height:24px;font-size:8px}
+.fs-tab .fs-stemma.fs-crest{width:24px;height:27px}
 .fs-gchips{flex-wrap:nowrap;overflow-x:auto}
 .fs-gchips .chip.futura{opacity:.6}
 .fs-cap-r{padding:0}

@@ -56,7 +56,13 @@ export const COLORE_BARRA = '#111111';
 // ---------------------------------------------------------------- piccoli pezzi
 const colore = new Map(CLUBS.map((c) => [c.id, c]));
 const nomeSq = (id) => F.squadra.get(id)?.nome || id;
-const stemma = (id, cls = 'fs-crest') => { const c = colore.get(id); return crest({ color: c?.color, initials: c?.shortName || String(id).slice(0, 3).toUpperCase() }, cls); };
+// Lo stemma Fantatitano della squadra (di fantasia, lo stesso del calcio: media/stemmi);
+// il tondo con la sigla resta per chi non ha uno stemma.
+const CON_STEMMA = new Set(F.SQUADRE.map((s) => s.id));
+const stemma = (id, cls = 'fs-crest') => {
+  if (CON_STEMMA.has(id)) return `<img class="fs-stemma ${cls}" src="./media/stemmi/${encodeURIComponent(id)}-mini.webp" alt="" width="31" height="34" decoding="async">`;
+  const c = colore.get(id); return crest({ color: c?.color, initials: c?.shortName || String(id).slice(0, 3).toUpperCase() }, cls);
+};
 const nomeG = (g) => `${g.cognome} ${g.nome ? `${g.nome[0]}.` : ''}`;
 const ruoloChip = (r) => `<span class="rl rl-${r === 'P' ? 'p' : r === 'D' ? 'd' : 'a'}">${r}</span>`;
 const RUOLI = { P: 'Porta', D: 'Difensore', A: 'Attaccante' };

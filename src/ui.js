@@ -87,12 +87,13 @@ export const crest = (m, cls = '') => {
 };
 
 /**
- * Lo stemma di una squadra del campionato: e' di fantasia, disegnato da
- * Fantatitano (media/stemmi, si rifa' con strumenti/stemmi/genera.mjs).
+ * Lo stemma di una squadra del campionato: e' di fantasia, non quello
+ * ufficiale (media/stemmi: <id>-mini.webp per le liste, <id>.webp grande;
+ * scelti da Alex il 17/11 e confrontati con gli stemmi delle societa').
  * Senza id si torna al cerchio con la sigla.
  */
 export const stemmaClub = (club, cls = '') => (club?.id
-  ? `<img class="stemma ${cls}" src="./media/stemmi/${encodeURIComponent(club.id)}-mini.svg" alt="" width="31" height="34" decoding="async">`
+  ? `<img class="stemma ${cls}" src="./media/stemmi/${encodeURIComponent(club.id)}-mini.webp" alt="" width="31" height="34" decoding="async">`
   : crest({ color: club?.color, initials: club?.shortName }, cls));
 
 /**

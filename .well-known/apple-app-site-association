@@ -16,6 +16,15 @@
             "exclude": true
           },
           {
+            "/": "/gioco",
+            "exclude": true,
+            "comment": "La Partita (gioco 3D) resta nel browser"
+          },
+          {
+            "/": "/gioco/*",
+            "exclude": true
+          },
+          {
             "/": "/*"
           }
         ]

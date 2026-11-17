@@ -1,5 +1,5 @@
 /* Service worker — shell in cache, aggiornamento in background. */
-const VERSION = 'fcs-v4.2.303';
+const VERSION = 'fcs-v4.2.304';
 const SHELL = [
   './', './index.html', './manifest.webmanifest', './styles/app.css', './styles/logo.css', './styles/font.css', './design/tokens/tokens.css',
   // I caratteri stanno in casa: nella cache ci vanno, se no senza rete si vede
@@ -106,6 +106,10 @@ self.addEventListener('fetch', (e) => {
     e.respondWith(caches.open(VERSION + '-ext').then(async (c) => { try { const r = await fetch(e.request); if (r.status === 200) await c.put(e.request, r.clone()).catch(() => null); return r; } catch { return (await c.match(e.request)) || Response.error(); } }));
     return;
   }
+  // La Partita (/gioco/) e' un altro sito servito sotto lo stesso indirizzo, con i suoi aggiornamenti:
+  // se passasse da qui finirebbe nella cache di questa versione e chi ha l'app installata
+  // continuerebbe a giocare alla versione vecchia fino al prossimo aggiornamento dell'app.
+  if (url.pathname === '/gioco' || url.pathname.startsWith('/gioco/')) return;
   // Guscio: dalla cache di QUESTA versione, e basta.
   //
   // Prima era stale-while-revalidate: si serviva la copia in cache e intanto si

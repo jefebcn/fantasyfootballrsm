@@ -61,6 +61,14 @@
     {
       "source": "/link",
       "destination": "/link.html"
+    },
+    {
+      "source": "/gioco/",
+      "destination": "https://fantatitano-gioco.vercel.app/"
+    },
+    {
+      "source": "/gioco/:path*",
+      "destination": "https://fantatitano-gioco.vercel.app/:path*"
     }
   ],
   "redirects": [
@@ -74,6 +82,11 @@
       ],
       "destination": "https://fantatitano.site/:path*",
       "permanent": true
+    },
+    {
+      "source": "/gioco",
+      "destination": "/gioco/",
+      "permanent": false
     },
     {
       "source": "/:dir(supabase|scripts|tests|prove|data|legale|regia|videos|social|store|strumenti|node_modules|\\.claude|\\.github)/:path*",

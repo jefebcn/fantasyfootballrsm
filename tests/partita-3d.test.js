@@ -16,8 +16,11 @@
  * se passasse da li', chi ha l'app installata giocherebbe alla versione vecchia
  * fino al prossimo aggiornamento dell'app.
  *
- * FUORI DALL'APP PER IPHONE. Con l'app installata, iOS apre dentro l'app ogni indirizzo
- * del sito: l'app non ha il gioco, e il link finirebbe nel vuoto. Come /link, resta nel browser.
+ * DENTRO L'APP PER IPHONE. Alex, 17/11: «dall'app non voglio che si apra in una nuova schermata,
+ * deve rimanere tutto sull'applicazione». L'app per iPhone carica fantatitano.site: /gioco/ e' lo
+ * stesso indirizzo, quindi ci si arriva restando dentro l'app. E un link a fantatitano.site/gioco
+ * toccato fuori (Instagram, messaggi) deve aprire l'app, come ogni altro indirizzo del sito:
+ * per questo /gioco NON va escluso dai link universali, al contrario di /link.
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -56,11 +59,12 @@ test('partita 3D: il service worker la lascia passare senza cache', () => {
   assert.ok(salta < guscio, 'il salto va prima della cache del guscio');
 });
 
-test('partita 3D: sull\'iPhone resta nel browser anche con l\'app installata', () => {
+test('partita 3D: sull\'iPhone si apre dentro l\'app, non nel browser', () => {
   const aasa = JSON.parse(readFileSync('.well-known/apple-app-site-association', 'utf8'));
-  const c = aasa.applinks.details[0].components, tutto = c.findIndex((x) => x['/'] === '/*');
-  for (const p of ['/gioco', '/gioco/*']) {
-    const i = c.findIndex((x) => x['/'] === p && x.exclude);
-    assert.ok(i >= 0 && i < tutto, `${p} va escluso prima di /*`);
-  }
+  const c = aasa.applinks.details[0].components;
+  assert.ok(c.some((x) => x['/'] === '/*' && !x.exclude), 'i link universali devono coprire tutto il sito');
+  for (const x of c.filter((y) => y.exclude)) assert.ok(!/^\/gioco/.test(x['/']), `${x['/']} manderebbe il gioco nel browser invece che nell'app`);
+  // l'app carica il sito vero: il gioco sotto lo stesso indirizzo resta nella stessa finestra
+  const cap = JSON.parse(readFileSync('capacitor.config.json', 'utf8'));
+  assert.equal(new URL(cap.server.url).host, 'fantatitano.site');
 });

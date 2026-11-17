@@ -154,6 +154,7 @@ export const termini = {
       ${blocco('Di chi è l\'app', [
     'Il codice, la grafica, le illustrazioni, i testi, il nome e il marchio Fantatitano appartengono a chi gestisce l\'app: tutti i diritti sono riservati. Non si possono copiare, ripubblicare o riusare, in tutto o in parte, senza un permesso scritto.',
     'I nomi dei giocatori e delle società e i risultati delle partite restano di chi ne ha i diritti: l\'app li usa solo per far funzionare il gioco.',
+    'Gli stemmi delle squadre che compaiono nell\'app e sui profili social di Fantatitano sono disegni di fantasia: non sono gli stemmi ufficiali delle società e non indicano un legame con loro.',
   ])}
       ${blocco('Chi può iscriversi', [
     `Serve aver compiuto ${ETA_MINIMA} anni e un account a testa. Un profilo per più persone, o più profili per la stessa persona nella stessa lega, falsano il gioco per tutti.`,

@@ -58,11 +58,11 @@ function attesa() {
   await p.click('[data-vista="campionato"]'); await w(700);
   const vista = await p.evaluate(() => ({
     nota: document.querySelector('.warn.info')?.innerText || '',
-    righe: [...document.querySelectorAll('.cls.camp .crow')].map((r) => ({ pos: +r.querySelector('.pos').innerText, nome: r.querySelector('.nm b').innerText, club: (r.querySelector('img.stemma')?.getAttribute('src') || '').match(/stemmi\/([a-z]+)-mini\.svg$/)?.[1] || '', pt: +r.querySelector('.pt b').innerText, forma: r.querySelectorAll('.fm').length })),
+    righe: [...document.querySelectorAll('.cls.camp .crow')].map((r) => ({ pos: +r.querySelector('.pos').innerText, nome: r.querySelector('.nm b').innerText, club: (r.querySelector('img.stemma')?.getAttribute('src') || '').match(/stemmi\/([a-z]+)-mini\.webp$/)?.[1] || '', pt: +r.querySelector('.pt b').innerText, forma: r.querySelectorAll('.fm').length })),
   }));
   const { pt, gare5, fatte5 } = attesa();
   et(vista.righe.length === 16, `ci sono tutte e 16 le squadre (${vista.righe.length})`);
-  // la squadra si riconosce dallo stemma (media/stemmi/<id>-mini.svg), uno diverso per riga
+  // la squadra si riconosce dallo stemma (media/stemmi/<id>-mini.webp), uno diverso per riga
   et(vista.righe.every((r) => r.club) && new Set(vista.righe.map((r) => r.club)).size === 16, 'ogni riga ha lo stemma della sua squadra');
   const sbagliate = vista.righe.filter((r) => (pt[r.club] || 0) !== r.pt);
   et(sbagliate.length === 0, `i punti tornano col conto fatto a parte (${sbagliate.length ? sbagliate.map((r) => `${r.nome} ${r.pt} invece di ${pt[r.club] || 0}`).join(', ') : 'tutti'})`);

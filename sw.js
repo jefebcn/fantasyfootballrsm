@@ -1,5 +1,5 @@
 /* Service worker — shell in cache, aggiornamento in background. */
-const VERSION = 'fcs-v4.2.301';
+const VERSION = 'fcs-v4.2.302';
 const SHELL = [
   './', './index.html', './manifest.webmanifest', './styles/app.css', './styles/logo.css', './styles/font.css', './design/tokens/tokens.css',
   // I caratteri stanno in casa: nella cache ci vanno, se no senza rete si vede
@@ -31,7 +31,7 @@ const SHELL = [
   './media/maglia-base.webp', './media/sfondo-home.jpg', './media/sfondo-titano.jpg',
   './media/sfondo-titano-notte.jpg',
   // Gli stemmi delle squadre: compaiono in home (prossime partite) e in classifica.
-  './media/stemmi/trefiori-mini.svg', './media/stemmi/lafiorita-mini.svg', './media/stemmi/virtus-mini.svg', './media/stemmi/trepenne-mini.svg', './media/stemmi/folgore-mini.svg', './media/stemmi/cosmos-mini.svg', './media/stemmi/murata-mini.svg', './media/stemmi/libertas-mini.svg', './media/stemmi/juvenes-mini.svg', './media/stemmi/fiorentino-mini.svg', './media/stemmi/faetano-mini.svg', './media/stemmi/domagnano-mini.svg', './media/stemmi/pennarossa-mini.svg', './media/stemmi/cailungo-mini.svg', './media/stemmi/sangiovanni-mini.svg', './media/stemmi/academy-mini.svg',
+  './media/stemmi/trefiori-mini.webp', './media/stemmi/lafiorita-mini.webp', './media/stemmi/virtus-mini.webp', './media/stemmi/trepenne-mini.webp', './media/stemmi/folgore-mini.webp', './media/stemmi/cosmos-mini.webp', './media/stemmi/murata-mini.webp', './media/stemmi/libertas-mini.webp', './media/stemmi/juvenes-mini.webp', './media/stemmi/fiorentino-mini.webp', './media/stemmi/faetano-mini.webp', './media/stemmi/domagnano-mini.webp', './media/stemmi/pennarossa-mini.webp', './media/stemmi/cailungo-mini.webp', './media/stemmi/sangiovanni-mini.webp', './media/stemmi/academy-mini.webp',
 ];
 /**
  * Il guscio si riscarica dalla RETE, non dalla cache del browser.

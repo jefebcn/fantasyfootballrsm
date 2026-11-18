@@ -129,6 +129,7 @@ export const ACCESSO = {
   'Salta': 'Saltar',
   'Avanti': 'Siguiente',
   'Ho già un account · Accedi': 'Ya tengo una cuenta · Iniciar sesión',
+  'Scarica l\'app dall\'App Store': 'Descarga la app en el App Store',
   // la guida di TITO dopo la registrazione (src/views/guida.js)
   'Passo {n} di {tot}': 'Paso {n} de {tot}',
   'Come si gioca': 'Cómo se juega',

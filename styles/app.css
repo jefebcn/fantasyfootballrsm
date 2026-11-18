@@ -1417,6 +1417,10 @@ button,a{-webkit-tap-highlight-color:transparent}
 .guida-nota{margin:0;font-size:12.5px;color:#fff;opacity:.75;text-align:center}
 .guida .guida-fumetto{position:relative;max-width:none;background:#fff;color:var(--c-pietra-900,#14243a);border-radius:16px 16px 16px 4px;padding:10px 14px;font:700 14.5px/1.4 var(--font-body);text-align:left;margin:0 0 18px;opacity:1}
 @media (prefers-reduced-motion:no-preference){.guida-tito img{animation:tito-entra .5s cubic-bezier(.2,.9,.3,1.2) both}@keyframes tito-entra{from{transform:translateY(14px) scale(.94);opacity:0}to{transform:none;opacity:1}}}
+/* Il tasto dell'App Store (18/11): per chi apre il sito e non ha ancora l'app. */
+.intro-appstore{display:inline-flex;align-items:center;justify-content:center;gap:8px;margin-top:4px;border-radius:999px;padding:10px 18px;
+  background:#000;color:#fff;border:1px solid rgba(255,255,255,.35);font:700 14px var(--font-body);text-decoration:none}
+.intro-appstore .ic{width:18px;height:18px}
 .intro-link{border:0;background:transparent;color:#fff;font:600 13px var(--font-body);opacity:.85;cursor:pointer;padding:8px;text-decoration:underline;text-underline-offset:3px}
 @media (prefers-reduced-motion:reduce){.intro-points li{animation:none}.intro-bg video{transition:none}}
 

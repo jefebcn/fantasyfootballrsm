@@ -37,7 +37,7 @@ s = importlib.util.spec_from_file_location('f', 'scripts/foto_gol.py'); f = impo
 x = f.foto_per(${JSON.stringify(pid)}, None, f.giocatori())
 print(json.dumps(x and {'tipo': x['tipo'], 'credito': x['credito']}))`], { encoding: 'utf8' }));
   assert.deepEqual(py('domagnano_23'), { tipo: 'giocatore', credito: '©FSGC/Palmieri' });
-  assert.equal(py('libertas_2')?.tipo, 'squadra');
+  assert.equal(py('libertas_4')?.tipo, 'squadra'); // libertas_2 dal 17/11 ha la sua foto nel catalogo
   assert.equal(py('murata_2')?.tipo, 'squadra');
   assert.equal(py('nessuno_1'), null, 'squadra senza foto di gruppo: niente foto');
 });

@@ -14,7 +14,7 @@ Fantacalcio gratuito sul Campionato Sammarinese (fantatitano.site), PWA statica 
 | Monetizzazione | `MONETIZZAZIONE.md` |
 | Controlli e avvisi automatici | `MONITORAGGIO.md`, `.github/workflows/` |
 | Storie e gol per i social | `social/`, `scripts/storie-gol.mjs`, `scripts/pubblica-storia.mjs` |
-| Video (HyperFrames) | `/regia-hyperframes`, poi le skill in `.claude/skills/`; progetti in `videos/` e `regia/` |
+| Video (HyperFrames) | `/regia-hyperframes` o la skill `hyperframes` (porta d'ingresso); progetti in `videos/` e `regia/`. Le altre 20 skill video sono nascoste (`disable-model-invocation: true`) per non pagarle in ogni sessione: quando un passo dice `/nome`, leggi `.claude/skills/<nome>/SKILL.md`. Se `npx hyperframes skills update` toglie quella riga, rimettila. |
 
 I documenti grandi (`IOS.md` e `PLAY.md` 23 KB, `MONETIZZAZIONE.md` 17 KB) si leggono solo per quel lavoro, cercando con grep la sezione giusta.
 

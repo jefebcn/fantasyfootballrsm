@@ -9,6 +9,7 @@ description: >
   real image's geometry into a chart. Usually under 10s (up to ~30s), no
   narration or live-action subject; renders to MP4 or transparent overlay.
   Longer / narrated / multi-scene → /general-video. Unclear → /hyperframes.
+disable-model-invocation: true
 ---
 
 **Plugin installs:** Before setup or freshness commands, follow [plugin execution rules](../hyperframes/references/plugin-installation.md) when this skill is inside a HyperFrames plugin. Standalone installs keep the update instructions below.

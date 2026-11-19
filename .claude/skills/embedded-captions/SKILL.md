@@ -7,6 +7,7 @@ description: >
   identity, not by backend engine. The quiet `anchor` rail is the default; embed every word only
   when the user explicitly wants a fully cinematic treatment. The workflow runs locally end to end,
   including transcription and subject matting; split multi-shot footage before applying it.
+disable-model-invocation: true
 ---
 
 **Plugin installs:** Before setup or freshness commands, follow [plugin execution rules](../hyperframes/references/plugin-installation.md) when this skill is inside a HyperFrames plugin. Standalone installs keep the update instructions below.

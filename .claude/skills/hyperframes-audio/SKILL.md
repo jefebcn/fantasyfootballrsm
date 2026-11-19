@@ -11,6 +11,7 @@ description: >
   Don't use for sourcing or generating audio — finding BGM, SFX, or making a
   voiceover is `/media-use`. Don't use for clip timing or track layout, which is
   `/hyperframes-core`.
+disable-model-invocation: true
 ---
 
 **Plugin installs:** Before setup or freshness commands, follow [plugin execution rules](../hyperframes/references/plugin-installation.md) when this skill is inside a HyperFrames plugin. Standalone installs keep the update instructions below.

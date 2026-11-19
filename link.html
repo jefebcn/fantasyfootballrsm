@@ -36,6 +36,7 @@
 <style>
   :root{--nero:#0A0A0C;--viola:#4B06FC;--viola-s:#340AAA;--lime:#D9F51F;--card:#17151F;--bordo:#2A2638;--testo:#F4F2FA;--tenue:#A9A4BF}
   *{box-sizing:border-box}
+  [hidden]{display:none!important} /* il conto alla rovescia nascosto non lascia la barretta */
   html,body{margin:0;background:var(--nero);color:var(--testo);font-family:'Lato',system-ui,sans-serif;-webkit-font-smoothing:antialiased}
   body{min-height:100vh;background:radial-gradient(120% 60% at 85% -10%,rgba(75,6,252,.55),transparent 60%),radial-gradient(80% 40% at -10% 105%,rgba(75,6,252,.35),transparent 60%),var(--nero)}
   .pag{max-width:520px;margin:0 auto;padding:calc(28px + env(safe-area-inset-top,0px)) 16px calc(36px + env(safe-area-inset-bottom,0px))}
@@ -63,6 +64,21 @@
   a.voce.ora .t small{color:#2E3300;font-weight:700}
   a.voce.ora .freccia{color:var(--nero)}
   .conto{display:inline-block;margin-top:6px;padding:3px 9px;border-radius:999px;background:var(--nero);color:var(--lime);font:700 12px/1.4 'IBM Plex Mono',ui-monospace,monospace}
+  /* L'avviso del FantaTitano Futsal (Alex, 19/11): nello stile del futsal,
+     carta, nero e rosso con il Teko, e il bollino con la data dell'uscita */
+  @font-face{font-family:'Teko';font-weight:300 700;font-display:swap;src:url(media/font/teko-latin.woff2) format('woff2')}
+  .futsal{position:relative;margin:4px 0 6px;padding:16px 18px 16px;background:#F2F0E9;color:#111;border:3px solid #111;border-radius:6px;box-shadow:6px 6px 0 #FF4B2B}
+  .futsal .fs-tag{display:inline-flex;align-items:center;gap:6px;background:#111;color:#fff;font:600 17px/1 'Teko',Impact,sans-serif;text-transform:uppercase;letter-spacing:.06em;padding:5px 12px 2px 10px;clip-path:polygon(6px 0,100% 0,calc(100% - 6px) 100%,0 100%)}
+  .futsal .fs-tag svg{width:14px;height:14px;margin-top:-3px}
+  .futsal h2{margin:10px 0 0;font:600 40px/.86 'Teko',Impact,sans-serif;text-transform:uppercase;letter-spacing:.01em;padding-right:86px}
+  .futsal h2 span{display:inline-block;margin-top:4px;background:#FF4B2B;color:#fff;padding:4px 10px 0;clip-path:polygon(8px 0,100% 0,calc(100% - 8px) 100%,0 100%)}
+  .futsal p{margin:10px 0 0;font-size:14px;line-height:1.4;color:#3A3833}
+  .futsal p b{color:#111}
+  .futsal .fs-conto{display:inline-block;margin-top:10px;padding:4px 12px 1px;background:#111;color:#fff;font:600 19px/1.1 'Teko',Impact,sans-serif;text-transform:uppercase;letter-spacing:.04em}
+  .futsal .fs-conto em{font-style:normal;color:#FF4B2B}
+  .bollino{position:absolute;top:-16px;right:-10px;width:92px;height:92px;border-radius:50%;background:#FF4B2B;border:3px solid #111;display:grid;place-content:center;text-align:center;color:#fff;font:600 21px/.85 'Teko',Impact,sans-serif;text-transform:uppercase;transform:rotate(10deg);box-shadow:0 6px 16px rgba(0,0,0,.35)}
+  .bollino b{display:block;font-size:31px;font-weight:600}
+  @media (prefers-reduced-motion:no-preference){.bollino{animation:bollino 2.6s ease-in-out infinite}@keyframes bollino{0%,100%{transform:rotate(10deg) scale(1)}50%{transform:rotate(6deg) scale(1.05)}}}
   footer{margin-top:26px;text-align:center;color:var(--tenue);font-size:13px;line-height:1.7}
   footer a{color:var(--tenue)}
   @media (prefers-reduced-motion:reduce){a.voce{transition:none}}
@@ -80,6 +96,13 @@
       <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 12h18M12 3v18"/><circle cx="12" cy="12" r="3"/></svg></span>
       <span class="t"><b id="ora-t">Schiera la formazione</b><small id="ora-s">Prima della chiusura della giornata</small><span class="conto" id="ora-c" hidden></span></span>
       <span class="freccia">›</span></a></li>
+    <li><div class="futsal" id="futsal" role="note" aria-label="Fantatitano Futsal in arrivo il 1° dicembre">
+      <span class="bollino" aria-hidden="true">Dal<b>01/12</b></span>
+      <span class="fs-tag"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="#fff" fill-rule="evenodd" d="M12 2a10 10 0 1 1 0 20 10 10 0 0 1 0-20Zm0 5.2-3.6 2.6 1.4 4.3h4.4l1.4-4.3Zm-1.7-3.1A8 8 0 0 0 5 7l1 3.1 2-.7 3.1-2.3V5Zm3.4 0V5l.1 2.1 3.1 2.3 2 .7L19 7a8 8 0 0 0-5.3-2.9ZM4.1 11.4A8 8 0 0 0 5.8 17l2.3-.3.6-2.1-1.3-4.1-2-.7Zm15.8 0-1.3.4-2 .7-1.3 4.1.6 2.1 2.3.3a8 8 0 0 0 1.7-5.6ZM9.6 16.1l-.8 2.4 1 1.2a8 8 0 0 0 4.4 0l1-1.2-.8-2.4Z"/></svg>Novità</span>
+      <h2>Fantatitano<br><span>Futsal</span></h2>
+      <p id="futsal-s"><b>Dal 1° dicembre sui tuoi dispositivi</b>: il fanta del futsal sammarinese, nella stessa app e con lo stesso account. Fatti trovare già dentro.</p>
+      <span class="fs-conto" id="futsal-c" hidden></span>
+    </div></li>
     <li><a class="voce" id="ios" data-voce="app-store" href="https://apps.apple.com/it/app/fantatitano/id6834601552">
       <span class="ico"><img src="icons/icon-192.png" alt=""></span>
       <span class="t"><b id="ios-t">Scarica l'app per iPhone</b><small id="ios-s">Gratis sull'App Store</small></span>
@@ -176,6 +199,24 @@
   }
   window.__adesso = adesso;
 
+
+  // L'avviso del futsal: fino al 1° dicembre il conto alla rovescia, da quel
+  // giorno dice che e' arrivato. Esportata per le prove.
+  var LANCIO_FUTSAL = Date.parse('2026-11-30T23:00:00Z'); // 1/12 alle 00:00 di Roma
+  function futsal(now) {
+    if (now < LANCIO_FUTSAL) return { arrivato: false, c: manca(LANCIO_FUTSAL - now).replace(/^mancano /, 'mancano <em>') + '</em>' };
+    return { arrivato: true, c: '' };
+  }
+  window.__futsal = futsal;
+  function avvisoFutsal() {
+    var f = futsal(Date.now()), c = document.getElementById('futsal-c');
+    if (!c) return;
+    if (f.arrivato) {
+      c.hidden = true;
+      document.getElementById('futsal-s').innerHTML = '<b>È arrivato!</b> Il fanta del futsal sammarinese è nell\'app Fantatitano, con lo stesso account.';
+    } else { c.innerHTML = f.c; c.hidden = false; }
+  }
+  avvisoFutsal(); setInterval(avvisoFutsal, 60000);
   tutti();
   fetch('widget.json', { cache: 'no-cache' }).then(function (r) { return r.ok ? r.json() : null; }).then(function (w) {
     if (!w || !w.giornate || !w.giornate.length) return;

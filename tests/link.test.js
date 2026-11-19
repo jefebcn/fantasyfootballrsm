@@ -96,3 +96,19 @@ test('link: sull\'iPhone la formazione va all\'App Store, restano video e regole
   assert.match(el['ora-s'].textContent, /nell'app/);
   assert.equal(el['ios-t'].textContent, "Apri l'app Fantatitano");
 });
+
+test('link: l\'avviso del FantaTitano Futsal conta i giorni al 1° dicembre, poi dice che è arrivato', () => {
+  const { window } = pagina();
+  assert.match(html, /id="futsal"/);
+  assert.match(html, /class="bollino"[^>]*>Dal<b>01\/12<\/b>/);
+  const prima = window.__futsal(Date.parse('2026-11-19T13:38:00Z'));
+  assert.equal(prima.arrivato, false);
+  assert.match(prima.c, /mancano <em>11 giorni<\/em>/);
+  assert.match(window.__futsal(Date.parse('2026-11-30T22:30:00Z')).c, /30 minuti/);
+  assert.equal(window.__futsal(Date.parse('2026-11-30T23:00:00Z')).arrivato, true, 'a mezzanotte di Roma del 1/12');
+});
+
+test('link: il font del futsal va online con la pagina', () => {
+  assert.match(html, /url\(media\/font\/teko-latin\.woff2\)/);
+  assert.ok(readFileSync('media/font/teko-latin.woff2').length > 1000);
+});

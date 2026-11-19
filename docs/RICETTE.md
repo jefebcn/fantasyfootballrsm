@@ -1,0 +1,8 @@
+# Ricette – lavori che si ripetono
+
+Formato: COSA | comando o script | trappole | la prossima volta
+
+- Post e storie Instagram della settimana | attività pianificate lunedì e giovedì, kit social (`kit/PLAYBOOK.md`, `plan.py`, `render.py`, `buffer.py`) | `storico.json` è incompleto per le ripetizioni: cerca i nomi anche nelle didascalie; le foto delle storie non devono mostrare squadre che non giocano quel giorno | la prossima volta: contact sheet `prova_foto.py` prima di ogni sfida con foto.
+- Aggiornare regole o codice del kit social | modifica in `kit/`, poi `zip -qr kit.zip kit -x 'kit/work/*' 'kit/__pycache__/*'`, caricamento su Higgsfield, nuovo URL in TUTTE e due le attività | `update_trigger` si può perdere con un riavvio | la prossima volta: `get_trigger` subito dopo.
+- Controllo infortuni e squalifiche prima della formazione consigliata | resoconti dell'ultima giornata su fsgc.sm/it/news/campionato-sammarinese/9 (espulsi), più la presentazione della giornata | i comunicati ufficiali e le diffide non sono leggibili online | la prossima volta: partire dai resoconti, non dalla ricerca web generica.
+- Chiudere una sessione | «SESSIONE FINITA» o «termina sessione»: `docs/STATO.md` + `kit/STATO.md` + rezip del kit | la sezione FINE SESSIONE del PLAYBOOK vale per il kit | —

@@ -1,23 +1,29 @@
 # Stato – Fantatitano
 
-Aggiornato: 2026-11-19 (prima versione, ricostruita da git: da confermare con Alex alla prossima ripartenza)
+Aggiornato: 2026-11-19 · tema: Instagram automatico (meme, foto vere, stemmi) e tasto App Store
 
 ## Dove siamo
-- App online su fantatitano.site, iPhone (Capacitor, widget Home, notifiche, recensione) e link in bio su fantatitano.site/link (al posto di Linktree).
-- Lavoro di sviluppo sul ramo `claude/fantacalcio-sammarinese-design-xlxzd3`, unito a `main` con PR; dopo ogni modifica all'app parte il commit «versione: fcs-v4.2.x».
-- Dati del campionato: import automatico (`dati: import automatico`), catalogo foto giocatori (249 giocatori, 769 foto dagli album FSGC).
-- Stemmi di fantasia per le 16 squadre (scelti da Alex il 17/11), con la nota nei Termini.
+- App online su fantatitano.site e su iPhone. Nell'onboarding del sito c'è il tasto «Scarica l'app dall'App Store» (PR #117, unita); non compare nell'app né su Android.
+- Instagram @fantatitano si pubblica da solo con Buffer: un post alle 14:00 e una storia alle 14:15, al massimo uno di ciascuno al giorno. Li prepara il kit social (fuori dal repo), con due attività pianificate: lunedì (dopo la giornata) e giovedì (prima della giornata).
+- Il kit ha la sua memoria: `kit/STATO.md` (cosa è programmato) e `kit/PLAYBOOK.md` (tutte le regole di Alex). L'URL del kit è scritto nel prompt delle due attività.
+- La 9ª giornata (19–22/11) è già programmata. Il controllo infortuni e squalifiche del 19/11 non ha trovato nessuno fuori.
 
 ## Aperto / in corso
-- FantaTitano Futsal: annunciato nel link in bio per il 1° dicembre (PR #118). Stato dello sviluppo da verificare con Alex.
+- FantaTitano Futsal: annunciato nel link in bio per il 1° dicembre (PR #118). Lo stato dello sviluppo è da verificare con Alex.
 - Migrazione 057 (carriera di La Partita sull'account), 18/11: da verificare se è applicata su Supabase.
 
 ## Prossimo passo consigliato
-- Da decidere con Alex alla prima ripartenza.
+- Lunedì 23/11 l'attività del lunedì fa il recap della 9ª giornata. Dopo, controllare che le grafiche rispettino le regole qui sotto.
 
 ## Decisioni recenti di Alex ancora valide
-- Sull'iPhone tutto porta all'app, non al sito.
-- Niente riga «non affiliato» nel link in bio: resta nei Termini.
+- Sull'iPhone tutto porta all'app, non al sito. Niente riga «non affiliato» nel link in bio: resta nei Termini.
+- Social: avatar solo nei campi delle formazioni. Nelle sfide e nella figurina vanno foto vere del giocatore nominato, ben visibile e centrato.
+- Logo FANTATITANO sempre in alto a sinistra. In ogni grafica con squadre ci sono i loro stemmi di fantasia.
+- Due meme a settimana, con dipinti in pubblico dominio: nell'immagine solo il titolo del quadro, autore e licenza in didascalia.
+- Mai ripetere giocatori o argomenti: prima di usare un nome, cercarlo in tutte le didascalie recenti.
+- Le storie parlano solo del loro giorno: niente scadenze già passate.
+- Si lavora in una chat sola: «termina sessione» o «SESSIONE FINITA» salva il punto, poi la chat si può svuotare.
 
 ## Attenzione
 - Il deploy parte solo se `npm test` è verde.
+- Dopo `update_trigger` verifica con `get_trigger`: due volte l'aggiornamento si è perso con un riavvio.

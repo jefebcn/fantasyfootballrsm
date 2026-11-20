@@ -9,7 +9,7 @@ Aggiornato: 2026-11-20 · tema: Instagram automatico (meme, foto vere, stemmi, s
 - La 9ª giornata (19–22/11) è già programmata. Il controllo infortuni e squalifiche del 19/11 non ha trovato nessuno fuori.
 
 ## Aperto / in corso
-- Storie dei gol su Instagram, quasi istantanee (20/11): l'orologio `orologio-gol` (pg_cron ogni 2 minuti) fa partire subito il turno quando si gioca. Le storie si pubblicano con Buffer tramite la funzione `pubblica-gol`, senza token Instagram. Funzioni e orologio sono già attivi su Supabase. Per accendere tutto servono: in Supabase → Edge Functions → Secrets, `BUFFER_TOKEN` (la chiave API di Buffer) e `GITHUB_TOKEN_OROLOGIO` (token GitHub fine-grained con Actions: read and write); su GitHub la variabile `STORIE_GOL=on`; l'unione della PR #119.
+- Storie dei gol su Instagram, quasi istantanee (20/11): accese. L'orologio `orologio-gol` (pg_cron ogni 2 minuti) fa partire il turno quando si gioca, e la funzione `pubblica-gol` pubblica subito con Buffer. Prima prova vera: venerdì 20/11 alle 21:15 (La Fiorita–Folgore, Tre Fiori–Juvenes), da verificare nel log del turno.
 - FantaTitano Futsal: annunciato nel link in bio per il 1° dicembre (PR #118). Lo stato dello sviluppo è da verificare con Alex.
 - Migrazione 057 (carriera di La Partita sull'account), 18/11: da verificare se è applicata su Supabase.
 

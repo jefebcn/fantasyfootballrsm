@@ -7,7 +7,9 @@
 #
 # L'INTERRUTTORE e' la variabile del repository STORIE_GOL (Settings → Secrets
 # and variables → Actions → Variables):
-#   on     pubblica davvero
+#   on     pubblica davvero (con Buffer, tramite la funzione Supabase
+#          pubblica-gol: serve solo il suo secret BUFFER_TOKEN; con IG_USER_ID
+#          e IG_TOKEN pubblica invece direttamente con l'API di Instagram)
 #   off    il lavoro non parte neanche
 #   altro  (o non impostata) prova: le storie si fanno e restano negli
 #          artefatti del lavoro, su Instagram non va niente
@@ -39,6 +41,7 @@ concurrency:
 permissions:
   contents: read
   actions: write      # per far partire il turno dopo (workflow_dispatch)
+  id-token: write     # il token OIDC con cui la funzione pubblica-gol riconosce questo lavoro
 
 jobs:
   diretta:

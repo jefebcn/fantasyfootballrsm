@@ -50,7 +50,8 @@ const ARGS = ['--allow-file-access-from-files'];
 const b = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium', args: ARGS }).catch(() => chromium.launch({ args: ARGS }));
 const p = await b.newPage({ viewport: { width: 1080, height: 1920 } });
 for (const s of storie) {
-  const foto = fotoMap[s.id];
+  // la foto con percorso assoluto, anche se arriva relativo (20/11: sfondo nero)
+  const foto = fotoMap[s.id] && { ...fotoMap[s.id], file: /^https?:/.test(fotoMap[s.id].file) ? fotoMap[s.id].file : resolve(fotoMap[s.id].file) };
   const m = foto ? 'foto' : modello || modelloPer(s);
   // L'HTML sta accanto al JPG e prende font e sfondo dal progetto con un
   // indirizzo file:// assoluto: cosi' si apre anche a mano per ritoccarlo.

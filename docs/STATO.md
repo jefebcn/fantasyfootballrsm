@@ -4,13 +4,13 @@ Aggiornato: 2026-11-20 · tema: coda Buffer fino al 30/11, controllo giornaliero
 
 ## Dove siamo
 - Sezione futsal (modello Dunkest, § 13 di `FUTSAL.md`) solo sul ramo `futsal`, nascosta (`?futsal=1`, anteprima admin). NON su main né su fantatitano.site.
-- Dati: referti fino alla 10ª giornata (`src/futsal-dati.js`), quotazioni fino alla 10ª su Supabase. Stemmi Fantatitano nell'app.
+- Dati: referti di tutta la 10ª giornata (`src/futsal-dati.js`), quotazioni fino all’11ª su Supabase (applicate il 20/11). Stemmi Fantatitano nell'app.
 - Link in bio (main, PR #118): card «Fantatitano Futsal · Dal 01/12», online.
 - Instagram @fantatitano.futsal via Buffer: coda 9/10 fino al 30/11 (vigilia del lancio). Grafiche: `scratchpad/ig/sett3.mjs` (stile da copiare).
 - Foto: archivio Flickr FSGC su Drive, cartelle «Futsal - Giornata 01/02/09/10» (Desktop\FOTO FSGC\flickr\FSGC _ official\Albums, sincronizzata da Drive), catalogo `catalogo-futsal.csv` (Drive id 1cxmXJ3_xL3Ghku4pCXWhIPXJq2KRit0X): 5.304 foto, 27 partite, fotografo per ogni foto.
 
 ## Aperto / in corso
-- Oggi 14:00 (trig_015frfsmeqfqUtRCACKJzkg2): import referti, storia «Classifica» su Buffer (usa l'ultimo posto), quotazioni 11ª, push.
+- Storia «Classifica dopo la 10ª» programmata su Buffer per ven 20/11 alle 18:30 (grafica `scratchpad/ig/classifica.mjs`); coda 9/10. Da mettere in evidenza a mano in «Classifica».
 - Ogni giorno 9:47 (trig_019gaxf1eECjzEK6qMnLV9NA): se su Buffer ci sono ≥4 posti liberi crea contenuti con foto dall'archivio Drive e avvisa Alex; altrimenti silenzio.
 - Storie da mettere in evidenza a mano da Alex (21/11 App, 23/11 Giornate, 25/11 schemi): gli highlight non hanno API.
 - Album Flickr nuovi (11ª giornata in poi): aggiungere l'indirizzo in `scripts/foto-flickr-futsal.ps1` e mandare ad Alex il comando completo; poi lui rilancia scaricamento, rinomina e catalogo.

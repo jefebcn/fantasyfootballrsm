@@ -10,6 +10,7 @@ Aggiornato: 2026-11-20 · tema: Instagram automatico (meme, foto vere, stemmi, s
 
 ## Aperto / in corso
 - Storie dei gol su Instagram (lavoro GitHub «Storie dei gol»): il codice è pronto, ma è ancora in prova. Per accenderle Alex mette nei segreti del repo `SUPABASE_SERVICE_KEY`, `IG_USER_ID` e `IG_TOKEN`, e la variabile `STORIE_GOL=on`.
+- Orologio delle storie dei gol (20/11): pg_cron `orologio-gol` ogni 2 minuti chiama la funzione Supabase `orologio-gol`, che fa partire subito il turno quando si gioca. È attivo, ma aspetta il secret `GITHUB_TOKEN_OROLOGIO` (token GitHub fine-grained con Actions: read and write) nelle Edge Functions.
 - FantaTitano Futsal: annunciato nel link in bio per il 1° dicembre (PR #118). Lo stato dello sviluppo è da verificare con Alex.
 - Migrazione 057 (carriera di La Partita sull'account), 18/11: da verificare se è applicata su Supabase.
 

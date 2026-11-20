@@ -46,11 +46,11 @@ DOPO = 210 * 60
 RITENTA = 15          # tentativi di pubblicazione per storia, uno per giro
 
 
-def pubblica(jpg, id_storia):
+def pubblica(jpg, id_storia, ia=False):
     """Una storia su Instagram (scripts/pubblica-storia.mjs). Torna la riga
     della pubblicazione e se va ritentata: si' solo per un errore, non per
     PUBBLICATA, PROVA, GIA' FATTA o TETTO."""
-    p = subprocess.run(['node', str(RADICE / 'scripts' / 'pubblica-storia.mjs'), str(jpg), id_storia],
+    p = subprocess.run(['node', str(RADICE / 'scripts' / 'pubblica-storia.mjs'), str(jpg), id_storia] + (['--ia'] if ia else []),
                        capture_output=True, text=True)
     riga = p.stdout.strip() or p.stderr.strip()[-300:] or 'ERRORE pubblicazione senza risposta'
     fatta = riga.startswith(('PUBBLICATA', 'PROVA', "GIA' FATTA", 'TETTO'))
@@ -100,7 +100,7 @@ def main():
     uscita.mkdir(parents=True, exist_ok=True)
     stato_f = uscita / 'stato.json'
     stato = json.loads(stato_f.read_text()) if stato_f.exists() else {'visti': {}, 'n': 0, 'attese': []}
-    stato.setdefault('da_pubblicare', [])     # [jpg, id, tentativi]: pubblicazioni fallite da ritentare
+    stato.setdefault('da_pubblicare', [])     # [jpg, id, tentativi, ia]: pubblicazioni fallite da ritentare
     idx = fsgc.indice_giocatori()
     # Le foto (Alex, 7/11): quelle scelte a mano in social/gol/foto-giocatori.json
     # e foto-squadre.json. Se qualcosa va storto si va avanti con la grafica di
@@ -137,14 +137,15 @@ def main():
             break
         # le storie che Instagram ha rifiutato al giro prima
         resta = []
-        for jpg, id_storia, n in stato['da_pubblicare']:
+        for jpg, id_storia, n, *ia in stato['da_pubblicare']:
+            ia = bool(ia and ia[0])
             if not pathlib.Path(jpg).exists():
                 dice('ERRORE', id_storia, 'storia da ritentare senza file (turno nuovo): persa')
                 continue
-            riga, ancora = pubblica(jpg, id_storia)
+            riga, ancora = pubblica(jpg, id_storia, ia)
             dice('RITENTA', n + 1, riga)
             if ancora and n + 1 < RITENTA:
-                resta.append([jpg, id_storia, n + 1])
+                resta.append([jpg, id_storia, n + 1, ia])
             else:
                 pathlib.Path(jpg).unlink(missing_ok=True)
         stato['da_pubblicare'] = resta
@@ -197,13 +198,27 @@ def main():
                     for x in nuovi:
                         pid, m, tipo = dettagli[x]
                         sq = x.split('-')[-2]          # la squadra che ha segnato (l'autogol vale per l'altra)
+                        # Lo sfondo e' SEMPRE una foto (Alex, 20/11: «lo sfondo deve essere
+                        # sempre della squadra o del ragazzo che ha fatto gol»): prima il
+                        # marcatore, poi la sua squadra se quella non si scarica. La grafica
+                        # senza foto resta solo se non si scarica niente.
+                        scelte = []
                         try:
-                            sc = FG.foto_per(pid, articoli, giocatori) if tipo == 'goal' else FG.foto_squadra(sq, articoli, giocatori)
-                            if sc:
-                                mappa[gol[x]] = {'file': FG.scarica(sc, uscita), 'credito': sc['credito'],
-                                                 'centro': sc.get('centro', 0.5), 'tipo': sc['tipo']}
+                            scelte = [FG.foto_per(pid, articoli, giocatori) if tipo == 'goal' else None,
+                                      FG.foto_squadra(sq, articoli, giocatori)]
                         except Exception as e:
                             dice('ERRORE foto', x, e)
+                        visti_f = set()
+                        for sc in scelte:
+                            if not sc or sc['id'] in visti_f:
+                                continue
+                            visti_f.add(sc['id'])
+                            try:
+                                mappa[gol[x]] = {'file': FG.scarica(sc, uscita), 'credito': sc['credito'],
+                                                 'centro': sc.get('centro', 0.5), 'tipo': sc['tipo']}
+                                break
+                            except Exception as e:
+                                dice('ERRORE foto', x, sc.get('tipo'), e)
                     if mappa:
                         mf = uscita / f'{chiave}-foto.json'
                         mf.write_text(json.dumps(mappa, ensure_ascii=False))
@@ -216,14 +231,15 @@ def main():
                     if a.pubblica:
                         jpg = pathlib.Path(riga.split()[1])
                         id_storia = chi.get(jpg.stem, jpg.stem)
-                        esito, ancora = pubblica(jpg, id_storia)
+                        ia = '[foto]' not in riga
+                        esito, ancora = pubblica(jpg, id_storia, ia)
                         dice(esito)
                         if ancora:
                             # una copia in ritenta/, che la cache di GitHub passa al turno dopo
                             copia = uscita / 'ritenta' / jpg.name
                             copia.parent.mkdir(exist_ok=True)
                             shutil.copyfile(jpg, copia)
-                            stato['da_pubblicare'].append([str(copia), id_storia, 1])
+                            stato['da_pubblicare'].append([str(copia), id_storia, 1, ia])
                 if r.returncode:
                     dice('ERRORE storia', chiave, r.stderr.strip()[-300:])
                 else:

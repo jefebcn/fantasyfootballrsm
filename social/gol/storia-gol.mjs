@@ -214,7 +214,12 @@ function inchiostro(hex) {
 /** «Gol della Virtus», «del Cosmos», «dell'Academy», «de La Fiorita». */
 const ARTICOLO = { virtus: 'della ', folgore: 'della ', libertas: 'della ', juvenes: 'della ', lafiorita: 'de ', academy: "dell'" };
 export const golDi = (c) => `Gol ${ARTICOLO[c.id] || 'del '}${c.name}`;
-const tondo = (c, cls = '') => `<span class="tondo ${cls}" style="background:${c.color};color:${inchiostro(c.color)}">${esc(c.shortName)}</span>`;
+// Lo stemma di fantasia della squadra (media/stemmi, scelti da Alex il 17/11:
+// «ricordati i nostri loghi delle squadre»), non piu' la sigla nel cerchio.
+// RADICE la fissa la storia che si sta disegnando (htmlStoria, htmlFoto).
+let RADICE = '../..';
+const stemma = (c, cls = '') => `<img class="stemma ${cls}" src="${RADICE}/media/stemmi/${encodeURIComponent(c.id)}.webp" alt="${esc(c.shortName)}">`;
+const tondo = (c, cls = '') => `<span class="tondo ${cls}">${stemma(c)}</span>`;
 
 /**
  * La ridipintura della maglia, dentro la pagina: ogni pixel magenta prende il
@@ -254,6 +259,7 @@ const RIDIPINGI = `<script>
 
 /** La storia in HTML. radice: l'indirizzo della cartella del progetto, per font, sfondi e pose. */
 export function htmlStoria(storia, modello = modelloPer(storia), radice = '../..') {
+  RADICE = radice;
   // la carta della squadra occupa mezza storia: li' i fatti sono due
   const fatti = scegli(storia, modello === 'squadra' ? 2 : 3);
   const [gc, go] = storia.punteggio;
@@ -262,7 +268,7 @@ export function htmlStoria(storia, modello = modelloPer(storia), radice = '../..
   const risultato = `<div class="ris">${tondo(storia.casa)}<b>${gc}<i>–</i>${go}</b>${tondo(storia.ospite)}</div>`;
   const chips = fatti.map((x) => `<div class="fatto"><b>${esc(x.valore)}</b><span>${esc(x.testo)}</span></div>`).join('');
   const testa = `<div class="testa"><img src="${radice}/media/logo-mask.png" alt=""><span>Fantatitano</span><em>${storia.g}ª giornata</em></div>`;
-  const piede = `<div class="piede">Il fantacalcio del Campionato Sammarinese · <b>fantatitano.site</b></div>`;
+  const piede = `<div class="piede">Il fantacalcio del Campionato Sammarinese · <b>link in bio</b></div>`;
   const giocatore = (cls) => `<canvas class="gioc ${cls}" data-src="${radice}/social/gol/giocatori/${posaPer(storia)}.png" data-colore="${storia.squadra.color}"></canvas>`;
   const ruolo = storia.ruolo ? ` · ${{ P: 'portiere', D: 'difensore', C: 'centrocampista', A: 'attaccante' }[storia.ruolo]}` : '';
   let corpo, figura = '';
@@ -309,7 +315,8 @@ body{font-family:Lato,sans-serif;color:#fff;background:#04173B;position:relative
 .testa img{width:60px;filter:brightness(0) saturate(100%) invert(91%) sepia(62%) saturate(758%) hue-rotate(20deg)}
 .testa em{margin-left:auto;font-style:normal;color:#D9F51F;font-size:34px}
 .tondo{display:inline-grid;place-items:center;width:120px;height:120px;border-radius:50%;font:400 40px/1 Anton;letter-spacing:.02em;
-  border:6px solid #04173B;box-shadow:0 0 0 4px #D9F51F;flex:none}
+  border:6px solid #04173B;box-shadow:0 0 0 4px #D9F51F;flex:none;background:#F4F2FA}
+.tondo .stemma{width:76%;height:76%;object-fit:contain}
 .tondo.mini{width:72px;height:72px;font-size:24px;border-width:4px;box-shadow:0 0 0 3px #D9F51F}
 .tondo.big{width:190px;height:190px;font-size:60px}
 .ris{display:flex;align-items:center;justify-content:center;gap:40px;padding:26px;border-radius:40px;background:rgba(4,23,59,.72);
@@ -355,6 +362,7 @@ body{font-family:Lato,sans-serif;color:#fff;background:#04173B;position:relative
  * foto: { file (percorso o indirizzo), credito, centro (0-1, dove tagliare) }
  */
 export function htmlFoto(storia, foto, radice = '../..') {
+  RADICE = radice;
   const fatti = scegli(storia, 4);
   const fanta = fatti.find((x) => x.chiave === 'fanta');
   const righe = fatti.filter((x) => x !== fanta).slice(0, 3);
@@ -388,6 +396,7 @@ h2{font:400 ${grande}px/.95 Anton;color:#D9F51F;margin-top:4px}
 .riga b{font:400 42px/1 Anton;color:#D9F51F;white-space:nowrap}
 .ris{justify-content:center;gap:28px;font:900 30px/1 Lato;text-transform:uppercase}
 .ris b{background:#0A0A0C;padding:8px 22px;border-radius:12px;font-size:40px}
+.stemma.pic{width:44px;height:48px;object-fit:contain;vertical-align:middle;margin:0 12px}
 .pill{align-self:center;margin-top:16px;background:#4B06FC;border-radius:999px;padding:16px 40px;font:400 44px/1 Anton;text-transform:uppercase}
 .piede{display:flex;justify-content:space-between;margin-top:22px;font:700 26px Lato;color:#9692AA}
 </style></head><body><img class="foto" src="${esc(src)}" alt=""><div class="velo"></div>
@@ -395,11 +404,11 @@ h2{font:400 ${grande}px/.95 Anton;color:#D9F51F;margin-top:4px}
 <div class="giu"><div class="eti">${storia.g}ª giornata · ${storia.minuto}'</div>
 <h1>GOL ${esc(art)}</h1><h2>${esc(nomeSq)}</h2>
 <div class="sotto">${esc(storia.casa.name)}–${esc(storia.ospite.name)}, ${tempo}</div>
-<div class="riga ris"><span>${esc(storia.casa.name)}</span><b>${gc}-${go}</b><span>${esc(storia.ospite.name)}</span></div>
+<div class="riga ris"><span>${stemma(storia.casa, 'pic')}${esc(storia.casa.name)}</span><b>${gc}-${go}</b><span>${esc(storia.ospite.name)}${stemma(storia.ospite, 'pic')}</span></div>
 <div class="riga"><span>${chi}</span><b>${storia.minuto}'</b></div>
 ${righe.map((x) => `<div class="riga"><span>${esc(maiusc(x.testo))}</span><b>${esc(x.valore)}</b></div>`).join('\n')}
 ${fanta ? `<div class="pill">In rosa in ${esc(fanta.valore)} squadre Fantatitano</div>` : ''}
-<div class="piede"><span>Foto ${esc(foto.credito)}</span><span>fantatitano.site</span></div></div>
+<div class="piede"><span>Foto ${esc(foto.credito)}</span><span>Link in bio</span></div></div>
 <script>(async()=>{await document.fonts.ready;await Promise.all([...document.images].map((i)=>i.decode().catch(()=>{})));document.body.dataset.pronto='1';})();<\/script>
 </body></html>`;
 }

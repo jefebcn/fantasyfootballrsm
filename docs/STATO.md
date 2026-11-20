@@ -24,6 +24,7 @@ Aggiornato: 2026-11-20 · tema: Instagram automatico (meme, foto vere, stemmi, s
 - Mai ripetere giocatori o argomenti: prima di usare un nome, cercarlo in tutte le didascalie recenti.
 - Le storie parlano solo del loro giorno: niente scadenze già passate.
 - Le storie dei gol sono un'eccezione al limite di una storia al giorno: una per ogni gol della giornata in corso (20/11).
+- Storie dei gol: lo sfondo è sempre la foto del marcatore o, se manca, della sua squadra; stemmi di fantasia; mai «fantatitano.site», si scrive «Link in bio» (20/11).
 - Si lavora in una chat sola: «termina sessione» o «SESSIONE FINITA» salva il punto, poi la chat si può svuotare.
 
 ## Attenzione

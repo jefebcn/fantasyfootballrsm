@@ -7,10 +7,18 @@
 #
 # L'INTERRUTTORE e' la variabile del repository STORIE_GOL (Settings → Secrets
 # and variables → Actions → Variables):
-#   on     pubblica davvero
+#   on     pubblica davvero (con Buffer, tramite la funzione Supabase
+#          pubblica-gol: serve solo il suo secret BUFFER_TOKEN; con IG_USER_ID
+#          e IG_TOKEN pubblica invece direttamente con l'API di Instagram)
 #   off    il lavoro non parte neanche
 #   altro  (o non impostata) prova: le storie si fanno e restano negli
 #          artefatti del lavoro, su Instagram non va niente
+#
+# L'OROLOGIO (20/11, Alex: «quasi istantaneo»): ogni 2 minuti pg_cron chiama
+# la funzione Supabase orologio-gol, che fa partire SUBITO questo lavoro
+# (workflow_dispatch) se c'e' una partita fra meno di 30 minuti o in corso e
+# nessun turno sta girando. Le corse pianificate qui sotto restano come riserva.
+# Durante il turno le pagine delle partite si leggono ogni 30 secondi.
 #
 # IL TURNO SEGUE LE PARTITE (scripts/turno-gol.mjs, 15/11): da mezz'ora prima
 # del calcio d'inizio a 3h30 dopo, al massimo 5h20 per turno. GitHub fa partire
@@ -33,6 +41,7 @@ concurrency:
 permissions:
   contents: read
   actions: write      # per far partire il turno dopo (workflow_dispatch)
+  id-token: write     # il token OIDC con cui la funzione pubblica-gol riconosce questo lavoro
 
 jobs:
   diretta:
@@ -65,11 +74,14 @@ jobs:
 
       # Quali gol hanno gia' la loro storia: il turno prima lo sa, questo no.
       # (Il database lo sa comunque, storie_pubblicate, e non ripubblica.)
+      # In ritenta/ le storie che Instagram ha rifiutato: si riprovano qui.
       - name: Riprendi lo stato
         if: steps.finestra.outputs.si == 'si'
         uses: actions/cache@v4
         with:
-          path: diretta/stato.json
+          path: |
+            diretta/stato.json
+            diretta/ritenta
           key: storie-gol-${{ github.run_id }}
           restore-keys: |
             storie-gol-
@@ -86,7 +98,7 @@ jobs:
           SUPABASE_FUNCTIONS_URL: ${{ secrets.SUPABASE_FUNCTIONS_URL }}
           PROMEMORIA_TOKEN: ${{ secrets.PROMEMORIA_TOKEN }}
           PROMEMORIA_FUNZIONE: ${{ secrets.PROMEMORIA_FUNZIONE }}
-        run: python3 scripts/gol-in-diretta.py --uscita diretta --dati-db --pubblica --avvisa --foto --anche-vecchi --per ${{ steps.finestra.outputs.per }}
+        run: python3 scripts/gol-in-diretta.py --uscita diretta --dati-db --pubblica --avvisa --foto --anche-vecchi --ogni 30 --per ${{ steps.finestra.outputs.per }}
 
       - name: Le storie fatte
         if: always() && steps.finestra.outputs.si == 'si'

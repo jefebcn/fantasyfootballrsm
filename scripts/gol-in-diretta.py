@@ -18,11 +18,18 @@ Con --dati-db i dati del database (aderenti, possesso) si rileggono ogni mezz'or
 Con --avvisa ogni gol nuovo (non gli autogol) diventa anche una notifica per
 chi ha il marcatore fra i titolari (052, Alex 04/11).
 
+OGNI GOL DELLA GIORNATA HA LA SUA STORIA (Alex, 20/11: «le storie dei gol
+valgono come eccezione, bisogna pubblicare ogni storia relativa a ogni gol»):
+sono fuori dal limite di una storia al giorno. Se Instagram rifiuta una
+pubblicazione (ERRORE), la storia non si perde: resta in stato['da_pubblicare']
+e si ritenta a ogni giro, fino a RITENTA volte; storie_pubblicate impedisce i
+doppioni.
+
 Righe che scrive: STORIA, AVVISO, PUBBLICATA/PROVA/GIA' FATTA/TETTO (dalla
-pubblicazione), ANNULLATO (un gol sparito dalla pagina), ATTESA (punteggio
+pubblicazione), RITENTA, ANNULLATO (un gol sparito dalla pagina), ATTESA (punteggio
 cambiato ma marcatore non ancora scritto), ERRORE, FINE.
 """
-import argparse, importlib.util, json, pathlib, subprocess, sys, time
+import argparse, importlib.util, json, pathlib, shutil, subprocess, sys, time
 from datetime import datetime
 
 RADICE = pathlib.Path(__file__).resolve().parent.parent
@@ -36,6 +43,18 @@ spec.loader.exec_module(fsgc)
 # lascerebbe scoperto il secondo tempo.
 PRIMA = 10 * 60
 DOPO = 210 * 60
+RITENTA = 15          # tentativi di pubblicazione per storia, uno per giro
+
+
+def pubblica(jpg, id_storia):
+    """Una storia su Instagram (scripts/pubblica-storia.mjs). Torna la riga
+    della pubblicazione e se va ritentata: si' solo per un errore, non per
+    PUBBLICATA, PROVA, GIA' FATTA o TETTO."""
+    p = subprocess.run(['node', str(RADICE / 'scripts' / 'pubblica-storia.mjs'), str(jpg), id_storia],
+                       capture_output=True, text=True)
+    riga = p.stdout.strip() or p.stderr.strip()[-300:] or 'ERRORE pubblicazione senza risposta'
+    fatta = riga.startswith(('PUBBLICATA', 'PROVA', "GIA' FATTA", 'TETTO'))
+    return riga, not fatta
 
 
 def dice(*a):
@@ -81,6 +100,7 @@ def main():
     uscita.mkdir(parents=True, exist_ok=True)
     stato_f = uscita / 'stato.json'
     stato = json.loads(stato_f.read_text()) if stato_f.exists() else {'visti': {}, 'n': 0, 'attese': []}
+    stato.setdefault('da_pubblicare', [])     # [jpg, id, tentativi]: pubblicazioni fallite da ritentare
     idx = fsgc.indice_giocatori()
     # Le foto (Alex, 7/11): quelle scelte a mano in social/gol/foto-giocatori.json
     # e foto-squadre.json. Se qualcosa va storto si va avanti con la grafica di
@@ -112,9 +132,22 @@ def main():
         quando = lambda c: datetime.fromisoformat(c['quando']).timestamp()
         oggi = [c for c in cal if c['url'] and c['quando'] and abs(quando(c) - ora) < 12 * 3600]
         vive = [c for c in oggi if quando(c) - PRIMA <= ora <= quando(c) + DOPO]
-        if not vive and all(ora > quando(c) + DOPO for c in oggi):
+        if not vive and all(ora > quando(c) + DOPO for c in oggi) and not stato['da_pubblicare']:
             dice('FINE nessuna partita in corso o in arrivo')
             break
+        # le storie che Instagram ha rifiutato al giro prima
+        resta = []
+        for jpg, id_storia, n in stato['da_pubblicare']:
+            if not pathlib.Path(jpg).exists():
+                dice('ERRORE', id_storia, 'storia da ritentare senza file (turno nuovo): persa')
+                continue
+            riga, ancora = pubblica(jpg, id_storia)
+            dice('RITENTA', n + 1, riga)
+            if ancora and n + 1 < RITENTA:
+                resta.append([jpg, id_storia, n + 1])
+            else:
+                pathlib.Path(jpg).unlink(missing_ok=True)
+        stato['da_pubblicare'] = resta
         for c in vive:
             chiave = f"{c['g']}-{c['casa']}-{c['ospite']}"
             try:
@@ -182,9 +215,15 @@ def main():
                     dice(riga)
                     if a.pubblica:
                         jpg = pathlib.Path(riga.split()[1])
-                        p = subprocess.run(['node', str(RADICE / 'scripts' / 'pubblica-storia.mjs'), str(jpg), chi.get(jpg.stem, jpg.stem)],
-                                           capture_output=True, text=True)
-                        dice((p.stdout.strip() or p.stderr.strip()[-300:] or 'ERRORE pubblicazione senza risposta'))
+                        id_storia = chi.get(jpg.stem, jpg.stem)
+                        esito, ancora = pubblica(jpg, id_storia)
+                        dice(esito)
+                        if ancora:
+                            # una copia in ritenta/, che la cache di GitHub passa al turno dopo
+                            copia = uscita / 'ritenta' / jpg.name
+                            copia.parent.mkdir(exist_ok=True)
+                            shutil.copyfile(jpg, copia)
+                            stato['da_pubblicare'].append([str(copia), id_storia, 1])
                 if r.returncode:
                     dice('ERRORE storia', chiave, r.stderr.strip()[-300:])
                 else:

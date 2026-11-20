@@ -50,7 +50,8 @@ const ARGS = ['--allow-file-access-from-files'];
 const b = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium', args: ARGS }).catch(() => chromium.launch({ args: ARGS }));
 const p = await b.newPage({ viewport: { width: 1080, height: 1920 } });
 for (const s of storie) {
-  const foto = fotoMap[s.id];
+  // la foto con percorso assoluto, anche se arriva relativo (20/11: sfondo nero)
+  const foto = fotoMap[s.id] && { ...fotoMap[s.id], file: /^https?:/.test(fotoMap[s.id].file) ? fotoMap[s.id].file : resolve(fotoMap[s.id].file) };
   const m = foto ? 'foto' : modello || modelloPer(s);
   // L'HTML sta accanto al JPG e prende font e sfondo dal progetto con un
   // indirizzo file:// assoluto: cosi' si apre anche a mano per ritoccarlo.
@@ -58,6 +59,17 @@ for (const s of storie) {
   writeFileSync(html, foto ? htmlFoto(s, foto, pathToFileURL(RADICE).href) : htmlStoria(s, m, pathToFileURL(RADICE).href));
   await p.goto(pathToFileURL(html).href, { waitUntil: 'load' });
   await p.waitForSelector('body[data-pronto]', { timeout: 30000 });
+  // Prima di fotografarla: ogni immagine (foto, stemmi, logo) deve essersi
+  // caricata davvero (Alex, 20/11: «controlla che pubblichi sempre con foto»).
+  // Se ne manca una la storia non esce: niente riga STORIA, codice d'uscita 1,
+  // e gol-in-diretta.py non segna il gol come visto, quindi ci riprova al giro dopo.
+  const rotte = await p.evaluate(() => [...document.images]
+    .filter((i) => !i.complete || !i.naturalWidth).map((i) => i.getAttribute('src')));
+  if (rotte.length) {
+    console.error(`ERRORE ${s.id}: immagini non caricate ${rotte.join(' ')}`);
+    process.exitCode = 1;
+    continue;
+  }
   await p.screenshot({ path: join(uscita, `${s.id}.jpg`), type: 'jpeg', quality: 90 });
   console.log(`STORIA ${join(uscita, `${s.id}.jpg`)}  [${m}]  ${foto ? `${s.sigla} · foto ${foto.tipo || ''} ${foto.credito}` : s.nominabile ? s.marcatore : '(squadra)'}`);
 }

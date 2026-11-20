@@ -162,7 +162,10 @@ def scarica(scelta, cartella):
     f = d / f"fsgc_{scelta['id']}.jpg"   # gli id Flickr sono lunghi, quelli degli articoli no: non si scontrano
     if not f.exists():
         f.write_bytes(_get(scelta['foto'], binario=True))
-    return str(f)
+    # Percorso assoluto: il lavoro passa --uscita diretta (relativo), e la
+    # storia lo trasformava in file:///diretta/... — foto non trovata, sfondo
+    # nero (prima storia live, 20/11).
+    return str(f.resolve())
 
 
 if __name__ == '__main__':

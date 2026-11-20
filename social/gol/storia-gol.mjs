@@ -154,18 +154,22 @@ export function fattiDelGol(r, k, { aderenti = new Set(), possesso = {}, squadre
  * uguale.
  */
 export function scegli(storia, quanti = 3) {
-  const rnd = mulberry32([...storia.id].reduce((h, c) => (h * 31 + c.charCodeAt(0)) >>> 0, 7));
-  const per = [...storia.fatti].sort((a, b) => b.peso - a.peso);
-  const scelti = [per[0]];
-  const resto = per.slice(1).filter((x) => x.chiave !== per[0].chiave);
-  while (scelti.length < quanti && resto.length) {
-    const tot = resto.reduce((s, x) => s + x.peso, 0);
-    let t = rnd() * tot, i = 0;
-    while ((t -= resto[i].peso) > 0) i++;
-    const [x] = resto.splice(i, 1);
-    scelti.push(x);
-    for (let j = resto.length - 1; j >= 0; j--) if (resto[j].chiave === x.chiave) resto.splice(j, 1);
-  }
+  // OGNI STORIA CON NUMERI DIVERSI (Alex, 20/11: «ogni volta metti scritte o
+  // statistiche differenti»). Prima i fatti di QUESTO gol (il momento, il
+  // minuto, la partita, l'assist, la stagione del marcatore): cambiano da soli
+  // da un gol all'altro. I numeri della squadra (classifica, gol in
+  // campionato, media) invece sono uguali per tutti i gol di quella squadra:
+  // riempiono solo i posti rimasti, e girano con n (le storie gia' uscite
+  // nella giornata), cosi' due storie di fila non mostrano lo stesso numero.
+  const n = storia.n || 0;
+  const SQUADRA = new Set(['classifica', 'golsquadra', 'media']);
+  const ordinati = [...storia.fatti].sort((a, b) => b.peso - a.peso);
+  const scelti = [];
+  const prendi = (x) => { if (scelti.length < quanti && !scelti.some((y) => y.chiave === x.chiave)) scelti.push(x); };
+  ordinati.filter((x) => !SQUADRA.has(x.chiave)).forEach(prendi);
+  const comuni = ordinati.filter((x) => SQUADRA.has(x.chiave));
+  const giro = comuni.length ? n % comuni.length : 0;
+  [...comuni.slice(giro), ...comuni.slice(0, giro)].forEach(prendi);
   return scelti;
 }
 
@@ -368,6 +372,11 @@ export function htmlFoto(storia, foto, radice = '../..') {
   const righe = fatti.filter((x) => x !== fanta).slice(0, 3);
   const [gc, go] = storia.punteggio;
   const art = (ARTICOLO[storia.squadra.id] || 'del ').trim().toUpperCase();
+  // il titolo cambia da una storia all'altra (Alex, 20/11): GOL DEL, SEGNA IL,
+  // RETE DEL, ESULTA IL, COLPO DEL... con l'articolo giusto per ogni squadra
+  const il = { virtus: 'LA', folgore: 'LA', libertas: 'LA', juvenes: 'LA', lafiorita: '', academy: "L'" }[storia.squadra.id] ?? 'IL';
+  const TITOLI = [`GOL ${art}`, `SEGNA ${il}`, `RETE ${art}`, `ESULTA ${il}`, `COLPO ${art}`, `A SEGNO ${il}`];
+  const titolo = storia.autogol ? `GOL ${art}` : TITOLI[(storia.n || 0) % TITOLI.length];
   const tempo = storia.minuto > 90 ? 'in pieno recupero' : storia.minuto > 45 ? 'secondo tempo' : 'primo tempo';
   const maiusc = (t) => t.charAt(0).toUpperCase() + t.slice(1);
   const chi = storia.autogol ? `Autogol di ${esc(storia.sigla)}` : `Marcatore: ${esc(storia.sigla)}`;
@@ -402,7 +411,7 @@ h2{font:400 ${grande}px/.95 Anton;color:#D9F51F;margin-top:4px}
 </style></head><body><img class="foto" src="${esc(src)}" alt=""><div class="velo"></div>
 <div class="testa"><img src="${radice}/media/logo-mask.png" alt=""><span>FANTA<i>TITANO</i></span></div>
 <div class="giu"><div class="eti">${storia.g}ª giornata · ${storia.minuto}'</div>
-<h1>GOL ${esc(art)}</h1><h2>${esc(nomeSq)}</h2>
+<h1>${esc(titolo.trim())}</h1><h2>${esc(nomeSq)}</h2>
 <div class="sotto">${esc(storia.casa.name)}–${esc(storia.ospite.name)}, ${tempo}</div>
 <div class="riga ris"><span>${stemma(storia.casa, 'pic')}${esc(storia.casa.name)}</span><b>${gc}-${go}</b><span>${esc(storia.ospite.name)}${stemma(storia.ospite, 'pic')}</span></div>
 <div class="riga"><span>${chi}</span><b>${storia.minuto}'</b></div>

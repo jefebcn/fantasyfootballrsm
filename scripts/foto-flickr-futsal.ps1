@@ -33,3 +33,16 @@ Get-ChildItem $alb -Directory | ForEach-Object {
     "$n  ->  $nuovo"
   }
 }
+
+# Catalogo delle foto futsal (un file solo, che Claude legge da Drive):
+# catalogo-futsal.csv in «FOTO FSGC» con id, cartella, partita, fotografo, data, misure.
+$righe = Get-ChildItem $alb -Directory -Filter 'Futsal - Giornata *' | ForEach-Object {
+  $g = $_.Name
+  Get-ChildItem $_.FullName -Filter *.json | ForEach-Object {
+    $d = Get-Content $_.FullName -Raw -Encoding UTF8 | ConvertFrom-Json
+    $fot = if ($d.description -match '©\s*FSGC\s*/\s*([^|]+)') { $Matches[1].Trim() } else { '' }
+    [pscustomobject]@{ id = $d.id; cartella = $g; partita = $d.title; fotografo = $fot; data = $d.date; larghezza = $d.width; altezza = $d.height }
+  }
+}
+$righe | Export-Csv 'catalogo-futsal.csv' -NoTypeInformation -Encoding UTF8
+"Foto nel catalogo: $($righe.Count)"

@@ -15,19 +15,26 @@
 -- Per vedere com'e' andata:
 --   select status_code, content, created from net._http_response order by id desc limit 10;
 
+-- Dove pg_cron non c'e' (il Postgres delle prove in CI) il file non fa niente
+-- e lo dice: l'orologio serve solo sul progetto Supabase vero.
 do $$
 begin
+  if not exists (select 1 from pg_available_extensions where name = 'pg_cron')
+     or not exists (select 1 from pg_available_extensions where name = 'pg_net') then
+    raise notice 'orologio-gol: pg_cron o pg_net non disponibili qui, salto';
+    return;
+  end if;
   if not exists (select 1 from pg_extension where extname = 'pg_cron') then create extension pg_cron; end if;
   if not exists (select 1 from pg_extension where extname = 'pg_net') then create extension pg_net; end if;
-end $$;
 
-select cron.unschedule(jobid) from cron.job where jobname = 'orologio-gol';
-select cron.schedule(
-  'orologio-gol',
-  '*/2 * * * *',
-  $$select net.http_post(
-      url := 'https://nskgzpbcssnpfuxmbepa.supabase.co/functions/v1/orologio-gol',
-      headers := '{"Content-Type": "application/json"}'::jsonb,
-      body := '{}'::jsonb,
-      timeout_milliseconds := 20000)$$
-);
+  execute $q$select cron.unschedule(jobid) from cron.job where jobname = 'orologio-gol'$q$;
+  execute $q$select cron.schedule(
+    'orologio-gol',
+    '*/2 * * * *',
+    $c$select net.http_post(
+        url := 'https://nskgzpbcssnpfuxmbepa.supabase.co/functions/v1/orologio-gol',
+        headers := '{"Content-Type": "application/json"}'::jsonb,
+        body := '{}'::jsonb,
+        timeout_milliseconds := 20000)$c$
+  )$q$;
+end $$;

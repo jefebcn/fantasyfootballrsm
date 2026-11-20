@@ -1,6 +1,6 @@
 # Stato – Fantatitano
 
-Aggiornato: 2026-11-19 · tema: Instagram automatico (meme, foto vere, stemmi) e tasto App Store
+Aggiornato: 2026-11-20 · tema: Instagram automatico (meme, foto vere, stemmi, storie dei gol) e tasto App Store
 
 ## Dove siamo
 - App online su fantatitano.site e su iPhone. Nell'onboarding del sito c'è il tasto «Scarica l'app dall'App Store» (PR #117, unita); non compare nell'app né su Android.
@@ -9,6 +9,7 @@ Aggiornato: 2026-11-19 · tema: Instagram automatico (meme, foto vere, stemmi) e
 - La 9ª giornata (19–22/11) è già programmata. Il controllo infortuni e squalifiche del 19/11 non ha trovato nessuno fuori.
 
 ## Aperto / in corso
+- Storie dei gol su Instagram (lavoro GitHub «Storie dei gol»): il codice è pronto, ma è ancora in prova. Per accenderle Alex mette nei segreti del repo `SUPABASE_SERVICE_KEY`, `IG_USER_ID` e `IG_TOKEN`, e la variabile `STORIE_GOL=on`.
 - FantaTitano Futsal: annunciato nel link in bio per il 1° dicembre (PR #118). Lo stato dello sviluppo è da verificare con Alex.
 - Migrazione 057 (carriera di La Partita sull'account), 18/11: da verificare se è applicata su Supabase.
 
@@ -22,6 +23,7 @@ Aggiornato: 2026-11-19 · tema: Instagram automatico (meme, foto vere, stemmi) e
 - Due meme a settimana, con dipinti in pubblico dominio: nell'immagine solo il titolo del quadro, autore e licenza in didascalia.
 - Mai ripetere giocatori o argomenti: prima di usare un nome, cercarlo in tutte le didascalie recenti.
 - Le storie parlano solo del loro giorno: niente scadenze già passate.
+- Le storie dei gol sono un'eccezione al limite di una storia al giorno: una per ogni gol della giornata in corso (20/11).
 - Si lavora in una chat sola: «termina sessione» o «SESSIONE FINITA» salva il punto, poi la chat si può svuotare.
 
 ## Attenzione

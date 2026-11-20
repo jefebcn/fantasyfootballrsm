@@ -65,11 +65,14 @@ jobs:
 
       # Quali gol hanno gia' la loro storia: il turno prima lo sa, questo no.
       # (Il database lo sa comunque, storie_pubblicate, e non ripubblica.)
+      # In ritenta/ le storie che Instagram ha rifiutato: si riprovano qui.
       - name: Riprendi lo stato
         if: steps.finestra.outputs.si == 'si'
         uses: actions/cache@v4
         with:
-          path: diretta/stato.json
+          path: |
+            diretta/stato.json
+            diretta/ritenta
           key: storie-gol-${{ github.run_id }}
           restore-keys: |
             storie-gol-

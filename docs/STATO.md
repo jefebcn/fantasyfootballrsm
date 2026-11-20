@@ -20,7 +20,7 @@ Aggiornato: 2026-11-20 · tema: coda Buffer riempita fino al 30/11
 - Quando Google Play è pubblico: grafiche «Disponibile su Google Play» e storia del giorno di lancio con i due store.
 
 ## Decisioni recenti di Alex ancora valide
-- Coda Buffer: appena i posti liberi sono 4 o più (10 − programmati), creare e programmare subito nuovi contenuti. Il controllo automatico giornaliero non è attivo (permesso negato): controllare a ogni sessione.
+- Coda Buffer: appena i posti liberi sono 4 o più (10 − programmati), creare e programmare subito nuovi contenuti. Attività pianificata ogni giorno alle 9:47 (trig_019gaxf1eECjzEK6qMnLV9NA).
 - Lavorare solo su `futsal`; niente merge in main né pubblicazione finché non lo dice lui.
 - Instagram: foto solo FSGC con «© FSGC / Fotografo»; niente nomi di giocatori; niente stemmi ufficiali (quelli Fantatitano sì, «stemmi di fantasia, non ufficiali»); CTA solo Salvalo / Swipe / Link in bio; isAiGenerated true; storie senza testo di caption.
 - Lancio annunciato per il 01/12 su App Store e Google Play.

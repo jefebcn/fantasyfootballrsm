@@ -18,7 +18,7 @@
 # la funzione Supabase orologio-gol, che fa partire SUBITO questo lavoro
 # (workflow_dispatch) se c'e' una partita fra meno di 30 minuti o in corso e
 # nessun turno sta girando. Le corse pianificate qui sotto restano come riserva.
-# Durante il turno le pagine delle partite si leggono ogni 30 secondi.
+# Durante il turno le pagine delle partite si leggono ogni 15 secondi (Alex, 20/11: «dobbiamo essere piu rapidi»).
 #
 # IL TURNO SEGUE LE PARTITE (scripts/turno-gol.mjs, 15/11): da mezz'ora prima
 # del calcio d'inizio a 3h30 dopo, al massimo 5h20 per turno. GitHub fa partire
@@ -98,7 +98,7 @@ jobs:
           SUPABASE_FUNCTIONS_URL: ${{ secrets.SUPABASE_FUNCTIONS_URL }}
           PROMEMORIA_TOKEN: ${{ secrets.PROMEMORIA_TOKEN }}
           PROMEMORIA_FUNZIONE: ${{ secrets.PROMEMORIA_FUNZIONE }}
-        run: python3 scripts/gol-in-diretta.py --uscita diretta --dati-db --pubblica --avvisa --foto --anche-vecchi --ogni 30 --per ${{ steps.finestra.outputs.per }}
+        run: python3 scripts/gol-in-diretta.py --uscita diretta --dati-db --pubblica --avvisa --foto --anche-vecchi --ogni 15 --per ${{ steps.finestra.outputs.per }}
 
       - name: Le storie fatte
         if: always() && steps.finestra.outputs.si == 'si'

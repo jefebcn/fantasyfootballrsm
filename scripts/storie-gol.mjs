@@ -59,6 +59,17 @@ for (const s of storie) {
   writeFileSync(html, foto ? htmlFoto(s, foto, pathToFileURL(RADICE).href) : htmlStoria(s, m, pathToFileURL(RADICE).href));
   await p.goto(pathToFileURL(html).href, { waitUntil: 'load' });
   await p.waitForSelector('body[data-pronto]', { timeout: 30000 });
+  // Prima di fotografarla: ogni immagine (foto, stemmi, logo) deve essersi
+  // caricata davvero (Alex, 20/11: «controlla che pubblichi sempre con foto»).
+  // Se ne manca una la storia non esce: niente riga STORIA, codice d'uscita 1,
+  // e gol-in-diretta.py non segna il gol come visto, quindi ci riprova al giro dopo.
+  const rotte = await p.evaluate(() => [...document.images]
+    .filter((i) => !i.complete || !i.naturalWidth).map((i) => i.getAttribute('src')));
+  if (rotte.length) {
+    console.error(`ERRORE ${s.id}: immagini non caricate ${rotte.join(' ')}`);
+    process.exitCode = 1;
+    continue;
+  }
   await p.screenshot({ path: join(uscita, `${s.id}.jpg`), type: 'jpeg', quality: 90 });
   console.log(`STORIA ${join(uscita, `${s.id}.jpg`)}  [${m}]  ${foto ? `${s.sigla} · foto ${foto.tipo || ''} ${foto.credito}` : s.nominabile ? s.marcatore : '(squadra)'}`);
 }

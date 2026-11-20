@@ -224,10 +224,18 @@ def main():
                         mf.write_text(json.dumps(mappa, ensure_ascii=False))
                         cmd += ['--foto-map', str(mf)]
                 r = subprocess.run(cmd, capture_output=True, text=True)
+                senza_foto = False
                 for riga in r.stdout.splitlines():
                     if not riga.startswith('STORIA'):
                         continue
                     dice(riga)
+                    # Alex, 20/11: «pubblica sempre con foto». Con --foto una
+                    # storia senza foto non esce: il gol resta da fare e si
+                    # riprova al giro dopo (la foto magari ora si scarica).
+                    if a.foto and '[foto]' not in riga:
+                        dice('SENZA FOTO, non pubblicata: riprovo al giro dopo')
+                        senza_foto = True
+                        continue
                     if a.pubblica:
                         jpg = pathlib.Path(riga.split()[1])
                         id_storia = chi.get(jpg.stem, jpg.stem)
@@ -242,6 +250,8 @@ def main():
                             stato['da_pubblicare'].append([str(copia), id_storia, 1, ia])
                 if r.returncode:
                     dice('ERRORE storia', chiave, r.stderr.strip()[-300:])
+                elif senza_foto:
+                    pass
                 else:
                     visti.extend(nuovi)
                     stato['n'] += len(nuovi)

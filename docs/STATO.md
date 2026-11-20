@@ -26,6 +26,6 @@ Aggiornato: 2026-11-20 · tema: coda Buffer riempita fino al 30/11
 - Lancio annunciato per il 01/12 su App Store e Google Play.
 
 ## Attenzione
-- Foto: archivio Flickr FSGC su Drive (Desktop\FOTO FSGC\flickr\FSGC _ official\Albums\Futsal - Giornata NN, ~5.300 foto, fotografo nel .json; catalogo `catalogo-futsal.csv`), scaricato da Alex con `scripts/foto-flickr-futsal.ps1`. Ogni foto si usa una sola volta (regola del 20/11). Già usate (notizie FSGC): 2406 2409 2411 2413 2422 2427 2431 2435 2441 2447 2451 2452 2459 2462 2464 2473 2477 2482 2485. Libere: 2399 2402 2438 (nomi sulle maglie in primo piano); poi servono foto nuove dalle notizie FSGC.
+- Foto: archivio Flickr FSGC su Drive (Desktop\FOTO FSGC\flickr\FSGC _ official\Albums\Futsal - Giornata NN, ~5.300 foto, fotografo nel .json; catalogo `catalogo-futsal.csv`, Drive id 1cxmXJ3_xL3Ghku4pCXWhIPXJq2KRit0X: 5.304 foto, 27 partite, tutte col fotografo), scaricato da Alex con `scripts/foto-flickr-futsal.ps1`. Ogni foto si usa una sola volta (regola del 20/11). Già usate (notizie FSGC): 2406 2409 2411 2413 2422 2427 2431 2435 2441 2447 2451 2452 2459 2462 2464 2473 2477 2482 2485. Libere: 2399 2402 2438 (nomi sulle maglie in primo piano); poi servono foto nuove dalle notizie FSGC.
 - Buffer gratuito: max 10 elementi in coda per canale.
 - I referti FSGC arrivano 15-22 ore dopo la partita (quelli del lunedì il mattino dopo).

@@ -3,7 +3,8 @@
  * (Instagram vuole un indirizzo da cui prenderla) e la pubblica con l'API di
  * Instagram (accesso con Instagram, permesso instagram_business_content_publish).
  *
- *   node scripts/pubblica-storia.mjs file.jpg id-del-gol
+ *   node scripts/pubblica-storia.mjs file.jpg id-del-gol [--ia]
+ *   (--ia: la storia senza foto vera, con lo sfondo disegnato: etichetta IA su Instagram)
  *
  * STORIE_GOL decide cosa succede:
  *   on        pubblica davvero
@@ -52,7 +53,7 @@ if (!process.env.IG_TOKEN || !process.env.IG_USER_ID) {
     if (!chiedi || !perm) esci(`ERRORE ${id} manca il token OIDC di GitHub (permissions: id-token: write)`, 1);
     const oidc = await (await fetch(`${chiedi}&audience=fantatitano-storie-gol`, { headers: { authorization: `Bearer ${perm}` } })).json();
     if (!oidc.value) throw new Error('GitHub non ha dato il token OIDC');
-    const r = await fetch(`${SUPABASE_URL}/functions/v1/pubblica-gol?nome=${encodeURIComponent(basename(file))}&id=${encodeURIComponent(id)}&ai=0`, {
+    const r = await fetch(`${SUPABASE_URL}/functions/v1/pubblica-gol?nome=${encodeURIComponent(basename(file))}&id=${encodeURIComponent(id)}&ai=${process.argv.includes('--ia') ? 1 : 0}`, {
       method: 'POST', headers: { authorization: `Bearer ${oidc.value}`, 'content-type': 'image/jpeg' }, body: readFileSync(file),
     });
     const j = await r.json().catch(() => ({ esito: 'ERRORE', motivo: `risposta ${r.status} non leggibile` }));

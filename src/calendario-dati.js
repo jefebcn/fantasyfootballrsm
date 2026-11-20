@@ -72,7 +72,7 @@ export const CALENDARIO = [
   [8,"cailungo","trefiori","2026-11-08T15:00:00+01:00","Stadio di Domagnano",2,2],
   [8,"academy","sangiovanni","2026-11-08T15:00:00+01:00","Stadio di Fiorentino",0,0],
   [8,"trepenne","murata","2026-11-08T15:00:00+01:00","Stadio di Montecchio",3,0],
-  [9,"lafiorita","folgore","2026-11-20T21:15:00+01:00","Stadio di Montecchio",null,null],
+  [9,"lafiorita","folgore","2026-11-20T21:15:00+01:00","Stadio di Montecchio",3,1],
   [9,"trefiori","juvenes","2026-11-20T21:15:00+01:00","Stadio di Acquaviva",2,1],
   [9,"cosmos","faetano","2026-11-21T15:00:00+01:00","Stadio di Montecchio",null,null],
   [9,"sangiovanni","virtus","2026-11-21T15:00:00+01:00","Stadio di Fiorentino",null,null],

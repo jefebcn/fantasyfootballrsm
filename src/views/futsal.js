@@ -72,6 +72,8 @@ const stemma = (id, cls = 'fs-crest') => {
 };
 const nomeG = (g) => `${g.cognome} ${g.nome ? `${g.nome[0]}.` : ''}`;
 const ruoloChip = (r) => `<span class="rl rl-${r === 'P' ? 'p' : r === 'D' ? 'd' : 'a'}">${r}</span>`;
+// Nelle liste la maglia della squadra (Alex, 21/11: «al posto della lettera»), col ruolo piccolo nell'angolo.
+const magliaRiga = (club, num, r) => `<span class="fs-mgr">${maglietta(club, r === 'P' ? 'P' : num)}${ruoloChip(r)}</span>`;
 const RUOLI = { P: 'Porta', D: 'Difensore', A: 'Attaccante' };
 const cr = (x) => fmt(x, 1);
 const piu = (x) => (x > 0 ? `+${fmt(x, 1)}` : x < 0 ? `−${fmt(-x, 1)}` : '0,0');
@@ -470,7 +472,7 @@ function tabellaPunti(r) {
   const nota = (x) => (x.entrato ? `non convocato: entra ${nomeG(F.giocatore(x.entrato.id))}` : x.voto.sv ? x.voto.motivo : x.usato ? 'entrato in campo' : x.voto.voci.slice(x.voto.riposo ? 0 : 2).map((v) => v.etichetta).join(' · ') || 'nessun evento');
   const nome = (x) => (x.posto === 'P' ? `Porta ${nomeSq(x.club)}` : nomeG(F.giocatore(x.entrato?.id || x.id)));
   const peso = (x) => (x.posto === 'S' ? 'sesto' : x.posto === 'B' ? (x.usato ? '' : '50%') : x.capitano ? `×${fmt(R.capitano)}` : '');
-  return `<div class="a-card fs-list">${r.righe.map((x) => `<div class="vr">${ruoloChip(x.posto === 'S' || x.posto === 'B' ? x.ruolo : x.posto)}<span class="nm"><b>${esc(nome(x))}${peso(x) ? ` <small class="fs-w">${peso(x)}</small>` : ''}</b><span>${esc(nota(x))}</span></span><span class="ev"></span>${x.voto.sv ? '<span class="fv sv">0</span>' : `<span class="fv${x.capitano ? ' cap' : ''}">${fmt(x.punti)}</span>`}</div>`).join('')}
+  return `<div class="a-card fs-list">${r.righe.map((x) => `<div class="vr">${magliaRiga(F.giocatore(x.entrato?.id || x.id)?.club || x.club, F.giocatore(x.entrato?.id || x.id)?.numero, x.posto === 'S' || x.posto === 'B' ? x.ruolo : x.posto)}<span class="nm"><b>${esc(nome(x))}${peso(x) ? ` <small class="fs-w">${peso(x)}</small>` : ''}</b><span>${esc(nota(x))}</span></span><span class="ev"></span>${x.voto.sv ? '<span class="fv sv">0</span>' : `<span class="fv${x.capitano ? ' cap' : ''}">${fmt(x.punti)}</span>`}</div>`).join('')}
   ${r.bonusDifesa ? `<div class="vr"><span></span><span class="nm"><b>Bonus difesa</b><span>media ${fmt(r.bonusDifesa.media)} su ${fmt(R.bonusDifesa.soglia)}</span></span><span class="ev"></span><span class="fv">${r.bonusDifesa.punti ? `+${fmt(r.bonusDifesa.punti, 0)}` : '0'}</span></div>` : ''}
   ${r.malus ? `<div class="vr"><span></span><span class="nm"><b>Cambi di mercato</b><span>oltre quelli gratis</span></span><span class="ev"></span><span class="fv">−${fmt(r.malus, 0)}</span></div>` : ''}
   <div class="vr fs-tot"><span></span><span class="nm"><b>Totale</b></span><span class="ev"></span><span class="fv">${fmt(r.totale)}</span></div></div>`;
@@ -527,7 +529,7 @@ function scheda(r, idx, id, n, ctx) {
     if (az === 'sost') {
       const altri = inCampo ? pan : tit;
       sh.querySelector('#fs-mod-sost').innerHTML = `<p class="sheet-sub">${inCampo ? 'Chi entra al suo posto' : 'Al posto di chi'}: se il ruolo è diverso cambia lo schema.</p>
-        <div class="fs-scelta">${altri.map((o) => { const g = F.giocatore(o); return `<button class="vr" data-swap="${o}">${ruoloChip(g.ruolo)}<span class="nm"><b>${esc(nomeG(g))}</b><span>${esc(nomeSq(g.club))} · ${esc(avversario(g.club, n))}</span></span><span class="ev"></span>${punti(numeri(o).media)}</button>`; }).join('')}</div>`;
+        <div class="fs-scelta">${altri.map((o) => { const g = F.giocatore(o); return `<button class="vr" data-swap="${o}">${magliaRiga(g.club, g.numero, g.ruolo)}<span class="nm"><b>${esc(nomeG(g))}</b><span>${esc(nomeSq(g.club))} · ${esc(avversario(g.club, n))}</span></span><span class="ev"></span>${punti(numeri(o).media)}</button>`; }).join('')}</div>`;
     }
   };
 }
@@ -677,7 +679,7 @@ export const futsalStatistiche = {
       corpo = `<div class="fs-filtri">${porte ? '' : `<div class="chips">${[['', 'Tutti'], ['D', 'Difensori'], ['A', 'Attaccanti']].map(([r, l]) => `<button class="chip${filtroStat.ruolo === r ? ' on' : ''}" data-fr="${r}">${l}</button>`).join('')}</div>`}
         <div class="fs-filtri-r"><input class="field-input" id="fs-sq" placeholder="Cerca" value="${esc(filtroStat.q)}" autocomplete="off"><select id="fs-sclub" class="select" aria-label="Squadra"><option value="">Tutte le squadre</option>${F.SQUADRE.map((s) => `<option value="${s.id}" ${filtroStat.club === s.id ? 'selected' : ''}>${esc(s.nome)}</option>`).join('')}</select></div></div>
         <div class="fs-tab-wrap"><table class="fs-tab"><thead><tr><th class="fs-tab-n">#</th><th class="fs-tab-g">${porte ? 'Porta' : 'Giocatore'}</th>${cols.map(([k, l, t]) => `<th data-col="${k}" title="${t}" class="${col === k ? (ordStat.verso < 0 ? 'giu' : 'su') : ''}">${l}</th>`).join('')}</tr></thead>
-        <tbody>${righe.map((x, i) => `<tr><td class="fs-tab-n">${i + 1}</td><td class="fs-tab-g"><a href="${profilo(x.id)}">${porte ? '' : ruoloChip(x.r)}<span><b>${esc(x.nome)}</b><small>${esc(nomeSq(x.club))}</small></span></a></td>${cols.map(([k]) => `<td class="${col === k ? 'on' : ''}${k === 'plus' ? (x.plus > 0 ? ' su' : x.plus < 0 ? ' giu' : '') : ''}">${k === 'vnp' ? x.vnpT : k === 'plus' ? piu(x.plus) : k === 'cr' || k === 'mpf' || k === 'pf' ? fmt(x[k], k === 'cr' ? 1 : 1) : x[k]}</td>`).join('')}</tr>`).join('')}</tbody></table></div>
+        <tbody>${righe.map((x, i) => `<tr><td class="fs-tab-n">${i + 1}</td><td class="fs-tab-g"><a href="${profilo(x.id)}">${magliaRiga(x.club, F.giocatore(x.id)?.numero, x.r)}<span><b>${esc(x.nome)}</b><small>${esc(nomeSq(x.club))}</small></span></a></td>${cols.map(([k]) => `<td class="${col === k ? 'on' : ''}${k === 'plus' ? (x.plus > 0 ? ' su' : x.plus < 0 ? ' giu' : '') : ''}">${k === 'vnp' ? x.vnpT : k === 'plus' ? piu(x.plus) : k === 'cr' || k === 'mpf' || k === 'pf' ? fmt(x[k], k === 'cr' ? 1 : 1) : x[k]}</td>`).join('')}</tr>`).join('')}</tbody></table></div>
         <p class="small muted fs-nota">Tocca un'intestazione per ordinare. ${cols.map(([, l, t]) => `<b>${l}</b> ${t}`).join(' · ')}.</p>`;
     } else if (vistaStat === 'squadre') {
       const cl = F.classificaReale();

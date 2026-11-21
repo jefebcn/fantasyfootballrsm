@@ -241,3 +241,7 @@
 .fs-distinte a.vr{text-decoration:none;color:inherit}
 .vr .ev i.fs-ev{width:auto;height:auto;min-width:0}
 .vr .ev i.fs-ev.amm,.vr .ev i.fs-ev.esp{width:10px;height:14px}
+/* la maglia al posto della lettera del ruolo nelle liste: piccola, col ruolo nell'angolo */
+.fs-mgr{position:relative;flex:none;width:30px;margin-right:5px;display:inline-block;line-height:0}
+.fs-mgr .fs-mg{width:30px}
+.fs-mgr .rl{position:absolute;right:-6px;bottom:-4px;width:17px;height:17px;display:grid;place-items:center;padding:0;font:800 9.5px/1 var(--font-body);border:1.5px solid #fff}

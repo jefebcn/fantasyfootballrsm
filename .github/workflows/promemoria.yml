@@ -31,6 +31,10 @@ concurrency:
   group: promemoria
   cancel-in-progress: false
 
+# solo lettura del repo: il lavoro non scrive su GitHub (analisi sicurezza del 21/11)
+permissions:
+  contents: read
+
 jobs:
   avvisa:
     runs-on: ubuntu-latest

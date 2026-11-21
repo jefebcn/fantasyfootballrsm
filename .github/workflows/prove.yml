@@ -31,6 +31,10 @@ concurrency:
   group: prove-${{ github.ref }}
   cancel-in-progress: true
 
+# solo lettura del repo: il lavoro non scrive su GitHub (analisi sicurezza del 21/11)
+permissions:
+  contents: read
+
 jobs:
   veloci:
     runs-on: ubuntu-latest

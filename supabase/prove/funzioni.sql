@@ -2596,6 +2596,13 @@ select public.salva_partita_gioco((now() at time zone 'Europe/Rome')::date - 1, 
 select public.salva_partita_gioco((now() at time zone 'Europe/Rome')::date, 3, true);
 select public.salva_partita_gioco((now() at time zone 'Europe/Rome')::date, 2, false);   -- indietro no
 select public.salva_partita_gioco((now() at time zone 'Europe/Rome')::date - 5, 1, true); -- troppo vecchio
+select pg_temp.entra('user_cip');
+select public.salva_partita_gioco((now() at time zone 'Europe/Rome')::date, 0, true);     -- 062: vinto in 0 tentativi è impossibile
+reset role;
+select pg_temp.esige('una vittoria con 0 tentativi non si salva (varrebbe 7 punti)',
+  not exists (select 1 from public.gioco_partite where user_id = 'user_cip' and vinto));
+select pg_temp.entra('user_bea');
+set role authenticated;
 do $$ begin
   perform * from public.gioco_partite;
   raise exception 'FALLITA: gioco_partite non doveva leggersi';

@@ -74,6 +74,8 @@ Deno.serve(async (req) => {
     const jwt = (req.headers.get('authorization') || '').replace(/^Bearer\s+/i, '');
     const { payload } = await jwtVerify(jwt, JWKS, { issuer: GITHUB, audience: PUBBLICO });
     if (payload.repository !== REPO || !String(payload.workflow_ref || '').startsWith(LAVORO)) throw new Error('lavoro sbagliato');
+    // solo il lavoro del ramo principale: da un ramo qualunque si sarebbero pubblicate storie arbitrarie
+    if (payload.ref !== 'refs/heads/main') throw new Error('ramo sbagliato');
   } catch (e) {
     return esito('ERRORE', { motivo: `non autorizzato: ${(e as Error).message}` }, 401);
   }

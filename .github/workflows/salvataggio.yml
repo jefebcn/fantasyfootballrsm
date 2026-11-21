@@ -47,6 +47,10 @@ concurrency:
   group: salvataggio
   cancel-in-progress: false
 
+# solo lettura del repo: il lavoro non scrive su GitHub (analisi sicurezza del 21/11)
+permissions:
+  contents: read
+
 jobs:
   salva:
     runs-on: ubuntu-latest
@@ -169,9 +173,10 @@ jobs:
           url=$(printf '%s' "$DBURL" | tr -d '[:space:]')
           # --no-owner e --no-acl: i ruoli di Supabase non esistono altrove, e
           # senza queste il ripristino su un altro progetto si pianta sulla
-          # prima riga. Solo lo schema public: auth e storage li ricrea Supabase.
+          # prima riga. Lo schema public e quello interno (avvisi, promemoria,
+          # conferme a mano): auth e storage li ricrea Supabase.
           /usr/lib/postgresql/17/bin/pg_dump "$url" \
-            --schema=public --no-owner --no-acl --format=plain \
+            --schema=public --schema=interno --no-owner --no-acl --format=plain \
             > salvataggio.sql
           # pg_dump di uno schema mette in cima "CREATE SCHEMA public", ma il
           # public esiste già in ogni database Postgres e in ogni progetto
@@ -194,14 +199,31 @@ jobs:
           printf '%s' "$PAROLA" | tr -d '[:space:]' > /tmp/parola
           gpg --batch --yes --symmetric --cipher-algo AES256 \
               --passphrase-file /tmp/parola --output salvataggio.sql.gpg salvataggio.sql
-          rm -f /tmp/parola salvataggio.sql
+          rm -f salvataggio.sql
           echo "cifrato: $(du -h salvataggio.sql.gpg | cut -f1)"
+          # Gli account (auth.users e auth.identities): profiles punta a
+          # auth.users con «on delete cascade», e senza gli account un
+          # ripristino lascerebbe i profili orfani. Solo i dati, in un file a
+          # parte: se Supabase un giorno non li lasciasse leggere, il backup
+          # principale resta buono e lo si dice con un avviso.
+          if /usr/lib/postgresql/17/bin/pg_dump "$url" --data-only --no-owner --no-acl \
+               --table=auth.users --table=auth.identities --format=plain > account.sql 2> account.err \
+             && grep -q "COPY auth.users" account.sql; then
+            gpg --batch --yes --symmetric --cipher-algo AES256 \
+                --passphrase-file /tmp/parola --output account.sql.gpg account.sql
+            echo "account cifrati: $(du -h account.sql.gpg | cut -f1)"
+          else
+            echo "::warning::Gli account non si sono salvati: $(head -c 300 account.err)"
+          fi
+          rm -f /tmp/parola account.sql account.err
 
       - name: Allega la copia
         if: steps.cfg.outputs.pronta == 'si'
         uses: actions/upload-artifact@v4
         with:
           name: salvataggio-${{ github.run_id }}
-          path: salvataggio.sql.gpg
+          path: |
+            salvataggio.sql.gpg
+            account.sql.gpg
           retention-days: 90
           if-no-files-found: error

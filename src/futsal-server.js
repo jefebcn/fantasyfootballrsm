@@ -135,7 +135,7 @@ export function risultato(g, id = uid()) {
 /** punti(g, id) per le competizioni (src/futsal-gare.js): 0 senza squadra, null senza referti. */
 export const punti = (g, id) => (F.giocate().includes(g) ? risultato(g, id)?.totale ?? 0 : null);
 
-/** Quanti iscritti hanno in rosa ogni giocatore nella giornata g (il «POP» di Dunkest), su chi ha una squadra. */
+/** Quanti iscritti hanno in rosa ogni giocatore nella giornata g, su chi ha una squadra. */
 export function popolarita(g) {
   const k = `pop${g}`;
   if (!calcoli.has(k)) {

@@ -98,7 +98,7 @@ export function calendarioTesta(membri, avvio, ultima = 30) {
 export const COPPA = { preliminari: [9, 14], gironi: [15, 20], finale: 27 };
 
 /**
- * Le tre Serie (§ 13.8), come le Champions Series di Dunkest: classifiche a
+ * Le tre Serie (§ 13.8): classifiche a
  * somma indipendenti su un blocco di giornate, con dentro tutti gli iscritti.
  * Hanno il nome delle tre torri del Titano.
  */

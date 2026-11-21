@@ -1,8 +1,8 @@
 /**
  * Motore di punteggio del FantaFutsal.
  * Funzioni pure: nessuno stato, nessuna chiamata esterna.
- * Riferimenti: FUTSAL.md §§ 3-8 (voti) e § 13 (rosa, schemi e mercato in stile
- * Dunkest, dal 29/10/2026).
+ * Riferimenti: FUTSAL.md §§ 3-8 (voti) e § 13 (rosa, schemi e mercato, dal
+ * 29/10/2026).
  *
  * Il referto FSGC del futsal non dice chi e' entrato in campo: tutti i
  * convocati stanno sotto «Titolari» e i cambi non ci sono. Quindi prende il
@@ -22,7 +22,7 @@ export const REGOLE_FUTSAL = {
   golSubito: -0.5,
   portaInviolata: 3,
   bonusDifesa: { punti: 2, soglia: 7.0, schema: '3-1' },
-  // La rosa, come in Dunkest (FUTSAL.md § 13): la Porta fa da «coach», poi
+  // La rosa (FUTSAL.md § 13): la Porta fa da «coach», poi
   // otto giocatori di movimento. In campo ne vanno quattro, uno e' il sesto
   // uomo e gli altri tre stanno in panchina.
   rosa: { D: 4, A: 4 },
@@ -203,7 +203,7 @@ export function punteggioFormazione(f, voti, { malus = 0 } = {}, R = REGOLE_FUTS
   const entrati = new Set(righe.map((r) => r.entrato?.id).filter(Boolean));
   for (const b of panchina) righe.push({ posto: 'B', id: b.id, club: b.club, ruolo: b.ruolo, voto: di(b.id), peso: entrati.has(b.id) ? 0 : R.panchina, entrato: null, usato: entrati.has(b.id) });
   // Capitano, e se non gioca il vice. Chi riposa prende la media ma non la
-  // fascia, come in Dunkest; chi entra dalla panchina nemmeno.
+  // fascia; chi entra dalla panchina nemmeno.
   const gioca = (id) => righe.find((r) => r.id === id && r.peso === 1 && !r.entrato && !r.voto.sv && !r.voto.riposo);
   const fascia = gioca(f.capitano) ? f.capitano : gioca(f.vice) ? f.vice : null;
   let totale = 0;

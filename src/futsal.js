@@ -78,7 +78,7 @@ const daRiposo = (media) => ({ sv: false, riposo: true, base: media, bonus: 0, t
  * Voti di una giornata: { porta: Map club -> voto, giocatori: Map id -> voto }.
  * A giornata conclusa, chi riposa (o ha la partita rinviata) prende la media
  * delle giornate prima, con { riposo: true }: niente fascia e niente
- * variazione di quotazione (FUTSAL.md § 13.5, come Dunkest).
+ * variazione di quotazione (FUTSAL.md § 13.5).
  */
 export function votiGiornata(n) {
   if (cache.has(n)) return cache.get(n);
@@ -145,7 +145,7 @@ export function statistichePorte() {
 /**
  * La classifica vera del campionato, dai risultati del calendario FSGC, e
  * quanti fantapunti a partita lasciano agli avversari per ruolo (la «difesa
- * contro ruolo» delle statistiche di Dunkest).
+ * contro ruolo» delle statistiche).
  */
 export function classificaReale() {
   const t = new Map(SQUADRE.map((q) => [q.id, { id: q.id, g: 0, v: 0, n: 0, p: 0, gf: 0, gs: 0, punti: 0, concessi: { D: [], A: [] } }]));

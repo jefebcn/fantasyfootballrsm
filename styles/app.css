@@ -2889,9 +2889,8 @@ div.fs-slot2{cursor:default}
 .fs-spiega p{margin:4px 0 0}
 .fs-partita summary::after{content:"Tocca per i voti ▾";grid-column:1 / -1;text-align:center;font:600 11px var(--font-body);color:var(--text-muted);margin-top:-2px}
 .fs-partita[open] summary::after{content:"Chiudi ▴"}
-/* Futsal sul modello Dunkest (FUTSAL.md § 13, 29/10): rosa, crediti, campo
-   con panchina, scheda giocatore, statistiche. Colori di Fantatitano: di
-   Dunkest si prende la struttura, non il marchio. */
+/* Futsal (FUTSAL.md § 13, 29/10): rosa, crediti, campo con panchina, scheda
+   giocatore, statistiche. Colori di Fantatitano. */
 .fp{display:inline-block;min-width:40px;text-align:center;padding:3px 6px;border-radius:8px;font:700 13px var(--font-data);font-variant-numeric:tabular-nums}
 .fp-r{background:var(--fp-r);color:var(--fp-r-ink)}.fp-g{background:var(--fp-g);color:var(--fp-g-ink)}.fp-v{background:var(--fp-v);color:var(--fp-v-ink)}.fp-n{background:var(--surface-sunk);color:var(--text-muted)}
 .fp-plus{background:var(--positive-soft);color:var(--positive-ink)}

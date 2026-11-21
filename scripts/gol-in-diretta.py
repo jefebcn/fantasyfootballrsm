@@ -175,6 +175,11 @@ def main():
             for v in [v for v in visti if v not in gol]:
                 dice('ANNULLATO', v)
                 visti.remove(v)
+                # 21/11: la storia del gol tolto e' gia' in storie_pubblicate col
+                # suo nome (squadra-n), e il gol vero che poi prende quel nome
+                # veniva scartato come «gia' fatta» (Benincasa, Virtus 0-2).
+                # Il nome bruciato riparte con un suffisso.
+                stato.setdefault('bruciati', {})[v] = stato['bruciati'].get(v, 0) + 1
             nuovi = [x for x in gol if x not in visti]
             if primo and not a.anche_vecchi:
                 visti.extend(nuovi)
@@ -267,6 +272,8 @@ def main():
                     if a.pubblica:
                         jpg = pathlib.Path(riga.split()[1])
                         id_storia = chi.get(jpg.stem, jpg.stem)
+                        if id_storia in stato.get('bruciati', {}):
+                            id_storia += f"-r{stato['bruciati'][id_storia]}"
                         ia = '[foto]' not in riga
                         esito, ancora = pubblica(jpg, id_storia, ia)
                         dice(esito)

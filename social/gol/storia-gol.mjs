@@ -92,7 +92,10 @@ export function fattiDelGol(r, k, { aderenti = new Set(), possesso = {}, squadre
   if (mio === suo) f(5, 'VANTAGGIO', mio === 0 ? 'sblocca la partita' : `torna avanti, ${dopo[io]}-${dopo[1 - io]}`, 'momento');
   else if (mio + 1 === suo) f(6, 'PAREGGIO', `${dopo[io]}-${dopo[1 - io]}, tutto da rifare`, 'momento');
   else if (mio > suo) f(3, `+${mio + 1 - suo}`, 'la fuga continua', 'momento');
-  else f(3, `-${suo - mio - 1}`, 'riapre la partita', 'momento');
+  // Alex, 21/11: «riapre la partita» solo se resta un gol da recuperare; sotto
+  // di due o piu' e' un gol che accorcia (nel finale, il gol della bandiera).
+  else if (suo - mio - 1 === 1) f(3, '-1', 'riapre la partita', 'momento');
+  else f(3, `-${suo - mio - 1}`, x.minuto >= 75 ? 'gol della bandiera' : 'accorcia le distanze', 'momento');
   if (x.minuto >= 88) f(8, `${x.minuto}'`, x.minuto > 90 ? 'in pieno recupero' : 'allo scadere', 'minuto');
   else if (x.minuto <= 5) f(7, `${x.minuto}'`, 'dopo pochi minuti', 'minuto');
 
@@ -107,7 +110,7 @@ export function fattiDelGol(r, k, { aderenti = new Set(), possesso = {}, squadre
   if (riga.gio) {
     f(2, ord(pos), 'posto in classifica prima di questa giornata', 'classifica');
     f(2, riga.gf + dopo[io], 'gol della squadra in campionato', 'golsquadra');
-    f(1, (riga.gf / riga.gio).toFixed(1).replace('.', ','), 'gol a partita finora', 'media');
+    f(1, (riga.gf / riga.gio).toFixed(1).replace('.', ','), 'media gol della squadra', 'media');
   }
   const andata = CALENDARIO.find(([n, a, b, , , gc]) => n < r.g && gc != null && ((a === r.casa && b === r.ospite) || (a === r.ospite && b === r.casa)));
   if (andata) {
@@ -125,10 +128,11 @@ export function fattiDelGol(r, k, { aderenti = new Set(), possesso = {}, squadre
     if (nelMatch >= 3) f(10, 'TRIPLETTA', `${nelMatch} gol in questa partita`, 'match');
     const marc = marcatoriPrima(r.g);
     const stag = (marc.get(x.pid) || 0) + nelMatch;
-    if (stag === 1) f(7, '1°', 'primo gol in campionato', 'stagione');
-    else f(4, stag, 'gol in campionato', 'stagione');
     const testa = Math.max(0, ...marc.values());
-    if (stag > 1 && stag > testa) f(9, stag, 'in testa ai marcatori', 'marcatori');
+    // In testa ai marcatori il numero e' gia' quello dei gol: una riga sola (21/11).
+    if (stag === 1) f(7, '1°', 'primo gol in campionato', 'stagione');
+    else if (stag > testa) f(9, stag, 'gol in campionato, in testa ai marcatori', 'marcatori');
+    else f(4, stag, 'gol in campionato', 'stagione');
     // Il numero conta quando e' grande: «1 squadra lo ha in rosa» non dice niente.
     const n = possesso[x.pid] || 0;
     if (squadre && n >= 5) f(n >= 20 ? 7 : 5, n, 'squadre di Fantatitano lo hanno in rosa', 'fanta');

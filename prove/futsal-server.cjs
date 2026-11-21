@@ -1,5 +1,5 @@
 /**
- * Il FantaFutsal col server, sul modello Dunkest (FUTSAL.md § 13).
+ * Il FantaFutsal col server (FUTSAL.md § 13).
  *
  * Un utente nuovo si iscrive con la squadra del cuore, compra la rosa al
  * mercato (Porta, 4 difensori, 4 attaccanti) dentro i 70 crediti, sceglie

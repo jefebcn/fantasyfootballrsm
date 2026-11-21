@@ -3,7 +3,7 @@
  * nascosta: si apre con ?futsal=1 nell'indirizzo, si richiude con ?futsal=0
  * (vedi futsalAttivo).
  *
- * Dal 29/10/2026 e' costruita sul modello di Dunkest (FUTSAL.md § 13): una
+ * Dal 29/10/2026 e' costruita sul modello di FUTSAL.md § 13: una
  * rosa comprata con i crediti, quotazioni che si muovono dopo ogni giornata,
  * il campo con schema, sesto uomo e panchina, le statistiche dei giocatori
  * con il loro profilo, i campionati principali in home e il regolamento a
@@ -72,10 +72,12 @@ const stemma = (id, cls = 'fs-crest') => {
 };
 const nomeG = (g) => `${g.cognome} ${g.nome ? `${g.nome[0]}.` : ''}`;
 const ruoloChip = (r) => `<span class="rl rl-${r === 'P' ? 'p' : r === 'D' ? 'd' : 'a'}">${r}</span>`;
+// Nelle liste la maglia della squadra (Alex, 21/11: «al posto della lettera»), col ruolo piccolo nell'angolo.
+const magliaRiga = (club, num, r) => `<span class="fs-mgr">${maglietta(club, r === 'P' ? 'P' : num)}${ruoloChip(r)}</span>`;
 const RUOLI = { P: 'Porta', D: 'Difensore', A: 'Attaccante' };
 const cr = (x) => fmt(x, 1);
 const piu = (x) => (x > 0 ? `+${fmt(x, 1)}` : x < 0 ? `−${fmt(-x, 1)}` : '0,0');
-/** Il colore del punteggio, a fasce come i «fantasy_pts_colors» di Dunkest. */
+/** Il colore del punteggio, a fasce. */
 const fascia = (p) => (p == null ? 'fp-n' : p < 6 ? 'fp-r' : p < 9 ? 'fp-g' : 'fp-v');
 const punti = (p, extra = '') => `<span class="fp ${fascia(p)}${extra}">${p == null ? '–' : fmt(p)}</span>`;
 const nomeId = (id) => (V.ePorta(id) ? `Porta ${nomeSq(id.slice(2))}` : nomeG(F.giocatore(id)));
@@ -144,7 +146,7 @@ function montaIscrizione(root, ctx) {
   });
 }
 
-/** Il gioco in quattro passi, come le schermate di benvenuto di Dunkest. */
+/** Il gioco in quattro passi, come schermate di benvenuto. */
 const comeSiGioca = () => `<div class="fs-intro">
   ${[['shirt', 'Crea la tua squadra', `${R.budget} crediti per comprare la Porta di una squadra e 8 giocatori veri del campionato sammarinese: 4 difensori e 4 attaccanti.`],
     ['users', 'Sfida gli altri', 'Classifica generale, campionato dei tifosi, le tre Serie, la Coppa Titano e le leghe con gli amici: tutte con la stessa squadra.'],
@@ -180,7 +182,7 @@ function numeri(id) {
   if (V.ePorta(id)) { const x = sp().get(id.slice(2)); return { media: x?.media || 0, presenze: x?.partite || 0, punti: x?.punti || 0, trend: x?.trend || [] }; }
   const x = st().get(id); return { media: x?.media || 0, presenze: x?.presenze || 0, punti: x?.punti || 0, trend: x?.trend || [], ...x };
 }
-/** «In forma»: nelle ultime tre giocate ha fatto meglio della sua media di prima, come i «Players on fire» di Dunkest. */
+/** «In forma»: nelle ultime tre giocate ha fatto meglio della sua media di prima. */
 function inForma(id) {
   const t = numeri(id).trend.filter((x) => x.punti != null && !x.riposo).map((x) => x.punti);
   if (t.length < 4) return false;
@@ -259,7 +261,7 @@ function leader(n) {
 /** La maglia disegnata del futsal (src/futsal-grafica.js); col cognome sulle spalle dove c'e' spazio. */
 const maglietta = (club, num = '', cls = '', nome = '') => `<span class="fs-mg ${cls}">${magliaFs({ colore: colore.get(club)?.color, numero: num, nome, porta: num === 'P' })}</span>`;
 
-// ---------------------------------------------------------------- la squadra (il campo di Dunkest)
+// ---------------------------------------------------------------- la squadra (il campo)
 // Bozza: { porta, D: [id|null ×4], A: [id|null ×4], schema, sesto, capitano, vice }.
 // La rosa e' posizionale: i primi s.D difensori e i primi s.A attaccanti sono
 // in campo, gli altri in panchina. Cambiare schema sposta i giocatori da soli.
@@ -470,7 +472,7 @@ function tabellaPunti(r) {
   const nota = (x) => (x.entrato ? `non convocato: entra ${nomeG(F.giocatore(x.entrato.id))}` : x.voto.sv ? x.voto.motivo : x.usato ? 'entrato in campo' : x.voto.voci.slice(x.voto.riposo ? 0 : 2).map((v) => v.etichetta).join(' · ') || 'nessun evento');
   const nome = (x) => (x.posto === 'P' ? `Porta ${nomeSq(x.club)}` : nomeG(F.giocatore(x.entrato?.id || x.id)));
   const peso = (x) => (x.posto === 'S' ? 'sesto' : x.posto === 'B' ? (x.usato ? '' : '50%') : x.capitano ? `×${fmt(R.capitano)}` : '');
-  return `<div class="a-card fs-list">${r.righe.map((x) => `<div class="vr">${ruoloChip(x.posto === 'S' || x.posto === 'B' ? x.ruolo : x.posto)}<span class="nm"><b>${esc(nome(x))}${peso(x) ? ` <small class="fs-w">${peso(x)}</small>` : ''}</b><span>${esc(nota(x))}</span></span><span class="ev"></span>${x.voto.sv ? '<span class="fv sv">0</span>' : `<span class="fv${x.capitano ? ' cap' : ''}">${fmt(x.punti)}</span>`}</div>`).join('')}
+  return `<div class="a-card fs-list">${r.righe.map((x) => `<div class="vr">${magliaRiga(F.giocatore(x.entrato?.id || x.id)?.club || x.club, F.giocatore(x.entrato?.id || x.id)?.numero, x.posto === 'S' || x.posto === 'B' ? x.ruolo : x.posto)}<span class="nm"><b>${esc(nome(x))}${peso(x) ? ` <small class="fs-w">${peso(x)}</small>` : ''}</b><span>${esc(nota(x))}</span></span><span class="ev"></span>${x.voto.sv ? '<span class="fv sv">0</span>' : `<span class="fv${x.capitano ? ' cap' : ''}">${fmt(x.punti)}</span>`}</div>`).join('')}
   ${r.bonusDifesa ? `<div class="vr"><span></span><span class="nm"><b>Bonus difesa</b><span>media ${fmt(r.bonusDifesa.media)} su ${fmt(R.bonusDifesa.soglia)}</span></span><span class="ev"></span><span class="fv">${r.bonusDifesa.punti ? `+${fmt(r.bonusDifesa.punti, 0)}` : '0'}</span></div>` : ''}
   ${r.malus ? `<div class="vr"><span></span><span class="nm"><b>Cambi di mercato</b><span>oltre quelli gratis</span></span><span class="ev"></span><span class="fv">−${fmt(r.malus, 0)}</span></div>` : ''}
   <div class="vr fs-tot"><span></span><span class="nm"><b>Totale</b></span><span class="ev"></span><span class="fv">${fmt(r.totale)}</span></div></div>`;
@@ -484,7 +486,7 @@ function apri(slot, n, ctx) {
   scheda(r, idx, id, n, ctx);
 }
 
-/** Il «player modal» di Dunkest: numeri e azioni su un giocatore della rosa. */
+/** La scheda del giocatore: numeri e azioni su un giocatore della rosa. */
 function scheda(r, idx, id, n, ctx) {
   const vid = r === 'P' ? V.idPorta(id) : id;
   const club = clubId(vid);
@@ -527,7 +529,7 @@ function scheda(r, idx, id, n, ctx) {
     if (az === 'sost') {
       const altri = inCampo ? pan : tit;
       sh.querySelector('#fs-mod-sost').innerHTML = `<p class="sheet-sub">${inCampo ? 'Chi entra al suo posto' : 'Al posto di chi'}: se il ruolo è diverso cambia lo schema.</p>
-        <div class="fs-scelta">${altri.map((o) => { const g = F.giocatore(o); return `<button class="vr" data-swap="${o}">${ruoloChip(g.ruolo)}<span class="nm"><b>${esc(nomeG(g))}</b><span>${esc(nomeSq(g.club))} · ${esc(avversario(g.club, n))}</span></span><span class="ev"></span>${punti(numeri(o).media)}</button>`; }).join('')}</div>`;
+        <div class="fs-scelta">${altri.map((o) => { const g = F.giocatore(o); return `<button class="vr" data-swap="${o}">${magliaRiga(g.club, g.numero, g.ruolo)}<span class="nm"><b>${esc(nomeG(g))}</b><span>${esc(nomeSq(g.club))} · ${esc(avversario(g.club, n))}</span></span><span class="ev"></span>${punti(numeri(o).media)}</button>`; }).join('')}</div>`;
     }
   };
 }
@@ -677,7 +679,7 @@ export const futsalStatistiche = {
       corpo = `<div class="fs-filtri">${porte ? '' : `<div class="chips">${[['', 'Tutti'], ['D', 'Difensori'], ['A', 'Attaccanti']].map(([r, l]) => `<button class="chip${filtroStat.ruolo === r ? ' on' : ''}" data-fr="${r}">${l}</button>`).join('')}</div>`}
         <div class="fs-filtri-r"><input class="field-input" id="fs-sq" placeholder="Cerca" value="${esc(filtroStat.q)}" autocomplete="off"><select id="fs-sclub" class="select" aria-label="Squadra"><option value="">Tutte le squadre</option>${F.SQUADRE.map((s) => `<option value="${s.id}" ${filtroStat.club === s.id ? 'selected' : ''}>${esc(s.nome)}</option>`).join('')}</select></div></div>
         <div class="fs-tab-wrap"><table class="fs-tab"><thead><tr><th class="fs-tab-n">#</th><th class="fs-tab-g">${porte ? 'Porta' : 'Giocatore'}</th>${cols.map(([k, l, t]) => `<th data-col="${k}" title="${t}" class="${col === k ? (ordStat.verso < 0 ? 'giu' : 'su') : ''}">${l}</th>`).join('')}</tr></thead>
-        <tbody>${righe.map((x, i) => `<tr><td class="fs-tab-n">${i + 1}</td><td class="fs-tab-g"><a href="${profilo(x.id)}">${porte ? '' : ruoloChip(x.r)}<span><b>${esc(x.nome)}</b><small>${esc(nomeSq(x.club))}</small></span></a></td>${cols.map(([k]) => `<td class="${col === k ? 'on' : ''}${k === 'plus' ? (x.plus > 0 ? ' su' : x.plus < 0 ? ' giu' : '') : ''}">${k === 'vnp' ? x.vnpT : k === 'plus' ? piu(x.plus) : k === 'cr' || k === 'mpf' || k === 'pf' ? fmt(x[k], k === 'cr' ? 1 : 1) : x[k]}</td>`).join('')}</tr>`).join('')}</tbody></table></div>
+        <tbody>${righe.map((x, i) => `<tr><td class="fs-tab-n">${i + 1}</td><td class="fs-tab-g"><a href="${profilo(x.id)}">${magliaRiga(x.club, F.giocatore(x.id)?.numero, x.r)}<span><b>${esc(x.nome)}</b><small>${esc(nomeSq(x.club))}</small></span></a></td>${cols.map(([k]) => `<td class="${col === k ? 'on' : ''}${k === 'plus' ? (x.plus > 0 ? ' su' : x.plus < 0 ? ' giu' : '') : ''}">${k === 'vnp' ? x.vnpT : k === 'plus' ? piu(x.plus) : k === 'cr' || k === 'mpf' || k === 'pf' ? fmt(x[k], k === 'cr' ? 1 : 1) : x[k]}</td>`).join('')}</tr>`).join('')}</tbody></table></div>
         <p class="small muted fs-nota">Tocca un'intestazione per ordinare. ${cols.map(([, l, t]) => `<b>${l}</b> ${t}`).join(' · ')}.</p>`;
     } else if (vistaStat === 'squadre') {
       const cl = F.classificaReale();
@@ -772,7 +774,7 @@ export const futsalGiornata = {
   },
 };
 
-// ---------------------------------------------------------------- regolamento (a capitoli, come i docs di Dunkest)
+// ---------------------------------------------------------------- regolamento (a capitoli)
 const mini = (k) => { const s = R.schemi[k]; const fila = (r, q) => `<div>${Array.from({ length: q }, () => `<i class="${r}"></i>`).join('')}</div>`; return `<div class="fs-mini"><div class="fs-mini-c">${fila('a', s.A)}${fila('d', s.D)}${fila('p', 1)}</div><b>${k}</b><small>${s.D} D · ${s.A} A${k === R.bonusDifesa.schema ? ' · bonus difesa' : ''}</small></div>`; };
 export const futsalRegolamento = {
   title: 'Regolamento futsal', appbar: 'futsal', sub: () => 'Regolamento',
@@ -784,17 +786,17 @@ export const futsalRegolamento = {
       <div class="fs-benvenuto">${logoFs('grande')}<p>Regolamento 2026/27</p></div>
       <div class="a-card"><p class="rule-art">IN BREVE</p>
         <p>Il FantaFutsal è il fanta del <b>Campionato Sammarinese di Futsal</b>: compri una rosa di giocatori veri con i crediti, ogni giornata scegli chi va in campo e fai punti con quello che dicono i <b>referti ufficiali FSGC</b>.</p>
-        <p>È costruito come Dunkest, il fantabasket più giocato: quotazioni che salgono e scendono, mercato tra una giornata e l'altra, sesto uomo e panchina che contano, campionati principali per tutti e leghe con gli amici.</p></div>
+        <p>Funziona così: quotazioni che salgono e scendono, mercato tra una giornata e l'altra, sesto uomo e panchina che contano, campionati principali per tutti e leghe con gli amici.</p></div>
       ${cap('1 · Creazione della squadra', `<p>Con un account (lo stesso del calcio) hai una squadra. Hai <b>${R.budget} crediti</b> per comprare:</p>
         <table>${row('1 Porta', 'la porta di una squadra')}${row('4 Difensori', 'Centrali e Laterali')}${row('4 Attaccanti', 'Pivot e Universali')}</table>
         <p>Al massimo <b>${R.perClub} della stessa squadra</b>, Porta compresa.</p>
-        <p><b>Perché la Porta e non il portiere.</b> Ogni squadra porta due o tre portieri e il referto non dice chi ha giocato: compri la porta di una squadra, che prende i gol subiti e gli eventi di tutti i suoi portieri. Fa la parte del «coach» di Dunkest.</p>`, true)}
+        <p><b>Perché la Porta e non il portiere.</b> Ogni squadra porta due o tre portieri e il referto non dice chi ha giocato: compri la porta di una squadra, che prende i gol subiti e gli eventi di tutti i suoi portieri. Fa la parte dell'allenatore.</p>`, true)}
       ${cap('2 · Schemi', `<p>Ogni giornata vanno in campo la Porta e quattro giocatori, secondo uno schema:</p><div class="fs-minis">${Object.keys(R.schemi).map(mini).join('')}</div>
         <p>Con il <b>${R.bonusDifesa.schema}</b>, se Porta e tre difensori fanno in media almeno ${fmt(R.bonusDifesa.soglia)}, la squadra prende <b>${s(R.bonusDifesa.punti)}</b>.</p>`)}
       ${cap('3 · Gestione della squadra', `<p>Dei quattro rimasti fuori, uno è il <b>sesto uomo</b> e conta al 100%; gli altri tre stanno in <b>panchina e contano al ${fmt(R.panchina * 100, 0)}%</b>.</p>
         <table>${row('In campo e Porta', '100%')}${row('Sesto uomo', '100%')}${row('Panchina', `${fmt(R.panchina * 100, 0)}%`)}${row('Capitano', `×${fmt(R.capitano)}`)}</table>
         <p><b>Capitano e vice</b> si scelgono fra i quattro in campo: il capitano moltiplica per ${fmt(R.capitano)} i suoi punti. Se non è convocato la fascia passa al vice.</p>
-        <p><b>Cambio automatico.</b> Se uno in campo non è convocato, entra al 100% il primo della panchina del suo ruolo che ha giocato (il sesto uomo conta già per intero). Dunkest i cambi li fa fare a mano fra un turno e l'altro; qui la giornata si chiude tutta insieme, quindi li fa l'app.</p>
+        <p><b>Cambio automatico.</b> Se uno in campo non è convocato, entra al 100% il primo della panchina del suo ruolo che ha giocato (il sesto uomo conta già per intero). La giornata si chiude tutta insieme, quindi i cambi li fa l'app.</p>
         <p>La squadra si cambia fino a <b>10 minuti prima della prima partita</b> della giornata. <b>Resta da una giornata all'altra</b>: se non tocchi niente gioca quella di prima.</p>`)}
       ${cap('4 · Punteggio dei giocatori', `<table><tr><th>Evento</th><th></th></tr>${row('Convocato (in distinta)', fmt(R.voto))}${row('La sua squadra vince / perde', `${s(R.esito.vittoria)} / ${fmt(R.esito.sconfitta)}`)}${row('Gol (anche su rigore)', s(R.gol))}${row('Autogol', fmt(R.autogol))}${row('Ammonizione', fmt(R.ammonizione))}${row('Espulsione', fmt(R.espulsione))}${row('Rigore sbagliato', fmt(R.rigoreSbagliato))}</table>
         <p><b>Convocato</b> vuol dire nell'elenco della partita sul referto. La FSGC non registra chi entra in campo né i cambi, quindi il voto lo prende ogni convocato. Assist e rigori parati non contano: il referto non li riporta.</p>`)}
@@ -808,9 +810,9 @@ export const futsalRegolamento = {
       ${cap('8 · Riposo e partite rinviate', `<p>Ogni giornata una squadra riposa. I suoi giocatori e la sua Porta prendono la <b>loro media</b> delle giornate giocate, senza fascia da capitano e senza variazione di quotazione. Lo stesso per una partita rinviata o senza referto dopo tre giorni.</p>`)}
       ${cap('9 · Campionati', `<p>Con la stessa squadra giochi in tutti, senza fare niente:</p>
         <table>${row('Generale', 'somma dei punti di tutte le giornate')}${row('Tifosi', 'chi ha la stessa squadra del cuore')}${SERIE.map((x) => row(x.nome, `giornate ${x.da}–${x.a}`)).join('')}${row('Coppa Titano', `gironi e tabellone, ${COPPA.preliminari[0]}ª–${COPPA.finale}ª`)}</table>
-        <p>Le <b>Serie</b> sono come le Champions Series di Dunkest: ognuna ha la sua classifica, che riparte da zero. A parità conta la media per giornata, poi la giornata migliore.</p>
+        <p>Le <b>Serie</b> sono campionati a tappe: ognuna ha la sua classifica, che riparte da zero. A parità conta la media per giornata, poi la giornata migliore.</p>
         <p><b>Coppa Titano.</b> Il sorteggio si fa alla chiusura della ${COPPA.preliminari[0]}ª: entra chi ha una squadra, servono almeno 8 iscritti. Gironi con 3 punti a vittoria, poi eliminazione diretta con andata e ritorno e finale secca. Con 50 o più iscritti ci sono anche i preliminari.</p>
-        <p><b>Leghe con gli amici.</b> Una lega è un gruppo con la sua classifica: <b>a somma</b> (conta dalla giornata in cui nasce la lega) o <b>testa a testa</b> (ogni giornata contro un altro del gruppo, 3 punti a chi fa di più). Con un numero dispari, chi resta fuori affronta la media del gruppo, come la «Dunkest Team». Si entra col codice o col link «Invita».</p>
+        <p><b>Leghe con gli amici.</b> Una lega è un gruppo con la sua classifica: <b>a somma</b> (conta dalla giornata in cui nasce la lega) o <b>testa a testa</b> (ogni giornata contro un altro del gruppo, 3 punti a chi fa di più). Con un numero dispari, chi resta fuori affronta la media del gruppo. Si entra col codice o col link «Invita».</p>
         <p><b>Leghe pubbliche.</b> Aperte a tutti, senza codice: si entra dall'elenco con la squadra che hai già e vince chi fa più punti dalla giornata in cui la lega è nata.</p>`)}
       ${cap('10 · Arrivare a stagione iniziata', `<p>Ci si iscrive quando si vuole: si parte con ${R.budget} crediti e alle quotazioni del momento. Le giornate già giocate valgono 0 punti in classifica generale, ma le Serie e le leghe nuove ripartono da zero.</p>`)}
     </main>`;

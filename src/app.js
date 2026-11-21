@@ -162,7 +162,7 @@ function appbar(view, ctx) {
  * voce: cosi' resta attaccata all'icona qualunque sia la larghezza della
  * colonna, che cambia col telefono.
  */
-// Le voci in basso come quelle di Dunkest: la squadra, le statistiche, il
+// Le voci in basso: la squadra, le statistiche, il
 // calendario con i voti e le classifiche (FUTSAL.md § 13.10).
 // Le icone sono quelle del futsal (media/icone/futsal), non le sagome del calcio.
 const NAV_FUTSAL = [['futsal', 'home', 'Home'], ['futsal/squadra', 'squadra', 'Squadra'], ['futsal/statistiche', 'statistiche', 'Statistiche'],

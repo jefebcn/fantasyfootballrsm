@@ -1,6 +1,6 @@
 /**
  * Quotazioni, plusvalenze, crediti e cambi del FantaFutsal (FUTSAL.md § 13),
- * sul modello di Dunkest: ogni giocatore e ogni Porta ha un valore in crediti
+ * (FUTSAL.md § 13): ogni giocatore e ogni Porta ha un valore in crediti
  * che sale o scende dopo ogni giornata, e la rosa si compra con quei crediti.
  *
  * Tutto si ricava dai referti FSGC che l'app porta con se', con funzioni
@@ -62,7 +62,7 @@ function voto(id, n) {
 
 /**
  * Di quanto si muove la quotazione dopo la giornata n: dai punti fatti e dal
- * valore di partenza, come in Dunkest (a parita' di punti guadagna di piu' chi
+ * valore di partenza (a parita' di punti guadagna di piu' chi
  * costa meno). Chi riposa non si muove; chi non e' convocato vale 0 punti.
  */
 export function variazione(id, n, valore) {
@@ -119,7 +119,7 @@ export const costo = (f, n) => r1(elementi(f).reduce((s, id) => s + quotazione(i
  * Il bilancio di un iscritto alla giornata n (§ 13.7).
  * effettiva(k): la formazione in vigore alla giornata k (l'ultima consegnata
  * fino a k compresa), o null. La squadra resta da una giornata all'altra:
- * chi non tocca niente gioca con quella di prima, come in Dunkest.
+ * chi non tocca niente gioca con quella di prima.
  *
  * patrimonio = budget + le plusvalenze dei giocatori avuti in rosa;
  * residui = patrimonio − quanto costa oggi la rosa;
@@ -144,7 +144,7 @@ export function bilancio(effettiva, n, bozza = undefined) {
   return { patrimonio, costo: c, residui: r1(patrimonio - c), cambi, malus: Math.max(0, cambi - R.cambiGratis) * R.malusCambio, primo, entrati, usciti };
 }
 
-/** I migliori per plusvalenza nella giornata n (i «Fantasy Plus leaders» di Dunkest). */
+/** I migliori per plusvalenza nella giornata n */
 export function migliorPlus(n, quanti = 3) {
   return QUOTATI().map((id) => ({ id, plus: plus(id, n) })).filter((x) => x.plus > 0).sort((a, b) => b.plus - a.plus).slice(0, quanti);
 }

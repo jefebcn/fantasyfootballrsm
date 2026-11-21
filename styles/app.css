@@ -2889,9 +2889,8 @@ div.fs-slot2{cursor:default}
 .fs-spiega p{margin:4px 0 0}
 .fs-partita summary::after{content:"Tocca per i voti ▾";grid-column:1 / -1;text-align:center;font:600 11px var(--font-body);color:var(--text-muted);margin-top:-2px}
 .fs-partita[open] summary::after{content:"Chiudi ▴"}
-/* Futsal sul modello Dunkest (FUTSAL.md § 13, 29/10): rosa, crediti, campo
-   con panchina, scheda giocatore, statistiche. Colori di Fantatitano: di
-   Dunkest si prende la struttura, non il marchio. */
+/* Futsal (FUTSAL.md § 13, 29/10): rosa, crediti, campo con panchina, scheda
+   giocatore, statistiche. Colori di Fantatitano. */
 .fp{display:inline-block;min-width:40px;text-align:center;padding:3px 6px;border-radius:8px;font:700 13px var(--font-data);font-variant-numeric:tabular-nums}
 .fp-r{background:var(--fp-r);color:var(--fp-r-ink)}.fp-g{background:var(--fp-g);color:var(--fp-g-ink)}.fp-v{background:var(--fp-v);color:var(--fp-v-ink)}.fp-n{background:var(--surface-sunk);color:var(--text-muted)}
 .fp-plus{background:var(--positive-soft);color:var(--positive-ink)}
@@ -2943,9 +2942,9 @@ div.fs-carta{cursor:default}
 .fs-panca{background:var(--fs-scuro);border-radius:0 0 14px 14px;margin-top:-10px;padding:16px 8px 12px}
 .fs-panca>p{display:flex;justify-content:space-between;margin:0 6px 10px;font:700 10px var(--font-body);text-transform:uppercase;letter-spacing:.06em;color:rgba(255,255,255,.7)}
 .fs-panca>p span:first-child{color:var(--fs-evid)}
-.fs-panca>div{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;justify-items:center}
-.fs-panca .fs-carta{width:80px}
-.fs-panca .fs-carta b,.fs-panca .fs-carta small{max-width:80px}
+.fs-panca>div{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:4px;justify-items:center}
+.fs-panca .fs-carta{width:100%;max-width:80px;min-width:0}
+.fs-panca .fs-carta b,.fs-panca .fs-carta small{max-width:100%}
 .fs-panca .fs-carta .fs-mg{width:44px}
 .fs-panca .fs-carta.sesto{outline:2px solid var(--fs-evid);outline-offset:4px;border-radius:10px}
 .fs-panca .fs-vuota{width:44px;height:44px;font-size:20px}

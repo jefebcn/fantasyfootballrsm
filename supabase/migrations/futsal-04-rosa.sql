@@ -1,5 +1,5 @@
 -- =====================================================================
--- FUTSAL 04 — Rosa, crediti e mercato in stile Dunkest (FUTSAL.md § 13)
+-- FUTSAL 04 — Rosa, crediti e mercato (FUTSAL.md § 13)
 --
 -- Solo sul ramo `futsal`. Si può rieseguire. Cambia il FantaFutsal da
 -- «ogni settimana cinque giocatori scelti fra tutti» a una rosa vera:

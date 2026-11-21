@@ -549,3 +549,9 @@ test('la formazione proposta ha in panchina almeno uno per ruolo', () => {
   assert.equal(players.get(d.bench[0]).role, 'P');
   assert.equal(d.bench.length, 7);
 });
+test('recordLega: il doppio tavolino è una sconfitta per tutti e due, come in classifica', () => {
+  const r = recordLega([SF(1, 'a', 'b', 1, 0, 70, 60), { ...SF(2, 'a', 'b', 0, 0, 0, 0), forfait: 'entrambi' }]);
+  const a = r.strisce.find((x) => x.managerId === 'a');
+  assert.deepEqual(a.esiti, ['V', 'P']);
+  assert.equal(a.imbattuto, 1);
+});

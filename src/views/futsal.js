@@ -750,7 +750,7 @@ export const futsalListone = futsalStatistiche;
 function distinte(n, casa, evid = null) {
   const p = F.PARTITE.find((x) => x.g === n && x.casa === casa);
   const ref = F.referto(n, casa);
-  if (!p || !ref) return '<p class="small muted" style="padding:12px">Il referto di questa partita non c\'e\' ancora.</p>';
+  if (!p || !ref) return '<p class="small muted" style="padding:12px">Il referto di questa partita non c\'è ancora.</p>';
   const voti = F.votiGiornata(n);
   const voto = (v) => (!v || v.sv ? '<span class="fv sv">S.V.</span>' : punti(v.totale));
   const segni = (id) => {

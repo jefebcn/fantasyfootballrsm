@@ -261,7 +261,7 @@ export const adminCongela = {
     // irreversibile e la domanda lo dice.
     if (btn) btn.onclick = () => {
       const n2 = S.currentMatchday();
-      if (!confirm(`Calcolare la giornata ${n2}?\n\nI punteggi diventano definitivi e non si rettificano piu' (art. 9.2).`)) return;
+      if (!confirm(`Calcolare la giornata ${n2}?\n\nI punteggi diventano definitivi e non si rettificano più (art. 9.2).`)) return;
       S.freezeMatchday(n2); ctx.toast(`Giornata ${n2} calcolata`);
     };
     root.querySelector('#reopen')?.addEventListener('click', () => { if (confirm('Riaprire la giornata? Solo per la stagione pilota.')) { S.reopenMatchday(S.currentMatchday()); } });
@@ -397,7 +397,7 @@ function consegne(r) {
     .map((g) => ({ ...g, squadre: Math.max(g.squadre || 0, g.consegne || 0) }));
   if (!serie.length) {
     return `<div class="a-sec"><b>Chi consegna</b><span>niente ancora</span></div>
-      <p class="small muted" style="margin:0 2px">La prima colonna compare quando una giornata chiude: finche' il lock non e' passato si consegna ancora, e contarla direbbe un calo che non c'e'.</p>`;
+      <p class="small muted" style="margin:0 2px">La prima colonna compare quando una giornata chiude: finché la chiusura non è passata si consegna ancora, e contarla direbbe un calo che non c'è.</p>`;
   }
   const quota = (g) => (g.squadre ? Math.round((g.consegne / g.squadre) * 100) : 0);
   const max = Math.max(1, ...serie.map((g) => g.consegne));

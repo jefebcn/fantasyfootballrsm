@@ -77,7 +77,7 @@ export const lega = {
         const L = S.base.league;
         // Si fa scrivere il nome: un tocco solo non basta per una cosa che
         // cancella anche le squadre degli altri.
-        const risposta = prompt(`Questa operazione cancella la lega per tutti e non si puo' annullare.\n\nPer confermare scrivi il nome della lega:\n${L.name}`);
+        const risposta = prompt(`Questa operazione cancella la lega per tutti e non si può annullare.\n\nPer confermare scrivi il nome della lega:\n${L.name}`);
         if (risposta === null) return;
         if (risposta.trim().toLowerCase() !== L.name.trim().toLowerCase()) { ctx.toast('Nome non corrispondente: non ho eliminato niente'); return; }
         try { await S.deleteLeague(); ctx.toast('Lega eliminata'); ctx.go('leghe'); } catch (err) { ctx.toast(err.message); }

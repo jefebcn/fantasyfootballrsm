@@ -92,7 +92,7 @@ export const BASE = {
   Classifiche: 'Clasificaciones',
   'In campo': 'En la cancha',
   'Formazioni di tutti': 'Alineaciones de todos',
-  'dal lock di ogni giornata': 'desde el cierre de cada fecha',
+  'dalla chiusura di ogni giornata': 'desde el cierre de cada fecha',
   'La tua rosa': 'Tu plantel',
   'Mercato libero': 'Mercado de libres',
   'rilancio 24h': 'pujas de 24 h',

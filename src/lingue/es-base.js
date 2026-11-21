@@ -133,8 +133,6 @@ export const BASE = {
   'Il quadrato con la freccia in su, nella barra di Safari.': 'El cuadrado con la flecha hacia arriba, en la barra de Safari.',
 
   // avvisi comuni (src/app.js)
-  'Nuova versione pronta': 'Nueva versión lista',
-  'Tocca per usarla adesso; se no entra alla prossima apertura.': 'Toca para usarla ahora; si no, se activa la próxima vez que abras la app.',
   'Non fai parte di questa lega.': 'No formas parte de esta liga.',
   'Errore di rete': 'Error de red',
   'Quel link l\'avevi già usato': 'Ya habías usado ese enlace',

@@ -43,6 +43,7 @@ spec.loader.exec_module(fsgc)
 # lascerebbe scoperto il secondo tempo.
 PRIMA = 10 * 60
 DOPO = 210 * 60
+DUBBIO = 10 * 60      # dopo tanto un gol che il risultato FSGC non comprende esce lo stesso
 RITENTA = 15          # tentativi di pubblicazione per storia, uno per giro
 
 
@@ -178,6 +179,33 @@ def main():
             if primo and not a.anche_vecchi:
                 visti.extend(nuovi)
                 nuovi = []
+            # Alex, 21/11 («cerca di non sbagliare piu'»): la FSGC aveva scritto
+            # per qualche minuto due gol della Virtus (10' e 20') col risultato
+            # fermo sullo 0-1, ed e' uscita la storia di una doppietta mai
+            # esistita. Ora un gol esce solo se (1) e' sul referto da almeno un
+            # giro e (2) il risultato FSGC della sua squadra lo comprende. Se il
+            # risultato non torna per DUBBIO secondi esce lo stesso: meglio tardi
+            # che perso.
+            prima = set(stato.setdefault('ultimi', {}).get(chiave, []))
+            stato['ultimi'][chiave] = list(gol)
+            dubbi = stato.setdefault('dubbi', {})
+            for v in [v for v in dubbi if v.startswith(chiave + '-') and v not in gol]:
+                dubbi.pop(v)
+            tetto = {c['casa']: c['gc'], c['ospite']: c['go']}
+            pronti = []
+            for x in nuovi:
+                sq, n = x.split('-')[-2], int(x.split('-')[-1])
+                if x not in prima:
+                    continue                  # visto solo ora: si conferma al giro dopo
+                if tetto.get(sq) is not None and n > tetto[sq]:
+                    da = dubbi.setdefault(x, ora)
+                    if da == ora:
+                        dice('ATTESA', x, f"risultato FSGC {c['gc']}-{c['go']}: il gol non torna, aspetto")
+                    if ora - da < DUBBIO:
+                        continue
+                dubbi.pop(x, None)
+                pronti.append(x)
+            nuovi = pronti
             segnati = (c['gc'] or 0) + (c['go'] or 0)
             if segnati > len(gol) and f"{chiave}-{segnati}" not in stato['attese']:
                 stato['attese'].append(f"{chiave}-{segnati}")

@@ -15,6 +15,17 @@ import * as F from './futsal.js';
 import { punteggioFormazione } from './futsal-engine.js';
 import { bilancio } from './futsal-valori.js';
 
+const PAGINA = 1000;
+/** Tutte le righe, una pagina alla volta; la prima risposta con errore si restituisce così com'è. */
+async function aPagine(richiesta) {
+  const data = [];
+  for (let da = 0; ; da += PAGINA) {
+    const r = await richiesta().range(da, da + PAGINA - 1);
+    if (r.error) return r;
+    data.push(...(r.data || []));
+    if ((r.data || []).length < PAGINA) return { data, error: null };
+  }
+}
 const vuoto = () => ({ caricato: false, inCorso: false, attivo: true, errore: null, iscritti: [], formazioni: new Map(), leghe: [], membri: [] });
 let st = vuoto(), per = null;
 const ascolta = new Set();
@@ -31,9 +42,13 @@ export async function carica({ forza = false } = {}) {
   if (!sb || !uid() || st.inCorso || (st.caricato && !forza && per === uid())) return;
   st.inCorso = true; per = uid();
   try {
+    // a pagine da 1000 righe: oltre, Supabase taglia SENZA errore (backend.js, tutte()), e con
+    // 150 iscritti le formazioni di 7 giornate sono già di più: classifiche diverse da telefono a telefono
     const [isc, form, leghe, membri] = await Promise.all([
-      sb.from('futsal_iscritti').select('*'), sb.from('futsal_formazioni').select('*'),
-      sb.from('futsal_leghe').select('*'), sb.from('futsal_membri').select('*')]);
+      aPagine(() => sb.from('futsal_iscritti').select('*').order('user_id')),
+      aPagine(() => sb.from('futsal_formazioni').select('*').order('giornata').order('user_id')),
+      aPagine(() => sb.from('futsal_leghe').select('*').order('id')),
+      aPagine(() => sb.from('futsal_membri').select('*').order('lega_id').order('user_id'))]);
     const errore = [isc, form, leghe, membri].map((r) => r.error).find(Boolean);
     if (manca(errore)) st = { ...vuoto(), caricato: true, attivo: false };
     else if (errore) st = { ...st, caricato: true, errore: errore.message };

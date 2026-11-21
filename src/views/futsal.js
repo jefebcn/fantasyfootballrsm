@@ -87,7 +87,7 @@ const profilo = (id) => `#/futsal/giocatore/${encodeURIComponent(id)}`;
 /** «tra 9 ore», «tra 2 giorni», «tra 25 minuti». */
 function traQuanto(d) {
   const m = Math.round((d.getTime() - Date.now()) / 60000);
-  if (m < 60) return `tra ${Math.max(1, m)} ${m === 1 ? 'minuto' : 'minuti'}`;
+  if (m < 60) { const k = Math.max(1, m); return `tra ${k} ${k === 1 ? 'minuto' : 'minuti'}`; }
   const h = Math.round(m / 60);
   if (h < 36) return `tra ${h} ${h === 1 ? 'ora' : 'ore'}`;
   return `tra ${Math.round(h / 24)} giorni`;
@@ -898,7 +898,8 @@ export const futsalCoppa = {
         <div class="a-card fs-fasi"><p><b>1 · Preliminari</b> giornate ${COPPA.preliminari.join('–')}, da 24 iscritti in su</p><p><b>2 · Gironi</b> giornate ${COPPA.gironi.join('–')}, andata e ritorno</p><p><b>3 · Tabellone</b> fino alla finale secca della ${COPPA.finale}ª</p></div>
       </main>`;
     }
-    const c = coppa(ammessi, FS.punti);
+    // la coppa decide qualificati e passaggi del turno solo a giornata conclusa: con i primi referti cambierebbero dopo
+    const c = coppa(ammessi, (g, id) => (F.conclusa(g) ? FS.punti(g, id) : null));
     if (!c.formato) return `<main class="a-body fs">${empty(`La coppa non si gioca: alla chiusura della ${COPPA.preliminari[0]}ª gli iscritti con una squadra erano ${ammessi.length}, ne servivano 8.`)}</main>`;
     const turni = (partite) => partite.map((p) => `${sec(`${p.giornata}ª giornata`)}<div class="a-card fs-list">${p.sfide.map(sfidaHtml).join('')}</div>`).join('');
     return `<main class="a-body fs">

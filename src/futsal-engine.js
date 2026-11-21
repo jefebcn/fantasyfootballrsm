@@ -185,7 +185,8 @@ export function punteggioFormazione(f, voti, { malus = 0 } = {}, R = REGOLE_FUTS
   const rosa = [...(f.D || []), ...(f.A || [])].filter(Boolean);
   const chi = (id) => rosa.find((x) => x.id === id);
   const panchina = panchinaDi(f);
-  const libera = panchina.filter((b) => !di(b.id).sv);
+  // entra dalla panchina solo chi ha GIOCATO (§ 13.5): chi riposa ha la media, non un voto vero
+  const libera = panchina.filter((b) => !di(b.id).sv && !di(b.id).riposo);
   const righe = [{ posto: 'P', id: null, club: f.porta, voto: voti.porta || sv, peso: 1, entrato: null }];
   for (const id of f.titolari) {
     const t = chi(id);
@@ -215,7 +216,8 @@ export function punteggioFormazione(f, voti, { malus = 0 } = {}, R = REGOLE_FUTS
   let bonusDifesa = null;
   if (f.schema === R.bonusDifesa.schema) {
     const quali = righe.filter((r) => r.posto === 'P' || r.posto === 'D');
-    const media = r2(quali.reduce((s, r) => s + r.punti, 0) / quali.length);
+    // il voto, non i punti: la fascia da capitano (×1,5) non deve gonfiare la media della difesa
+    const media = r2(quali.reduce((s, r) => s + (r.voto.sv ? 0 : r.voto.totale), 0) / quali.length);
     bonusDifesa = { media, preso: media >= R.bonusDifesa.soglia, punti: media >= R.bonusDifesa.soglia ? R.bonusDifesa.punti : 0 };
     totale += bonusDifesa.punti;
   }

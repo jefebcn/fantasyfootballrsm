@@ -317,7 +317,8 @@ function gate(path) {
 /**
  * Dentro il futsal la radice porta data-sport="futsal": styles/futsal-tema.css
  * ridipinge tutta l'app da li'. Entrando dal calcio
- * c'e' il velo col nome del gioco, perche' si capisca che si e' cambiato.
+ * c'e' il velo col nome del gioco, perche' si capisca che si e' cambiato;
+ * tornando al calcio, il velo blu col marchio Fantatitano.
  */
 function sport(path, prevPath) {
   const r = document.documentElement;
@@ -333,7 +334,16 @@ function sport(path, prevPath) {
       v.innerHTML = logoFs('velo');
       document.body.appendChild(v); setTimeout(() => v.remove(), 800);
     }
-  } else if (era) { delete r.dataset.sport; applyTheme(); }
+  } else if (era) {
+    delete r.dataset.sport; applyTheme();
+    // e tornando al calcio, lo stesso gesto col marchio Fantatitano (Alex, 21/11)
+    if (prevPath !== undefined) {
+      const v = document.createElement('div');
+      v.className = 'cs-ingresso'; v.setAttribute('aria-hidden', 'true');
+      v.innerHTML = marchio();
+      document.body.appendChild(v); setTimeout(() => v.remove(), 800);
+    }
+  }
 }
 export function render() {
   const g = gate(resolve(location.hash).path); if (g !== null && g !== resolve(location.hash).path) { location.hash = `#/${g}`; return; }

@@ -1151,6 +1151,17 @@ hr.sep{border:0;border-top:1px solid var(--border);margin:4px 0}
    sui piu' stretti (l'iPhone SE e' largo 320) e un filo di piu' sul tablet.
    L'altezza la porta l'aspect-ratio della maschera, in styles/logo.css. */
 .splash .marchio{width:min(230px,62vw);opacity:.97}
+/* --- il ritorno dal futsal al calcio: lo stesso gesto del velo del futsal
+   (styles/futsal-tema.css, .fs-ingresso), coi colori del calcio — il blu del
+   Titano, il marchio Fantatitano e una riga d'oro — e scorre via a sinistra */
+.cs-ingresso{position:fixed;inset:0;z-index:999;display:grid;place-items:center;pointer-events:none;color:#fff;
+  background:linear-gradient(180deg,#21397F 0%,#162657 58%,#0D1733 100%);animation:cs-velo .75s cubic-bezier(.7,0,.3,1) forwards}
+.cs-ingresso .marchio{width:min(220px,58vw);filter:drop-shadow(0 2px 18px rgba(0,0,0,.35));animation:cs-nome .75s ease forwards}
+.cs-ingresso::after{content:"";position:absolute;left:0;right:0;top:64%;height:8px;background:#FFC94D;transform:skewY(4deg) scaleX(0);transform-origin:right;animation:cs-riga .75s ease forwards}
+@keyframes cs-velo{0%,45%{clip-path:polygon(0 0,100% 0,100% 100%,0 100%)}100%{clip-path:polygon(0 0,0 0,0 100%,0 100%)}}
+@keyframes cs-nome{0%{transform:translateX(30px) scale(.94);opacity:0}30%{transform:none;opacity:1}70%{opacity:1}100%{opacity:0}}
+@keyframes cs-riga{0%{transform:skewY(4deg) scaleX(0)}40%{transform:skewY(4deg) scaleX(1)}}
+@media (prefers-reduced-motion:reduce){.cs-ingresso{display:none}}
 /* La barra del caricamento: una cometa, non un blocchetto.
 
    Il segmento ha una coda che sfuma — un gradiente che parte trasparente e

@@ -362,6 +362,10 @@ export async function proprietarioApp() { const { data, error } = await sb.rpc('
 export async function adminImpostaRuolo(userId, ruolo, on) { return must(await sb.rpc('admin_imposta_ruolo', { p_user: userId, p_ruolo: ruolo, p_on: on })); }
 
 export async function updateLeague(id, patch) { return must(await sb.from('leagues').update(patch).eq('id', id).select().single()); }
+// la bacheca della lega (064): gli ultimi 50 messaggi, scriverne uno, cancellarlo
+export async function messaggiLega(leagueId) { return must(await sb.from('lega_messaggi').select('id, member_id, testo, created_at').eq('league_id', leagueId).order('created_at', { ascending: false }).limit(50)); }
+export async function scriviMessaggio(leagueId, memberId, testo) { return must(await sb.from('lega_messaggi').insert({ league_id: leagueId, member_id: memberId, testo })); }
+export async function cancellaMessaggio(id) { return must(await sb.from('lega_messaggi').delete().eq('id', id)); }
 export async function deleteLeague(id) { return must(await sb.from('leagues').delete().eq('id', id)); }
 export async function abbandonaLega(id) { return must(await sb.rpc('abbandona_lega', { p_league: id })); }
 export async function rigeneraCodiceVice(memberId) { return must(await sb.rpc('rigenera_codice_vice', { p_member: memberId })); }

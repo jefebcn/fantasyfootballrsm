@@ -2818,4 +2818,30 @@ select pg_temp.esige('l''admin di una lega privata non la rende pubblica né cam
      from public.leagues where name = 'Lega di prova rinominata'));
 select pg_temp.esige('ma il nome della lega lo cambia', exists (select 1 from public.leagues where name = 'Lega di prova rinominata'));
 
+\echo '--- bacheca della lega (064) ---'
+select pg_temp.entra('user_alex');
+set role authenticated;
+insert into public.lega_messaggi (league_id, member_id, testo)
+  values (:'lega60', public.my_member_id(:'lega60'), '  Ciao a tutti  ');
+select pg_temp.esige('chi è nella lega scrive e legge, il testo arriva ripulito',
+  (select testo from public.lega_messaggi where league_id = :'lega60') = 'Ciao a tutti');
+do $$ begin
+  insert into public.lega_messaggi (league_id, member_id, testo)
+    values ((select id from public.leagues where name = 'Lega di prova rinominata'), public.my_member_id((select id from public.leagues where name = 'Lega di prova rinominata')), 'subito un altro');
+  raise exception 'FALLITA: due messaggi di fila';
+exception when others then if sqlerrm like 'FALLITA%' then raise; end if;
+  raise notice 'ok  un messaggio ogni 10 secondi (%)', sqlerrm;
+end $$;
+select pg_temp.entra('user_bea');
+select pg_temp.esige('chi non è nella lega non legge la bacheca', (select count(*) from public.lega_messaggi where league_id = :'lega60') = 0);
+do $$ begin
+  insert into public.lega_messaggi (league_id, member_id, testo)
+    values ((select id from public.leagues where name = 'Lega di prova rinominata' limit 1), (select id from public.league_members limit 1), 'intruso');
+  raise exception 'FALLITA: un estraneo ha scritto in bacheca';
+exception when others then if sqlerrm like 'FALLITA%' then raise; end if;
+  raise notice 'ok  un estraneo non scrive in bacheca';
+end $$;
+reset role;
+select set_config('request.jwt.claims', '', false);
+
 select 'tutte le prove sulle funzioni sono passate' as esito;

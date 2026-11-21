@@ -367,7 +367,12 @@ body{font-family:Lato,sans-serif;color:#fff;background:#04173B;position:relative
  */
 export function htmlFoto(storia, foto, radice = '../..') {
   RADICE = radice;
-  const fatti = scegli(storia, 4);
+  // Il minuto c'e' gia' due volte (etichetta e riga del marcatore) e il
+  // sottotitolo dice gia' «in pieno recupero»: la riga «In pieno recupero 93'»
+  // lo ripeteva una terza (Alex, 20/11). Resta solo «il gol piu' veloce della
+  // stagione», che aggiunge qualcosa.
+  const senzaDoppi = storia.fatti.filter((x) => x.chiave !== 'minuto' || x.testo.startsWith('il gol piu'));
+  const fatti = scegli({ ...storia, fatti: senzaDoppi }, 4);
   const fanta = fatti.find((x) => x.chiave === 'fanta');
   const righe = fatti.filter((x) => x !== fanta).slice(0, 3);
   const [gc, go] = storia.punteggio;
@@ -382,6 +387,8 @@ export function htmlFoto(storia, foto, radice = '../..') {
   const chi = storia.autogol ? `Autogol di ${esc(storia.sigla)}` : `Marcatore: ${esc(storia.sigla)}`;
   const nomeSq = storia.squadra.name.toUpperCase();
   const grande = nomeSq.length > 12 ? 118 : nomeSq.length > 9 ? 140 : 160;
+  // Il marchio in alto scende a 270px (Alex, 20/11, screenshot): piu' su finiva
+  // sotto la testata di Instagram («La tua storia» e la foto profilo).
   const src = /^https?:/.test(foto.file) ? foto.file : new URL(foto.file, 'file:///').href;
   const centro = Math.round((foto.centro ?? 0.5) * 100);
   return `<!doctype html><html lang="it"><head><meta charset="utf-8"><style>
@@ -392,8 +399,8 @@ export function htmlFoto(storia, foto, radice = '../..') {
 html,body{width:1080px;height:1920px;overflow:hidden}
 body{font-family:Lato,sans-serif;color:#fff;background:#0A0A0C;position:relative}
 .foto{position:absolute;left:0;top:0;width:1080px;height:1400px;object-fit:cover;object-position:${centro}% 25%}
-.velo{position:absolute;inset:0;background:linear-gradient(180deg,rgba(10,10,12,.62) 0,rgba(10,10,12,0) 330px,rgba(10,10,12,0) 640px,rgba(10,10,12,.55) 900px,#0A0A0C 1330px)}
-.testa{position:absolute;left:60px;top:96px;display:flex;align-items:center;gap:14px;font:400 58px/1 Anton;letter-spacing:.01em;text-shadow:0 2px 14px rgba(0,0,0,.5)}
+.velo{position:absolute;inset:0;background:linear-gradient(180deg,rgba(10,10,12,.62) 0,rgba(10,10,12,.3) 340px,rgba(10,10,12,0) 460px,rgba(10,10,12,0) 640px,rgba(10,10,12,.55) 900px,#0A0A0C 1330px)}
+.testa{position:absolute;left:60px;top:270px;display:flex;align-items:center;gap:14px;font:400 58px/1 Anton;letter-spacing:.01em;text-shadow:0 2px 14px rgba(0,0,0,.5)}
 .testa img{width:66px;filter:brightness(0) saturate(100%) invert(91%) sepia(62%) saturate(758%) hue-rotate(20deg)}
 .testa i{font-style:normal;color:#D9F51F}
 .giu{position:absolute;left:60px;right:60px;bottom:74px;display:flex;flex-direction:column}

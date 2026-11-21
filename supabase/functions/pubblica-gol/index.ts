@@ -15,8 +15,10 @@
  *      lo stesso Buffer dei post: niente verifica Meta e niente token Instagram.
  *
  * Secret (Edge Functions -> Secrets): BUFFER_TOKEN, la chiave API di Buffer
- * (Buffer -> Settings -> API). Il canale si trova da solo: l'Instagram che si
- * chiama «fantatitano» (mai fantatitano.futsal).
+ * (Buffer -> Settings -> API). Il canale e' scritto qui sotto; se Buffer non
+ * lo trova si cerca l'Instagram che si chiama «fantatitano» (mai
+ * fantatitano.futsal). Una sola chiamata a Buffer per gol: Buffer blocca chi
+ * ne fa troppe (20/11, finestra di 24 ore).
  *
  * Risponde { esito: PUBBLICATA | GIA' FATTA | TETTO | ERRORE, ... }.
  */
@@ -37,7 +39,10 @@ const BUFFER = 'https://api.buffer.com';
 const esito = (e: string, altro: Record<string, unknown> = {}, status = 200) =>
   Response.json({ esito: e, ...altro }, { status });
 
-let canale: string | null = null;                    // si cerca una volta per istanza
+// Il canale Instagram @fantatitano su Buffer, scritto qui (Alex, 21/11: «non
+// farci piu' bloccare»): cercarlo costava due chiamate in piu' a ogni avvio
+// della funzione. Se un giorno il canale cambia, si cerca di nuovo per nome.
+let canale: string | null = Deno.env.get('BUFFER_CANALE') || '6afcb03bece6dfde5ffd4fbb';
 
 async function buffer(token: string, query: string, variables: Record<string, unknown> = {}) {
   const r = await fetch(BUFFER, {
@@ -112,7 +117,11 @@ Deno.serve(async (req) => {
         metadata: { instagram: { type: 'story', shouldShareToFeed: false, isAiGenerated: ai } },
       },
     });
-    if (d.createPost.message) throw new Error(`Buffer: ${d.createPost.message}`);
+    if (d.createPost.message) {
+      // canale sparito o cambiato: la prossima volta si cerca per nome
+      if (/channel/i.test(d.createPost.message)) canale = null;
+      throw new Error(`Buffer: ${d.createPost.message}`);
+    }
     const post = d.createPost.post;
     await sb.from('storie_pubblicate').insert({ id, media_id: `buffer:${post.id}`, url: pubblica });
     return esito('PUBBLICATA', { id, buffer: post.id, stato: post.status });

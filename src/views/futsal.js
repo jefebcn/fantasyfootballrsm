@@ -178,7 +178,17 @@ export function formazioneMancante() {
 }
 
 /** Carica i dati del server la prima volta e ridisegna, se si e' ancora li'. */
+let ctxAttivo = null;
+// dopo una ricarica automatica si ridisegna la schermata del futsal aperta, se non si sta scrivendo
+FS.quandoRicarica(() => {
+  if (!ctxAttivo || !location.hash.startsWith('#/futsal')) return;
+  const a = document.activeElement;
+  if (a && /^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName)) return;
+  if (document.getElementById('sheet')?.classList.contains('on')) return;
+  ctxAttivo.render();
+});
 function caricaE(ctx) {
+  ctxAttivo = ctx;
   if (FS.stato().caricato) return;
   const h = location.hash;
   FS.carica().then(() => { if (location.hash === h) ctx.render(); });
@@ -401,6 +411,9 @@ export const futsalSquadra = {
       const errori = controllaFormazione(FS.perMotore(sal));
       const cambia = !prima || !stessaRosa(sal, prima);
       const bil = bilancioOra(n, sal);
+      // a giornata chiusa non si salva niente, nemmeno schema o capitano: il server rifiuterebbe
+      const c = F.chiusura(n);
+      if (c && c.getTime() <= Date.now()) { ctx.toast(`La ${n}ª è chiusa: si gioca`); ctx.render(); return; }
       if (errori.length || (cambia && !m.aperto) || (cambia && bil.residui < 0)) { tentato = true; ctx.toast(errori.length ? 'Mancano ancora delle scelte' : !m.aperto ? 'Mercato chiuso' : 'Crediti insufficienti'); ctx.render(); return; }
       if (!sulServer()) { scriviLocale(n, sal); timbro('Squadra salvata', 'sul telefono'); ctx.render(); return; }
       b.disabled = true;

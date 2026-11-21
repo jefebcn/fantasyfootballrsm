@@ -64,6 +64,14 @@ exception when others then
   if sqlerrm like 'FALLITA:%' then raise; end if;
   raise notice 'ok  non si iscrive un altro al suo posto';
 end $$;
+-- futsal-09: data d'iscrizione e squadra del cuore non si riscrivono dall'app
+select pg_temp.entra('fut_alex');
+update public.futsal_iscritti set created_at = '2026-01-01', club_cuore = 'virtus', squadra = 'Titani C5' where user_id = 'fut_alex';
+select pg_temp.esige('l''iscrizione non si retrodata e la squadra del cuore resta, il nome invece cambia',
+  (select created_at > '2026-06-01' and club_cuore = 'murata' and squadra = 'Titani C5' from public.futsal_iscritti where user_id = 'fut_alex'));
+select pg_temp.entra('fut_bea');
+update public.futsal_iscritti set club_cuore = 'virtus' where user_id = 'fut_bea';
+select pg_temp.esige('chi non l''aveva scelta la sceglie una volta', (select club_cuore from public.futsal_iscritti where user_id = 'fut_bea') = 'virtus');
 
 -- rosa e formazione
 select pg_temp.entra('fut_alex');
@@ -196,6 +204,16 @@ select pg_temp.esige('Cip non vede la lega degli altri', not exists (select 1 fr
 select pg_temp.entra('fut_bea');
 select public.futsal_esci_lega((select id from public.futsal_leghe where codice = :'codice'));
 select pg_temp.esige('Bea esce dalla lega', not public.futsal_in_lega((select id from public.futsal_leghe limit 1)));
+-- futsal-09: chi crea un testa a testa ed esce prima dell'avvio lo passa al membro entrato prima
+select pg_temp.entra('fut_alex');
+select (public.futsal_crea_lega('Da passare', 'testa')).codice as codice2 \gset
+select pg_temp.entra('fut_bea');
+select public.futsal_entra_lega(:'codice2');
+select pg_temp.entra('fut_alex');
+select public.futsal_esci_lega((select id from public.futsal_leghe where codice = :'codice2'));
+select pg_temp.entra('fut_bea');
+select pg_temp.esige('la lega non avviata passa a Bea, che la può avviare',
+  (select creata_da from public.futsal_leghe where codice = :'codice2') = 'fut_bea');
 reset role;
 
 -- promemoria (futsal-03): chi e' iscritto, ha un telefono e non ha consegnato

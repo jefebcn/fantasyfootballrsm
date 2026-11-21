@@ -3247,3 +3247,27 @@ b > .stemma.xs:last-child{margin:0 0 0 6px}
 .bmsg div span{color:var(--text-muted)}
 .bmsg p{margin:2px 0 4px;white-space:pre-wrap;overflow-wrap:anywhere}
 .bmsg .chip{font-size:11px;padding:2px 8px}
+
+/* ---- Coppa Fantatitano (src/views/coppa.js) ---- */
+.cf-hero h3{font:400 24px/1.1 var(--font-title, 'Anton', sans-serif)}
+.cf-prossima{margin:4px 0 0;font-size:13px}
+.cf-linea{display:flex;align-items:center;gap:8px;padding:4px 12px;font-size:11px;color:var(--primary);text-transform:uppercase;letter-spacing:.06em}
+.cf-linea::before,.cf-linea::after{content:'';flex:1;border-top:1px dashed var(--primary)}
+.cf-salto{padding:2px 12px;color:var(--muted);text-align:center}
+.cf-tutte{display:block;width:100%;padding:10px 12px;border:0;border-top:1px solid var(--border);background:none;color:var(--primary);font:600 13px var(--font-body, inherit);cursor:pointer}
+.cf-ok{font-style:normal;color:var(--success, #1E9E5A);font-weight:700}
+.cf-gare{display:flex;justify-content:center;gap:16px;padding:0 12px 10px;font-size:12px;color:var(--muted)}
+.cf-gare b{font:700 12px var(--font-data);color:var(--text)}
+.cf-form{display:flex;flex-direction:column;gap:8px}
+.cf-slot{display:flex;flex-direction:column;gap:4px}
+.cf-ruolo{display:flex;align-items:center;gap:8px;font-size:13px}
+.cf-ruolo>b{display:inline-grid;place-items:center;width:22px;height:22px;border-radius:6px;background:var(--surface-2, #eee);font-size:12px}
+.cf-ruolo i{color:var(--muted);font-style:normal}
+.cf-err{margin:0;color:var(--danger, #C0392B);font-size:13px;font-weight:600}
+.cf-fuori{opacity:.5}
+.cf-campione{align-items:center;text-align:center}
+.cf-campione .chip{align-self:center}
+.cf-crest-big{width:64px;height:64px;font-size:22px}
+.cf-regole p{margin:0 0 6px}
+.cf-cls .vr{grid-template-columns:auto auto 1fr auto}
+.cf-chiude{margin:0;display:flex;align-items:center;gap:6px;font-weight:700;font-size:13px}

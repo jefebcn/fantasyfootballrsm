@@ -23,6 +23,9 @@ from zoneinfo import ZoneInfo
 
 BASE = 'https://www.fsgc.sm'
 CAMPIONATO = f'{BASE}/it/campionato/campionato-sammarinese/1'
+# La Coppa Titano (Coppa Fantatitano, 21/11): stessa forma di pagina, «Giornata N»
+# per turno. I suoi tabellini vanno in src/coppa-dati.js, mai fra quelli del campionato.
+COPPA = f'{BASE}/it/campionato/coppa-titano/2'
 RADICE = pathlib.Path(__file__).resolve().parent.parent
 PAUSA = 2.0
 TENTATIVI = 4
@@ -84,9 +87,9 @@ def chiavi(nome):
     return tuple(sorted(w for w in parole if len(w) > 1)), ''.join(sorted(''.join(parole)))
 
 
-def calendario():
+def calendario(url=CAMPIONATO):
     from bs4 import BeautifulSoup
-    s = BeautifulSoup(prendi(CAMPIONATO), 'lxml')
+    s = BeautifulSoup(prendi(url), 'lxml')
     fuori = []
     for t in s.select('table'):
         intestazione = ' '.join(x.get_text(' ', strip=True) for x in t.select('tr')[:1])
@@ -377,22 +380,12 @@ def rimappa(fatto, alias):
             'cambi': [[a(c[0]), a(c[1]), *c[2:]] for c in fatto.get('cambi', [])]}
 
 
-def main():
-    idx = indice_giocatori()
-    print(f"listone indicizzato: {len(idx['tutti'])} chiavi su {len(idx['per_club'])} società")
-    cal = calendario()
-    giocate = [x for x in cal if x['gc'] is not None and x['url']]
-    print(f'calendario: {len(cal)} partite, {len({x["g"] for x in cal})} giornate, '
-          f'{len(giocate)} già giocate')
-
-    f = RADICE / 'data' / 'tabellini.json'
-    fatti = json.loads(f.read_text(encoding='utf-8')) if f.exists() else {}
-    # i tabellini gia' in archivio sono stati letti col vecchio indice
-    fatti = {k: rimappa(t, idx['alias']) for k, t in fatti.items()}
-    tutti_mancanti = {}
+def leggi_tabellini(giocate, prefisso, fatti, f, idx, tutti_mancanti):
+    """Scarica i tabellini che servono (vedi da_riscaricare) e li mette in fatti, salvando f.
+    prefisso: '' per il campionato, 'c' per la Coppa Titano."""
     ora = time.time()
     for i, p in enumerate(giocate, 1):
-        k = f"{p['g']}:{p['casa']}:{p['ospite']}"
+        k = f"{prefisso}{p['g']}:{p['casa']}:{p['ospite']}"
         # Si salta solo un tabellino gia' preso a partita finita (e non di
         # recente: vedi da_riscaricare). Il file resta
         # fra un giro e l'altro dello stesso lavoro (non e' nel repository, il
@@ -431,12 +424,38 @@ def main():
     # le partite tolte perché in corso escono anche dal file, non solo da qui
     f.write_text(json.dumps(fatti, ensure_ascii=False), encoding='utf-8')
 
+
+def main():
+    idx = indice_giocatori()
+    print(f"listone indicizzato: {len(idx['tutti'])} chiavi su {len(idx['per_club'])} società")
+    cal = calendario()
+    giocate = [x for x in cal if x['gc'] is not None and x['url']]
+    print(f'calendario: {len(cal)} partite, {len({x["g"] for x in cal})} giornate, '
+          f'{len(giocate)} già giocate')
+
+    f = RADICE / 'data' / 'tabellini.json'
+    fatti = json.loads(f.read_text(encoding='utf-8')) if f.exists() else {}
+    # i tabellini gia' in archivio sono stati letti col vecchio indice
+    fatti = {k: rimappa(t, idx['alias']) for k, t in fatti.items()}
+    tutti_mancanti = {}
+    leggi_tabellini(giocate, '', fatti, f, idx, tutti_mancanti)
+    # La Coppa Titano: stesso archivio, chiavi che cominciano per «c» (c3:domagnano:trefiori).
+    try:
+        coppa = calendario(COPPA)
+    except Exception as e:
+        print(f'coppa: ERRORE calendario {e}', file=sys.stderr)
+        coppa = None
+    if coppa is not None:
+        print(f'coppa: {len(coppa)} partite, {sum(1 for x in coppa if x["gc"] is not None)} giocate')
+        leggi_tabellini([x for x in coppa if x['gc'] is not None and x['url']], 'c', fatti, f, idx, tutti_mancanti)
     if tutti_mancanti:
         print(f'\ngiocatori del referto non presenti nel listone: {len(tutti_mancanti)}')
         for n, v in sorted(tutti_mancanti.items(), key=lambda x: -x[1]['volte'])[:12]:
             print(f"   {v['volte']:>3} × {n} ({v.get('club') or '?'}, {v.get('ruolo') or 'ruolo ignoto'})")
 
-    scrivi(cal, fatti, tutti_mancanti, idx['doppioni'])
+    scrivi(cal, {k: t for k, t in fatti.items() if not k.startswith('c')}, tutti_mancanti, idx['doppioni'])
+    if coppa is not None:
+        scrivi_coppa(coppa, {k[1:]: t for k, t in fatti.items() if k.startswith('c')})
 
 
 def doppie_ammonizioni(eventi):
@@ -502,6 +521,35 @@ def applica_eccezioni(chiave, eventi, eccezioni):
             out.remove(trovati[0]); continue
         mancate.append(x)
     return out, mancate
+
+
+def scrivi_coppa(cal, fatti):
+    """La Coppa Titano in src/coppa-dati.js: calendario e tabellini, separati dal
+    campionato perché la Coppa Fantatitano conta solo i voti delle partite di coppa."""
+    righe = ['  [%d,%s,%s,%s,%s,%s,%s]' % (
+        p['g'], json.dumps(p['casa']), json.dumps(p['ospite']), json.dumps(p['quando']),
+        json.dumps(p['stadio']), 'null' if p['gc'] is None else p['gc'],
+        'null' if p['go'] is None else p['go']) for p in cal]
+    voci = []
+    for k, t in sorted(fatti.items(), key=lambda x: (int(x[0].split(':')[0]), x[0])):
+        g, casa, ospite = k.split(':')
+        voci.append('  {g:%s,casa:%s,ospite:%s,arbitro:%s,titolari:%s,eventi:%s,cambi:%s}' % (
+            g, json.dumps(casa), json.dumps(ospite), json.dumps(t['arbitro']),
+            json.dumps(t['titolari']), json.dumps(doppie_ammonizioni(t['eventi'])), json.dumps(t['cambi'])))
+    (RADICE / 'src' / 'coppa-dati.js').write_text(
+        '/**\n'
+        ' * Coppa Titano (la coppa nazionale sammarinese): calendario e tabellini veri.\n'
+        ' * La Coppa Fantatitano conta solo questi voti, mai quelli del campionato.\n'
+        ' *\n'
+        ' * GENERATO da scripts/importa-fsgc.py — non modificare a mano. Fonte: FSGC.\n'
+        ' *\n'
+        ' * COPPA_CALENDARIO: [turnoFSGC, casa, ospite, calcioInizioISO, stadio, golCasa, golOspite]\n'
+        ' * COPPA_REFERTI: come REFERTI di src/eventi-dati.js, g = turno FSGC\n'
+        ' */\n'
+        'export const COPPA_CALENDARIO = [\n%s,\n];\n'
+        'export const COPPA_REFERTI = [\n%s%s];\n' % (',\n'.join(righe), ',\n'.join(voci), ',\n' if voci else ''),
+        encoding='utf-8')
+    print(f'scritto src/coppa-dati.js — {len(cal)} partite, {len(fatti)} tabellini')
 
 
 def scrivi(cal, fatti, mancanti=None, doppioni=None):

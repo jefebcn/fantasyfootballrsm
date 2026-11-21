@@ -36,3 +36,4 @@ export { attestato } from './attestato.js';
 export { futsalHome, futsalSquadra, futsalFormazione, futsalGiornata, futsalListone, futsalStatistiche, futsalGiocatore, futsalRegolamento, futsalClassifica, futsalCoppa, futsalLeghe, futsalLega } from './futsal.js';
 export { gioco } from './gioco.js';
 export { shop } from './shop.js';
+export { coppa } from './coppa.js';

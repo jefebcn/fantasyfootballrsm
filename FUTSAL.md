@@ -1,8 +1,9 @@
 # Fantatitano Futsal — bozza di regolamento
 
-Stato: **regolamento deciso il 25/10/2026, rifatto sul modello Dunkest il
-29/10/2026 (§ 13), ramo `futsal`, non pubblicato.**
-Nell'app la sezione esiste ma è nascosta (si apre solo con `?futsal=1`).
+Stato: **regolamento deciso il 25/10/2026, rifatto a rosa e crediti il
+29/10/2026 (§ 13), su main dal 21/11/2026.**
+Fino al lancio (01/12) nell'app lo vede solo il proprietario (`APERTO_A_TUTTI`
+in `src/views/futsal.js`).
 
 > **Dal 29/10 valgono le regole del § 13** (rosa con crediti, schemi, sesto
 > uomo, panchina al 50%, mercato e quotazioni). Le sezioni 3, 4 e 8 qui
@@ -325,40 +326,28 @@ funzione `promemoria` ridistribuita (`supabase functions deploy promemoria
 6. Due panchinari (D e A), capitano con vice.
 7. Coppa a tre fasi dalla 9ª alla 27ª giornata.
 
-## 13. Il FantaFutsal sul modello Dunkest (29/10/2026)
+## 13. Il FantaFutsal a rosa e crediti (29/10/2026)
 
-Richiesta di Alex: studiare Dunkest (fantabasket NBA, app iOS e
-fantasy.dunkest.com) con la skill di reverse engineering e strutturare il
-futsal allo stesso modo: statistiche, schemi, regolamento, tutto collegato.
+Richiesta di Alex: strutturare il futsal come un fantasy a rosa e crediti,
+con statistiche, schemi e regolamento tutti collegati. Colori, nomi e
+grafica sono di Fantatitano.
 
-**Cosa si è studiato.** Il sito è un'app Flutter (`main.dart.js`, versione
-5.3.9): REA ha inventariato il pacchetto (il bundle Dart da 7,6 MB supera la
-memoria del suo analizzatore, quindi stringhe e indirizzi sono letti come
-testo). Le API pubbliche `fantaking-api.dunkest.com/api/v1` danno la
-configurazione del gioco (rosa 4 G / 4 F / 2 C + coach, 5 in campo e 5 in
-panchina, capitano ×1,5, 5 schemi, 3 per squadra, 95 crediti, −5 a cambio),
-il profilo giocatore (quotazione, media, plus, popolarità, «on fire»,
-infortunio), il trend per giornata e il dettaglio dei punti per statistica.
-Il regolamento completo sta su docs.dunkest.com; le schermate vere vengono
-dall'App Store. Di Dunkest si prende la **struttura**, non il marchio:
-colori, nomi e grafica restano di Fantatitano.
-
-| Dunkest | FantaFutsal |
+| Pezzo | FantaFutsal |
 |---|---|
-| 10 giocatori + 1 coach, 95 crediti | 8 giocatori (4 D, 4 A) + 1 Porta, 70 crediti |
-| Coach: punti dal risultato della squadra | **Porta**: gol subiti, inviolata, esito ed eventi dei portieri |
-| 5 schemi (2-2-1, 1-2-2…) | 3 schemi: 1-3, 2-2, 3-1 (col bonus difesa) |
-| 5 in campo, sesto uomo 100%, panchina 50% | 4 in campo + Porta, sesto uomo 100%, panchina 50% |
-| Capitano ×1,5 | Capitano ×1,5, con il vice se non è convocato |
-| Max 3 per squadra NBA | Max 2 per squadra, Porta compresa |
-| Cambi tra i turni, a mano | Cambio automatico dalla panchina (la giornata si chiude tutta insieme) |
-| Squadra a riposo: media, niente capitano | Uguale |
-| Quotazioni con plusvalenze | Uguale, dalle prime 6 giornate |
-| Mercato tra le giornate, −5 a cambio | Mercato tra le giornate, 1 cambio gratis poi −1 |
-| Overall, Country, Favorite Team, 5 Champions Series, 2 Cup | Generale, Tifosi, 3 Serie (Guaita, Cesta, Montale), Coppa Titano |
-| Leghe private a somma o testa a testa, «Dunkest Team» se dispari | Uguale, la squadra in più affronta la media |
-| Statistiche: tabellone giocatori, difesa contro posizione | Tabella giocatori e porte, classifica vera con «vs D / vs A», leader |
-| Profilo: crediti, FPM, plus, pop, partite, forma | Uguale, più quotazione giornata per giornata |
+| Rosa | 8 giocatori (4 D, 4 A) + 1 Porta, 70 crediti |
+| Porta | gol subiti, inviolata, esito ed eventi dei portieri della squadra |
+| Schemi | 1-3, 2-2, 3-1 (col bonus difesa) |
+| In campo | 4 + Porta; sesto uomo al 100%, panchina al 50% |
+| Capitano | ×1,5, con il vice se non è convocato |
+| Limite per squadra | max 2 giocatori della stessa squadra, Porta compresa |
+| Cambi | cambio automatico dalla panchina (la giornata si chiude tutta insieme) |
+| Squadra a riposo | conta la media, niente capitano |
+| Quotazioni | con plusvalenze, dalle prime 6 giornate |
+| Mercato | tra le giornate, 1 cambio gratis poi −1 |
+| Campionati | Generale, Tifosi, 3 Serie (Guaita, Cesta, Montale), Coppa Titano |
+| Leghe private | a somma o testa a testa; se dispari, la squadra in più affronta la media |
+| Statistiche | tabella giocatori e porte, classifica vera con «vs D / vs A», leader |
+| Profilo giocatore | crediti, media, plus, popolarità, partite, forma, quotazione giornata per giornata |
 
 ### 13.1 La rosa
 Porta di una squadra + 4 difensori + 4 attaccanti, con **70 crediti**, al
@@ -428,7 +417,7 @@ campionati principali, «I miei campionati», i leader e le partite.
 ### 13.11 Da decidere con Alex
 1. Budget 70, max 2 per squadra, 1 cambio gratis e −1 a cambio: tarati sui
    dati delle prime 6 giornate, da confermare.
-2. Il cambio automatico (Dunkest non ce l'ha): tenerlo?
+2. Il cambio automatico: tenerlo?
 3. Al lancio: applicare `futsal-04-rosa.sql` e `futsal-05-quotazioni.sql`,
    e far rigenerare/applicare le quotazioni dopo ogni importazione (oggi è a
    mano, come futsal-02).

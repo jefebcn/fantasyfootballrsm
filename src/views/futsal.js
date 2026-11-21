@@ -224,7 +224,7 @@ export const futsalHome = {
       ${sec('I miei campionati')}
       ${FS.invitoInSospeso() ? `<a class="a-card fs-hero fs-invitato" href="#/futsal/leghe" style="text-decoration:none;color:inherit"><h3>Hai un invito in una lega</h3><p class="small muted">Tocca per entrare con la tua squadra.</p></a>` : ''}
       ${srv.leghe.length ? `<div class="a-card fs-list">${srv.leghe.map(rigaLega).join('')}</div>` : ''}
-      <div class="a-card fs-crea"><b>Entra in una lega pubblica o creane una con gli amici</b><div><a class="a-btn" href="#/futsal/leghe" data-vai-leghe="pubbliche">Leghe pubbliche</a><a class="a-btn sec" href="#/futsal/leghe" data-vai-leghe="private">Con gli amici</a></div></div>` : ''}
+      <div class="a-card fs-crea"><b>Entra in una lega pubblica o creane una con gli amici</b><div><a class="a-btn" href="#/futsal/leghe" data-vai-leghe="pubbliche">Pubbliche</a><a class="a-btn sec" href="#/futsal/leghe" data-vai-leghe="private">Con gli amici</a></div></div>` : ''}
       ${ultima ? leader(ultima) : ''}
       ${sec('Le partite', `${n}ª giornata`)}
       <div class="a-card fs-list">${F.PARTITE.filter((p) => p.g === n).map((p) => `<div class="fs-match">${stemma(p.casa)}<b>${esc(nomeSq(p.casa))}</b><span class="fs-ora">${p.quando ? timeIt(p.quando) : '–'}<small>${p.quando ? dateIt(p.quando) : ''}</small></span><b class="r">${esc(nomeSq(p.ospite))}</b>${stemma(p.ospite)}</div>`).join('')}

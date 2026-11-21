@@ -25,6 +25,7 @@ I documenti grandi (`IOS.md` e `PLAY.md` 23 KB, `MONETIZZAZIONE.md` 17 KB) si le
 - Le modifiche al database vanno salvate anche in `supabase/migrations/`.
 - Brand: il logo originale (corona viola disegnata a mano) non si modifica. Font: Anton per i titoli grandi, Bebas Neue per i titoli alternativi, Montserrat per sottotitoli e testi. La mascotte è Tito, draghetto viola streetwear (felpa nera, cargo viola), senza corona.
 - Social: niente inviti tipo «scrivetelo nei commenti». Le partite si giocano sabato e domenica.
+- Buffer: al massimo una chiamata per pubblicazione, mai controlli in continuo (20/11: blocco di 24 ore). Le storie uscite si leggono dalla funzione `storie-oggi`.
 - Non inventare dati del campionato: le fonti sono il referto FSGC e gli script `scripts/importa-*.py`.
 - Questo file resta corto: i dettagli vanno nei documenti indicati sopra, non qui.
 

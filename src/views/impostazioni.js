@@ -1,5 +1,5 @@
 import * as S from '../state.js';
-import { esc, icon, pic } from '../ui.js';
+import { esc, icon, pic, t, lingua } from '../ui.js';
 import { tintaLeggibile } from '../colore.js';
 import { applyTheme } from '../app.js';
 import { CONTATTO, LINGUE } from '../config.js';
@@ -29,13 +29,13 @@ function apriAvvisi(ctx) {
     const motivo = AV.motivoNonSupportate();
     ctx.sheet(`<h3>Preferenze notifiche</h3>
       <button class="setting" data-avvisi="${on ? 'off' : 'on'}"><i class="ico">${icon('bell')}</i>
-        <span class="txt"><b>Promemoria della formazione</b><span>Un avviso quando manca poco al lock e non hai ancora schierato</span></span>
+        <span class="txt"><b>Notifiche di Fantatitano</b><span>Il gol di un tuo titolare, la giornata finita coi punti pronti e il promemoria quando manca poco al lock e non hai ancora schierato</span></span>
         <span class="sw${on ? ' on' : ''}"></span></button>
       ${on && perm === 'default' ? `<button class="a-btn" data-avvisi="permesso" style="margin-top:10px">Consenti le notifiche</button>` : ''}
       ${perm === 'denied' ? `<p class="auth-hint">Le notifiche sono bloccate dalle impostazioni del telefono per questo sito: vanno riattivate da lì.</p>` : ''}
       ${motivo === 'ios-nel-browser' ? `<p class="auth-hint avvisi-ios"><b>Su iPhone le notifiche funzionano solo con l'app installata.</b> Tocca <b>Condividi</b> (${esc(AV.doveCondividi().replace(/^Il quadrato/, 'il quadrato').replace(/\.$/, ''))}), poi <b>Aggiungi alla schermata Home</b>, e apri l'app da lì: qui comparirà il bottone per consentirle.</p>` : ''}
       ${motivo === 'browser-senza' ? `<p class="auth-hint">Questo browser non supporta le notifiche: da qui l'avviso arriva solo ad app aperta.</p>` : ''}
-      ${on && perm === 'granted' && !AV.nativa() ? `<button class="a-btn sec" data-avvisi="prova" style="margin-top:10px">Mandami un avviso di prova</button>` : ''}
+      ${on && perm === 'granted' ? `<button class="a-btn sec" data-avvisi="prova" style="margin-top:10px">Mandami una notifica di prova</button>` : ''}
       <p class="auth-hint"><b>Ad app aperta</b> l'avviso arriva${perm === 'granted' ? '' : ' appena dai il permesso'}: si controlla ogni volta che apri la dashboard, e ne arriva uno solo per giornata.</p>
       <p class="auth-hint"><b>A telefono chiuso</b> ${!AV.pushConfigurato()
     ? 'servono le notifiche push, e la chiave non è ancora configurata. Il codice c\'è tutto — i passi che restano sono nelle istruzioni del promemoria — ma finché la chiave manca questa parte è spenta, e preferiamo dirlo che lasciartelo scoprire.'
@@ -50,11 +50,20 @@ function apriAvvisi(ctx) {
       if (v === 'prova') {
         // Una prova vera, non un finto "ok": se le notifiche non funzionano su
         // questo telefono e' meglio saperlo adesso che la settimana del lock.
-        const fatta = await AV.avvisaFormazione(
-          { giornata: 0, ore: 24 },
-          { giaAvvisato: null, segna: () => {} },
-        );
-        ctx.toast(fatta ? 'Avviso mandato: guarda le notifiche' : 'Non è stato possibile mostrare la notifica');
+        // Dal 15/11 passa dal SERVER, come i promemoria veri (anche nell'app
+        // iPhone): se arriva questa, arrivano anche quelle a telefono chiuso.
+        // Senza iscrizione sul server resta la prova locale di prima.
+        b.disabled = true;
+        try {
+          const r = await S.notificaDiProva();
+          if (r?.spedite) ctx.toast(r.spedite > 1 ? `Notifica mandata a ${r.spedite} dispositivi: guarda il telefono` : 'Notifica mandata: guarda il telefono');
+          else if (r?.dispositivi) ctx.toast('Il server non è riuscito a spedirla: riprova fra poco');
+          else {
+            const fatta = await AV.avvisaFormazione({ giornata: 0, ore: 24 }, { giaAvvisato: null, segna: () => {} });
+            ctx.toast(fatta ? 'Avviso mostrato qui. A telefono chiuso: spegni e riaccendi le notifiche qui sopra' : 'Questo dispositivo non risulta iscritto alle notifiche');
+          }
+        } catch (err) { ctx.toast(err.message || 'Non riesco a mandare la prova'); }
+        b.disabled = false;
         return;
       }
       if (v === 'permesso') {
@@ -120,7 +129,7 @@ export const impostazioni = {
 
     const generale = group('Generale', `
       ${row('book', 'Come si gioca', 'La guida di TITO in tre passi', 'guida')}
-      ${row('globe', 'Impostazione lingua', LINGUE.find(([k]) => k === (d.lingua || 'it'))?.[1] || 'Italiano', 'lingua')}
+      ${row('globe', t('Impostazione lingua'), LINGUE.find(([k]) => k === lingua())?.[1] || 'Italiano', 'lingua')}
       ${row('bell', 'Preferenze notifiche', avvisiSottotitolo(d), 'avvisi')}
       ${row('chat', 'Contattaci', CONTATTO || 'Indirizzo non ancora impostato', 'contatto')}
       ${row('gear', 'Impostazioni avanzate', 'Tema, lega, server e diagnostica', 'avanzate')}`);
@@ -155,7 +164,7 @@ export const impostazioni = {
       // Privacy, ne' Lingua, ne' il server, ne' il caricamento delle giornate.
       // Con il tema su "Sistema" l'attributo non c'e' e sembrava tutto a posto,
       // ed e' per questo che non salta all'occhio.
-      const t = e.target.closest('button[data-theme]'); if (t) { S.store.set({ theme: t.dataset.theme }); applyTheme(); return; }
+      const tema = e.target.closest('button[data-theme]'); if (tema) { S.store.set({ theme: tema.dataset.theme }); applyTheme(); return; }
       const a = e.target.closest('[data-act]'); if (!a) return;
       const act = a.dataset.act;
       if (act === 'logout') { await S.signOut(); ctx.go('login'); return; }
@@ -201,6 +210,10 @@ export const impostazioni = {
           const b = ev.target.closest('[data-conferma]'); if (!b) return;
           if (b.dataset.conferma === 'no') { ctx.sheet(''); return; }
           try {
+            // entrato con Apple: prima si chiude l'accesso presso Apple
+            try { await S.revocaAppleSeServe(); } catch (e) {
+              if (S.appleAnnullato(e)) { ctx.toast('Per cancellare l\'account conferma con Apple'); return; }
+            }
             const esito = await S.eliminaProfilo();
             ctx.toast(esito || 'Profilo cancellato');
             await S.signOut();
@@ -238,8 +251,17 @@ export const impostazioni = {
       if (act === 'archiviazione') { ctx.go('archiviazione'); return; }
       if (act === 'licenze') { ctx.go('licenze'); return; }
       if (act === 'lingua') {
-        ctx.sheet(`<h3>Lingua</h3>${LINGUE.map(([k, l]) => `<button class="setting" data-lingua="${k}"><i class="ico">${icon('check')}</i><span class="txt"><b>${l}</b></span></button>`).join('')}
-          <p class="auth-hint">Per ora l'app parla solo italiano. Non è una scelta definitiva: quando ci sarà una seconda lingua comparirà qui.</p>`);
+        // Cambiare lingua ricarica l'app (src/lingua.js): i testi si scrivono
+        // una volta sola, e ricaricare e' l'unico modo di riscriverli tutti.
+        ctx.sheet(`<h3>${t('Lingua')}</h3>${LINGUE.map(([k, l]) => `<button class="setting${k === lingua() ? ' on' : ''}" data-lingua="${k}" aria-pressed="${k === lingua()}"><i class="ico">${k === lingua() ? icon('check') : ''}</i><span class="txt"><b>${l}</b></span></button>`).join('')}
+          <p class="auth-hint">${t('La lingua dell\'app. Cambiandola l\'app si ricarica.')} ${lingua() === 'it' ? '' : t('Alcune parti (regolamento, privacy e termini, notizie) sono ancora in italiano.')}</p>`);
+        const sh = document.getElementById('sheet');
+        if (sh) sh.onclick = (e) => {
+          const b = e.target.closest('[data-lingua]'); if (!b) return;
+          if (b.dataset.lingua === lingua()) { ctx.sheet(null); return; }
+          S.store.set({ lingua: b.dataset.lingua });
+          location.reload();
+        };
         return;
       }
       if (act === 'contatto') {

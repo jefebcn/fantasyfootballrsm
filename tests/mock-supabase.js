@@ -88,6 +88,7 @@ function builder(table) {
         if (op === 'insert') { const list = (Array.isArray(payload) ? payload : [payload]).map(withDefaults); guardFrozen(table, list); if (table === 'adesioni_giocatori') list.forEach((r) => sigillo(r, null)); if (table === 'prove_consenso') list.forEach((r) => { r.id = T('prove_consenso').length + 1; r.impronta = Math.random().toString(16).slice(2).padEnd(64, '0'); r.caricata_at = now(); r.caricata_da = userId; }); rows.push(...list); data = list.map(expand); }
         if (op === 'upsert' && table === 'profiles') globalThis.__mockProfiloScritto = true;
         if (op === 'upsert') { const list = (Array.isArray(payload) ? payload : [payload]); guardFrozen(table, list); for (const r of list) { const i = rows.findIndex((x) => pk.every((k) => x[k] === r[k])); if (i >= 0) rows[i] = { ...rows[i], ...r }; else rows.push(withDefaults(r)); } data = list; }
+        if (op === 'upsert' && table === 'lineups') inAvanti(Array.isArray(payload) ? payload : [payload]);
         if (op === 'update') { data = []; for (const r of rows) if (filters.every((f) => f(r))) { const prima = { ...r }; Object.assign(r, payload); if (table === 'adesioni_giocatori') sigillo(r, prima); data.push(expand(r)); } }
         if (op === 'delete') { const del = apply(rows); guardFrozen(table, del); tables[table] = rows.filter((r) => !del.includes(r)); data = del; }
         if (single || maybe) data = data[0] || null;
@@ -113,6 +114,21 @@ function sigillo(r, prima) {
   const reg = T('consensi_registro'); const prec = reg.length ? reg[reg.length - 1].impronta : null;
   reg.push({ id: reg.length + 1, adesione_id: r.id, evento: ev, chi: prima ? userId : null, quando: now(), dati: { ...r },
     impronta_prec: prec, impronta: Math.random().toString(16).slice(2).padEnd(64, '0') });
+}
+// 050: nella lega pubblica la formazione consegnata vale anche per le
+// giornate dopo ancora aperte (il trigger formazione_in_avanti).
+function inAvanti(list) {
+  const adesso = new Date(); const L = T('lineups');
+  for (const r of list) {
+    if (!T('leagues').find((l) => l.id === r.league_id)?.pubblica) continue;
+    if (T('matchday_locks').some((k) => k.matchday === r.matchday && new Date(k.lock_at) <= adesso)) continue;
+    for (const k of T('matchday_locks')) {
+      if (k.matchday <= r.matchday || new Date(k.lock_at) <= adesso) continue;
+      const copia = { league_id: r.league_id, member_id: r.member_id, matchday: k.matchday, lineup: r.lineup, submitted_at: r.submitted_at };
+      const i = L.findIndex((x) => x.member_id === r.member_id && x.league_id === r.league_id && x.matchday === k.matchday);
+      if (i >= 0) L[i] = { ...L[i], ...copia }; else L.push(copia);
+    }
+  }
 }
 function guardFrozen(table, list) {
   // 037: nella lega pubblica la formazione si consegna con la rosa completa.
@@ -389,6 +405,89 @@ export function createClient(_url, _key, opts) {
         if (name === 'admin_da_confermare') {
           if (!amministro()) throw new Error("Serve essere amministratore dell'app");
           return { data: T('da_confermare').filter((u) => !u.confermata), error: null };
+        }
+        // 048: «Chi è?». Stesse regole della funzione vera: una riga per
+        // persona e giorno, i tentativi solo in su, l'admin legge i conteggi.
+        if (name === 'salva_partita_gioco') {
+          const t = Number(args.p_tentativi); const g = String(args.p_giorno || '');
+          if (!g || !(t >= 0 && t <= 6)) return { data: null, error: null };
+          const r = T('gioco_partite').find((x) => x.user_id === userId && x.giorno === g);
+          if (!r) T('gioco_partite').push({ user_id: userId, giorno: g, tentativi: t, vinto: !!args.p_vinto });
+          else if (t >= r.tentativi) { r.tentativi = t; r.vinto = r.vinto || !!args.p_vinto; }
+          persisti(); return { data: null, error: null };
+        }
+        // 049: classifica del mese e serie, con gli stessi conti del database
+        if (name === 'classifica_gioco') {
+          const mese = String(args.p_mese || new Date().toISOString()).slice(0, 7);
+          const lega = args.p_lega || null;
+          const membri = lega ? T('league_members').filter((m) => m.league_id === lega) : null;
+          if (lega && !membri.some((m) => m.user_id === userId)) return { data: [], error: null };
+          const per = new Map();
+          for (const r of T('gioco_partite').filter((x) => x.giorno.slice(0, 7) === mese && (!membri || membri.some((m) => m.user_id === x.user_id)))) {
+            const x = per.get(r.user_id) || per.set(r.user_id, { user_id: r.user_id, punti: 0, vinte: 0, giocate: 0 }).get(r.user_id);
+            x.giocate++; if (r.vinto) { x.vinte++; x.punti += 7 - r.tentativi; }
+          }
+          const righe = [...per.values()].sort((a, b) => b.punti - a.punti || b.vinte - a.vinte);
+          return { data: righe.map((x, i) => ({ posizione: i + 1, punti: x.punti, vinte: x.vinte, giocate: x.giocate, io: x.user_id === userId,
+            nome: (membri && membri.find((m) => m.user_id === x.user_id)?.team_name) || T('profiles').find((p) => p.id === x.user_id)?.display_name || 'Giocatore' })), error: null };
+        }
+        if (name === 'mio_gioco') {
+          const v = T('gioco_partite').filter((x) => x.user_id === userId && x.vinto).map((x) => x.giorno).sort();
+          let max = 0, n = 0, prima = null;
+          for (const g of v) { n = prima && (Date.parse(g) - Date.parse(prima)) / 864e5 === 1 ? n + 1 : 1; max = Math.max(max, n); prima = g; }
+          return { data: [{ serie: n, serie_max: max, vinte: v.length, giocate: T('gioco_partite').filter((x) => x.user_id === userId).length }], error: null };
+        }
+        // 051: chi apre l'app, un giorno per persona; l'admin legge i conteggi
+        if (name === 'segna_accesso') {
+          const g = new Date().toISOString().slice(0, 10);
+          if (!T('accessi').some((x) => x.user_id === userId && x.giorno === g)) T('accessi').push({ user_id: userId, giorno: g });
+          persisti(); return { data: null, error: null };
+        }
+        if (name === 'admin_accessi') {
+          if (!amministro()) throw new Error('solo admin');
+          const n = Math.max(1, Math.min(Number(args.p_giorni) || 14, 90));
+          const giorno = (k) => new Date(Date.now() - k * 864e5).toISOString().slice(0, 10);
+          const persone = (da, a) => new Set(T('accessi').filter((x) => x.giorno >= giorno(da) && x.giorno <= giorno(a)).map((x) => x.user_id));
+          const sette = persone(6, 0); const prima = persone(13, 7);
+          return { data: { oggi: persone(0, 0).size, sette: sette.size, trenta: persone(29, 0).size, prima: prima.size,
+            tornati: [...prima].filter((u) => sette.has(u)).length, dal: T('accessi').map((x) => x.giorno).sort()[0] || null,
+            giorni: Array.from({ length: n }, (_, k) => ({ giorno: giorno(k), persone: persone(k, k).size })) }, error: null };
+        }
+        if (name === 'admin_gioco_conteggi') {
+          if (!amministro()) throw new Error('solo admin');
+          const per = new Map();
+          for (const r of T('gioco_partite')) { const x = per.get(r.giorno) || per.set(r.giorno, { giorno: r.giorno, giocatori: 0, vinti: 0, somma: 0 }).get(r.giorno); x.giocatori++; if (r.vinto) { x.vinti++; x.somma += r.tentativi; } }
+          return { data: [...per.values()].sort((a, b) => (a.giorno < b.giorno ? 1 : -1)).map(({ somma, ...x }) => ({ ...x, media_tentativi: x.vinti ? Math.round((somma / x.vinti) * 10) / 10 : null })), error: null };
+        }
+        // 056: lo shop. Stessi conti della funzione vera: il prezzo lo decide
+        // il server, la spedizione si paga una volta, l'admin cambia lo stato.
+        if (name === 'shop_ordina') {
+          const prezzi = { 'top-fantatitano': 1800 };
+          const prezzo = prezzi[args.p_articolo]; const q = Number(args.p_quantita) || 1;
+          if (!userId) throw new Error("Per ordinare devi aver fatto l'accesso.");
+          if (!prezzo) throw new Error('Articolo non disponibile.');
+          if (!['S', 'M', 'L', 'XL'].includes(args.p_taglia) || !(q >= 1 && q <= 5) || !['spedizione', 'ritiro'].includes(args.p_consegna)) throw new Error('Ordine non valido.');
+          if (String(args.p_nome || '').trim().length < 2 || String(args.p_contatto || '').trim().length < 3) throw new Error('Mancano il nome o il recapito.');
+          if (args.p_consegna === 'spedizione' && String(args.p_indirizzo || '').trim().length < 8) throw new Error("Per la spedizione serve l'indirizzo.");
+          const sped = args.p_consegna === 'spedizione' ? 200 : 0;
+          const id = T('shop_ordini').length + 1;
+          T('shop_ordini').push({ id, creato_at: now(), user_id: userId, articolo: args.p_articolo, taglia: args.p_taglia, quantita: q, consegna: args.p_consegna,
+            nome: args.p_nome, contatto: args.p_contatto, indirizzo: args.p_consegna === 'spedizione' ? args.p_indirizzo : null, note: args.p_note || null,
+            totale_cent: prezzo * q + sped, stato: 'nuovo' });
+          persisti(); return { data: id, error: null };
+        }
+        if (name === 'shop_miei_ordini') {
+          return { data: T('shop_ordini').filter((o) => o.user_id === userId).sort((a, b) => b.id - a.id)
+            .map(({ id, creato_at, articolo, taglia, quantita, consegna, totale_cent, stato }) => ({ id, creato_at, articolo, taglia, quantita, consegna, totale_cent, stato })), error: null };
+        }
+        if (name === 'admin_shop_ordini') {
+          if (!amministro()) throw new Error('solo admin');
+          return { data: T('shop_ordini').filter((o) => args.p_tutti || !['consegnato', 'annullato'].includes(o.stato)).sort((a, b) => b.id - a.id).map((o) => ({ ...o, email: null })), error: null };
+        }
+        if (name === 'admin_shop_stato') {
+          if (!amministro()) throw new Error('solo admin');
+          const o = T('shop_ordini').find((x) => x.id === Number(args.p_id)); if (o) o.stato = args.p_stato;
+          persisti(); return { data: null, error: null };
         }
         if (name === 'admin_risolvi_errore') {
           if (!amministro()) throw new Error("Serve essere amministratore dell'app");

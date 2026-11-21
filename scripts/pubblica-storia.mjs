@@ -3,7 +3,8 @@
  * (Instagram vuole un indirizzo da cui prenderla) e la pubblica con l'API di
  * Instagram (accesso con Instagram, permesso instagram_business_content_publish).
  *
- *   node scripts/pubblica-storia.mjs file.jpg id-del-gol
+ *   node scripts/pubblica-storia.mjs file.jpg id-del-gol [--ia]
+ *   (--ia: la storia senza foto vera, con lo sfondo disegnato: etichetta IA su Instagram)
  *
  * STORIE_GOL decide cosa succede:
  *   on        pubblica davvero
@@ -14,6 +15,16 @@
  * Segreti: SUPABASE_SERVICE_KEY, IG_USER_ID, IG_TOKEN. Il token dura 60 giorni:
  * lo script lo rinnova da solo quando ne mancano meno di 15 e tiene il nuovo
  * nella tabella social_token (047), che solo la service_role legge.
+ *
+ * DUE STRADE (Alex, 20/11: «non riesco a verificare per IG user id e IG
+ * token, possiamo fare con altro metodo?»):
+ *   - BUFFER (quella di default): il JPG va alla funzione Supabase pubblica-gol,
+ *     che lo pubblica subito con Buffer, lo stesso dei post. Qui non serve
+ *     nessun segreto: il lavoro si presenta col suo token OIDC di GitHub
+ *     (permesso id-token: write nel workflow) e la funzione lo verifica. La
+ *     chiave di Buffer sta solo nei secret della funzione (BUFFER_TOKEN).
+ *   - INSTAGRAM DIRETTO: solo se ci sono IG_USER_ID e IG_TOKEN (e
+ *     SUPABASE_SERVICE_KEY), con l'API di Instagram come prima.
  *
  * Righe che scrive: PUBBLICATA, PROVA, GIA' FATTA, TETTO, ERRORE.
  */
@@ -34,6 +45,25 @@ const db = (path, init = {}) => fetch(`${SUPABASE_URL}${path}`, {
 const esci = (riga, codice = 0) => { console.log(riga); process.exit(codice); };
 
 if (MODO !== 'on') esci(`PROVA ${id} (STORIE_GOL=${MODO}: non pubblicata)`);
+
+// --- la strada di Buffer, se non ci sono le chiavi di Instagram
+if (!process.env.IG_TOKEN || !process.env.IG_USER_ID) {
+  try {
+    const { ACTIONS_ID_TOKEN_REQUEST_URL: chiedi, ACTIONS_ID_TOKEN_REQUEST_TOKEN: perm } = process.env;
+    if (!chiedi || !perm) esci(`ERRORE ${id} manca il token OIDC di GitHub (permissions: id-token: write)`, 1);
+    const oidc = await (await fetch(`${chiedi}&audience=fantatitano-storie-gol`, { headers: { authorization: `Bearer ${perm}` } })).json();
+    if (!oidc.value) throw new Error('GitHub non ha dato il token OIDC');
+    const r = await fetch(`${SUPABASE_URL}/functions/v1/pubblica-gol?nome=${encodeURIComponent(basename(file))}&id=${encodeURIComponent(id)}&ai=${process.argv.includes('--ia') ? 1 : 0}`, {
+      method: 'POST', headers: { authorization: `Bearer ${oidc.value}`, 'content-type': 'image/jpeg' }, body: readFileSync(file),
+    });
+    const j = await r.json().catch(() => ({ esito: 'ERRORE', motivo: `risposta ${r.status} non leggibile` }));
+    if (j.esito === 'PUBBLICATA') esci(`PUBBLICATA ${id} ${j.buffer} (Buffer)`);
+    if (j.esito === "GIA' FATTA" || j.esito === 'TETTO') esci(`${j.esito} ${id}`);
+    esci(`ERRORE ${id} ${j.motivo || r.status}`, 1);
+  } catch (e) {
+    esci(`ERRORE ${id} ${e.message}`, 1);
+  }
+}
 for (const k of ['SUPABASE_SERVICE_KEY', 'IG_USER_ID', 'IG_TOKEN']) if (!process.env[k]) esci(`ERRORE manca il segreto ${k}`, 1);
 
 // --- gia' uscita? e quante oggi?

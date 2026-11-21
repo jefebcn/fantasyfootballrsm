@@ -1,5 +1,5 @@
 import * as S from '../state.js';
-import { icon } from '../ui.js';
+import { icon, t } from '../ui.js';
 import { fx } from './onboarding.js';
 import { apriModulo, vaiAllePubbliche } from './leghe.js';
 import { suiOS, installata, browserIOS, doveCondividi } from '../notifiche.js';
@@ -104,27 +104,27 @@ export const guida = {
     return `<main class="intro guida">
       <div class="intro-bg"><canvas id="intro-fx"></canvas><span class="intro-veil"></span></div>
       <div class="intro-top">
-        ${passo ? `<button class="intro-back" data-prev aria-label="Indietro">${icon('chev', 'ic flip')}</button>` : '<span></span>'}
-        <span class="guida-passo">Passo ${passo + 1} di ${tutti.length}</span>
-        <button class="intro-skip" data-fine="leghe">Salta</button>
+        ${passo ? `<button class="intro-back" data-prev aria-label="${t('Indietro')}">${icon('chev', 'ic flip')}</button>` : '<span></span>'}
+        <span class="guida-passo">${t('Passo {n} di {tot}', { n: passo + 1, tot: tutti.length })}</span>
+        <button class="intro-skip" data-fine="leghe">${t('Salta')}</button>
       </div>
       <div class="intro-body guida-body">
         <div class="guida-tito">
           <img src="media/tito/${p.posa}.webp" alt="TITO" width="160" height="220" decoding="async">
-          <p class="guida-fumetto">${p.frase}</p>
+          <p class="guida-fumetto">${t(p.frase)}</p>
         </div>
-        <span class="intro-eyebrow">Come si gioca</span>
-        <h1>${p.titolo}</h1>
-        <ul class="intro-points${p.azione ? '' : ' info'}">${p.punti.map(([ic, t, d], i) => `<li style="--i:${i}"><i>${ico(ic)}</i><div><b>${t}</b><span>${d}</span></div></li>`).join('')}</ul>
-        ${p.installa && window.__installPrompt ? `<button class="guida-installa" data-installa>${icon('down', 'ic sm')}Installa adesso</button>` : ''}
-        ${p.nota ? `<p class="guida-nota">${p.nota}</p>` : ''}
+        <span class="intro-eyebrow">${t('Come si gioca')}</span>
+        <h1>${t(p.titolo)}</h1>
+        <ul class="intro-points${p.azione ? '' : ' info'}">${p.punti.map(([ic, tit, d], i) => `<li style="--i:${i}"><i>${ico(ic)}</i><div><b>${t(tit)}</b><span>${t(d)}</span></div></li>`).join('')}</ul>
+        ${p.installa && window.__installPrompt ? `<button class="guida-installa" data-installa>${icon('down', 'ic sm')}${t('Installa adesso')}</button>` : ''}
+        ${p.nota ? `<p class="guida-nota">${t(p.nota)}</p>` : ''}
       </div>
       <div class="intro-foot">
         <div class="intro-dots">${tutti.map((_, i) => `<i class="${i === passo ? 'on' : ''}"></i>`).join('')}</div>
         ${ultimo
-          ? `<button class="a-btn intro-cta" data-fine="pubblica">${icon('globe', 'ic sm')}Entra nella lega pubblica</button>
-             <button class="intro-link" data-fine="crea">Crea una lega con gli amici</button>`
-          : `<button class="a-btn intro-cta" data-next>Avanti ${icon('chev', 'ic sm')}</button>`}
+          ? `<button class="a-btn intro-cta" data-fine="pubblica">${icon('globe', 'ic sm')}${t('Entra nella lega pubblica')}</button>
+             <button class="intro-link" data-fine="crea">${t('Crea una lega con gli amici')}</button>`
+          : `<button class="a-btn intro-cta" data-next>${t('Avanti')} ${icon('chev', 'ic sm')}</button>`}
       </div>
     </main>`;
   },

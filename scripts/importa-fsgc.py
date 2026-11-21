@@ -18,6 +18,8 @@ interrotto, così un'interruzione non costa il lavoro già fatto.
     python3 scripts/importa-fsgc.py
 """
 import json, re, subprocess, sys, time, unicodedata, pathlib
+from datetime import datetime
+from zoneinfo import ZoneInfo
 
 BASE = 'https://www.fsgc.sm'
 CAMPIONATO = f'{BASE}/it/campionato/campionato-sammarinese/1'
@@ -40,6 +42,17 @@ RUOLI = {'Portiere': 'P', 'Difensore': 'D', 'Centrocampista': 'C', 'Attaccante':
 #   Piscitella: «Giammario» per Transfermarkt, «Gianmario» per la FSGC (17/10,
 #   segnalato da un utente: era in vendita due volte, i voti al doppione).
 STESSA_PERSONA = {'piscitella-gianmario': 'virtus_14'}
+
+
+ROMA = ZoneInfo('Europe/Rome')
+
+
+def ora_italiana(anno, mese, giorno, hhmm):
+    """L'orario del calendario FSGC e' quello di San Marino: col fuso di quel
+    giorno. Prima era «+02:00» fisso, giusto solo d'estate: dal 25/10, con
+    l'ora solare, ogni partita risultava un'ora prima e la formazione si
+    chiudeva alle 20:05 per una partita delle 21:15."""
+    return datetime.strptime(f'{anno}-{mese}-{giorno} {hhmm}', '%Y-%m-%d %H:%M').replace(tzinfo=ROMA).isoformat()
 
 
 def prendi(url):
@@ -95,8 +108,7 @@ def calendario():
                 continue
             ris = re.match(r'^(\d+)\s*-\s*(\d+)$', c[2].strip())
             quando = re.match(r'(\d{2})/(\d{2})/(\d{4})\s+(\d{2}:\d{2})', c[0])
-            iso = (f'{quando.group(3)}-{quando.group(2)}-{quando.group(1)}T{quando.group(4)}:00+02:00'
-                   if quando else None)
+            iso = ora_italiana(quando.group(3), quando.group(2), quando.group(1), quando.group(4)) if quando else None
             a = tr.select_one('a[href*="/it/partita/"]')
             fuori.append({'g': g, 'casa': casa, 'ospite': osp, 'quando': iso,
                           'stadio': None if c[4] in ('TBD', '') else c[4],
@@ -427,6 +439,71 @@ def main():
     scrivi(cal, fatti, tutti_mancanti, idx['doppioni'])
 
 
+def doppie_ammonizioni(eventi):
+    """
+    La FSGC scrive ogni espulsione allo stesso modo («Espulsione», red_card):
+    non dice se e' un rosso diretto o il secondo giallo. Se l'espulso era gia'
+    stato ammonito nella stessa partita, e' una doppia ammonizione (art. 6 del
+    regolamento: -0,5 il giallo e -1 l'espulsione, -1,5 in tutto), non un rosso
+    diretto (-2). Segnalato il 5/11 su De Lucia (Domagnano-Virtus, 7a giornata):
+    dal video era doppio giallo e l'app gli aveva dato -2.
+    Se nel referto i gialli prima dell'espulsione fossero due, se ne tiene uno:
+    il secondo e' gia' l'espulsione.
+    """
+    out = [list(e) for e in eventi]
+    for e in out:
+        if e[2] != 'red_direct':
+            continue
+        gialli = [x for x in out if x[0] == e[0] and x[2] == 'yellow' and x[1] <= e[1]]
+        if gialli:
+            e[2] = 'second_yellow'
+            for x in sorted(gialli, key=lambda x: x[1])[1:]:
+                x[2] = None
+    return [e for e in out if e[2]]
+
+
+TIPI_EVENTO = {'goal', 'assist', 'yellow', 'second_yellow', 'red_direct', 'own_goal', 'pen_missed', 'pen_saved'}
+
+
+def leggi_eccezioni():
+    """Le correzioni a mano ai tabellini (data/eccezioni-referti.json)."""
+    f = RADICE / 'data' / 'eccezioni-referti.json'
+    return json.loads(f.read_text(encoding='utf-8')).get('eccezioni', []) if f.exists() else []
+
+
+def applica_eccezioni(chiave, eventi, eccezioni):
+    """
+    Le eccezioni di questa partita ('g:casa:ospite') applicate agli eventi.
+    Restituisce (eventi, voci non applicate): una voce che non trova il suo
+    evento non si perde in silenzio, chi chiama la segnala.
+    """
+    out = [list(e) for e in eventi]
+    mancate = []
+    for x in eccezioni:
+        if f"{x['giornata']}:{x['casa']}:{x['ospite']}" != chiave:
+            continue
+        az, chi, minuto, tipo = x.get('azione'), x['giocatore'], int(x['minuto']), x['evento']
+        if tipo not in TIPI_EVENTO:
+            mancate.append(x); continue
+        if az == 'aggiungi':
+            out.insert(0, [chi, minuto, tipo]); continue
+        if az == 'cambia':
+            # l'evento di quel giocatore a quel minuto: se ce n'e' piu' d'uno, un cartellino
+            cand = [e for e in out if e[0] == chi and e[1] == minuto]
+            cart = [e for e in cand if e[2] in ('yellow', 'second_yellow', 'red_direct')]
+            bersaglio = (cart or cand or [None])[0]
+            if bersaglio is None:
+                mancate.append(x); continue
+            bersaglio[2] = tipo; continue
+        if az == 'togli':
+            trovati = [e for e in out if e[0] == chi and e[1] == minuto and e[2] == tipo]
+            if not trovati:
+                mancate.append(x); continue
+            out.remove(trovati[0]); continue
+        mancate.append(x)
+    return out, mancate
+
+
 def scrivi(cal, fatti, mancanti=None, doppioni=None):
     righe = []
     for p in cal:
@@ -449,11 +526,19 @@ def scrivi(cal, fatti, mancanti=None, doppioni=None):
     print(f'\nscritto src/calendario-dati.js — {len(cal)} partite, {giornate} giornate')
 
     voci = []
+    eccezioni = leggi_eccezioni()
     for k, t in sorted(fatti.items(), key=lambda x: (int(x[0].split(':')[0]), x[0])):
         g, casa, ospite = k.split(':')
+        eventi, mancate = applica_eccezioni(k, doppie_ammonizioni(t['eventi']), eccezioni)
+        for x in mancate:
+            print(f"  ATTENZIONE: eccezione non applicata in {k}: {json.dumps(x, ensure_ascii=False)}", file=sys.stderr)
         voci.append('  {g:%s,casa:%s,ospite:%s,arbitro:%s,titolari:%s,eventi:%s,cambi:%s}' % (
             g, json.dumps(casa), json.dumps(ospite), json.dumps(t['arbitro']),
-            json.dumps(t['titolari']), json.dumps(t['eventi']), json.dumps(t['cambi'])))
+            json.dumps(t['titolari']), json.dumps(eventi), json.dumps(t['cambi'])))
+    giocate = set(fatti)
+    for x in eccezioni:
+        if f"{x['giornata']}:{x['casa']}:{x['ospite']}" not in giocate:
+            print(f"  ATTENZIONE: eccezione per una partita senza tabellino: {json.dumps(x, ensure_ascii=False)}", file=sys.stderr)
     (RADICE / 'src' / 'eventi-dati.js').write_text(
         '/**\n'
         ' * Tabellini veri del Campionato Sammarinese: formazioni, marcatori, assist,\n'
@@ -488,6 +573,10 @@ def scrivi(cal, fatti, mancanti=None, doppioni=None):
         parole = [w.capitalize() for w in re.split(r'[-_\s]+', v['slug']) if w]
         cognome = parole[-1] if len(parole) > 1 else parole[0]
         primo = ' '.join(parole[:-1]) or parole[0]
+        # La FSGC scrive a volte «cognome-nome» («molinari-nicola», «sahud-scutella-
+        # mathias»): dal solo indirizzo non si capisce. Dove serve, nome e cognome
+        # giusti stanno in data/extra.json e vincono (Alex, 10/11).
+        primo, cognome = v.get('nome') or primo, v.get('cognome') or cognome
         # un doppione di un giocatore del listone (vedi indice_giocatori) resta
         # al suo posto, col quinto campo che dice chi e' davvero: l'app non lo
         # mette fra quelli da comprare
@@ -495,7 +584,8 @@ def scrivi(cal, fatti, mancanti=None, doppioni=None):
         extra.append('  [%s,%s,%s,%s%s]' % (json.dumps(v['club']), json.dumps(primo),
                                             json.dumps(cognome), json.dumps(v.get('ruolo') or 'C'),
                                             ',' + json.dumps(vero) if vero else ''))
-        elenco_extra.append({'slug': nome, 'club': v['club'], 'ruolo': v.get('ruolo') or 'C'})
+        elenco_extra.append({'slug': nome, 'club': v['club'], 'ruolo': v.get('ruolo') or 'C',
+                             **({'nome': v['nome'], 'cognome': v['cognome']} if v.get('nome') and v.get('cognome') else {})})
     (RADICE / 'src' / 'listone-extra.js').write_text(
         '/**\n'
         ' * Tesserati presenti nei tabellini FSGC ma assenti dalle rose di\n'

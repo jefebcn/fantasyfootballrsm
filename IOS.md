@@ -1,8 +1,8 @@
 # Pubblicare Fantatitano sull'App Store
 
-La strada completa, in ordine. Il resto è già nel repository. Il giorno del
-Mac in prestito è il **passo 7**: tutto quello che viene prima si fa da iPhone
-o dal computer, così sul Mac si sta due-tre ore e non un pomeriggio.
+La strada completa, in ordine. Il resto è già nel repository. Xcode ce l'hai
+già (13/11): il lavoro sul Mac è il **passo 7**, e tutto quello che viene prima
+si fa da iPhone o dal browser.
 
 **Chi fa cosa.** Da San Marino Apple non accetta l'iscrizione al programma
 sviluppatori, quindi l'account lo intesta **l'amico** (cittadino croato, UE).
@@ -100,6 +100,9 @@ a destra, se hai più team).
 
 ## 2. Il Team ID — **TU**, poi **IO**
 
+**Fatto il 14/11**: Team ID `8VQ5WP5Y4L`. Il file dei link è scritto e il
+Team è già impostato nel progetto Xcode (in *Signing* lo trovi già scelto).
+
 Dopo l'invito: [developer.apple.com/account](https://developer.apple.com/account)
 → **Membership details** → **Team ID** (10 lettere e numeri). È quello del
 team dell'amico.
@@ -135,10 +138,9 @@ Le notifiche nell'app iPhone passano da Apple, che vuole una chiave.
    | `APNS_KEY_ID` | il Key ID |
    | `APNS_TEAM_ID` | il Team ID del passo 2 |
 
-5. **Ridistribuisci la funzione** `promemoria`: il codice nuovo (quello che
-   sa parlare con Apple) è in `supabase/functions/promemoria/index.ts`. Dal
-   pannello: Edge Functions → promemoria → *Code* → incolla il file → Deploy.
-   Da terminale: `supabase functions deploy promemoria --no-verify-jwt`.
+5. **Non serve ridistribuire la funzione**: Supabase rende i secret
+   disponibili subito, e la funzione online (`promemoria-`) sa già parlare
+   con Apple. **Fatto il 14/11.**
 
 Finché i secret non ci sono, gli iPhone dell'app vengono saltati (e rimessi
 in coda) e le notifiche web partono come oggi: niente si rompe.
@@ -170,17 +172,17 @@ nella scheda.
 La build non c'è ancora: il bottone «Invia per la revisione» resta spento
 fino al passo 7. Va bene così.
 
-## 5. Il Mac in prestito — **chi lo presta**, il giorno prima
+## 5. Il tuo Mac — **TU**, un controllo di 10 minuti
 
-Da controllare e preparare **prima**, perché sono le cose lente:
+Xcode c'è già. Controlla che sia quello giusto:
 
 1. **macOS 15.6 o più recente** (Mela → Informazioni su questo Mac). Da
    aprile 2026 Apple accetta solo app fatte con **Xcode 26**, che su macOS
    più vecchi non si installa. Qualsiasi Mac con chip Apple (M1 o più nuovi)
    va bene; un Intel vecchio potrebbe non arrivarci.
-2. **Xcode** dall'App Store del Mac: pesa più di 10 GB, ci mette ore. Una
-   volta installato va **aperto una volta**: chiede di installare i
-   componenti iOS (*iOS platform*), si dice sì e si aspetta.
+2. **Xcode 26 o più recente**: Xcode → *About Xcode*. Se è più vecchio,
+   aggiornalo dall'App Store del Mac (sono ore: lancialo la sera). Aprilo una
+   volta e, se chiede di installare i componenti iOS (*iOS platform*), di' sì.
 3. **Almeno 40 GB liberi** sul disco.
 4. **Node.js** versione LTS da [nodejs.org](https://nodejs.org) (il
    pacchetto .pkg, cinque minuti). Si può fare anche il giorno stesso.
@@ -200,7 +202,7 @@ rifiuta al primo giro. Serve un account **apposta**:
    Questo passaggio lo prepariamo insieme quando l'account esiste.
 3. Scrivi e-mail e password nelle note per il revisore (passo 9).
 
-## 7. Il giorno del Mac — **TU**, 2-3 ore
+## 7. La build sul Mac — **TU**, 1-2 ore
 
 Apri il **Terminale** sul Mac (Cmd+Spazio, scrivi «Terminale»):
 
@@ -246,6 +248,7 @@ Apple: per provarle così serve il secret `APNS_SANDBOX` = `1` su Supabase, da
 
 | Messaggio | Cosa fare |
 |---|---|
+| *The file "capacitor.config.json" couldn't be opened* (con *config.xml*, *public* e *Command Ld failed*) | manca `npx cap sync ios`, o è partito da un'altra cartella: da GitHub Desktop **Repository → Open in Terminal**, rilancialo, poi in Xcode **Product → Clean Build Folder** e ▶ (successo ad Alex il 14/11) |
 | *No account for team* / *Signing requires a development team* | punto 1 e 2: account in Xcode e Team scelto |
 | *Failed to register bundle identifier* | il Bundle ID è già registrato su un altro account: dimmelo |
 | *You do not have permission to create certificates* | nell'invito del passo 1b manca la spunta «Accesso a Certificati, Identificatori e Profili»: l'amico la aggiunge da Utenti e accesso |
@@ -323,6 +326,105 @@ Center e si rimanda.
   trasferimento si aggiornano i secret delle notifiche (nuova chiave del
   nuovo team) e il file dei link (passo 2).
 
+## 12. «Accedi con Apple» (dalla versione 1.1, 14/11)
+
+**Già fatto (Apple e Supabase):** capability Sign In with Apple su
+`site.fantatitano.app`; Services ID `site.fantatitano.web` per il sito
+(domini `fantatitano.site` e quello di Supabase, ritorno su
+`…supabase.co/auth/v1/callback`); chiave Sign in with Apple con Key ID
+`4AQX3MQX53` (il file .p8 lo tiene Alex); su Supabase il provider Apple è
+acceso con Client IDs `site.fantatitano.app,site.fantatitano.web`.
+
+**Come funziona**
+
+| Dove | Strada | Serve il secret? |
+|---|---|---|
+| App iPhone 1.1 | foglio nativo di Apple (`ios/App/App/AccediConApple.swift`) → gettone → Supabase `signInWithIdToken` | **no** |
+| App iPhone 1.0 | il pulsante non compare | — |
+| Sito | giro OAuth di Supabase con il Services ID | **sì**, e si accende con `APPLE_WEB` in `src/config.js` |
+
+Stesso account in tutti e due i casi. Se l'e-mail che Apple manda è già di
+un account Fantatitano confermato, Supabase **aggiunge Apple a quell'account**
+(stesso profilo, stesse leghe): nessun doppione. L'unica eccezione è chi
+sceglie «Nascondi la mia e-mail»: Apple inventa un indirizzo, e per Supabase
+è un account nuovo. Lo dice la riga sotto il pulsante.
+
+**Il secret per il sito — TU, sul Mac, 2 minuti, ogni 6 mesi**
+
+1. Terminale nella cartella `fantasyfootballrsm` (GitHub Desktop → Repository → Open in Terminal).
+2. `node scripts/apple-secret.mjs ~/Downloads/AuthKey_4AQX3MQX53.p8`
+   (il percorso giusto del tuo file .p8: puoi trascinarlo nella finestra).
+3. Esce una riga lunga (tre pezzi separati da punti) e la data di scadenza.
+4. Supabase → Authentication → Sign In / Providers → **Apple** →
+   **Secret Key (for OAuth)** → incolla la riga → **Save**.
+5. Dimmelo: accendo `APPLE_WEB` e il pulsante compare anche sul sito.
+
+Il .p8 non si carica da nessuna parte e la riga non si incolla in chat: solo
+su Supabase. **Apple non accetta un secret che duri più di 6 mesi**: prima
+della scadenza (la stampa lo script) si rifà dal punto 2. Se scade, sul sito
+l'accesso con Apple dà errore; nell'app continua a funzionare.
+
+**Cancellazione dell'account con Apple — TU, su Supabase, 3 minuti**
+
+Apple chiede che, quando un utente entrato con Apple cancella l'account,
+l'app chiuda anche l'accesso presso Apple (regola 5.1.1(v)). Nell'app 1.1 la
+cancellazione chiede di nuovo il foglio di Apple, e la funzione
+`apple-revoca` (già pubblicata) fa il resto. Le servono due secret, in
+Supabase → Edge Functions → **Secrets**:
+
+| Nome | Valore |
+|---|---|
+| `APPLE_SIWA_KEY` | tutto il testo del file `AuthKey_4AQX3MQX53.p8`, righe BEGIN/END comprese — **lo incolli tu** |
+| `APPLE_SIWA_KEY_ID` | `4AQX3MQX53` |
+
+(Il Team ID lo prende da `APNS_TEAM_ID`, che c'è già.) Senza questi due la
+cancellazione funziona lo stesso, ma l'accesso presso Apple resta aperto.
+
+**La build 1.1 — TU, sul Mac**
+
+1. GitHub Desktop → Fetch origin → Pull.
+2. Terminale: `npx cap sync ios`, poi `npx cap open ios`.
+3. Xcode → target App → Signing & Capabilities: deve esserci **Sign In with
+   Apple** (arriva dal progetto). Versione `1.1`, build `2` (già impostate).
+4. Prova nel simulatore o sul telefono: Accedi → **Accedi con Apple**.
+5. Any iOS Device → Product → Archive → Distribute App → App Store Connect.
+
+Finché la 1.0 è in revisione la 1.1 si può **caricare** ma non **inviare**:
+si invia dopo l'esito della 1.0 (App Store Connect → **+ Versione** → 1.1).
+Nelle note per il revisore aggiungere: *"Version 1.1 adds Sign in with
+Apple on the login screen (native AuthenticationServices). The demo account
+above still works with e-mail and password."*
+
+## 13. Il widget per la schermata Home (dalla 1.1, 15/11) — TU in Xcode, 10 minuti
+
+Mostra la prossima giornata: quanto manca alla chiusura della formazione e le
+partite; durante la giornata dice «In campo». Toccandolo si apre l'app sulla
+formazione. Legge `https://fantatitano.site/widget.json`, un file pubblico
+fatto a ogni pubblicazione del sito (`scripts/widget-dati.mjs`): niente
+account, niente chiavi.
+
+Il codice è pronto in `ios/widget/FantaWidget.swift`. Il «target» del widget
+invece si crea da Xcode (a mano nel progetto sarebbe fragile):
+
+1. GitHub Desktop → **Fetch origin** → **Pull**, poi `npx cap sync ios` e
+   `npx cap open ios`.
+2. Xcode → **File → New → Target…** → iOS → **Widget Extension** → Next.
+3. Product Name **`FantaWidget`**, Team quello solito. **Togli** le spunte
+   «Include Live Activity», «Include Control» e «Include Configuration App
+   Intent». **Finish**. Se chiede di attivare lo schema: **Activate**.
+4. Nella colonna a sinistra compare la cartella **FantaWidget**: tasto destro
+   su **FantaWidgetBundle.swift** → **Delete** → **Move to Trash**.
+5. Terminale, nella cartella del progetto:
+   `cp ios/widget/FantaWidget.swift ios/App/FantaWidget/FantaWidget.swift`
+6. Target **FantaWidget** → **General** → **Minimum Deployments**: **iOS 17.0**.
+   In **Signing & Capabilities**: Automatically manage signing, stesso Team.
+7. Schema **App** (in alto) → ▶ sul simulatore. Sulla schermata Home tieni
+   premuto → **Modifica** → **Aggiungi widget** → Fantatitano.
+8. GitHub Desktop: fai **Commit** e **Push** del progetto (Xcode ha cambiato
+   `project.pbxproj`): se no al prossimo Pull si incastra.
+
+Poi la build 1.1 si archivia come sempre: il widget viaggia dentro l'app.
+
 ## Tempi in breve
 
 | Passo | Chi | Tempo |
@@ -330,7 +432,7 @@ Center e si rimanda.
 | 1. Account Apple Developer | AMICO | 1-2 giorni di attesa |
 | 1b. Invito di Alex come Admin | AMICO, poi TU | 5 minuti |
 | 2-4. Team ID, chiave notifiche, scheda | TU (+ IO) | 1 ora in tutto |
-| 5. Preparare il Mac | chi lo presta | la sera prima |
+| 5. Controllare Xcode | TU | 10 minuti |
 | 6. Account di prova | insieme | 20 minuti |
 | 7. Build e upload | TU sul Mac | 2-3 ore |
 | 8. TestFlight | TU | 20 minuti |

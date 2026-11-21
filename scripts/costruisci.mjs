@@ -21,13 +21,14 @@ import { transform } from 'esbuild';
 import { cp, mkdir, readdir, readFile, rm, stat, writeFile } from 'node:fs/promises';
 import { dirname, join, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { datiWidget } from './widget-dati.mjs';
 
 const RADICE = join(dirname(fileURLToPath(import.meta.url)), '..');
 const USCITA = process.argv[2] ? resolve(process.argv[2]) : join(RADICE, 'pubblico');
 
 // Quello che va online. Le cartelle si copiano intere tranne cio' che SALTA.
 export const ELENCO = [
-  'index.html', 'privacy.html', 'termini.html', 'cancella-account.html', 'assistenza.html',
+  'index.html', 'privacy.html', 'termini.html', 'cancella-account.html', 'assistenza.html', 'link.html',
   'manifest.webmanifest', 'sw.js',
   '.well-known', 'src', 'styles', 'media', 'icons', 'vendor', 'design/tokens',
 ];
@@ -78,4 +79,7 @@ for (const voce of ELENCO) {
     for await (const f of file(da)) n += await copia(relative(RADICE, f));
   } else n += await copia(voce);
 }
+// il file del widget dell'iPhone (scripts/widget-dati.mjs)
+await writeFile(join(USCITA, 'widget.json'), JSON.stringify(datiWidget()));
+n += 1;
 console.log(`pubblicati ${n} file in ${relative(process.cwd(), USCITA) || '.'}`);

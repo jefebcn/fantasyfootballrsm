@@ -1,6 +1,20 @@
 import * as S from '../state.js';
-import { icon, logo, marchio } from '../ui.js';
+import { icon, logo, marchio, t } from '../ui.js';
 import { prepareLogin } from './auth.js';
+import { nativa } from '../notifiche.js';
+
+/**
+ * IL TASTO DELL'APP STORE (Alex, 18/11: «se entra una persona che non ha
+ * installato da App Store, che gli compaia da qualche parte un tasto che lo
+ * reindirizza all'App Store»). Chi arriva qui dal link in bio di Instagram
+ * apre il SITO dentro il browser di Instagram: gli diamo la strada per l'app
+ * vera. Dentro l'app (Capacitor) non compare; su Android neanche, perche'
+ * l'app c'e' solo per iPhone.
+ */
+export const APP_STORE = 'https://apps.apple.com/it/app/fantatitano/id6834601552';
+const mostraAppStore = () => !nativa()
+  && !(typeof navigator !== 'undefined' && /android/i.test(navigator.userAgent || ''));
+const MELA = '<svg class="ic sm" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M16.37 12.6c-.02-2.16 1.77-3.2 1.85-3.25-1.01-1.47-2.58-1.67-3.13-1.7-1.33-.13-2.6.79-3.28.79-.68 0-1.72-.77-2.83-.75-1.45.02-2.8.85-3.55 2.15-1.52 2.63-.39 6.52 1.09 8.66.72 1.04 1.58 2.21 2.71 2.17 1.09-.04 1.5-.7 2.82-.7 1.31 0 1.69.7 2.84.68 1.17-.02 1.91-1.06 2.62-2.11.83-1.21 1.17-2.38 1.19-2.44-.03-.01-2.28-.87-2.33-3.5zM14.23 6.25c.6-.73 1-1.73.89-2.75-.86.04-1.91.58-2.53 1.3-.55.64-1.04 1.67-.91 2.66.96.07 1.95-.49 2.55-1.21z"/></svg>';
 
 /**
  * Presentazione per chi apre l'app la prima volta: due schermate su un video
@@ -25,8 +39,11 @@ const SLIDES = [
     // quello del logo — due volte lo stesso nome, in due modi diversi, nella
     // prima schermata che si vede dell'app.
     marchio: true,
-    body: `<p>Il fantacalcio delle sedici squadre di San Marino: asta, rosa, formazione ogni settimana, scontro diretto.</p>
-           <p>Qui il voto non è un'opinione: <b>lo scrive la partita</b>. Gol, assist, porta inviolata, cartellini — quello che c'è nel referto, e nient'altro.</p>`,
+    // un paragrafo per voce, tradotti quando si disegna la schermata
+    body: [
+      'Il fantacalcio delle sedici squadre di San Marino: asta, rosa, formazione ogni settimana, scontro diretto.',
+      'Qui il voto non è un\'opinione: <b>lo scrive la partita</b>. Gol, assist, porta inviolata, cartellini — quello che c\'è nel referto, e nient\'altro.',
+    ],
   },
   {
     eyebrow: 'Come funziona',
@@ -54,25 +71,26 @@ export const onboarding = {
         <span class="intro-veil"></span>
       </div>
       <div class="intro-top">
-        ${slide ? `<button class="intro-back" data-prev aria-label="Indietro">${icon('chev', 'ic flip')}</button>` : '<span></span>'}
+        ${slide ? `<button class="intro-back" data-prev aria-label="${t('Indietro')}">${icon('chev', 'ic flip')}</button>` : '<span></span>'}
         ${s.marchio ? '<span></span>' : logo('intro-mark')}
-        <button class="intro-skip" data-skip>Salta</button>
+        <button class="intro-skip" data-skip>${t('Salta')}</button>
       </div>
       <div class="intro-body">
         ${s.marchio
     // La corona in cima sparisce quando sotto c'e' il marchio intero: due
     // corone nella stessa schermata sono una di troppo.
     ? `<div class="intro-marchio">${marchio()}</div>`
-    : `<span class="intro-eyebrow">${s.eyebrow}</span><h1>${s.title}</h1>`}
-        ${s.body || ''}
-        ${s.points ? `<ul class="intro-points">${s.points.map(([ic, t, d], i) => `<li style="--i:${i}"><i>${icon(ic)}</i><div><b>${t}</b><span>${d}</span></div></li>`).join('')}</ul>` : ''}
+    : `<span class="intro-eyebrow">${t(s.eyebrow)}</span><h1>${t(s.title)}</h1>`}
+        ${s.body ? s.body.map((p) => `<p>${t(p)}</p>`).join('\n           ') : ''}
+        ${s.points ? `<ul class="intro-points">${s.points.map(([ic, tit, d], i) => `<li style="--i:${i}"><i>${icon(ic)}</i><div><b>${t(tit)}</b><span>${t(d)}</span></div></li>`).join('')}</ul>` : ''}
       </div>
       <div class="intro-foot">
         <div class="intro-dots">${SLIDES.map((_, i) => `<i class="${i === slide ? 'on' : ''}"></i>`).join('')}</div>
         ${last
-          ? `<button class="a-btn intro-cta" data-signup>${icon('userplus', 'ic sm')}Registrati</button>
-             <button class="intro-link" data-signin>Ho già un account · Accedi</button>`
-          : `<button class="a-btn intro-cta" data-next>Avanti ${icon('chev', 'ic sm')}</button>`}
+          ? `<button class="a-btn intro-cta" data-signup>${icon('userplus', 'ic sm')}${t('Registrati')}</button>
+             <button class="intro-link" data-signin>${t('Ho già un account · Accedi')}</button>`
+          : `<button class="a-btn intro-cta" data-next>${t('Avanti')} ${icon('chev', 'ic sm')}</button>`}
+        ${mostraAppStore() ? `<a class="intro-appstore" href="${APP_STORE}" target="_blank" rel="noopener">${MELA}${t('Scarica l\'app dall\'App Store')}</a>` : ''}
       </div>
     </main>`;
   },

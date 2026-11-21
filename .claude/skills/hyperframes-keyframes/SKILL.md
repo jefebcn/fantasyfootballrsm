@@ -7,6 +7,7 @@ description: >
   masks, SVG morph/draw, text trails, 3D depth, or `hyperframes keyframes` diagnostics.
   Don't use for broad scene strategy, brand design, media sourcing, captions, or
   general video planning.
+disable-model-invocation: true
 ---
 
 **Plugin installs:** Before setup or freshness commands, follow [plugin execution rules](../hyperframes/references/plugin-installation.md) when this skill is inside a HyperFrames plugin. Standalone installs keep the update instructions below.

@@ -70,7 +70,7 @@ const ok = [], ko = []; const et = (c, t) => (c ? ok : ko).push(t);
   // Sei da quando ci sono le formazioni (046), cinque dallo sponsor (017): il numero e' qui
   // perche' una scheda che sparisce senza che nessuno se ne accorga e' un
   // pezzo di console che smette di esistere.
-  et(num.tab.length === 6 && /Sponsor/i.test(num.tab.join(' ')) && /Consegne/i.test(num.tab.join(' ')), `con sei schede (${num.tab.join(', ')})`);
+  et(num.tab.length === 7 && /Shop/i.test(num.tab.join(' ')) && /Sponsor/i.test(num.tab.join(' ')) && /Consegne/i.test(num.tab.join(' ')), `con sette schede (${num.tab.join(', ')})`);
   // Le etichette escono in maiuscolo: il CSS ha text-transform e innerText
   // restituisce il testo RESO. Confronto senza distinguere le maiuscole.
   et(/iscritti/i.test(num.testo) && /leghe/i.test(num.testo), 'fra cui iscritti e leghe');
@@ -82,6 +82,20 @@ const ok = [], ko = []; const et = (c, t) => (c ? ok : ko).push(t);
   });
   et(graf.quante === 14, `e l'andamento delle iscrizioni a quattordici giorni (${graf.quante} colonne)`);
   et(graf.ultima > 2, `con la colonna di oggi piena (${graf.ultima}px): gli iscritti di prova sono di oggi`);
+
+  // ---- CHI APRE L'APP (051): l'amministratore stesso ha aperto l'app oggi
+  await p.waitForSelector('.adm-graf.accessi', { timeout: 5000 }).catch(() => {});
+  const acc = await p.evaluate(() => {
+    const sez = document.querySelector('.d-acc');
+    const col = [...document.querySelectorAll('.adm-graf.accessi .col')];
+    const oggi = sez && [...sez.querySelectorAll('.adm-n')].find((n) => /oggi/i.test(n.querySelector('.et')?.textContent || ''));
+    return { testo: sez?.textContent || '', quante: col.length, oggi: Number(oggi?.querySelector('b')?.textContent || 0),
+      ultima: parseFloat(col.length ? getComputedStyle(col[col.length - 1].querySelector('i')).height : '0') };
+  });
+  et(/Chi apre l'app/.test(acc.testo), 'la console dice chi apre l\'app');
+  et(acc.quante === 14, `giorno per giorno, quattordici colonne (${acc.quante})`);
+  et(acc.oggi >= 1 && acc.ultima > 2, `e oggi conta almeno chi sta guardando (${acc.oggi}, colonna ${acc.ultima}px)`);
+  et(/Tornano/.test(acc.testo), 'col numero di chi torna dalla settimana prima');
 
   // ---- CHI CONSEGNA, GIORNATA PER GIORNATA (020)
   // «Formazioni consegnate» e' un totale che sale e basta: dopo dieci giornate

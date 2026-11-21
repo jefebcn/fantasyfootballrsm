@@ -6,6 +6,7 @@ description: >
   montages, static loops, static title cards, footage remixes, and freeform builds. Use
   motion-graphics instead for a short unnarrated motion-first unit, including an animated title.
   Route fresh creation through hyperframes before using this skill.
+disable-model-invocation: true
 ---
 
 **Plugin installs:** Before setup or freshness commands, follow [plugin execution rules](../hyperframes/references/plugin-installation.md) when this skill is inside a HyperFrames plugin. Standalone installs keep the update instructions below.

@@ -1,0 +1,30 @@
+{
+  "applinks": {
+    "details": [
+      {
+        "appIDs": [
+          "8VQ5WP5Y4L.site.fantatitano.app"
+        ],
+        "components": [
+          {
+            "/": "/link",
+            "exclude": true,
+            "comment": "il link in bio resta nel browser"
+          },
+          {
+            "/": "/link.html",
+            "exclude": true
+          },
+          {
+            "/": "/*"
+          }
+        ]
+      }
+    ]
+  },
+  "webcredentials": {
+    "apps": [
+      "8VQ5WP5Y4L.site.fantatitano.app"
+    ]
+  }
+}

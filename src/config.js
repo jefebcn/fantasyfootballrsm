@@ -88,9 +88,26 @@ export const TITOLARE = {
   rappresentanteUE: '',
 };
 /** Data dell'ultima revisione dei testi legali, in ISO. */
-export const LEGALI_AGGIORNATE = '2026-10-17';
+export const LEGALI_AGGIORNATE = '2026-11-14';
+/**
+ * «Accedi con Apple» SUL SITO (nell'app iPhone va da solo, col foglio nativo).
+ * Il giro web di Supabase vuole il «Secret Key (for OAuth)» del provider
+ * Apple: un JWT firmato con la chiave .p8 (scripts/apple-secret.mjs) che
+ * SCADE OGNI 6 MESI. Si accende quando il secret c'e', e se scade si rifa'.
+ */
+export const APPLE_WEB = false;
+/** Lo slug della funzione che spedisce le notifiche (supabase/functions/promemoria):
+ *  Supabase l'ha fissato alla creazione col trattino in fondo, e non si cambia. */
+export const FUNZIONE_AVVISI = 'promemoria-';
 /** Eta' minima per iscriversi. */
 export const ETA_MINIMA = 14;
+/**
+ * Il banner «Giochi nel campionato sammarinese?» in Home, che chiede ai
+ * calciatori se va bene comparire (044). Spento per ora (Alex, 04/11:
+ * «elimina per il momento la richiesta dei calciatori»): la pagina
+ * #/giocatori resta, il banner torna mettendo true.
+ */
+export const INVITO_CALCIATORI = false;
 
 /**
  * Chiave PUBBLICA VAPID per le notifiche a telefono chiuso. E' pubblica per
@@ -107,4 +124,4 @@ export const VAPID_PUBBLICA = 'BLrGGXQUEc9KX2oOtPO5ygNu5Z1tcDKmCLMMBX7Dq9IcR4qFw
 
 /** Lingue dell'interfaccia. Per ora l'app parla solo italiano: quando ne
  *  arriverà un'altra basta aggiungerla qui. */
-export const LINGUE = [['it', 'Italiano']];
+export const LINGUE = [['it', 'Italiano'], ['es', 'Español']];

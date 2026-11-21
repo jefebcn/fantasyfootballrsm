@@ -71,6 +71,13 @@ async function spedisciApns(a: Apns, dispositivo: string, n: { titolo: string; c
   return r.status === 410 || motivo === 'BadDeviceToken' || motivo === 'Unregistered' ? 'morto' : 'riprova';
 }
 
+/** La prova parte dall'app (fantatitano.site): il browser chiede prima il permesso. */
+const CORS = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-prova',
+  'Access-Control-Allow-Methods': 'POST, OPTIONS',
+};
+
 const gestisci = async (req: Request): Promise<Response> => {
   // Due guasti diversi, e per mesi rispondevano la stessa identica cosa.
   // Il 17 settembre l'azione pianificata ha preso 401 e dal registro non si
@@ -87,7 +94,12 @@ const gestisci = async (req: Request): Promise<Response> => {
       { status: 500 },
     );
   }
-  if (req.headers.get('x-promemoria-token')?.trim() !== atteso) {
+  // LA PROVA (Alex, 15/11): «Mandami una notifica di prova» dalle
+  // impostazioni dell'app. Niente token: serve il gettone di chi ha fatto
+  // l'accesso, e la notifica va SOLO ai suoi dispositivi. Prova il giro vero
+  // (server -> Apple o il browser -> telefono), non un avviso locale.
+  const prova = req.method === 'POST' && req.headers.get('x-prova') === '1';
+  if (!prova && req.headers.get('x-promemoria-token')?.trim() !== atteso) {
     return new Response('token non valido', { status: 401 });
   }
 
@@ -166,6 +178,118 @@ const gestisci = async (req: Request): Promise<Response> => {
     host: Deno.env.get('APNS_SANDBOX')?.trim() === '1' ? 'api.sandbox.push.apple.com' : 'api.push.apple.com',
   } : null;
   let iphoneSaltati = 0;
+
+  if (prova) {
+    const jwt = (req.headers.get('authorization') || '').replace(/^Bearer\s+/i, '');
+    const { data: u, error: eu } = await sb.auth.getUser(jwt);
+    if (eu || !u?.user) return Response.json({ errore: 'Serve aver fatto l\'accesso.' }, { status: 401, headers: CORS });
+    const { data: miei, error: em } = await sb.from('push_subscriptions')
+      .select('endpoint, p256dh, auth').eq('user_id', u.user.id).is('failed_at', null);
+    if (em) return Response.json({ errore: em.message }, { status: 500, headers: CORS });
+    const avviso = {
+      titolo: 'Notifiche attive ✓',
+      corpo: 'È una prova: quando manca la formazione o segna un tuo titolare, ti avviso così.',
+      tag: 'prova', url: './#/',
+    };
+    let spedite = 0; const morti: string[] = []; const esiti: string[] = [];
+    for (const s of miei ?? []) {
+      if (s.endpoint.startsWith('apns:')) {
+        if (!apns) { iphoneSaltati++; esiti.push('iphone: chiave APNs mancante'); continue; }
+        const esito = await spedisciApns(apns, s.endpoint.slice(5), avviso).catch(() => 'riprova');
+        esiti.push(`iphone: ${esito}`);
+        if (esito === 'ok') spedite++; else if (esito === 'morto') morti.push(s.endpoint);
+        continue;
+      }
+      try {
+        await webpush.sendNotification({ endpoint: s.endpoint, keys: { p256dh: s.p256dh, auth: s.auth } }, JSON.stringify(avviso));
+        spedite++; esiti.push('web: ok');
+      } catch (err) {
+        const code = (err as { statusCode?: number }).statusCode;
+        esiti.push(`web: ${code || 'errore'}`);
+        if (code === 404 || code === 410) morti.push(s.endpoint);
+      }
+    }
+    if (morti.length) await sb.from('push_subscriptions').update({ failed_at: new Date().toISOString() }).in('endpoint', morti);
+    return Response.json({ dispositivi: (miei ?? []).length, spedite, esiti }, { headers: CORS });
+  }
+
+  // GLI ALTRI AVVISI (052, Alex 04/11: far tornare la gente). Con un corpo
+  // JSON la funzione non fa il promemoria ma uno di questi:
+  //   { tipo: 'gol', tag, giocatore, giornata, minuto }   da scripts/gol-in-diretta.py
+  //   { tipo: 'fine-giornata', giornata }                 da scripts/avvisi.mjs
+  // Le liste le fa il database, che segna l'avviso mentre lo restituisce:
+  // chiamare due volte non spedisce due volte.
+  const richiesta = req.method === 'POST'
+    ? await req.json().catch(() => null) as Record<string, unknown> | null
+    : null;
+  if (richiesta && (richiesta.tipo === 'gol' || richiesta.tipo === 'fine-giornata')) {
+    const giornata = Number(richiesta.giornata);
+    if (!Number.isInteger(giornata) || giornata < 1) return Response.json({ errore: 'giornata mancante' }, { status: 400 });
+    type Riga = { endpoint: string; p256dh: string; auth: string; team_name: string; league_name: string;
+      capitano?: boolean; nome?: string; club?: string | null; leghe?: number };
+    let righe: Riga[] = []; let tag = '';
+    if (richiesta.tipo === 'gol') {
+      tag = `gol-${String(richiesta.tag || '')}`;
+      const giocatore = String(richiesta.giocatore || '');
+      if (tag === 'gol-' || !giocatore) return Response.json({ errore: 'tag o giocatore mancanti' }, { status: 400 });
+      const { data, error } = await sb.rpc('avvisi_gol', { p_tag: tag, p_giocatore: giocatore, p_giornata: giornata });
+      if (error) return Response.json({ errore: error.message }, { status: 500 });
+      righe = data ?? [];
+    } else {
+      tag = `giornata-${giornata}`;
+      const { data, error } = await sb.rpc('avvisi_fine_giornata', { p_giornata: giornata });
+      if (error) return Response.json({ errore: error.message }, { status: 500 });
+      righe = data ?? [];
+    }
+    const minuto = Number(richiesta.minuto);
+    const tipo = richiesta.tipo;
+    const testo = (r: Riga) => {
+      if (tipo === 'gol') {
+        // «Cremonini L.» -> «Cremonini»: l'iniziale in coda in una notifica e' rumore
+        const nome = String(r.nome || '').replace(/\s+[A-ZÀ-Ý]\.$/u, '') || 'un tuo giocatore';
+        const quando = Number.isFinite(minuto) && minuto > 0 ? `al ${minuto}'` : 'adesso';
+        return {
+          titolo: `⚽ Gol di ${nome}!`,
+          corpo: r.capitano
+            ? `Ha segnato ${quando}${r.club ? ` per il ${r.club}` : ''}. È il capitano di ${r.team_name}.`
+            : `Ha segnato ${quando}${r.club ? ` per il ${r.club}` : ''}. Ce l'hai in formazione con ${r.team_name}.`,
+          tag, url: './#/',
+        };
+      }
+      return {
+        titolo: `Giornata ${giornata} finita`,
+        corpo: (r.leghe ?? 1) > 1
+          ? `Sono pronti i punti di ${r.team_name} e delle tue altre squadre. Guarda dove sei in classifica.`
+          : `Sono pronti i punti di ${r.team_name} in ${r.league_name}. Guarda dove sei in classifica.`,
+        tag, url: './#/',
+      };
+    };
+    let spedite = 0; const morti: string[] = []; const daRimettere: string[] = [];
+    for (const r of righe) {
+      const avviso = testo(r);
+      if (r.endpoint.startsWith('apns:')) {
+        if (!apns) { iphoneSaltati++; daRimettere.push(r.endpoint); continue; }
+        const esito = await spedisciApns(apns, r.endpoint.slice(5), avviso).catch(() => 'riprova');
+        if (esito === 'ok') spedite++; else if (esito === 'morto') morti.push(r.endpoint); else daRimettere.push(r.endpoint);
+        continue;
+      }
+      try {
+        await webpush.sendNotification({ endpoint: r.endpoint, keys: { p256dh: r.p256dh, auth: r.auth } }, JSON.stringify(avviso));
+        spedite++;
+      } catch (err) {
+        const code = (err as { statusCode?: number }).statusCode;
+        if (code === 404 || code === 410) morti.push(r.endpoint); else daRimettere.push(r.endpoint);
+      }
+    }
+    let rimessi = 0;
+    if (daRimettere.length) {
+      const { data: n } = await sb.rpc('avvisi_da_rifare', { p_tag: tag, p_endpoints: daRimettere });
+      rimessi = Number(n ?? 0);
+    }
+    if (morti.length) await sb.from('push_subscriptions').update({ failed_at: new Date().toISOString() }).in('endpoint', morti);
+    return Response.json({ tipo, tag, spedite, scaduti: morti.length, da_rifare: rimessi,
+      ...(iphoneSaltati ? { iphone_senza_chiave_apns: iphoneSaltati } : {}) });
+  }
 
   // Quali giornate hanno il lock nel giorno che viene? Le date stanno su
   // matchday_locks, cioe' la stessa fonte che regola i permessi: se qui si
@@ -297,6 +421,7 @@ const gestisci = async (req: Request): Promise<Response> => {
  * dice i percorsi dei file del runtime e non serve a chi legge il registro.
  */
 Deno.serve(async (req) => {
+  if (req.method === 'OPTIONS') return new Response(null, { status: 204, headers: CORS });
   try {
     return await gestisci(req);
   } catch (err) {

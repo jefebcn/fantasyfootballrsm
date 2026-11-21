@@ -3,7 +3,7 @@
  *
  * Stessa ragione della prova gemella per Play: i limiti (nome e sottotitolo
  * 30, testo promozionale 170, parole chiave 100, descrizione 4000) si
- * scoprono incollando, il giorno che si ha il Mac in prestito e poco tempo.
+ * scoprono incollando, con la build pronta e la voglia di mandarla.
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';

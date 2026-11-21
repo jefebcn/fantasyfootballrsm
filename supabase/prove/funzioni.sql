@@ -2150,6 +2150,46 @@ select pg_temp.esige('ma quella di una giornata gia'' cominciata resta',
   exists (select 1 from public.lineups where member_id = :'m_pub1' and matchday = 30));
 delete from public.lineups where member_id = :'m_pub1' and matchday in (29, 30);
 delete from public.matchday_locks where matchday in (29, 30);
+-- 050: nella lega pubblica la formazione consegnata vale per le giornate dopo
+insert into public.matchday_locks (matchday, lock_at) values
+  (26, now() - interval '2 days'), (27, now() + interval '1 day'), (28, now() + interval '2 days'),
+  (29, now() + interval '3 days'), (30, now() - interval '1 day')
+  on conflict (matchday) do update set lock_at = excluded.lock_at;
+delete from public.lineups where member_id = :'m_pub1' and matchday >= 26;
+select pg_temp.entra('user_pub1');
+set role authenticated;
+select public.compra_giocatore(:'aperta', 'prova_d3');
+reset role;
+insert into public.lineups (league_id, member_id, matchday, lineup) values
+  (:'aperta', :'m_pub1', 26, '{"formation":"4-4-2","starters":["vecchia"],"bench":[]}'),
+  (:'aperta', :'m_pub1', 27, '{"formation":"4-4-2","starters":["prova_d3"],"bench":[]}');
+select pg_temp.esige('consegnata la 27, vale anche per la 28 e la 29 (050)',
+  (select count(*) from public.lineups where member_id = :'m_pub1' and matchday in (28, 29)
+      and lineup -> 'starters' = '["prova_d3"]') = 2);
+select pg_temp.esige('ma non per una giornata gia'' chiusa',
+  not exists (select 1 from public.lineups where member_id = :'m_pub1' and matchday = 30));
+update public.lineups set lineup = '{"formation":"4-3-3","starters":["prova_d3"],"bench":[]}'
+ where member_id = :'m_pub1' and matchday = 28;
+select pg_temp.esige('cambiata la 28, cambia anche la 29',
+  (select lineup ->> 'formation' from public.lineups where member_id = :'m_pub1' and matchday = 29) = '4-3-3');
+select pg_temp.esige('e la 27 resta com''era',
+  (select lineup ->> 'formation' from public.lineups where member_id = :'m_pub1' and matchday = 27) = '4-4-2');
+select pg_temp.esige('e quella chiusa prima non si tocca',
+  (select lineup -> 'starters' from public.lineups where member_id = :'m_pub1' and matchday = 26) = '["vecchia"]');
+select pg_temp.entra('user_pub1');
+set role authenticated;
+select (public.vendi_giocatore(:'aperta', 'prova_d3') ->> 'formazioni_tolte')::int as tolte \gset
+reset role;
+select pg_temp.esige('vendendo un giocatore schierato vanno riconfermate tutte quelle da giocare (tolte ' || :tolte || ', restano ' || coalesce((select string_agg(matchday::text, ',') from public.lineups where member_id = :'m_pub1'), '-') || ')',
+  :tolte = 3 and not exists (select 1 from public.lineups where member_id = :'m_pub1' and matchday in (27, 28, 29)));
+select id as m_lega_bea from public.league_members where league_id = :'lega' and user_id = 'user_bea' \gset
+delete from public.lineups where member_id = :'m_lega_bea' and matchday >= 26;
+insert into public.lineups (league_id, member_id, matchday, lineup) values
+  (:'lega', :'m_lega_bea', 27, '{"formation":"4-4-2","starters":[],"bench":[]}');
+select pg_temp.esige('nella lega fra amici ogni giornata si consegna',
+  not exists (select 1 from public.lineups where member_id = :'m_lega_bea' and matchday > 27));
+delete from public.lineups where member_id in (:'m_pub1', :'m_lega_bea') and matchday >= 26;
+delete from public.matchday_locks where matchday between 26 and 30;
 -- user_pub1 qui e' il proprietario: la prova di chi non lo e' la fa user_bea
 select pg_temp.entra('user_bea');
 set role authenticated;
@@ -2530,6 +2570,182 @@ select pg_temp.esige('«come l''ultima» ripete la formazione della 27',
   (public.admin_conferma_formazione(:'lega_boz', :'m_boz', 28, 'ultima') ->> 'dalla_giornata') = '27');
 reset role;
 select pg_temp.esige('e la 28 risulta consegnata', exists (select 1 from public.lineups where member_id = :'m_boz' and matchday = 28));
+select set_config('request.jwt.claims', '', false);
+
+-- «Chi è?» (048, 049): si salva solo com'e' andata, i tentativi solo in su,
+-- l'admin conta, la classifica e la serie si calcolano dal database.
+reset role;
+delete from public.gioco_partite where user_id in ('user_bea', 'user_cip');
+-- la storia di Bea: indovinato anche l'altro ieri (oltre ieri non si scrive
+-- dal telefono, quindi la si mette a mano)
+insert into public.gioco_partite (user_id, giorno, tentativi, vinto)
+  values ('user_bea', (now() at time zone 'Europe/Rome')::date - 2, 1, true);
+select pg_temp.entra('user_bea');
+set role authenticated;
+select public.salva_partita_gioco((now() at time zone 'Europe/Rome')::date - 1, 2, true);
+select public.salva_partita_gioco((now() at time zone 'Europe/Rome')::date, 3, true);
+select public.salva_partita_gioco((now() at time zone 'Europe/Rome')::date, 2, false);   -- indietro no
+select public.salva_partita_gioco((now() at time zone 'Europe/Rome')::date - 5, 1, true); -- troppo vecchio
+do $$ begin
+  perform * from public.gioco_partite;
+  raise exception 'FALLITA: gioco_partite non doveva leggersi';
+exception when others then
+  if sqlerrm like 'FALLITA%' then raise; end if;
+  raise notice 'ok  gioco_partite non si legge da fuori (%)', sqlerrm;
+end $$;
+do $$ begin
+  perform * from public.admin_gioco_conteggi(14);
+  raise exception 'FALLITA: i conteggi sono solo per l''admin';
+exception when others then
+  if sqlerrm like 'FALLITA%' then raise; end if;
+  raise notice 'ok  i conteggi del gioco sono solo per l''admin (%)', sqlerrm;
+end $$;
+select pg_temp.esige('la serie di Bea e'' 3, la piu'' lunga 3',
+  (select serie = 3 and serie_max = 3 and vinte = 3 and giocate = 3 from public.mio_gioco()));
+reset role;
+select pg_temp.esige('oggi resta a 3 tentativi, indovinato',
+  (select tentativi = 3 and vinto from public.gioco_partite where user_id = 'user_bea' and giorno = (now() at time zone 'Europe/Rome')::date));
+select pg_temp.esige('cinque giorni fa non si e'' scritto',
+  not exists (select 1 from public.gioco_partite where user_id = 'user_bea' and giorno = (now() at time zone 'Europe/Rome')::date - 5));
+-- Cip oggi non indovina: serie a zero, in classifica dopo Bea
+select pg_temp.entra('user_cip');
+set role authenticated;
+select public.salva_partita_gioco((now() at time zone 'Europe/Rome')::date, 6, false);
+select pg_temp.esige('Cip ha perso oggi: serie 0', (select serie = 0 from public.mio_gioco()));
+select pg_temp.esige('in classifica Bea e'' prima e Cip vede la sua riga',
+  (select string_agg(nome || ':' || punti || ':' || posizione || ':' || io, ',' order by posizione) from public.classifica_gioco())
+  like 'Bea:%:1:false%Cip:0:2:true%');
+select pg_temp.esige('i punti del mese di Bea: (7-1) + (7-2) + (7-3), se tutti nel mese',
+  (select punti between 4 and 15 from public.classifica_gioco() where nome = 'Bea'));
+reset role;
+update public.profiles set is_admin = true where id = 'user_alex';
+select pg_temp.entra('user_alex');
+set role authenticated;
+select pg_temp.esige('l''admin conta due giocatori oggi',
+  (select giocatori = 2 and vinti = 1 from public.admin_gioco_conteggi(14) where giorno = (now() at time zone 'Europe/Rome')::date));
+reset role;
+update public.profiles set is_admin = false where id = 'user_alex';
+select set_config('request.jwt.claims', '', false);
+
+-- Chi apre l'app (051): un giorno per persona, solo per se', l'admin conta,
+-- e il profilo cancellato si porta via i suoi giorni.
+reset role;
+delete from public.accessi where user_id in ('user_bea', 'user_cip', 'user_via');
+-- Bea c'era anche la settimana scorsa: e' una che torna
+insert into public.accessi (user_id, giorno)
+  values ('user_bea', (now() at time zone 'Europe/Rome')::date - 9),
+         ('user_bea', (now() at time zone 'Europe/Rome')::date - 500);
+select pg_temp.entra('user_bea');
+set role authenticated;
+select public.segna_accesso();
+select public.segna_accesso();   -- due aperture lo stesso giorno: una riga
+do $$ begin
+  perform * from public.accessi;
+  raise exception 'FALLITA: accessi non doveva leggersi';
+exception when others then
+  if sqlerrm like 'FALLITA%' then raise; end if;
+  raise notice 'ok  accessi non si legge da fuori (%)', sqlerrm;
+end $$;
+do $$ begin
+  perform public.admin_accessi(14);
+  raise exception 'FALLITA: i conteggi degli accessi sono solo per l''admin';
+exception when others then
+  if sqlerrm like 'FALLITA%' then raise; end if;
+  raise notice 'ok  i conteggi degli accessi sono solo per l''admin (%)', sqlerrm;
+end $$;
+select pg_temp.entra('user_cip');
+set role authenticated;
+select public.segna_accesso();
+reset role;
+select pg_temp.esige('Bea oggi conta una volta sola',
+  (select count(*) = 1 from public.accessi where user_id = 'user_bea' and giorno = (now() at time zone 'Europe/Rome')::date));
+select pg_temp.esige('il giorno di 500 giorni fa se n''e'' andato da solo',
+  not exists (select 1 from public.accessi where user_id = 'user_bea' and giorno < (now() at time zone 'Europe/Rome')::date - 400));
+select set_config('request.jwt.claims', '', false);
+set role anon;
+do $$ begin
+  perform public.segna_accesso();
+  raise exception 'FALLITA: senza account non si segna niente';
+exception when others then
+  if sqlerrm like 'FALLITA%' then raise; end if;
+  raise notice 'ok  senza account segna_accesso non si chiama (%)', sqlerrm;
+end $$;
+reset role;
+update public.profiles set is_admin = true where id = 'user_alex';
+select pg_temp.entra('user_alex');
+set role authenticated;
+select pg_temp.esige('l''admin vede 2 persone oggi, 2 in 7 giorni, 1 della settimana prima tornata',
+  (select (r ->> 'oggi')::int = 2 and (r ->> 'sette')::int = 2 and (r ->> 'prima')::int = 1 and (r ->> 'tornati')::int = 1
+            and jsonb_array_length(r -> 'giorni') = 14 and (r -> 'giorni' -> 0 ->> 'persone')::int = 2
+     from public.admin_accessi(14) r));
+reset role;
+update public.profiles set is_admin = false where id = 'user_alex';
+-- il profilo cancellato si porta via i suoi giorni
+insert into public.profiles (id, display_name) values ('user_via', 'Via') on conflict (id) do nothing;
+insert into public.accessi (user_id, giorno) values ('user_via', (now() at time zone 'Europe/Rome')::date);
+delete from public.profiles where id = 'user_via';
+select pg_temp.esige('cancellato il profilo, i suoi giorni non ci sono piu''',
+  not exists (select 1 from public.accessi where user_id = 'user_via'));
+select set_config('request.jwt.claims', '', false);
+
+-- Le notifiche del gol e della giornata finita (052): a chi ha il giocatore
+-- fra i titolari, una volta sola per telefono, il capitano detto, e solo
+-- dal service role.
+reset role;
+select set_config('request.jwt.claims', '', false);
+insert into public.profiles (id, display_name) values ('user_gol', 'Golea'), ('user_gol2', 'Panca') on conflict (id) do nothing;
+select pg_temp.entra('user_gol');
+select public.create_league('Lega Gol', 'LGL', 'Gol FC', '#123456', 'GF') as lega_gol \gset
+reset role;
+select id as m_gol from public.league_members where league_id = :'lega_gol' and user_id = 'user_gol' \gset
+select pg_temp.formazione(:'m_gol', '4-4-2')::text as f_gol \gset
+select (:'f_gol'::jsonb -> 'starters' ->> 10) as bomber, (:'f_gol'::jsonb -> 'starters' ->> 0) as portiere \gset
+-- il bomber e' il capitano di Golea
+insert into public.lineups (league_id, member_id, matchday, lineup)
+  values (:'lega_gol', :'m_gol', 29, :'f_gol'::jsonb || jsonb_build_object('captainId', :'bomber'));
+delete from public.avvisi_inviati;
+delete from public.push_subscriptions where user_id in ('user_gol', 'user_gol2');
+insert into public.push_subscriptions (endpoint, user_id, p256dh, auth) values
+  ('https://push/gol-telefono', 'user_gol', 'k1', 'a1'),
+  ('https://push/gol-morto', 'user_gol', 'k2', 'a2'),
+  ('https://push/panca', 'user_gol2', 'k3', 'a3');
+update public.push_subscriptions set failed_at = now() where endpoint = 'https://push/gol-morto';
+select count(*)::int as gol1 from public.avvisi_gol('29-a-b-a-1', :'bomber', 29) \gset
+select pg_temp.esige('il gol del bomber avvisa il telefono vivo di chi lo schiera, non quello morto ne'' gli altri', :gol1 = 1);
+select pg_temp.esige('e dice che e'' il capitano',
+  (select bool_and(capitano) from public.avvisi_gol('29-a-b-a-2', :'bomber', 29)));
+select count(*)::int as gol_bis from public.avvisi_gol('29-a-b-a-1', :'bomber', 29) \gset
+select pg_temp.esige('lo stesso gol non si avvisa due volte', :gol_bis = 0);
+select count(*)::int as gol_altra from public.avvisi_gol('28-a-b-a-1', :'bomber', 28) \gset
+select pg_temp.esige('nelle giornate senza formazione non si avvisa', :gol_altra = 0);
+select count(*)::int as gol_fuori from public.avvisi_gol('29-a-b-a-3', 'nessuno_99', 29) \gset
+select pg_temp.esige('chi non e'' fra i titolari non fa partire avvisi', :gol_fuori = 0);
+select pg_temp.esige('il portiere non e'' il capitano',
+  (select not bool_or(capitano) from public.avvisi_gol('29-a-b-b-1', :'portiere', 29)));
+select public.avvisi_da_rifare('29-a-b-a-1', array['https://push/gol-telefono']) as rifare \gset
+select pg_temp.esige('un invio fallito si toglie e si riprova', :rifare = 1
+  and (select count(*) from public.avvisi_gol('29-a-b-a-1', :'bomber', 29)) = 1);
+select count(*)::int as fine1 from public.avvisi_fine_giornata(29) \gset
+select pg_temp.esige('a giornata finita si avvisa chi aveva la formazione', :fine1 = 1);
+select count(*)::int as fine2 from public.avvisi_fine_giornata(29) \gset
+select pg_temp.esige('una volta sola', :fine2 = 0);
+select pg_temp.entra('user_gol');
+set role authenticated;
+do $$ begin
+  perform * from public.avvisi_gol('x', 'y', 1);
+  raise exception 'FALLITA: gli avvisi li chiede solo il service role';
+exception when others then
+  if sqlerrm like 'FALLITA%' then raise; end if;
+  raise notice 'ok  avvisi_gol non si chiama dall''app (%)', sqlerrm;
+end $$;
+do $$ begin
+  perform * from public.avvisi_inviati;
+  raise exception 'FALLITA: avvisi_inviati non doveva leggersi';
+exception when others then
+  if sqlerrm like 'FALLITA%' then raise; end if;
+  raise notice 'ok  avvisi_inviati non si legge da fuori (%)', sqlerrm;
+end $$;
+reset role;
 select set_config('request.jwt.claims', '', false);
 
 select 'tutte le prove sulle funzioni sono passate' as esito;

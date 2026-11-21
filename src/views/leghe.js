@@ -1,5 +1,5 @@
 import * as S from '../state.js';
-import { esc, premioHtml, icon, crest, logo, pic, sec } from '../ui.js';
+import { esc, premioHtml, icon, crest, logo, pic, sec, t } from '../ui.js';
 import { COLORI_SQUADRA } from '../colore.js';
 import * as AV from '../notifiche.js';
 
@@ -23,7 +23,7 @@ let invitoAperto = false; // il modulo dell'invito si apre da solo una volta, no
 // Con Apple e «Nascondi la mia e-mail» il nome non arriva: lo chiediamo qui,
 // che è il passaggio obbligato prima di entrare in una lega.
 const nameField = () => S.nomeDaCompletare()
-  ? `<label class="lbl" for="who">Come ti chiami</label><input class="field-input" id="who" placeholder="es. Alex" maxlength="40" autocomplete="name">`
+  ? `<label class="lbl" for="who">${t('Come ti chiami')}</label><input class="field-input" id="who" placeholder="${t('es. Alex')}" maxlength="40" autocomplete="name">`
   : '';
 /**
  * Il nome della squadra, e basta.
@@ -40,8 +40,8 @@ const nameField = () => S.nomeDaCompletare()
  * su una schermata dove si vuole solo cominciare a giocare. Alla creazione ne
  * arriva uno a caso, che e' un punto di partenza come un altro.
  */
-const teamFields = () => `${nameField()}<label class="lbl" for="team">Nome della tua squadra</label><input class="field-input" id="team" placeholder="es. Hasta El Chapo FC" maxlength="28">
-  <p class="small muted" style="margin:6px 2px 0">Colori e stemma si scelgono dopo, in «La mia squadra».</p>`;
+const teamFields = () => `${nameField()}<label class="lbl" for="team">${t('Nome della tua squadra')}</label><input class="field-input" id="team" placeholder="${t('es. Hasta El Chapo FC')}" maxlength="28">
+  <p class="small muted" style="margin:6px 2px 0">${t('Colori e stemma si scelgono dopo, in «La mia squadra».')}</p>`;
 /** Un colore di partenza a caso: si cambia in "La mia squadra". */
 const coloreACaso = () => COLORI_SQUADRA[Math.floor(Math.random() * COLORI_SQUADRA.length)];
 
@@ -52,7 +52,7 @@ function comeFunziona() {
     ['probabili', 'Una giornata per settimana', 'Si schiera entro le 15 del giorno della prima partita, di solito il venerdì. Il martedì la giornata si chiude.'],
     ['quotazioni', 'Rosa da 25', 'Listone del campionato sammarinese e 500 crediti: all\'asta nella lega fra amici, dal negozio nella lega pubblica (lì la rosa si sceglie prima della tua prima giornata e poi resta quella).'],
   ];
-  return sec('Come funziona') + `<div class="a-card howto">${punti.map(([ic, t, d]) => `<div class="how"><i>${pic(ic, 'menu')}</i><span><b>${t}</b><span>${d}</span></span></div>`).join('')}</div>`;
+  return sec(t('Come funziona')) + `<div class="a-card howto">${punti.map(([ic, tit, d]) => `<div class="how"><i>${pic(ic, 'menu')}</i><span><b>${t(tit)}</b><span>${t(d)}</span></span></div>`).join('')}</div>`;
 }
 
 /**
@@ -65,19 +65,19 @@ function comeFunziona() {
  */
 function moduloPubblica() {
   return `<div class="a-card" style="display:flex;flex-direction:column;gap:6px">
-    <p class="auth-hint" style="margin:0 0 4px"><b>Come funziona una lega pubblica.</b> Ci entra chiunque, senza codice. I giocatori non sono esclusivi: possono stare nella rosa di tutti, altrimenti dal ventesimo iscritto non resterebbero più portieri. Non ci sono scontri diretti: ogni giornata i tuoi fantapunti si sommano, e vince chi ne ha di più. La rosa si compra dal negozio fino alla prima giornata di ognuno, poi resta quella per la stagione.</p>
-    <label class="lbl" for="pname">Nome della lega</label>
-    <input class="field-input" id="pname" placeholder="es. Titano Open" maxlength="40">
+    <p class="auth-hint" style="margin:0 0 4px">${t('<b>Come funziona una lega pubblica.</b> Ci entra chiunque, senza codice. I giocatori non sono esclusivi: possono stare nella rosa di tutti, altrimenti dal ventesimo iscritto non resterebbero più portieri. Non ci sono scontri diretti: ogni giornata i tuoi fantapunti si sommano, e vince chi ne ha di più. La rosa si compra dal negozio fino alla prima giornata di ognuno, poi resta quella per la stagione.')}</p>
+    <label class="lbl" for="pname">${t('Nome della lega')}</label>
+    <input class="field-input" id="pname" placeholder="${t('es. Titano Open')}" maxlength="40">
     <div class="due">
-      <span><label class="lbl" for="pbudget">Crediti a testa</label>
+      <span><label class="lbl" for="pbudget">${t('Crediti a testa')}</label>
         <input class="field-input" id="pbudget" type="number" value="500" min="50" max="5000" inputmode="numeric"></span>
-      <span><label class="lbl" for="pmax">Massimo partecipanti</label>
+      <span><label class="lbl" for="pmax">${t('Massimo partecipanti')}</label>
         <input class="field-input" id="pmax" type="number" value="200" min="2" max="1000" inputmode="numeric"></span>
     </div>
-    <label class="lbl" for="ppremio">Premio per il primo <span class="muted">(facoltativo)</span></label>
-    <input class="field-input" id="ppremio" placeholder="es. una cena offerta" maxlength="120">
+    <label class="lbl" for="ppremio">${t('Premio per il primo <span class="muted">(facoltativo)</span>')}</label>
+    <input class="field-input" id="ppremio" placeholder="${t('es. una cena offerta')}" maxlength="120">
     ${teamFields()}
-    <button class="a-btn" id="go-pubblica" style="margin-top:10px">Crea la lega pubblica</button>
+    <button class="a-btn" id="go-pubblica" style="margin-top:10px">${t('Crea la lega pubblica')}</button>
   </div>`;
 }
 
@@ -88,9 +88,9 @@ function moduloPubblica() {
  * escono solo il nome, quanti sono e cosa c'e' in palio.
  */
 function elencoPubbliche(inCima, quanteMie = 0) {
-  if (pubbliche === null) return `<div class="a-sec"><b>Leghe pubbliche</b></div><p class="small muted" style="margin:0 2px">Sto guardando quali ci sono…</p>`;
-  if (!pubbliche.length) return `<div class="a-card vuoto-admin"><b>Per ora non c'è una lega pubblica aperta.</b><span>Intanto puoi giocare con gli amici: crei una lega e mandi il link d'invito.</span>
-    <button class="a-btn" data-form="create">${icon('users', 'ic sm')}Crea una lega con gli amici</button></div>`;
+  if (pubbliche === null) return `<div class="a-sec"><b>${t('Leghe pubbliche')}</b></div><p class="small muted" style="margin:0 2px">${t('Sto guardando quali ci sono…')}</p>`;
+  if (!pubbliche.length) return `<div class="a-card vuoto-admin"><b>${t('Per ora non c\'è una lega pubblica aperta.')}</b><span>${t('Intanto puoi giocare con gli amici: crei una lega e mandi il link d\'invito.')}</span>
+    <button class="a-btn" data-form="create">${icon('users', 'ic sm')}${t('Crea una lega con gli amici')}</button></div>`;
   // LA SCHEDA CON TITO. La lega pubblica e' la porta per chi arriva da
   // solo: non una riga fra le altre ma un manifesto, scritto grande in
   // corsivo nero, con la mascotte a destra su un alone blu. Idea di Alex
@@ -99,15 +99,15 @@ function elencoPubbliche(inCima, quanteMie = 0) {
   const riga = (l) => {
     const pieno = l.membri >= l.max_membri;
     const primo = (l.premi || []).slice().sort((a, b) => a.posto - b.posto)[0];
-    const stato = l.dentro ? 'Gioca' : pieno ? 'Al completo' : 'Entra';
+    const stato = l.dentro ? t('Gioca') : pieno ? t('Al completo') : t('Entra');
     // Quella in cui sei gia' non e' spenta: si tocca e ci entri a giocare.
     return `<button class="pubcard${entraIn === l.id ? ' on' : ''}" ${l.dentro ? `data-league="${l.id}"` : `data-pubblica="${l.id}"`} ${!l.dentro && pieno ? 'disabled' : ''} aria-label="${esc(l.name)}: ${stato.toLowerCase()}">
         <span class="pc-txt">
-          <span class="pc-sotto"><i>Campionato sammarinese</i></span>
+          <span class="pc-sotto"><i>${t('Campionato sammarinese')}</i></span>
           <b class="pc-nome">${esc(l.name)}</b>
           <span class="pc-pills">
-            <span class="pc-pill">${l.membri}${l.max_membri < 1000 ? `/${l.max_membri}` : ''} squadre · ${l.budget} cr.</span>
-            ${primo ? `<span class="pc-pill oro">In palio: ${premioHtml(primo.premio)}</span>` : ''}
+            <span class="pc-pill">${t('{membri} squadre · {budget} cr.', { membri: `${l.membri}${l.max_membri < 1000 ? `/${l.max_membri}` : ''}`, budget: l.budget })}</span>
+            ${primo ? `<span class="pc-pill oro">${t('In palio: {premio}', { premio: premioHtml(primo.premio) })}</span>` : ''}
           </span>
           <span class="pc-cta${!l.dentro && pieno ? ' spento' : ''}">${stato}${!l.dentro && pieno ? '' : icon('chev', 'ic sm')}</span>
         </span>
@@ -117,13 +117,13 @@ function elencoPubbliche(inCima, quanteMie = 0) {
   // In cima l'elenco cambia mestiere: non e' piu' "le altre leghe che
   // esistono", e' la cosa da fare. Quindi il titolo dice cosa fai e la riga
   // che spiega sta PRIMA, non sotto — sotto la legge chi ha gia' capito.
-  return `<div class="a-sec"><b>${inCima ? 'Entra in una lega aperta' : 'Leghe pubbliche'}</b><span>${pubbliche.length}</span></div>
-    ${inCima ? '<p class="small muted" style="margin:-4px 2px 6px">Non serve il codice e non serve conoscere nessuno: entri, ti fai la rosa e giochi.</p>' : ''}
+  return `<div class="a-sec"><b>${inCima ? t('Entra in una lega aperta') : t('Leghe pubbliche')}</b><span>${pubbliche.length}</span></div>
+    ${inCima ? `<p class="small muted" style="margin:-4px 2px 6px">${t('Non serve il codice e non serve conoscere nessuno: entri, ti fai la rosa e giochi.')}</p>` : ''}
     <div class="pubcards${inCima ? ' pubcards--primo' : ''}">${pubbliche.map(riga).join('')}</div>
     ${entraIn ? `<div class="a-card" style="display:flex;flex-direction:column;gap:6px">
-      <p class="auth-hint" style="margin:0">Stai entrando in <b>${esc(pubbliche.find((l) => l.id === entraIn)?.name || '')}</b>. Ti serve solo il nome della tua squadra.</p>
-      ${teamFields()}<button class="a-btn" id="go-entra" style="margin-top:10px">Entra nella lega</button></div>` : ''}
-    ${inCima ? '<button class="lglink" data-vista="private">Oppure gioca con gli amici: crea una lega o entra con un codice ' + icon('chev', 'ic sm') + '</button>' : '<p class="small muted" style="margin:-4px 2px 0">Nelle leghe pubbliche non serve il codice: si entra e si fa la propria rosa.</p>'}`;
+      <p class="auth-hint" style="margin:0">${t('Stai entrando in <b>{lega}</b>. Ti serve solo il nome della tua squadra.', { lega: esc(pubbliche.find((l) => l.id === entraIn)?.name || '') })}</p>
+      ${teamFields()}<button class="a-btn" id="go-entra" style="margin-top:10px">${t('Entra nella lega')}</button></div>` : ''}
+    ${inCima ? '<button class="lglink" data-vista="private">' + t('Oppure gioca con gli amici: crea una lega o entra con un codice') + ' ' + icon('chev', 'ic sm') + '</button>' : `<p class="small muted" style="margin:-4px 2px 0">${t('Nelle leghe pubbliche non serve il codice: si entra e si fa la propria rosa.')}</p>`}`;
 }
 
 /**
@@ -146,8 +146,8 @@ function vistaAttuale(mine) {
   return pubblica(S.currentLeagueId()) ? 'pubbliche' : 'private';
 }
 function schede(v) {
-  const t = (k, ic, nome) => `<button class="lgtab${v === k ? ' on' : ''}" data-vista="${k}" role="tab" aria-selected="${v === k}">${icon(ic, 'ic sm')}<span>${nome}</span></button>`;
-  return `<div class="lgtabs" role="tablist">${t('pubbliche', 'globe', 'Pubbliche')}${t('private', 'lock', 'Private')}${t('admin', 'shield', 'Admin')}</div>`;
+  const scheda = (k, ic, nome) => `<button class="lgtab${v === k ? ' on' : ''}" data-vista="${k}" role="tab" aria-selected="${v === k}">${icon(ic, 'ic sm')}<span>${nome}</span></button>`;
+  return `<div class="lgtabs" role="tablist">${scheda('pubbliche', 'globe', t('Pubbliche'))}${scheda('private', 'lock', t('Private'))}${scheda('admin', 'shield', t('Admin'))}</div>`;
 }
 /** Le righe delle mie leghe: entrarci, e a destra uscire o eliminarla. */
 function righeMie(lista, cur, titolo) {
@@ -155,40 +155,40 @@ function righeMie(lista, cur, titolo) {
   return `<div class="vlist"><div class="vhead">${titolo} <span>${lista.length}</span></div>${lista.map((l) => {
     const mia = S.laHoCreataIo(l);
     return `<div class="lgrow">
-      <button class="vr" data-league="${l.id}">${crest({ color: l.id === cur ? 'var(--primary)' : 'var(--c-pietra-400)', initials: (l.short_name || l.name).slice(0, 2).toUpperCase() }, 'sm')}<span class="nm"><b>${esc(l.name)}</b><span>${l.myRole === 'admin' ? 'admin' : 'fantallenatore'} · ${l.started ? 'in corso' : 'in attesa delle rose'} · codice ${esc(l.invite_code)}</span></span><span class="ev"></span><span class="fv" style="font-size:12px">${l.id === cur ? icon('check', 'ic sm') : ''}</span></button>
-      <button class="lgvia" data-via="${mia ? 'elimina' : 'esci'}:${l.id}" aria-label="${mia ? 'Elimina' : 'Esci da'} ${esc(l.name)}" title="${mia ? 'Elimina la lega' : 'Esci dalla lega'}">${icon(mia ? 'trash' : 'exit', 'ic sm')}</button>
+      <button class="vr" data-league="${l.id}">${crest({ color: l.id === cur ? 'var(--primary)' : 'var(--c-pietra-400)', initials: (l.short_name || l.name).slice(0, 2).toUpperCase() }, 'sm')}<span class="nm"><b>${esc(l.name)}</b><span>${t('{ruolo} · {stato} · codice {codice}', { ruolo: l.myRole === 'admin' ? t('admin') : t('fantallenatore'), stato: l.started ? t('in corso') : t('in attesa delle rose'), codice: esc(l.invite_code) })}</span></span><span class="ev"></span><span class="fv" style="font-size:12px">${l.id === cur ? icon('check', 'ic sm') : ''}</span></button>
+      <button class="lgvia" data-via="${mia ? 'elimina' : 'esci'}:${l.id}" aria-label="${mia ? t('Elimina {lega}', { lega: esc(l.name) }) : t('Esci da {lega}', { lega: esc(l.name) })}" title="${mia ? t('Elimina la lega') : t('Esci dalla lega')}">${icon(mia ? 'trash' : 'exit', 'ic sm')}</button>
     </div>`;
   }).join('')}</div>
-  <p class="small muted" style="margin:-4px 2px 0">Tocca una lega per entrarci. Il tasto a destra ${lista.some((l) => S.laHoCreataIo(l)) ? 'elimina quelle che hai creato tu ed esce dalle altre' : 'ti fa uscire dalla lega'}.</p>`;
+  <p class="small muted" style="margin:-4px 2px 0">${t('Tocca una lega per entrarci. Il tasto a destra {azione}.', { azione: lista.some((l) => S.laHoCreataIo(l)) ? t('elimina quelle che hai creato tu ed esce dalle altre') : t('ti fa uscire dalla lega') })}</p>`;
 }
-const cartaPubblica = () => (S.isAdmin() ? `<button class="startcard larga${form === 'pubblica' ? ' on' : ''}" data-form="pubblica">${pic('trofei', 'lega')}<b>Crea una lega pubblica</b><span>Aperta a tutti, senza codice: ognuno si fa la sua rosa e vince chi fa più punti</span></button>` : '');
+const cartaPubblica = () => (S.isAdmin() ? `<button class="startcard larga${form === 'pubblica' ? ' on' : ''}" data-form="pubblica">${pic('trofei', 'lega')}<b>${t('Crea una lega pubblica')}</b><span>${t('Aperta a tutti, senza codice: ognuno si fa la sua rosa e vince chi fa più punti')}</span></button>` : '');
 /** Private: le leghe fra amici, e i riquadri per crearne una o entrare col codice. */
 function schedaPrivate(mine, cur) {
   const pubblica = (id) => Array.isArray(pubbliche) && pubbliche.some((p) => p.id === id);
   const inv = S.invitoInSospeso();
-  return `${righeMie(mine.filter((l) => !pubblica(l.id)), cur, 'Le mie leghe')}
+  return `${righeMie(mine.filter((l) => !pubblica(l.id)), cur, t('Le mie leghe'))}
       <div class="startgrid">
-        <button class="startcard${form === 'create' ? ' on' : ''}" data-form="create">${pic('leghe', 'menu')}<b>Crea una lega</b><span>Ne diventi admin e ricevi il codice da girare agli altri</span></button>
-        <button class="startcard${form === 'join' ? ' on' : ''}" data-form="join">${pic('squadre', 'menu')}<b>Entra con codice</b><span>Ti serve il codice a 6 caratteri dell'organizzatore</span></button>
+        <button class="startcard${form === 'create' ? ' on' : ''}" data-form="create">${pic('leghe', 'menu')}<b>${t('Crea una lega')}</b><span>${t('Ne diventi admin e ricevi il codice da girare agli altri')}</span></button>
+        <button class="startcard${form === 'join' ? ' on' : ''}" data-form="join">${pic('squadre', 'menu')}<b>${t('Entra con codice')}</b><span>${t('Ti serve il codice a 6 caratteri dell\'organizzatore')}</span></button>
         ${cartaPubblica()}
       </div>
-      ${form === 'create' ? `<div class="a-card" style="display:flex;flex-direction:column;gap:6px"><label class="lbl" for="lname">Nome della lega</label><input class="field-input" id="lname" placeholder="es. I Sudati di RSM" maxlength="40">${teamFields()}<button class="a-btn" id="go-create" style="margin-top:10px">Crea e diventa admin</button></div>` : ''}
+      ${form === 'create' ? `<div class="a-card" style="display:flex;flex-direction:column;gap:6px"><label class="lbl" for="lname">${t('Nome della lega')}</label><input class="field-input" id="lname" placeholder="${t('es. I Sudati di RSM')}" maxlength="40">${teamFields()}<button class="a-btn" id="go-create" style="margin-top:10px">${t('Crea e diventa admin')}</button></div>` : ''}
       ${form === 'join' ? `<div class="a-card${inv ? ' invitato' : ''}" style="display:flex;flex-direction:column;gap:6px">${inv
-    ? '<p class="auth-hint" style="margin:0 0 4px">Ti hanno invitato: <b>il codice è già qui</b>. Scegli solo il nome della tua squadra.</p>' : ''}<label class="lbl" for="code">Codice invito</label><input class="field-input" id="code" placeholder="es. A1B2C3" autocapitalize="characters" maxlength="6" value="${esc(inv || '')}">${teamFields()}<button class="a-btn" id="go-join" style="margin-top:10px">Entra nella lega</button></div>` : ''}
+    ? `<p class="auth-hint" style="margin:0 0 4px">${t('Ti hanno invitato: <b>il codice è già qui</b>. Scegli solo il nome della tua squadra.')}</p>` : ''}<label class="lbl" for="code">${t('Codice invito')}</label><input class="field-input" id="code" placeholder="${t('es. A1B2C3')}" autocapitalize="characters" maxlength="6" value="${esc(inv || '')}">${teamFields()}<button class="a-btn" id="go-join" style="margin-top:10px">${t('Entra nella lega')}</button></div>` : ''}
       ${form === 'pubblica' ? moduloPubblica() : ''}`;
 }
 /** Admin: le leghe che amministri tu, private o pubbliche. */
 function schedaAdmin(mine, cur) {
   const mie = mine.filter((l) => l.myRole === 'admin');
-  return `${mie.length ? righeMie(mie, cur, 'Leghe che amministri')
-    : `<div class="a-card vuoto-admin"><b>Non amministri nessuna lega.</b><span>Chi crea una lega ne diventa admin: decide le regole, registra l'asta e gestisce le rose.</span>
-        <button class="a-btn" data-form="create">${icon('users', 'ic sm')}Crea una lega con gli amici</button></div>`}
+  return `${mie.length ? righeMie(mie, cur, t('Leghe che amministri'))
+    : `<div class="a-card vuoto-admin"><b>${t('Non amministri nessuna lega.')}</b><span>${t('Chi crea una lega ne diventa admin: decide le regole, registra l\'asta e gestisce le rose.')}</span>
+        <button class="a-btn" data-form="create">${icon('users', 'ic sm')}${t('Crea una lega con gli amici')}</button></div>`}
       ${S.isAdmin() ? `<div class="startgrid">${cartaPubblica()}</div>` : ''}
       ${form === 'pubblica' ? moduloPubblica() : ''}`;
 }
 
 export const leghe = {
-  title: 'Le mie leghe', appbar: () => (S.hasLeague() ? 'main' : 'none'), sub: () => 'Le mie leghe',
+  title: 'Le mie leghe', appbar: () => (S.hasLeague() ? 'main' : 'none'), sub: () => t('Le mie leghe'),
   render() {
     const mine = S.myLeagues(); const cur = S.currentLeagueId();
     // CHI ARRIVA SENZA AMICI VEDE PER PRIMA L'UNICA COSA CHE PUO' FARE.
@@ -201,13 +201,13 @@ export const leghe = {
       && Array.isArray(pubbliche)
       && pubbliche.some((l) => !l.dentro && l.membri < l.max_membri);
     return `<main class="a-body">
-      ${mine.length ? '' : `<div class="auth-hero" style="padding-top:20px">${logo('auth-mark')}<h1 style="font-size:22px">Benvenuto${!S.nomeDaCompletare() && S.profileInfo()?.display_name ? `, ${esc(S.profileInfo().display_name)}` : ''}</h1><p>${primaLePubbliche
+      ${mine.length ? '' : `<div class="auth-hero" style="padding-top:20px">${logo('auth-mark')}<h1 style="font-size:22px">${!S.nomeDaCompletare() && S.profileInfo()?.display_name ? t('Benvenuto, {nome}', { nome: esc(S.profileInfo().display_name) }) : t('Benvenuto')}</h1><p>${primaLePubbliche
     // La frase segue l'ordine di quello che si vede sotto: prima diceva
     // "creala tu... oppure entra", mentre adesso la prima cosa in pagina e'
     // la lega aperta. Una frase che racconta un ordine diverso da quello
     // che hai davanti si legge due volte.
-    ? 'Per giocare serve una lega. Ce n\'è una aperta a tutti: entri e giochi, senza codice e senza aspettare nessuno.'
-    : 'Per giocare serve una lega: creala tu e invita gli altri con un codice, oppure entra in una che esiste già.'}</p></div>`}
+    ? t('Per giocare serve una lega. Ce n\'è una aperta a tutti: entri e giochi, senza codice e senza aspettare nessuno.')
+    : t('Per giocare serve una lega: creala tu e invita gli altri con un codice, oppure entra in una che esiste già.')}</p></div>`}
       ${schede(vistaAttuale(mine))}
       ${vistaAttuale(mine) === 'pubbliche' ? elencoPubbliche(!mine.length, mine.length)
     : vistaAttuale(mine) === 'admin' ? schedaAdmin(mine, cur)
@@ -219,13 +219,13 @@ export const leghe = {
             arrivato dal sito e' esattamente chi vorrebbe l'icona sulla
             Home. Stessa azione, stesso data-installa (l'ascoltatore sta sul
             documento): cambia solo il posto. */
-    mine.length || AV.installata() ? '' : `<button class="rigainstalla" data-installa>${icon('down', 'ic sm')}<span><b>Installa l'app</b><small>${AV.suiOS() ? 'Condividi → Aggiungi alla Home' : 'a schermo intero, con le notifiche'}</small></span></button>`}
+    mine.length || AV.installata() ? '' : `<button class="rigainstalla" data-installa>${icon('down', 'ic sm')}<span><b>${t('Installa l\'app')}</b><small>${AV.suiOS() ? t('Condividi → Aggiungi alla Home') : t('a schermo intero, con le notifiche')}</small></span></button>`}
       ${/* E per lo stesso motivo — niente menu — chi non ha ancora una lega
             non arrivava alle impostazioni: ne' uscire, ne' cancellare il
             profilo, ne' leggere l'informativa da dentro l'app. Un account
             appena creato e poi lasciato li' e' proprio quello che prova chi
             controlla l'app prima di pubblicarla. */
-    mine.length ? '' : `<a class="rigaconto" href="#/impostazioni">${icon('gear', 'ic sm')}<span><b>Impostazioni e account</b><small>notifiche, privacy, esci o cancella il profilo</small></span></a>`}
+    mine.length ? '' : `<a class="rigaconto" href="#/impostazioni">${icon('gear', 'ic sm')}<span><b>${t('Impostazioni e account')}</b><small>${t('notifiche, privacy, esci o cancella il profilo')}</small></span></a>`}
     </main>`;
   },
   mount(root, ctx) {
@@ -253,7 +253,7 @@ export const leghe = {
       const libere = pubbliche.filter((l) => !l.dentro && l.membri < l.max_membri);
       if (libere.length === 1 && entraIn !== libere[0].id) { entraIn = apriEntra = libere[0].id; ctx.render(); return; }
       if (libere.length > 1) root.querySelector('.pubcards--primo')?.scrollIntoView({ block: 'start', behavior: 'smooth' });
-      if (!libere.length) ctx.toast('Per ora non c\'è una lega pubblica aperta: creane una con gli amici');
+      if (!libere.length) ctx.toast(t('Per ora non c\'è una lega pubblica aperta: creane una con gli amici'));
     }
     if (apriEntra) {
       const modulo = root.querySelector('#go-entra')?.closest('.a-card');
@@ -276,34 +276,34 @@ export const leghe = {
         const lega = S.myLeagues().find((x) => x.id === id); if (!lega) return;
         if (azione === 'elimina') {
           // Si fa riscrivere il nome: cancella anche le squadre degli altri.
-          const risposta = prompt(`Eliminare "${lega.name}" cancella per sempre squadre, rose e formazioni di tutti, e non si puo' annullare.\n\nPer confermare scrivi il nome della lega:\n${lega.name}`);
+          const risposta = prompt(t('Eliminare "{lega}" cancella per sempre squadre, rose e formazioni di tutti, e non si puo\' annullare.\n\nPer confermare scrivi il nome della lega:\n{lega}', { lega: lega.name }));
           if (risposta === null) return;
-          if (risposta.trim().toLowerCase() !== lega.name.trim().toLowerCase()) { ctx.toast('Nome non corrispondente: non ho eliminato niente'); return; }
-          try { await S.deleteLeague(id); ctx.toast('Lega eliminata'); } catch (err) { ctx.toast(err.message); }
+          if (risposta.trim().toLowerCase() !== lega.name.trim().toLowerCase()) { ctx.toast(t('Nome non corrispondente: non ho eliminato niente')); return; }
+          try { await S.deleteLeague(id); ctx.toast(t('Lega eliminata')); } catch (err) { ctx.toast(t(err.message)); }
         } else {
-          if (!confirm(`Uscire da "${lega.name}"? Perdi la tua squadra e la tua rosa in questa lega.`)) return;
-          try { await S.abbandonaLega(id); ctx.toast('Sei uscito dalla lega'); } catch (err) { ctx.toast(err.message); }
+          if (!confirm(t('Uscire da "{lega}"? Perdi la tua squadra e la tua rosa in questa lega.', { lega: lega.name }))) return;
+          try { await S.abbandonaLega(id); ctx.toast(t('Sei uscito dalla lega')); } catch (err) { ctx.toast(t(err.message)); }
         }
         ctx.render(); return;
       }
       const l = e.target.closest('[data-league]'); if (l) { await S.switchLeague(l.dataset.league); ctx.go(''); return; }
-      const team = () => { const t = root.querySelector('#team')?.value.trim(); if (!t) { ctx.toast('Dai un nome alla tua squadra'); return null; } return t; };
+      const team = () => { const sq = root.querySelector('#team')?.value.trim(); if (!sq) { ctx.toast(t('Dai un nome alla tua squadra')); return null; } return sq; };
       // Ritorna false se il nome serve e manca: senza, in lega comparirebbe la sigla dell'indirizzo.
       const salvaNome = async () => {
         const c = root.querySelector('#who'); if (!c) return true;
-        const v = c.value.trim(); if (!v) { ctx.toast('Scrivi come ti chiami'); c.focus(); return false; }
-        try { await S.updateDisplayName(v); return true; } catch (err) { ctx.toast(err.message); return false; }
+        const v = c.value.trim(); if (!v) { ctx.toast(t('Scrivi come ti chiami')); c.focus(); return false; }
+        try { await S.updateDisplayName(v); return true; } catch (err) { ctx.toast(t(err.message)); return false; }
       };
-      const initials = (t) => t.split(/\s+/).map((w) => w[0]).join('').slice(0, 2).toUpperCase();
+      const initials = (s) => s.split(/\s+/).map((w) => w[0]).join('').slice(0, 2).toUpperCase();
       // Il bottone si spegne mentre la richiesta e' in volo: senza, due tocchi
       // ravvicinati creavano DUE leghe identiche, ed e' quasi certamente cosi'
       // che ne sono nate quattro con lo stesso nome.
-      const occupa = (b) => { b.disabled = true; b.dataset.prima = b.textContent; b.textContent = 'Un attimo\u2026'; };
+      const occupa = (b) => { b.disabled = true; b.dataset.prima = b.textContent; b.textContent = t('Un attimo…'); };
       const libera = (b) => { b.disabled = false; if (b.dataset.prima) b.textContent = b.dataset.prima; };
       const bc = e.target.closest('#go-create');
-      if (bc) { if (bc.disabled) return; const name = root.querySelector('#lname').value.trim(); const t = team(); if (!name) { ctx.toast('Dai un nome alla lega'); return; } if (!t) return; if (!await salvaNome()) return;
+      if (bc) { if (bc.disabled) return; const name = root.querySelector('#lname').value.trim(); const sq = team(); if (!name) { ctx.toast(t('Dai un nome alla lega')); return; } if (!sq) return; if (!await salvaNome()) return;
         occupa(bc);
-        try { await S.createLeague(name, t, color, initials(t)); ctx.toast('Lega creata'); form = 'none'; ctx.go('lega'); } catch (err) { ctx.toast(err.message); libera(bc); } return; }
+        try { await S.createLeague(name, sq, color, initials(sq)); ctx.toast(t('Lega creata')); form = 'none'; ctx.go('lega'); } catch (err) { ctx.toast(t(err.message)); libera(bc); } return; }
       // scelta di una lega pubblica: prima si chiede nome squadra e colore
       const pb = e.target.closest('[data-pubblica]');
       if (pb) { entraIn = entraIn === pb.dataset.pubblica ? null : pb.dataset.pubblica; ctx.render(); return; }
@@ -311,12 +311,12 @@ export const leghe = {
       const be = e.target.closest('#go-entra');
       if (be) {
         if (be.disabled) return;
-        const t = team(); if (!t) return; if (!await salvaNome()) return;
+        const sq = team(); if (!sq) return; if (!await salvaNome()) return;
         occupa(be);
         try {
-          await S.entraLegaPubblica(entraIn, t, color, initials(t));
-          entraIn = null; pubbliche = null; ctx.toast('Sei dentro'); ctx.go('');
-        } catch (err) { ctx.toast(err.message); libera(be); }
+          await S.entraLegaPubblica(entraIn, sq, color, initials(sq));
+          entraIn = null; pubbliche = null; ctx.toast(t('Sei dentro')); ctx.go('');
+        } catch (err) { ctx.toast(t(err.message)); libera(be); }
         return;
       }
 
@@ -327,25 +327,25 @@ export const leghe = {
         const budget = parseInt(root.querySelector('#pbudget').value, 10);
         const max = parseInt(root.querySelector('#pmax').value, 10);
         const premio = root.querySelector('#ppremio').value.trim();
-        const t = team();
-        if (!name) { ctx.toast('Dai un nome alla lega'); return; }
-        if (!Number.isInteger(budget) || budget < 50 || budget > 5000) { ctx.toast('I crediti vanno da 50 a 5000'); return; }
-        if (!Number.isInteger(max) || max < 2 || max > 1000) { ctx.toast('I partecipanti vanno da 2 a 1000'); return; }
-        if (!t) return; if (!await salvaNome()) return;
+        const sq = team();
+        if (!name) { ctx.toast(t('Dai un nome alla lega')); return; }
+        if (!Number.isInteger(budget) || budget < 50 || budget > 5000) { ctx.toast(t('I crediti vanno da 50 a 5000')); return; }
+        if (!Number.isInteger(max) || max < 2 || max > 1000) { ctx.toast(t('I partecipanti vanno da 2 a 1000')); return; }
+        if (!sq) return; if (!await salvaNome()) return;
         occupa(bp);
         try {
-          await S.creaLegaPubblica(name, t, color, initials(t), {
+          await S.creaLegaPubblica(name, sq, color, initials(sq), {
             budget, max, premi: premio ? [{ posto: 1, premio }] : [],
           });
-          form = 'none'; pubbliche = null; ctx.toast('Lega pubblica creata'); ctx.go('lega');
-        } catch (err) { ctx.toast(err.message); libera(bp); }
+          form = 'none'; pubbliche = null; ctx.toast(t('Lega pubblica creata')); ctx.go('lega');
+        } catch (err) { ctx.toast(t(err.message)); libera(bp); }
         return;
       }
 
       const bj = e.target.closest('#go-join');
-      if (bj) { if (bj.disabled) return; const code = root.querySelector('#code').value.trim(); const t = team(); if (code.length < 4) { ctx.toast('Inserisci il codice invito'); return; } if (!t) return; if (!await salvaNome()) return;
+      if (bj) { if (bj.disabled) return; const code = root.querySelector('#code').value.trim(); const sq = team(); if (code.length < 4) { ctx.toast(t('Inserisci il codice invito')); return; } if (!sq) return; if (!await salvaNome()) return;
         occupa(bj);
-        try { await S.joinLeague(code, t, color, initials(t)); S.dimenticaInvito(); ctx.toast('Sei dentro'); form = 'none'; ctx.go(''); } catch (err) { ctx.toast(err.message); libera(bj); } }
+        try { await S.joinLeague(code, sq, color, initials(sq)); S.dimenticaInvito(); ctx.toast(t('Sei dentro')); form = 'none'; ctx.go(''); } catch (err) { ctx.toast(t(err.message)); libera(bj); } }
     });
   },
 };

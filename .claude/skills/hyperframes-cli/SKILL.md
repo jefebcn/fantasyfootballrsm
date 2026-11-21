@@ -7,6 +7,7 @@ description: >
   benchmark, telemetry, transcribe, auth, tts, and remove-background. Also use when diagnosing build
   or render failures. validate, inspect, and layout are deprecated aliases; use check. Covers local,
   HeyGen-hosted cloud, AWS Lambda, and Google Cloud Run rendering.
+disable-model-invocation: true
 ---
 
 **Plugin installs:** Before setup or freshness commands, follow [plugin execution rules](../hyperframes/references/plugin-installation.md) when this skill is inside a HyperFrames plugin. Standalone installs keep the update instructions below.

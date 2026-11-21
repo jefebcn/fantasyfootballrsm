@@ -33,3 +33,14 @@ test('i sondaggi e le partite che il calendario non conosce restano video del ca
     'Campionato Sammarinese 2026-27 | HL Faetano - Fiorentino 0-6']]))`);
   assert.deepEqual(r, [null, null]);
 });
+
+// Dalla 6ª (26/10) la giornata torna nel titolo ma con «HL» davanti alla casa:
+// la casa diventava «HL Tre Penne», non si riconosceva, e la pagina degli
+// highlights e' rimasta ferma alla 6ª fino al 13/11.
+test('la forma dalla 6ª: giornata nel titolo e «HL» davanti alla casa', () => {
+  const r = py(`print(json.dumps([m.smonta(t, '2026-11-09', []) for t in [
+    'Campionato Sammarinese 2026-27, 8. giornata | HL Tre Penne - Murata 3-0',
+    'Campionato Sammarinese 2026-27, 8. giornata | HL San Marino Academy - San Giovanni 0-0',
+    'Campionato Sammarinese 2026-27, 6. giornata | HL Libertas - Folgore 1-2']]))`);
+  assert.deepEqual(r, [[8, 'trepenne', 'murata'], [8, 'academy', 'sangiovanni'], [6, 'libertas', 'folgore']]);
+});

@@ -1,7 +1,7 @@
 /** Highlights della FSGC. La copertina e' disegnata qui: Google non riceve
  *  niente finche' non si tocca play. */
 import * as S from '../state.js';
-import { esc, icon, dateIt } from '../ui.js';
+import { esc, icon, dateIt, t } from '../ui.js';
 import { maglia } from '../maglia.js';
 import { videoGiornata, giornateConVideo, altriVideo, urlCanale, urlIncorpora, urlVideo, videoDaAprire } from '../video.js';
 
@@ -32,33 +32,33 @@ function scheda(m, v) {
         <span class="vid-lato">${divisa(a)}<b>${esc(a.name)}</b></span>
       </div>
       ${S.prudente()
-    ? `<a class="vid-play" href="${urlVideo(v.id)}" target="_blank" rel="noopener" aria-label="Guarda su YouTube gli highlights di ${esc(h.name)} contro ${esc(a.name)}">${icon('play', 'ic')}</a>`
-    : `<button class="vid-play" aria-label="Guarda gli highlights di ${esc(h.name)} contro ${esc(a.name)}">${icon('play', 'ic')}</button>`}
+    ? `<a class="vid-play" href="${urlVideo(v.id)}" target="_blank" rel="noopener" aria-label="${t('Guarda su YouTube gli highlights di {casa} contro {ospite}', { casa: esc(h.name), ospite: esc(a.name) })}">${icon('play', 'ic')}</a>`
+    : `<button class="vid-play" aria-label="${t('Guarda gli highlights di {casa} contro {ospite}', { casa: esc(h.name), ospite: esc(a.name) })}">${icon('play', 'ic')}</button>`}
     </div>
-    <div class="vid-pie"><span>${esc(sotto)}</span><a href="${urlVideo(v.id)}" target="_blank" rel="noopener">Apri su YouTube</a></div>
+    <div class="vid-pie"><span>${esc(sotto)}</span><a href="${urlVideo(v.id)}" target="_blank" rel="noopener">${t('Apri su YouTube')}</a></div>
   </div>`;
 }
 
 export const video = {
-  title: 'Video', appbar: 'back', sub: () => 'Highlights della FSGC',
+  title: 'Video', appbar: 'back', sub: () => t('Highlights della FSGC'),
   render() {
     const giornate = giornateConVideo().slice(0, 6)
       .map((k) => [k, videoGiornata(S.matchesOf(k))]).filter(([, l]) => l.length);
     const altri = altriVideo();
     if (!giornate.length && !altri.length) {
-      return `<main class="a-body"><div class="empty"><p>Non ci sono ancora video.</p>
-        <p class="small muted">Arrivano dal canale della FSGC quando pubblica gli highlights di una giornata.</p>
-        <a class="a-btn sec" href="${urlCanale}" target="_blank" rel="noopener" style="text-decoration:none">Vai al canale</a></div></main>`;
+      return `<main class="a-body"><div class="empty"><p>${t('Non ci sono ancora video.')}</p>
+        <p class="small muted">${t('Arrivano dal canale della FSGC quando pubblica gli highlights di una giornata.')}</p>
+        <a class="a-btn sec" href="${urlCanale}" target="_blank" rel="noopener" style="text-decoration:none">${t('Vai al canale')}</a></div></main>`;
     }
     return `<main class="a-body">
-      <div class="warn info">${icon('eye', 'ic sm')}<span>${S.prudente() ? 'I video si guardano su YouTube: il play apre il canale della FSGC.' : 'I video stanno su YouTube. Finché non tocchi play non parte nessuna richiesta verso Google: la copertina la disegna l\'app.'}</span></div>
-      ${giornate.map(([k, lista]) => `<div class="a-sec"><b>${k}ª giornata</b><span>${lista.length} ${lista.length === 1 ? 'partita' : 'partite'}</span></div>
+      <div class="warn info">${icon('eye', 'ic sm')}<span>${S.prudente() ? t('I video si guardano su YouTube: il play apre il canale della FSGC.') : t('I video stanno su YouTube. Finché non tocchi play non parte nessuna richiesta verso Google: la copertina la disegna l\'app.')}</span></div>
+      ${giornate.map(([k, lista]) => `<div class="a-sec"><b>${t('{n}ª giornata', { n: k })}</b><span>${lista.length === 1 ? t('{n} partita', { n: lista.length }) : t('{n} partite', { n: lista.length })}</span></div>
         ${lista.map(({ m, v }) => scheda(m, v)).join('')}`).join('')}
-      ${altri.length ? `<div class="a-sec"><b>Dal canale</b><span>coppa e sondaggi</span></div>
+      ${altri.length ? `<div class="a-sec"><b>${t('Dal canale')}</b><span>${t('coppa e sondaggi')}</span></div>
         <div class="bench">${altri.map((x) => `<a class="br" href="${urlVideo(x.id)}" target="_blank" rel="noopener" style="text-decoration:none">
           <span class="vid-mini">${icon('play', 'ic sm')}</span>
           <span class="nm"><b>${esc(x.titolo)}</b><span>${esc(dateIt(x.quando))}</span></span></a>`).join('')}</div>` : ''}
-      <a class="a-btn sec" href="${urlCanale}" target="_blank" rel="noopener" style="text-decoration:none">Tutto il canale della FSGC</a>
+      <a class="a-btn sec" href="${urlCanale}" target="_blank" rel="noopener" style="text-decoration:none">${t('Tutto il canale della FSGC')}</a>
     </main>`;
   },
   mount(root) {
@@ -68,7 +68,7 @@ export const video = {
       if (S.prudente()) return;
       const id = card.dataset.vid; const cop = card.querySelector('.vid-cop:not(.in)'); if (!cop) return;
       cop.outerHTML = `<div class="vid-cop in"><iframe
-        src="${urlIncorpora(id)}" title="Highlights" loading="lazy" allowfullscreen
+        src="${urlIncorpora(id)}" title="${t('Highlights')}" loading="lazy" allowfullscreen
         allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture; fullscreen" playsinline
         referrerpolicy="strict-origin-when-cross-origin"></iframe></div>`;
     };

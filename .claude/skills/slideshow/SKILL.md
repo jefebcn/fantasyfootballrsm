@@ -7,6 +7,7 @@ description: >
   page into a deck. Output is a navigable deck, not a rendered MP4. If the
   user didn't explicitly ask for a slideshow, confirm before authoring.
   Unclear → /hyperframes.
+disable-model-invocation: true
 ---
 
 **Plugin installs:** Before setup or freshness commands, follow [plugin execution rules](../hyperframes/references/plugin-installation.md) when this skill is inside a HyperFrames plugin. Standalone installs keep the update instructions below.

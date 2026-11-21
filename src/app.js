@@ -1,7 +1,7 @@
 /** Shell applicativa: router hash, app bar, drawer, bottom nav, toast, sheet. */
 import { SPRITE } from './sprite.js';
 import { AVATAR_SPRITE } from './avatar.js';
-import { esc, icon, marchio, pic, mask, crest } from './ui.js';
+import { esc, icon, marchio, pic, mask, crest, plurale, t } from './ui.js';
 import * as S from './state.js';
 import * as diagnostica from './diagnostica.js';
 import * as views from './views/index.js';
@@ -11,6 +11,7 @@ import { apriNuovaPassword, segnaRecupero, recuperoInCorso } from './views/nuova
 import { futsalAttivo, leggiInterruttore, selettore, menuFutsal, formazioneMancante, maskFs, COLORE_BARRA } from './views/futsal.js';
 import { logoFs, caricaFs } from './futsal-grafica.js';
 import * as FS from './futsal-server.js';
+import { formazioneInSospeso } from './views/formazione.js';
 
 const root = document.getElementById('app');
 let current = null; // { view, params }
@@ -30,7 +31,7 @@ const ROUTES = [
   ['futsal/formazione', views.futsalFormazione], ['futsal/formazione/:n', views.futsalFormazione], ['futsal/giornata', views.futsalGiornata], ['futsal/giornata/:n', views.futsalGiornata],
   ['futsal/statistiche', views.futsalStatistiche], ['futsal/giocatore/:id', views.futsalGiocatore], ['futsal/listone', views.futsalListone], ['futsal/regolamento', views.futsalRegolamento],
   ['futsal/classifica', views.futsalClassifica], ['futsal/classifica/:vista', views.futsalClassifica], ['futsal/coppa', views.futsalCoppa], ['futsal/leghe', views.futsalLeghe], ['futsal/lega/:id', views.futsalLega],
-  ['login', views.login], ['leghe', views.leghe], ['lega', views.lega], ['gestione', views.gestione], ['squadra', views.squadra], ['vice/:code', views.vice], ['setup', views.setup], ['offline', views.offline], ['sospeso', views.sospeso], ['benvenuto', views.onboarding], ['guida', views.guida],
+  ['login', views.login], ['leghe', views.leghe], ['lega', views.lega], ['gestione', views.gestione], ['squadra', views.squadra], ['vice/:code', views.vice], ['setup', views.setup], ['offline', views.offline], ['sospeso', views.sospeso], ['benvenuto', views.onboarding], ['guida', views.guida], ['gioco', views.gioco], ['shop', views.shop],
 ];
 
 function resolve(hash) {
@@ -47,8 +48,8 @@ function resolve(hash) {
 
 export function go(hash) { location.hash = hash.startsWith('#') ? hash : `#/${hash.replace(/^\//, '')}`; }
 export function toast(msg) {
-  const t = document.getElementById('toast'); t.textContent = msg; t.classList.add('on');
-  clearTimeout(toast._t); toast._t = setTimeout(() => t.classList.remove('on'), 2400);
+  const el = document.getElementById('toast'); el.textContent = msg; el.classList.add('on');
+  clearTimeout(toast._t); toast._t = setTimeout(() => el.classList.remove('on'), 2400);
 }
 /**
  * "Nuova versione pronta": una barra sopra la navigazione, con un bottone.
@@ -59,9 +60,58 @@ export function mostraAggiornamento() {
   if (document.getElementById('aggiorna')) return;
   const b = document.createElement('div');
   b.id = 'aggiorna'; b.className = 'aggiorna'; b.setAttribute('role', 'status');
-  b.innerHTML = '<div><b>Nuova versione pronta</b><span>Tocca per usarla adesso; se no entra alla prossima apertura.</span></div><button type="button">Aggiorna</button>';
+  b.innerHTML = `<div><b>${t('Nuova versione pronta')}</b><span>${t('Tocca per usarla adesso; se no entra alla prossima apertura.')}</span></div><button type="button">${t('Aggiorna')}</button>`;
   b.querySelector('button').onclick = () => location.reload();
   document.body.appendChild(b);
+}
+/**
+ * L'AGGIORNAMENTO ENTRA DA SOLO (Alex, 15/11, con l'app sull'App Store:
+ * «eviterei che alle persone compaia la scritta Aggiorna... che gli venga
+ * fatto in autonomia»). Quando il codice nuovo e' pronto, la pagina si
+ * ricarica in un momento in cui nessuno se ne accorge:
+ *  - appena l'app va in secondo piano: al ritorno e' gia' quella nuova;
+ *  - al primo cambio di schermata: la schermata nuova arriva col codice nuovo;
+ *  - dopo un minuto senza toccare niente.
+ * Mai mentre si scrive in un campo, con un foglio aperto o con una
+ * formazione modificata e non confermata (quella vive solo in memoria).
+ *
+ * Il ciclo infinito di una volta (vedi registraServiceWorker): al massimo UNA
+ * ricarica automatica ogni 10 minuti, contata in localStorage, che
+ * sopravvive alla ricarica. Se il limite scatta, o la memoria non c'e', torna
+ * la barra col bottone: un bottone non puo' andare in ciclo.
+ */
+const RICARICA = 'fcs:ricarica-auto';
+const LIMITE_RICARICA = 10 * 60 * 1000;
+let daAggiornare = false;
+let ultimoTocco = Date.now();
+export function momentoTranquillo() {
+  const a = document.activeElement;
+  if (a && /^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName)) return false;
+  if (document.getElementById('sheet')?.classList.contains('on')) return false;
+  try { if (formazioneInSospeso()) return false; } catch { /* formazione non aperta */ }
+  return true;
+}
+export function aggiornaInSilenzio() {
+  if (!daAggiornare || !momentoTranquillo()) return false;
+  let ultima = 0;
+  try {
+    ultima = Number(localStorage.getItem(RICARICA)) || 0;
+    if (Date.now() - ultima < LIMITE_RICARICA) throw new Error('troppo presto');
+    localStorage.setItem(RICARICA, String(Date.now()));
+  } catch { daAggiornare = false; mostraAggiornamento(); return false; }
+  daAggiornare = false;
+  location.reload();
+  return true;
+}
+function preparaAggiornamento() {
+  daAggiornare = true;
+  if (document.hidden) aggiornaInSilenzio();
+}
+if (typeof window !== 'undefined') {
+  for (const ev of ['pointerdown', 'keydown', 'scroll']) addEventListener(ev, () => { ultimoTocco = Date.now(); }, { passive: true, capture: true });
+  document.addEventListener('visibilitychange', () => { if (document.hidden) aggiornaInSilenzio(); });
+  addEventListener('hashchange', () => { if (daAggiornare) aggiornaInSilenzio(); });
+  setInterval(() => { if (daAggiornare && Date.now() - ultimoTocco > 60 * 1000) aggiornaInSilenzio(); }, 15 * 1000);
 }
 export function sheet(html) {
   const sc = document.getElementById('sheet-scrim'), sh = document.getElementById('sheet');
@@ -91,8 +141,8 @@ const splash = () => `<div class="splash">${marchio()}<i class="splash-bar"><i><
  * l'attributo non c'e'.
  */
 export function applyTheme() {
-  const t = S.store.get().theme;
-  if (t === 'system') document.documentElement.removeAttribute('data-theme'); else document.documentElement.setAttribute('data-theme', t);
+  const tema = S.store.get().theme;
+  if (tema === 'system') document.documentElement.removeAttribute('data-theme'); else document.documentElement.setAttribute('data-theme', tema);
   const meta = document.querySelector('meta[name=theme-color]');
   if (meta) meta.content = document.documentElement.getAttribute('data-theme') === 'dark' ? '#0A3E60' : '#1B84C6';
 }
@@ -107,8 +157,10 @@ function appbar(view, ctx) {
   const kind = (typeof view.appbar === 'function' ? view.appbar(ctx) : view.appbar) || 'main';
   if (kind === 'none') return '';
   if (kind === 'futsal') return `<header class="a-appbar"><button class="ib" data-open-drawer aria-label="Menu">${maskFs('menu', 'ib-mi')}</button><div class="t"><b>Fanta<i>futsal</i></b><span>${esc(view.sub?.(ctx) || view.title)}</span></div><a class="fs-regole" href="#/futsal/regolamento">${maskFs('regolamento', 'ib-mi')}<span>Regole</span></a></header>`;
-  if (kind === 'back') return `<header class="a-appbar"><button class="ib flip" data-back aria-label="Indietro">${icon('chev')}</button><div class="t"><b>${esc(league.name)}</b><span>${esc(view.sub?.(ctx) || view.title)}</span></div>${view.actions ? view.actions(ctx) : ''}</header>`;
-  return `<header class="a-appbar"><button class="ib" data-open-drawer aria-label="Menu">${icon('menu')}</button><div class="t"><b>${esc(league.name)}</b><span>${esc(view.sub?.(ctx) || view.title)}</span></div><button class="ib" data-refresh aria-label="Aggiorna">${mask('pallone-scambio', 'ib-mi')}</button><a class="ib" href="#/regolamento" aria-label="Regolamento">${mask('fischietto', 'ib-mi')}</a><a class="ib" href="#/admin/contestazioni" aria-label="Contestazioni">${icon('bandierina')}${S.contestazioni().some((c) => c.status === 'open') ? '<i class="dot"></i>' : ''}</a></header>`;
+  // Il titolo della schermata si traduce qui, dove entra nella pagina: nelle
+  // viste resta la frase italiana (title: 'Classifica').
+  if (kind === 'back') return `<header class="a-appbar"><button class="ib flip" data-back aria-label="${t('Indietro')}">${icon('chev')}</button><div class="t"><b>${esc(league.name)}</b><span>${esc(view.sub?.(ctx) || t(view.title))}</span></div>${view.actions ? view.actions(ctx) : ''}</header>`;
+  return `<header class="a-appbar"><button class="ib" data-open-drawer aria-label="${t('Menu')}">${icon('menu')}</button><div class="t"><b>${esc(league.name)}</b><span>${esc(view.sub?.(ctx) || t(view.title))}</span></div><button class="ib" data-refresh aria-label="${t('Aggiorna')}">${mask('pallone-scambio', 'ib-mi')}</button><a class="ib" href="#/regolamento" aria-label="${t('Regolamento')}">${mask('fischietto', 'ib-mi')}</a><a class="ib" href="#/admin/contestazioni" aria-label="${t('Contestazioni')}">${icon('bandierina')}${S.contestazioni().some((c) => c.status === 'open') ? '<i class="dot"></i>' : ''}</a></header>`;
 }
 /**
  * La barra in basso.
@@ -136,7 +188,7 @@ function nav(path) {
   if (path.startsWith('futsal')) return navFutsal(path);
   const active = path.split('/')[0];
   const avviso = (p) => (p === 'voti' && S.matchdayStatus(S.currentMatchday()) === 'provisional' ? '<i class="dot"></i>' : '');
-  return `<nav class="a-nav">${NAV.map(([p, ic, l]) => `<a href="#/${p}" class="${active === p ? 'on' : ''}"><i class="np">${mask(ic)}${avviso(p)}</i><span>${l}</span></a>`).join('')}</nav>`;
+  return `<nav class="a-nav">${NAV.map(([p, ic, l]) => `<a href="#/${p}" class="${active === p ? 'on' : ''}"><i class="np">${mask(ic)}${avviso(p)}</i><span>${t(l)}</span></a>`).join('')}</nav>`;
 }
 /**
  * "Installa l'app": finche' non e' sullo Store, la strada e' la schermata
@@ -155,9 +207,9 @@ function nav(path) {
 function vociInstalla() {
   if (AV.installata()) return '';
   const ios = AV.suiOS();
-  const sub = ios ? 'Aggiungi alla Home' : 'schermo intero';
-  return `<div class="d-sec"><span class="chip">App</span></div>
-    <button class="d-item d-installa" data-installa><i>${icon('down')}</i><span class="et">Installa l'app</span><small>${sub}</small></button>`;
+  const sub = ios ? t('Aggiungi alla Home') : t('schermo intero');
+  return `<div class="d-sec"><span class="chip">${t('App')}</span></div>
+    <button class="d-item d-installa" data-installa><i>${icon('down')}</i><span class="et">${t('Installa l\'app')}</span><small>${sub}</small></button>`;
 }
 
 function drawer() {
@@ -189,15 +241,15 @@ function drawer() {
     : `<span class="crest md" style="background:var(--c-titano-700);color:#fff">${esc((nome[0] || '?').toUpperCase())}</span>`;
   const head = `<div class="d-head">
     <div class="d-io">${stemma}
-      <span class="d-chi"><b>${esc(nome)}</b><span>${esc(me?.teamName || u?.email || 'nessuna lega')}</span></span>
-      <button class="d-esci" data-logout aria-label="Esci dall'account" title="Esci">${icon('exit')}</button>
+      <span class="d-chi"><b>${esc(nome)}</b><span>${esc(me?.teamName || u?.email || t('nessuna lega'))}</span></span>
+      <button class="d-esci" data-logout aria-label="${t('Esci dall\'account')}" title="${t('Esci')}">${icon('exit')}</button>
     </div>
     ${S.hasLeague() ? `<a class="d-lega" href="#/leghe">
       <i>${icon(S.base.league.pubblica ? 'globe' : 'cup')}</i>
-      <span class="d-nl"><b>${esc(S.base.league.name)}</b><small>${S.base.managers.length} ${S.base.managers.length === 1 ? 'partecipante' : 'partecipanti'} · cambia lega</small></span>
+      <span class="d-nl"><b>${esc(S.base.league.name)}</b><small>${plurale(S.base.managers.length, t('partecipante'), t('partecipanti'))} · ${t('cambia lega')}</small></span>
       ${icon('chev', 'ic sm')}
     </a>` : `<a class="d-lega" href="#/leghe"><i>${icon('cup')}</i>
-      <span class="d-nl"><b>Nessuna lega</b><small>creane una o entra con un codice</small></span>${icon('chev', 'ic sm')}</a>`}
+      <span class="d-nl"><b>${t('Nessuna lega')}</b><small>${t('creane una o entra con un codice')}</small></span>${icon('chev', 'ic sm')}</a>`}
   </div>`;
   // Dentro il futsal il menu e' il suo: le voci del calcio (lega, mercato,
   // Giudice Dati) a chi gioca solo a futsal non dicono niente, e facevano
@@ -224,7 +276,7 @@ function drawer() {
     <div class="d-foot">Versione ${VERSIONE}<br>Fantatitano Futsal</div>
   </div></div>`;
   }
-  const leagueRow = leagues.length > 1 ? `<div class="d-sec"><span class="chip">Le mie leghe</span></div>${leagues.filter((l) => l.id !== cur).map((l) => `<button class="d-item" data-switch="${l.id}"><i>${icon('cup')}</i><span class="et">${esc(l.name)}</span><small>${esc(l.myRole)}</small></button>`).join('')}` : '';
+  const leagueRow = leagues.length > 1 ? `<div class="d-sec"><span class="chip">${t('Le mie leghe')}</span></div>${leagues.filter((l) => l.id !== cur).map((l) => `<button class="d-item" data-switch="${l.id}"><i>${icon('cup')}</i><span class="et">${esc(l.name)}</span><small>${esc(l.myRole)}</small></button>`).join('')}` : '';
   return `<div class="a-drawer${drawerOpen ? ' on' : ''}"><div class="scrim" data-close-drawer></div><div class="panel">
     ${head}${leagueRow}
     ${S.hasLeague() ? `<div class="d-cta">${(() => {
@@ -233,33 +285,33 @@ function drawer() {
     // questo momento c'e' davvero da guardare.
     const b = S.schieramentoBloccato();
     return b
-      ? `<a class="a-btn" href="#/voti/${b.inGioco}" style="text-decoration:none">${icon('votes', 'ic sm')}Voti della ${b.inGioco}ª</a>`
-      : `<a class="a-btn" href="#/rosa/formazione" style="text-decoration:none">${icon('shirt', 'ic sm')}Schiera la formazione</a>`;
+      ? `<a class="a-btn" href="#/voti/${b.inGioco}" style="text-decoration:none">${icon('votes', 'ic sm')}${t('Voti della {n}ª', { n: b.inGioco })}</a>`
+      : `<a class="a-btn" href="#/rosa/formazione" style="text-decoration:none">${icon('shirt', 'ic sm')}${t('Schiera la formazione')}</a>`;
   })()}</div>` : ''}
     ${vociInstalla()}
-    ${item('#/gestione', { l: 'impostazioni' }, 'Gestione lega', 'tutte le sezioni')}${item('#/squadra', { l: 'la-mia-squadra' }, 'La mia squadra', 'stemma, maglia e nomi')}
+    ${item('#/gestione', { l: 'impostazioni' }, t('Gestione lega'), t('tutte le sezioni'))}${item('#/squadra', { l: 'la-mia-squadra' }, t('La mia squadra'), t('stemma, maglia e nomi'))}${/* Lo shop (Alex, 12/11) */ item('#/shop', 'cart', t('Shop'), t('il top Fantatitano'))}
     ${/* Le impostazioni erano l'ultima riga del menu, senza icona, sotto due
           schermate di voci: Alex, l'8 ottobre, non le ha trovate. Stanno qui,
           in cima, con la guida di TITO accanto. */
-    item('#/impostazioni', 'gear', 'Impostazioni', 'account e privacy')}${item('#/guida', 'book', 'Come si gioca', 'la guida di TITO')}${/* I Reclutatori (023): l'invito in vista, non sepolto in Profilo lega */
-    S.reclutatoriAttivi() && S.base.league.id ? item('#/lega', 'userplus', 'Invita amici', S.mieiReclutati() ? `Reclutatore · ${S.mieiReclutati()}` : 'diventa Reclutatore') : ''}
-    <div class="d-sec"><span class="chip">La lega</span></div>
-    ${item('#/lega', { m: 'leghe' }, 'La tua lega', S.base.league.inviteCode ? `codice ${esc(S.base.league.inviteCode)}` : '')}${item('#/lega', { m: 'squadre' }, 'Partecipanti', String(S.base.managers.length))}${item('#/regolamento', { m: 'guide' }, 'Regole del gioco')}${item('#/classifica', { m: 'statistiche' }, 'Classifiche')}
-    <div class="d-sec"><span class="chip">In campo</span></div>
-    ${S.base.league.id ? item('#/formazioni', 'users', 'Formazioni di tutti', 'dal lock di ogni giornata') : ''}
-    ${S.legaPubblica() ? item('#/negozio', { l: 'rose' }, 'La tua rosa', `${S.rosterIds(S.me()?.id).length}/25`) : ''}${item('#/listone', { m: 'quotazioni' }, 'Listone', String(S.base.players.length))}${S.legaPubblica()
+    item('#/impostazioni', 'gear', t('Impostazioni'), t('account e privacy'))}${item('#/guida', 'book', t('Come si gioca'), t('la guida di TITO'))}${/* I Reclutatori (023): l'invito in vista, non sepolto in Profilo lega */
+    S.reclutatoriAttivi() && S.base.league.id ? item('#/lega', 'userplus', t('Invita amici'), S.mieiReclutati() ? t('Reclutatore · {n}', { n: S.mieiReclutati() }) : t('diventa Reclutatore')) : ''}
+    <div class="d-sec"><span class="chip">${t('La lega')}</span></div>
+    ${item('#/lega', { m: 'leghe' }, t('La tua lega'), S.base.league.inviteCode ? t('codice {codice}', { codice: esc(S.base.league.inviteCode) }) : '')}${item('#/lega', { m: 'squadre' }, t('Partecipanti'), String(S.base.managers.length))}${item('#/regolamento', { m: 'guide' }, t('Regole del gioco'))}${item('#/classifica', { m: 'statistiche' }, t('Classifiche'))}
+    <div class="d-sec"><span class="chip">${t('In campo')}</span></div>
+    ${S.base.league.id ? item('#/formazioni', 'users', t('Formazioni di tutti'), t('dal lock di ogni giornata')) : ''}
+    ${S.legaPubblica() ? item('#/negozio', { l: 'rose' }, t('La tua rosa'), `${S.rosterIds(S.me()?.id).length}/25`) : ''}${item('#/listone', { m: 'quotazioni' }, t('Listone'), String(S.base.players.length))}${S.legaPubblica()
     // Il mercato degli svincolati e' una gara per chi e' rimasto libero: in
     // una lega aperta non e' libero nessuno e non e' preso nessuno, quindi
     // la voce porterebbe a una gara senza posta. La rosa si cambia dal
     // negozio, finche' il mercato e' aperto.
-    ? '' : item('#/mercato', { m: 'trasferimenti' }, 'Mercato libero', 'rilancio 24h')}${item('#/mercato', 'out', 'Fuori dal campionato', String(S.base.players.filter((p) => !p.isActive).length))}${item('#/scheda', { m: 'scheda' }, 'Scheda condivisibile')}
-    ${S.isLeagueAdmin() ? `<div class="d-sec"><span class="chip">Per chi amministra</span></div>${S.legaPubblica() ? item('#/classifica', { l: 'premi' }, 'Premi in palio', `${S.premi().length || 'nessuno'}`) : ''}${item('#/lega', { m: 'squadre' }, 'Gestione rose')}${item('#/lega', { m: 'vice-allenatore' }, 'Partecipanti e ruoli')}` : ''}
-    ${S.isAdmin() ? `<div class="d-sec admin"><span class="chip">Amministrazione</span></div>
-    ${item('#/admin/console', { l: 'strumenti' }, 'Console', 'persone, leghe e numeri')}` : ''}
-    ${S.isJudge() ? `<div class="d-sec admin"><span class="chip">Giudice Dati</span></div>
-    ${item('#/admin', { m: 'voti' }, 'Inserisci eventi', `G${ph.matchday}`)}${item('#/admin/contestazioni', 'flag', 'Contestazioni', `${S.contestazioni().filter((c) => c.status === 'open').length} aperte`)}${item('#/admin/congela', 'calc', 'Calcola giornata', 'la chiude per sempre')}${item('#/admin/registro', 'archive', 'Registro modifiche')}` : ''}
-    <button class="d-esci-fondo" data-logout>${icon('exit', 'ic sm')}Esci dall'account</button>
-    <div class="d-foot">Versione ${VERSIONE}<br>Fantatitano</div>
+    ? '' : item('#/mercato', { m: 'trasferimenti' }, t('Mercato libero'), t('rilancio 24h'))}${item('#/mercato', 'out', t('Fuori dal campionato'), String(S.base.players.filter((p) => !p.isActive).length))}${item('#/scheda', { m: 'scheda' }, t('Scheda condivisibile'))}
+    ${S.isLeagueAdmin() ? `<div class="d-sec"><span class="chip">${t('Per chi amministra')}</span></div>${S.legaPubblica() ? item('#/classifica', { l: 'premi' }, t('Premi in palio'), `${S.premi().length || t('nessuno')}`) : ''}${item('#/lega', { m: 'squadre' }, t('Gestione rose'))}${item('#/lega', { m: 'vice-allenatore' }, t('Partecipanti e ruoli'))}` : ''}
+    ${S.isAdmin() ? `<div class="d-sec admin"><span class="chip">${t('Amministrazione')}</span></div>
+    ${item('#/admin/console', { l: 'strumenti' }, t('Console'), t('persone, leghe e numeri'))}` : ''}
+    ${S.isJudge() ? `<div class="d-sec admin"><span class="chip">${t('Giudice Dati')}</span></div>
+    ${item('#/admin', { m: 'voti' }, t('Inserisci eventi'), t('G{n}', { n: ph.matchday }))}${item('#/admin/contestazioni', 'flag', t('Contestazioni'), t('{n} aperte', { n: S.contestazioni().filter((c) => c.status === 'open').length }))}${item('#/admin/congela', 'calc', t('Calcola giornata'), t('la chiude per sempre'))}${item('#/admin/registro', 'archive', t('Registro modifiche'))}` : ''}
+    <button class="d-esci-fondo" data-logout>${icon('exit', 'ic sm')}${t('Esci dall\'account')}</button>
+    <div class="d-foot">${t('Versione {v}', { v: VERSIONE })}<br>Fantatitano</div>
   </div></div>`;
 }
 
@@ -271,7 +323,7 @@ const STATE_ROUTE = { unconfigured: 'setup', offline: 'offline', anonymous: 'log
 // A chi e' sospeso restano le impostazioni e le pagine che ci stanno dentro:
 // da li' si scaricano i propri dati e si cancella l'account, che sono diritti
 // e non si sospendono insieme al resto.
-const ALLOWED = { 'no-league': ['leghe', 'guida', 'impostazioni', 'impostazioni/avanzate', 'admin/console'], anonymous: ['login', 'benvenuto'],
+const ALLOWED = { 'no-league': ['leghe', 'guida', 'impostazioni', 'impostazioni/avanzate', 'admin/console', 'shop'], anonymous: ['login', 'benvenuto'],
   sospeso: ['impostazioni', 'impostazioni/avanzate', 'privacy', 'termini', 'archiviazione', 'licenze', 'cancella-account'] };
 // Le pagine legali si leggono SEMPRE: senza account, senza collegamento,
 // anche prima di configurare il server. Un'informativa raggiungibile solo a
@@ -354,7 +406,7 @@ export function render() {
   if (path === 'login' && prevPath !== 'login') views.resetLogin();
   if (prevPath !== undefined) { const m = root.querySelector('.a-body'); if (m) scrollMemo[prevPath] = m.scrollTop; }
   current = { view, params, path };
-  document.title = `${view.title} · Fantatitano`;
+  document.title = `${t(view.title)} · Fantatitano`;
   sport(path, prevPath);
   // senza barra in basso e' il corpo a dover stare sopra la tacca del telefono:
   // con la barra ci pensa lei, e sommarli lascerebbe un vuoto in fondo.
@@ -369,7 +421,7 @@ export function render() {
   // tutte, invece che in ogni schermata.
   const fuori = view.serveSquadra && !S.me();
   const corpo = fuori
-    ? `<main class="a-body"><div class="empty"><p>Non fai parte di questa lega.</p><a class="a-btn" href="#/leghe" style="text-decoration:none">Le mie leghe</a></div></main>`
+    ? `<main class="a-body"><div class="empty"><p>${t('Non fai parte di questa lega.')}</p><a class="a-btn" href="#/leghe" style="text-decoration:none">${t('Le mie leghe')}</a></div></main>`
     : view.render(ctx);
   // Calcio | Futsal in cima alla home del calcio, solo a interruttore acceso
   // (la home del futsal lo mette da se').
@@ -385,11 +437,11 @@ document.addEventListener('click', (e) => {
   if (e.target.closest('[data-close-drawer]')) { drawerOpen = false; root.querySelector('.a-drawer').classList.remove('on'); return; }
   if (e.target.closest('.a-drawer a')) { drawerOpen = false; }
   if (e.target.closest('[data-installa]')) { drawerOpen = false; root.querySelector('.a-drawer')?.classList.remove('on'); installa(); return; }
-  if (e.target.closest('[data-refresh]')) { toast('Aggiorno…'); S.refresh(); return; }
+  if (e.target.closest('[data-refresh]')) { toast(t('Aggiorno…')); S.refresh(); return; }
   if (e.target.closest('[data-logout]')) { S.signOut().then(() => go('login')); return; }
   const sw = e.target.closest('[data-switch]'); if (sw) { drawerOpen = false; S.switchLeague(sw.dataset.switch).then(() => go('')); return; }
   if (e.target.closest('[data-back]')) { e.preventDefault(); if (history.length > 1) history.back(); else go(''); return; }
-  const t = e.target.closest('.vr[data-toggle]'); if (t) { const vb = t.nextElementSibling; if (vb?.classList.contains('vb')) vb.classList.toggle('on'); return; }
+  const tg = e.target.closest('.vr[data-toggle]'); if (tg) { const vb = tg.nextElementSibling; if (vb?.classList.contains('vb')) vb.classList.toggle('on'); return; }
   if (e.target.id === 'sheet-scrim') sheet(null);
 });
 /**
@@ -404,20 +456,20 @@ async function installa() {
     p.prompt();
     const esito = await p.userChoice.catch(() => null);
     window.__installPrompt = null;
-    if (esito && esito.outcome === 'accepted') toast('Fatto: la trovi nella schermata Home');
+    if (esito && esito.outcome === 'accepted') toast(t('Fatto: la trovi nella schermata Home'));
     return;
   }
   const ios = AV.suiOS();
-  sheet(`<h3>Installa Fantatitano</h3>
-    <p class="sheet-sub">Si apre a schermo intero, senza la barra dell'indirizzo, e le notifiche funzionano anche a telefono chiuso.</p>
+  sheet(`<h3>${t('Installa Fantatitano')}</h3>
+    <p class="sheet-sub">${t('Si apre a schermo intero, senza la barra dell\'indirizzo, e le notifiche funzionano anche a telefono chiuso.')}</p>
     ${ios
-    ? `<ol class="passi"><li>Tocca <b>Condividi</b> ${icon('share', 'ic sm')}: ${esc(AV.doveCondividi().replace(/^Il quadrato/, 'il quadrato'))}</li>
-       <li>Scorri e tocca <b>Aggiungi alla schermata Home</b>.</li>
-       <li>Conferma con <b>Aggiungi</b>.</li></ol>
-       <p class="small muted">${AV.browserIOS() === 'app' ? 'Sei dentro un\'altra app (Instagram, Facebook…): lì la voce non c\'è. Apri prima fantatitano.site in Safari o in Chrome.' : 'Funziona da Safari e da Chrome. Se la voce non c\'è, aggiorna l\'iPhone oppure apri fantatitano.site in Safari.'}</p>`
-    : `<ol class="passi"><li>Apri il <b>menu del browser</b> (i tre puntini in alto).</li>
-       <li>Tocca <b>Installa app</b>, o <b>Aggiungi a schermata Home</b>.</li></ol>
-       <p class="small muted">Se non trovi la voce, il browser che stai usando non la offre: prova con Chrome.</p>`}`);
+    ? `<ol class="passi"><li>${t('Tocca <b>Condividi</b> {icona}: {dove}', { icona: icon('share', 'ic sm'), dove: esc(AV.doveCondividi().replace(/^./, (c) => c.toLowerCase())) })}</li>
+       <li>${t('Scorri e tocca <b>Aggiungi alla schermata Home</b>.')}</li>
+       <li>${t('Conferma con <b>Aggiungi</b>.')}</li></ol>
+       <p class="small muted">${AV.browserIOS() === 'app' ? t('Sei dentro un\'altra app (Instagram, Facebook…): lì la voce non c\'è. Apri prima fantatitano.site in Safari o in Chrome.') : t('Funziona da Safari e da Chrome. Se la voce non c\'è, aggiorna l\'iPhone oppure apri fantatitano.site in Safari.')}</p>`
+    : `<ol class="passi"><li>${t('Apri il <b>menu del browser</b> (i tre puntini in alto).')}</li>
+       <li>${t('Tocca <b>Installa app</b>, o <b>Aggiungi a schermata Home</b>.')}</li></ol>
+       <p class="small muted">${t('Se non trovi la voce, il browser che stai usando non la offre: prova con Chrome.')}</p>`}`);
 }
 
 window.addEventListener('hashchange', () => { drawerOpen = false; sheet(null); render(); });
@@ -459,21 +511,21 @@ function mostraRitornoFallito(err) {
   // chiedere un altro link (log del 23/10: due tocchi a vuoto, poi la
   // password vecchia sbagliata due volte).
   if (S.currentUser()) {
-    sheet(`<h3>Quel link l'avevi già usato</h3>
-      <p class="auth-hint">Vale una volta sola, e la prima volta ha funzionato: <b>sei già dentro</b>. Se stavi recuperando la password, sceglila adesso.</p>
-      <button class="a-btn" id="ritorno-pw" style="margin-top:12px">Scegli la nuova password</button>
-      <button class="sottile centro" id="ritorno-ok" style="margin-top:6px">Va bene così</button>`);
+    sheet(`<h3>${t('Quel link l\'avevi già usato')}</h3>
+      <p class="auth-hint">${t('Vale una volta sola, e la prima volta ha funzionato: <b>sei già dentro</b>. Se stavi recuperando la password, sceglila adesso.')}</p>
+      <button class="a-btn" id="ritorno-pw" style="margin-top:12px">${t('Scegli la nuova password')}</button>
+      <button class="sottile centro" id="ritorno-ok" style="margin-top:6px">${t('Va bene così')}</button>`);
     document.getElementById('ritorno-pw').onclick = () => apriNuovaPassword({ sheet, toast }, { recupero: true });
     document.getElementById('ritorno-ok').onclick = () => sheet(null);
     return;
   }
-  sheet(`<h3>Quel link era già stato aperto</h3>
-    <p class="auth-hint">Vale una volta sola, e certe caselle di posta lo aprono da sole per controllarlo prima di mostrartelo. Non hai sbagliato niente.</p>
+  sheet(`<h3>${t('Quel link era già stato aperto')}</h3>
+    <p class="auth-hint">${t('Vale una volta sola, e certe caselle di posta lo aprono da sole per controllarlo prima di mostrartelo. Non hai sbagliato niente.')}</p>
     <ul class="passi">
-      <li><b>Se ti stavi iscrivendo</b>, l'account è già confermato: entra con la tua e-mail e la tua password.</li>
-      <li><b>Se stavi recuperando la password</b>, quel link non serve più: chiedine un altro da «Password dimenticata».</li>
+      <li>${t('<b>Se ti stavi iscrivendo</b>, l\'account è già confermato: entra con la tua e-mail e la tua password.')}</li>
+      <li>${t('<b>Se stavi recuperando la password</b>, quel link non serve più: chiedine un altro da «Password dimenticata».')}</li>
     </ul>
-    <button class="a-btn" id="ritorno-ok" style="margin-top:12px">Vai all'accesso</button>`);
+    <button class="a-btn" id="ritorno-ok" style="margin-top:12px">${t('Vai all\'accesso')}</button>`);
   const b = document.getElementById('ritorno-ok');
   if (b) b.onclick = () => { sheet(null); go('login'); };
 }
@@ -535,9 +587,9 @@ function misuraAltezza() {
   // iOS disegna davvero — sparite. La seconda, che invece serve: la barretta
   // di casa sta gia' fuori dalla finestra, quindi tenerle da parte 34pt dentro
   // la barra e' contarla due volte, e sono 34pt di vuoto in piu' in fondo.
-  const t = taccaSopra();
+  const tacca = taccaSopra();
   const schermo = (window.screen && window.screen.height) || 0;
-  const doppioConto = t > 0 && schermo && Math.abs(h + t - schermo) <= 1;
+  const doppioConto = tacca > 0 && schermo && Math.abs(h + tacca - schermo) <= 1;
   const r = document.documentElement.style;
   if (doppioConto) r.setProperty('--sa-bottom', '0px'); else r.removeProperty('--sa-bottom');
   return h;
@@ -573,11 +625,12 @@ function seguiAltezza() {
  */
 function avvisaReferti() {
   const n = S.prendiAvvisoCambiati();
-  const cambiati = n ? `Referti FSGC completati: ${n === 1 ? 'una partita' : `${n} partite`} da aggiornare in Impostazioni avanzate → Giudice Dati` : '';
+  const partite = (k) => (k === 1 ? t('una partita') : t('{n} partite', { n: k }));
+  const cambiati = n ? t('Referti FSGC completati: {partite} da aggiornare in Impostazioni avanzate → Giudice Dati', { partite: partite(n) }) : '';
   const a = S.prendiAvvisoReferti();
   if (!a) { if (cambiati) toast(cambiati); return; }
-  const g = a.giornate.length === 1 ? `giornata ${a.giornate[0]}` : `giornate ${a.giornate.join(', ')}`;
-  toast(`Referti FSGC: ${a.gare.length === 1 ? 'una partita' : `${a.gare.length} partite`} in lega (${g}) · ${a.eventi} eventi${cambiati ? ` · ${cambiati}` : ''}`);
+  const g = a.giornate.length === 1 ? t('giornata {n}', { n: a.giornate[0] }) : t('giornate {n}', { n: a.giornate.join(', ') });
+  toast(t('Referti FSGC: {partite} in lega ({giornate}) · {eventi} eventi', { partite: partite(a.gare.length), giornate: g, eventi: a.eventi }) + (cambiati ? ` · ${cambiati}` : ''));
 }
 
 async function boot() {
@@ -594,7 +647,7 @@ async function boot() {
     // Anche quelli che l'app gia' prendeva finiscono nella lista: sono i piu'
     // utili, perche' sono quelli che l'utente ha visto.
     diagnostica.segna('app', e?.message || e, e?.stack || '');
-    if (S.appState() !== 'offline') toast(e?.message || 'Errore di rete');
+    if (S.appState() !== 'offline') toast(e?.message || t('Errore di rete'));
   });
   // Il codice d'invito si legge subito, prima che l'indirizzo venga
   // ripulito: ?invito=ABC123 arriva dal link condiviso, oppure di ritorno
@@ -650,7 +703,7 @@ async function boot() {
  * vecchia senza che nulla lo segnalasse.
  */
 function registraServiceWorker() {
-  // NIENTE ricarica automatica quando arriva un service worker nuovo.
+  // LA RICARICA AUTOMATICA DI UNA VOLTA, e perche' quella di oggi e' diversa.
   //
   // C'era, e poteva bloccare l'app. La guardia che doveva impedire il ciclo
   // infinito era una variabile della pagina: dopo location.reload() la pagina e'
@@ -667,16 +720,18 @@ function registraServiceWorker() {
   // schermata Home resta sospesa in memoria e torna su com'era, senza
   // ricaricare. Alex ha cercato per un quarto d'ora un bottone che c'era da
   // un'ora, perche' la sua app era ancora quella del giorno prima. Quindi
-  // quando il service worker nuovo prende il controllo si AVVISA — un
-  // bottone, non una ricarica: e' la persona a decidere quando, e un bottone
-  // non puo' andare in ciclo.
+  // quando il service worker nuovo prende il controllo si avvisava con un
+  // bottone. Dal 15/11 (app sull'App Store) si ricarica da sola in un momento
+  // tranquillo (aggiornaInSilenzio, sopra), con la guardia che mancava allora:
+  // in localStorage, quindi sopravvive alla ricarica, e al massimo una ogni
+  // 10 minuti. Oltre quel limite torna il bottone.
   if ('serviceWorker' in navigator) {
     // Al primo accesso il controllo passa da "nessuno" al primo service
     // worker: non e' un aggiornamento e non si dice niente.
     let avevaControllo = !!navigator.serviceWorker.controller;
     navigator.serviceWorker.addEventListener('controllerchange', () => {
       if (!avevaControllo) { avevaControllo = true; return; }
-      mostraAggiornamento();
+      preparaAggiornamento();
     });
     navigator.serviceWorker.register('./sw.js').then((reg) => {
       // Il controllo automatico del browser non e' garantito quando serve:

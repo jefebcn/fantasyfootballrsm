@@ -15,6 +15,7 @@
  *    chiave non e' configurata questa parte resta spenta e l'app lo dice.
  */
 import { VAPID_PUBBLICA } from './config.js';
+import { t } from './lingua.js';
 
 /**
  * DENTRO L'APP IPHONE (App Store, cartella ios/). L'app e' questo stesso sito
@@ -47,7 +48,7 @@ const ascolta = (plugin, evento, fn) => Promise.resolve().then(() => plugin.addL
 async function avviaNativo() {
   const [{ P }, core] = await Promise.all([push(), import('../vendor/capacitor-core.js')]);
   try { permessoNativo = STATI[(await P.checkPermissions()).receive] || 'default'; } catch { /* resta default */ }
-  ascolta(P, 'registration', (t) => { tokenNativo = t.value; aspettaToken?.(t.value); });
+  ascolta(P, 'registration', (reg) => { tokenNativo = reg.value; aspettaToken?.(reg.value); });
   ascolta(P, 'registrationError', () => aspettaToken?.(null));
   // tocco sulla notifica: si apre la schermata giusta (es. la formazione)
   ascolta(P, 'pushNotificationActionPerformed', (a) => {
@@ -99,9 +100,9 @@ export function browserIOS() {
 /** Dove si tocca Condividi, con le parole del browser che si ha in mano. */
 export function doveCondividi() {
   const b = browserIOS();
-  if (b === 'chrome') return 'Il quadrato con la freccia in su, a destra nella barra dell\'indirizzo.';
-  if (b === 'altro') return 'Il quadrato con la freccia in su: se non lo vedi nella barra, è nel menu del browser.';
-  return 'Il quadrato con la freccia in su, nella barra di Safari.';
+  if (b === 'chrome') return t('Il quadrato con la freccia in su, a destra nella barra dell\'indirizzo.');
+  if (b === 'altro') return t('Il quadrato con la freccia in su: se non lo vedi nella barra, è nel menu del browser.');
+  return t('Il quadrato con la freccia in su, nella barra di Safari.');
 }
 
 /** Aperta dalla schermata Home, non dentro un browser. */
@@ -195,10 +196,10 @@ export async function avvisaFormazione(p, { giaAvvisato, segna }) {
   if (giaAvvisato === p.giornata) return false;
   const reg = await registrazione(); if (!reg) return false;
   const ore = Math.floor(p.ore);
-  const quando = ore >= 24 ? `${Math.floor(ore / 24)} giorni` : ore >= 1 ? `${ore} ore` : 'meno di un\'ora';
+  const quando = ore >= 24 ? t('{n} giorni', { n: Math.floor(ore / 24) }) : ore >= 1 ? t('{n} ore', { n: ore }) : t('meno di un\'ora');
   try {
-    await reg.showNotification(`Giornata ${p.giornata}: manca la formazione`, {
-      body: `Si chiude fra ${quando}. Senza consegna la partita è persa 0-3 a tavolino.`,
+    await reg.showNotification(t('Giornata {n}: manca la formazione', { n: p.giornata }), {
+      body: t('Si chiude fra {quando}. Senza consegna la partita è persa 0-3 a tavolino.', { quando }),
       tag: `formazione-${p.giornata}`,       // una sola, e si sostituisce
       renotify: false,
       icon: './icons/icon-192.png',

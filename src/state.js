@@ -11,6 +11,8 @@ import { computeRating, computeLineupResult, computeStandings, defaultLineup, va
 import * as remote from './backend.js';
 import * as clerk from './auth-clerk.js';
 import * as AV from './notifiche.js';
+import { appleMostrabile, appleNativo, accediNativo, annullato } from './apple.js';
+import { t } from './lingua.js';
 
 const PREFS_KEY = 'fcs:prefs';
 export const base = buildSeason();
@@ -83,15 +85,16 @@ export async function init() {
     if (authKind() === 'clerk') {
       user = await clerk.init();
       await remote.init({ accessToken: clerk.token });
-      clerk.onChange(async (u) => { const was = user?.id; user = u; if (u?.id !== was) { await loadAll(); notify(); } });
+      clerk.onChange(async (u) => { const was = user?.id; user = u; if (u?.id !== was) { await loadAll(); notify(); segnaAccesso(); } });
     } else {
       user = await remote.init();
-      remote.onAuth(async (u) => { const was = user?.id; user = u; if (u?.id !== was) { await loadAll(); notify(); } });
+      remote.onAuth(async (u) => { const was = user?.id; user = u; if (u?.id !== was) { await loadAll(); notify(); segnaAccesso(); } });
     }
     ready = true;
     if (user && !prefs.onboarded) { prefs.onboarded = true; persistPrefs(); }
     await loadAll();
     programmaAlLock();
+    segnaAccesso();
     // app iPhone: il codice del dispositivo puo' cambiare, si risalva a ogni avvio
     if (user && AV.nativa()) AV.nativoPronto().then(() => AV.permesso() === 'granted' && iscriviAvvisi()).catch(() => {});
   } catch (e) {
@@ -208,7 +211,7 @@ async function loadAll() {
     const n = refertiDaAggiornare().length;
     if (n) avvisoCambiati = n;
   }
-  if (prof?.is_judge && !lockGiaSincronizzati && !lockInCorso && lockDisallineati().length) {
+  if (prof?.is_judge && !lockGiaSincronizzati && !lockInCorso && lockDisallineati().length && await codiceAggiornato()) {
     // Il segno di "fatto" va messo DOPO che e' riuscita, non prima: segnandolo
     // prima, un errore di rete lasciava il calendario disallineato per tutta la
     // sessione senza piu' riprovare. `lockInCorso` evita solo la sovrapposizione
@@ -338,7 +341,28 @@ export async function signInPassword(email, password) { await remote.signInPassw
 export async function signUpPassword(email, password, displayName) { const r = await remote.signUpPassword(email, password, displayName, ritornoConInvito()); if (!r.needsConfirmation && !r.giaIscritto) await adopt(); return r; }
 export async function resendConfirmation(email) { await remote.resendConfirmation(email, ritornoConInvito()); }
 export async function signInLink(email) { await remote.signInLink(email, ritornoConInvito()); }
-export const oauthProviders = () => { const p = remote.enabledProviders(); return ['google', 'apple'].filter((k) => p[k]); };
+// Apple ha il suo pulsante (appleDisponibile): qui restano gli altri
+export const oauthProviders = () => { const p = remote.enabledProviders(); return ['google'].filter((k) => p[k]); };
+export const appleDisponibile = () => appleMostrabile(!!remote.enabledProviders().apple);
+/** Accedi con Apple: il foglio nativo nell'app iPhone, il giro OAuth sul sito. */
+export async function signInWithApple() {
+  if (!appleNativo()) { await remote.signInOAuth('apple', returnUrl()); return null; }
+  const r = await accediNativo();
+  await remote.signInAppleToken(r);
+  return adopt();
+}
+export { annullato as appleAnnullato };
+/**
+ * Prima di cancellare un account entrato con Apple (regola 5.1.1(v)): nell'app
+ * il foglio di Apple conferma, e il server chiude l'accesso presso Apple.
+ * Se la persona chiude il foglio si ferma tutto (errore 'CANCELED'); ogni
+ * altro intoppo non blocca la cancellazione.
+ */
+export async function revocaAppleSeServe() {
+  if (!remote.conApple(user) || !appleNativo()) return { revocato: false, motivo: 'non serve' };
+  const r = await accediNativo();
+  return remote.revocaApple(r.codice);
+}
 export const clerkMount = (el, kind) => clerk.mount(el, kind);
 export const clerkUnmount = (el) => clerk.unmount(el);
 export const clerkProfile = () => clerk.openProfile();
@@ -349,7 +373,7 @@ export async function updatePassword(password) { await remote.updatePassword(pas
 /**
  * Il nome è stato ricavato dall'indirizzo invece che dichiarato?
  * Succede con Apple: chi sceglie «Nascondi la mia e-mail» arriva con un
- * indirizzo tipo pq7jh9h827@privaterelay.appleid.com, e il nome passa solo
+ * indirizzo tipo abc123xyz@privaterelay.appleid.com, e il nome passa solo
  * alla primissima autorizzazione. Senza chiederlo, in lega comparirebbe la
  * sigla dell'indirizzo.
  */
@@ -1068,6 +1092,28 @@ export function contaBannerUnaVolta(evento) {
   });
 }
 export const caricaConteggiBanner = () => remote.caricaConteggiBanner();
+/*
+ * Chi apre l'app (051, Alex 04/11: capire se la gente torna). Un giorno per
+ * persona: il telefono si ricorda di averlo gia' detto oggi e chiama il
+ * server al massimo una volta al giorno. Se lo ricorda solo quando il server
+ * l'ha segnato: senza la 051, o con la rete giu', riprova alla prossima
+ * apertura. Il giorno e' quello italiano, come nel database.
+ */
+let accessoInCorso = false;
+const giornoItalia = () => new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Rome', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date());
+export function segnaAccesso() {
+  if (!user || accessoInCorso) return;
+  const k = `ft.accesso.${user.id}`; const oggi = giornoItalia();
+  try { if (localStorage.getItem(k) === oggi) return; } catch { /* senza memoria si chiede lo stesso: il server tiene una riga al giorno */ }
+  accessoInCorso = true;
+  remote.segnaAccesso().then((ok) => {
+    accessoInCorso = false;
+    if (ok) try { localStorage.setItem(k, oggi); } catch { /* domani lo richiede, pazienza */ }
+  });
+}
+// Un'app lasciata aperta e ripresa il giorno dopo e' un'apertura nuova.
+if (typeof document !== 'undefined') document.addEventListener('visibilitychange', () => { if (!document.hidden) segnaAccesso(); });
+export const adminAccessi = (giorni) => remote.adminAccessi(giorni);
 export const verificaRegistro = () => remote.verificaRegistro();
 export const testoConsenso = (v) => remote.testoConsenso(v);
 export const caricaProva = (id) => remote.caricaProva(id);
@@ -1104,6 +1150,17 @@ export const sponsorTutti = () => sponsor.slice();
 /** Gli errori dei telefoni (022): li manda diagnostica.js, li legge la console. */
 export const segnalaErrore = (r) => (authKind() === 'supabase' ? remote.segnalaErrore(r) : Promise.resolve(false));
 export const caricaErrori = (giorni) => remote.caricaErrori(giorni);
+export const salvaPartitaGioco = (giorno, tentativi, vinto) => (authKind() === 'supabase' ? remote.salvaPartitaGioco(giorno, tentativi, vinto).catch(() => false) : Promise.resolve(false));
+export const adminGiocoConteggi = (giorni) => remote.adminGiocoConteggi(giorni);
+// Lo shop (056). Si ordina solo con un account vero sul server: in prova
+// (senza server) la pagina si vede ma il tasto non c'e'.
+export const shopDisponibile = () => !!(remote.config() && user);
+export const shopOrdina = (o) => remote.shopOrdina(o);
+export const shopMieiOrdini = () => (shopDisponibile() ? remote.shopMieiOrdini().catch(() => null) : Promise.resolve(null));
+export const adminShopOrdini = (tutti) => remote.adminShopOrdini(tutti);
+export const adminShopStato = (id, stato) => remote.adminShopStato(id, stato);
+export const classificaGioco = (mese, lega) => (authKind() === 'supabase' ? remote.classificaGioco(mese, lega).catch(() => null) : Promise.resolve(null));
+export const mioGioco = () => (authKind() === 'supabase' ? remote.mioGioco().catch(() => null) : Promise.resolve(null));
 export const adminRisolviErrore = (id) => remote.adminRisolviErrore(id);
 export async function salvaSponsor(s) { const r = await remote.salvaSponsor(s, user.id); await refresh(); return r; }
 export async function eliminaSponsor(id) { await remote.eliminaSponsor(id); await refresh(); }
@@ -1177,10 +1234,28 @@ export function rendicontoSponsor(id) {
     // La percentuale di tocco su zero viste non e' zero: non esiste.
     ctr: viste ? somma(righe, 'tocchi') / viste : null };
 }
+/**
+ * Il calendario dei lock che il telefono manda al database e' quello del suo
+ * codice. Il 30/10 il telefono del Giudice girava ancora con gli orari a
+ * +02:00 fissi (prima della correzione del fuso): aprendo l'app ha rimesso la
+ * chiusura della 7a alle 20:05 invece delle 21:05, e chi ha provato a
+ * consegnare in quell'ora e' stato rifiutato dal database. Quindi si allinea
+ * solo con il codice piu' recente: se il service worker trova una versione
+ * nuova, o non riesce a controllare (niente rete), non si manda niente.
+ */
+async function codiceAggiornato() {
+  try {
+    const reg = await globalThis.navigator?.serviceWorker?.getRegistration?.();
+    if (!reg) return true;                     // niente service worker: il codice e' quello del sito
+    await reg.update();
+    return !(reg.installing || reg.waiting);
+  } catch { return false; }
+}
 let refertiGiaCaricati = false; let refertiInCorso = false; let avvisoReferti = null;
 let cambiatiDetti = false; let avvisoCambiati = 0;
 export async function sincronizzaLock({ forza = false } = {}) {
   if (!isJudge()) throw new Error('Solo il Giudice Dati può aggiornare il calendario dei lock');
+  if (!(await codiceAggiornato())) throw new Error("C'è una versione nuova dell'app: chiudila e riaprila, poi allinea il calendario");
   const da = forza ? calendarioLock() : lockDisallineati();
   if (!da.length) return 0;
   const n = await remote.syncMatchdayLocks(forza ? calendarioLock() : da);
@@ -1198,6 +1273,7 @@ export async function sincronizzaLock({ forza = false } = {}) {
  * domanda, tenuta separata da chi la mostra.
  */
 /** Iscrive o disiscrive questo dispositivo dalle push. */
+export async function notificaDiProva() { return remote.notificaDiProva(); }
 export async function iscriviAvvisi() {
   const sub = await AV.iscriviPush();
   if (!sub || !user) return false;
@@ -1413,12 +1489,16 @@ export function saveLineup(n, managerId, lineup) {
   // schermata vale solo per quella schermata, e qui ci si arriva anche da un
   // collegamento diretto.
   const b = schieramentoBloccato();
-  if (b && n === b.giornata) throw new Error(`La ${b.inGioco}ª giornata è ancora in corso: la formazione della ${n}ª si apre quando finisce`);
+  if (b && n === b.giornata) throw new Error(t('La {g}ª giornata è ancora in corso: la formazione della {n}ª si apre quando finisce', { g: b.inGioco, n }));
   const rosa = rosaIncompletaPerSchierare(managerId);
-  if (rosa) throw new Error(`Nella lega pubblica la formazione si consegna con la rosa completa: hai ${rosa.ha} giocatori su ${rosa.serve}. Completala dal Negozio.`);
+  if (rosa) throw new Error(t('Nella lega pubblica la formazione si consegna con la rosa completa: hai {ha} giocatori su {serve}. Completala dal Negozio.', { ha: rosa.ha, serve: rosa.serve }));
   const fuori = fuoriRosa(managerId, [...lineup.starters, ...lineup.bench]);
-  if (fuori.length) { const p = playersById.get(fuori[0]); throw new Error(`${p ? p.name : fuori[0]} non è più nella tua rosa: sostituiscilo e conferma di nuovo`); }
-  const rec = { ...lineup, submittedAt: now().toISOString() }; L.lineups[`${n}:${managerId}`] = rec; notify();
+  if (fuori.length) { const p = playersById.get(fuori[0]); throw new Error(t('{nome} non è più nella tua rosa: sostituiscilo e conferma di nuovo', { nome: p ? p.name : fuori[0] })); }
+  const rec = { ...lineup, submittedAt: now().toISOString() }; L.lineups[`${n}:${managerId}`] = rec;
+  // 050: nella lega pubblica vale anche per le giornate dopo ancora aperte
+  // (le scrive il database; qui si vede subito, senza ricaricare)
+  if (legaPubblica()) for (const md of base.matchdays) if (md.number > n && new Date(md.lockAt) > now()) L.lineups[`${md.number}:${managerId}`] = { ...rec };
+  notify();
   return remote.upsertLineup(base.league.id, managerId, n, rec).catch((e) => { onError(e); refresh(); });
 }
 /**

@@ -2,7 +2,7 @@
  * Adattatore Supabase. Caricato solo se configurato: la modalità locale non tocca la rete.
  * Ogni funzione ritorna dati già nel formato usato da state.js.
  */
-import { SUPABASE_URL, SUPABASE_ANON_KEY, SUPABASE_JS, SUPABASE_TIMEOUT_MS } from './config.js';
+import { SUPABASE_URL, SUPABASE_ANON_KEY, SUPABASE_JS, SUPABASE_TIMEOUT_MS, FUNZIONE_AVVISI } from './config.js';
 
 let sb = null; let cfg = null; let providers = {}; let external = false; let settings = null;
 export function config() {
@@ -142,6 +142,8 @@ export function translate(error) {
   if (m.includes('signups not allowed')) return 'Le registrazioni sono chiuse su questo progetto.';
   if (m.includes('more than one relationship') || m.includes('pgrst201')) return 'Il database ha più di un collegamento fra queste tabelle e la richiesta è ambigua: va indicata la chiave da usare.';
   if (m.includes('failed to fetch') || m.includes('networkerror')) return 'Nessuna connessione al server.';
+  // la formazione dopo il lock (004): il database la rifiuta con la regola di sicurezza
+  if (m.includes('row-level security') && m.includes('"lineups"')) return 'La consegna per questa giornata è chiusa: la formazione non è stata salvata.';
   if (m.includes('invalid input syntax for type uuid')) return 'Il database non è pronto per Clerk: esegui la migrazione 001-identita-esterna.sql nell\'SQL Editor.';
   if (!external && (m.includes('jwt expired') || m.includes('pgrst301') || m.includes('pgrst303'))) return 'La sessione è scaduta: chiudi e riapri l\'app. Se succede ancora, esci e rientra dal Profilo.';
   if (m.includes('jwt') || m.includes('jwks') || m.includes('invalid claim')) return 'Token non accettato da Supabase: controlla l\'integrazione Clerk in Authentication → Third-Party Auth e che il claim "role" valga "authenticated".';
@@ -152,6 +154,44 @@ const must = ({ data, error }) => { if (error) throw new Error(translate(error))
 // ---------------------------------------------------------------- auth
 const authCall = async (promise) => { const { data, error } = await promise; if (error) throw new Error(translate(error)); return data; };
 
+/**
+ * Accedi con Apple dall'app (src/apple.js): il gettone firmato da Apple.
+ * Se l'e-mail che Apple manda e' gia' di un account Fantatitano confermato,
+ * Supabase aggiunge Apple a QUELL'account (stesso id, stesse leghe): nessun
+ * doppione. Fa eccezione chi sceglie «Nascondi la mia e-mail»: per Supabase
+ * e' un indirizzo nuovo, quindi un account nuovo.
+ * Il nome Apple lo manda solo al primo accesso: lo si tiene per il profilo.
+ */
+let nomeInArrivo = '';
+export async function signInAppleToken({ token, nonce, nome }) {
+  nomeInArrivo = nome || '';
+  const data = await authCall(sb.auth.signInWithIdToken({ provider: 'apple', token, nonce }));
+  if (nome && !data.user?.user_metadata?.full_name) sb.auth.updateUser({ data: { full_name: nome } }).catch(() => {});
+  return data;
+}
+/**
+ * Una notifica vera ai propri dispositivi (Alex, 15/11): passa dal server e da
+ * Apple o dal browser, come i promemoria. -> { dispositivi, spedite, esiti }
+ */
+export async function notificaDiProva() {
+  const { data, error } = await sb.functions.invoke(FUNZIONE_AVVISI, { headers: { 'x-prova': '1' }, body: { tipo: 'prova' } });
+  if (error) {
+    const dettaglio = await error.context?.json?.().catch(() => null);
+    throw new Error(dettaglio?.errore || translate(error));
+  }
+  return data;
+}
+/**
+ * Chiude l'accesso Apple prima di cancellare l'account (supabase/functions/
+ * apple-revoca). Non lancia mai: la cancellazione deve andare avanti comunque.
+ */
+export async function revocaApple(codice) {
+  try {
+    const { data } = await sb.functions.invoke('apple-revoca', { body: { codice } });
+    return data || { revocato: false };
+  } catch (e) { return { revocato: false, motivo: e?.message }; }
+}
+export const conApple = (u) => !!(u?.app_metadata?.providers || []).includes('apple') || !!(u?.identities || []).some((i) => i.provider === 'apple');
 export async function signInPassword(email, password) { return authCall(sb.auth.signInWithPassword({ email, password })); }
 export async function signUpPassword(email, password, displayName, redirectTo) {
   const data = await authCall(sb.auth.signUp({ email, password, options: { data: { display_name: displayName }, emailRedirectTo: redirectTo } }));
@@ -247,7 +287,7 @@ export async function ensureProfile(user) {
     if (!data?.session) throw new Error(SESSIONE_PERSA);
   }
   const m = user.user_metadata || {};
-  const name = m.display_name || m.full_name || m.name
+  const name = m.display_name || m.full_name || m.name || nomeInArrivo
     || [m.given_name, m.family_name].filter(Boolean).join(' ')
     || (user.email || '').split('@')[0];
   const { error } = await sb.from('profiles').upsert({ id: user.id, display_name: name }, { onConflict: 'id', ignoreDuplicates: true });
@@ -651,6 +691,58 @@ export async function segnalaErrore(r) {
   const { error } = await sb.rpc('segnala_errore', { p_messaggio: r.messaggio, p_versione: r.versione || '',
     p_schermata: r.schermata || '', p_dettaglio: r.dettaglio || '', p_dispositivo: r.dispositivo || '' });
   return !error;
+}
+/** «Chi è?»: com'e' andata la partita di oggi, per i conteggi in admin (048). */
+export async function salvaPartitaGioco(giorno, tentativi, vinto) {
+  if (!sb) return false;
+  const { error } = await sb.rpc('salva_partita_gioco', { p_giorno: giorno, p_tentativi: tentativi, p_vinto: vinto });
+  return !error;
+}
+/** Quanti giocano a «Chi è?», giorno per giorno (048). null se la 048 non c'e'. */
+export async function adminGiocoConteggi(giorni = 14) {
+  const { data, error } = await sb.rpc('admin_gioco_conteggi', { p_giorni: giorni });
+  if (error) return null;
+  return data || [];
+}
+/** Lo shop (056): l'ordine di chi e' dentro. Il totale lo calcola il database. */
+export async function shopOrdina(o) {
+  return must(await sb.rpc('shop_ordina', { p_articolo: o.articolo, p_taglia: o.taglia, p_quantita: o.quantita, p_consegna: o.consegna,
+    p_nome: o.nome, p_contatto: o.contatto, p_indirizzo: o.indirizzo || null, p_note: o.note || null }));
+}
+/** I propri ordini (056). null se la 056 non c'e'. */
+export async function shopMieiOrdini() {
+  const { data, error } = await sb.rpc('shop_miei_ordini');
+  if (error) return null;
+  return data || [];
+}
+/** Tutti gli ordini, per l'admin (056): quelli aperti, o tutti. */
+export async function adminShopOrdini(tutti = false) { return must(await sb.rpc('admin_shop_ordini', { p_tutti: tutti })) || []; }
+export async function adminShopStato(id, stato) { return must(await sb.rpc('admin_shop_stato', { p_id: id, p_stato: stato })); }
+/**
+ * Chi apre l'app (051): segna oggi per chi e' dentro. Una richiesta persa non
+ * e' un errore da mostrare: true solo se il server l'ha segnato.
+ */
+export function segnaAccesso() {
+  if (!sb) return Promise.resolve(false);
+  return sb.rpc('segna_accesso').then(({ error }) => !error, () => false);
+}
+/** Quanti aprono l'app, per l'admin (051). null se la 051 non c'e'. */
+export async function adminAccessi(giorni = 14) {
+  const { data, error } = await sb.rpc('admin_accessi', { p_giorni: giorni });
+  if (error) return null;
+  return data || null;
+}
+/** «Chi è?»: la classifica del mese, di tutti o di una lega (049). null se non c'e'. */
+export async function classificaGioco(mese = null, lega = null) {
+  if (!sb) return null;
+  const { data, error } = await sb.rpc('classifica_gioco', { p_mese: mese, p_lega: lega });
+  return error ? null : data || [];
+}
+/** «Chi è?»: la propria serie, la piu' lunga, vinte e giocate (049). */
+export async function mioGioco() {
+  if (!sb) return null;
+  const { data, error } = await sb.rpc('mio_gioco');
+  return error ? null : (data || [])[0] || null;
 }
 /** Un errore corretto si toglie dalla console, con tutte le sue righe (031). */
 export async function adminRisolviErrore(id) { return must(await sb.rpc('admin_risolvi_errore', { p_id: id })); }

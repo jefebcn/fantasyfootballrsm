@@ -58,13 +58,14 @@ function attesa() {
   await p.click('[data-vista="campionato"]'); await w(700);
   const vista = await p.evaluate(() => ({
     nota: document.querySelector('.warn.info')?.innerText || '',
-    righe: [...document.querySelectorAll('.cls.camp .crow')].map((r) => ({ pos: +r.querySelector('.pos').innerText, nome: r.querySelector('.nm b').innerText, sigla: r.querySelector('.crest').innerText.trim(), pt: +r.querySelector('.pt b').innerText, forma: r.querySelectorAll('.fm').length })),
+    righe: [...document.querySelectorAll('.cls.camp .crow')].map((r) => ({ pos: +r.querySelector('.pos').innerText, nome: r.querySelector('.nm b').innerText, club: (r.querySelector('img.stemma')?.getAttribute('src') || '').match(/stemmi\/([a-z]+)-mini\.webp$/)?.[1] || '', pt: +r.querySelector('.pt b').innerText, forma: r.querySelectorAll('.fm').length })),
   }));
   const { pt, gare5, fatte5 } = attesa();
-  const sigla = await p.evaluate(async () => { const S = await import('/src/state.js'); return Object.fromEntries(S.base.clubs.map((c) => [c.shortName, c.id])); });
   et(vista.righe.length === 16, `ci sono tutte e 16 le squadre (${vista.righe.length})`);
-  const sbagliate = vista.righe.filter((r) => (pt[sigla[r.sigla]] || 0) !== r.pt);
-  et(sbagliate.length === 0, `i punti tornano col conto fatto a parte (${sbagliate.length ? sbagliate.map((r) => `${r.nome} ${r.pt} invece di ${pt[sigla[r.sigla]] || 0}`).join(', ') : 'tutti'})`);
+  // la squadra si riconosce dallo stemma (media/stemmi/<id>-mini.webp), uno diverso per riga
+  et(vista.righe.every((r) => r.club) && new Set(vista.righe.map((r) => r.club)).size === 16, 'ogni riga ha lo stemma della sua squadra');
+  const sbagliate = vista.righe.filter((r) => (pt[r.club] || 0) !== r.pt);
+  et(sbagliate.length === 0, `i punti tornano col conto fatto a parte (${sbagliate.length ? sbagliate.map((r) => `${r.nome} ${r.pt} invece di ${pt[r.club] || 0}`).join(', ') : 'tutti'})`);
   et(vista.righe.every((r, i) => i === 0 || vista.righe[i - 1].pt >= r.pt), 'in ordine di punti');
   et(vista.righe.every((r) => r.forma <= 5), 'la forma è al massimo delle ultime cinque');
   et(new RegExp(`5ª giornata, ancora in corso: ${fatte5} partite giocate su ${gare5}`).test(vista.nota), `e dice che la 5ª è in corso, con quante partite giocate ("${vista.nota.replace(/\s+/g, ' ')}")`);

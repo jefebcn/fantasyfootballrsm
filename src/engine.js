@@ -4,6 +4,8 @@
  * Riferimenti: regolamento artt. 4-8, 10-12; README §4-6.
  */
 
+import { t } from './lingua.js';
+
 export const ENGINE_VERSION = '1.0.0';
 
 export const DEFAULT_RULES = {
@@ -546,17 +548,17 @@ export function computeStandings(managers, results, rules = DEFAULT_RULES) {
 /** Validazione formazione (art. 8). */
 export function validateLineup(lineup, players, rules = DEFAULT_RULES) {
   const errors = [];
-  if (!rules.modules.includes(lineup.formation)) errors.push('Modulo non ammesso');
+  if (!rules.modules.includes(lineup.formation)) errors.push(t('Modulo non ammesso'));
   const need = parseModule(lineup.formation);
   const starters = lineup.starters.filter(Boolean);
-  if (starters.length !== 11) errors.push(`Titolari: ${starters.length}/11`);
+  if (starters.length !== 11) errors.push(t('Titolari: {n}/11', { n: starters.length }));
   const have = { P: 0, D: 0, C: 0, A: 0 };
-  for (const id of starters) { const p = players.get(id); if (p) have[p.role]++; else errors.push(`Giocatore sconosciuto: ${id}`); }
-  for (const r of ['P', 'D', 'C', 'A']) if (have[r] !== need[r]) errors.push(`${roleName(r)}: ${have[r]}/${need[r]}`);
-  if (new Set([...starters, ...lineup.bench.filter(Boolean)]).size !== starters.length + lineup.bench.filter(Boolean).length) errors.push('Giocatore duplicato');
-  if (lineup.captainId && !starters.includes(lineup.captainId)) errors.push('Il capitano deve essere titolare');
-  if (lineup.viceCaptainId && !starters.includes(lineup.viceCaptainId)) errors.push('Il vice deve essere titolare');
-  if (lineup.captainId && lineup.captainId === lineup.viceCaptainId) errors.push('Capitano e vice devono essere diversi');
+  for (const id of starters) { const p = players.get(id); if (p) have[p.role]++; else errors.push(t('Giocatore sconosciuto: {id}', { id })); }
+  for (const r of ['P', 'D', 'C', 'A']) if (have[r] !== need[r]) errors.push(`${t(roleName(r))}: ${have[r]}/${need[r]}`);
+  if (new Set([...starters, ...lineup.bench.filter(Boolean)]).size !== starters.length + lineup.bench.filter(Boolean).length) errors.push(t('Giocatore duplicato'));
+  if (lineup.captainId && !starters.includes(lineup.captainId)) errors.push(t('Il capitano deve essere titolare'));
+  if (lineup.viceCaptainId && !starters.includes(lineup.viceCaptainId)) errors.push(t('Il vice deve essere titolare'));
+  if (lineup.captainId && lineup.captainId === lineup.viceCaptainId) errors.push(t('Capitano e vice devono essere diversi'));
   return errors;
 }
 

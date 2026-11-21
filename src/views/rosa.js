@@ -1,5 +1,5 @@
 import * as S from '../state.js';
-import { esc, fmt, faccia, ROLE_NAME, ROLE_ORDER, mask } from '../ui.js';
+import { esc, fmt, faccia, ROLE_NAME, ROLE_ORDER, mask, t } from '../ui.js';
 
 /**
  * Le schede in cima a Rosa e Formazione. Erano due chip piccole, uguali a
@@ -10,19 +10,19 @@ import { esc, fmt, faccia, ROLE_NAME, ROLE_ORDER, mask } from '../ui.js';
 export function schedeRosa(attiva) {
   const me = S.me(); const quanti = me ? S.rosterOf(me.id).length : 0;
   const voci = [
-    ['rosa', '#/rosa', mask('maglia-10'), `Rosa <small>${quanti}</small>`],
-    ['formazione', '#/rosa/formazione', mask('campo'), 'Formazione'],
+    ['rosa', '#/rosa', mask('maglia-10'), t('Rosa <small>{n}</small>', { n: quanti })],
+    ['formazione', '#/rosa/formazione', mask('campo'), t('Formazione')],
   ];
   if (S.scambiInQuestaLega() && S.base.managers.length > 1) {
     const da = S.scambiDaDecidere().length;
-    voci.push(['scambi', '#/scambi', '', `Scambi${da ? ` <b class="segn">${da}</b>` : ''}`]);
+    voci.push(['scambi', '#/scambi', '', `${t('Scambi')}${da ? ` <b class="segn">${da}</b>` : ''}`]);
   }
-  return `<nav class="segwrap"><div class="seg seg-cls seg-rosa">${voci.map(([k, h, ic, t]) =>
-    `<a href="${h}"${k === attiva ? ' class="on" aria-current="page"' : ''}>${ic}<span>${t}</span></a>`).join('')}</div></nav>`;
+  return `<nav class="segwrap"><div class="seg seg-cls seg-rosa">${voci.map(([k, h, ic, testo]) =>
+    `<a href="${h}"${k === attiva ? ' class="on" aria-current="page"' : ''}>${ic}<span>${testo}</span></a>`).join('')}</div></nav>`;
 }
 
 export const rosa = {
-  title: 'Rosa', sub: () => 'Rosa · 25 giocatori',
+  title: 'Rosa', sub: () => t('Rosa · 25 giocatori'),
   serveSquadra: true,   // senza una squadra in questa lega: app.js mostra «Non fai parte di questa lega»
   render() {
     const me = S.me(); const r = S.rosterOf(me.id); const n = S.currentMatchday(); const ratings = S.ratingsOf(n);
@@ -31,12 +31,12 @@ export const rosa = {
       return `<div class="vlist"><div class="vhead">${ROLE_NAME[role]} <span>${list.length}/${S.rules().roster[role]}</span></div>${list.map((x) => {
         const rt = ratings.get(x.playerId); const v = rt ? (rt.isSV ? 'S.V.' : fmt(rt.fantaVote)) : '–';
         const sq = S.squalifica(x.playerId);
-        return `<a class="vr" href="#/giocatore/${x.playerId}" style="text-decoration:none">${faccia(x.player, x.club)}<span class="nm"><b${x.player.isActive ? '' : ' style="text-decoration:line-through"'}>${esc(x.player.name)}${sq ? ` <i class="squal" title="${esc(sq.motivo)}">SQUALIFICATO</i>` : ''}</b><span>${esc(x.club.name)} · quot. ${x.player.quotation} · pagato ${x.pricePaid}${x.player.isActive ? '' : ' · <b style="color:var(--negative)">RIMOSSO · rimborso 50%</b>'}</span></span><span class="ev"></span><span class="fv${rt && !rt.isSV ? '' : ' sv'}">${v}</span></a>`;
+        return `<a class="vr" href="#/giocatore/${x.playerId}" style="text-decoration:none">${faccia(x.player, x.club)}<span class="nm"><b${x.player.isActive ? '' : ' style="text-decoration:line-through"'}>${esc(x.player.name)}${sq ? ` <i class="squal" title="${esc(sq.motivo)}">${t('SQUALIFICATO')}</i>` : ''}</b><span>${t('{club} · quot. {q} · pagato {p}', { club: esc(x.club.name), q: x.player.quotation, p: x.pricePaid })}${x.player.isActive ? '' : ` · <b style="color:var(--negative)">${t('RIMOSSO · rimborso 50%')}</b>`}</span></span><span class="ev"></span><span class="fv${rt && !rt.isSV ? '' : ' sv'}">${v}</span></a>`;
       }).join('')}</div>`;
     }).join('');
     return `<main class="a-body">
       ${schedeRosa('rosa')}
-      <div class="a-card a-fase"><div class="r"><p><b>${esc(me.teamName)}</b> · ${esc(me.owner)}</p><span class="small muted">crediti <b class="num" style="color:var(--text)">${me.credits}</b></span></div><p class="small muted">Ultimo fantavoto: giornata ${n}. Tocca un giocatore per lo storico.</p></div>
+      <div class="a-card a-fase"><div class="r"><p><b>${esc(me.teamName)}</b> · ${esc(me.owner)}</p><span class="small muted">${t('crediti')} <b class="num" style="color:var(--text)">${me.credits}</b></span></div><p class="small muted">${t('Ultimo fantavoto: giornata {n}. Tocca un giocatore per lo storico.', { n })}</p></div>
       ${groups}
     </main>`;
   },

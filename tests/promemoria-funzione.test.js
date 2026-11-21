@@ -30,7 +30,7 @@ let genteFinta = [];
 // il FantaFutsal ha giornate e iscritti suoi (futsal-03)
 let lockFutsalFinti = [];
 let genteFutsalFinta = [];
-const segnati = { morti: [], rifare: [] };
+const segnati = { morti: [], rifare: [], rpc: [] };
 
 globalThis.__banco = {
   webpush,
@@ -48,7 +48,8 @@ globalThis.__banco = {
       };
     },
     rpc: async (nome, p) => {
-      if (nome === 'promemoria_da_rifare' || nome === 'futsal_promemoria_da_rifare') { segnati.rifare.push(...p.p_endpoints); return { data: p.p_endpoints.length, error: null }; }
+      segnati.rpc.push({ nome, p });
+      if (nome === 'promemoria_da_rifare' || nome === 'avvisi_da_rifare' || nome === 'futsal_promemoria_da_rifare') { segnati.rifare.push(...p.p_endpoints); return { data: p.p_endpoints.length, error: null }; }
       if (nome === 'futsal_da_avvisare') return { data: genteFutsalFinta, error: null };
       return { data: genteFinta, error: null };
     },
@@ -71,8 +72,10 @@ const ambiente = globalThis.__banco.ambiente;
 let maniglia;
 globalThis.Deno = { env: { get: (n) => ambiente[n] }, serve: (h) => { maniglia = h; } };
 ${code.replace(/^import .*?from ["']npm:.*?["'];?$/gm, '')}
-export const chiama = (token) => maniglia(new Request('http://x/promemoria-', {
-  headers: token === undefined ? {} : { 'x-promemoria-token': token },
+export const chiama = (token, corpo) => maniglia(new Request('http://x/promemoria-', {
+  method: corpo ? 'POST' : 'GET',
+  headers: { ...(token === undefined ? {} : { 'x-promemoria-token': token }), ...(corpo ? { 'content-type': 'application/json' } : {}) },
+  body: corpo ? JSON.stringify(corpo) : undefined,
 }));
 `;
 const { chiama } = await import(
@@ -89,7 +92,7 @@ const buone = {
 
 /** Rimette l'ambiente da zero: i casi non si devono sporcare fra loro. */
 const con = (env) => {
-  rompi = null; lockFinti = []; genteFinta = []; lockFutsalFinti = []; genteFutsalFinta = []; segnati.morti = []; segnati.rifare = [];
+  rompi = null; lockFinti = []; genteFinta = []; lockFutsalFinti = []; genteFutsalFinta = []; segnati.morti = []; segnati.rifare = []; segnati.rpc = [];
   for (const k of Object.keys(ambiente)) delete ambiente[k];
   Object.assign(ambiente, env);
 };
@@ -251,4 +254,61 @@ test('futsal: avvisa chi non ha la formazione e porta alla formazione futsal', a
   assert.match(msg.aps.alert.body, /Titani Futsal/);
   assert.equal(msg.url, './#/futsal/formazione');
   assert.match(corpo, /"futsal":\{"giornate":\[8\],"spedite":1\}/);
+});
+
+// ---- GLI ALTRI AVVISI (052): il gol e la giornata finita ----
+const telefono = { endpoint: 'apns:abcd1234', p256dh: 'apns', auth: 'apns', team_name: 'I Draghi', league_name: 'Titano Open' };
+const conCorpo = async (corpo, fn) => { let r; const viste = await conFetch(200, '', async () => { const x = await chiama('segreto', corpo); r = { stato: x.status, corpo: await x.text() }; }); return { ...r, viste }; };
+
+test('gol: chi ha il giocatore in formazione riceve «Gol di X!», e il capitano e\' detto', async () => {
+  conIphone();
+  genteFinta = [{ ...telefono, capitano: true, nome: 'Cremonini L.', club: 'Cosmos' }];
+  const { stato, corpo, viste } = await conCorpo({ tipo: 'gol', tag: '8-cosmos-x-cosmos-1', giocatore: 'cosmos_23', giornata: 8, minuto: 21 });
+  assert.equal(stato, 200);
+  assert.match(corpo, /"spedite":1/);
+  const chiesta = segnati.rpc.find((x) => x.nome === 'avvisi_gol');
+  assert.deepEqual(chiesta.p, { p_tag: 'gol-8-cosmos-x-cosmos-1', p_giocatore: 'cosmos_23', p_giornata: 8 });
+  const msg = JSON.parse(viste[0].init.body);
+  assert.equal(msg.aps.alert.title, '⚽ Gol di Cremonini!');
+  assert.match(msg.aps.alert.body, /al 21' per il Cosmos\. È il capitano di I Draghi/);
+  assert.equal(viste[0].init.headers['apns-collapse-id'], 'gol-8-cosmos-x-cosmos-1');
+});
+
+test('gol: senza capitano dice «Ce l\'hai in formazione»', async () => {
+  conIphone();
+  genteFinta = [{ ...telefono, capitano: false, nome: 'Pancotti S.', club: 'Folgore' }];
+  const { viste } = await conCorpo({ tipo: 'gol', tag: '8-a-b-folgore-1', giocatore: 'folgore_12', giornata: 8, minuto: 65 });
+  assert.match(JSON.parse(viste[0].init.body).aps.alert.body, /Ce l'hai in formazione con I Draghi/);
+});
+
+test('giornata finita: «Giornata 8 finita» con la squadra, e non fa il promemoria', async () => {
+  conIphone();
+  genteFinta = [{ ...telefono, leghe: 1 }];
+  const { corpo, viste } = await conCorpo({ tipo: 'fine-giornata', giornata: 8 });
+  assert.match(corpo, /"tipo":"fine-giornata"/);
+  assert.ok(!segnati.rpc.some((x) => x.nome === 'da_avvisare'), 'il promemoria non parte');
+  const msg = JSON.parse(viste[0].init.body);
+  assert.equal(msg.aps.alert.title, 'Giornata 8 finita');
+  assert.match(msg.aps.alert.body, /punti di I Draghi in Titano Open/);
+});
+
+test('avviso che non parte: si rimette in coda sul suo tag', async () => {
+  conIphone();
+  genteFinta = [{ ...telefono, leghe: 1 }];
+  await conFetch(503, '', async () => { await chiama('segreto', { tipo: 'fine-giornata', giornata: 8 }); });
+  const rifare = segnati.rpc.find((x) => x.nome === 'avvisi_da_rifare');
+  assert.deepEqual(rifare.p, { p_tag: 'giornata-8', p_endpoints: ['apns:abcd1234'] });
+});
+
+test('avviso senza giornata: 400, niente liste', async () => {
+  conIphone();
+  const { stato } = await conCorpo({ tipo: 'gol', tag: 'x', giocatore: 'y' });
+  assert.equal(stato, 400);
+  assert.ok(!segnati.rpc.length);
+});
+
+test('un POST senza tipo e\' il promemoria di sempre', async () => {
+  con(buone);
+  const r = await chiama('segreto', { qualcosa: 1 });
+  assert.match(await r.text(), /nessun lock nella finestra/);
 });

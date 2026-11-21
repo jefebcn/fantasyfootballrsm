@@ -1,0 +1,229 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Fantatitano · link</title>
+<meta name="description" content="Fantatitano, il fantacalcio gratuito del Campionato Sammarinese: la formazione della giornata, l'app per iPhone, le leghe con gli amici.">
+<meta name="theme-color" content="#0A0A0C">
+<meta name="apple-itunes-app" content="app-id=6834601552">
+<meta property="og:title" content="Fantatitano">
+<meta property="og:description" content="Il fantacalcio gratuito del Campionato Sammarinese.">
+<meta property="og:image" content="https://fantatitano.site/media/anteprima.jpg">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="stylesheet" href="styles/font.css">
+<!--
+  Il «link in bio» di Instagram (Alex, 15/11), al posto di Linktree.
+
+  Imparato guardando il Linktree di fantacalcio.it: in cima l'evento del
+  momento, poi pochi link con l'immagine. Il loro ha 22 voci, molte scadute
+  (l'uovo di Pasqua a novembre): qui sono sei, e la prima si aggiorna da sola.
+
+  LA PRIMA VOCE viene da widget.json (scripts/widget-dati.mjs, rifatto a ogni
+  pubblicazione): la stessa chiusura delle formazioni dell'app. Prima della
+  chiusura «Schiera la formazione», a giornata in corso «I voti in diretta»,
+  a campionato finito la classifica. Senza widget.json la voce resta generica.
+
+  OGNI LINK porta utm_source=instagram&utm_medium=bio&utm_content=<voce>: si
+  vede quale voce porta gente. In bio va fantatitano.site/link.
+
+  SULL'IPHONE (16/11) niente sito: la prima voce e «Apri l'app» vanno
+  all'App Store (che apre l'app se c'e'), le voci del sito spariscono.
+
+  Niente strumenti di terzi (la pagina sui cookie dice che non ce ne sono).
+-->
+<style>
+  :root{--nero:#0A0A0C;--viola:#4B06FC;--viola-s:#340AAA;--lime:#D9F51F;--card:#17151F;--bordo:#2A2638;--testo:#F4F2FA;--tenue:#A9A4BF}
+  *{box-sizing:border-box}
+  [hidden]{display:none!important} /* il conto alla rovescia nascosto non lascia la barretta */
+  html,body{margin:0;background:var(--nero);color:var(--testo);font-family:'Lato',system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+  body{min-height:100vh;background:radial-gradient(120% 60% at 85% -10%,rgba(75,6,252,.55),transparent 60%),radial-gradient(80% 40% at -10% 105%,rgba(75,6,252,.35),transparent 60%),var(--nero)}
+  .pag{max-width:520px;margin:0 auto;padding:calc(28px + env(safe-area-inset-top,0px)) 16px calc(36px + env(safe-area-inset-bottom,0px))}
+  header{text-align:center;margin-bottom:22px}
+  header img{width:88px;height:88px;border-radius:22px;box-shadow:0 0 0 3px var(--lime),0 10px 30px rgba(75,6,252,.5)}
+  h1{font:400 40px/1 'Anton',Impact,sans-serif;letter-spacing:.01em;margin:16px 0 6px;text-transform:uppercase}
+  h1 span{color:var(--lime)}
+  header p{margin:0;color:var(--tenue);font-size:15px;line-height:1.4}
+  ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:12px}
+  a.voce{display:flex;align-items:center;gap:14px;min-height:64px;padding:12px 16px 12px 12px;border-radius:16px;background:var(--card);border:1px solid var(--bordo);color:inherit;text-decoration:none;transition:transform .12s ease,border-color .12s ease}
+  a.voce:active{transform:scale(.98)}
+  a.voce:hover{border-color:var(--viola)}
+  a.voce:focus-visible{outline:3px solid var(--lime);outline-offset:2px}
+  .ico{flex:0 0 44px;width:44px;height:44px;border-radius:12px;display:grid;place-items:center;background:var(--viola);color:#fff}
+  .ico svg{width:24px;height:24px}
+  .ico img{width:44px;height:44px;border-radius:12px}
+  .t{flex:1;min-width:0}
+  .t b{display:block;font-weight:900;font-size:16px;line-height:1.25}
+  .t small{display:block;color:var(--tenue);font-size:13px;line-height:1.35;margin-top:2px}
+  .freccia{flex:0 0 auto;color:var(--tenue);font-size:20px}
+  /* la prima voce: l'evento del momento */
+  a.voce.ora{background:var(--lime);border-color:var(--lime);color:var(--nero);min-height:84px;box-shadow:0 10px 30px rgba(217,245,31,.18)}
+  a.voce.ora .ico{background:var(--nero);color:var(--lime)}
+  a.voce.ora .t b{font:400 21px/1.1 'Anton',Impact,sans-serif;text-transform:uppercase;letter-spacing:.01em}
+  a.voce.ora .t small{color:#2E3300;font-weight:700}
+  a.voce.ora .freccia{color:var(--nero)}
+  .conto{display:inline-block;margin-top:6px;padding:3px 9px;border-radius:999px;background:var(--nero);color:var(--lime);font:700 12px/1.4 'IBM Plex Mono',ui-monospace,monospace}
+  /* L'avviso del FantaTitano Futsal (Alex, 19/11): nello stile del futsal,
+     carta, nero e rosso con il Teko, e il bollino con la data dell'uscita */
+  @font-face{font-family:'Teko';font-weight:300 700;font-display:swap;src:url(media/font/teko-latin.woff2) format('woff2')}
+  .futsal{position:relative;margin:4px 0 6px;padding:16px 18px 16px;background:#F2F0E9;color:#111;border:3px solid #111;border-radius:6px;box-shadow:6px 6px 0 #FF4B2B}
+  .futsal .fs-tag{display:inline-flex;align-items:center;gap:6px;background:#111;color:#fff;font:600 17px/1 'Teko',Impact,sans-serif;text-transform:uppercase;letter-spacing:.06em;padding:5px 12px 2px 10px;clip-path:polygon(6px 0,100% 0,calc(100% - 6px) 100%,0 100%)}
+  .futsal .fs-tag svg{width:14px;height:14px;margin-top:-3px}
+  .futsal h2{margin:10px 0 0;font:600 40px/.86 'Teko',Impact,sans-serif;text-transform:uppercase;letter-spacing:.01em;padding-right:86px}
+  .futsal h2 span{display:inline-block;margin-top:4px;background:#FF4B2B;color:#fff;padding:4px 10px 0;clip-path:polygon(8px 0,100% 0,calc(100% - 8px) 100%,0 100%)}
+  .futsal p{margin:10px 0 0;font-size:14px;line-height:1.4;color:#3A3833}
+  .futsal p b{color:#111}
+  .futsal .fs-conto{display:inline-block;margin-top:10px;padding:4px 12px 1px;background:#111;color:#fff;font:600 19px/1.1 'Teko',Impact,sans-serif;text-transform:uppercase;letter-spacing:.04em}
+  .futsal .fs-conto em{font-style:normal;color:#FF4B2B}
+  .bollino{position:absolute;top:-16px;right:-10px;width:92px;height:92px;border-radius:50%;background:#FF4B2B;border:3px solid #111;display:grid;place-content:center;text-align:center;color:#fff;font:600 21px/.85 'Teko',Impact,sans-serif;text-transform:uppercase;transform:rotate(10deg);box-shadow:0 6px 16px rgba(0,0,0,.35)}
+  .bollino b{display:block;font-size:31px;font-weight:600}
+  @media (prefers-reduced-motion:no-preference){.bollino{animation:bollino 2.6s ease-in-out infinite}@keyframes bollino{0%,100%{transform:rotate(10deg) scale(1)}50%{transform:rotate(6deg) scale(1.05)}}}
+  footer{margin-top:26px;text-align:center;color:var(--tenue);font-size:13px;line-height:1.7}
+  footer a{color:var(--tenue)}
+  @media (prefers-reduced-motion:reduce){a.voce{transition:none}}
+</style>
+</head>
+<body>
+<div class="pag">
+  <header>
+    <img src="icons/icon-192.png" alt="" width="88" height="88">
+    <h1>Fanta<span>titano</span></h1>
+    <p>Il fantacalcio gratuito del Campionato Sammarinese.<br>I voti nascono dai referti delle partite.</p>
+  </header>
+  <ul id="voci">
+    <li><a class="voce ora" id="ora" data-voce="formazione" href="./#/rosa/formazione">
+      <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 12h18M12 3v18"/><circle cx="12" cy="12" r="3"/></svg></span>
+      <span class="t"><b id="ora-t">Schiera la formazione</b><small id="ora-s">Prima della chiusura della giornata</small><span class="conto" id="ora-c" hidden></span></span>
+      <span class="freccia">›</span></a></li>
+    <li><div class="futsal" id="futsal" role="note" aria-label="Fantatitano Futsal in arrivo il 1° dicembre">
+      <span class="bollino" aria-hidden="true">Dal<b>01/12</b></span>
+      <span class="fs-tag"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="#fff" fill-rule="evenodd" d="M12 2a10 10 0 1 1 0 20 10 10 0 0 1 0-20Zm0 5.2-3.6 2.6 1.4 4.3h4.4l1.4-4.3Zm-1.7-3.1A8 8 0 0 0 5 7l1 3.1 2-.7 3.1-2.3V5Zm3.4 0V5l.1 2.1 3.1 2.3 2 .7L19 7a8 8 0 0 0-5.3-2.9ZM4.1 11.4A8 8 0 0 0 5.8 17l2.3-.3.6-2.1-1.3-4.1-2-.7Zm15.8 0-1.3.4-2 .7-1.3 4.1.6 2.1 2.3.3a8 8 0 0 0 1.7-5.6ZM9.6 16.1l-.8 2.4 1 1.2a8 8 0 0 0 4.4 0l1-1.2-.8-2.4Z"/></svg>Novità</span>
+      <h2>Fantatitano<br><span>Futsal</span></h2>
+      <p id="futsal-s"><b>Dal 1° dicembre sui tuoi dispositivi</b>: il fanta del futsal sammarinese, nella stessa app e con lo stesso account. Fatti trovare già dentro.</p>
+      <span class="fs-conto" id="futsal-c" hidden></span>
+    </div></li>
+    <li><a class="voce" id="ios" data-voce="app-store" href="https://apps.apple.com/it/app/fantatitano/id6834601552">
+      <span class="ico"><img src="icons/icon-192.png" alt=""></span>
+      <span class="t"><b id="ios-t">Scarica l'app per iPhone</b><small id="ios-s">Gratis sull'App Store</small></span>
+      <span class="freccia">›</span></a></li>
+    <li><a class="voce" data-voce="gioca" href="./#/">
+      <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="m12 7 4 3-1.5 4.5h-5L8 10z"/></svg></span>
+      <span class="t"><b id="gioca-t">Gioca gratis dal sito</b><small>Funziona anche su Android e computer</small></span>
+      <span class="freccia">›</span></a></li>
+    <li><a class="voce" data-voce="lega" href="./#/leghe">
+      <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.2"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/><path d="M17 11v6M14 14h6"/></svg></span>
+      <span class="t"><b>Crea una lega con gli amici</b><small>Un link d'invito e si parte</small></span>
+      <span class="freccia">›</span></a></li>
+    <li><a class="voce" data-voce="video" href="./#/video">
+      <span class="ico"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5.5v13a1 1 0 0 0 1.5.86l10.5-6.5a1 1 0 0 0 0-1.72L9.5 4.64A1 1 0 0 0 8 5.5z"/></svg></span>
+      <span class="t"><b>I gol della giornata</b><small>Gli highlights di ogni partita</small></span>
+      <span class="freccia">›</span></a></li>
+    <li><a class="voce" data-voce="guida" href="./#/guida">
+      <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5a2 2 0 0 1 2-2h12v16H6a2 2 0 0 0-2 2z"/><path d="M4 19V5M9 8h6M9 12h4"/></svg></span>
+      <span class="t"><b>Come si gioca</b><small>Le regole in due minuti</small></span>
+      <span class="freccia">›</span></a></li>
+  </ul>
+  <footer>
+    <a href="https://www.instagram.com/fantatitano/">@fantatitano</a> · <a href="assistenza.html">Assistenza</a> · <a href="privacy.html">Privacy</a> · <a href="termini.html">Termini</a>
+  </footer>
+</div>
+<script>
+(function () {
+  'use strict';
+  var UTM = 'utm_source=instagram&utm_medium=bio&utm_content=';
+
+  // l'etichetta di ogni link nei parametri, cosi' si vede quale voce porta gente
+  function segna(a) {
+    var v = a.getAttribute('data-voce'); if (!v) return;
+    var h = a.getAttribute('href');
+    if (/^https?:/.test(h)) return; // l'App Store: i suoi numeri li da' Apple
+    var i = h.indexOf('#'); var base = i < 0 ? h : h.slice(0, i); var hash = i < 0 ? '' : h.slice(i);
+    a.href = base + (base.indexOf('?') < 0 ? '?' : '&') + UTM + v + hash;
+  }
+  function tutti() { [].forEach.call(document.querySelectorAll('a.voce'), segna); }
+
+  var ua = navigator.userAgent || '';
+  // Sull'iPhone c'e' l'app vera (Alex, 16/11: «non dobbiamo reindirizzare le
+  // persone sul sito ma sulle app»): tutto porta all'App Store, che apre l'app
+  // se e' gia' installata. Spariscono «Gioca dal sito» e «Crea una lega», che
+  // sull'iPhone si fanno nell'app; video e regole restano (Alex, 17/11).
+  var APP = 'https://apps.apple.com/it/app/fantatitano/id6834601552';
+  var IOS = /iPhone|iPad|iPod/i.test(ua) || (/Macintosh/i.test(ua) && (navigator.maxTouchPoints || 0) > 1);
+  if (IOS) {
+    [].forEach.call(document.querySelectorAll('a.voce'), function (a) {
+      if (/^(gioca|lega)$/.test(a.getAttribute('data-voce'))) a.parentNode.hidden = true;
+    });
+    document.getElementById('ios-t').textContent = 'Apri l\'app Fantatitano';
+    document.getElementById('ios-s').textContent = 'Se non ce l\'hai: gratis sull\'App Store';
+  }
+  // Android l'app non ce l'ha ancora: «Gioca dal sito» sale al secondo posto
+  if (/Android/i.test(ua)) {
+    var ios = document.getElementById('ios').parentNode; ios.parentNode.appendChild(ios);
+    document.getElementById('gioca-t').textContent = 'Gioca gratis: si apre nel browser';
+  }
+
+  var ROMA = 'Europe/Rome';
+  function giorno(d) { return d.toLocaleDateString('it-IT', { weekday: 'long', day: 'numeric', month: 'long', timeZone: ROMA }); }
+  function ora(d) { return d.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit', timeZone: ROMA }); }
+  function manca(ms) {
+    var m = Math.round(ms / 60000), h = Math.floor(m / 60), g = Math.floor(h / 24);
+    if (g >= 2) return 'mancano ' + g + ' giorni';
+    if (h >= 1) return 'mancano ' + h + ' ' + (h === 1 ? 'ora' : 'ore') + ' e ' + (m % 60) + ' min';
+    return 'mancano ' + Math.max(1, m) + ' minuti';
+  }
+
+  function prima(o) {
+    var a = document.getElementById('ora');
+    a.setAttribute('href', IOS ? APP : o.href); a.setAttribute('data-voce', o.voce);
+    document.getElementById('ora-t').textContent = o.t;
+    document.getElementById('ora-s').textContent = o.s + (IOS ? ' · nell\'app' : '');
+    var c = document.getElementById('ora-c');
+    if (o.c) { c.textContent = o.c; c.hidden = false; } else c.hidden = true;
+  }
+
+  /** Cosa mettere in cima adesso, dal calendario. Esportata per le prove. */
+  function adesso(giornate, now) {
+    var DOPO = 2.5 * 3600e3; // una partita dura due ore abbondanti
+    for (var i = 0; i < giornate.length; i++) {
+      var g = giornate[i], chiude = new Date(g.chiusura).getTime();
+      var fine = Math.max.apply(null, (g.partite || []).map(function (p) { return new Date(p.quando).getTime(); }).concat([chiude])) + DOPO;
+      if (now < chiude) {
+        var d = new Date(chiude);
+        return { voce: 'formazione', href: './#/rosa/formazione', t: 'Schiera la formazione della ' + g.giornata + 'ª giornata',
+          s: 'Entro ' + giorno(d) + ' alle ' + ora(d), c: manca(chiude - now) };
+      }
+      if (now < fine) return { voce: 'voti', href: './#/voti', t: g.giornata + 'ª giornata in corso', s: 'I voti e la classifica in diretta' };
+    }
+    return { voce: 'classifica', href: './#/classifica', t: 'La classifica', s: 'Com\'è finita la stagione' };
+  }
+  window.__adesso = adesso;
+
+
+  // L'avviso del futsal: fino al 1° dicembre il conto alla rovescia, da quel
+  // giorno dice che e' arrivato. Esportata per le prove.
+  var LANCIO_FUTSAL = Date.parse('2026-11-30T23:00:00Z'); // 1/12 alle 00:00 di Roma
+  function futsal(now) {
+    if (now < LANCIO_FUTSAL) return { arrivato: false, c: manca(LANCIO_FUTSAL - now).replace(/^mancano /, 'mancano <em>') + '</em>' };
+    return { arrivato: true, c: '' };
+  }
+  window.__futsal = futsal;
+  function avvisoFutsal() {
+    var f = futsal(Date.now()), c = document.getElementById('futsal-c');
+    if (!c) return;
+    if (f.arrivato) {
+      c.hidden = true;
+      document.getElementById('futsal-s').innerHTML = '<b>È arrivato!</b> Il fanta del futsal sammarinese è nell\'app Fantatitano, con lo stesso account.';
+    } else { c.innerHTML = f.c; c.hidden = false; }
+  }
+  avvisoFutsal(); setInterval(avvisoFutsal, 60000);
+  tutti();
+  fetch('widget.json', { cache: 'no-cache' }).then(function (r) { return r.ok ? r.json() : null; }).then(function (w) {
+    if (!w || !w.giornate || !w.giornate.length) return;
+    function aggiorna() { prima(adesso(w.giornate, Date.now())); segna(document.getElementById('ora')); }
+    aggiorna(); setInterval(aggiorna, 60000);
+  }).catch(function () { /* resta la voce generica */ });
+})();
+</script>
+</body>
+</html>

@@ -1,39 +1,36 @@
-# Stato – Fantatitano Futsal (ramo `futsal`)
+# Stato – Fantatitano
 
-Aggiornato: 2026-11-20 · tema: coda Buffer fino al 30/11, controllo giornaliero, archivio foto Flickr su Drive
+Aggiornato: 2026-11-21 · tema: storie dei gol live (prima serata 20/11) e limite di Buffer
 
 ## Dove siamo
-- Sezione futsal (modello Dunkest, § 13 di `FUTSAL.md`) solo sul ramo `futsal`, nascosta (`?futsal=1`, anteprima admin). NON su main né su fantatitano.site.
-- Dati: referti di tutta la 10ª giornata (`src/futsal-dati.js`), quotazioni fino all’11ª su Supabase (applicate il 20/11). Stemmi Fantatitano nell'app.
-- Link in bio (main, PR #118): card «Fantatitano Futsal · Dal 01/12», online.
-- Instagram @fantatitano.futsal via Buffer: coda 9/10 fino al 30/11 (vigilia del lancio). Grafiche: `scratchpad/ig/sett3.mjs` (stile da copiare).
-- Foto: archivio Flickr FSGC su Drive, cartelle «Futsal - Giornata 01/02/09/10» (Desktop\FOTO FSGC\flickr\FSGC _ official\Albums, sincronizzata da Drive), catalogo `catalogo-futsal.csv` (Drive id 1cxmXJ3_xL3Ghku4pCXWhIPXJq2KRit0X): 5.304 foto, 27 partite, fotografo per ogni foto.
+- App online su fantatitano.site e su iPhone. Nell'onboarding del sito c'è il tasto «Scarica l'app dall'App Store» (PR #117, unita); non compare nell'app né su Android.
+- Instagram @fantatitano si pubblica da solo con Buffer: un post alle 14:00 e una storia alle 14:15, al massimo uno di ciascuno al giorno. Li prepara il kit social (fuori dal repo), con due attività pianificate: lunedì (dopo la giornata) e giovedì (prima della giornata).
+- Il kit ha la sua memoria: `kit/STATO.md` (cosa è programmato) e `kit/PLAYBOOK.md` (tutte le regole di Alex). L'URL del kit è scritto nel prompt delle due attività.
+- La 9ª giornata (19–22/11) è già programmata. Il controllo infortuni e squalifiche del 19/11 non ha trovato nessuno fuori.
 
 ## Aperto / in corso
-- Storia «Classifica dopo la 10ª» programmata su Buffer per ven 20/11 alle 18:30 (grafica `scratchpad/ig/classifica.mjs`); coda 9/10. Da mettere in evidenza a mano in «Classifica».
-- Ogni giorno 9:47 (trig_019gaxf1eECjzEK6qMnLV9NA): se su Buffer ci sono ≥4 posti liberi crea contenuti con foto dall'archivio Drive e avvisa Alex; altrimenti silenzio.
-- Storie da mettere in evidenza a mano da Alex (21/11 App, 23/11 Giornate, 25/11 schemi): gli highlight non hanno API.
-- Album Flickr nuovi (11ª giornata in poi): aggiungere l'indirizzo in `scripts/foto-flickr-futsal.ps1` e mandare ad Alex il comando completo; poi lui rilancia scaricamento, rinomina e catalogo.
-- `prove/futsal.cjs`: 1 errore vecchio (giornata 8 scritta a mano), non regressione.
-
-- PROVA DELL'IMPORT ATTIVA dal 21/11: `.github/workflows/futsal-prova.yml` su main (PR #125) gira l'import solo-futsal SUL RAMO futsal ogni 2 ore (e ogni 20 min nei giorni del futsal), pusha su futsal e carica quotazioni/orari sul database. Si spegne da solo al lancio (quando main ha importa-futsal-giro.sh): poi cancellarlo. NON lanciare più importa-futsal.py a mano.
-- Anteprima per Alex (admin, account già is_admin): https://fantasyfootballrsm-git-futsal-jefebcns-projects.vercel.app (protetta dal login Vercel), database vero: lì si apre la lega pubblica e si prova tutto.
-- Controlli programmati: primo giro del lavoro (21/11 15:12) e rapporto sulla velocità dei referti (24/11 18:30).
-- Import automatico del futsal PRONTO ma attivo solo dopo il merge in main: `scripts/importa-futsal-giro.sh` dentro `importa-in-giro.sh` (dati-fsgc.yml), referti → app, quotazioni e orari → database con il secret SUPABASE_DB_URL (lo stesso del backup). Fino al lancio i referti li importo io a mano.
-- Date FSGC fissate solo fino alla 12ª (3/12): dalla 13ª l'app dice «date non ancora fissate» finché la FSGC non le pubblica (l'import automatico aggiorna app e database da solo).
+- Storie dei gol: funzionano. Venerdì 20/11 sono uscite 7 storie su 7, tutte con la foto, 2-4 minuti dopo il gol. Le prime due erano nere (foto con percorso relativo, PR #122): rifatte, e le nere le ha cancellate Alex. Ora la storia esce solo se tutte le immagini si sono caricate. Il referto si legge ogni 15 s (PR #123).
+- Il 20/11 alle 23:10 Buffer ha bloccato la chiave per 24 ore a causa del controllo della chat ogni 8 s. Il 21/11 alle 10 era già sbloccata. Alex darà una seconda chiave: una per le storie automatiche (secret `BUFFER_TOKEN` su Supabase), una per la chat e il kit.
+- La PR del 21/11 aggiunge la funzione `storie-oggi` (sola lettura, per seguire le storie senza Buffer), il canale scritto in `pubblica-gol` (una chiamata per gol), niente minuto ripetuto e marchio più in basso nelle storie.
+- FantaTitano Futsal: annunciato nel link in bio per il 1° dicembre (PR #118). Stato e ricette del futsal in `docs/futsal/STATO.md` e `docs/futsal/RICETTE.md`. Dal 21/11 il codice è su main ma lo vede solo il proprietario (`APERTO_A_TUTTI` in `src/views/futsal.js`).
+- Migrazione 057 (carriera di La Partita sull'account), 18/11: da verificare se è applicata su Supabase.
 
 ## Prossimo passo consigliato
-- Lancio del 01/12: quando Alex dà il via, merge di main in `futsal`, poi `futsal` in main (conflitto su `docs/STATO.md` = riscrivere). Dopo il merge: lanciare a mano «Dati FSGC» (Run workflow) e controllare nel registro la riga «futsal:»; se dice SUPABASE_DB_URL non impostato, va aggiunto il secret.
-- Quando Google Play è pubblico: «Disponibile su Google Play» nelle grafiche e storia del lancio con i due store.
+- Lunedì 23/11 l'attività del lunedì fa il recap della 9ª giornata. Dopo, controllare che le grafiche rispettino le regole qui sotto.
 
 ## Decisioni recenti di Alex ancora valide
-- Lavorare solo su `futsal`; niente merge in main né pubblicazione finché non lo dice lui.
-- Coda Buffer: con 4 o più posti liberi si creano subito nuovi contenuti.
-- Ogni foto si usa UNA SOLA VOLTA. Già usate (notizie FSGC, id articolo): 2406 2409 2411 2413 2422 2427 2431 2435 2441 2447 2451 2452 2459 2462 2464 2473 2477 2482 2485. Dall'archivio Flickr: nessuna ancora (segnare qui l'id flickr).
-- Instagram: credito «© FSGC / Fotografo»; niente nomi di giocatori; solo stemmi Fantatitano («di fantasia, non ufficiali»); CTA solo Salvalo / Swipe / Link in bio; isAiGenerated true; storie senza testo.
-- Lancio 01/12 su App Store e Google Play.
+- Sull'iPhone tutto porta all'app, non al sito. Niente riga «non affiliato» nel link in bio: resta nei Termini.
+- Social: avatar solo nei campi delle formazioni. Nelle sfide e nella figurina vanno foto vere del giocatore nominato, ben visibile e centrato.
+- Logo FANTATITANO sempre in alto a sinistra. In ogni grafica con squadre ci sono i loro stemmi di fantasia.
+- Due meme a settimana, con dipinti in pubblico dominio: nell'immagine solo il titolo del quadro, autore e licenza in didascalia.
+- Mai ripetere giocatori o argomenti: prima di usare un nome, cercarlo in tutte le didascalie recenti.
+- Le storie parlano solo del loro giorno: niente scadenze già passate.
+- Le storie dei gol sono un'eccezione al limite di una storia al giorno: una per ogni gol della giornata in corso (20/11).
+- Storie dei gol: lo sfondo è sempre la foto del marcatore o, se manca, della sua squadra; stemmi di fantasia; mai «fantatitano.site», si scrive «Link in bio» (20/11).
+- Si lavora in una chat sola: «termina sessione» o «SESSIONE FINITA» salva il punto, poi la chat si può svuotare.
 
 ## Attenzione
-- Comandi per il PC di Alex (Windows, PowerShell): sempre completi da copiare e incollare, mai segnaposto tipo `<percorso>`; la cartella è `$env:USERPROFILE\Desktop\FOTO FSGC`.
-- Dal cloud Flickr risponde 429 alle immagini: si scarica dal PC di Alex. Le cartelle Drive del backup del computer non si possono rinominare via API: si rinominano sul PC.
-- Buffer gratuito: max 10 in coda per canale. Referti FSGC 15-22 ore dopo la partita.
+- Il deploy parte solo se `npm test` è verde.
+- Dopo `update_trigger` verifica con `get_trigger`: due volte l'aggiornamento si è perso con un riavvio.
+- Un turno delle storie già partito non prende le correzioni: va fermato (lo fa Alex da GitHub, da qui 403) e l'orologio ne fa partire uno nuovo entro 2 minuti.
+- La FSGC corregge il referto durante la partita (marcatore cambiato, gol inserito due volte): una storia già uscita non si corregge da sola.

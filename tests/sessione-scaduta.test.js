@@ -38,3 +38,10 @@ test('le richieste di autenticazione non passano di qui', async () => {
   await f('https://x.supabase.co/auth/v1/token', {});
   assert.equal(n, 1);
 });
+
+test('la formazione rifiutata dopo il lock dice che la consegna e\' chiusa', async () => {
+  const { translate } = await import('../src/backend.js');
+  const m = translate({ message: 'new row violates row-level security policy for table "lineups"' });
+  assert.match(m, /consegna per questa giornata è chiusa/);
+  assert.equal(translate({ message: 'new row violates row-level security policy for table "profiles"' }), 'new row violates row-level security policy for table "profiles"');
+});

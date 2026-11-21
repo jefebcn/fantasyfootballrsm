@@ -12,7 +12,7 @@ set -euo pipefail
 cd "$(dirname "$0")/../.."
 PORTA=${PORTA:-5465}
 PAROLA='parola-di-prova-non-usarla-davvero'
-export PATH=/usr/lib/postgresql/16/bin:/usr/lib/postgresql/15/bin:$PATH
+export PATH="$(ls -d /usr/lib/postgresql/*/bin 2>/dev/null | sort -rV | tr "\n" :)$PATH"
 
 rosso() { printf '\033[31m%s\033[0m\n' "$*"; }
 verde() { printf '\033[32m%s\033[0m\n' "$*"; }

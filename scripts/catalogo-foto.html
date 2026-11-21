@@ -1,0 +1,103 @@
+<title>Catalogo foto Fantatitano</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=Lato:wght@400;700;900&display=swap">
+<style>
+/* Layout: una striscia per squadra, foto in griglia; in cima filtro e ricerca. Colori del marchio Fantatitano. */
+:root {
+  --bg: #0A0A0C; --panel: #17151F; --line: #2A2738; --fg: #F2F1F7; --muted: #A29EB5;
+  --lime: #D9F51F; --viola: #4B06FC; --rosso: #F26B6B;
+  --display: "Anton", "Impact", "Arial Narrow", sans-serif;
+  --body: "Lato", "Segoe UI", system-ui, sans-serif;
+  color-scheme: dark;
+}
+@media (prefers-color-scheme: light) { :root:not([data-theme="dark"]) {
+  --bg: #F6F5FA; --panel: #FFFFFF; --line: #E2E0EC; --fg: #0A0A0C; --muted: #5D5A6E; --lime: #4B06FC; --rosso: #B3261E; color-scheme: light } }
+:root[data-theme="light"] { --bg: #F6F5FA; --panel: #FFFFFF; --line: #E2E0EC; --fg: #0A0A0C; --muted: #5D5A6E; --lime: #4B06FC; --rosso: #B3261E; color-scheme: light }
+* { box-sizing: border-box }
+body { background: var(--bg); color: var(--fg); font: 400 15px/1.45 var(--body);
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 20px 48px }
+.wrap { max-width: 1120px; margin: 0 auto; display: flex; flex-direction: column; gap: 22px }
+h1 { font: 400 clamp(38px, 8vw, 64px)/0.95 var(--display); margin: 0; letter-spacing: .01em; text-wrap: balance }
+h1 i { font-style: normal; color: var(--lime) }
+.sotto { color: var(--muted); max-width: 62ch; margin: 8px 0 0 }
+.numeri { display: flex; flex-wrap: wrap; gap: 10px }
+.numeri div { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 10px 14px; font-size: 13px; color: var(--muted) }
+.numeri b { display: block; font: 400 28px/1 var(--display); color: var(--fg); font-variant-numeric: tabular-nums }
+.dove { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 14px 16px; font-size: 14px }
+.dove h3 { margin: 0 0 6px; font: 900 13px/1 var(--body); letter-spacing: .08em; text-transform: uppercase; color: var(--lime) }
+.dove ol { margin: 0; padding-left: 20px; display: grid; gap: 4px }
+.dove code { font-size: 13px; background: var(--bg); padding: 1px 6px; border-radius: 6px; overflow-wrap: anywhere }
+.barra { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--bg); padding-block: 10px; display: flex; flex-direction: column; gap: 10px }
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--bg) }
+#cerca { width: 100%; font: 400 16px var(--body); color: var(--fg); background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px }
+#cerca:focus-visible, .chip:focus-visible { outline: 2px solid var(--lime); outline-offset: 2px }
+.chips { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 2px }
+.chip { flex: none; font: 700 13px var(--body); color: var(--fg); background: var(--panel); border: 1px solid var(--line); border-radius: 999px; padding: 7px 13px; cursor: pointer }
+.chip[aria-pressed="true"] { background: var(--lime); color: var(--bg); border-color: var(--lime) }
+.club header { display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px 10px; border-bottom: 2px solid var(--line); padding-bottom: 8px; margin-bottom: 12px }
+.club h2 { font: 400 30px/1 var(--display); margin: 0; letter-spacing: .01em }
+.pill { font: 700 12px var(--body); color: var(--muted); border: 1px solid var(--line); border-radius: 999px; padding: 3px 10px }
+.pill.manca { color: var(--rosso); border-color: var(--rosso) }
+.griglia { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 250px), 1fr)); gap: 12px }
+.carta { margin: 0; background: var(--panel); border: 1px solid var(--line); border-radius: 14px; overflow: hidden; display: flex; flex-direction: column }
+.carta img { width: 100%; aspect-ratio: 16 / 9; object-fit: cover; display: block; max-width: 100% }
+.carta figcaption { padding: 10px 12px 12px; display: flex; flex-direction: column; gap: 3px; min-width: 0 }
+.carta b { font: 900 15px var(--body) }
+.tipo { align-self: flex-start; font: 900 11px var(--body); letter-spacing: .06em; text-transform: uppercase; padding: 2px 8px; border-radius: 6px; background: var(--viola); color: #fff }
+.squadra .tipo { background: var(--line); color: var(--fg) }
+.nota { color: var(--muted); font-size: 13px }
+.cred { font-size: 12px; color: var(--muted) }
+.cred a { color: var(--lime) }
+.vuoto { color: var(--muted); margin: 0; font-size: 14px }
+.club[hidden] { display: none }
+</style>
+<div class="wrap">
+  <div>
+    <h1>CATALOGO <i>FOTO</i></h1>
+    <p class="sotto">Le foto della Federazione per le storie dei gol, divise per squadra. Ogni foto è stata guardata: maglia di questa stagione e giocatore riconosciuto. Il credito «©FSGC/Fotografo» va sempre sull'immagine.</p>
+  </div>
+  <div class="numeri">
+    <div><b>{{N_FOTO}}</b>foto</div>
+    <div><b>{{N_GIOCATORI}}</b>giocatori con la loro foto</div>
+    <div><b>{{N_SQUADRE}}</b>squadre con foto di gruppo</div>
+  </div>
+  <div class="dove">
+    <h3>Come si sceglie la foto di un gol</h3>
+    <ol>
+      <li>La foto del marcatore, se c'è (anche già usata).</li>
+      <li>Altrimenti una foto di gruppo della sua squadra, mai un giocatore solo.</li>
+      <li>Altrimenti la grafica di prima. Senza foto di gruppo oggi: {{SENZA}}.</li>
+    </ol>
+  </div>
+  <div class="barra">
+    <input id="cerca" type="search" placeholder="Cerca un giocatore o una squadra" autocomplete="off" aria-label="Cerca un giocatore o una squadra">
+    <div class="chips" id="chips" role="group" aria-label="Filtra per squadra"></div>
+  </div>
+  {{BLOCCHI}}
+</div>
+<script>
+(() => {
+  const club = [...document.querySelectorAll('.club')];
+  const chips = document.getElementById('chips');
+  const cerca = document.getElementById('cerca');
+  let scelto = '';
+  const tutte = document.createElement('button');
+  tutte.className = 'chip'; tutte.textContent = 'Tutte'; tutte.dataset.club = '';
+  chips.append(tutte);
+  for (const c of club) {
+    const b = document.createElement('button');
+    b.className = 'chip'; b.dataset.club = c.dataset.club;
+    b.textContent = c.querySelector('h2').textContent;
+    chips.append(b);
+  }
+  const aggiorna = () => {
+    const q = cerca.value.trim().toLowerCase();
+    for (const c of club) c.hidden = (scelto && c.dataset.club !== scelto) || (q && !c.dataset.nomi.includes(q));
+    for (const b of chips.children) b.setAttribute('aria-pressed', String(b.dataset.club === scelto));
+  };
+  chips.addEventListener('click', (e) => { const b = e.target.closest('.chip'); if (!b) return; scelto = b.dataset.club; aggiorna(); });
+  cerca.addEventListener('input', aggiorna);
+  aggiorna();
+})();
+</script>

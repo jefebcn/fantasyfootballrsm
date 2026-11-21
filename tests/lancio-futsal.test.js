@@ -22,8 +22,10 @@ test('fuori dal lancio le icone restano quelle di sempre', () => {
 
 test('nel lancio cambia scheda del browser e icona della Home, e i file ci sono', () => {
   const links = { 'link[rel="icon"]': { href: '' }, 'link[rel="apple-touch-icon"]': { href: '' } };
-  const doc = { querySelector: (s) => links[s] };
+  const classi = new Set();
+  const doc = { querySelector: (s) => links[s], documentElement: { classList: { add: (c) => classi.add(c) } } };
   assert.equal(iconeLancio(ora('2026-12-07T12:00:00+01:00'), doc), true);
+  assert.ok(classi.has('lancio-futsal'), 'la corona dentro l\'app cambia colore');
   for (const l of Object.values(links)) {
     assert.match(l.href, /^icons\/lancio-futsal\//);
     assert.ok(existsSync(new URL(`../${l.href}`, import.meta.url)), l.href);

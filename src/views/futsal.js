@@ -105,7 +105,11 @@ function mercato(n) {
   if (!c) return { aperto: false, stato: 'chiuso', testo: 'Date non ancora fissate dalla FSGC' };
   const provvisoria = F.chiusuraProvvisoria(n);
   // una chiusura provvisoria passata senza date vere: non si sta giocando, la FSGC è in ritardo
-  if (c.getTime() <= Date.now()) return { aperto: false, stato: 'chiuso', testo: provvisoria ? 'Date non ancora fissate dalla FSGC' : `Chiuso ${quando(c)}: si gioca` };
+  if (c.getTime() <= Date.now()) {
+    // dopo l'ultima giornata non c'è più niente da giocare: lo si dice, invece di «si gioca»
+    if (n >= F.GIORNATE && F.conclusa(n)) return { aperto: false, stato: 'chiuso', fine: true, testo: 'Stagione finita: ci vediamo alla prossima' };
+    return { aperto: false, stato: 'chiuso', testo: provvisoria ? 'Date non ancora fissate dalla FSGC' : `Chiuso ${quando(c)}: ${n >= F.GIORNATE ? 'ultima giornata' : 'si gioca'}` };
+  }
   if (!V.quotazioniPronte(n)) return { aperto: false, stato: 'attesa', testo: `${inVigore(n - 1) ? 'Riapre' : 'Apre'} con i referti della ${n - 1}ª` };
   return { aperto: true, stato: 'aperto', testo: `Si chiude ${traQuanto(c)}${provvisoria ? ' (data provvisoria: la FSGC non ha ancora fissato le partite)' : ''}` };
 }
@@ -269,7 +273,7 @@ export const futsalHome = {
       ${nuovo ? `<div class="fs-benvenuto">${logoFs('grande')}<p>Il fanta del Campionato Sammarinese di Futsal</p></div>${comeSiGioca()}${iscrizione()}` : ''}
       ${io || !srv.attivo ? `<a class="fs-banda" href="#/futsal/squadra">
         <div class="fs-banda-top">${io ? crest({ color: io.colore, initials: io.iniziali }) : stemma('cailungo')}<div><b>${esc(io?.squadra || 'La mia squadra')}</b><span>${io ? posto(ids, giocate) : 'sul telefono'}${rUltima ? ` · ${ultima}ª: ${fmt(rUltima.totale)} pt` : ''}</span></div>${icon('chev', 'ic sm')}</div>
-        <div class="fs-banda-num"><span><b>${n}ª</b>giornata</span><span class="fs-merc ${m.stato}"><b>${{ aperto: 'Aperto', attesa: 'In attesa', chiuso: 'Chiuso' }[m.stato]}</b>mercato</span><span><b>${b ? cr(b.residui) : cr(R.budget)}</b>crediti</span><span><b>${b && b.primo !== null && b.primo < n ? `${b.cambi}` : '–'}</b>cambi</span></div>
+        <div class="fs-banda-num"><span><b>${n}ª</b>giornata</span><span class="fs-merc ${m.stato}"><b>${m.fine ? 'Finita' : { aperto: 'Aperto', attesa: 'In attesa', chiuso: 'Chiuso' }[m.stato]}</b>${m.fine ? 'stagione' : 'mercato'}</span><span><b>${b ? cr(b.residui) : cr(R.budget)}</b>crediti</span><span><b>${b && b.primo !== null && b.primo < n ? `${b.cambi}` : '–'}</b>cambi</span></div>
         <p>${mia ? esc(m.testo) : m.aperto ? 'Non hai ancora una squadra: compra la tua rosa' : esc(m.testo)}</p></a>` : ''}
       ${io ? '<button class="a-btn sec fs-modifica" id="fs-modifica-squadra" type="button">Nome e colore della squadra</button>' : ''}
       ${!nuovo ? sec('Campionati principali') : ''}
@@ -410,7 +414,7 @@ export const futsalSquadra = {
     return `<main class="a-body fs">
       <div class="fs-cruscotto">
         <span><b>${n}ª</b>giornata</span>
-        <span class="fs-merc ${m.stato}"><b>${{ aperto: 'Aperto', attesa: 'In attesa', chiuso: 'Chiuso' }[m.stato]}</b>mercato</span>
+        <span class="fs-merc ${m.stato}"><b>${m.fine ? 'Finita' : { aperto: 'Aperto', attesa: 'In attesa', chiuso: 'Chiuso' }[m.stato]}</b>${m.fine ? 'stagione' : 'mercato'}</span>
         <span class="${bil.residui < 0 ? 'neg' : ''}"><b>${cr(bil.residui)}</b>di ${cr(bil.patrimonio)} crediti</span>
         <span><b>${bil.primo !== null && bil.primo < n ? bil.cambi : '∞'}</b>${bil.primo !== null && bil.primo < n ? `cambi${bil.malus ? ` · −${bil.malus} pt` : ''}` : 'cambi'}</span>
       </div>
@@ -915,7 +919,7 @@ export const futsalRegolamento = {
       ${cap('9 · Campionati', `<p>Con la stessa squadra giochi in tutti, senza fare niente:</p>
         <table>${row('Generale', 'somma dei punti di tutte le giornate')}${row('Tifosi', 'chi ha la stessa squadra del cuore')}${SERIE.map((x) => row(x.nome, `giornate ${x.da}–${x.a}`)).join('')}${row('Coppa Titano', `gironi e tabellone, ${COPPA.preliminari[0]}ª–${COPPA.finale}ª`)}</table>
         <p>Le <b>Serie</b> sono campionati a tappe: ognuna ha la sua classifica, che riparte da zero. A parità conta la media per giornata, poi la giornata migliore.</p>
-        <p><b>Coppa Titano.</b> Il sorteggio si fa alla chiusura della ${COPPA.preliminari[0]}ª: entra chi ha una squadra, servono almeno 8 iscritti. Gironi con 3 punti a vittoria, poi eliminazione diretta con andata e ritorno e finale secca. Da 24 iscritti in su prima ci sono i preliminari.</p>
+        <p><b>Coppa Titano.</b> Il sorteggio si fa alla chiusura della ${COPPA.preliminari[0]}ª: entra chi ha una squadra, servono almeno 8 iscritti. Gironi con 3 punti a vittoria e 1 a testa in parità; a parità di punti conta la differenza fra fantapunti fatti e subiti, poi i fantapunti fatti. Poi eliminazione diretta con andata e ritorno (passa chi fa più fantapunti in totale) e finale secca. Da 24 iscritti in su prima ci sono i preliminari: due gironi, 4 sfide ciascuno, passano i primi 8 di ogni girone (i primi 16 da 50 iscritti in su).</p>
         <p><b>Leghe con gli amici.</b> Una lega è un gruppo con la sua classifica: <b>a somma</b> (conta dalla giornata in cui nasce la lega) o <b>testa a testa</b> (ogni giornata contro un altro del gruppo, 3 punti a chi fa di più). Con un numero dispari, chi resta fuori affronta la media del gruppo. Si entra col codice o col link «Invita».</p>
         <p><b>Leghe pubbliche.</b> Aperte a tutti, senza codice: si entra dall'elenco con la squadra che hai già e vince chi fa più punti dalla giornata in cui la lega è nata.</p>`)}
       ${cap('10 · Arrivare a stagione iniziata', `<p>Ci si iscrive quando si vuole: si parte con ${R.budget} crediti e alle quotazioni del momento. Le giornate già giocate valgono 0 punti in classifica generale, ma le Serie e le leghe nuove ripartono da zero.</p>`)}
@@ -965,8 +969,94 @@ export const futsalClassifica = {
 };
 
 // ---------------------------------------------------------------- coppa
-const sfidaHtml = (s) => `<div class="fs-sfida"><span>${esc(squadraDi(s.a).squadra)}</span><b>${s.pa == null ? '–' : fmt(s.pa)}</b><i>–</i><b>${s.pb == null ? '–' : fmt(s.pb)}</b><span class="r">${s.b ? esc(squadraDi(s.b).squadra) : s.media ? 'media del girone' : 'riposa'}</span></div>`;
-const tabellaGirone = (g) => `<div class="a-card fs-list">${g.classifica.map((r) => rigaSquadra(r.id, `<span class="fv">${r.punti}</span>`, `${r.vinte}V ${r.pari}N ${r.perse}P · ${fmt(r.fatti)} fatti`)).join('')}</div>`;
+// Con 100 iscritti i preliminari sono due gironi da 50: si mostrano chi passa
+// e la propria squadra, il resto a richiesta. In cima «La tua coppa» dice a
+// che punto è chi guarda, senza cercarsi in mezzo a centinaia di righe.
+const coppaAperti = new Set();   // gironi dei preliminari mostrati per intero
+const mioId = () => FS.io()?.user_id || null;
+const nomeH = (id) => esc(squadraDi(id).squadra);
+const PASSATO = { Ottavi: 'gli ottavi', Quarti: 'i quarti', Semifinali: 'la semifinale' };
+const FUORI = { Ottavi: 'agli ottavi', Quarti: 'ai quarti', Semifinali: 'in semifinale', Finale: 'in finale' };
+const SPAREGGI = 'a parità di punti conta la differenza fra fantapunti fatti e subiti, poi i fantapunti fatti';
+
+function sfidaHtml(s, { vince, sotto = '', evidenzia = true } = {}) {
+  const me = mioId();
+  // nei gironi vince chi fa di più quella giornata; nel tabellone lo dice chi chiama (somma di andata e ritorno)
+  if (vince === undefined) vince = s.pa != null && s.pb != null && s.pa !== s.pb ? (s.pa > s.pb ? s.a : s.b) : null;
+  const cl = (id) => `${id && id === vince ? ' vince' : ''}${id && id === me ? ' io' : ''}`;
+  const destra = s.b ? nomeH(s.b) : s.media ? 'media del girone' : 'riposa';
+  return `<div class="fs-sfida${evidenzia && me && (s.a === me || s.b === me) ? ' fs-mia' : ''}"><span class="${cl(s.a).trim()}">${nomeH(s.a)}</span><b>${s.pa == null ? '–' : fmt(s.pa)}</b><i>–</i><b>${s.pb == null ? '–' : fmt(s.pb)}</b><span class="r${cl(s.b)}">${destra}</span>${sotto ? `<small>${sotto}</small>` : ''}</div>`;
+}
+const rigaGirone = (r) => { const s = squadraDi(r.id); return `<div class="vr${r.id === mioId() ? ' fs-mia' : ''}"><span class="fs-pos">${r.posto}</span>${crest({ color: s.colore, initials: s.iniziali }, 'fs-crest')}<span class="nm"><b>${esc(s.squadra)}</b><span>${r.vinte}V ${r.pari}N ${r.perse}P · ${fmt(r.fatti)} fatti</span></span><span class="fv">${r.punti}</span></div>`; };
+
+/** La classifica di un girone, con la linea di chi passa; limite: quante righe mostrare da chiusa (più la propria). */
+function tabellaGirone(g, { passano = 0, etichetta = '', limite = 0, chiave = '' } = {}) {
+  const me = mioId(), tutte = g.classifica;
+  const aperto = !limite || coppaAperti.has(chiave) || tutte.length <= limite + 2;
+  const viste = aperto ? tutte : tutte.filter((r) => r.posto <= limite || r.id === me);
+  let html = '', prima = 0;
+  for (const r of viste) {
+    if (prima && r.posto > prima + 1) html += '<div class="fs-taglio puntini">…</div>';
+    if (passano && prima <= passano && r.posto > passano) html += `<div class="fs-taglio">${etichetta || `passano i primi ${passano}`}</div>`;
+    html += rigaGirone(r); prima = r.posto;
+  }
+  const bottone = limite && tutte.length > limite + 2
+    ? `<button class="a-btn sec fs-tutti" data-tutti="${esc(chiave)}">${aperto ? `Mostra solo i primi ${limite}` : `Mostra tutte le ${tutte.length} squadre`}</button>` : '';
+  return `<div class="a-card fs-list fs-classifica">${html}</div>${bottone}`;
+}
+/** Il turno da mostrare di un girone: il primo non ancora concluso, se no l'ultimo. */
+const turnoDa = (g) => g.partite.find((p) => p.sfide.some((s) => s.pa == null && s.a)) || g.partite.at(-1);
+
+/** Chi passa dai gironi, detto come si legge: dipende da quanti posti ha il tabellone. */
+function passanoGironi(c) {
+  const n = c.gironi.length, p = c.posti;
+  if (p >= 2 * n) return { passano: 2, etichetta: 'passano le prime due', nota: '' };
+  if (p <= n) return { passano: 1, etichetta: 'passa la prima', nota: '' };
+  return { passano: 1, etichetta: 'passa la prima', nota: `Passano anche le ${p - n} migliori seconde di tutti i gironi.` };
+}
+
+/** «La tua coppa»: dove sei, contro chi giochi, o dove ti sei fermato. */
+function miaCoppa(c, ammessi) {
+  const me = mioId(); if (!me) return '';
+  const carta = (chip, titolo, testo = '', righe = '') => `<div class="a-card fs-hero fs-mia-coppa"><span class="chip">${chip}</span><h3>${titolo}</h3>${testo ? `<p class="small muted">${testo}</p>` : ''}${righe ? `<div class="fs-list">${righe}</div>` : ''}</div>`;
+  if (!ammessi.includes(me)) return carta('La tua coppa', 'Quest\'anno non sei in coppa', `Il sorteggio si è fatto alla chiusura della ${COPPA.preliminari[0]}ª: entrano le squadre iscritte e con la rosa in quel momento. Restano la classifica generale, le tre Serie e le leghe con gli amici.`);
+  if (c.campione === me) return carta('La tua coppa', 'Hai vinto la Coppa Titano!', 'Il tuo nome resta nell\'albo d\'oro della stagione.');
+  const mie = (partite) => partite.flatMap((p) => p.sfide.filter((s) => s.a === me || s.b === me).map((s) => ({ ...s, giornata: p.giornata })));
+  const righe = (lista) => lista.map((s) => sfidaHtml(s, { sotto: `${s.giornata}ª giornata`, evidenzia: false })).join('');
+  const avversario = (s) => (s.a === me ? s.b : s.a);
+  // tabellone
+  for (let k = c.tabellone.length - 1; k >= 0; k--) {
+    const t = c.tabellone[k], s = t.sfide.find((x) => x.a === me || x.b === me);
+    if (!s) continue;
+    const io = s.a === me ? 0 : 1, gare = s.gare.map((x) => (io ? [x[1], x[0]] : x));
+    const fatte = gare.filter((x) => x[0] != null && x[1] != null);
+    const parziale = fatte.length ? `. ${fatte.map((x, k) => `${t.giornate.length > 1 ? (k ? 'Ritorno' : 'Andata') : 'Finale'}: ${fmt(x[0])} a ${fmt(x[1])}`).join(' · ')}` : '';
+    if (!s.vincente) return carta('La tua coppa', `${t.nome}: contro ${nomeH(avversario(s))}`, `${t.giornate.map((g) => `${g}ª`).join(' e ')} giornata${t.giornate.length > 1 ? ', conta la somma dei fantapunti' : ', partita secca'}${parziale}.`);
+    if (s.vincente === me) return carta('La tua coppa', `Hai passato ${PASSATO[t.nome] || 'il turno'}`, `Contro ${nomeH(avversario(s))}${parziale}. Il prossimo avversario esce quando finiscono le altre sfide.`);
+    return carta('La tua coppa', `Fuori ${FUORI[t.nome] || 'nel tabellone'}`, `Ti ha battuto ${nomeH(avversario(s))}${parziale}.`);
+  }
+  // gironi
+  if (c.gironi) {
+    const g = c.gironi.find((x) => x.classifica.some((r) => r.id === me));
+    if (g) {
+      const r = g.classifica.find((x) => x.id === me), prossima = mie(g.partite).find((s) => s.pa == null);
+      if (c.tabellone.length) return carta('La tua coppa', `Fuori ai gironi: ${r.posto}° nel girone ${g.nome}`, `${r.punti} punti in 6 sfide. ${SPAREGGI[0].toUpperCase()}${SPAREGGI.slice(1)}.`);
+      const pg = passanoGironi(c), regola = `${pg.etichetta[0].toUpperCase()}${pg.etichetta.slice(1)}${pg.nota ? `; ${pg.nota[0].toLowerCase()}${pg.nota.slice(1)}` : '.'}`;
+      return carta('La tua coppa', `Girone ${g.nome}: sei ${r.posto}° con ${r.punti} punti`, `${prossima ? `Prossima sfida alla ${prossima.giornata}ª contro ${nomeH(avversario(prossima))}.` : 'Le tue sfide del girone sono finite.'} ${regola}`, righe(mie(g.partite)));
+    }
+  }
+  // preliminari
+  if (c.preliminari) {
+    const g = c.preliminari.find((x) => x.classifica.some((r) => r.id === me));
+    if (g) {
+      const r = g.classifica.find((x) => x.id === me), n = c.formato.passanoPerGirone;
+      if (c.gironi) return carta('La tua coppa', `Fuori ai preliminari: ${r.posto}° nel girone ${g.nome}`, `Passavano i primi ${n} su ${g.classifica.length}; ${SPAREGGI}.`, righe(mie(g.partite)));
+      const prossima = mie(g.partite).find((s) => s.pa == null);
+      return carta('La tua coppa', `Preliminari, girone ${g.nome}: sei ${r.posto}° su ${g.classifica.length}`, `Passano i primi ${n}.${prossima ? ` Prossima sfida alla ${prossima.giornata}ª contro ${prossima.b || prossima.a !== me ? nomeH(avversario(prossima)) : 'la media del girone'}.` : ''}`, righe(mie(g.partite)));
+    }
+  }
+  return '';
+}
 
 export const futsalCoppa = {
   title: 'Coppa futsal', appbar: 'futsal', sub: () => 'Coppa Titano',
@@ -988,21 +1078,41 @@ export const futsalCoppa = {
           <h3>${formato ? `Con ${ammessi.length} iscritti: ${descr[formato.nome]}` : `Servono almeno 8 iscritti: ora sono ${ammessi.length}`}</h3>
           <p class="small muted">Il sorteggio si fa alla chiusura della ${COPPA.preliminari[0]}ª giornata${inizio ? ` (${quando(inizio)})` : ''}: partecipa chi è iscritto in quel momento. Nessuna squadra in più: conta quella della giornata. Finale alla ${COPPA.finale}ª.</p></div>
         ${sec('Le fasi')}
-        <div class="a-card fs-fasi"><p><b>1 · Preliminari</b> giornate ${COPPA.preliminari.join('–')}, da 24 iscritti in su</p><p><b>2 · Gironi</b> giornate ${COPPA.gironi.join('–')}, andata e ritorno</p><p><b>3 · Tabellone</b> fino alla finale secca della ${COPPA.finale}ª</p></div>
+        <div class="a-card fs-fasi"><p><b>1 · Preliminari</b> giornate ${COPPA.preliminari.join('–')}, da 24 iscritti in su: due gironi, 4 sfide ciascuno, passano i primi 8 (i primi 16 da 50 iscritti)</p><p><b>2 · Gironi</b> giornate ${COPPA.gironi.join('–')}, da quattro, andata e ritorno</p><p><b>3 · Tabellone</b> andata e ritorno fino alla finale secca della ${COPPA.finale}ª</p><p class="small muted">Ogni sfida: 3 punti a chi fa più fantapunti, 1 a testa in parità; ${SPAREGGI}.</p></div>
       </main>`;
     }
     // la coppa decide qualificati e passaggi del turno solo a giornata conclusa: con i primi referti cambierebbero dopo
     const c = coppa(ammessi, (g, id) => (F.conclusa(g) ? FS.punti(g, id) : null));
     if (!c.formato) return `<main class="a-body fs">${empty(`La coppa non si gioca: alla chiusura della ${COPPA.preliminari[0]}ª gli iscritti con una squadra erano ${ammessi.length}, ne servivano 8.`)}</main>`;
-    const turni = (partite) => partite.map((p) => `${sec(`${p.giornata}ª giornata`)}<div class="a-card fs-list">${p.sfide.map(sfidaHtml).join('')}</div>`).join('');
+    const me = mioId();
+    const mioPrima = (lista) => [...lista].sort((a, b) => (b.classifica.some((r) => r.id === me) ? 1 : 0) - (a.classifica.some((r) => r.id === me) ? 1 : 0));
+    const finale = c.tabellone.find((t) => t.nome === 'Finale')?.sfide[0];
+    const campione = c.campione ? (() => { const s = squadraDi(c.campione), f = finale; const vinto = f && (f.a === c.campione ? [f.gare[0][0], f.gare[0][1], f.b] : [f.gare[0][1], f.gare[0][0], f.a]);
+      return `<div class="a-card fs-hero fs-campione"><span class="chip">${icon('cup', 'ic sm')} Campione della Coppa Titano</span><div class="fs-campione-sq">${crest({ color: s.colore, initials: s.iniziali }, 'fs-crest')}<h3>${esc(s.squadra)}</h3></div>${vinto ? `<p class="small muted">In finale ha battuto ${nomeH(vinto[2])}, ${fmt(vinto[0])} a ${fmt(vinto[1])}.</p>` : ''}</div>`; })() : '';
+    const tabellone = c.tabellone.length ? `${sec('Tabellone')}${c.tabellone.map((t) => `${sec(t.nome, t.giornate.map((g) => `${g}ª`).join(' e '))}<div class="a-card fs-list">${t.sfide.map((s) => {
+      const somma = (i) => (s.gare.every((x) => x[i] != null) ? s.gare.reduce((x, y) => x + y[i], 0) : null);
+      const due = s.gare.length > 1 && s.gare.some((x) => x[0] != null);
+      const sotto = due ? s.gare.map((x, k) => `${k ? 'ritorno' : 'andata'} ${x[0] == null ? '–' : fmt(x[0])}–${x[1] == null ? '–' : fmt(x[1])}`).join(' · ') : '';
+      return sfidaHtml({ a: s.a, b: s.b, pa: somma(0), pb: somma(1) }, { vince: s.vincente, sotto });
+    }).join('')}</div>`).join('')}` : '';
+    const pg = c.gironi && passanoGironi(c);
+    const gironi = c.gironi ? `${sec('Gironi', `${COPPA.gironi.join('–')}ª`)}${pg.nota ? `<p class="small muted fs-nota">${pg.nota}</p>` : ''}${mioPrima(c.gironi).map((g) => { const t = turnoDa(g); const finito = !t.sfide.some((s) => s.pa == null && s.a);
+      return `${sec(`Girone ${g.nome}${g.classifica.some((r) => r.id === me) ? ' · il tuo' : ''}`)}${tabellaGirone(g, pg)}<p class="small muted fs-turno">${finito ? 'Ultimo turno' : 'Prossimo turno'} · ${t.giornata}ª giornata</p><div class="a-card fs-list">${t.sfide.map((s) => sfidaHtml(s)).join('')}</div>`; }).join('')}` : '';
+    const prelim = c.preliminari ? `${sec('Preliminari', `${COPPA.preliminari.join('–')}ª`)}<p class="small muted fs-nota">Due gironi, 4 sfide ciascuno: passano i primi ${c.formato.passanoPerGirone}; ${SPAREGGI}.</p>${mioPrima(c.preliminari).map((g) => `${sec(`Girone ${g.nome}${g.classifica.some((r) => r.id === me) ? ' · il tuo' : ''}`, `${g.classifica.length} squadre`)}${tabellaGirone(g, { passano: c.formato.passanoPerGirone, limite: c.formato.passanoPerGirone, chiave: g.nome })}`).join('')}` : '';
+    // a coppa finita in cima il campione; durante, prima la fase in corso
     return `<main class="a-body fs">
-      ${c.campione ? `<div class="a-card fs-hero"><span class="chip">Campione</span><h3>${esc(squadraDi(c.campione).squadra)}</h3></div>` : ''}
-      ${c.tabellone.length ? `${sec('Tabellone')}${c.tabellone.map((t) => `${sec(t.nome, t.giornate.map((g) => `${g}ª`).join(' e '))}<div class="a-card fs-list">${t.sfide.map((s) => sfidaHtml({ a: s.a, b: s.b, pa: s.gare.every((x) => x[0] != null) ? s.gare.reduce((x, y) => x + y[0], 0) : null, pb: s.gare.every((x) => x[1] != null) ? s.gare.reduce((x, y) => x + y[1], 0) : null })).join('')}</div>`).join('')}` : ''}
-      ${c.gironi ? c.gironi.map((g) => `${sec(`Girone ${g.nome}`)}${tabellaGirone(g)}`).join('') : ''}
-      ${c.preliminari ? c.preliminari.map((g) => `${sec(`Preliminari · girone ${g.nome}`)}${tabellaGirone(g)}${turni(g.partite.slice(-1))}`).join('') : ''}
+      ${campione}${miaCoppa(c, ammessi)}
+      ${tabellone}${gironi}${prelim}
     </main>`;
   },
-  mount(root, ctx) { caricaE(ctx); },
+  mount(root, ctx) {
+    caricaE(ctx);
+    root.querySelector('main').addEventListener('click', (e) => {
+      const b = e.target.closest('[data-tutti]'); if (!b) return;
+      const k = b.dataset.tutti; if (coppaAperti.has(k)) coppaAperti.delete(k); else coppaAperti.add(k);
+      ctx.render();
+    });
+  },
 };
 
 // ---------------------------------------------------------------- leghe: pubbliche, con gli amici, admin
@@ -1134,7 +1244,7 @@ export const futsalLega = {
       const { classifica, partite } = classificaScontri(l.membri_avvio, turni, FS.punti, { mediaAlRiposo: true });
       const prossima = partite.find((p) => p.sfide.some((s) => s.pa == null)) || partite.at(-1);
       corpo = `<div class="a-card fs-list fs-classifica">${classifica.map((r) => `<div class="vr fs-tocca${r.id === FS.io()?.user_id ? ' fs-mia' : ''}" data-chi="${esc(r.id)}" role="button" tabindex="0"><span class="fs-pos">${r.posto}</span>${crest({ color: squadraDi(r.id).colore, initials: squadraDi(r.id).iniziali }, 'fs-crest')}<span class="nm"><b>${esc(squadraDi(r.id).squadra)}</b><span>${r.vinte}V ${r.pari}N ${r.perse}P · ${fmt(r.fatti)} fatti</span></span><span class="fv">${r.punti}</span></div>`).join('')}</div>
-        ${prossima ? `${sec(`${prossima.giornata}ª giornata`)}<div class="a-card fs-list">${prossima.sfide.map(sfidaHtml).join('')}</div>` : ''}`;
+        ${prossima ? `${sec(`${prossima.giornata}ª giornata`)}<div class="a-card fs-list">${prossima.sfide.map((x) => sfidaHtml(x)).join('')}</div>` : ''}`;
     }
     // si invita finché si può entrare: una testa a testa avviata è chiusa
     const invitabile = !(l.tipo === 'testa' && l.avvio_giornata);

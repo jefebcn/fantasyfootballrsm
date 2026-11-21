@@ -71,3 +71,11 @@ test('la coppa si ferma dove si fermano i punteggi', () => {
   assert.equal(c.gironi, null);
   assert.equal(c.tabellone.length, 0);
 });
+test('posti del tabellone noti dal sorteggio dei gironi: 16 con 100 iscritti, 4 con 3 gironi', () => {
+  const c = coppa(ids(100), tutti(20));
+  assert.equal(c.gironi.length, 8);
+  assert.equal(c.posti, 16, 'prime e seconde, già mentre i gironi si giocano');
+  assert.equal(c.tabellone.length, 0);
+  assert.equal(coppa(ids(12), tutti(30)).posti, 4, 'tre gironi: le prime e la migliore seconda');
+  assert.equal(coppa(ids(30), tutti(12)).posti, null, 'preliminari in corso: gironi non ancora sorteggiati');
+});

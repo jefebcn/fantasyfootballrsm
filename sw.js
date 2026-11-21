@@ -1,5 +1,5 @@
 /* Service worker — shell in cache, aggiornamento in background. */
-const VERSION = 'fcs-v4.2.313';
+const VERSION = 'fcs-v4.2.314';
 const SHELL = [
   './', './index.html', './manifest.webmanifest', './styles/app.css', './styles/futsal-tema.css', './styles/logo.css', './styles/font.css', './design/tokens/tokens.css',
   // I caratteri stanno in casa: nella cache ci vanno, se no senza rete si vede
@@ -12,7 +12,7 @@ const SHELL = [
   './src/views/regolamento.js', './src/views/scheda.js', './src/views/impostazioni.js', './src/views/formazioni.js', './src/views/nuova-password.js', './src/password.js', './src/views/mercato.js', './src/views/admin.js', './src/views/auth.js', './src/views/leghe.js', './src/views/lega.js', './src/views/setup.js', './src/views/onboarding.js', './src/views/guida.js', './src/views/gestione.js', './src/views/squadra.js', './src/views/vice.js', './src/views/legali.js', './src/views/adesione.js', './src/views/attestato.js', './src/views/gioco.js', './src/gioco.js', './src/notifiche.js', './src/schermo.js', './vendor/supabase-js.js', './src/views/asta.js', './src/views/video.js', './src/video.js', './src/video-dati.js', './src/views/regole.js', './src/views/scambi.js', './src/views/confronto.js',
   // Tutti i moduli, nessuno escluso: un file preso dalla rete accanto agli altri
   // presi dalla cache puo' essere di un'altra versione (tests/sw-guscio.test.js).
-  './src/colore.js', './src/diagnostica.js', './src/miei-dati.js', './src/notizie.js', './src/views/negozio.js', './src/views/sospeso.js',
+  './src/colore.js', './src/lancio-futsal.js', './icons/lancio-futsal/icon-192.png', './icons/lancio-futsal/apple-touch-icon.png', './src/diagnostica.js', './src/miei-dati.js', './src/notizie.js', './src/views/negozio.js', './src/views/sospeso.js',
   './src/calendario-dati.js', './src/eventi-dati.js', './src/listone-dati.js', './src/listone-extra.js',
   './src/views/futsal.js', './src/futsal.js', './src/futsal-engine.js', './src/futsal-dati.js', './src/futsal-server.js', './src/futsal-gare.js', './src/futsal-valori.js', './src/futsal-grafica.js',
   './icons/icon-192.png', './icons/icon-512.png', './icons/maskable-512.png', './icons/apple-touch-icon.png',

@@ -1,0 +1,90 @@
+# La prova generale dell'import del futsal, prima del lancio (Alex, 21/11/2026).
+#
+# Il futsal vive sul ramo `futsal` finché non si lancia: questo lavoro fa
+# girare l'import automatico che arriverà su main (scripts/importa-in-giro.sh
+# con scripts/importa-futsal-giro.sh) ma SUL RAMO futsal, così si vede già
+# questa settimana quanto ci mettono i referti ad arrivare nell'anteprima, e
+# quotazioni e orari arrivano al database da soli. Il calcio non lo tocca:
+# l'import del calcio resta quello di dati-fsgc.yml, su main.
+#
+# Sta su main solo perché GitHub fa partire i lavori pianificati dal ramo
+# principale. Non cambia niente nell'app pubblicata.
+#
+# SI SPEGNE DA SOLO al lancio: quando su main c'è scripts/importa-futsal-giro.sh
+# il futsal lo importa dati-fsgc.yml, e questo lavoro non fa più niente. Dopo
+# il lancio si può cancellare.
+
+name: Futsal (prova prima del lancio)
+
+on:
+  schedule:
+    - cron: '37 */2 * * *'     # ogni due ore (GitHub la servirà quando può)
+  workflow_dispatch:
+
+concurrency:
+  group: futsal-prova
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  importa:
+    runs-on: ubuntu-latest
+    timeout-minutes: 350
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: futsal
+          fetch-depth: 0
+
+      - name: Il lancio c'è già stato?
+        id: gia
+        run: |
+          git fetch -q origin main
+          if git cat-file -e origin/main:scripts/importa-futsal-giro.sh 2>/dev/null; then
+            echo "lanciato=si" >> "$GITHUB_OUTPUT"
+            echo "Il futsal è su main: lo importa dati-fsgc.yml. Questo lavoro si può cancellare."
+          else
+            echo "lanciato=no" >> "$GITHUB_OUTPUT"
+          fi
+
+      - uses: actions/setup-python@v5
+        if: steps.gia.outputs.lanciato == 'no'
+        with:
+          python-version: '3.12'
+
+      - uses: actions/setup-node@v4
+        if: steps.gia.outputs.lanciato == 'no'
+        with:
+          node-version: '22'
+
+      - name: Le librerie che servono
+        if: steps.gia.outputs.lanciato == 'no'
+        run: |
+          python3 -m pip install --quiet 'beautifulsoup4==4.15.0' 'lxml==6.1.3'
+          npm install --no-audit --no-fund
+
+      - name: Riprendi l'archivio dei tabellini del futsal
+        if: steps.gia.outputs.lanciato == 'no'
+        uses: actions/cache@v4
+        with:
+          path: data/futsal-tabellini.json
+          key: futsal-tabellini-${{ github.run_id }}
+          restore-keys: |
+            futsal-tabellini-
+
+      # Solo il futsal (IMPORTA=true salta il calcio), sul ramo futsal, e nei
+      # giorni del futsal resta acceso e ricontrolla la FSGC ogni 20 minuti.
+      - name: Importa il futsal, e nei suoi giorni resta di guardia
+        if: steps.gia.outputs.lanciato == 'no'
+        env:
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+          RAMO: futsal
+          IMPORTA: 'true'
+          VIDEO: 'true'
+          FINESTRA: node scripts/finestra-partite.mjs --futsal
+        run: |
+          git config user.name  'importatore FSGC'
+          git config user.email 'importatore-fsgc@users.noreply.github.com'
+          bash scripts/importa-in-giro.sh

@@ -1,11 +1,12 @@
 # Stato – Fantatitano
 
-Aggiornato: 2026-11-21 · tema: storie dei gol live (prima serata 20/11) e limite di Buffer
+Aggiornato: 2026-11-21 (sera) · temi: storie dei gol live e Buffer; audit del sito con 13 correzioni (PR #134–#141)
 
 ## Dove siamo
 - App online su fantatitano.site e su iPhone. Nell'onboarding del sito c'è il tasto «Scarica l'app dall'App Store» (PR #117, unita); non compare nell'app né su Android.
 - Instagram @fantatitano si pubblica da solo con Buffer: un post alle 14:00 e una storia alle 14:15, al massimo uno di ciascuno al giorno. Li prepara il kit social (fuori dal repo), con due attività pianificate: lunedì (dopo la giornata) e giovedì (prima della giornata).
 - Il kit ha la sua memoria: `kit/STATO.md` (cosa è programmato) e `kit/PLAYBOOK.md` (tutte le regole di Alex). L'URL del kit è scritto nel prompt delle due attività.
+- 21/11, audit completo: sicurezza (nomi protetti, leghe private non apribili, codice vice, CSP, backup con account cifrati), formazione «consegnata» solo se il server risponde, conferme sulle azioni irreversibili, date «da definire», turno infrasettimanale. Nuove: Listone per gol/assist, preferiti e «Liberi»; bacheca della lega (064); albo d'oro. Migrazioni fino alla 065 applicate.
 - La 9ª giornata (19–22/11) è già programmata. Il controllo infortuni e squalifiche del 19/11 non ha trovato nessuno fuori.
 
 ## Aperto / in corso
@@ -15,6 +16,8 @@ Aggiornato: 2026-11-21 · tema: storie dei gol live (prima serata 20/11) e limit
 - FantaTitano Futsal: annunciato nel link in bio per il 1° dicembre (PR #118). Stato e ricette del futsal in `docs/futsal/STATO.md` e `docs/futsal/RICETTE.md`. Dal 21/11 il codice è su main ma lo vede solo il proprietario (`APERTO_A_TUTTI` in `src/views/futsal.js`).
 - Lancio Futsal (21/11): corona metà viola e metà nera su fondo arancio (versione A scelta da Alex). Sul sito si accende da sola dal 1° al 14/12 (`src/lancio-futsal.js`). Le foto profilo di @fantatitano e @fantatitano.futsal le cambia Alex a mano il 1/12 e le rimette il 15/12. La versione B (fondo nero) è per le grafiche grandi del lancio. Le icone degli store non cambiano.
 - Migrazione 057 (carriera di La Partita sull'account), 18/11: da verificare se è applicata su Supabase.
+- Per Alex, dal pannello: Supabase → Authentication → Email → controllo delle password già rubate (consigliato, non urgente); copia del backup fuori da GitHub e `BACKUP_PASSPHRASE` al sicuro.
+- Coppa fantasy del calcio legata alla Coppa Titano vera (quarti mer 25/11): Alex ha il prompt per un'altra chat; struttura come la coppa del futsal (`src/futsal-gare.js`). Da verificare prima se l'import legge i referti di coppa.
 
 ## Prossimo passo consigliato
 - Lunedì 23/11 l'attività del lunedì fa il recap della 9ª giornata. Dopo, controllare che le grafiche rispettino le regole qui sotto.
@@ -31,6 +34,8 @@ Aggiornato: 2026-11-21 · tema: storie dei gol live (prima serata 20/11) e limit
 - Si lavora in una chat sola: «termina sessione» o «SESSIONE FINITA» salva il punto, poi la chat si può svuotare.
 
 ## Attenzione
+- `apply_migration` su Supabase chiede conferma ad Alex: avvisarlo prima, se no va in timeout.
+- Prove browser in cloud: `BASE=http://app.local node -r ./prove/strumenti/servi-da-disco.cjs prove/xxx.cjs` (https://app.local per il service worker).
 - Il deploy parte solo se `npm test` è verde.
 - Dopo `update_trigger` verifica con `get_trigger`: due volte l'aggiornamento si è perso con un riavvio.
 - Un turno delle storie già partito non prende le correzioni: va fermato (lo fa Alex da GitHub, da qui 403) e l'orologio ne fa partire uno nuovo entro 2 minuti.

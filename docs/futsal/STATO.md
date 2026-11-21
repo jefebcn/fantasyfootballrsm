@@ -1,12 +1,13 @@
 # Stato – Fantatitano Futsal
 
-Aggiornato: 2026-11-21 · tema: futsal su main (visibile solo al proprietario), import automatico, ritocchi grafici
+Aggiornato: 2026-11-21 (sera) · tema: futsal pronto al lancio, funzioni nuove, Coppa provata con 100 squadre
 
 ## Dove siamo
 - Futsal su main e su fantatitano.site dal 21/11 (PR #126): lo vede solo il proprietario (`profiles.is_owner`) finché `APERTO_A_TUTTI = false` in `src/views/futsal.js`. Gioco a rosa e crediti (§ 13 di `FUTSAL.md`).
 - Import automatico: i referti futsal li importa «Dati FSGC» (`dati-fsgc.yml` → `importa-in-giro.sh` → `scripts/importa-futsal-giro.sh`); quotazioni e orari vanno sul database con il secret SUPABASE_DB_URL. Primo giro 21/11 ok (referti aggiornati, database non ancora toccato: nulla di nuovo).
 - Database: futsal-06 (leghe pubbliche) e futsal-07 (funzioni chiuse agli anonimi) applicate. Date FSGC fissate fino alla 12ª (3/12).
-- 21/11: barra «Aggiorna» tolta (PR #129); maglie al posto della lettera nelle liste, icona di Regole, niente citazioni di altre app, pagina Squadra che non sborda (PR #130).
+- 21/11: barra «Aggiorna» tolta, maglie nelle liste, icona di Regole, niente citazioni di altre app (PR #129-#133). Lancio: la 13ª è la prima giornata giocabile (chiusura provvisoria, `futsal_lock` 13 a mano). Coppa dalla 14ª alla 30ª (`COPPA` in `src/futsal-gare.js`). Nuove: nome e colore della squadra (nomi unici, futsal-10), «Primo in panchina», formazioni degli avversari, avviso «mercato aperto» (futsal-11 + funzione `promemoria-`), albo d'oro.
+- Coppa con 100 squadre simulata (`prove/coppa-simulata/`): «La tua coppa», linea di chi passa, preliminari ridotti ai primi 16, sfide del turno, ✓ su chi passa (PR #141). A stagione finita la home dice «Stagione finita».
 - Instagram @fantatitano.futsal via Buffer: coda fino al 30/11. Foto: archivio Flickr FSGC su Drive, catalogo `catalogo-futsal.csv` (Drive id 1cxmXJ3_xL3Ghku4pCXWhIPXJq2KRit0X).
 
 ## Aperto / in corso
@@ -35,4 +36,4 @@ Aggiornato: 2026-11-21 · tema: futsal su main (visibile solo al proprietario), 
 - Comandi per il PC di Alex (Windows, PowerShell): sempre completi, mai segnaposto; la cartella è `$env:USERPROFILE\Desktop\FOTO FSGC`.
 - Dal cloud Flickr risponde 429 alle immagini: si scarica dal PC di Alex.
 - Buffer gratuito: max 10 in coda per canale. Referti FSGC 15-22 ore dopo la partita.
-- Prove browser in cloud: niente server locale, si servono i file dal disco con `page.route`; per il service worker serve un indirizzo https.
+- Prove browser in cloud: `prove/strumenti/servi-da-disco.cjs` (vedi docs/STATO.md); per il service worker serve https://app.local.

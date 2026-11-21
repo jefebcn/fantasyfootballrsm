@@ -127,7 +127,7 @@ function probabili(n, h, a, f) {
 export const live = {
   title: 'Live', appbar: 'none', nav: false,
   render({ params }) {
-    const f = S.fixture(params.id); if (!f) return `<main class="a-body"><div class="empty"><p>${t('Partita non trovata.')}</p></div></main>`;
+    const f = S.fixture(params.id); if (!f) return `<main class="a-body"><div class="empty"><p>${t('Partita non trovata.')}</p><a class="a-btn" href="#/">${t('Torna alla Home')}</a></div></main>`;
     const r = S.fixtureResult(f); const h = S.managersById.get(f.homeManagerId), a = S.managersById.get(f.awayManagerId);
     const n = f.matchday; const st = S.matchdayStatus(n); const ratings = S.ratingsOf(n);
     const evs = {}; for (const m of S.matchesOf(n)) for (const e of S.eventsOf(m.id)) (evs[e.playerId] ||= []).push(e);

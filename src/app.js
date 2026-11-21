@@ -426,8 +426,8 @@ document.addEventListener('click', (e) => {
   if (e.target.closest('.a-drawer a')) { drawerOpen = false; }
   if (e.target.closest('[data-installa]')) { drawerOpen = false; root.querySelector('.a-drawer')?.classList.remove('on'); installa(); return; }
   if (e.target.closest('[data-refresh]')) { toast(t('Aggiorno…')); S.refresh(); return; }
-  if (e.target.closest('[data-logout]')) { S.signOut().then(() => go('login')); return; }
-  const sw = e.target.closest('[data-switch]'); if (sw) { drawerOpen = false; S.switchLeague(sw.dataset.switch).then(() => go('')); return; }
+  if (e.target.closest('[data-logout]')) { S.signOut().then(() => go('login')).catch((err) => toast(err?.message || t('Nessuna connessione al server.'))); return; }
+  const sw = e.target.closest('[data-switch]'); if (sw) { drawerOpen = false; S.switchLeague(sw.dataset.switch).then(() => go('')).catch((err) => toast(err?.message || t('Nessuna connessione al server.'))); return; }
   if (e.target.closest('[data-back]')) { e.preventDefault(); if (history.length > 1) history.back(); else go(''); return; }
   const tg = e.target.closest('.vr[data-toggle]'); if (tg) { const vb = tg.nextElementSibling; if (vb?.classList.contains('vb')) vb.classList.toggle('on'); return; }
   if (e.target.id === 'sheet-scrim') sheet(null);

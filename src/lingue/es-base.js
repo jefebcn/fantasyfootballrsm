@@ -134,6 +134,9 @@ export const BASE = {
 
   // avvisi comuni (src/app.js)
   'Non fai parte di questa lega.': 'No formas parte de esta liga.',
+  'Torna alla Home': 'Volver al inicio',
+  'Formazione NON consegnata: {motivo} Riprova.': 'Alineación NO entregada: {motivo} Inténtalo de nuevo.',
+  'Invio la formazione…': 'Envío la alineación…',
   'Errore di rete': 'Error de red',
   'Quel link l\'avevi già usato': 'Ya habías usado ese enlace',
   'Vale una volta sola, e la prima volta ha funzionato: <b>sei già dentro</b>. Se stavi recuperando la password, sceglila adesso.': 'Sirve una sola vez, y la primera vez funcionó: <b>ya entraste</b>. Si estabas recuperando la contraseña, elígela ahora.',

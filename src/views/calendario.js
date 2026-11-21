@@ -3,6 +3,12 @@ import { esc, icon, logo, badge, matchCard, stemmaClub, sec, dateIt, timeIt, t }
 import { videoDi } from '../video.js';
 
 const STATUS = { played: null, scheduled: null, postponed: 'Rinviata', suspended_before_45: 'Sospesa <45\'', suspended_after_45: 'Sospesa >45\'', awarded: 'A tavolino' };
+/** La riga della chiusura: «si chiude sab 5/12 15:00», o «chiusura stimata» se la FSGC non ha dato gli orari. */
+function chiusuraTesto(md, st) {
+  if (st !== 'open' && st !== 'scheduled') return '';
+  if (md.stimata) return t('chiusura stimata {data}', { data: dateIt(md.lockAt) });
+  return st === 'open' ? t('si chiude {data} {ora}', { data: dateIt(md.lockAt), ora: timeIt(md.lockAt) }) : dateIt(md.lockAt);
+}
 export const calendario = {
   title: 'Calendario',
   render({ params }) {
@@ -20,9 +26,9 @@ export const calendario = {
             e' "vuoto", e' assente. Prima apriva la schermata con un riquadro
             che diceva "qui non ci sono scontri" e spingeva in fondo le
             partite del campionato, che invece servono a tutti. */
-    S.aPunti() ? `<div class="statusline">${badge(st, st === 'open' ? t('lock {data} {ora}', { data: dateIt(md.lockAt), ora: timeIt(md.lockAt) }) : st === 'scheduled' ? dateIt(md.lockAt) : '')}</div>` : `
+    S.aPunti() ? `<div class="statusline">${badge(st, chiusuraTesto(md, st))}</div>` : `
       ${sec(t('Scontri di lega'), fx.length === 1 ? t('{n} partita', { n: fx.length }) : t('{n} partite', { n: fx.length }))}
-      <div class="statusline">${badge(st, st === 'open' ? t('lock {data} {ora}', { data: dateIt(md.lockAt), ora: timeIt(md.lockAt) }) : st === 'scheduled' ? dateIt(md.lockAt) : '')}</div>
+      <div class="statusline">${badge(st, chiusuraTesto(md, st))}</div>
       ${fx.length ? fx.map((r) => matchCard(r, S.managersById)).join('')
     : `<div class="empty piccolo">${logo()}<p>${n < S.primaGiornata()
       // Il motivo vero, invece di dare la colpa al numero di squadre: questa
@@ -31,11 +37,11 @@ export const calendario = {
       : S.aPunti() ? t('In una lega pubblica non ci sono scontri diretti: si sommano i fantapunti di ogni giornata.')
         : t('Nessuno scontro: servono almeno due squadre nella lega.')}</p></div>`}`}
       ${sec(t('Partite del campionato'), t('{n}ª giornata', { n }))}
-      ${Object.entries(real.reduce((acc, m) => { (acc[dateIt(m.kickoffAt)] ||= []).push(m); return acc; }, {}))
+      ${Object.entries(real.reduce((acc, m) => { (acc[m.kickoffAt ? dateIt(m.kickoffAt) : t('Data da definire')] ||= []).push(m); return acc; }, {}))
         .map(([giorno, lista]) => `<div class="daygroup"><div class="dayhead">${esc(giorno)}</div>${lista.map((m) => {
           const h = S.clubsById.get(m.homeClubId), a = S.clubsById.get(m.awayClubId); const label = STATUS[m.status] && t(STATUS[m.status]);
           const right = m.status === 'played' ? `<span class="sc">${m.homeGoals} – ${m.awayGoals}</span>`
-            : label ? `<span class="sc st">${label}</span>` : `<span class="sc time">${timeIt(m.kickoffAt)}</span>`;
+            : label ? `<span class="sc st">${label}</span>` : `<span class="sc time">${m.kickoffAt ? timeIt(m.kickoffAt) : '—'}</span>`;
           return `<div class="rr"><div><b>${stemmaClub(h, 'xs')}${esc(h.name)} — ${esc(a.name)}${stemmaClub(a, 'xs')}</b><span>${m.venue ? esc(m.venue) : ''}</span></div>${right}${(() => { const yt = videoDi(m); return m.videoUrl
             ? `<a href="${m.videoUrl}" target="_blank" rel="noopener" class="play" aria-label="${t('Guarda su Titani.TV')}">${icon('play', 'ic sm')}</a>`
             : yt ? `<a href="#/video" class="play" aria-label="${t('Guarda gli highlights')}">${icon('play', 'ic sm')}</a>` : '<span></span>'; })()}</div>`;

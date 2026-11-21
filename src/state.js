@@ -1112,7 +1112,17 @@ export function segnaAccesso() {
   });
 }
 // Un'app lasciata aperta e ripresa il giorno dopo e' un'apertura nuova.
-if (typeof document !== 'undefined') document.addEventListener('visibilitychange', () => { if (!document.hidden) segnaAccesso(); });
+// Al ritorno in primo piano: una PWA sospesa riparte com'era, coi risultati
+// di quando la si era lasciata e il timer del lock fermo (iOS lo congela).
+// Si ricarica, al massimo una volta ogni due minuti, e si riprogramma il lock.
+let tornataAlle = Date.now();
+if (typeof document !== 'undefined') document.addEventListener('visibilitychange', () => {
+  if (document.hidden) return;
+  segnaAccesso();
+  if (Date.now() - tornataAlle < 120000) return;
+  tornataAlle = Date.now();
+  if (ready) { programmaAlLock(); refresh(); }
+});
 export const adminAccessi = (giorni) => remote.adminAccessi(giorni);
 export const verificaRegistro = () => remote.verificaRegistro();
 export const testoConsenso = (v) => remote.testoConsenso(v);

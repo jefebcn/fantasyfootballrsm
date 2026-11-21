@@ -47,14 +47,15 @@ test('tabellone: 1 e 2 solo in finale', () => {
   assert.deepEqual(posizioniTabellone(4), [1, 4, 2, 3]);
   assert.deepEqual(posizioniTabellone(8), [1, 8, 4, 5, 2, 7, 3, 6]);
 });
-test('coppa completa con 60 iscritti: 32 ai gironi, 16 al tabellone, ottavi alla 21ª, un campione', () => {
+test('coppa completa con 60 iscritti: 32 ai gironi, 16 al tabellone, ottavi alla 24ª, finale alla 30ª, un campione', () => {
   const c = coppa(ids(60), tutti(30));
   assert.equal(c.preliminari.length, 2);
   assert.equal(c.gironi.length, 8);
   assert.ok(c.gironi.every((g) => g.classifica.length === 4));
   assert.equal(c.tabellone[0].nome, 'Ottavi');
-  assert.deepEqual(c.tabellone[0].giornate, [21, 22]);
-  assert.deepEqual(c.tabellone.at(-1).giornate, [27]);
+  assert.deepEqual(c.tabellone[0].giornate, [24, 25]);
+  assert.deepEqual(c.tabellone.at(-1).giornate, [30]);
+  assert.ok(c.gironi[0].partite.every((p) => p.giornata >= 18 && p.giornata <= 23), 'gironi tra la 18ª e la 23ª');
   assert.equal(c.campione, 'u000');
 });
 test('coppa ridotta con 10 iscritti: due gironi da cinque, semifinali', () => {

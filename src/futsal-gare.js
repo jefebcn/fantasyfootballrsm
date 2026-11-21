@@ -95,7 +95,10 @@ export function calendarioTesta(membri, avvio, ultima = 30) {
 
 // ---------------------------------------------------------------- coppa
 
-export const COPPA = { preliminari: [9, 14], gironi: [15, 20], finale: 27 };
+// Dal lancio del 01/12 (la prima giornata giocabile è la 13ª): sorteggio alla
+// chiusura della 14ª, così entra chi si iscrive nelle prime due settimane;
+// preliminari in 4 turni, gironi andata e ritorno, tabellone fino alla 30ª.
+export const COPPA = { preliminari: [14, 17], gironi: [18, 23], finale: 30 };
 
 /**
  * Le tre Serie (§ 13.8): classifiche a
@@ -140,7 +143,7 @@ const NOMI_TURNO = { 16: 'Ottavi', 8: 'Quarti', 4: 'Semifinali', 2: 'Finale' };
 
 /**
  * La coppa intera, fin dove i punteggi la fanno arrivare.
- * ids: gli iscritti ammessi (chi c'era alla chiusura della 9ª), in ordine qualunque.
+ * ids: gli iscritti ammessi (chi c'era alla chiusura della prima giornata di coppa), in ordine qualunque.
  */
 export function coppa(ids, punti, seme = 'futsal-2026') {
   const formato = formatoCoppa(ids.length);
@@ -148,7 +151,7 @@ export function coppa(ids, punti, seme = 'futsal-2026') {
   const ordine = mescola([...ids].sort(), seme);
   const out = { formato, iscritti: ids.length, preliminari: null, gironi: null, tabellone: [], campione: null };
 
-  // fase 1 — gironi preliminari A e B, sei turni contro avversari diversi
+  // fase 1 — gironi preliminari A e B, un turno per giornata dei preliminari, avversari diversi
   let qualificati = ordine;
   if (formato.preliminari) {
     const gA = ordine.filter((_, i) => i % 2 === 0), gB = ordine.filter((_, i) => i % 2 === 1);

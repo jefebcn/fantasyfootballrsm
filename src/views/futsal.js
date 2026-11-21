@@ -822,7 +822,7 @@ export const futsalRegolamento = {
       ${cap('9 · Campionati', `<p>Con la stessa squadra giochi in tutti, senza fare niente:</p>
         <table>${row('Generale', 'somma dei punti di tutte le giornate')}${row('Tifosi', 'chi ha la stessa squadra del cuore')}${SERIE.map((x) => row(x.nome, `giornate ${x.da}–${x.a}`)).join('')}${row('Coppa Titano', `gironi e tabellone, ${COPPA.preliminari[0]}ª–${COPPA.finale}ª`)}</table>
         <p>Le <b>Serie</b> sono campionati a tappe: ognuna ha la sua classifica, che riparte da zero. A parità conta la media per giornata, poi la giornata migliore.</p>
-        <p><b>Coppa Titano.</b> Il sorteggio si fa alla chiusura della ${COPPA.preliminari[0]}ª: entra chi ha una squadra, servono almeno 8 iscritti. Gironi con 3 punti a vittoria, poi eliminazione diretta con andata e ritorno e finale secca. Con 50 o più iscritti ci sono anche i preliminari.</p>
+        <p><b>Coppa Titano.</b> Il sorteggio si fa alla chiusura della ${COPPA.preliminari[0]}ª: entra chi ha una squadra, servono almeno 8 iscritti. Gironi con 3 punti a vittoria, poi eliminazione diretta con andata e ritorno e finale secca. Da 24 iscritti in su prima ci sono i preliminari.</p>
         <p><b>Leghe con gli amici.</b> Una lega è un gruppo con la sua classifica: <b>a somma</b> (conta dalla giornata in cui nasce la lega) o <b>testa a testa</b> (ogni giornata contro un altro del gruppo, 3 punti a chi fa di più). Con un numero dispari, chi resta fuori affronta la media del gruppo. Si entra col codice o col link «Invita».</p>
         <p><b>Leghe pubbliche.</b> Aperte a tutti, senza codice: si entra dall'elenco con la squadra che hai già e vince chi fa più punti dalla giornata in cui la lega è nata.</p>`)}
       ${cap('10 · Arrivare a stagione iniziata', `<p>Ci si iscrive quando si vuole: si parte con ${R.budget} crediti e alle quotazioni del momento. Le giornate già giocate valgono 0 punti in classifica generale, ma le Serie e le leghe nuove ripartono da zero.</p>`)}
@@ -883,7 +883,10 @@ export const futsalCoppa = {
     if (!srv.attivo) return nonAttivo();
     const inizio = F.chiusura(COPPA.preliminari[0]);
     const prima = !inizio || inizio.getTime() > Date.now();
-    const ammessi = srv.iscritti.filter((x) => !inizio || new Date(x.created_at) <= inizio).map((x) => x.user_id);
+    // entra chi era iscritto alla chiusura della prima giornata di coppa E aveva una squadra in quella
+    // giornata (le formazioni altrui si vedono solo a giornata chiusa: prima si contano gli iscritti)
+    const ammessi = srv.iscritti.filter((x) => !inizio || new Date(x.created_at) <= inizio)
+      .filter((x) => prima || FS.inVigore(COPPA.preliminari[0], x.user_id)).map((x) => x.user_id);
     const formato = formatoCoppa(ammessi.length);
     const descr = { completo: 'preliminari in due gironi, poi 8 gironi da quattro e gli ottavi', medio: 'preliminari in due gironi, poi 4 gironi da quattro e i quarti', ridotto: 'gironi da quattro (o cinque), poi il tabellone' };
     if (prima) {
@@ -896,7 +899,7 @@ export const futsalCoppa = {
       </main>`;
     }
     const c = coppa(ammessi, FS.punti);
-    if (!c.formato) return `<main class="a-body fs">${empty(`La coppa non si gioca: alla chiusura della ${COPPA.preliminari[0]}ª gli iscritti erano ${ammessi.length}, ne servivano 8.`)}</main>`;
+    if (!c.formato) return `<main class="a-body fs">${empty(`La coppa non si gioca: alla chiusura della ${COPPA.preliminari[0]}ª gli iscritti con una squadra erano ${ammessi.length}, ne servivano 8.`)}</main>`;
     const turni = (partite) => partite.map((p) => `${sec(`${p.giornata}ª giornata`)}<div class="a-card fs-list">${p.sfide.map(sfidaHtml).join('')}</div>`).join('');
     return `<main class="a-body fs">
       ${c.campione ? `<div class="a-card fs-hero"><span class="chip">Campione</span><h3>${esc(squadraDi(c.campione).squadra)}</h3></div>` : ''}

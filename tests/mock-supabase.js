@@ -58,8 +58,10 @@ function builder(table) {
   function esegui(res) {
     {
       try {
+        // database senza le migrazioni futsal: le tabelle non ci sono
+        if (String(table).startsWith('futsal_') && typeof window !== 'undefined' && window.__MOCK_SENZA_FUTSAL__) { res({ data: null, error: { code: '42P01', message: `relation "public.${table}" does not exist` } }); return; }
         let data = null; const rows = T(table);
-        const pk = { lineups: ['league_id', 'member_id', 'matchday'], match_overrides: ['match_id'], match_appearances: ['match_id', 'player_id'], matchday_status: ['matchday'], matchday_locks: ['matchday'], formazioni_bozze: ['league_id', 'member_id', 'matchday'], profiles: ['id'], app_interruttori: ['chiave'], giocatori_esclusi: ['player_id'], squalifiche: ['player_id', 'matchday'] }[table] || ['id'];
+        const pk = { lineups: ['league_id', 'member_id', 'matchday'], match_overrides: ['match_id'], match_appearances: ['match_id', 'player_id'], matchday_status: ['matchday'], matchday_locks: ['matchday'], formazioni_bozze: ['league_id', 'member_id', 'matchday'], profiles: ['id'], app_interruttori: ['chiave'], giocatori_esclusi: ['player_id'], squalifiche: ['player_id', 'matchday'], futsal_iscritti: ['user_id'], futsal_formazioni: ['user_id', 'giornata'], futsal_membri: ['lega_id', 'user_id'] }[table] || ['id'];
         const withDefaults = (r) => ({ id: uid(), created_at: now(), ...r });
         // __MOCK_SESSIONE_PERSA__: il token e' scaduto e la rete non l'ha
         // rinnovato, le richieste partono come anonimo. Come Supabase vero: i
@@ -786,6 +788,67 @@ export function createClient(_url, _key, opts) {
             if (!assegnato) chiudi('persa');
           }
           persisti(); return { data: n, error: null };
+        }
+        // Il FantaFutsal (supabase/migrations/futsal-01): le leghe di amici.
+        if (name.startsWith('futsal_') && window.__MOCK_SENZA_FUTSAL__) return { data: null, error: { code: 'PGRST202', message: 'Could not find the function in the schema cache' } };
+        // la prima giornata con le formazioni ancora aperte (futsal_prossima_giornata in futsal-06)
+        const prossimaFs = async () => { if (args?.__giornata) return args.__giornata; const F = await import('/src/futsal.js'); for (let n = 1; n <= F.GIORNATE; n++) { const c = F.chiusura(n); if (c && c.getTime() > Date.now()) return n; } return null; };
+        const iscrittoFs = () => { if (!T('futsal_iscritti').some((x) => x.user_id === userId)) throw new Error('Prima iscriviti al FantaFutsal'); };
+        const codiceFs = () => 'F' + Math.random().toString(16).slice(2, 7).toUpperCase();
+        if (name === 'futsal_crea_lega') {
+          iscrittoFs();
+          const l = { id: uid(), nome: args.p_nome, tipo: args.p_tipo || 'somma', codice: codiceFs(), creata_da: userId, avvio_giornata: null, membri_avvio: null, pubblica: false, max_membri: 50, premi: [], dalla_giornata: await prossimaFs(), created_at: now() };
+          T('futsal_leghe').push(l); T('futsal_membri').push({ lega_id: l.id, user_id: userId, entrato_at: now() }); persisti();
+          return { data: l, error: null };
+        }
+        if (name === 'futsal_entra_lega') {
+          iscrittoFs();
+          const l = T('futsal_leghe').find((x) => x.codice === String(args.p_codice).trim().toUpperCase());
+          if (!l) throw new Error('Codice non trovato');
+          if (T('futsal_membri').some((m) => m.lega_id === l.id && m.user_id === userId)) return { data: l.id, error: null };
+          if (l.avvio_giornata) throw new Error('La lega è già partita: il calendario degli scontri è fissato');
+          if (T('futsal_membri').filter((m) => m.lega_id === l.id).length >= (l.max_membri || 50)) throw new Error('Lega al completo');
+          T('futsal_membri').push({ lega_id: l.id, user_id: userId, entrato_at: now() });
+          persisti(); return { data: l.id, error: null };
+        }
+        if (name === 'futsal_esci_lega') {
+          tables.futsal_membri = T('futsal_membri').filter((m) => !(m.lega_id === args.p_lega && m.user_id === userId));
+          if (!T('futsal_membri').some((m) => m.lega_id === args.p_lega)) tables.futsal_leghe = T('futsal_leghe').filter((l) => l.id !== args.p_lega);
+          persisti(); return { data: null, error: null };
+        }
+        if (name === 'futsal_avvia_lega') {
+          const l = T('futsal_leghe').find((x) => x.id === args.p_lega);
+          if (!l || l.creata_da !== userId) throw new Error('Solo chi ha creato la lega la può avviare');
+          if (!l.avvio_giornata) {
+            if (T('futsal_membri').filter((m) => m.lega_id === l.id).length < 2) throw new Error('Servono almeno due squadre');
+            const g = await prossimaFs(); if (!g) throw new Error('Non ci sono più giornate da giocare');
+            l.avvio_giornata = g;
+            l.membri_avvio = T('futsal_membri').filter((m) => m.lega_id === l.id).map((m) => m.user_id);
+          }
+          persisti(); return { data: l.avvio_giornata, error: null };
+        }
+        if (name === 'futsal_crea_lega_pubblica') {
+          if (!T('profiles').find((x) => x.id === userId)?.is_admin) throw new Error("Le leghe pubbliche le apre chi amministra l'app");
+          iscrittoFs();
+          if (String(args.p_nome || '').trim().length < 2) throw new Error('Serve un nome per la lega');
+          const m = args.p_max ?? 200; if (m < 2 || m > 1000) throw new Error('I partecipanti vanno da 2 a 1000');
+          const l = { id: uid(), nome: args.p_nome.trim(), tipo: 'somma', codice: codiceFs(), creata_da: userId, avvio_giornata: null, membri_avvio: null, pubblica: true, max_membri: m, premi: args.p_premi || [], dalla_giornata: await prossimaFs(), created_at: now() };
+          T('futsal_leghe').push(l); T('futsal_membri').push({ lega_id: l.id, user_id: userId, entrato_at: now() }); persisti();
+          return { data: l, error: null };
+        }
+        if (name === 'futsal_entra_lega_pubblica') {
+          iscrittoFs();
+          const l = T('futsal_leghe').find((x) => x.id === args.p_lega);
+          if (!l) throw new Error('Lega non trovata');
+          if (!l.pubblica) throw new Error('Questa lega non è pubblica: serve il codice');
+          if (T('futsal_membri').some((m) => m.lega_id === l.id && m.user_id === userId)) return { data: l.id, error: null };
+          const n = T('futsal_membri').filter((m) => m.lega_id === l.id).length;
+          if (n >= l.max_membri) throw new Error(`Lega al completo (${n} su ${l.max_membri})`);
+          T('futsal_membri').push({ lega_id: l.id, user_id: userId, entrato_at: now() }); persisti();
+          return { data: l.id, error: null };
+        }
+        if (name === 'futsal_leghe_pubbliche') {
+          return { data: T('futsal_leghe').filter((l) => l.pubblica).map((l) => ({ id: l.id, nome: l.nome, premi: l.premi || [], membri: T('futsal_membri').filter((m) => m.lega_id === l.id).length, max_membri: l.max_membri, dalla_giornata: l.dalla_giornata, creata: l.created_at, dentro: T('futsal_membri').some((m) => m.lega_id === l.id && m.user_id === userId) })).reverse(), error: null };
         }
         throw new Error('rpc sconosciuta ' + name);
       } catch (e) { return { data: null, error: { message: e.message } }; }

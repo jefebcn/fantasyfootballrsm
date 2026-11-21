@@ -12,7 +12,7 @@ Aggiornato: 2026-11-21 · tema: storie dei gol live (prima serata 20/11) e limit
 - Storie dei gol: funzionano. Venerdì 20/11 sono uscite 7 storie su 7, tutte con la foto, 2-4 minuti dopo il gol. Le prime due erano nere (foto con percorso relativo, PR #122): rifatte, e le nere le ha cancellate Alex. Ora la storia esce solo se tutte le immagini si sono caricate. Il referto si legge ogni 15 s (PR #123).
 - Il 20/11 alle 23:10 Buffer ha bloccato la chiave per 24 ore a causa del controllo della chat ogni 8 s. Il 21/11 alle 10 era già sbloccata. Alex darà una seconda chiave: una per le storie automatiche (secret `BUFFER_TOKEN` su Supabase), una per la chat e il kit.
 - La PR del 21/11 aggiunge la funzione `storie-oggi` (sola lettura, per seguire le storie senza Buffer), il canale scritto in `pubblica-gol` (una chiamata per gol), niente minuto ripetuto e marchio più in basso nelle storie.
-- FantaTitano Futsal: annunciato nel link in bio per il 1° dicembre (PR #118). Lo stato dello sviluppo è da verificare con Alex.
+- FantaTitano Futsal: annunciato nel link in bio per il 1° dicembre (PR #118). Stato e ricette del futsal in `docs/futsal/STATO.md` e `docs/futsal/RICETTE.md`. Dal 21/11 il codice è su main ma lo vede solo il proprietario (`APERTO_A_TUTTI` in `src/views/futsal.js`).
 - Lancio Futsal (21/11): corona metà viola e metà nera su fondo arancio (versione A scelta da Alex). Sul sito si accende da sola dal 1° al 14/12 (`src/lancio-futsal.js`). Le foto profilo di @fantatitano e @fantatitano.futsal le cambia Alex a mano il 1/12 e le rimette il 15/12. La versione B (fondo nero) è per le grafiche grandi del lancio. Le icone degli store non cambiano.
 - Migrazione 057 (carriera di La Partita sull'account), 18/11: da verificare se è applicata su Supabase.
 

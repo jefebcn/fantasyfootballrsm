@@ -76,4 +76,13 @@ USCITA=$("${PSQL[@]}" -q -v ON_ERROR_STOP=1 -f supabase/prove/funzioni.sql 2>&1)
 set -e
 echo "$USCITA" | grep -E "ok |FALLITA|ERROR" | sed -E 's/^psql:[^ ]+ NOTICE:  /  /; s/^NOTICE:  /  /'
 if [ $ESITO -ne 0 ]; then rosso "  KO  le prove sulle funzioni sono fallite"; exit 1; fi
+
+echo "== futsal =="
+# Il FantaFutsal (FUTSAL.md): iscrizione, formazioni con chiusura e regole,
+# leghe. Come «authenticated», con le policy che contano.
+set +e
+USCITA=$("${PSQL[@]}" -q -v ON_ERROR_STOP=1 -f supabase/prove/futsal.sql 2>&1); ESITO=$?
+set -e
+echo "$USCITA" | grep -E "ok |FALLITA|ERROR" | sed -E 's/^psql:[^ ]+ NOTICE:  /  /; s/^NOTICE:  /  /'
+if [ $ESITO -ne 0 ]; then rosso "  KO  le prove sul futsal sono fallite"; exit 1; fi
 verde "tutto a posto"

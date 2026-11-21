@@ -21,6 +21,7 @@
  *   ADESSO=2026-10-10T18:00:00Z node scripts/...   -> per le prove
  */
 import { CALENDARIO } from '../src/calendario-dati.js';
+import { CALENDARIO as CALENDARIO_FUTSAL } from '../src/futsal-dati.js';
 
 const ORA = 3600 * 1000;
 export const PRIMA = 1 * ORA;
@@ -41,8 +42,22 @@ export function finestre(calendario = CALENDARIO) {
 export const siGioca = (adesso = Date.now(), calendario = CALENDARIO) =>
   finestre(calendario).some(([da, a]) => adesso >= da && adesso <= a);
 
+/**
+ * IL FUTSAL gioca dal lunedì al giovedì sera e la FSGC ne pubblica i referti
+ * completi 15-22 ore dopo (data/futsal-orologio.json, 7ª giornata): la sua
+ * finestra va da un'ora prima della prima partita a 30 ore dopo l'ultima.
+ * Il calendario ha la stessa forma di quello del calcio: [g, casa, ospite, inizio, ...].
+ */
+export const DOPO_FUTSAL = 30 * ORA;
+export const finestreFutsal = (calendario = CALENDARIO_FUTSAL) =>
+  finestre(calendario).map(([da, a]) => [da, a - DOPO + DOPO_FUTSAL]);
+export const siGiocaFutsal = (adesso = Date.now(), calendario = CALENDARIO_FUTSAL) =>
+  finestreFutsal(calendario).some(([da, a]) => adesso >= da && adesso <= a);
+
 // eseguito da riga di comando (non quando lo importa una prova)
 if (import.meta.url === `file://${process.argv[1]}`) {
   const adesso = process.env.ADESSO ? Date.parse(process.env.ADESSO) : Date.now();
-  process.stdout.write(siGioca(adesso) ? 'si\n' : 'no\n');
+  // --futsal: solo le giornate del futsal (la prova prima del lancio, futsal-prova.yml)
+  const si = process.argv.includes('--futsal') ? siGiocaFutsal(adesso) : siGioca(adesso) || siGiocaFutsal(adesso);
+  process.stdout.write(si ? 'si\n' : 'no\n');
 }

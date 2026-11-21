@@ -41,6 +41,8 @@ IMPORTA=${IMPORTA:-"python3 scripts/importa-fsgc.py"}
 VIDEO=${VIDEO:-"python3 scripts/importa-video.py"}
 PROVE=${PROVE:-"npm test"}
 FINESTRA=${FINESTRA:-"node scripts/finestra-partite.mjs"}
+# il futsal (scripts/importa-futsal-giro.sh): non fallisce mai, al massimo salta il giro
+FUTSAL=${FUTSAL:-"bash scripts/importa-futsal-giro.sh"}
 
 inizio=$(date +%s)
 giro=0
@@ -63,6 +65,10 @@ un_giro() {
     return 2
   fi
   bash -c "$VIDEO" || echo "::warning::gli highlights non si sono aggiornati (non blocca: i voti vengono dai referti)"
+
+  # Il futsal: referti, e quotazioni e orari sul database prima di pubblicare.
+  # Se qualcosa va storto rimette i suoi file com'erano e il calcio va avanti.
+  bash -c "$FUTSAL" || echo "::warning::il futsal non si e' aggiornato in questo giro"
 
   if git diff --quiet -- src/; then
     echo "niente di nuovo dalla FSGC"
@@ -89,7 +95,7 @@ un_giro() {
   # data/extra.json: i tesserati del referto che il listone non ha. Senza
   # salvarlo, al giro dopo il reset lo riportava indietro e il giocatore
   # (Bakalyar della Juvenes, 11/10) non entrava mai nei titolari letti.
-  git add src/ sw.js data/extra.json supabase/migrations/012-calendario-lock.sql supabase/seed-quotazioni.sql
+  git add src/ sw.js data/extra.json supabase/migrations/012-calendario-lock.sql supabase/seed-quotazioni.sql supabase/migrations/futsal-02-dati.sql supabase/migrations/futsal-05-quotazioni.sql
   git commit -q -m "dati: import automatico del $(date -u +'%d/%m/%Y')" \
                 -m "$(git diff --cached --stat -- src/ | tail -1)"
   if git push -q origin "HEAD:$RAMO"; then

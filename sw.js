@@ -1,7 +1,7 @@
 /* Service worker — shell in cache, aggiornamento in background. */
 const VERSION = 'fcs-v4.2.315';
 const SHELL = [
-  './', './index.html', './manifest.webmanifest', './styles/app.css', './styles/logo.css', './styles/font.css', './design/tokens/tokens.css',
+  './', './index.html', './manifest.webmanifest', './styles/app.css', './styles/futsal-tema.css', './styles/logo.css', './styles/font.css', './design/tokens/tokens.css',
   // I caratteri stanno in casa: nella cache ci vanno, se no senza rete si vede
   // il ripiego di sistema. Solo le varianti latin, le altre entrano al bisogno.
   './media/font/lato-400-latin.woff2', './media/font/lato-700-latin.woff2',
@@ -14,6 +14,7 @@ const SHELL = [
   // presi dalla cache puo' essere di un'altra versione (tests/sw-guscio.test.js).
   './src/colore.js', './src/lancio-futsal.js', './icons/lancio-futsal/icon-192.png', './icons/lancio-futsal/apple-touch-icon.png', './src/diagnostica.js', './src/miei-dati.js', './src/notizie.js', './src/views/negozio.js', './src/views/sospeso.js',
   './src/calendario-dati.js', './src/eventi-dati.js', './src/listone-dati.js', './src/listone-extra.js',
+  './src/views/futsal.js', './src/futsal.js', './src/futsal-engine.js', './src/futsal-dati.js', './src/futsal-server.js', './src/futsal-gare.js', './src/futsal-valori.js', './src/futsal-grafica.js',
   './icons/icon-192.png', './icons/icon-512.png', './icons/maskable-512.png', './icons/apple-touch-icon.png',
   // icone evento: compaiono su Voti, Live e Giudice Dati, quindi valgono il precache.
   // Le altre (menu, eventi di secondo livello) entrano in cache al primo uso.

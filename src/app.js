@@ -53,19 +53,6 @@ export function toast(msg) {
   clearTimeout(toast._t); toast._t = setTimeout(() => el.classList.remove('on'), 2400);
 }
 /**
- * "Nuova versione pronta": una barra sopra la navigazione, con un bottone.
- * Resta finche' non si tocca. Chi la ignora ha il codice nuovo comunque alla
- * prossima apertura.
- */
-export function mostraAggiornamento() {
-  if (document.getElementById('aggiorna')) return;
-  const b = document.createElement('div');
-  b.id = 'aggiorna'; b.className = 'aggiorna'; b.setAttribute('role', 'status');
-  b.innerHTML = `<div><b>${t('Nuova versione pronta')}</b><span>${t('Tocca per usarla adesso; se no entra alla prossima apertura.')}</span></div><button type="button">${t('Aggiorna')}</button>`;
-  b.querySelector('button').onclick = () => location.reload();
-  document.body.appendChild(b);
-}
-/**
  * L'AGGIORNAMENTO ENTRA DA SOLO (Alex, 15/11, con l'app sull'App Store:
  * «eviterei che alle persone compaia la scritta Aggiorna... che gli venga
  * fatto in autonomia»). Quando il codice nuovo e' pronto, la pagina si
@@ -78,8 +65,10 @@ export function mostraAggiornamento() {
  *
  * Il ciclo infinito di una volta (vedi registraServiceWorker): al massimo UNA
  * ricarica automatica ogni 10 minuti, contata in localStorage, che
- * sopravvive alla ricarica. Se il limite scatta, o la memoria non c'e', torna
- * la barra col bottone: un bottone non puo' andare in ciclo.
+ * sopravvive alla ricarica. Se il limite scatta si aspetta in silenzio il
+ * primo momento tranquillo dopo i 10 minuti; senza memoria non si ricarica
+ * e il codice nuovo entra alla prossima apertura. Mai la barra «Aggiorna»
+ * (Alex, 21/11: compariva dopo due aggiornamenti ravvicinati).
  */
 const RICARICA = 'fcs:ricarica-auto';
 const LIMITE_RICARICA = 10 * 60 * 1000;
@@ -95,11 +84,9 @@ export function momentoTranquillo() {
 export function aggiornaInSilenzio() {
   if (!daAggiornare || !momentoTranquillo()) return false;
   let ultima = 0;
-  try {
-    ultima = Number(localStorage.getItem(RICARICA)) || 0;
-    if (Date.now() - ultima < LIMITE_RICARICA) throw new Error('troppo presto');
-    localStorage.setItem(RICARICA, String(Date.now()));
-  } catch { daAggiornare = false; mostraAggiornamento(); return false; }
+  try { ultima = Number(localStorage.getItem(RICARICA)) || 0; } catch { daAggiornare = false; return false; }
+  if (Date.now() - ultima < LIMITE_RICARICA) return false; // troppo presto: resta in attesa
+  try { localStorage.setItem(RICARICA, String(Date.now())); } catch { daAggiornare = false; return false; }
   daAggiornare = false;
   location.reload();
   return true;

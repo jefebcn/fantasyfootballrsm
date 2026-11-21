@@ -1,7 +1,8 @@
 /**
  * L'aggiornamento: dal 15/11 entra da solo, in un momento tranquillo (cambio
  * di schermata, app in secondo piano), al massimo una volta ogni 10 minuti;
- * oltre quel limite torna la barra «Nuova versione pronta» col bottone.
+ * oltre quel limite aspetta in silenzio: la barra «Aggiorna» non compare mai
+ * (Alex, 21/11).
  *
  * Nasce dall'app installata sull'iPhone di Alex, che e' rimasta quella del
  * giorno prima per un giorno intero: sulla schermata Home una PWA resta
@@ -59,28 +60,19 @@ const ok = [], ko = []; const et = (c, t) => (c ? ok : ko).push(t);
   et((await p.evaluate(() => location.hash)) === '#/classifica', 'e resta sulla schermata scelta');
   et((await barra()) === '', 'senza barre dopo la ricarica');
 
-  // un altro aggiornamento entro 10 minuti: niente seconda ricarica (il vecchio ciclo infinito), torna il bottone
+  // un altro aggiornamento entro 10 minuti: niente seconda ricarica (il vecchio ciclo infinito) e niente barra
   await p.evaluate(() => navigator.serviceWorker.dispatchEvent(new Event('controllerchange'))); await w(100);
   await p.evaluate(() => navigator.serviceWorker.dispatchEvent(new Event('controllerchange'))); await w(100);
   await p.evaluate(() => { location.hash = '#/'; }); await w(900);
   et((await p.evaluate(() => performance.timeOrigin)) === t1, 'entro 10 minuti non ricarica una seconda volta');
-  const testo = await barra();
-  et(/Nuova versione pronta/.test(testo) && /Aggiorna/i.test(testo), `oltre il limite torna la barra col bottone ("${testo.split('\n')[0]}")`);
+  et((await barra()) === '' && !(await p.$('#aggiorna')), 'e non compare nessuna barra «Aggiorna»');
 
-  // non copre la navigazione ne' esce dallo schermo
-  const geo = await p.evaluate(() => {
-    const r = (s) => document.querySelector(s)?.getBoundingClientRect();
-    const a = r('#aggiorna'), nav = r('.a-nav') || r('nav');
-    return { a: a && { top: a.top, bottom: a.bottom, left: a.left, right: a.right }, nav: nav && { top: nav.top }, h: innerHeight, w: innerWidth };
-  });
-  et(geo.a && geo.a.left >= 0 && geo.a.right <= geo.w && geo.a.bottom <= geo.h, `sta dentro lo schermo (${JSON.stringify(geo.a)})`);
-  et(!geo.nav || geo.a.bottom <= geo.nav.top + 1, `non copre la navigazione (barra fino a ${geo.a?.bottom}, nav da ${geo.nav?.top})`);
-
-  // il bottone ricarica davvero
-  const prima = await p.evaluate(() => performance.timeOrigin);
-  await Promise.all([p.waitForEvent('load'), p.click('#aggiorna button')]); await w(600);
-  const dopo = await p.evaluate(() => performance.timeOrigin);
-  et(dopo > prima, 'il bottone ricarica la pagina');
+  // passati i 10 minuti, il primo cambio di schermata porta il codice nuovo, sempre in silenzio
+  await p.evaluate(() => localStorage.setItem('fcs:ricarica-auto', String(Date.now() - 11 * 60 * 1000)));
+  await Promise.all([p.waitForEvent('load'), p.evaluate(() => { location.hash = '#/classifica'; })]); await w(900);
+  const t2 = await p.evaluate(() => performance.timeOrigin);
+  et(t2 > t1, 'passati i 10 minuti ricarica da sola al cambio di schermata');
+  et((await barra()) === '', 'senza barre');
   // la formazione modificata e non confermata vive solo in memoria: con quella in sospeso niente ricarica
   await p.evaluate(() => { location.hash = '#/rosa/formazione'; }); await w(1200);
   const sospesa = () => p.evaluate(async () => (await import('/src/views/formazione.js')).formazioneInSospeso());

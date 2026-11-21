@@ -57,5 +57,7 @@ export const siGiocaFutsal = (adesso = Date.now(), calendario = CALENDARIO_FUTSA
 // eseguito da riga di comando (non quando lo importa una prova)
 if (import.meta.url === `file://${process.argv[1]}`) {
   const adesso = process.env.ADESSO ? Date.parse(process.env.ADESSO) : Date.now();
-  process.stdout.write(siGioca(adesso) || siGiocaFutsal(adesso) ? 'si\n' : 'no\n');
+  // --futsal: solo le giornate del futsal (la prova prima del lancio, futsal-prova.yml)
+  const si = process.argv.includes('--futsal') ? siGiocaFutsal(adesso) : siGioca(adesso) || siGiocaFutsal(adesso);
+  process.stdout.write(si ? 'si\n' : 'no\n');
 }

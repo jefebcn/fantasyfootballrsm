@@ -13,6 +13,40 @@ import { CALENDARIO, GIORNATE } from './calendario-dati.js';
 import { LISTONE_EXTRA } from './listone-extra.js';
 import { REFERTI } from './eventi-dati.js';
 
+/**
+ * Presenze ed eventi di una partita dal suo referto FSGC (src/eventi-dati.js o
+ * src/coppa-dati.js): minuti dei titolari, chi entra e quando, gol e cartellini.
+ * m: { id, homeClubId, awayClubId }; nuovoId: dà l'id di ogni evento.
+ * La usano il campionato (qui sotto) e la Coppa Fantatitano (src/coppa-fanta.js).
+ */
+export function presenzeDalReferto(r, m, nuovoId = (() => { let n = 0; return () => `e${++n}`; })()) {
+  const appearances = []; const events = [];
+  // Chi è uscito, e quando: serve sia per i minuti dei titolari sia per
+  // capire da quando è in campo chi è entrato.
+  const uscitoAl = new Map(); const entratoAl = new Map();
+  for (const [dentro, fuori, min] of r.cambi || []) {
+    const q = Math.min(90, Math.max(1, min));
+    uscitoAl.set(fuori, q); entratoAl.set(dentro, q);
+  }
+  const squadraDi = (pid) => (pid.startsWith(`${m.homeClubId}_`) ? m.homeClubId : m.awayClubId);
+  const visti = new Set();
+  (r.titolari || []).flat().forEach((pid) => {
+    if (visti.has(pid)) return; visti.add(pid);
+    appearances.push({ matchId: m.id, playerId: pid, clubId: squadraDi(pid), started: true,
+      minutesPlayed: uscitoAl.get(pid) ?? 90, enteredAt: 0 });
+  });
+  for (const [dentro] of (r.cambi || []).map((c) => [c[0]])) {
+    if (visti.has(dentro)) continue; visti.add(dentro);
+    const da = entratoAl.get(dentro) ?? 90;
+    appearances.push({ matchId: m.id, playerId: dentro, clubId: squadraDi(dentro), started: false,
+      minutesPlayed: Math.max(0, 90 - da), enteredAt: da });
+  }
+  for (const [pid, min, tipo] of r.eventi || []) {
+    events.push({ id: nuovoId(), matchId: m.id, playerId: pid, clubId: squadraDi(pid), minute: min, type: tipo });
+  }
+  return { appearances, events };
+}
+
 export function mulberry32(seed) {
   let a = seed >>> 0;
   return function () {
@@ -238,30 +272,8 @@ export function buildSeason(_seed = 20262027) {
     if (r.campo) m.venue = r.campo;
     m.referee = r.arbitro || null;
 
-    // Chi è uscito, e quando: serve sia per i minuti dei titolari sia per
-    // capire da quando è in campo chi è entrato.
-    const uscitoAl = new Map(); const entratoAl = new Map();
-    for (const [dentro, fuori, min] of r.cambi) {
-      const q = Math.min(90, Math.max(1, min));
-      uscitoAl.set(fuori, q); entratoAl.set(dentro, q);
-    }
-    const squadraDi = (pid) => (pid.startsWith(`${m.homeClubId}_`) ? m.homeClubId : m.awayClubId);
-    const visti = new Set();
-    (r.titolari || []).flat().forEach((pid) => {
-      if (visti.has(pid)) return; visti.add(pid);
-      appearances.push({ matchId: m.id, playerId: pid, clubId: squadraDi(pid), started: true,
-        minutesPlayed: uscitoAl.get(pid) ?? 90, enteredAt: 0 });
-    });
-    for (const [dentro] of r.cambi.map((c) => [c[0]])) {
-      if (visti.has(dentro)) continue; visti.add(dentro);
-      const da = entratoAl.get(dentro) ?? 90;
-      appearances.push({ matchId: m.id, playerId: dentro, clubId: squadraDi(dentro), started: false,
-        minutesPlayed: Math.max(0, 90 - da), enteredAt: da });
-    }
-    for (const [pid, min, tipo] of r.eventi) {
-      events.push({ id: `e${++idEvento}`, matchId: m.id, playerId: pid, clubId: squadraDi(pid),
-        minute: min, type: tipo });
-    }
+    const pe = presenzeDalReferto(r, m, () => `e${++idEvento}`);
+    appearances.push(...pe.appearances); events.push(...pe.events);
   }
   events.sort((a, b) => a.minute - b.minute);
 

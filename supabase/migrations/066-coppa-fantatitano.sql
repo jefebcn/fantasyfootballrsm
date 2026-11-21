@@ -119,5 +119,6 @@ create or replace function public.coppa_iscritti() returns int
 language sql stable security definer set search_path = public as $$
   select count(*)::int from public.coppa_formazioni where turno = 1
 $$;
-revoke all on function public.coppa_iscritti() from public;
-grant execute on function public.coppa_iscritti() to anon, authenticated;
+-- solo a chi ha fatto l'accesso: la pagina della coppa la apre chi gioca
+revoke all on function public.coppa_iscritti() from public, anon;
+grant execute on function public.coppa_iscritti() to authenticated;

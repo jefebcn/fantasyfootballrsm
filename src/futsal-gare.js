@@ -149,7 +149,8 @@ export function coppa(ids, punti, seme = 'futsal-2026') {
   const formato = formatoCoppa(ids.length);
   if (!formato) return { formato: null, iscritti: ids.length };
   const ordine = mescola([...ids].sort(), seme);
-  const out = { formato, iscritti: ids.length, preliminari: null, gironi: null, tabellone: [], campione: null };
+  // posti: quanti entrano nel tabellone (prime, poi le migliori seconde), noto dal sorteggio dei gironi
+  const out = { formato, iscritti: ids.length, preliminari: null, gironi: null, tabellone: [], campione: null, posti: null };
 
   // fase 1 — gironi preliminari A e B, un turno per giornata dei preliminari, avversari diversi
   let qualificati = ordine;
@@ -167,6 +168,7 @@ export function coppa(ids, punti, seme = 'futsal-2026') {
 
   // fase 2 — gironi da quattro (da cinque nel formato ridotto, se avanzano squadre)
   const nGironi = Math.floor(qualificati.length / 4);
+  out.posti = 2; while (out.posti * 2 <= nGironi * 2) out.posti *= 2;
   const gironi = Array.from({ length: nGironi }, () => []);
   qualificati.forEach((id, i) => {
     const fascia = Math.floor(i / nGironi), pos = i % nGironi;
@@ -182,7 +184,7 @@ export function coppa(ids, punti, seme = 'futsal-2026') {
   if (!finita(g15, punti, qualificati)) return out;
 
   // fase 3 — eliminazione diretta: prime, poi le migliori seconde, fino alla potenza di due
-  let posti = 2; while (posti * 2 <= nGironi * 2) posti *= 2;
+  const posti = out.posti;
   const perPosto = (p) => out.gironi.map((g) => g.classifica[p]).filter(Boolean)
     .sort((a, b) => b.punti - a.punti || (b.fatti - b.subiti) - (a.fatti - a.subiti) || b.fatti - a.fatti);
   const teste = [...perPosto(0), ...perPosto(1), ...perPosto(2)].slice(0, posti).map((r) => r.id);

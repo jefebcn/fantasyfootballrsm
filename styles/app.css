@@ -2854,13 +2854,28 @@ div.fs-slot2{cursor:default}
 .fs-iscriviti .chip{align-self:flex-start}
 .fs-pos{font:800 15px var(--font-display);min-width:22px;text-align:center;color:var(--text-muted)}
 .fs-classifica .vr{grid-template-columns:auto auto 1fr auto}
-.fs-mia{background:color-mix(in srgb,var(--primary) 9%,transparent)}
 .fs-sfida{display:grid;grid-template-columns:1fr auto auto auto 1fr;gap:6px;align-items:center;padding:10px 12px;border-top:1px solid var(--border);font-size:13px}
 .fs-sfida:first-child{border-top:0}
 .fs-sfida span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .fs-sfida span.r{text-align:right}
 .fs-sfida b{font:700 14px var(--font-data);font-variant-numeric:tabular-nums}
 .fs-sfida i{font-style:normal;color:var(--text-muted)}
+/* Coppa: chi passa il turno, la propria squadra, la linea dei qualificati */
+.fs-sfida .vince{font-weight:800}
+.fs-sfida .vince::after{content:" ✓";color:var(--positive,#1B998B)}
+.fs-sfida span.r.vince::after{content:""}
+.fs-sfida span.r.vince::before{content:"✓ ";color:var(--positive,#1B998B)}
+.fs-sfida small{grid-column:1/-1;text-align:center;color:var(--text-muted);font-size:11.5px;margin-top:-2px}
+.fs-mia,.fs-sfida.fs-mia{background:color-mix(in srgb,var(--primary) 14%,transparent)}
+.fs-taglio{display:flex;align-items:center;gap:8px;padding:6px 12px;font:700 11px var(--font-body);letter-spacing:.06em;text-transform:uppercase;color:var(--primary)}
+.fs-taglio::before,.fs-taglio::after{content:"";flex:1;border-top:2px dashed currentColor;opacity:.6}
+.fs-taglio.puntini{color:var(--text-muted);justify-content:center;letter-spacing:.3em}
+.fs-taglio.puntini::before,.fs-taglio.puntini::after{display:none}
+.fs-tutti{width:100%;margin:8px 0 4px}
+.fs-turno{margin:10px 2px 6px}
+.fs-mia-coppa .fs-list{margin-top:6px;border-top:1px solid var(--border)}
+.fs-campione-sq{display:flex;align-items:center;gap:12px}
+.fs-campione-sq h3{margin:0}
 .fs-codice{font:800 15px var(--font-data);letter-spacing:.08em;background:var(--surface-sunk);padding:4px 10px;border-radius:8px}
 .fs-fasi p{margin:6px 0;font-size:13.5px}
 /* Futsal: leghe pubbliche e inviti (futsal-06) */

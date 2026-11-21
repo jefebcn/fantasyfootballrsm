@@ -50,16 +50,25 @@ const ok = [], ko = []; const et = (c, t) => (c ? ok : ko).push(t);
   et(!/futsal/.test(await p.evaluate(() => location.hash)), 'spento: #/futsal riporta a casa');
   await foto('0-spento');
 
-  // ---- un amministratore la vede da solo, senza ?futsal=1 (anteprima di Alex)
-  await p.evaluate(() => { const s = JSON.parse(localStorage.getItem('fcs:mock')); s.tables.profiles.find((x) => x.id === s.userId).is_admin = true; localStorage.setItem('fcs:mock', JSON.stringify(s)); });
+  // ---- prima del lancio la vede SOLO il proprietario (Alex, 21/11)
+  const ruoli = (r) => p.evaluate((r) => { const s = JSON.parse(localStorage.getItem('fcs:mock')); Object.assign(s.tables.profiles.find((x) => x.id === s.userId), r); localStorage.setItem('fcs:mock', JSON.stringify(s)); }, r);
   // cambiare solo il pezzo dopo # non ricarica: serve un reload vero per rileggere il profilo
+  await ruoli({ is_admin: true, is_owner: false });
   await p.evaluate(() => { location.hash = '#/leghe'; }); await p.reload({ waitUntil: 'load' }); await w(1500);
-  et(!!(await p.$('.sport-sw')), 'amministratore: il selettore Calcio/Futsal compare da solo');
+  et(!(await p.$('.sport-sw')), 'un amministratore che non è il proprietario non vede il selettore');
+  await p.goto(`${BASE}/?futsal=1#/leghe`, { waitUntil: 'load' }); await w(1300);
+  et(!(await p.$('.sport-sw')), 'e nemmeno con ?futsal=1');
+  await p.evaluate(() => { location.hash = '#/futsal'; }); await w(600);
+  et(!/futsal/.test(await p.evaluate(() => location.hash)), 'e #/futsal lo riporta a casa');
+  await ruoli({ is_admin: true, is_owner: true });
+  await p.reload({ waitUntil: 'load' }); await w(1500);
+  et(!!(await p.$('.sport-sw')), 'il proprietario vede il selettore da solo');
   await p.goto(`${BASE}/?futsal=0#/leghe`, { waitUntil: 'load' }); await w(1300);
-  et(!(await p.$('.sport-sw')), 'amministratore con ?futsal=0: la sezione si spegne');
-  await p.evaluate(() => { const s = JSON.parse(localStorage.getItem('fcs:mock')); s.tables.profiles.find((x) => x.id === s.userId).is_admin = false; localStorage.setItem('fcs:mock', JSON.stringify(s)); });
+  et(!(await p.$('.sport-sw')), 'proprietario con ?futsal=0: la sezione si spegne');
+  await ruoli({ is_admin: false, is_owner: false });
 
-  // ---- acceso
+  // ---- acceso: da qui la prova gira con l'interruttore delle prove
+  await ctx.addInitScript(() => { window.__PROVA_FUTSAL__ = true; });
   await p.goto(`${BASE}/?futsal=1#/leghe`, { waitUntil: 'load' }); await w(1300);
   et(!/futsal=/.test(await p.evaluate(() => location.search)), "l'interruttore si toglie dall'indirizzo");
   et(!!(await p.$('.sport-sw')), 'acceso: il selettore compare');

@@ -327,6 +327,7 @@ function sport(path, prevPath) {
   const meta = document.querySelector('meta[name=theme-color]');
   if (futsal) {
     r.dataset.sport = 'futsal';
+    try { localStorage.setItem('fcs:futsal:visto', '1'); } catch { /* niente storage */ }
     if (meta) meta.content = COLORE_BARRA;
     if (!era && prevPath !== undefined) {
       const v = document.createElement('div');
@@ -613,7 +614,10 @@ async function boot() {
   if (/(^|[#?&])type=recovery(&|$)/.test(`${location.hash}&${location.search}`)) segnaRecupero();
   // Chi apre direttamente un indirizzo del futsal vede l'attesa del futsal,
   // non quella del calcio: e' un altro gioco fin dal primo istante.
-  if (location.hash.startsWith('#/futsal')) {
+  // Solo a chi il futsal l'ha gia' visto su questo telefono (fcs:futsal:visto,
+  // segnato da sport()): prima del lancio agli altri non si mostra nemmeno il logo.
+  let vistoFs = false; try { vistoFs = localStorage.getItem('fcs:futsal:visto') === '1'; } catch { /* niente storage */ }
+  if (location.hash.startsWith('#/futsal') && vistoFs) {
     document.documentElement.dataset.sport = 'futsal';
     root.innerHTML = `<div class="app"><div class="splash fs-splash">${logoFs('velo')}${caricaFs('')}</div></div>`;
   } else root.innerHTML = `<div class="app">${splash()}</div>`;

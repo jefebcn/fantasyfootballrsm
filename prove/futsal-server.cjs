@@ -29,7 +29,7 @@ const ok = [], ko = []; const et = (c, t) => (c ? ok : ko).push(t);
     localStorage.setItem('fcs:auth', 'supabase');
     localStorage.setItem('fcs:prefs', JSON.stringify({ onboarded: true, guidaVista: true, theme: 'light' }));
     localStorage.setItem('fcs:supabase', JSON.stringify({ url: 'https://mock.supabase.co', key: 'mock-key-mock-key-mock' }));
-    localStorage.setItem('fcs:futsal', '1');
+    localStorage.setItem('fcs:futsal', '1'); window.__PROVA_FUTSAL__ = true;
   });
   const p = await ctx.newPage();
   const errori = []; p.on('pageerror', (e) => errori.push(e.message));
@@ -153,7 +153,7 @@ const ok = [], ko = []; const et = (c, t) => (c ? ok : ko).push(t);
   const home = await testo();
   et(/Campionati principali/i.test(home) && /Tifosi Murata/i.test(home) && /Serie Guaita/i.test(home) && /Coppa Titano/i.test(home), 'la home elenca Generale, Tifosi, Serie e Coppa');
   et(/su 12/.test(home), 'con il posto fra 12 iscritti');
-  et(/Leader della 7ª/i.test(home), 'e i leader della 7ª');
+  et(/Leader della \d+ª/i.test(home), 'e i leader dell\'ultima giornata giocata');
   await foto('09-home', true);
   await scorri('.fs-leader'); await foto('10-home-leader');
 

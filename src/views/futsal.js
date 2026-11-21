@@ -24,16 +24,23 @@ const LOCALI = 'fcs:futsal:squadre';
 
 /**
  * L'interruttore che tiene nascosta la sezione a chi non la deve vedere.
- * Gli amministratori dell'app la vedono da soli, per provarla dal vivo in
- * anteprima (Alex, 29/10); gli altri solo con ?futsal=1. ?futsal=0 la spegne
- * anche a un amministratore.
+ *
+ * PRIMA DEL LANCIO la vede solo il proprietario dell'app (Alex, 21/11: «lo
+ * deve vedere solo lui»), che la prova dal vivo su fantatitano.site: non gli
+ * altri amministratori, non gli utenti. ?futsal=1 non apre niente a nessun
+ * altro; ?futsal=0 la spegne anche al proprietario. Le prove col server finto
+ * (prove/futsal*.cjs) la accendono con window.__PROVA_FUTSAL__ e ?futsal=1.
+ *
+ * AL LANCIO: APERTO_A_TUTTI = true, e la vedono tutti (?futsal=0 la spegne).
  */
+export const APERTO_A_TUTTI = false;
 export function futsalAttivo() {
   let v = null;
   try { v = localStorage.getItem(CHIAVE); } catch { /* senza storage decide il profilo */ }
-  if (v === '1') return true;
   if (v === '0') return false;
-  return Stato.isAdmin();
+  if (APERTO_A_TUTTI) return true;
+  if (Stato.isOwner()) return true;
+  return v === '1' && typeof window !== 'undefined' && window.__PROVA_FUTSAL__ === true;
 }
 /** ?futsal=1 accende, ?futsal=0 spegne: da chiamare all'avvio. */
 export function leggiInterruttore() {

@@ -44,7 +44,7 @@ const TIPI = { '.html': 'text/html', '.js': 'text/javascript', '.mjs': 'text/jav
     localStorage.setItem('fcs:auth', 'supabase');
     localStorage.setItem('fcs:prefs', JSON.stringify({ onboarded: true, guidaVista: true, theme: 'light' }));
     localStorage.setItem('fcs:supabase', JSON.stringify({ url: 'https://mock.supabase.co', key: 'mock-key-mock-key-mock' }));
-    localStorage.setItem('fcs:futsal', '1');
+    localStorage.setItem('fcs:futsal', '1'); window.__PROVA_FUTSAL__ = true;
     // l'invito si legge: niente foglio di condivisione, si copia
     window.__copiato = [];
     Object.defineProperty(navigator, 'share', { value: undefined, configurable: true });

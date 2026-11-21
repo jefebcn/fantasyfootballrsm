@@ -148,7 +148,7 @@ const MOMENTI = [
           ...ferma.D.slice(0, 2), ...ferma.C.slice(0, 2), ...ferma.A.slice(0, 1),
         ];
         if (titolari.length < 11) return 0;
-        S.saveLineup(4, S.me().id, { formation: '4-4-2', starters: titolari, bench: [], captainId: titolari[0], viceCaptainId: titolari[1] });
+        await S.saveLineup(4, S.me().id, { formation: '4-4-2', starters: titolari, bench: [], captainId: titolari[0], viceCaptainId: titolari[1] });
         return titolari.length;
       });
       await p.reload({ waitUntil: 'load' }); await w(2000);
@@ -189,7 +189,7 @@ const MOMENTI = [
       // e la regola vale dove si scrive, non solo dove si guarda
       const scritto = await p.evaluate(async () => {
         const S = await import('/src/state.js');
-        try { S.saveLineup(S.giornataDaSchierare(), S.me().id, { formation: '4-4-2', starters: [], bench: [] }); return 'passata'; }
+        try { await S.saveLineup(S.giornataDaSchierare(), S.me().id, { formation: '4-4-2', starters: [], bench: [] }); return 'passata'; }
         catch (e) { return e.message; }
       });
       et(/ancora in corso/i.test(scritto), `${m.etichetta}: e il salvataggio si rifiuta ("${String(scritto).slice(0, 50)}")`);

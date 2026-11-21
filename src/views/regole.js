@@ -46,6 +46,7 @@ export const regole = {
       const b = e.target.closest('[data-val]'); if (!b) return;
       const k = b.closest('[data-opz]').dataset.opz; const v = JSON.parse(b.dataset.val);
       if (val(S.rules()[k]) === val(v)) return;
+      if (S.base.league.started && !confirm('Il campionato è già iniziato: la regola nuova ricalcola anche le giornate già giocate e può cambiare la classifica. Cambiarla?')) return;
       b.disabled = true;
       try { await S.salvaRegole({ [k]: v }); ctx.toast('Regola salvata'); }
       catch (err) { ctx.toast(err.message || 'Non è stato possibile salvare'); }

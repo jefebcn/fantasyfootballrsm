@@ -426,7 +426,7 @@ export const formazione = {
       return presi.length ? t('In panchina: {nomi}', { nomi: presi.map(cognome).join(', ') }) : t('Non c\'è nessuno da aggiungere');
     };
 
-    root.querySelector('main').addEventListener('click', (e) => {
+    root.querySelector('main').addEventListener('click', async (e) => {
       const mod = e.target.closest('[data-mod]'); if (mod) { d.formation = mod.dataset.mod; normalize(d, true); autofill(d, rosterIds); ctx.render(); return; }
       const sl = e.target.closest('[data-slot]');
       if (sl) {
@@ -444,8 +444,12 @@ export const formazione = {
       if (e.target.closest('#confirm')) {
         const errors = validateLineup({ ...d, starters: d.starters.filter(Boolean), bench: d.bench.filter(Boolean) }, S.playersById);
         if (errors.length) { vibra('errore'); ctx.toast(errors[0]); return; }
-        try { S.saveLineup(n, me.id, { ...d, bench: d.bench.filter(Boolean) }); tolti = []; clearTimeout(attesaBozza); bozzaSalvata = comeBozza(d); base = bozzaSalvata; vibra('successo'); ctx.toast(t('Formazione salvata · giornata {n}', { n })); chiediDopoIlSalvataggio(ctx); formazioneConfermata(); }
-        catch (err) { ctx.toast(err.message); ctx.render(); }
+        if (!d.captainId && !confirm(t('Non hai scelto il capitano: nessun raddoppio in questa giornata. Confermi lo stesso?'))) return;
+        const bott = e.target.closest('#confirm');
+        if (bott.dataset.invio) return;
+        bott.dataset.invio = '1'; bott.disabled = true; ctx.toast(t('Invio la formazione…'));
+        try { await S.saveLineup(n, me.id, { ...d, bench: d.bench.filter(Boolean) }); tolti = []; clearTimeout(attesaBozza); bozzaSalvata = comeBozza(d); base = bozzaSalvata; vibra('successo'); ctx.toast(t('Formazione salvata · giornata {n}', { n })); chiediDopoIlSalvataggio(ctx); formazioneConfermata(); }
+        catch (err) { vibra('errore'); ctx.toast(err.message); ctx.render(); }
       }
     });
   },

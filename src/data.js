@@ -210,7 +210,8 @@ export function buildSeason(_seed = 20262027) {
       : n >= LOCK_PRIMA_DAL ? new Date(+primo - LOCK_PRIMA_MINUTI * 60000)
       : primo < alle15 ? primo : alle15;
     if (orari.length) { ultimoNoto = +sat; ultimoN = n; }
-    const md = { id: `md${n}`, number: n, lockAt: sat.toISOString(), saturday: sat.toISOString() };
+    // stimata: la FSGC non ha ancora dato gli orari, la data è il ritmo di una settimana per giornata
+    const md = { id: `md${n}`, number: n, lockAt: sat.toISOString(), saturday: sat.toISOString(), stimata: !orari.length };
     matchdays.push(md);
     righe.forEach(([, home, away, iso, venue, gc, go], i) => {
       matches.push({ id: `${md.id}_m${i + 1}`, matchdayId: md.id, matchday: n, homeClubId: home, awayClubId: away,

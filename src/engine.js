@@ -191,8 +191,9 @@ export function roleName(r) {
 
 /** Conversione fantapunti → gol (art. 11). */
 export function conversionParams(managerCount, rules = DEFAULT_RULES) {
+  // sotto la prima fascia vale la prima (una lega piccola), sopra l'ultima vale l'ultima
   const row = rules.conversion.find((c) => managerCount >= c.min && managerCount <= c.max)
-    || rules.conversion[rules.conversion.length - 1];
+    || (managerCount < rules.conversion[0].min ? rules.conversion[0] : rules.conversion[rules.conversion.length - 1]);
   return { threshold: row.threshold, step: row.step };
 }
 export function toGoals(score, managerCount, rules = DEFAULT_RULES) {

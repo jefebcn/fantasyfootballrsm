@@ -174,7 +174,12 @@ export const scambi = {
         catch (err) { ctx.toast(err.message || 'Non è andata'); b.disabled = false; ctx.render(); }
       };
       const acc = e.target.closest('[data-accetta]');
-      if (acc) return decidi(acc, () => S.accettaScambio(acc.dataset.accetta), 'Scambio fatto');
+      if (acc) {
+        // irreversibile: prima di concluderlo si rilegge chi va e chi arriva
+        const riepilogo = [...(acc.closest('.scambio')?.querySelectorAll('.lato, .soldi') || [])].map((x) => x.innerText.replace(/\s+/g, ' ').trim()).join('\n');
+        if (!confirm(`Accetti lo scambio?\n\n${riepilogo}\n\nDiventa effettivo subito e non si può annullare.`)) return;
+        return decidi(acc, () => S.accettaScambio(acc.dataset.accetta), 'Scambio fatto');
+      }
       const rif = e.target.closest('[data-rifiuta]');
       if (rif) return decidi(rif, () => S.rifiutaScambio(rif.dataset.rifiuta), 'Proposta rifiutata');
       const ann = e.target.closest('[data-annulla]');

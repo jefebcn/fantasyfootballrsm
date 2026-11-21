@@ -72,6 +72,13 @@ select pg_temp.esige('l''iscrizione non si retrodata e la squadra del cuore rest
 select pg_temp.entra('fut_bea');
 update public.futsal_iscritti set club_cuore = 'virtus' where user_id = 'fut_bea';
 select pg_temp.esige('chi non l''aveva scelta la sceglie una volta', (select club_cuore from public.futsal_iscritti where user_id = 'fut_bea') = 'virtus');
+-- futsal-10: due squadre non si chiamano uguali (maiuscole e spazi non contano)
+do $$ begin
+  update public.futsal_iscritti set squadra = ' titani c5 ' where user_id = 'fut_bea';
+  raise exception 'FALLITA: due squadre con lo stesso nome';
+exception when others then if sqlerrm like 'FALLITA:%' then raise; end if;
+  raise notice 'ok  il nome di una squadra già presa non passa (%)', sqlerrm;
+end $$;
 
 -- rosa e formazione
 select pg_temp.entra('fut_alex');
@@ -224,7 +231,19 @@ select pg_temp.esige('il promemoria va a Bea, che non ha ancora una squadra, e n
   (select array_agg(user_id) from public.futsal_da_avvisare(29)) = array['fut_bea']);
 select pg_temp.esige('e una volta sola', not exists (select 1 from public.futsal_da_avvisare(29)));
 select pg_temp.esige('un invio fallito si rimette in coda', public.futsal_promemoria_da_rifare(29, array['https://push.example/bea']) = 1);
+-- futsal-11: «mercato aperto» a tutti gli iscritti col telefono, una volta per giornata, solo con le quotazioni
+select pg_temp.esige('mercato aperto: lo sanno Alex e Bea',
+  (select array_agg(user_id order by user_id) from public.futsal_mercato_da_avvisare(29)) = array['fut_alex', 'fut_bea']);
+select pg_temp.esige('e una volta sola', not exists (select 1 from public.futsal_mercato_da_avvisare(29)));
+select pg_temp.esige('senza quotazioni della giornata nessun avviso', not exists (select 1 from public.futsal_mercato_da_avvisare(39)));
 set role authenticated;
+select pg_temp.entra('fut_bea');
+do $$ begin
+  perform public.futsal_mercato_da_avvisare(28);
+  raise exception 'FALLITA: un utente ha letto chi avvisare del mercato';
+exception when others then if sqlerrm like 'FALLITA:%' then raise; end if;
+  raise notice 'ok  chi avvisare del mercato lo legge solo la funzione promemoria';
+end $$;
 select pg_temp.entra('fut_bea');
 do $$ begin
   perform public.futsal_da_avvisare(29);

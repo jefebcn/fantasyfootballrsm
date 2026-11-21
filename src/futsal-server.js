@@ -114,6 +114,7 @@ export const consegnataAlle = (g, id = uid()) => st.formazioni.get(`${g}:${id}`)
 export function inItaliano(e) {
   const m = String(e?.message || e || '');
   if (/row-level security|violates row level|permission denied/i.test(m)) return 'Non si può più: la giornata è chiusa, o non hai il permesso.';
+  if (/futsal_iscritti_nome_unico/.test(m)) return 'C\'è già una squadra con questo nome: scegline un altro.';
   if (/duplicate key|already exists|unique constraint/i.test(m)) return 'C\'è già: forse l\'hai salvato un attimo fa.';
   if (/failed to fetch|networkerror|load failed|network request failed/i.test(m)) return 'Connessione assente: riprova quando sei in linea.';
   if (/JWT|token|not authenticated|auth/i.test(m) && !/[àèéìòù]/.test(m)) return 'La sessione è scaduta: esci e rientra.';
@@ -125,6 +126,14 @@ const deve = (r) => { if (r.error) throw new Error(inItaliano(r.error)); return 
 export async function iscriviti(squadra, colore = '#1B84C6', clubCuore = null) {
   const iniziali = squadra.split(/\s+/).map((w) => w[0]).join('').slice(0, 3).toUpperCase();
   deve(await remote.client().from('futsal_iscritti').insert({ user_id: uid(), squadra: squadra.trim(), colore, iniziali, ...(clubCuore ? { club_cuore: clubCuore } : {}) }));
+  await carica({ forza: true });
+}
+
+/** Nome e colore della propria squadra (il database rifiuta < > " ` e i nomi già presi). */
+export async function aggiornaSquadra(squadra, colore) {
+  const nome = String(squadra || '').trim();
+  const iniziali = nome.split(/\s+/).map((w) => w[0]).join('').slice(0, 3).toUpperCase();
+  deve(await remote.client().from('futsal_iscritti').update({ squadra: nome, colore, iniziali }).eq('user_id', uid()));
   await carica({ forza: true });
 }
 

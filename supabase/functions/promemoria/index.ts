@@ -316,10 +316,9 @@ const gestisci = async (req: Request): Promise<Response> => {
   const candidateFutsal = (locksFutsal ?? []).map((l) => ({
     ...l, ore: (new Date(l.lock_at).getTime() - ora) / 3600000,
   })).filter((l) => l.ore > 0 && l.ore <= ORE_PRIMA);
-  if (!candidate.length && !candidateFutsal.length) return Response.json({ spedite: 0, iscritti, motivo: 'nessun lock nella finestra' });
 
   let spedite = 0; const morti: string[] = []; let rimessi = 0;
-  let speditefutsal = 0;
+  let speditefutsal = 0; let mercatoAperto = 0;
   /** Un avviso a un telefono: 'ok', 'morto' o 'riprova'. */
   const spedisci = async (g: { endpoint: string; p256dh: string; auth: string }, avviso: { titolo: string; corpo: string; tag: string; url: string }) => {
     if (g.endpoint.startsWith('apns:')) {
@@ -334,6 +333,29 @@ const gestisci = async (req: Request): Promise<Response> => {
       return code === 404 || code === 410 ? 'morto' : 'riprova';
     }
   };
+  // «Mercato aperto»: la prossima giornata futsal ancora da chiudere, appena ha
+  // le quotazioni (arrivano coi referti di quella prima). futsal_mercato_da_avvisare
+  // (futsal-11) controlla quotazioni e chiusura e segna chi ha gia' avuto l'avviso.
+  const prossimaFutsal = (locksFutsal ?? []).filter((l) => new Date(l.lock_at).getTime() > ora)
+    .sort((a, b) => new Date(a.lock_at).getTime() - new Date(b.lock_at).getTime())[0];
+  if (prossimaFutsal) {
+    const { data: gente } = await sb.rpc('futsal_mercato_da_avvisare', { p_giornata: prossimaFutsal.giornata });
+    const quando = new Date(prossimaFutsal.lock_at).toLocaleString('it-IT', { timeZone: 'Europe/Rome', weekday: 'short', day: 'numeric', month: 'numeric', hour: '2-digit', minute: '2-digit' });
+    for (const g of gente ?? []) {
+      const esito = await spedisci(g, {
+        titolo: `Futsal: mercato aperto per la ${prossimaFutsal.giornata}ª`,
+        corpo: `${g.squadra}: sono arrivati i referti, i prezzi sono nuovi. Si chiude ${quando}.`,
+        tag: `futsal-mercato-${prossimaFutsal.giornata}`,
+        url: './#/futsal/squadra',
+      });
+      if (esito === 'ok') { spedite++; mercatoAperto++; } else if (esito === 'morto') morti.push(g.endpoint);
+    }
+  }
+  if (!candidate.length && !candidateFutsal.length) {
+    if (morti.length) await sb.from('push_subscriptions').update({ failed_at: new Date().toISOString() }).in('endpoint', morti);
+    return Response.json({ spedite, iscritti, mercatoAperto, motivo: 'nessun lock nella finestra' });
+  }
+
   for (const l of candidateFutsal) {
     const { data: gente, error } = await sb.rpc('futsal_da_avvisare', { p_giornata: l.giornata });
     if (error) break;
@@ -402,7 +424,7 @@ const gestisci = async (req: Request): Promise<Response> => {
   if (morti.length) await sb.from('push_subscriptions').update({ failed_at: new Date().toISOString() }).in('endpoint', morti);
 
   return Response.json({
-    giornate: candidate.map((c) => c.matchday), spedite, iscritti, scaduti: morti.length, da_rifare: rimessi,
+    giornate: candidate.map((c) => c.matchday), spedite, iscritti, mercatoAperto, scaduti: morti.length, da_rifare: rimessi,
     ...(candidateFutsal.length ? { futsal: { giornate: candidateFutsal.map((c) => c.giornata), spedite: speditefutsal } } : {}),
     ...(iphoneSaltati ? { iphone_senza_chiave_apns: iphoneSaltati } : {}),
   });

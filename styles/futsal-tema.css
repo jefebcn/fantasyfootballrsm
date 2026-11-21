@@ -249,3 +249,10 @@
 [data-sport="futsal"] .a-body{overflow-x:hidden}
 [data-sport="futsal"] .a-sec{flex-wrap:wrap}
 [data-sport="futsal"] .a-sec b{display:block;white-space:normal;min-width:0}
+/* nome e colore della squadra */
+.fs-colori{display:grid;grid-template-columns:repeat(6,1fr);gap:10px;margin:12px 0 16px}
+.fs-colori button{aspect-ratio:1;min-height:44px;border-radius:50%;border:3px solid transparent;cursor:pointer}
+.fs-colori button.on{border-color:var(--inchiostro,#111);box-shadow:0 0 0 2px #fff inset}
+.fs-modifica{margin-top:-4px}
+.fs-tocca{cursor:pointer}
+.fs-tocca:active{background:rgba(0,0,0,.05)}

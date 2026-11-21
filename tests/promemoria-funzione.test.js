@@ -30,6 +30,7 @@ let genteFinta = [];
 // il FantaFutsal ha giornate e iscritti suoi (futsal-03)
 let lockFutsalFinti = [];
 let genteFutsalFinta = [];
+let genteMercatoFinta = [];
 const segnati = { morti: [], rifare: [], rpc: [] };
 
 globalThis.__banco = {
@@ -51,6 +52,7 @@ globalThis.__banco = {
       segnati.rpc.push({ nome, p });
       if (nome === 'promemoria_da_rifare' || nome === 'avvisi_da_rifare' || nome === 'futsal_promemoria_da_rifare') { segnati.rifare.push(...p.p_endpoints); return { data: p.p_endpoints.length, error: null }; }
       if (nome === 'futsal_da_avvisare') return { data: genteFutsalFinta, error: null };
+      if (nome === 'futsal_mercato_da_avvisare') return { data: genteMercatoFinta, error: null };
       return { data: genteFinta, error: null };
     },
   }),
@@ -92,7 +94,7 @@ const buone = {
 
 /** Rimette l'ambiente da zero: i casi non si devono sporcare fra loro. */
 const con = (env) => {
-  rompi = null; lockFinti = []; genteFinta = []; lockFutsalFinti = []; genteFutsalFinta = []; segnati.morti = []; segnati.rifare = []; segnati.rpc = [];
+  rompi = null; lockFinti = []; genteFinta = []; lockFutsalFinti = []; genteFutsalFinta = []; genteMercatoFinta = []; segnati.morti = []; segnati.rifare = []; segnati.rpc = [];
   for (const k of Object.keys(ambiente)) delete ambiente[k];
   Object.assign(ambiente, env);
 };
@@ -311,4 +313,20 @@ test('un POST senza tipo e\' il promemoria di sempre', async () => {
   con(buone);
   const r = await chiama('segreto', { qualcosa: 1 });
   assert.match(await r.text(), /nessun lock nella finestra/);
+});
+
+test('futsal: «mercato aperto» per la prossima giornata, anche senza promemoria in finestra', async () => {
+  conIphone();
+  lockFinti = [];
+  lockFutsalFinti = [{ giornata: 13, lock_at: new Date(Date.now() + 3 * 86400000).toISOString() }];
+  genteMercatoFinta = [{ user_id: 'u1', endpoint: 'apns:abcd1234', p256dh: '', auth: '', squadra: 'Titani Futsal' }];
+  let corpo;
+  const viste = await conFetch(200, '', async () => { corpo = (await risposta()).corpo; });
+  assert.equal(viste.length, 1);
+  const msg = JSON.parse(viste[0].init.body);
+  assert.match(msg.aps.alert.title, /mercato aperto per la 13ª/);
+  assert.match(msg.aps.alert.body, /Titani Futsal/);
+  assert.equal(msg.url, './#/futsal/squadra');
+  assert.ok(segnati.rpc.some((r) => r.nome === 'futsal_mercato_da_avvisare' && r.p.p_giornata === 13));
+  assert.match(corpo, /"mercatoAperto":1/);
 });

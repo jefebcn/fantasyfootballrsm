@@ -59,7 +59,7 @@ function scambiDaDecidere() {
   const chi = S.managersById.get(q[0].da)?.teamName || t('una squadra');
   return tile({ href: '#/scambi', lead: icon('undo'), leadKind: 'accent',
     title: uno ? t('Una proposta di scambio') : t('{n} proposte di scambio', { n: q.length }),
-    sub: uno ? t('{chi} aspetta la tua risposta.', { chi }) : t('Aspettano la tua risposta.') });
+    sub: uno ? t('{chi} aspetta la tua risposta.', { chi: esc(chi) }) : t('Aspettano la tua risposta.') });
 }
 
 function daConsegnare() {

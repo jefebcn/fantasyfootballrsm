@@ -2748,4 +2748,57 @@ end $$;
 reset role;
 select set_config('request.jwt.claims', '', false);
 
+\echo '--- nomi senza caratteri da pagina web (059) ---'
+do $$ begin
+  update public.league_members set team_name = '<img src=x onerror=alert(1)>' where id = (select id from public.league_members limit 1);
+  raise exception 'FALLITA: un nome squadra con < > è passato';
+exception when others then
+  if sqlerrm like 'FALLITA%' then raise; end if;
+  raise notice 'ok  nome squadra con < > respinto (%)', sqlerrm;
+end $$;
+do $$ begin
+  update public.leagues set name = 'Lega "x"' where id = (select id from public.leagues limit 1);
+  raise exception 'FALLITA: un nome di lega con " è passato';
+exception when others then
+  if sqlerrm like 'FALLITA%' then raise; end if;
+  raise notice 'ok  nome lega con " respinto';
+end $$;
+do $$ begin
+  update public.profiles set display_name = 'Alex `x`' where id = 'user_alex';
+  raise exception 'FALLITA: un nome con ` è passato';
+exception when others then
+  if sqlerrm like 'FALLITA%' then raise; end if;
+  raise notice 'ok  nome persona con ` respinto';
+end $$;
+update public.league_members set team_name = 'Squadra d''Alex & C.' where id = (select id from public.league_members limit 1);
+select pg_temp.esige('apostrofo ed & restano permessi nei nomi', true);
+-- il controllo gira anche per chi scrive dall'app (ruolo authenticated), non solo per il superutente
+select pg_temp.entra('user_alex');
+set role authenticated;
+update public.profiles set display_name = 'Alex Nuovo' where id = 'user_alex';
+do $$ begin
+  update public.profiles set display_name = 'Alex <b>' where id = 'user_alex';
+  raise exception 'FALLITA: dall''app un nome con < è passato';
+exception when others then
+  if sqlerrm like 'FALLITA%' then raise; end if;
+  raise notice 'ok  anche dall''app il nome con < viene respinto (%)', sqlerrm;
+end $$;
+reset role;
+select set_config('request.jwt.claims', '', false);
+select pg_temp.esige('dall''app un nome normale si salva', (select display_name from public.profiles where id = 'user_alex') = 'Alex Nuovo');
+
+\echo '--- una lega privata non si fa pubblica dall''app (060) ---'
+select pg_temp.entra('user_alex');
+select public.create_league('Lega privata 060','P60','Squadra 060','#1B84C6','S6') as lega60 \gset
+set role authenticated;
+update public.leagues set pubblica = true, classifica = 'punti', max_membri = 1000,
+  premi = '[{"posto":1,"premio":"Mille euro"}]'::jsonb, created_by = null, name = 'Lega di prova rinominata'
+ where id = :'lega60';
+reset role;
+select set_config('request.jwt.claims', '', false);
+select pg_temp.esige('l''admin di una lega privata non la rende pubblica né cambia premi, posti e creatore',
+  (select not pubblica and classifica = 'scontri' and max_membri <> 1000 and premi is distinct from '[{"posto":1,"premio":"Mille euro"}]'::jsonb and created_by is not null
+     from public.leagues where name = 'Lega di prova rinominata'));
+select pg_temp.esige('ma il nome della lega lo cambia', exists (select 1 from public.leagues where name = 'Lega di prova rinominata'));
+
 select 'tutte le prove sulle funzioni sono passate' as esito;

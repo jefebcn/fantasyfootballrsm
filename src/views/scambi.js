@@ -41,7 +41,7 @@ export function perCheNo() {
   }
   if (stato.crediti > (me?.credits ?? 0)) return `Hai ${me.credits} crediti, ne stai offrendo ${stato.crediti}`;
   const altro = S.managersById.get(stato.con);
-  if (stato.crediti < 0 && -stato.crediti > (altro?.credits ?? 0)) return `${altro.teamName} ha ${altro.credits} crediti, ne stai chiedendo ${-stato.crediti}`;
+  if (stato.crediti < 0 && -stato.crediti > (altro?.credits ?? 0)) return `${esc(altro.teamName)} ha ${altro.credits} crediti, ne stai chiedendo ${-stato.crediti}`;
   if (S.scambiInAttesa().some((t) => t.a === stato.con)) return `Hai già una proposta aperta verso ${esc(nomeSquadra(stato.con))}`;
   return null;
 }

@@ -16,6 +16,9 @@ Aggiornato: 2026-11-20 · tema: coda Buffer fino al 30/11, controllo giornaliero
 - Album Flickr nuovi (11ª giornata in poi): aggiungere l'indirizzo in `scripts/foto-flickr-futsal.ps1` e mandare ad Alex il comando completo; poi lui rilancia scaricamento, rinomina e catalogo.
 - `prove/futsal.cjs`: 1 errore vecchio (giornata 8 scritta a mano), non regressione.
 
+- PROVA DELL'IMPORT ATTIVA dal 21/11: `.github/workflows/futsal-prova.yml` su main (PR #125) gira l'import solo-futsal SUL RAMO futsal ogni 2 ore (e ogni 20 min nei giorni del futsal), pusha su futsal e carica quotazioni/orari sul database. Si spegne da solo al lancio (quando main ha importa-futsal-giro.sh): poi cancellarlo. NON lanciare più importa-futsal.py a mano.
+- Anteprima per Alex (admin, account già is_admin): https://fantasyfootballrsm-git-futsal-jefebcns-projects.vercel.app (protetta dal login Vercel), database vero: lì si apre la lega pubblica e si prova tutto.
+- Controlli programmati: primo giro del lavoro (21/11 15:12) e rapporto sulla velocità dei referti (24/11 18:30).
 - Import automatico del futsal PRONTO ma attivo solo dopo il merge in main: `scripts/importa-futsal-giro.sh` dentro `importa-in-giro.sh` (dati-fsgc.yml), referti → app, quotazioni e orari → database con il secret SUPABASE_DB_URL (lo stesso del backup). Fino al lancio i referti li importo io a mano.
 - Date FSGC fissate solo fino alla 12ª (3/12): dalla 13ª l'app dice «date non ancora fissate» finché la FSGC non le pubblica (l'import automatico aggiorna app e database da solo).
 

@@ -9,6 +9,7 @@ import * as AV from './notifiche.js';
 import { VERSIONE } from './versione.js';
 import { apriNuovaPassword, segnaRecupero, recuperoInCorso } from './views/nuova-password.js';
 import { formazioneInSospeso } from './views/formazione.js';
+import { iconeLancio } from './lancio-futsal.js';
 
 const root = document.getElementById('app');
 let current = null; // { view, params }
@@ -555,6 +556,7 @@ async function boot() {
   registraServiceWorker();
   document.body.insertAdjacentHTML('afterbegin', SPRITE + AVATAR_SPRITE);
   applyTheme();
+  iconeLancio();
   window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', applyTheme);
   diagnostica.ascolta();
   S.setErrorHandler((e) => {

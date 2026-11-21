@@ -31,6 +31,7 @@ Aggiornato: 2026-11-21 · tema: futsal su main (visibile solo al proprietario), 
 - Lancio 01/12 su App Store e Google Play.
 
 ## Attenzione
+- Chiusura PROVVISORIA (`F.chiusura`): la prima giornata senza date FSGC chiude una settimana dopo la precedente, stessa ora; finisce anche in `futsal_lock`. Se il file SQL è già aggiornato nel commit, l'import non ricarica: la riga va messa a mano sul database.
 - Comandi per il PC di Alex (Windows, PowerShell): sempre completi, mai segnaposto; la cartella è `$env:USERPROFILE\Desktop\FOTO FSGC`.
 - Dal cloud Flickr risponde 429 alle immagini: si scarica dal PC di Alex.
 - Buffer gratuito: max 10 in coda per canale. Referti FSGC 15-22 ore dopo la partita.

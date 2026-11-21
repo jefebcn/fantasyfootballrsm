@@ -103,9 +103,19 @@ function daPreparare() {
 function mercato(n) {
   const c = F.chiusura(n);
   if (!c) return { aperto: false, stato: 'chiuso', testo: 'Date non ancora fissate dalla FSGC' };
-  if (c.getTime() <= Date.now()) return { aperto: false, stato: 'chiuso', testo: `Chiuso ${quando(c)}: si gioca` };
-  if (!V.quotazioniPronte(n)) return { aperto: false, stato: 'attesa', testo: `Riapre con i referti della ${n - 1}ª` };
-  return { aperto: true, stato: 'aperto', testo: `Si chiude ${traQuanto(c)}` };
+  const provvisoria = F.chiusuraProvvisoria(n);
+  // una chiusura provvisoria passata senza date vere: non si sta giocando, la FSGC è in ritardo
+  if (c.getTime() <= Date.now()) return { aperto: false, stato: 'chiuso', testo: provvisoria ? 'Date non ancora fissate dalla FSGC' : `Chiuso ${quando(c)}: si gioca` };
+  if (!V.quotazioniPronte(n)) return { aperto: false, stato: 'attesa', testo: `${inVigore(n - 1) ? 'Riapre' : 'Apre'} con i referti della ${n - 1}ª` };
+  return { aperto: true, stato: 'aperto', testo: `Si chiude ${traQuanto(c)}${provvisoria ? ' (data provvisoria: la FSGC non ha ancora fissato le partite)' : ''}` };
+}
+
+/** Chi non ha ancora una squadra e il mercato non è aperto: quando potrà comprare. */
+function primaGiornata(n, m) {
+  if (m.stato !== 'attesa') return '';
+  const fine = F.ultimaPartita(n - 1);
+  const giorno = fine ? dateIt(new Date(fine.getTime() + 86400e3).toISOString()) : '';
+  return `<div class="a-card fs-hero"><h3>La tua prima giornata è la ${n}ª</h3><p class="small muted">Il mercato apre appena la FSGC pubblica i referti della ${n - 1}ª, di solito il giorno dopo l'ultima partita${giorno ? ` (${giorno})` : ''}: i prezzi dei giocatori cambiano con quei risultati. Intanto guarda giocatori e quotazioni nelle <a href="#/futsal/statistiche">Statistiche</a>.</p></div>`;
 }
 
 // ---------------------------------------------------------------- la squadra, sul server o sul telefono
@@ -142,7 +152,7 @@ function montaIscrizione(root, ctx) {
     const nome = root.querySelector('#fs-squadra').value.trim();
     if (nome.length < 2) { ctx.toast('Scrivi il nome della squadra'); return; }
     e.target.disabled = true;
-    try { await FS.iscriviti(nome, '#1B84C6', root.querySelector('#fs-cuore').value || null); ctx.toast('Iscritto: ora compra la tua rosa'); ctx.go('futsal/squadra'); } catch (err) { ctx.toast(err.message); e.target.disabled = false; }
+    try { await FS.iscriviti(nome, '#1B84C6', root.querySelector('#fs-cuore').value || null); { const k = daPreparare() || F.giornataCorrente(); ctx.toast(mercato(k).aperto ? 'Iscritto: ora compra la tua rosa' : `Iscritto: la tua prima giornata è la ${k}ª`); } ctx.go('futsal/squadra'); } catch (err) { ctx.toast(err.message); e.target.disabled = false; }
   });
 }
 
@@ -349,6 +359,7 @@ export const futsalSquadra = {
         <span class="${bil.residui < 0 ? 'neg' : ''}"><b>${cr(bil.residui)}</b>di ${cr(bil.patrimonio)} crediti</span>
         <span><b>${bil.primo !== null && bil.primo < n ? bil.cambi : '∞'}</b>${bil.primo !== null && bil.primo < n ? `cambi${bil.malus ? ` · −${bil.malus} pt` : ''}` : 'cambi'}</span>
       </div>
+      ${!prima && !salvata?.D ? primaGiornata(n, m) : ''}
       <p class="small muted fs-nota">${esc(m.testo)}.${m.aperto ? ` ${bil.primo !== null && bil.primo < n ? `${R.cambiGratis === 1 ? 'Un cambio gratis' : `${R.cambiGratis} cambi gratis`}, poi −${R.malusCambio} punto a cambio.` : 'Prima rosa: cambi illimitati e gratis.'}` : ' Puoi cambiare schema, chi va in campo, sesto uomo e capitano, ma non comprare o vendere.'}</p>
       <div class="seg seg-cls fs-schemi" role="tablist" aria-label="Schema">${Object.keys(R.schemi).map((k) => `<button data-schema="${k}" class="${b.schema === k ? 'on' : ''}">${k}${k === R.bonusDifesa.schema ? ' bonus' : ''}</button>`).join('')}</div>
       <div class="fs-campo">${CAMPO}

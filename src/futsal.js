@@ -33,17 +33,46 @@ export const referto = (n, casa) => REFERTI.find((r) => r.g === n && r.casa === 
 /** Giornate con almeno un referto. */
 export const giocate = () => [...new Set(REFERTI.map((r) => r.g))].sort((a, b) => a - b);
 
-/** La prima giornata con partite ancora da giocare (o l'ultima). */
+/**
+ * La prima giornata con partite ancora da giocare (o l'ultima). Una partita
+ * senza data (la FSGC non ha ancora fissato quella giornata) conta come da
+ * giocare: prima si saltava alla 30ª appena finite le giornate con le date.
+ */
 export function giornataCorrente(ora = Date.now()) {
-  for (let n = 1; n <= GIORNATE; n++) if (PARTITE.some((p) => p.g === n && p.gc === null && new Date(p.quando).getTime() > ora - 3 * 3600e3)) return n;
+  for (let n = 1; n <= GIORNATE; n++) if (PARTITE.some((p) => p.g === n && p.gc === null && (!p.quando || new Date(p.quando).getTime() > ora - 3 * 3600e3))) return n;
   return GIORNATE;
 }
 
-/** Chiusura delle formazioni: 10 minuti prima della prima partita della giornata (§ 3). */
-export function chiusura(n) {
+/** La chiusura che viene dalle date FSGC: 10 minuti prima della prima partita (§ 3). */
+function chiusuraNota(n) {
   const t = PARTITE.filter((p) => p.g === n && p.quando).map((p) => new Date(p.quando).getTime());
   return t.length ? new Date(Math.min(...t) - 10 * 60e3) : null;
 }
+
+/**
+ * Chiusura delle formazioni della giornata n. Se la FSGC non ha ancora
+ * fissato le date, e la giornata è la prima dopo l'ultima con le date, la
+ * chiusura è PROVVISORIA: una settimana dopo quella della giornata prima,
+ * alla stessa ora. Serve al lancio del 01/12: la 12ª chiude il 30/11 e
+ * senza la 13ª nessuno avrebbe potuto fare la squadra. L'import la
+ * sostituisce con quella vera appena la FSGC pubblica le date (anche sul
+ * database: scripts/futsal-sql.mjs la scrive in futsal_lock).
+ */
+export function chiusura(n) {
+  const nota = chiusuraNota(n);
+  if (nota || n < 2) return nota;
+  const prima = chiusuraNota(n - 1);
+  return prima ? new Date(prima.getTime() + 7 * 86400e3) : null;
+}
+
+/** L'ora dell'ultima partita della giornata n (per dire quando arrivano i referti). */
+export function ultimaPartita(n) {
+  const t = PARTITE.filter((p) => p.g === n && p.quando).map((p) => new Date(p.quando).getTime());
+  return t.length ? new Date(Math.max(...t)) : null;
+}
+
+/** La chiusura della giornata n è provvisoria (date FSGC non ancora fissate). */
+export const chiusuraProvvisoria = (n) => !chiusuraNota(n) && !!chiusura(n);
 
 /** Chi riposa nella giornata: con 15 squadre, una ogni volta. */
 export function riposa(n) {

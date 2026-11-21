@@ -1,39 +1,37 @@
 # Stato – Fantatitano Futsal
 
-Aggiornato: 2026-11-20 · tema: coda Buffer fino al 30/11, controllo giornaliero, archivio foto Flickr su Drive
+Aggiornato: 2026-11-21 · tema: futsal su main (visibile solo al proprietario), import automatico, ritocchi grafici
 
 ## Dove siamo
-- Sezione futsal (modello Dunkest, § 13 di `FUTSAL.md`) solo sul ramo `futsal`, nascosta (`?futsal=1`, anteprima admin). NON su main né su fantatitano.site.
-- Dati: referti di tutta la 10ª giornata (`src/futsal-dati.js`), quotazioni fino all’11ª su Supabase (applicate il 20/11). Stemmi Fantatitano nell'app.
-- Link in bio (main, PR #118): card «Fantatitano Futsal · Dal 01/12», online.
-- Instagram @fantatitano.futsal via Buffer: coda 9/10 fino al 30/11 (vigilia del lancio). Grafiche: `scratchpad/ig/sett3.mjs` (stile da copiare).
-- Foto: archivio Flickr FSGC su Drive, cartelle «Futsal - Giornata 01/02/09/10» (Desktop\FOTO FSGC\flickr\FSGC _ official\Albums, sincronizzata da Drive), catalogo `catalogo-futsal.csv` (Drive id 1cxmXJ3_xL3Ghku4pCXWhIPXJq2KRit0X): 5.304 foto, 27 partite, fotografo per ogni foto.
+- Futsal su main e su fantatitano.site dal 21/11 (PR #126): lo vede solo il proprietario (`profiles.is_owner`) finché `APERTO_A_TUTTI = false` in `src/views/futsal.js`. Gioco a rosa e crediti (§ 13 di `FUTSAL.md`).
+- Import automatico: i referti futsal li importa «Dati FSGC» (`dati-fsgc.yml` → `importa-in-giro.sh` → `scripts/importa-futsal-giro.sh`); quotazioni e orari vanno sul database con il secret SUPABASE_DB_URL. Primo giro 21/11 ok (referti aggiornati, database non ancora toccato: nulla di nuovo).
+- Database: futsal-06 (leghe pubbliche) e futsal-07 (funzioni chiuse agli anonimi) applicate. Date FSGC fissate fino alla 12ª (3/12).
+- 21/11: barra «Aggiorna» tolta (PR #129); maglie al posto della lettera nelle liste, icona di Regole, niente citazioni di altre app, pagina Squadra che non sborda (PR #130).
+- Instagram @fantatitano.futsal via Buffer: coda fino al 30/11. Foto: archivio Flickr FSGC su Drive, catalogo `catalogo-futsal.csv` (Drive id 1cxmXJ3_xL3Ghku4pCXWhIPXJq2KRit0X).
 
 ## Aperto / in corso
-- Storia «Classifica dopo la 10ª» programmata su Buffer per ven 20/11 alle 18:30 (grafica `scratchpad/ig/classifica.mjs`); coda 9/10. Da mettere in evidenza a mano in «Classifica».
-- Ogni giorno 9:47 (trig_019gaxf1eECjzEK6qMnLV9NA): se su Buffer ci sono ≥4 posti liberi crea contenuti con foto dall'archivio Drive e avvisa Alex; altrimenti silenzio.
-- Storie da mettere in evidenza a mano da Alex (21/11 App, 23/11 Giornate, 25/11 schemi): gli highlight non hanno API.
-- Album Flickr nuovi (11ª giornata in poi): aggiungere l'indirizzo in `scripts/foto-flickr-futsal.ps1` e mandare ad Alex il comando completo; poi lui rilancia scaricamento, rinomina e catalogo.
-- `prove/futsal.cjs`: 1 errore vecchio (giornata 8 scritta a mano), non regressione.
-
-- PROVA DELL'IMPORT ATTIVA dal 21/11: `.github/workflows/futsal-prova.yml` su main (PR #125) gira l'import solo-futsal SUL RAMO futsal ogni 2 ore (e ogni 20 min nei giorni del futsal), pusha su futsal e carica quotazioni/orari sul database. Si spegne da solo al lancio (quando main ha importa-futsal-giro.sh): poi cancellarlo. NON lanciare più importa-futsal.py a mano.
-- Anteprima per Alex (admin, account già is_admin): https://fantasyfootballrsm-git-futsal-jefebcns-projects.vercel.app (protetta dal login Vercel), database vero: lì si apre la lega pubblica e si prova tutto.
-- Controlli programmati: primo giro del lavoro (21/11 15:12) e rapporto sulla velocità dei referti (24/11 18:30).
-- Import automatico del futsal PRONTO ma attivo solo dopo il merge in main: `scripts/importa-futsal-giro.sh` dentro `importa-in-giro.sh` (dati-fsgc.yml), referti → app, quotazioni e orari → database con il secret SUPABASE_DB_URL (lo stesso del backup). Fino al lancio i referti li importo io a mano.
-- Date FSGC fissate solo fino alla 12ª (3/12): dalla 13ª l'app dice «date non ancora fissate» finché la FSGC non le pubblica (l'import automatico aggiorna app e database da solo).
+- Alex prova il futsal dal suo account: iscrizione, mercato dell'11ª (chiude lun 23/11 20:05), lega pubblica da Leghe → Admin.
+- Rapporto sulla velocità dei referti dell'11ª: mar 24/11 18:30 (trig_01UtzL2kKz21n95LRYPwn9Zy), controlla anche la prima scrittura su database.
+- Ogni giorno 9:47 (trig_019gaxf1eECjzEK6qMnLV9NA): con ≥4 posti liberi su Buffer crea contenuti con foto dall'archivio Drive e avvisa Alex; altrimenti silenzio.
+- `.github/workflows/futsal-prova.yml` si è spento da solo: da cancellare dopo il lancio.
+- Storie da mettere in evidenza a mano da Alex (gli highlight non hanno API).
+- Album Flickr nuovi (11ª in poi): aggiungere l'indirizzo in `scripts/foto-flickr-futsal.ps1` e mandare ad Alex il comando completo.
 
 ## Prossimo passo consigliato
-- Lancio del 01/12: quando Alex dà il via, merge di main in `futsal`, poi `futsal` in main (conflitto su `docs/STATO.md` = riscrivere). Dopo il merge: lanciare a mano «Dati FSGC» (Run workflow) e controllare nel registro la riga «futsal:»; se dice SUPABASE_DB_URL non impostato, va aggiunto il secret.
+- Lancio del 01/12, al via di Alex: `APERTO_A_TUTTI = true`, PR su main, poi cancellare `futsal-prova.yml`.
 - Quando Google Play è pubblico: «Disponibile su Google Play» nelle grafiche e storia del lancio con i due store.
 
 ## Decisioni recenti di Alex ancora valide
-- Lavorare solo su `futsal`; niente merge in main né pubblicazione finché non lo dice lui.
+- Fino al lancio il futsal lo vede solo lui; gli altri admin e gli utenti no.
+- Mai citare le app a cui ci ispiriamo (app, social, codice, documenti).
+- Niente scritta «Aggiorna» in app: l'aggiornamento entra da solo.
 - Coda Buffer: con 4 o più posti liberi si creano subito nuovi contenuti.
 - Ogni foto si usa UNA SOLA VOLTA. Già usate (notizie FSGC, id articolo): 2406 2409 2411 2413 2422 2427 2431 2435 2441 2447 2451 2452 2459 2462 2464 2473 2477 2482 2485. Dall'archivio Flickr: nessuna ancora (segnare qui l'id flickr).
 - Instagram: credito «© FSGC / Fotografo»; niente nomi di giocatori; solo stemmi Fantatitano («di fantasia, non ufficiali»); CTA solo Salvalo / Swipe / Link in bio; isAiGenerated true; storie senza testo.
 - Lancio 01/12 su App Store e Google Play.
 
 ## Attenzione
-- Comandi per il PC di Alex (Windows, PowerShell): sempre completi da copiare e incollare, mai segnaposto tipo `<percorso>`; la cartella è `$env:USERPROFILE\Desktop\FOTO FSGC`.
-- Dal cloud Flickr risponde 429 alle immagini: si scarica dal PC di Alex. Le cartelle Drive del backup del computer non si possono rinominare via API: si rinominano sul PC.
+- Comandi per il PC di Alex (Windows, PowerShell): sempre completi, mai segnaposto; la cartella è `$env:USERPROFILE\Desktop\FOTO FSGC`.
+- Dal cloud Flickr risponde 429 alle immagini: si scarica dal PC di Alex.
 - Buffer gratuito: max 10 in coda per canale. Referti FSGC 15-22 ore dopo la partita.
+- Prove browser in cloud: niente server locale, si servono i file dal disco con `page.route`; per il service worker serve un indirizzo https.

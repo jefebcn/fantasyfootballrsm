@@ -29,7 +29,9 @@ nuovo() { # un'origine e una copia di lavoro nuove, dall'ultima versione di qui
 commit_origine() { git -C "$T/o.git" rev-list --count HEAD; }
 # lo script si prende da QUI (la versione che si sta provando), ma gira dentro
 # la copia di lavoro, dove ci sono gli altri script che chiama
-gira() { (cd "$T/w" && env "$@" bash "$RADICE/scripts/importa-in-giro.sh") > "$T/uscita" 2>&1; echo $?; }
+# il futsal di default non fa niente (le prove sue sono in fondo): se no
+# andrebbe davvero sulla FSGC
+gira() { (cd "$T/w" && env FUTSAL=true "$@" bash "$RADICE/scripts/importa-in-giro.sh") > "$T/uscita" 2>&1; echo $?; }
 # "l'import" che porta un dato nuovo: sempre lo stesso, quindi al secondo giro
 # non c'e' piu' niente di nuovo — come la FSGC quando non ha pubblicato
 CAMBIA="sed -i 's/^export const GIORNATE = 30;$/export const GIORNATE = 30; \/\/ nuovo/' src/calendario-dati.js"
@@ -95,6 +97,42 @@ ALTRO="n=\$(cat $T/n 2>/dev/null || echo 0); n=\$((n+1)); echo \$n > $T/n; if [ 
 esito=$(gira IMPORTA="$ALTRO" VIDEO=true PROVE=true FINESTRA="echo si" PAUSA=1 DURATA=4)
 git -C "$T/o.git" log --format=%s | grep -q "da fuori"; et $? "il commit arrivato da fuori resta"
 [ "$esito" = 0 ]; et $? "e il giro non si rompe: riparte dall'ultima versione"
+
+echo "== il futsal: referti nuovi, quotazioni e orari sul database prima di pubblicare =="
+FS="bash scripts/importa-futsal-giro.sh"
+# lo script del futsal si prende da QUI, come quello del giro
+cp "$RADICE/scripts/importa-futsal-giro.sh" "$T/fs.sh"; FS="bash $T/fs.sh"
+SOLO_REF="echo '// referto nuovo' >> src/futsal-dati.js"
+CON_SQL="echo '// referto nuovo' >> src/futsal-dati.js; echo '-- quotazioni nuove' >> supabase/migrations/futsal-05-quotazioni.sql"
+nuovo; prima=$(commit_origine)
+esito=$(gira IMPORTA=true VIDEO=true PROVE=true FINESTRA="echo no" PAUSA=1 DURATA=60 FUTSAL="$FS" IMPORTA_FS="$SOLO_REF")
+[ "$esito" = 0 ] && [ "$(commit_origine)" = $((prima + 1)) ] && git -C "$T/o.git" show HEAD:src/futsal-dati.js | grep -q "referto nuovo"
+et $? "un referto nuovo del futsal (senza quotazioni nuove) va online da solo"
+
+nuovo; prima=$(commit_origine)
+esito=$(gira IMPORTA=true VIDEO=true PROVE=true FINESTRA="echo no" PAUSA=1 DURATA=60 FUTSAL="$FS" IMPORTA_FS="$CON_SQL" CARICA_FS="touch $T/caricato")
+[ -f "$T/caricato" ] && git -C "$T/o.git" show HEAD:supabase/migrations/futsal-05-quotazioni.sql | grep -q "quotazioni nuove"
+et $? "quotazioni nuove: prima sul database, poi online insieme ai referti"
+
+nuovo; prima=$(commit_origine)
+esito=$(gira IMPORTA="$CAMBIA" VIDEO=true PROVE=true FINESTRA="echo no" PAUSA=1 DURATA=60 FUTSAL="$FS" IMPORTA_FS="$CON_SQL" CARICA_FS=false)
+[ "$esito" = 0 ] && [ "$(commit_origine)" = $((prima + 1)) ] && ! git -C "$T/o.git" show HEAD:src/futsal-dati.js | grep -q "referto nuovo"
+et $? "il database non risponde: il futsal resta com'era, il calcio esce lo stesso"
+grep -q "database non ha preso" "$T/uscita"; et $? "e lo dice"
+
+nuovo; prima=$(commit_origine)
+esito=$(gira IMPORTA=true VIDEO=true PROVE=true FINESTRA="echo no" PAUSA=1 DURATA=60 FUTSAL="$FS" IMPORTA_FS="$CON_SQL")
+[ "$(commit_origine)" = "$prima" ]; et $? "senza SUPABASE_DB_URL le quotazioni non si pubblicano a metà (app sì, database no)"
+
+nuovo; prima=$(commit_origine)
+# l'import perde l'ultimo referto (archivio perso, FSGC a metà)
+PERDE="python3 -c \"import re;p='src/futsal-dati.js';s=open(p).read();i=s.rindex('\n  {g:');j=s.index('\n',i+1);open(p,'w').write(s[:i]+s[j:])\""
+esito=$(gira IMPORTA=true VIDEO=true PROVE=true FINESTRA="echo no" PAUSA=1 DURATA=60 FUTSAL="$FS" IMPORTA_FS="$PERDE")
+[ "$(commit_origine)" = "$prima" ] && grep -q "referti sono scesi" "$T/uscita"; et $? "referti in meno dopo l'import: non si pubblica"
+
+nuovo; prima=$(commit_origine)
+esito=$(gira IMPORTA="$CAMBIA" VIDEO=true PROVE=true FINESTRA="echo no" PAUSA=1 DURATA=60 FUTSAL="$FS" IMPORTA_FS=false)
+[ "$esito" = 0 ] && [ "$(commit_origine)" = $((prima + 1)) ]; et $? "la FSGC del futsal non risponde: il calcio esce lo stesso"
 
 echo
 if [ $ko -eq 0 ]; then verde "tutto a posto ($ok controlli)"; else rosso "$ko problemi su $((ok+ko))"; fi

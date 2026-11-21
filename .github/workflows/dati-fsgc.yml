@@ -96,13 +96,30 @@ jobs:
           restore-keys: |
             tabellini-
 
-      # Calendario, risultati, referti e highlights, poi service worker nuovo,
+      # Lo stesso per il futsal (data/futsal-tabellini.json): senza, ogni giro
+      # riscaricherebbe tutti i referti della stagione.
+      - name: Riprendi l'archivio dei tabellini del futsal
+        uses: actions/cache@v4
+        with:
+          path: data/futsal-tabellini.json
+          key: futsal-tabellini-${{ github.run_id }}
+          restore-keys: |
+            futsal-tabellini-
+
+      # Calendario, risultati, referti e highlights del calcio, poi il futsal
+      # (referti, quotazioni e orari sul database), poi service worker nuovo,
       # calendario dei lock, prove, commit e push se ci sono dati nuovi: tutto
       # dentro scripts/importa-in-giro.sh, che nei giorni di partita resta
       # acceso e ricontrolla la FSGC ogni 20 minuti (lo spiega lui, in cima).
       # Se la FSGC non risponde al primo giro esce con errore: e' voluto, un
       # fallimento visibile e' meglio di dati vecchi spacciati per nuovi.
+      # SUPABASE_DB_URL (lo stesso del salvataggio notturno) serve al futsal:
+      # quotazioni e orari di chiusura vanno sul database prima che l'app esca
+      # (scripts/importa-futsal-giro.sh). Senza, il futsal non si pubblica e
+      # il calcio va avanti come sempre.
       - name: Importa, e nei giorni di partita resta di guardia
+        env:
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
         run: |
           git config user.name  'importatore FSGC'
           git config user.email 'importatore-fsgc@users.noreply.github.com'

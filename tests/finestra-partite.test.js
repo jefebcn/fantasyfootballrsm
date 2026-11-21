@@ -5,7 +5,7 @@
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { siGioca, finestre } from '../scripts/finestra-partite.mjs';
+import { siGioca, finestre, siGiocaFutsal } from '../scripts/finestra-partite.mjs';
 import { CALENDARIO } from '../src/calendario-dati.js';
 
 const a = (iso) => Date.parse(iso);
@@ -40,4 +40,17 @@ test("un'ora prima del primo calcio d'inizio si comincia a guardare", () => {
 
 test('un calendario con una data rotta non fa saltare tutto', () => {
   assert.doesNotThrow(() => siGioca(Date.now(), [[1, 'a', 'b', 'non-una-data', '', null, null]]));
+});
+
+// Il futsal: lunedì-giovedì sera, referti 15-22 ore dopo (data/futsal-orologio.json).
+// L'11ª: primo calcio d'inizio lunedì 23/11 alle 20:15, ultimo giovedì 26/11 alle 22:00.
+test("futsal: dal lunedi' sera dell'11a si guarda, un'ora prima del primo calcio d'inizio", () => {
+  assert.equal(siGiocaFutsal(a('2026-11-23T19:30:00+01:00')), true);
+  assert.equal(siGiocaFutsal(a('2026-11-23T12:00:00+01:00')), false);
+});
+test("futsal: il venerdi' dopo l'11a si resta accesi (i referti di giovedi' arrivano fino a sera)", () => {
+  assert.equal(siGiocaFutsal(a('2026-11-27T20:00:00+01:00')), true);
+});
+test("futsal: 30 ore dopo l'ultima partita la finestra si chiude", () => {
+  assert.equal(siGiocaFutsal(a('2026-11-28T05:00:00+01:00')), false);
 });

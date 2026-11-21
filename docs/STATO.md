@@ -16,8 +16,11 @@ Aggiornato: 2026-11-20 · tema: coda Buffer fino al 30/11, controllo giornaliero
 - Album Flickr nuovi (11ª giornata in poi): aggiungere l'indirizzo in `scripts/foto-flickr-futsal.ps1` e mandare ad Alex il comando completo; poi lui rilancia scaricamento, rinomina e catalogo.
 - `prove/futsal.cjs`: 1 errore vecchio (giornata 8 scritta a mano), non regressione.
 
+- Import automatico del futsal PRONTO ma attivo solo dopo il merge in main: `scripts/importa-futsal-giro.sh` dentro `importa-in-giro.sh` (dati-fsgc.yml), referti → app, quotazioni e orari → database con il secret SUPABASE_DB_URL (lo stesso del backup). Fino al lancio i referti li importo io a mano.
+- Date FSGC fissate solo fino alla 12ª (3/12): dalla 13ª l'app dice «date non ancora fissate» finché la FSGC non le pubblica (l'import automatico aggiorna app e database da solo).
+
 ## Prossimo passo consigliato
-- Lancio del 01/12: quando Alex dà il via, merge di main in `futsal`, poi `futsal` in main (conflitto su `docs/STATO.md` = riscrivere).
+- Lancio del 01/12: quando Alex dà il via, merge di main in `futsal`, poi `futsal` in main (conflitto su `docs/STATO.md` = riscrivere). Dopo il merge: lanciare a mano «Dati FSGC» (Run workflow) e controllare nel registro la riga «futsal:»; se dice SUPABASE_DB_URL non impostato, va aggiunto il secret.
 - Quando Google Play è pubblico: «Disponibile su Google Play» nelle grafiche e storia del lancio con i due store.
 
 ## Decisioni recenti di Alex ancora valide

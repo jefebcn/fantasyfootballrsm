@@ -57,3 +57,29 @@ test('ogni foto degli elenchi ha credito FSGC, indirizzo e taglio', () => {
     }
   }
 });
+
+// 21/11: le frasi giuste per il gol (Alex, «sistema tutto prima di domani»).
+// il referto FSGC elenca i gol dal piu' recente: qui si scrivono in ordine e si girano
+const partita = (eventi) => ({ g: 9, casa: 'cosmos', ospite: 'faetano', eventi: [...eventi].reverse(), titolari: [[], []], cambi: [] });
+const momento = (r, k) => fattiDelGol(r, k, { tutti: true }).fatti.find((f) => f.chiave === 'momento');
+
+test('«riapre la partita» solo se resta un gol da recuperare', () => {
+  const r = partita([['cosmos_21', 62, 'goal'], ['cosmos_21', 71, 'goal'], ['cosmos_19', 75, 'goal'], ['faetano_25', 85, 'goal']]);
+  assert.deepEqual([momento(r, 3).valore, momento(r, 3).testo], ['-2', 'gol della bandiera']);
+  const presto = partita([['cosmos_21', 10, 'goal'], ['cosmos_21', 20, 'goal'], ['cosmos_19', 25, 'goal'], ['faetano_25', 30, 'goal']]);
+  assert.equal(momento(presto, 3).testo, 'accorcia le distanze');
+  const uno = partita([['cosmos_21', 10, 'goal'], ['faetano_25', 30, 'goal']]);
+  assert.equal(momento(uno, 1).valore, 'PAREGGIO');
+  const due = partita([['cosmos_21', 10, 'goal'], ['cosmos_19', 20, 'goal'], ['faetano_25', 30, 'goal']]);
+  assert.deepEqual([momento(due, 2).valore, momento(due, 2).testo], ['-1', 'riapre la partita']);
+});
+
+test('la media è della squadra e il capocannoniere ha una riga sola', () => {
+  const r = partita([['cosmos_21', 62, 'goal'], ['cosmos_21', 71, 'goal']]);
+  const f = fattiDelGol(r, 1, { tutti: true }).fatti;
+  assert.ok(!f.some((x) => x.testo === 'gol a partita finora'));
+  const media = fattiDelGol(r, 1, { tutti: true }).fatti.find((x) => x.chiave === 'media');
+  if (media) assert.equal(media.testo, 'media gol della squadra');
+  const numeri = f.filter((x) => x.chiave === 'stagione' || x.chiave === 'marcatori');
+  assert.equal(numeri.length, 1);
+});

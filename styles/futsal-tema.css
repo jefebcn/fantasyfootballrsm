@@ -245,3 +245,7 @@
 .fs-mgr,.fs-tab .fs-tab-g .fs-mgr{position:relative;flex:none;width:30px;margin-right:5px;display:inline-block;line-height:0}
 .fs-mgr .fs-mg{width:30px}
 .fs-mgr .rl,.fs-tab .fs-tab-g .fs-mgr .rl{position:absolute;right:-6px;bottom:-4px;width:17px;height:17px;display:grid;place-items:center;padding:0;font:800 9.5px/1 var(--font-body);border:1.5px solid #fff}
+/* niente spostamenti di lato (Alex, 21/11): la pagina scorre solo in verticale e i titoli lunghi vanno a capo */
+[data-sport="futsal"] .a-body{overflow-x:hidden}
+[data-sport="futsal"] .a-sec{flex-wrap:wrap}
+[data-sport="futsal"] .a-sec b{display:block;white-space:normal;min-width:0}

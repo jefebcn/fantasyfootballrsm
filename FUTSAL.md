@@ -230,6 +230,21 @@ solo il tipo di classifica.
   più punti nella giornata (3 punti), pareggio a punteggio uguale (1 punto).
   Non servono fasce di conversione in gol.
 
+La lega a somma conta **dalla giornata in cui nasce** (la prima con le
+formazioni ancora aperte), non dalla 1ª: chi entra in una lega nuova non si
+trova davanti chi giocava da settembre. Ci si entra col codice o col link
+«Invita» (`?futsal-codice=…`); una testa a testa avviata è chiusa e non si
+invita più. (futsal-06, 21/11/2026)
+
+### 10.2-ter Leghe pubbliche
+
+Come nel calcio (013, 014): la apre solo chi amministra l'app, scheda «Admin»
+delle leghe; ci entra chiunque dall'elenco «Pubbliche», senza codice, con la
+squadra che ha già. Va a somma dalla giornata in cui nasce, ha un massimo di
+partecipanti e un premio per il primo scritto da chi l'apre (l'app lo mostra,
+non lo gestisce). Il link «Invita» non porta codici (`?futsal-pubblica=<id>`).
+(futsal-06, 21/11/2026)
+
 ### 10.3 Migliore della giornata
 
 A ogni giornata la squadra con il punteggio più alto fra tutti gli iscritti

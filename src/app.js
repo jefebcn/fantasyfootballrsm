@@ -10,6 +10,7 @@ import { VERSIONE } from './versione.js';
 import { apriNuovaPassword, segnaRecupero, recuperoInCorso } from './views/nuova-password.js';
 import { futsalAttivo, leggiInterruttore, selettore, menuFutsal, formazioneMancante, maskFs, COLORE_BARRA } from './views/futsal.js';
 import { logoFs, caricaFs } from './futsal-grafica.js';
+import * as FS from './futsal-server.js';
 
 const root = document.getElementById('app');
 let current = null; // { view, params }
@@ -468,7 +469,7 @@ function mostraRitornoFallito(err) {
 /** Il ritorno dal link e-mail porta i token nel frammento: ripulisce l'URL senza toccare il router. */
 function cleanAuthUrl() {
   const dirtyHash = location.hash && !location.hash.startsWith('#/');
-  const dirtyQuery = /[?&](code|error|error_description|invito|da|futsal)=/.test(location.search);
+  const dirtyQuery = /[?&](code|error|error_description|invito|da|futsal|futsal-codice|futsal-pubblica)=/.test(location.search);
   if (dirtyHash || dirtyQuery) history.replaceState(null, '', location.pathname + (dirtyHash ? '' : location.hash));
 }
 
@@ -594,6 +595,8 @@ async function boot() {
   if (invito) S.ricordaInvito(invito);
   // e chi l'ha mandato, per i Reclutatori (023)
   if (qs.get('da')) S.ricordaReclutatore(qs.get('da'));
+  // e l'invito a una lega del futsal (futsal-06)
+  FS.ricordaInvito(qs);
   const callbackError = authCallbackError();
   // Il ritorno dal link «Password dimenticata?» porta type=recovery: va letto
   // PRIMA di S.init(), che consuma il frammento coi token e lo ripulisce.

@@ -222,8 +222,9 @@ export const futsalHome = {
         <a class="vr" href="#/futsal/coppa">${icon('cup')}<span class="nm"><b>Coppa Titano</b><span>gironi dalla ${COPPA.preliminari[0]}ª, finale alla ${COPPA.finale}ª</span></span><span class="ev"></span>${icon('chev', 'ic sm')}</a>
       </div>
       ${sec('I miei campionati')}
-      ${srv.leghe.length ? `<div class="a-card fs-list">${srv.leghe.map((l) => `<a class="vr" href="#/futsal/lega/${l.id}">${icon(l.tipo === 'testa' ? 'users' : 'cup')}<span class="nm"><b>${esc(l.nome)}</b><span>${l.tipo === 'testa' ? 'testa a testa' : 'classifica a somma'} · ${FS.membriDi(l.id).length} squadre</span></span><span class="ev"></span>${icon('chev', 'ic sm')}</a>`).join('')}</div>` : ''}
-      <div class="a-card fs-crea"><b>Crea o unisciti a un campionato con gli amici</b><div><a class="a-btn" href="#/futsal/leghe">Crea campionato</a><a class="a-btn sec" href="#/futsal/leghe">Unisciti</a></div></div>` : ''}
+      ${FS.invitoInSospeso() ? `<a class="a-card fs-hero fs-invitato" href="#/futsal/leghe" style="text-decoration:none;color:inherit"><h3>Hai un invito in una lega</h3><p class="small muted">Tocca per entrare con la tua squadra.</p></a>` : ''}
+      ${srv.leghe.length ? `<div class="a-card fs-list">${srv.leghe.map(rigaLega).join('')}</div>` : ''}
+      <div class="a-card fs-crea"><b>Entra in una lega pubblica o creane una con gli amici</b><div><a class="a-btn" href="#/futsal/leghe" data-vai-leghe="pubbliche">Leghe pubbliche</a><a class="a-btn sec" href="#/futsal/leghe" data-vai-leghe="private">Con gli amici</a></div></div>` : ''}
       ${ultima ? leader(ultima) : ''}
       ${sec('Le partite', `${n}ª giornata`)}
       <div class="a-card fs-list">${F.PARTITE.filter((p) => p.g === n).map((p) => `<div class="fs-match">${stemma(p.casa)}<b>${esc(nomeSq(p.casa))}</b><span class="fs-ora">${p.quando ? timeIt(p.quando) : '–'}<small>${p.quando ? dateIt(p.quando) : ''}</small></span><b class="r">${esc(nomeSq(p.ospite))}</b>${stemma(p.ospite)}</div>`).join('')}
@@ -231,7 +232,10 @@ export const futsalHome = {
       ${nuovo ? '' : comeSiGioca()}
     </main>`;
   },
-  mount(root, ctx) { caricaE(ctx); montaIscrizione(root, ctx); },
+  mount(root, ctx) {
+    caricaE(ctx); montaIscrizione(root, ctx);
+    root.querySelectorAll('[data-vai-leghe]').forEach((a) => a.addEventListener('click', () => { vistaLeghe = a.dataset.vaiLeghe; }));
+  },
 };
 
 /** I leader della giornata: i migliori per punti e per plusvalenza. */
@@ -799,7 +803,8 @@ export const futsalRegolamento = {
         <table>${row('Generale', 'somma dei punti di tutte le giornate')}${row('Tifosi', 'chi ha la stessa squadra del cuore')}${SERIE.map((x) => row(x.nome, `giornate ${x.da}–${x.a}`)).join('')}${row('Coppa Titano', `gironi e tabellone, ${COPPA.preliminari[0]}ª–${COPPA.finale}ª`)}</table>
         <p>Le <b>Serie</b> sono come le Champions Series di Dunkest: ognuna ha la sua classifica, che riparte da zero. A parità conta la media per giornata, poi la giornata migliore.</p>
         <p><b>Coppa Titano.</b> Il sorteggio si fa alla chiusura della ${COPPA.preliminari[0]}ª: entra chi ha una squadra, servono almeno 8 iscritti. Gironi con 3 punti a vittoria, poi eliminazione diretta con andata e ritorno e finale secca. Con 50 o più iscritti ci sono anche i preliminari.</p>
-        <p><b>Leghe con gli amici.</b> Una lega è un gruppo con la sua classifica: <b>a somma</b> o <b>testa a testa</b> (ogni giornata contro un altro del gruppo, 3 punti a chi fa di più). Con un numero dispari, chi resta fuori affronta la media del gruppo, come la «Dunkest Team».</p>`)}
+        <p><b>Leghe con gli amici.</b> Una lega è un gruppo con la sua classifica: <b>a somma</b> (conta dalla giornata in cui nasce la lega) o <b>testa a testa</b> (ogni giornata contro un altro del gruppo, 3 punti a chi fa di più). Con un numero dispari, chi resta fuori affronta la media del gruppo, come la «Dunkest Team». Si entra col codice o col link «Invita».</p>
+        <p><b>Leghe pubbliche.</b> Aperte a tutti, senza codice: si entra dall'elenco con la squadra che hai già e vince chi fa più punti dalla giornata in cui la lega è nata.</p>`)}
       ${cap('10 · Arrivare a stagione iniziata', `<p>Ci si iscrive quando si vuole: si parte con ${R.budget} crediti e alle quotazioni del momento. Le giornate già giocate valgono 0 punti in classifica generale, ma le Serie e le leghe nuove ripartono da zero.</p>`)}
     </main>`;
   },
@@ -883,36 +888,108 @@ export const futsalCoppa = {
   mount(root, ctx) { caricaE(ctx); },
 };
 
-// ---------------------------------------------------------------- leghe con gli amici
+// ---------------------------------------------------------------- leghe: pubbliche, con gli amici, admin
+//
+// Come nel calcio (src/views/leghe.js): tre schede. Le PUBBLICHE le apre solo
+// chi amministra l'app e ci entra chiunque dall'elenco, senza codice; le
+// PRIVATE si creano e si entrano col codice; ADMIN (solo amministratori) ha
+// il modulo per aprire una pubblica. Nel futsal la rosa è già di ognuno, quindi
+// una lega è solo un gruppo con la sua classifica (futsal-06).
+let vistaLeghe = null;       // scheda scelta a mano; null = la sceglie la schermata
+let pubblicheFs = null;      // elenco dal server: null = non ancora chiesto
+let chiedoPubbliche = false;
+const tipoLega = (l) => (l.pubblica ? 'lega pubblica' : l.tipo === 'testa' ? 'testa a testa' : 'a somma di punti');
+const premioDi = (l) => (l.premi || []).find((p) => Number(p.posto) === 1)?.premio || '';
+const dalla = (l) => l.dalla_giornata || 1;
+const rigaLega = (l) => `<a class="vr" href="#/futsal/lega/${l.id}">${icon(l.pubblica ? 'globe' : l.tipo === 'testa' ? 'users' : 'cup')}<span class="nm"><b>${esc(l.nome)}</b><span>${tipoLega(l)} · ${FS.membriDi(l.id).length} squadre</span></span><span class="ev"></span>${icon('chev', 'ic sm')}</a>`;
+
+function schedaPubbliche(inv) {
+  if (pubblicheFs === null) return `<p class="small muted fs-nota">Sto guardando quali leghe pubbliche ci sono…</p>`;
+  if (!pubblicheFs.length) return `<div class="a-card fs-hero"><h3>Per ora non c'è una lega pubblica aperta</h3><p class="small muted">Intanto puoi giocare con gli amici: crei una lega e mandi il link d'invito.</p><button class="a-btn sec" data-vleghe="private">Gioca con gli amici</button></div>`;
+  const carta = (l) => {
+    const pieno = l.membri >= l.max_membri, premio = premioDi(l);
+    return `<div class="a-card fs-pub${inv?.pubblica === l.id ? ' fs-invitato' : ''}">
+      <div class="fs-stato"><div><b>${esc(l.nome)}</b><span>${l.membri}/${l.max_membri} squadre · punti dalla ${dalla(l)}ª giornata</span></div>${icon('globe')}</div>
+      ${premio ? `<p class="fs-premio">${icon('cup', 'ic sm')}<span><b>1° posto:</b> ${esc(premio)}</span></p>` : ''}
+      ${l.dentro ? `<a class="a-btn sec" href="#/futsal/lega/${l.id}" style="text-decoration:none">Sei dentro · apri la classifica</a>`
+        : `<button class="a-btn" data-entra-pub="${l.id}" ${pieno ? 'disabled' : ''}>${pieno ? 'Al completo' : 'Entra nella lega'}</button>`}</div>`;
+  };
+  return `${sec('Leghe aperte a tutti', String(pubblicheFs.length))}${pubblicheFs.map(carta).join('')}
+    <p class="small muted fs-nota">Nelle leghe pubbliche non serve il codice: entri con la squadra che hai già, e vince chi fa più punti dalla giornata in cui la lega è nata.</p>`;
+}
+
+function schedaPrivate(srv, inv) {
+  const mie = srv.leghe.filter((l) => !l.pubblica);
+  return `${inv?.codice ? `<div class="a-card fs-hero fs-invitato"><h3>Ti hanno invitato in una lega</h3><p class="small muted">Codice <b class="fs-codice">${esc(inv.codice)}</b>: tocca per entrare con la tua squadra.</p><button class="a-btn" id="fs-invito-entra">Entra nella lega</button></div>` : ''}
+    ${mie.length ? `${sec('Le mie leghe con gli amici')}<div class="a-card fs-list">${mie.map(rigaLega).join('')}</div>` : ''}
+    ${sec('Crea una lega con gli amici')}
+    <div class="a-card fs-form"><input class="field-input" id="fs-lnome" placeholder="Nome della lega" maxlength="40" autocomplete="off">
+      <div class="seg seg-cls" id="fs-ltipo"><button data-tipo="somma" class="on">A somma</button><button data-tipo="testa">Testa a testa</button></div>
+      <p class="small muted">A somma: vince chi fa più punti dalla giornata in cui nasce la lega. Testa a testa: ogni giornata contro un altro del gruppo, 3 punti a chi fa di più; il calendario si fissa quando la avvii, e da lì non entra più nessuno.</p>
+      <button class="a-btn" id="fs-crea">Crea</button></div>
+    ${sec('Unisciti con un codice')}
+    <div class="a-card fs-form"><input class="field-input" id="fs-codice" placeholder="Codice (es. F3A9C1)" maxlength="8" autocomplete="off" style="text-transform:uppercase" value="${esc(inv?.codice || '')}"><button class="a-btn sec" id="fs-entra">Unisciti</button></div>`;
+}
+
+function schedaAdmin(srv) {
+  const mie = srv.leghe.filter((l) => l.pubblica && l.creata_da === FS.io()?.user_id);
+  return `${mie.length ? `${sec('Le pubbliche che hai aperto')}<div class="a-card fs-list">${mie.map(rigaLega).join('')}</div>` : ''}
+    ${sec('Apri una lega pubblica')}
+    <div class="a-card fs-form">
+      <p class="small muted" style="margin:0"><b>Come funziona.</b> Ci entra chiunque, senza codice, con la squadra che ha già. Va a somma di punti dalla prossima giornata: niente scontri diretti, vince chi fa di più. I premi sono una promessa fra persone: l'app li mostra, non li gestisce.</p>
+      <label class="lbl" for="fs-pnome">Nome della lega</label><input class="field-input" id="fs-pnome" placeholder="es. Titano Futsal Open" maxlength="40" autocomplete="off">
+      <label class="lbl" for="fs-pmax">Massimo partecipanti</label><input class="field-input" id="fs-pmax" type="number" value="200" min="2" max="1000" inputmode="numeric">
+      <label class="lbl" for="fs-ppremio">Premio per il primo <span class="muted">(facoltativo)</span></label><input class="field-input" id="fs-ppremio" placeholder="es. una cena offerta" maxlength="120" autocomplete="off">
+      <button class="a-btn" id="fs-crea-pub">Apri la lega pubblica</button></div>`;
+}
+
 export const futsalLeghe = {
-  title: 'Leghe futsal', appbar: 'futsal', sub: () => 'Campionati con gli amici',
+  title: 'Leghe futsal', appbar: 'futsal', sub: () => 'Leghe pubbliche e con gli amici',
   render() {
     const srv = FS.stato();
     if (!srv.caricato) return `<main class="a-body fs">${caricaFs('Carico le leghe…')}</main>`;
     if (!srv.attivo) return nonAttivo();
-    if (!FS.io()) return `<main class="a-body fs">${iscrizione('Per creare o entrare in una lega, crea la tua squadra')}<p class="small muted fs-nota">Una lega è un gruppo di amici con la sua classifica, con la stessa squadra della classifica generale.</p></main>`;
+    if (!FS.io()) return `<main class="a-body fs">${iscrizione('Per creare o entrare in una lega, crea la tua squadra')}<p class="small muted fs-nota">Una lega è un gruppo con la sua classifica, con la stessa squadra della classifica generale: pubblica e aperta a tutti, o fra amici con un codice.</p></main>`;
+    const inv = FS.invitoInSospeso();
+    const admin = Stato.isAdmin();
+    const libere = Array.isArray(pubblicheFs) && pubblicheFs.some((l) => !l.dentro && l.membri < l.max_membri);
+    let vista = vistaLeghe || (inv?.pubblica ? 'pubbliche' : inv?.codice ? 'private' : srv.leghe.some((l) => !l.pubblica) || (Array.isArray(pubblicheFs) && !libere && !pubblicheFs.some((l) => l.dentro)) ? 'private' : 'pubbliche');
+    if (vista === 'admin' && !admin) vista = 'private';
+    const tab = (k, t) => `<button data-vleghe="${k}" class="${vista === k ? 'on' : ''}">${t}</button>`;
     return `<main class="a-body fs">
-      ${srv.leghe.length ? `${sec('I miei campionati')}<div class="a-card fs-list">${srv.leghe.map((l) => `<a class="vr" href="#/futsal/lega/${l.id}">${icon(l.tipo === 'testa' ? 'users' : 'cup')}<span class="nm"><b>${esc(l.nome)}</b><span>${l.tipo === 'testa' ? 'testa a testa' : 'a somma di punti'} · ${FS.membriDi(l.id).length} squadre</span></span><span class="ev"></span>${icon('chev', 'ic sm')}</a>`).join('')}</div>` : ''}
-      ${sec('Crea un campionato')}
-      <div class="a-card fs-form"><input class="field-input" id="fs-lnome" placeholder="Nome del campionato" maxlength="40" autocomplete="off">
-        <div class="seg seg-cls" id="fs-ltipo"><button data-tipo="somma" class="on">Classifica a somma</button><button data-tipo="testa">Testa a testa</button></div>
-        <p class="small muted">A somma: vince chi fa più punti. Testa a testa: ogni giornata contro un altro del gruppo, 3 punti a chi fa di più. Il calendario si fissa quando lo avvii, e da lì non entra più nessuno.</p>
-        <button class="a-btn" id="fs-crea">Crea</button></div>
-      ${sec('Unisciti con un codice')}
-      <div class="a-card fs-form"><input class="field-input" id="fs-codice" placeholder="Codice (es. F3A9C1)" maxlength="8" autocomplete="off" style="text-transform:uppercase"><button class="a-btn sec" id="fs-entra">Unisciti</button></div>
+      <div class="seg seg-cls fs-tabs-leghe" role="tablist">${tab('pubbliche', 'Pubbliche')}${tab('private', 'Private')}${admin ? tab('admin', 'Admin') : ''}</div>
+      ${vista === 'pubbliche' ? schedaPubbliche(inv) : vista === 'admin' ? schedaAdmin(srv) : schedaPrivate(srv, inv)}
     </main>`;
   },
   mount(root, ctx) {
     caricaE(ctx);
     montaIscrizione(root, ctx);
+    if (FS.stato().caricato && FS.io() && pubblicheFs === null && !chiedoPubbliche) {
+      chiedoPubbliche = true;
+      FS.leghePubbliche().then((l) => { pubblicheFs = l; }).catch(() => { pubblicheFs = []; })
+        .finally(() => { chiedoPubbliche = false; if (location.hash === '#/futsal/leghe') ctx.render(); });
+    }
+    const vaiInLega = (id) => { pubblicheFs = null; vistaLeghe = null; ctx.go(`futsal/lega/${id}`); };
+    root.querySelectorAll('[data-vleghe]').forEach((b) => b.addEventListener('click', () => { vistaLeghe = b.dataset.vleghe; ctx.render(); }));
+    root.querySelectorAll('[data-entra-pub]').forEach((b) => b.addEventListener('click', async () => {
+      b.disabled = true;
+      try { const id = await FS.entraLegaPubblica(b.dataset.entraPub); if (FS.invitoInSospeso()?.pubblica === id) FS.dimenticaInvito(); ctx.toast('Sei dentro'); vaiInLega(id); } catch (err) { ctx.toast(err.message); b.disabled = false; }
+    }));
     let tipo = 'somma';
     root.querySelector('#fs-ltipo')?.addEventListener('click', (e) => { const b = e.target.closest('[data-tipo]'); if (!b) return; tipo = b.dataset.tipo; root.querySelectorAll('#fs-ltipo button').forEach((x) => x.classList.toggle('on', x === b)); });
     root.querySelector('#fs-crea')?.addEventListener('click', async () => {
-      const nome = root.querySelector('#fs-lnome').value.trim(); if (nome.length < 2) { ctx.toast('Scrivi il nome del campionato'); return; }
-      try { const l = await FS.creaLega(nome, tipo); ctx.go(`futsal/lega/${l.id}`); } catch (err) { ctx.toast(err.message); }
+      const nome = root.querySelector('#fs-lnome').value.trim(); if (nome.length < 2) { ctx.toast('Scrivi il nome della lega'); return; }
+      try { const l = await FS.creaLega(nome, tipo); vaiInLega(l.id); } catch (err) { ctx.toast(err.message); }
     });
-    root.querySelector('#fs-entra')?.addEventListener('click', async () => {
-      try { const id = await FS.entraLega(root.querySelector('#fs-codice').value); ctx.go(`futsal/lega/${id}`); } catch (err) { ctx.toast(err.message); }
+    const entraCodice = async (codice) => {
+      try { const id = await FS.entraLega(codice); if (FS.invitoInSospeso()?.codice) FS.dimenticaInvito(); vaiInLega(id); } catch (err) { if (FS.invitoInSospeso()?.codice === String(codice).trim().toUpperCase()) FS.dimenticaInvito(); ctx.toast(err.message); }
+    };
+    root.querySelector('#fs-entra')?.addEventListener('click', () => entraCodice(root.querySelector('#fs-codice').value));
+    root.querySelector('#fs-invito-entra')?.addEventListener('click', () => entraCodice(FS.invitoInSospeso()?.codice || ''));
+    root.querySelector('#fs-crea-pub')?.addEventListener('click', async () => {
+      const nome = root.querySelector('#fs-pnome').value.trim(); if (nome.length < 2) { ctx.toast('Scrivi il nome della lega'); return; }
+      const max = Number(root.querySelector('#fs-pmax').value) || 200;
+      try { const l = await FS.creaLegaPubblica(nome, max, root.querySelector('#fs-ppremio').value); ctx.toast('Lega pubblica aperta'); vaiInLega(l.id); } catch (err) { ctx.toast(err.message); }
     });
   },
 };
@@ -923,12 +1000,15 @@ export const futsalLega = {
     const srv = FS.stato();
     if (!srv.caricato) return `<main class="a-body fs">${caricaFs('Carico la lega…')}</main>`;
     const l = srv.leghe.find((x) => x.id === ctx.params.id);
-    if (!l) return `<main class="a-body fs">${empty('Lega non trovata.', '<a class="a-btn" href="#/futsal/leghe" style="text-decoration:none">I tuoi campionati</a>')}</main>`;
+    if (!l) return `<main class="a-body fs">${empty('Lega non trovata.', '<a class="a-btn" href="#/futsal/leghe" style="text-decoration:none">Le tue leghe</a>')}</main>`;
     const membri = FS.membriDi(l.id);
     const mia = l.creata_da === FS.io()?.user_id;
+    const premio = premioDi(l);
     let corpo;
     if (l.tipo === 'somma') {
-      corpo = `<div class="a-card fs-list fs-classifica">${classificaSomma(membri, F.giocate(), FS.punti).map((r) => `<div class="vr${r.id === FS.io()?.user_id ? ' fs-mia' : ''}"><span class="fs-pos">${r.posto}</span>${crest({ color: squadraDi(r.id).colore, initials: squadraDi(r.id).iniziali }, 'fs-crest')}<span class="nm"><b>${esc(squadraDi(r.id).squadra)}</b><span>media ${fmt(r.media)}</span></span><span class="fv">${fmt(r.totale)}</span></div>`).join('')}</div>`;
+      const giornate = F.giocate().filter((g) => g >= dalla(l));
+      corpo = `${!giornate.length ? `<p class="small muted fs-nota">La classifica parte dalla ${dalla(l)}ª giornata: i punti arrivano con i referti.</p>` : ''}
+        <div class="a-card fs-list fs-classifica">${classificaSomma(membri, giornate, FS.punti).map((r) => `<div class="vr${r.id === FS.io()?.user_id ? ' fs-mia' : ''}"><span class="fs-pos">${r.posto}</span>${crest({ color: squadraDi(r.id).colore, initials: squadraDi(r.id).iniziali }, 'fs-crest')}<span class="nm"><b>${esc(squadraDi(r.id).squadra)}</b><span>media ${fmt(r.media)}</span></span><span class="fv">${fmt(r.totale)}</span></div>`).join('')}</div>`;
     } else if (!l.avvio_giornata) {
       corpo = `<div class="a-card fs-hero"><h3>Il calendario non è ancora fissato</h3><p class="small muted">Quando ci sono tutti, ${mia ? 'avvia la lega' : 'chi l\'ha creata la avvia'}: gli scontri partono dalla prossima giornata aperta e chi arriva dopo non entra più.</p>${mia ? '<button class="a-btn" id="fs-avvia">Avvia la lega</button>' : ''}</div>
         <div class="a-card fs-list">${membri.map((id) => rigaSquadra(id, '')).join('')}</div>`;
@@ -939,8 +1019,15 @@ export const futsalLega = {
       corpo = `<div class="a-card fs-list fs-classifica">${classifica.map((r) => `<div class="vr${r.id === FS.io()?.user_id ? ' fs-mia' : ''}"><span class="fs-pos">${r.posto}</span>${crest({ color: squadraDi(r.id).colore, initials: squadraDi(r.id).iniziali }, 'fs-crest')}<span class="nm"><b>${esc(squadraDi(r.id).squadra)}</b><span>${r.vinte}V ${r.pari}N ${r.perse}P · ${fmt(r.fatti)} fatti</span></span><span class="fv">${r.punti}</span></div>`).join('')}</div>
         ${prossima ? `${sec(`${prossima.giornata}ª giornata`)}<div class="a-card fs-list">${prossima.sfide.map(sfidaHtml).join('')}</div>` : ''}`;
     }
+    // si invita finché si può entrare: una testa a testa avviata è chiusa
+    const invitabile = !(l.tipo === 'testa' && l.avvio_giornata);
+    const quante = l.pubblica ? `${membri.length}/${l.max_membri} squadre` : `${membri.length} squadre`;
+    const quando = l.tipo === 'somma' ? ` · punti dalla ${dalla(l)}ª` : l.avvio_giornata ? ` · dalla ${l.avvio_giornata}ª` : '';
     return `<main class="a-body fs">
-      <div class="a-card fs-stato"><div><b>${esc(l.nome)}</b><span>${l.tipo === 'testa' ? 'testa a testa' : 'a somma di punti'} · ${membri.length} squadre</span></div><span class="fs-codice">${esc(l.codice)}</span></div>
+      <div class="a-card fs-stato fs-stato-lega"><div><b>${esc(l.nome)}</b><span>${tipoLega(l)} · ${quante}${quando}</span></div>
+        ${l.pubblica ? `<span class="small muted">Aperta a tutti</span>` : `<span class="fs-codice">${esc(l.codice)}</span>`}</div>
+      ${premio ? `<p class="fs-premio">${icon('cup', 'ic sm')}<span><b>1° posto:</b> ${esc(premio)}</span></p>` : ''}
+      ${invitabile ? `<button class="a-btn sec" id="fs-invita">${icon('share', 'ic sm')}Invita ${l.pubblica ? 'nella lega' : 'con il codice'}</button>` : ''}
       ${corpo}
       <button class="a-btn ghost" id="fs-esci">Esci dalla lega</button>
     </main>`;
@@ -948,7 +1035,15 @@ export const futsalLega = {
   mount(root, ctx) {
     caricaE(ctx);
     root.querySelector('#fs-avvia')?.addEventListener('click', async () => { try { const g = await FS.avviaLega(ctx.params.id); ctx.toast(`Si parte dalla ${g}ª giornata`); ctx.render(); } catch (err) { ctx.toast(err.message); } });
-    root.querySelector('#fs-esci')?.addEventListener('click', async () => { if (!confirm('Esci dalla lega?')) return; try { await FS.esciLega(ctx.params.id); ctx.go('futsal/leghe'); } catch (err) { ctx.toast(err.message); } });
+    root.querySelector('#fs-esci')?.addEventListener('click', async () => { if (!confirm('Esci dalla lega?')) return; try { await FS.esciLega(ctx.params.id); pubblicheFs = null; ctx.go('futsal/leghe'); } catch (err) { ctx.toast(err.message); } });
+    root.querySelector('#fs-invita')?.addEventListener('click', async () => {
+      const l = FS.stato().leghe.find((x) => x.id === ctx.params.id); if (!l) return;
+      const link = FS.linkInvito(l);
+      const text = l.pubblica
+        ? `Entra con me nella lega pubblica "${l.nome}" del FantaFutsal, il fanta del futsal sammarinese: è aperta a tutti, ti basta iscriverti — ${link}`
+        : `Entra nella mia lega "${l.nome}" del FantaFutsal con il codice ${l.codice} — ${link}`;
+      if (navigator.share) { try { await navigator.share({ text }); } catch { /* annullato */ } } else { try { await navigator.clipboard?.writeText(text); ctx.toast('Invito copiato: incollalo dove vuoi'); } catch { ctx.toast(text); } }
+    });
   },
 };
 

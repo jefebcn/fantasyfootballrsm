@@ -80,6 +80,33 @@ export async function creaLega(nome, tipo) { const l = deve(await remote.client(
 export async function entraLega(codice) { const id = deve(await remote.client().rpc('futsal_entra_lega', { p_codice: codice })); await carica({ forza: true }); return id; }
 export async function esciLega(id) { deve(await remote.client().rpc('futsal_esci_lega', { p_lega: id })); await carica({ forza: true }); }
 export async function avviaLega(id) { const g = deve(await remote.client().rpc('futsal_avvia_lega', { p_lega: id })); await carica({ forza: true }); return g; }
+// ---- leghe pubbliche (futsal-06): le apre l'amministratore, si entra dall'elenco senza codice
+export async function leghePubbliche() { return deve(await remote.client().rpc('futsal_leghe_pubbliche')) || []; }
+export async function creaLegaPubblica(nome, max, premio) {
+  const premi = premio?.trim() ? [{ posto: 1, premio: premio.trim() }] : [];
+  const l = deve(await remote.client().rpc('futsal_crea_lega_pubblica', { p_nome: nome, p_max: max, p_premi: premi }));
+  await carica({ forza: true }); return l;
+}
+export async function entraLegaPubblica(id) { const r = deve(await remote.client().rpc('futsal_entra_lega_pubblica', { p_lega: id })); await carica({ forza: true }); return r; }
+
+// ---- inviti: ?futsal-codice=F12AB3 (lega fra amici) o ?futsal-pubblica=<id>, letti all'avvio
+const INVITO = 'fcs:futsal-invito';
+export function ricordaInvito(qs) {
+  const codice = qs.get('futsal-codice'), pubblica = qs.get('futsal-pubblica');
+  const v = codice && /^[A-Za-z0-9]{4,8}$/.test(codice) ? { codice: codice.toUpperCase() } : pubblica && /^[A-Za-z0-9-]{6,64}$/.test(pubblica) ? { pubblica } : null;
+  if (!v) return;
+  try { localStorage.setItem(INVITO, JSON.stringify(v)); } catch { /* senza storage niente invito */ }
+}
+export function invitoInSospeso() { try { return JSON.parse(localStorage.getItem(INVITO) || 'null'); } catch { return null; } }
+export function dimenticaInvito() { try { localStorage.removeItem(INVITO); } catch { /* niente */ } }
+/** Il link da condividere per una lega: porta dritto alle leghe del futsal. */
+export function linkInvito(lega) {
+  const u = new URL(S.linkInvito());
+  if (lega.pubblica) u.searchParams.set('futsal-pubblica', lega.id); else u.searchParams.set('futsal-codice', lega.codice);
+  u.hash = '#/futsal/leghe';
+  return u.toString();
+}
+
 export const membriDi = (lega) => st.membri.filter((m) => m.lega_id === lega).sort((a, b) => String(a.entrato_at).localeCompare(String(b.entrato_at))).map((m) => m.user_id);
 
 // ---- punteggi: la formazione salvata passata al motore, una volta per giornata

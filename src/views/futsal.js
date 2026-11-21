@@ -147,12 +147,39 @@ const iscrizione = (titolo = 'Crea la tua squadra') => `<div class="a-card fs-is
   <input class="field-input" id="fs-squadra" placeholder="Nome della tua squadra" maxlength="30" autocomplete="off">
   <select class="select" id="fs-cuore" aria-label="Squadra del cuore"><option value="">Squadra del cuore (facoltativa)</option>${F.SQUADRE.map((s) => `<option value="${s.id}">${esc(s.nome)}</option>`).join('')}</select>
   <button class="a-btn big" id="fs-iscriviti">Iscriviti e crea la squadra</button></div>`;
+// I colori delle squadre: chi si iscrive ne riceve uno dal nome (prima tutte uguali), e lo cambia quando vuole.
+const COLORI = ['#1B84C6', '#D7263D', '#2E933C', '#F4A300', '#6A4C93', '#0B3C5D', '#E85D04', '#00A6A6', '#8B5E34', '#C2185B', '#4E7D1E', '#111111'];
+const coloreDi = (nome) => COLORI[[...String(nome)].reduce((h, c) => (h * 31 + c.charCodeAt(0)) >>> 0, 7) % COLORI.length];
+
+/** Il foglio «La tua squadra»: nome e colore. */
+function foglioSquadra(ctx) {
+  const io = FS.io(); if (!io) return;
+  let scelto = io.colore;
+  const disegna = () => ctx.sheet(`<div class="fs-modale"><h3>La tua squadra</h3>
+    <p class="sheet-sub">Il nome e il colore li vedono tutti in classifica e nelle leghe.</p>
+    <input class="field-input" id="fs-nuovo-nome" maxlength="30" value="${esc(io.squadra)}" autocomplete="off" aria-label="Nome della squadra">
+    <div class="fs-colori" role="radiogroup" aria-label="Colore">${COLORI.map((c) => `<button type="button" role="radio" aria-checked="${c === scelto}" aria-label="Colore ${c}" data-colore="${c}" class="${c === scelto ? 'on' : ''}" style="background:${c}"></button>`).join('')}</div>
+    <button class="a-btn big" id="fs-salva-squadra">Salva</button></div>`);
+  disegna();
+  const sh = document.getElementById('sheet');
+  sh.onclick = async (e) => {
+    const c = e.target.closest('[data-colore]');
+    if (c) { const nome = sh.querySelector('#fs-nuovo-nome').value; scelto = c.dataset.colore; disegna(); sh.querySelector('#fs-nuovo-nome').value = nome; return; }
+    if (!e.target.closest('#fs-salva-squadra')) return;
+    const nome = sh.querySelector('#fs-nuovo-nome').value.trim();
+    if (nome.length < 2) { ctx.toast('Scrivi il nome della squadra'); return; }
+    e.target.disabled = true;
+    try { await FS.aggiornaSquadra(nome, scelto); ctx.sheet(null); ctx.toast('Squadra aggiornata'); ctx.render(); }
+    catch (err) { ctx.toast(err.message); e.target.disabled = false; }
+  };
+}
+
 function montaIscrizione(root, ctx) {
   root.querySelector('#fs-iscriviti')?.addEventListener('click', async (e) => {
     const nome = root.querySelector('#fs-squadra').value.trim();
     if (nome.length < 2) { ctx.toast('Scrivi il nome della squadra'); return; }
     e.target.disabled = true;
-    try { await FS.iscriviti(nome, '#1B84C6', root.querySelector('#fs-cuore').value || null); { const k = daPreparare() || F.giornataCorrente(); ctx.toast(mercato(k).aperto ? 'Iscritto: ora compra la tua rosa' : `Iscritto: la tua prima giornata è la ${k}ª`); } ctx.go('futsal/squadra'); } catch (err) { ctx.toast(err.message); e.target.disabled = false; }
+    try { await FS.iscriviti(nome, coloreDi(nome), root.querySelector('#fs-cuore').value || null); { const k = daPreparare() || F.giornataCorrente(); ctx.toast(mercato(k).aperto ? 'Iscritto: ora compra la tua rosa' : `Iscritto: la tua prima giornata è la ${k}ª`); } ctx.go('futsal/squadra'); } catch (err) { ctx.toast(err.message); e.target.disabled = false; }
   });
 }
 
@@ -238,11 +265,13 @@ export const futsalHome = {
     const rUltima = ultima && (io || !srv.attivo) ? risultatoDi(ultima) : null;
     return `<main class="a-body fs">
       ${selettore('futsal')}
+      ${srv.attivo && F.conclusa(F.GIORNATE) ? fineStagione(ids) : ''}
       ${nuovo ? `<div class="fs-benvenuto">${logoFs('grande')}<p>Il fanta del Campionato Sammarinese di Futsal</p></div>${comeSiGioca()}${iscrizione()}` : ''}
       ${io || !srv.attivo ? `<a class="fs-banda" href="#/futsal/squadra">
         <div class="fs-banda-top">${io ? crest({ color: io.colore, initials: io.iniziali }) : stemma('cailungo')}<div><b>${esc(io?.squadra || 'La mia squadra')}</b><span>${io ? posto(ids, giocate) : 'sul telefono'}${rUltima ? ` · ${ultima}ª: ${fmt(rUltima.totale)} pt` : ''}</span></div>${icon('chev', 'ic sm')}</div>
         <div class="fs-banda-num"><span><b>${n}ª</b>giornata</span><span class="fs-merc ${m.stato}"><b>${{ aperto: 'Aperto', attesa: 'In attesa', chiuso: 'Chiuso' }[m.stato]}</b>mercato</span><span><b>${b ? cr(b.residui) : cr(R.budget)}</b>crediti</span><span><b>${b && b.primo !== null && b.primo < n ? `${b.cambi}` : '–'}</b>cambi</span></div>
         <p>${mia ? esc(m.testo) : m.aperto ? 'Non hai ancora una squadra: compra la tua rosa' : esc(m.testo)}</p></a>` : ''}
+      ${io ? '<button class="a-btn sec fs-modifica" id="fs-modifica-squadra" type="button">Nome e colore della squadra</button>' : ''}
       ${!nuovo ? sec('Campionati principali') : ''}
       ${!nuovo ? `<div class="a-card fs-list fs-camp">
         <a class="vr" href="#/futsal/classifica/generale">${icon('globe')}<span class="nm"><b>Generale</b><span>tutte le squadre · dalla 1ª</span></span><span class="ev">${srv.attivo ? posto(ids, giocate) : ''}</span>${icon('chev', 'ic sm')}</a>
@@ -263,9 +292,25 @@ export const futsalHome = {
   },
   mount(root, ctx) {
     caricaE(ctx); montaIscrizione(root, ctx);
+    root.querySelector('#fs-modifica-squadra')?.addEventListener('click', (e) => { e.preventDefault(); foglioSquadra(ctx); });
     root.querySelectorAll('[data-vai-leghe]').forEach((a) => a.addEventListener('click', () => { vistaLeghe = a.dataset.vaiLeghe; }));
   },
 };
+
+/**
+ * A stagione finita (30ª conclusa): l'albo d'oro in cima alla home. Campione
+ * della classifica Generale, vincitore della Coppa Titano e delle tre Serie.
+ */
+function fineStagione(ids) {
+  if (!ids.length) return '';
+  const tutte = Array.from({ length: F.GIORNATE }, (_, i) => i + 1);
+  const primo = (gg) => classificaSomma(ids, gg, FS.punti)[0];
+  const generale = primo(tutte);
+  const coppaV = coppa(ids.filter((id) => FS.inVigore(COPPA.preliminari[0], id)), (g, id) => (F.conclusa(g) ? FS.punti(g, id) : null)).campione;
+  const riga = (titolo, id, nota = '') => (id ? `<div class="vr">${crest({ color: squadraDi(id).colore, initials: squadraDi(id).iniziali }, 'fs-crest')}<span class="nm"><b>${esc(squadraDi(id).squadra)}</b><span>${titolo}${nota}</span></span></div>` : '');
+  return `<div class="a-card fs-hero fs-albo"><span class="chip">Stagione finita</span><h3>L'albo d'oro del FantaFutsal</h3></div>
+    <div class="a-card fs-list">${riga('Campione · classifica Generale', generale?.id, generale ? ` · ${fmt(generale.totale)} punti` : '')}${riga('Coppa Titano', coppaV)}${SERIE.map((x) => riga(x.nome, primo(giornateSerie(x))?.id)).join('')}</div>`;
+}
 
 /** I leader della giornata: i migliori per punti e per plusvalenza. */
 function leader(n) {
@@ -510,6 +555,38 @@ function apri(slot, n, ctx) {
   scheda(r, idx, id, n, ctx);
 }
 
+/**
+ * La squadra di un altro a giornata chiusa: la sua formazione con i punti di
+ * ognuno. Le formazioni altrui si leggono solo dopo la chiusura (RLS), quindi
+ * si mostra l'ultima giornata con i referti in cui aveva una squadra.
+ */
+function foglioAvversario(uid, ctx) {
+  const chi = squadraDi(uid);
+  const giornate = F.giocate().filter((g) => FS.risultato(g, uid)).reverse();
+  if (!giornate.length) { ctx.toast(`${chi.squadra}: la formazione si vede dopo la chiusura della prima giornata giocata`); return; }
+  let g = giornate[0];
+  const disegna = () => {
+    const r = FS.risultato(g, uid);
+    ctx.sheet(`<div class="fs-modale"><h3>${esc(chi.squadra)}</h3>
+      <p class="sheet-sub">${giornate.length > 1 ? `<select class="select" id="fs-avv-g" aria-label="Giornata">${giornate.map((x) => `<option value="${x}" ${x === g ? 'selected' : ''}>${x}ª giornata</option>`).join('')}</select>` : `${g}ª giornata`} · <b>${fmt(r.totale)}</b> punti${r.malus ? ` (−${r.malus} di cambi)` : ''}</p>
+      ${tabellaPunti(r)}</div>`);
+    document.getElementById('fs-avv-g')?.addEventListener('change', (e) => { g = Number(e.target.value); disegna(); });
+  };
+  disegna();
+}
+/** Toccando una riga di classifica si apre la squadra (in ogni schermata con .fs-tocca). */
+function montaAvversari(root, ctx) {
+  const apri = (e) => { const r = e.target.closest('.fs-tocca[data-chi]'); if (r && (e.type === 'click' || e.key === 'Enter')) foglioAvversario(r.dataset.chi, ctx); };
+  root.querySelector('main')?.addEventListener('click', apri);
+  root.querySelector('main')?.addEventListener('keydown', apri);
+}
+/** In panchina, il primo dello stesso ruolo che sta davanti a idx (non il sesto uomo): -1 se idx è già il primo. */
+function primoDavanti(r, idx) {
+  if (r === 'P') return -1;
+  const da = S(bozza)[r];
+  for (let j = da; j < idx; j++) if (bozza[r][j] && bozza[r][j] !== bozza.sesto) return j;
+  return -1;
+}
 /** La scheda del giocatore: numeri e azioni su un giocatore della rosa. */
 function scheda(r, idx, id, n, ctx) {
   const vid = r === 'P' ? V.idPorta(id) : id;
@@ -528,6 +605,8 @@ function scheda(r, idx, id, n, ctx) {
   } else if (r !== 'P') {
     if (bozza.sesto !== id) azioni.push(`<button data-az="sesto"><i>6</i>Sesto uomo</button>`);
     if (tit.length) azioni.push(`<button data-az="sost">${icon('up')}In campo</button>`);
+    // l'ordine della panchina conta: se un titolare non è convocato entra il PRIMO del suo ruolo
+    if (bozza.sesto !== id && primoDavanti(r, idx) >= 0) azioni.push(`<button data-az="primo">${icon('up')}Primo in panchina</button>`);
   }
   azioni.push(`<button data-az="vendi" ${mAperto ? '' : 'disabled'}>${icon('trash')}${r === 'P' ? 'Cambia' : 'Vendi'}</button>`);
   ctx.sheet(`<div class="fs-modale">
@@ -545,6 +624,7 @@ function scheda(r, idx, id, n, ctx) {
     const az = a.dataset.az;
     if (az === 'capitano' || az === 'vice') { const altro = az === 'capitano' ? 'vice' : 'capitano'; bozza[az] = id; if (bozza[altro] === id) bozza[altro] = null; ctx.sheet(null); ctx.render(); return; }
     if (az === 'sesto') { bozza.sesto = id; ctx.sheet(null); ctx.render(); return; }
+    if (az === 'primo') { const j = primoDavanti(r, idx); if (j >= 0) [bozza[r][j], bozza[r][idx]] = [bozza[r][idx], bozza[r][j]]; ctx.sheet(null); ctx.render(); ctx.toast('Ora entra per primo se serve un cambio'); return; }
     if (az === 'vendi') {
       mossa = { da: bilancioOra(n, perSalvare(bozza)).residui };
       if (r === 'P') bozza.porta = null; else bozza[r][idx] = null;
@@ -820,7 +900,7 @@ export const futsalRegolamento = {
       ${cap('3 · Gestione della squadra', `<p>Dei quattro rimasti fuori, uno è il <b>sesto uomo</b> e conta al 100%; gli altri tre stanno in <b>panchina e contano al ${fmt(R.panchina * 100, 0)}%</b>.</p>
         <table>${row('In campo e Porta', '100%')}${row('Sesto uomo', '100%')}${row('Panchina', `${fmt(R.panchina * 100, 0)}%`)}${row('Capitano', `×${fmt(R.capitano)}`)}</table>
         <p><b>Capitano e vice</b> si scelgono fra i quattro in campo: il capitano moltiplica per ${fmt(R.capitano)} i suoi punti. Se non è convocato la fascia passa al vice.</p>
-        <p><b>Cambio automatico.</b> Se uno in campo non è convocato, entra al 100% il primo della panchina del suo ruolo che ha giocato (il sesto uomo conta già per intero). La giornata si chiude tutta insieme, quindi i cambi li fa l'app.</p>
+        <p><b>Cambio automatico.</b> Se uno in campo non è convocato, entra al 100% il primo della panchina del suo ruolo che ha giocato (il sesto uomo conta già per intero). La giornata si chiude tutta insieme, quindi i cambi li fa l'app. L'ordine della panchina lo scegli tu: tocca un panchinaro e «Primo in panchina».</p>
         <p>La squadra si cambia fino a <b>10 minuti prima della prima partita</b> della giornata. <b>Resta da una giornata all'altra</b>: se non tocchi niente gioca quella di prima.</p>`)}
       ${cap('4 · Punteggio dei giocatori', `<table><tr><th>Evento</th><th></th></tr>${row('Convocato (in distinta)', fmt(R.voto))}${row('La sua squadra vince / perde', `${s(R.esito.vittoria)} / ${fmt(R.esito.sconfitta)}`)}${row('Gol (anche su rigore)', s(R.gol))}${row('Autogol', fmt(R.autogol))}${row('Ammonizione', fmt(R.ammonizione))}${row('Espulsione', fmt(R.espulsione))}${row('Rigore sbagliato', fmt(R.rigoreSbagliato))}</table>
         <p><b>Convocato</b> vuol dire nell'elenco della partita sul referto. La FSGC non registra chi entra in campo né i cambi, quindi il voto lo prende ogni convocato. Assist e rigori parati non contano: il referto non li riporta.</p>`)}
@@ -873,11 +953,11 @@ export const futsalClassifica = {
       <div class="seg seg-cls"><button data-tot="1" class="${classTot ? 'on' : ''}">Totale</button><button data-tot="0" class="${classTot ? '' : 'on'}">Giornata</button></div>
       ${classTot ? '' : `<select id="fs-cg" class="select">${blocco.map((g) => `<option value="${g}" ${g === classG ? 'selected' : ''}>${g}ª giornata</option>`).join('')}</select>`}
       <input class="field-input" id="fs-cq" placeholder="Cerca una squadra" value="${esc(classQ)}" autocomplete="off" style="margin-top:8px">
-      <div class="a-card fs-list fs-classifica">${righe.filter((r) => !q || squadraDi(r.id).squadra.toLowerCase().includes(q)).map((r) => `<div class="vr${r.id === FS.io()?.user_id ? ' fs-mia' : ''}"><span class="fs-pos">${r.posto}</span>${crest({ color: squadraDi(r.id).colore, initials: squadraDi(r.id).iniziali }, 'fs-crest')}<span class="nm"><b>${esc(squadraDi(r.id).squadra)}</b><span>${squadraDi(r.id).club_cuore ? `tifa ${esc(nomeSq(squadraDi(r.id).club_cuore))} · ` : ''}media ${fmt(r.media)}</span></span><span class="fv">${fmt(r.totale)}</span></div>`).join('') || '<p class="small muted" style="padding:12px">Nessuna squadra.</p>'}</div>
+      <div class="a-card fs-list fs-classifica">${righe.filter((r) => !q || squadraDi(r.id).squadra.toLowerCase().includes(q)).map((r) => `<div class="vr fs-tocca${r.id === FS.io()?.user_id ? ' fs-mia' : ''}" data-chi="${esc(r.id)}" role="button" tabindex="0"><span class="fs-pos">${r.posto}</span>${crest({ color: squadraDi(r.id).colore, initials: squadraDi(r.id).iniziali }, 'fs-crest')}<span class="nm"><b>${esc(squadraDi(r.id).squadra)}</b><span>${squadraDi(r.id).club_cuore ? `tifa ${esc(nomeSq(squadraDi(r.id).club_cuore))} · ` : ''}media ${fmt(r.media)}</span></span><span class="fv">${fmt(r.totale)}</span></div>`).join('') || '<p class="small muted" style="padding:12px">Nessuna squadra.</p>'}</div>
     </main>`;
   },
   mount(root, ctx) {
-    caricaE(ctx);
+    caricaE(ctx); montaAvversari(root, ctx);
     root.querySelector('main').addEventListener('click', (e) => { const t = e.target.closest('[data-tot]'); if (t) { classTot = t.dataset.tot === '1'; ctx.render(); } });
     root.querySelector('#fs-cg')?.addEventListener('change', (e) => { classG = Number(e.target.value); ctx.render(); });
     const q = root.querySelector('#fs-cq'); if (q) q.onchange = () => { classQ = q.value.trim(); ctx.render(); };
@@ -1045,7 +1125,7 @@ export const futsalLega = {
     if (l.tipo === 'somma') {
       const giornate = F.giocate().filter((g) => g >= dalla(l));
       corpo = `${!giornate.length ? `<p class="small muted fs-nota">La classifica parte dalla ${dalla(l)}ª giornata: i punti arrivano con i referti.</p>` : ''}
-        <div class="a-card fs-list fs-classifica">${classificaSomma(membri, giornate, FS.punti).map((r) => `<div class="vr${r.id === FS.io()?.user_id ? ' fs-mia' : ''}"><span class="fs-pos">${r.posto}</span>${crest({ color: squadraDi(r.id).colore, initials: squadraDi(r.id).iniziali }, 'fs-crest')}<span class="nm"><b>${esc(squadraDi(r.id).squadra)}</b><span>media ${fmt(r.media)}</span></span><span class="fv">${fmt(r.totale)}</span></div>`).join('')}</div>`;
+        <div class="a-card fs-list fs-classifica">${classificaSomma(membri, giornate, FS.punti).map((r) => `<div class="vr fs-tocca${r.id === FS.io()?.user_id ? ' fs-mia' : ''}" data-chi="${esc(r.id)}" role="button" tabindex="0"><span class="fs-pos">${r.posto}</span>${crest({ color: squadraDi(r.id).colore, initials: squadraDi(r.id).iniziali }, 'fs-crest')}<span class="nm"><b>${esc(squadraDi(r.id).squadra)}</b><span>media ${fmt(r.media)}</span></span><span class="fv">${fmt(r.totale)}</span></div>`).join('')}</div>`;
     } else if (!l.avvio_giornata) {
       corpo = `<div class="a-card fs-hero"><h3>Il calendario non è ancora fissato</h3><p class="small muted">Quando ci sono tutti, ${mia ? 'avvia la lega' : 'chi l\'ha creata la avvia'}: gli scontri partono dalla prossima giornata aperta e chi arriva dopo non entra più.</p>${mia ? '<button class="a-btn" id="fs-avvia">Avvia la lega</button>' : ''}</div>
         <div class="a-card fs-list">${membri.map((id) => rigaSquadra(id, '')).join('')}</div>`;
@@ -1053,7 +1133,7 @@ export const futsalLega = {
       const turni = calendarioTesta(l.membri_avvio, l.avvio_giornata);
       const { classifica, partite } = classificaScontri(l.membri_avvio, turni, FS.punti, { mediaAlRiposo: true });
       const prossima = partite.find((p) => p.sfide.some((s) => s.pa == null)) || partite.at(-1);
-      corpo = `<div class="a-card fs-list fs-classifica">${classifica.map((r) => `<div class="vr${r.id === FS.io()?.user_id ? ' fs-mia' : ''}"><span class="fs-pos">${r.posto}</span>${crest({ color: squadraDi(r.id).colore, initials: squadraDi(r.id).iniziali }, 'fs-crest')}<span class="nm"><b>${esc(squadraDi(r.id).squadra)}</b><span>${r.vinte}V ${r.pari}N ${r.perse}P · ${fmt(r.fatti)} fatti</span></span><span class="fv">${r.punti}</span></div>`).join('')}</div>
+      corpo = `<div class="a-card fs-list fs-classifica">${classifica.map((r) => `<div class="vr fs-tocca${r.id === FS.io()?.user_id ? ' fs-mia' : ''}" data-chi="${esc(r.id)}" role="button" tabindex="0"><span class="fs-pos">${r.posto}</span>${crest({ color: squadraDi(r.id).colore, initials: squadraDi(r.id).iniziali }, 'fs-crest')}<span class="nm"><b>${esc(squadraDi(r.id).squadra)}</b><span>${r.vinte}V ${r.pari}N ${r.perse}P · ${fmt(r.fatti)} fatti</span></span><span class="fv">${r.punti}</span></div>`).join('')}</div>
         ${prossima ? `${sec(`${prossima.giornata}ª giornata`)}<div class="a-card fs-list">${prossima.sfide.map(sfidaHtml).join('')}</div>` : ''}`;
     }
     // si invita finché si può entrare: una testa a testa avviata è chiusa
@@ -1070,7 +1150,7 @@ export const futsalLega = {
     </main>`;
   },
   mount(root, ctx) {
-    caricaE(ctx);
+    caricaE(ctx); montaAvversari(root, ctx);
     root.querySelector('#fs-avvia')?.addEventListener('click', async () => { try { const g = await FS.avviaLega(ctx.params.id); ctx.toast(`Si parte dalla ${g}ª giornata`); ctx.render(); } catch (err) { ctx.toast(err.message); } });
     root.querySelector('#fs-esci')?.addEventListener('click', async () => { if (!confirm('Esci dalla lega?')) return; try { await FS.esciLega(ctx.params.id); pubblicheFs = null; ctx.go('futsal/leghe'); } catch (err) { ctx.toast(err.message); } });
     root.querySelector('#fs-invita')?.addEventListener('click', async () => {

@@ -61,6 +61,16 @@ select pg_temp.esige('Cip diventa vice di Bea',
   (select vice_user_id from public.league_members where league_id = :'lega' and user_id='user_bea') = 'user_cip');
 select pg_temp.esige('il vice risulta membro', public.is_league_member(:'lega'));
 select pg_temp.esige('ma il vice non e amministratore', not public.is_league_admin(:'lega'));
+select pg_temp.esige('il codice usato non vale più', not exists (select 1 from public.codici_vice c join public.league_members m on m.id = c.member_id where m.league_id = :'lega' and m.user_id = 'user_bea'));
+-- 061: il codice lo legge solo il titolare della squadra, non gli altri della lega
+select pg_temp.entra('user_bea');
+select public.rigenera_codice_vice((select id from public.league_members where league_id = :'lega' and user_id='user_bea')) as codice2 \gset
+set role authenticated;
+select pg_temp.esige('Bea legge il suo codice', (select count(*) from public.codici_vice) = 1);
+select pg_temp.entra('user_alex');
+select pg_temp.esige('Alex, nella stessa lega, non legge il codice di Bea', (select count(*) from public.codici_vice) = 0);
+select pg_temp.esige('e nemmeno dalla colonna vecchia', (select count(*) from public.league_members where vice_code is not null) = 0);
+reset role;
 
 select pg_temp.entra('user_alex');
 select pg_temp.esige('chi crea la lega ne e amministratore', public.is_league_admin(:'lega'));
@@ -2586,6 +2596,13 @@ select public.salva_partita_gioco((now() at time zone 'Europe/Rome')::date - 1, 
 select public.salva_partita_gioco((now() at time zone 'Europe/Rome')::date, 3, true);
 select public.salva_partita_gioco((now() at time zone 'Europe/Rome')::date, 2, false);   -- indietro no
 select public.salva_partita_gioco((now() at time zone 'Europe/Rome')::date - 5, 1, true); -- troppo vecchio
+select pg_temp.entra('user_cip');
+select public.salva_partita_gioco((now() at time zone 'Europe/Rome')::date, 0, true);     -- 062: vinto in 0 tentativi è impossibile
+reset role;
+select pg_temp.esige('una vittoria con 0 tentativi non si salva (varrebbe 7 punti)',
+  not exists (select 1 from public.gioco_partite where user_id = 'user_cip' and vinto));
+select pg_temp.entra('user_bea');
+set role authenticated;
 do $$ begin
   perform * from public.gioco_partite;
   raise exception 'FALLITA: gioco_partite non doveva leggersi';

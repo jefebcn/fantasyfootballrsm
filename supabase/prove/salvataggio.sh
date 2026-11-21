@@ -50,7 +50,7 @@ prima=$(Q vivo -tAc "select (select count(*) from profiles)||'/'||(select count(
 verde "  ok  dati dentro: profili/leghe/squadre/rose/formazioni = $prima"
 
 echo "== dump, come lo fa il lavoro notturno =="
-pg_dump "$URL" --schema=public --no-owner --no-acl --format=plain > "$LAVORO/s.sql"
+pg_dump "$URL" --schema=public --schema=interno --no-owner --no-acl --format=plain > "$LAVORO/s.sql"
 # come nel lavoro notturno: via la creazione dello schema public, che esiste
 # gia' dappertutto e al ripristino ferma tutto
 sed -i '/^CREATE SCHEMA public;$/d; /^COMMENT ON SCHEMA public/d' "$LAVORO/s.sql"

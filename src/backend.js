@@ -416,6 +416,10 @@ export async function loadLeague(id) {
     insieme(sb.from('contestazioni').select('*').eq('league_id', id).order('created_at', { ascending: false })),
   ]);
   const managers = members.map(toManager);
+  // 061: il codice del vice sta in codici_vice e la policy fa leggere solo i propri.
+  // Senza la tabella (database non ancora aggiornato) resta quello di league_members.
+  const codici = await sb.from('codici_vice').select('member_id, codice');
+  if (!codici.error) for (const r of codici.data || []) { const m = managers.find((x) => x.id === r.member_id); if (m) m.viceCode = r.codice; }
   const rosterMap = Object.fromEntries(managers.map((m) => [m.id, []]));
   for (const r of rosters) (rosterMap[r.member_id] ||= []).push({ playerId: r.player_id, pricePaid: r.price_paid });
   const lineupMap = {}; for (const l of lineups) lineupMap[`${l.matchday}:${l.member_id}`] = { ...l.lineup, submittedAt: l.submitted_at };

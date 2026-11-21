@@ -444,6 +444,7 @@ export const formazione = {
       if (e.target.closest('#confirm')) {
         const errors = validateLineup({ ...d, starters: d.starters.filter(Boolean), bench: d.bench.filter(Boolean) }, S.playersById);
         if (errors.length) { vibra('errore'); ctx.toast(errors[0]); return; }
+        if (!d.captainId && !confirm(t('Non hai scelto il capitano: nessun raddoppio in questa giornata. Confermi lo stesso?'))) return;
         const bott = e.target.closest('#confirm');
         if (bott.dataset.invio) return;
         bott.dataset.invio = '1'; bott.disabled = true; ctx.toast(t('Invio la formazione…'));

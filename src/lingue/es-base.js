@@ -135,6 +135,9 @@ export const BASE = {
   // avvisi comuni (src/app.js)
   'Non fai parte di questa lega.': 'No formas parte de esta liga.',
   'Torna alla Home': 'Volver al inicio',
+  '{chi}? Se era nella formazione consegnata, dovrai confermarla di nuovo.': '¿{chi}? Si estaba en la alineación entregada, tendrás que confirmarla de nuevo.',
+  'questo giocatore': 'este jugador',
+  'Non hai scelto il capitano: nessun raddoppio in questa giornata. Confermi lo stesso?': 'No has elegido capitán: no habrá doble puntuación en esta jornada. ¿Confirmas igualmente?',
   'Formazione NON consegnata: {motivo} Riprova.': 'Alineación NO entregada: {motivo} Inténtalo de nuevo.',
   'Invio la formazione…': 'Envío la alineación…',
   'Errore di rete': 'Error de red',

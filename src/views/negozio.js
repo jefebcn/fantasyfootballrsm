@@ -118,6 +118,8 @@ export const negozio = {
       }
       const v = e.target.closest('[data-vendi]');
       if (v) {
+        const chi = v.getAttribute('aria-label') || t('questo giocatore');
+        if (!confirm(t('{chi}? Se era nella formazione consegnata, dovrai confermarla di nuovo.', { chi }))) return;
         v.disabled = true;
         try { const esito = await S.vendiGiocatore(v.dataset.vendi); ctx.toast(esito?.formazioni_tolte ? t('Tolto, +{crediti}. Era nella tua formazione: confermala di nuovo', { crediti: crediti(esito?.reso ?? 0) }) : t('Tolto, +{crediti}', { crediti: crediti(esito?.reso ?? 0) })); }
         catch (err) { ctx.toast(err.message || t('Non è stato possibile toglierlo')); }

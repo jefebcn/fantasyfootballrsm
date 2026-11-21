@@ -332,7 +332,7 @@ const ok = [], ko = []; const et = (c, t) => (c ? ok : ko).push(t);
     const venduto = fuori()[0];
     if (!preso) return 'acquisto rifiutato';
     const starters = [...lu.starters]; starters[starters.findIndex((id) => id && S.playersById.get(id).role === ruolo)] = venduto.id;
-    try { S.saveLineup(n, S.me().id, { ...lu, starters, bench: [] }); return 'passata'; }
+    try { await S.saveLineup(n, S.me().id, { ...lu, starters, bench: [] }); return 'passata'; }
     catch (e) { return e.message; }
   });
   et(/non è più nella tua rosa/.test(rifiuto) && !/_\d/.test(rifiuto), `e chi ci prova lo stesso legge il nome, non l'id ("${rifiuto}")`);

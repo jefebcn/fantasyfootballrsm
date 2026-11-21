@@ -119,7 +119,7 @@ export function computeRating({ player, appearance, events, match, rules = DEFAU
   const assists = count('assist');
   if (assists) add(`Assist × ${assists}`, rules.assist * assists);
   // Da palla inattiva vale meno: il merito e' minore e il referto lo distingue
-  // senza doverlo giudicare. Il "quality assist" di Fantacalcio (soft/standard/
+  // senza doverlo giudicare. Il "quality assist" di altri regolamenti (soft/standard/
   // gold) invece e' un giudizio, e qui i giudizi non entrano (art. 1).
   const assistsFermo = count('assist_set');
   if (assistsFermo) add(`Assist da fermo × ${assistsFermo}`, rules.assistSetPiece * assistsFermo, 'palla inattiva');

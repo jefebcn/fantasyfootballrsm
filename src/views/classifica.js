@@ -166,6 +166,17 @@ function tabellaPunti(st, me, inCorso, mosse) {
     <p class="tie">${t('<b>A pari punti</b> conta la giornata migliore; se è pari anche quella si resta pari merito, allo stesso posto. Chi non consegna la formazione fa zero in quella giornata (art. 8.4).')}</p>`;
 }
 
+/**
+ * A stagione finita (l'ultima giornata congelata) l'albo d'oro in cima alla
+ * classifica: il podio, con i fantapunti. Prima della fine non c'è.
+ */
+function albo(st, n, stato) {
+  if (n < S.base.matchdays.length || stato !== 'frozen' || !st.length) return '';
+  const posto = ['🥇', '🥈', '🥉'];
+  return `<div class="a-card albo"><div class="ph"><b>${t('Stagione finita · albo d\'oro')}</b></div>
+    ${st.slice(0, 3).map((r, i) => { const m = S.managersById.get(r.managerId); return `<div class="crow"><i class="pos">${posto[i]}</i>${crest(m, 'sm')}<span class="nm"><b>${esc(m.teamName)}</b><span>${esc(m.owner)}</span></span><span class="pt"><b>${S.aPunti() ? fmt(r.fantapunti) : r.points}</b><span>${S.aPunti() ? t('fantapunti') : t('punti')}</span></span></div>`; }).join('')}</div>`;
+}
+
 export const classifica = {
   title: 'Classifica',
   render() {
@@ -271,6 +282,7 @@ export const classifica = {
     if (S.aPunti()) {
       return `<main class="a-body">
         ${segPunti}${avviso}
+        ${albo(st, n, stato)}
         ${premiCard()}
         ${tabellaPunti(st, me, inCorso, mosse)}
       </main>`;
@@ -278,6 +290,7 @@ export const classifica = {
 
     return `<main class="a-body">
       ${seg}${avviso}
+      ${albo(st, n, stato)}
       <div class="cls">${st.map((r) => { const m = S.managersById.get(r.managerId);
         const io = r.managerId === me.id;
         return `<div class="crow${io ? ' io' : ''}">

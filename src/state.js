@@ -1333,6 +1333,26 @@ export function isFrozen(n) { return matchdayStatus(n) === 'frozen'; }
 export function weekPhase() { const n = currentMatchday(); const nxt = matchday(nextMatchday()); return { matchday: n, status: matchdayStatus(n), next: nextMatchday(), lockAt: nxt ? new Date(nxt.lockAt) : null }; }
 
 // ---------------------------------------------------------------- voti
+/**
+ * I numeri di stagione di ogni giocatore fino alla giornata corrente: presenze
+ * col voto, fantamedia, gol e assist (da referto). Per il Listone: ordinarlo
+ * per gol o per assist è la classifica dei marcatori e degli assistman.
+ */
+export function statisticheStagione() {
+  return memo(`stagione:${currentMatchday()}`, () => {
+    const out = new Map();
+    const di = (id) => { if (!out.has(id)) out.set(id, { presenze: 0, somma: 0, gol: 0, assist: 0 }); return out.get(id); };
+    for (let n = 1; n <= currentMatchday(); n++) {
+      for (const [id, r] of ratingsOf(n)) if (r && !r.isSV) { const x = di(id); x.presenze++; x.somma += r.fantaVote; }
+      for (const m of matchesOf(n)) for (const e of eventsOf(m.id)) {
+        if (e.type === 'goal') di(e.playerId).gol++;
+        else if (e.type === 'assist' || e.type === 'assist_set') di(e.playerId).assist++;
+      }
+    }
+    for (const x of out.values()) x.media = x.presenze ? Math.round((x.somma / x.presenze) * 100) / 100 : 0;
+    return out;
+  });
+}
 export function ratingsOf(n) {
   return memo(`ratings:${n}`, () => {
     const map = new Map();

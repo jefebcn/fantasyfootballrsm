@@ -1,5 +1,6 @@
 import * as S from '../state.js';
-import { esc, icon, crest, roleChip, sec, plurale, badgeReclutatore, livelloReclutatore } from '../ui.js';
+import { esc, icon, crest, roleChip, sec, plurale, badgeReclutatore, livelloReclutatore, dateIt } from '../ui.js';
+import * as remote from '../backend.js';
 import { maglia, kitOf } from '../maglia.js';
 import { personaggio, scelto } from '../personaggio.js';
 import { PREMI, sbloccato } from '../reclutatori.js';
@@ -34,6 +35,29 @@ function reclutatore() {
   </div>`;
 }
 
+// ---------------------------------------------------------------- bacheca (064)
+// I messaggi si caricano quando si apre la pagina; non cambiano con la lega,
+// quindi si tengono per id di lega.
+let bachecaDi = null, messaggi = null, caricando = false;
+function bacheca(admin, me) {
+  const L = S.base.league;
+  if (bachecaDi !== L.id) { bachecaDi = L.id; messaggi = null; }
+  const quando = (iso) => { const d = new Date(iso); return `${dateIt(iso)} ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`; };
+  const lista = messaggi === null ? '<p class="small muted">Carico…</p>'
+    : !messaggi.length ? '<p class="small muted">Nessun messaggio: scrivi il primo.</p>'
+    : messaggi.map((x) => { const m = S.managersById.get(x.member_id); const mio = x.member_id === me?.id;
+      return `<div class="bmsg${mio ? ' mio' : ''}"><div><b>${esc(m?.teamName || 'Una squadra')}</b><span>${quando(x.created_at)}</span></div><p>${esc(x.testo)}</p>${mio || admin ? `<button class="chip" data-msg-via="${esc(x.id)}" aria-label="Cancella il messaggio">Cancella</button>` : ''}</div>`; }).join('');
+  return `${sec('Bacheca', 'solo chi è nella lega')}
+    <div class="a-card bacheca"><div class="bscrivi"><textarea class="field-input" id="b-testo" maxlength="280" rows="2" placeholder="Scrivi alla lega…" aria-label="Messaggio alla lega"></textarea><button class="a-btn" id="b-invia">Invia</button></div>
+      <div class="blista">${lista}</div></div>`;
+}
+async function caricaBacheca(ctx) {
+  if (messaggi !== null || caricando) return;
+  caricando = true;
+  try { messaggi = await remote.messaggiLega(S.base.league.id) || []; } catch { messaggi = []; }
+  caricando = false; ctx.render();
+}
+
 export const lega = {
   title: 'Gestione lega', appbar: 'back', sub: () => 'La tua lega · Partecipanti · Rose',
   render() {
@@ -45,6 +69,7 @@ export const lega = {
         ${L.inviteCode && !S.legaPubblica() ? `<div style="display:flex;gap:8px;align-items:center;margin-top:6px"><span class="small muted">Codice invito</span><b class="num" style="font-size:20px;letter-spacing:.12em">${esc(L.inviteCode)}</b><button class="chip" id="share-code" style="margin-left:auto">${icon('share', 'ic sm')} Invita</button></div>` : ''}
         ${S.legaPubblica() ? `<div style="display:flex;gap:8px;align-items:center;margin-top:6px"><span class="small muted">Aperta a tutti, senza codice</span><button class="chip" id="share-code" style="margin-left:auto">${icon('share', 'ic sm')} Invita</button></div>` : ''}</div>
       ${reclutatore()}
+      ${bacheca(admin, me)}
       ${sec('Partecipanti', `${ms.length}/${S.maxMembri()}`)}
       <div class="vlist">${ms.map((m) => `<div class="prow conmaglia">${crest(m, 'sm')}${figura(m)}
         <div class="ptxt"><b>${esc(m.teamName)}${m.id === me?.id ? ' <em>tu</em>' : ''}${badgeReclutatore(m.reclutati)}</b><span>${esc(m.owner)}${m.viceName ? ` e ${esc(m.viceName)}` : ''} · ${m.role === 'admin' ? 'admin' : 'fantallenatore'}</span>
@@ -59,7 +84,23 @@ export const lega = {
     </main>`;
   },
   mount(root, ctx) {
+    caricaBacheca(ctx);
     root.querySelector('main').addEventListener('click', async (e) => {
+      if (e.target.closest('#b-invia')) {
+        const area = root.querySelector('#b-testo'); const testo = area.value.trim();
+        if (!testo) return;
+        const b = e.target.closest('#b-invia'); b.disabled = true;
+        try { await remote.scriviMessaggio(S.base.league.id, S.me().id, testo); area.value = ''; messaggi = null; caricaBacheca(ctx); }
+        catch (err) { ctx.toast(err.message || 'Non è partito: riprova'); b.disabled = false; }
+        return;
+      }
+      const via = e.target.closest('[data-msg-via]');
+      if (via) {
+        if (!confirm('Cancellare il messaggio?')) return;
+        try { await remote.cancellaMessaggio(via.dataset.msgVia); messaggi = messaggi.filter((x) => x.id !== via.dataset.msgVia); ctx.render(); }
+        catch (err) { ctx.toast(err.message || 'Non è stato cancellato'); }
+        return;
+      }
       // Il link porta il codice dentro (?invito=): chi lo apre trova il
       // modulo gia' compilato, anche dopo il giro della conferma e-mail. Il
       // codice resta scritto anche nel testo, per chi lo vuole dettare.

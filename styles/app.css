@@ -3216,3 +3216,19 @@ b > .stemma.xs:last-child{margin:0 0 0 6px}
    57% alto del disegno con la punta al 49%; la scritta sotto resta com'e'. */
 .lancio-futsal .marchio{background:linear-gradient(currentColor,currentColor) 0 100%/100% 43% no-repeat,
   linear-gradient(90deg,currentColor 0 49%,#FF4B2B 49% 100%)}
+/* Listone: la stella dei preferiti accanto a ogni giocatore */
+.li-riga{display:flex;align-items:center}
+.li-stella{flex:none;width:44px;height:44px;border:0;background:transparent;font-size:20px;color:var(--text-muted);cursor:pointer;line-height:1}
+.li-stella.on{color:#E8A400}
+/* bacheca della lega */
+.bacheca{display:flex;flex-direction:column;gap:12px}
+.bscrivi{display:flex;gap:8px;align-items:flex-end}
+.bscrivi textarea{height:auto;min-height:44px;padding:10px 12px;resize:vertical;font-size:16px}
+.bscrivi .a-btn{width:auto;flex:none;padding:0 16px}
+.blista{display:flex;flex-direction:column;gap:10px;max-height:420px;overflow:auto}
+.bmsg{border-left:3px solid var(--border-strong);padding:4px 0 4px 10px}
+.bmsg.mio{border-left-color:var(--primary)}
+.bmsg div{display:flex;justify-content:space-between;gap:8px;font-size:12px}
+.bmsg div span{color:var(--text-muted)}
+.bmsg p{margin:2px 0 4px;white-space:pre-wrap;overflow-wrap:anywhere}
+.bmsg .chip{font-size:11px;padding:2px 8px}

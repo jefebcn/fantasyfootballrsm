@@ -15,6 +15,17 @@ import * as F from './futsal.js';
 import { punteggioFormazione } from './futsal-engine.js';
 import { bilancio } from './futsal-valori.js';
 
+const PAGINA = 1000;
+/** Tutte le righe, una pagina alla volta; la prima risposta con errore si restituisce così com'è. */
+async function aPagine(richiesta) {
+  const data = [];
+  for (let da = 0; ; da += PAGINA) {
+    const r = await richiesta().range(da, da + PAGINA - 1);
+    if (r.error) return r;
+    data.push(...(r.data || []));
+    if ((r.data || []).length < PAGINA) return { data, error: null };
+  }
+}
 const vuoto = () => ({ caricato: false, inCorso: false, attivo: true, errore: null, iscritti: [], formazioni: new Map(), leghe: [], membri: [] });
 let st = vuoto(), per = null;
 const ascolta = new Set();
@@ -31,9 +42,13 @@ export async function carica({ forza = false } = {}) {
   if (!sb || !uid() || st.inCorso || (st.caricato && !forza && per === uid())) return;
   st.inCorso = true; per = uid();
   try {
+    // a pagine da 1000 righe: oltre, Supabase taglia SENZA errore (backend.js, tutte()), e con
+    // 150 iscritti le formazioni di 7 giornate sono già di più: classifiche diverse da telefono a telefono
     const [isc, form, leghe, membri] = await Promise.all([
-      sb.from('futsal_iscritti').select('*'), sb.from('futsal_formazioni').select('*'),
-      sb.from('futsal_leghe').select('*'), sb.from('futsal_membri').select('*')]);
+      aPagine(() => sb.from('futsal_iscritti').select('*').order('user_id')),
+      aPagine(() => sb.from('futsal_formazioni').select('*').order('giornata').order('user_id')),
+      aPagine(() => sb.from('futsal_leghe').select('*').order('id')),
+      aPagine(() => sb.from('futsal_membri').select('*').order('lega_id').order('user_id'))]);
     const errore = [isc, form, leghe, membri].map((r) => r.error).find(Boolean);
     if (manca(errore)) st = { ...vuoto(), caricato: true, attivo: false };
     else if (errore) st = { ...st, caricato: true, errore: errore.message };
@@ -43,7 +58,36 @@ export async function carica({ forza = false } = {}) {
     }
   } catch (e) { st = { ...st, caricato: true, errore: e.message }; }
   st.inCorso = false;
+  caricataAlle = Date.now();
+  programmaAllaChiusura();
   avvisa();
+  if (forza) ricaricati.forEach((f) => f());
+}
+
+// ---------------------------------------------------------------- dati freschi senza riaprire l'app
+// Le formazioni degli altri si vedono solo a giornata chiusa (RLS): si ricarica
+// un minuto dopo ogni chiusura, e quando l'app torna in primo piano dopo più
+// di due minuti (una PWA sospesa riparte com'era).
+let caricataAlle = 0, timerChiusura = null;
+const ricaricati = new Set();
+/** fn() dopo ogni ricarica automatica (chiusura, ritorno in primo piano). */
+export function quandoRicarica(fn) { ricaricati.add(fn); return () => ricaricati.delete(fn); }
+function programmaAllaChiusura() {
+  clearTimeout(timerChiusura);
+  const ora = Date.now();
+  for (let n = 1; n <= F.GIORNATE; n++) {
+    const c = F.chiusura(n);
+    if (c && c.getTime() > ora) {
+      const ms = c.getTime() - ora + 60e3;
+      if (ms < 2 ** 31 - 1) timerChiusura = setTimeout(() => carica({ forza: true }), ms);
+      return;
+    }
+  }
+}
+if (typeof document !== 'undefined') {
+  document.addEventListener('visibilitychange', () => {
+    if (!document.hidden && st.caricato && Date.now() - caricataAlle > 120e3) carica({ forza: true });
+  });
 }
 
 export const io = () => st.iscritti.find((x) => x.user_id === uid()) || null;
@@ -62,7 +106,21 @@ export function inVigore(g, id = uid()) {
 export const bilancioDi = (g, id = uid(), bozza = undefined) => bilancio((k) => inVigore(k, id), g, bozza);
 export const consegnataAlle = (g, id = uid()) => st.formazioni.get(`${g}:${id}`)?.consegnata_at || null;
 
-const deve = (r) => { if (r.error) throw new Error(r.error.message); return r.data; };
+/**
+ * L'errore del database detto in italiano. I messaggi scritti nelle funzioni
+ * futsal (raise exception '...') sono già in italiano e passano così come
+ * sono; quelli di Postgres e delle policy arrivavano grezzi, in inglese.
+ */
+export function inItaliano(e) {
+  const m = String(e?.message || e || '');
+  if (/row-level security|violates row level|permission denied/i.test(m)) return 'Non si può più: la giornata è chiusa, o non hai il permesso.';
+  if (/duplicate key|already exists|unique constraint/i.test(m)) return 'C\'è già: forse l\'hai salvato un attimo fa.';
+  if (/failed to fetch|networkerror|load failed|network request failed/i.test(m)) return 'Connessione assente: riprova quando sei in linea.';
+  if (/JWT|token|not authenticated|auth/i.test(m) && !/[àèéìòù]/.test(m)) return 'La sessione è scaduta: esci e rientra.';
+  if (/^[\x00-\x7F]*$/.test(m) && /\b(the|is|of|for|not|violates|invalid)\b/i.test(m)) return 'Qualcosa è andato storto sul server. Riprova tra poco.';
+  return m;
+}
+const deve = (r) => { if (r.error) throw new Error(inItaliano(r.error)); return r.data; };
 
 export async function iscriviti(squadra, colore = '#1B84C6', clubCuore = null) {
   const iniziali = squadra.split(/\s+/).map((w) => w[0]).join('').slice(0, 3).toUpperCase();

@@ -227,6 +227,7 @@ insert into public.futsal_lock (giornata, lock_at) values
   (9, '2026-11-09T19:05:00.000Z'),
   (10, '2026-11-16T19:05:00.000Z'),
   (11, '2026-11-23T19:05:00.000Z'),
-  (12, '2026-11-30T19:05:00.000Z')
+  (12, '2026-11-30T19:05:00.000Z'),
+  (13, '2026-12-07T19:05:00.000Z')
 on conflict (giornata) do update set lock_at = excluded.lock_at, updated_at = now()
   where futsal_lock.lock_at is distinct from excluded.lock_at;

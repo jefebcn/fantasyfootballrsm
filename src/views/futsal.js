@@ -87,7 +87,7 @@ const profilo = (id) => `#/futsal/giocatore/${encodeURIComponent(id)}`;
 /** «tra 9 ore», «tra 2 giorni», «tra 25 minuti». */
 function traQuanto(d) {
   const m = Math.round((d.getTime() - Date.now()) / 60000);
-  if (m < 60) return `tra ${Math.max(1, m)} ${m === 1 ? 'minuto' : 'minuti'}`;
+  if (m < 60) { const k = Math.max(1, m); return `tra ${k} ${k === 1 ? 'minuto' : 'minuti'}`; }
   const h = Math.round(m / 60);
   if (h < 36) return `tra ${h} ${h === 1 ? 'ora' : 'ore'}`;
   return `tra ${Math.round(h / 24)} giorni`;
@@ -103,9 +103,19 @@ function daPreparare() {
 function mercato(n) {
   const c = F.chiusura(n);
   if (!c) return { aperto: false, stato: 'chiuso', testo: 'Date non ancora fissate dalla FSGC' };
-  if (c.getTime() <= Date.now()) return { aperto: false, stato: 'chiuso', testo: `Chiuso ${quando(c)}: si gioca` };
-  if (!V.quotazioniPronte(n)) return { aperto: false, stato: 'attesa', testo: `Riapre con i referti della ${n - 1}ª` };
-  return { aperto: true, stato: 'aperto', testo: `Si chiude ${traQuanto(c)}` };
+  const provvisoria = F.chiusuraProvvisoria(n);
+  // una chiusura provvisoria passata senza date vere: non si sta giocando, la FSGC è in ritardo
+  if (c.getTime() <= Date.now()) return { aperto: false, stato: 'chiuso', testo: provvisoria ? 'Date non ancora fissate dalla FSGC' : `Chiuso ${quando(c)}: si gioca` };
+  if (!V.quotazioniPronte(n)) return { aperto: false, stato: 'attesa', testo: `${inVigore(n - 1) ? 'Riapre' : 'Apre'} con i referti della ${n - 1}ª` };
+  return { aperto: true, stato: 'aperto', testo: `Si chiude ${traQuanto(c)}${provvisoria ? ' (data provvisoria: la FSGC non ha ancora fissato le partite)' : ''}` };
+}
+
+/** Chi non ha ancora una squadra e il mercato non è aperto: quando potrà comprare. */
+function primaGiornata(n, m) {
+  if (m.stato !== 'attesa') return '';
+  const fine = F.ultimaPartita(n - 1);
+  const giorno = fine ? dateIt(new Date(fine.getTime() + 86400e3).toISOString()) : '';
+  return `<div class="a-card fs-hero"><h3>La tua prima giornata è la ${n}ª</h3><p class="small muted">Il mercato apre appena la FSGC pubblica i referti della ${n - 1}ª, di solito il giorno dopo l'ultima partita${giorno ? ` (${giorno})` : ''}: i prezzi dei giocatori cambiano con quei risultati. Intanto guarda giocatori e quotazioni nelle <a href="#/futsal/statistiche">Statistiche</a>.</p></div>`;
 }
 
 // ---------------------------------------------------------------- la squadra, sul server o sul telefono
@@ -142,7 +152,7 @@ function montaIscrizione(root, ctx) {
     const nome = root.querySelector('#fs-squadra').value.trim();
     if (nome.length < 2) { ctx.toast('Scrivi il nome della squadra'); return; }
     e.target.disabled = true;
-    try { await FS.iscriviti(nome, '#1B84C6', root.querySelector('#fs-cuore').value || null); ctx.toast('Iscritto: ora compra la tua rosa'); ctx.go('futsal/squadra'); } catch (err) { ctx.toast(err.message); e.target.disabled = false; }
+    try { await FS.iscriviti(nome, '#1B84C6', root.querySelector('#fs-cuore').value || null); { const k = daPreparare() || F.giornataCorrente(); ctx.toast(mercato(k).aperto ? 'Iscritto: ora compra la tua rosa' : `Iscritto: la tua prima giornata è la ${k}ª`); } ctx.go('futsal/squadra'); } catch (err) { ctx.toast(err.message); e.target.disabled = false; }
   });
 }
 
@@ -168,7 +178,17 @@ export function formazioneMancante() {
 }
 
 /** Carica i dati del server la prima volta e ridisegna, se si e' ancora li'. */
+let ctxAttivo = null;
+// dopo una ricarica automatica si ridisegna la schermata del futsal aperta, se non si sta scrivendo
+FS.quandoRicarica(() => {
+  if (!ctxAttivo || !location.hash.startsWith('#/futsal')) return;
+  const a = document.activeElement;
+  if (a && /^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName)) return;
+  if (document.getElementById('sheet')?.classList.contains('on')) return;
+  ctxAttivo.render();
+});
 function caricaE(ctx) {
+  ctxAttivo = ctx;
   if (FS.stato().caricato) return;
   const h = location.hash;
   FS.carica().then(() => { if (location.hash === h) ctx.render(); });
@@ -349,6 +369,7 @@ export const futsalSquadra = {
         <span class="${bil.residui < 0 ? 'neg' : ''}"><b>${cr(bil.residui)}</b>di ${cr(bil.patrimonio)} crediti</span>
         <span><b>${bil.primo !== null && bil.primo < n ? bil.cambi : '∞'}</b>${bil.primo !== null && bil.primo < n ? `cambi${bil.malus ? ` · −${bil.malus} pt` : ''}` : 'cambi'}</span>
       </div>
+      ${!prima && !salvata?.D ? primaGiornata(n, m) : ''}
       <p class="small muted fs-nota">${esc(m.testo)}.${m.aperto ? ` ${bil.primo !== null && bil.primo < n ? `${R.cambiGratis === 1 ? 'Un cambio gratis' : `${R.cambiGratis} cambi gratis`}, poi −${R.malusCambio} punto a cambio.` : 'Prima rosa: cambi illimitati e gratis.'}` : ' Puoi cambiare schema, chi va in campo, sesto uomo e capitano, ma non comprare o vendere.'}</p>
       <div class="seg seg-cls fs-schemi" role="tablist" aria-label="Schema">${Object.keys(R.schemi).map((k) => `<button data-schema="${k}" class="${b.schema === k ? 'on' : ''}">${k}${k === R.bonusDifesa.schema ? ' bonus' : ''}</button>`).join('')}</div>
       <div class="fs-campo">${CAMPO}
@@ -390,6 +411,9 @@ export const futsalSquadra = {
       const errori = controllaFormazione(FS.perMotore(sal));
       const cambia = !prima || !stessaRosa(sal, prima);
       const bil = bilancioOra(n, sal);
+      // a giornata chiusa non si salva niente, nemmeno schema o capitano: il server rifiuterebbe
+      const c = F.chiusura(n);
+      if (c && c.getTime() <= Date.now()) { ctx.toast(`La ${n}ª è chiusa: si gioca`); ctx.render(); return; }
       if (errori.length || (cambia && !m.aperto) || (cambia && bil.residui < 0)) { tentato = true; ctx.toast(errori.length ? 'Mancano ancora delle scelte' : !m.aperto ? 'Mercato chiuso' : 'Crediti insufficienti'); ctx.render(); return; }
       if (!sulServer()) { scriviLocale(n, sal); timbro('Squadra salvata', 'sul telefono'); ctx.render(); return; }
       b.disabled = true;
@@ -811,7 +835,7 @@ export const futsalRegolamento = {
       ${cap('9 · Campionati', `<p>Con la stessa squadra giochi in tutti, senza fare niente:</p>
         <table>${row('Generale', 'somma dei punti di tutte le giornate')}${row('Tifosi', 'chi ha la stessa squadra del cuore')}${SERIE.map((x) => row(x.nome, `giornate ${x.da}–${x.a}`)).join('')}${row('Coppa Titano', `gironi e tabellone, ${COPPA.preliminari[0]}ª–${COPPA.finale}ª`)}</table>
         <p>Le <b>Serie</b> sono campionati a tappe: ognuna ha la sua classifica, che riparte da zero. A parità conta la media per giornata, poi la giornata migliore.</p>
-        <p><b>Coppa Titano.</b> Il sorteggio si fa alla chiusura della ${COPPA.preliminari[0]}ª: entra chi ha una squadra, servono almeno 8 iscritti. Gironi con 3 punti a vittoria, poi eliminazione diretta con andata e ritorno e finale secca. Con 50 o più iscritti ci sono anche i preliminari.</p>
+        <p><b>Coppa Titano.</b> Il sorteggio si fa alla chiusura della ${COPPA.preliminari[0]}ª: entra chi ha una squadra, servono almeno 8 iscritti. Gironi con 3 punti a vittoria, poi eliminazione diretta con andata e ritorno e finale secca. Da 24 iscritti in su prima ci sono i preliminari.</p>
         <p><b>Leghe con gli amici.</b> Una lega è un gruppo con la sua classifica: <b>a somma</b> (conta dalla giornata in cui nasce la lega) o <b>testa a testa</b> (ogni giornata contro un altro del gruppo, 3 punti a chi fa di più). Con un numero dispari, chi resta fuori affronta la media del gruppo. Si entra col codice o col link «Invita».</p>
         <p><b>Leghe pubbliche.</b> Aperte a tutti, senza codice: si entra dall'elenco con la squadra che hai già e vince chi fa più punti dalla giornata in cui la lega è nata.</p>`)}
       ${cap('10 · Arrivare a stagione iniziata', `<p>Ci si iscrive quando si vuole: si parte con ${R.budget} crediti e alle quotazioni del momento. Le giornate già giocate valgono 0 punti in classifica generale, ma le Serie e le leghe nuove ripartono da zero.</p>`)}
@@ -872,7 +896,10 @@ export const futsalCoppa = {
     if (!srv.attivo) return nonAttivo();
     const inizio = F.chiusura(COPPA.preliminari[0]);
     const prima = !inizio || inizio.getTime() > Date.now();
-    const ammessi = srv.iscritti.filter((x) => !inizio || new Date(x.created_at) <= inizio).map((x) => x.user_id);
+    // entra chi era iscritto alla chiusura della prima giornata di coppa E aveva una squadra in quella
+    // giornata (le formazioni altrui si vedono solo a giornata chiusa: prima si contano gli iscritti)
+    const ammessi = srv.iscritti.filter((x) => !inizio || new Date(x.created_at) <= inizio)
+      .filter((x) => prima || FS.inVigore(COPPA.preliminari[0], x.user_id)).map((x) => x.user_id);
     const formato = formatoCoppa(ammessi.length);
     const descr = { completo: 'preliminari in due gironi, poi 8 gironi da quattro e gli ottavi', medio: 'preliminari in due gironi, poi 4 gironi da quattro e i quarti', ridotto: 'gironi da quattro (o cinque), poi il tabellone' };
     if (prima) {
@@ -884,8 +911,9 @@ export const futsalCoppa = {
         <div class="a-card fs-fasi"><p><b>1 · Preliminari</b> giornate ${COPPA.preliminari.join('–')}, da 24 iscritti in su</p><p><b>2 · Gironi</b> giornate ${COPPA.gironi.join('–')}, andata e ritorno</p><p><b>3 · Tabellone</b> fino alla finale secca della ${COPPA.finale}ª</p></div>
       </main>`;
     }
-    const c = coppa(ammessi, FS.punti);
-    if (!c.formato) return `<main class="a-body fs">${empty(`La coppa non si gioca: alla chiusura della ${COPPA.preliminari[0]}ª gli iscritti erano ${ammessi.length}, ne servivano 8.`)}</main>`;
+    // la coppa decide qualificati e passaggi del turno solo a giornata conclusa: con i primi referti cambierebbero dopo
+    const c = coppa(ammessi, (g, id) => (F.conclusa(g) ? FS.punti(g, id) : null));
+    if (!c.formato) return `<main class="a-body fs">${empty(`La coppa non si gioca: alla chiusura della ${COPPA.preliminari[0]}ª gli iscritti con una squadra erano ${ammessi.length}, ne servivano 8.`)}</main>`;
     const turni = (partite) => partite.map((p) => `${sec(`${p.giornata}ª giornata`)}<div class="a-card fs-list">${p.sfide.map(sfidaHtml).join('')}</div>`).join('');
     return `<main class="a-body fs">
       ${c.campione ? `<div class="a-card fs-hero"><span class="chip">Campione</span><h3>${esc(squadraDi(c.campione).squadra)}</h3></div>` : ''}

@@ -166,7 +166,7 @@ La coppa **non ricalcola niente**: il punteggio di ogni gara è esattamente il
 punteggio di campionato di quella giornata (capitano, panchina e bonus difesa
 compresi). Le chiusure delle formazioni sono le stesse.
 
-**Fase 1 — Gironi preliminari (6 turni).**
+**Fase 1 — Gironi preliminari (4 turni).**
 Gli iscritti vengono divisi in due gironi, A e B, di pari numero (al massimo
 uno di differenza). A ogni turno si affronta un avversario diverso dello stesso
 girone, sorteggiato fra quelli non ancora incontrati. Se il girone è dispari,
@@ -191,21 +191,23 @@ negli scontri, poi punti fatti, poi l'ordine del sorteggio iniziale.
 **Il sorteggio** è uno solo, all'inizio della coppa, ed è ripetibile: lo fa
 ogni telefono con lo stesso seme, e viene uguale per tutti
 (`src/futsal-gare.js`, `mescola`). Partecipa chi è iscritto alla chiusura
-della 9ª giornata.
+della 14ª giornata (la prima della coppa).
 
-**Calendario sulle 30 giornate FSGC** (19 turni in tutto):
+**Calendario sulle 30 giornate FSGC** (17 turni in tutto, rifatto il 21/11 per
+il lancio del 01/12: la prima giornata giocabile è la 13ª):
 
 | Fase | Turni | Giornate FSGC (proposta) |
 |---|---|---|
-| Preliminari | 6 | 9–14 |
-| Gironi principali | 6 | 15–20 |
-| Ottavi (A/R) | 2 | 21–22 |
-| Quarti (A/R) | 2 | 23–24 |
-| Semifinali (A/R) | 2 | 25–26 |
-| Finale | 1 | 27 |
+| Preliminari | 4 | 14–17 |
+| Gironi principali | 6 | 18–23 |
+| Ottavi (A/R) | 2 | 24–25 |
+| Quarti (A/R) | 2 | 26–27 |
+| Semifinali (A/R) | 2 | 28–29 |
+| Finale | 1 | 30 |
 
-Le giornate 1–8 servono a raccogliere iscrizioni; le 28–30 restano di margine
-per gare rinviate. La coppa parte a iscrizioni chiuse.
+Le giornate 13–14 servono a raccogliere iscrizioni dopo il lancio. Non resta
+margine per gare rinviate: una giornata senza referto dopo tre giorni vale la
+media, come in campionato. La coppa parte a iscrizioni chiuse.
 
 **Se gli iscritti sono meno di 50** la formula completa non regge. La natura
 della coppa e il punteggio restano uguali, cambia solo il formato:
@@ -324,7 +326,7 @@ funzione `promemoria` ridistribuita (`supabase functions deploy promemoria
 4. Moduli 2-2 e 3-1, bonus difesa +2 da media 7,0.
 5. Gol +3, Porta −0,5 a gol subito, +3 se inviolata; assist e rigori parati fuori.
 6. Due panchinari (D e A), capitano con vice.
-7. Coppa a tre fasi dalla 9ª alla 27ª giornata.
+7. Coppa a tre fasi dalla 14ª alla 30ª giornata.
 
 ## 13. Il FantaFutsal a rosa e crediti (29/10/2026)
 

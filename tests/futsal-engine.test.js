@@ -93,6 +93,17 @@ test('chi riposa prende la media ma non la fascia', () => {
   assert.equal(r.capitano, 'd1');
   assert.equal(r.righe.find((x) => x.id === 'a1').punti, 7);
 });
+test('chi in panchina ha riposato non entra al posto di un non convocato', () => {
+  const r = punteggioFormazione(base(), tutti6({ a1: SV, a4: riposo(9) }));
+  assert.equal(r.righe.find((x) => x.id === 'a1').entrato, null);
+  assert.equal(r.righe.find((x) => x.id === 'a4' && x.posto === 'B').punti, 4.5, 'resta in panchina al 50% con la sua media');
+});
+test('bonus difesa: la fascia da capitano non gonfia la media', () => {
+  const f = { ...base(), schema: '3-1', titolari: ['d1', 'd2', 'd3', 'a1'], capitano: 'd1', vice: 'd2' };
+  const v = { porta: voto(6.5), giocatori: new Map([['d1', voto(8)], ['d2', voto(6.5)], ['d3', voto(6.5)], ['a1', voto(6)]]) };
+  // voti 6,5 + 8 + 6,5 + 6,5 = 27,5 / 4 = 6,88: sotto il 7, anche se d1 da capitano fa 12 punti
+  assert.deepEqual(punteggioFormazione(f, v).bonusDifesa, { media: 6.88, preso: false, punti: 0 });
+});
 test('il malus dei cambi si toglie dal totale', () => {
   assert.equal(punteggioFormazione(base(), tutti6(), { malus: 2 }).totale, punteggioFormazione(base(), tutti6()).totale - 2);
 });

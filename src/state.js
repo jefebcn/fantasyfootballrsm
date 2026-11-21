@@ -1484,7 +1484,14 @@ export function fuoriRosa(managerId, ids) {
   const rosa = rosterIds(managerId); if (!rosa.length) return [];
   const mia = new Set(rosa); return ids.filter((id) => id && !mia.has(id));
 }
-export function saveLineup(n, managerId, lineup) {
+/**
+ * Consegna la formazione e ASPETTA il server: il «salvata» lo dice chi chiama
+ * solo quando la promessa si risolve. Prima il messaggio partiva subito e la
+ * voce restava sul telefono anche se il server non l'aveva ricevuta (fuori
+ * rete): uno credeva di aver consegnato e prendeva lo 0-3 a tavolino. Se il
+ * server rifiuta, la formazione sul telefono torna com'era.
+ */
+export async function saveLineup(n, managerId, lineup) {
   // La regola sta qui e non solo nella schermata: una regola messa solo nella
   // schermata vale solo per quella schermata, e qui ci si arriva anche da un
   // collegamento diretto.
@@ -1494,12 +1501,22 @@ export function saveLineup(n, managerId, lineup) {
   if (rosa) throw new Error(t('Nella lega pubblica la formazione si consegna con la rosa completa: hai {ha} giocatori su {serve}. Completala dal Negozio.', { ha: rosa.ha, serve: rosa.serve }));
   const fuori = fuoriRosa(managerId, [...lineup.starters, ...lineup.bench]);
   if (fuori.length) { const p = playersById.get(fuori[0]); throw new Error(t('{nome} non è più nella tua rosa: sostituiscilo e conferma di nuovo', { nome: p ? p.name : fuori[0] })); }
-  const rec = { ...lineup, submittedAt: now().toISOString() }; L.lineups[`${n}:${managerId}`] = rec;
+  const rec = { ...lineup, submittedAt: now().toISOString() };
+  const prima = new Map();
+  const scrivi = (k, v) => { if (!prima.has(k)) prima.set(k, L.lineups[k]); L.lineups[k] = v; };
+  scrivi(`${n}:${managerId}`, rec);
   // 050: nella lega pubblica vale anche per le giornate dopo ancora aperte
   // (le scrive il database; qui si vede subito, senza ricaricare)
-  if (legaPubblica()) for (const md of base.matchdays) if (md.number > n && new Date(md.lockAt) > now()) L.lineups[`${md.number}:${managerId}`] = { ...rec };
+  if (legaPubblica()) for (const md of base.matchdays) if (md.number > n && new Date(md.lockAt) > now()) scrivi(`${md.number}:${managerId}`, { ...rec });
   notify();
-  return remote.upsertLineup(base.league.id, managerId, n, rec).catch((e) => { onError(e); refresh(); });
+  try {
+    await remote.upsertLineup(base.league.id, managerId, n, rec);
+  } catch (e) {
+    for (const [k, v] of prima) { if (v === undefined) delete L.lineups[k]; else L.lineups[k] = v; }
+    notify();
+    const motivo = /load failed|failed to fetch|network/i.test(e?.message || '') ? t('Nessuna connessione al server.') : (e?.message || t('Errore imprevisto.'));
+    throw new Error(t('Formazione NON consegnata: {motivo} Riprova.', { motivo }));
+  }
 }
 /**
  * Il punteggio di una squadra in una giornata, dalla formazione CONSEGNATA.

@@ -724,10 +724,10 @@ export const dashboard = {
     const ch = root.querySelector('#chiudi-giornata');
     if (ch) ch.onclick = async () => {
       const q = S.giornataDaChiudere(); if (!q) return;
-      if (!confirm(t('Calcolare la giornata {n}? I punteggi diventano definitivi e non si rettificano piu\'.', { n: q.giornata }))) return;
+      if (!confirm(t('Calcolare la giornata {n}? I punteggi diventano definitivi e non si rettificano più.', { n: q.giornata }))) return;
       ch.disabled = true;
       try { await S.chiudiGiornata(q.giornata); ctx.toast(t('Giornata {n} calcolata', { n: q.giornata })); }
-      catch (e) { ctx.toast(e.message || t('Non e\' stato possibile calcolare la giornata')); ch.disabled = false; }
+      catch (e) { ctx.toast(e.message || t('Non è stato possibile calcolare la giornata')); ch.disabled = false; }
       ctx.render();
     };
 

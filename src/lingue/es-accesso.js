@@ -281,7 +281,7 @@ export const ACCESSO = {
   'notifiche, privacy, esci o cancella il profilo': 'notificaciones, privacidad, cerrar sesión o borrar el perfil',
   'Per ora non c\'è una lega pubblica aperta: creane una con gli amici':
     'Por ahora no hay ninguna liga pública abierta: crea una con amigos',
-  'Eliminare "{lega}" cancella per sempre squadre, rose e formazioni di tutti, e non si puo\' annullare.\n\nPer confermare scrivi il nome della lega:\n{lega}':
+  'Eliminare "{lega}" cancella per sempre squadre, rose e formazioni di tutti, e non si può annullare.\n\nPer confermare scrivi il nome della lega:\n{lega}':
     'Eliminar "{lega}" borra para siempre equipos, planteles y alineaciones de todos, y no se puede deshacer.\n\nPara confirmar, escribe el nombre de la liga:\n{lega}',
   'Nome non corrispondente: non ho eliminato niente': 'El nombre no coincide: no eliminé nada',
   'Lega eliminata': 'Liga eliminada',

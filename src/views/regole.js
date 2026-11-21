@@ -5,7 +5,7 @@ import { esc, fmt, icon } from '../ui.js';
 
 /** [chiave, titolo, spiegazione, scelte [valore, etichetta]] */
 const OPZIONI = [
-  ['homeBonus', 'Fattore campo', 'Punti in più a chi gioca in casa nella sfida di giornata. Il fantacalcio ne consiglia 2.',
+  ['homeBonus', 'Fattore campo', 'Punti in più a chi gioca in casa nella sfida di giornata. Di solito se ne danno 2.',
     [[0, 'Spento'], [2, '+2'], [3, '+3']]],
   ['decisiveGoal', 'Gol decisivo', 'Bonus al gol che vale il pareggio o il sorpasso. Uno solo per partita, e solo a chi non perde.',
     [[0, 'Spento'], [0.5, '+0,5'], [1, '+1']]],
@@ -13,7 +13,7 @@ const OPZIONI = [
     [[1, 'Come gli altri'], [0.5, '+0,5'], [0, 'Niente bonus']]],
   ['subMode', 'Sostituzioni automatiche', 'Quando un titolare non prende voto e in panchina non c\'è nessuno del suo ruolo.',
     [['role', 'Solo stesso ruolo'], ['free', 'Modulo libero']]],
-  ['maxSubs', 'Cambi massimi', 'Quanti titolari senza voto si possono rimpiazzare. Il fantacalcio ne consiglia da 5 a 7.',
+  ['maxSubs', 'Cambi massimi', 'Quanti titolari senza voto si possono rimpiazzare. Di solito da 3 a 7: più sono, meno conta chi non gioca.',
     [[3, '3'], [5, '5'], [7, '7']]],
   ['level2Events', 'Rigore procurato e causato', 'Eventi di livello 2: +1 a chi si procura un rigore, −1 a chi lo causa.',
     [[false, 'Spenti'], [true, 'Attivi']]],

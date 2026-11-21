@@ -162,8 +162,8 @@ export const live = {
     // undici, voti, panchina. Si dice cosa e' successo e chi ha vinto, e si
     // lascia la scheda del campionato.
     if (r.forfait) {
-      const chi = r.forfait === 'entrambi' ? t('{casa} e {ospite} non hanno consegnato la formazione entro il lock', { casa: esc(h.teamName), ospite: esc(a.teamName) })
-        : t('{squadra} non ha consegnato la formazione entro il lock', { squadra: esc(r.forfait === 'home' ? h.teamName : a.teamName) });
+      const chi = r.forfait === 'entrambi' ? t('{casa} e {ospite} non hanno consegnato la formazione entro la chiusura', { casa: esc(h.teamName), ospite: esc(a.teamName) })
+        : t('{squadra} non ha consegnato la formazione entro la chiusura', { squadra: esc(r.forfait === 'home' ? h.teamName : a.teamName) });
       const esito = r.forfait === 'entrambi' ? t('persa 0-3 da tutte e due')
         : t('vince {squadra} 3-0', { squadra: esc(r.forfait === 'home' ? a.teamName : h.teamName) });
       const spiega = `<div class="a-card tavolino"><p>${t('<b>Partita a tavolino</b> · art. 8.4')}</p><p>${chi}: ${esito}. ${r.forfait === 'entrambi' ? t('Zero fantapunti per entrambe.') : t('Chi ha consegnato tiene i suoi fantapunti; chi no ne ha zero.')}</p></div>`;

@@ -157,7 +157,7 @@ function tabellaPunti(st, me, inCorso, mosse) {
       <i class="pos">${r.position}</i>${inCorso ? freccia(mosse.get(r.managerId)) : ''}${crest(m, 'sm')}
       <span class="nm"><b>${esc(m.teamName)}</b><span>${esc(m.owner)} · ${t(r.played === 1 ? '{n} giornata' : '{n} giornate', { n: r.played })}</span></span>
       <span class="pt"><b>${fmt(r.punti)}</b><span>${t('punti')}</span></span>${icon('chev', 'ic sm cls-chev')}</a>`; }).join('')}</div>
-    <p class="small muted" style="margin:-4px 2px 0">${t('Tocca una squadra per vedere la sua formazione: si vede dal lock della giornata.')}</p>
+    <p class="small muted" style="margin:-4px 2px 0">${t('Tocca una squadra per vedere la sua formazione: si vede dalla chiusura della giornata.')}</p>
     <a class="a-btn sec" href="#/formazioni" style="text-decoration:none">${icon('users', 'ic sm')}${t('Le formazioni di tutti')}</a>
     <div class="a-card dett"><div class="dhead"><b>${t('Dettaglio')}</b><span>${t('giornate · media · migliore')}</span></div>
       ${st.map((r) => { const m = S.managersById.get(r.managerId);

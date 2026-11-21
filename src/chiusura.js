@@ -13,7 +13,10 @@ export function chiusuraGiornata(lockAt) {
   if (!lockAt) return null;
   const p = parti(new Date(lockAt));
   const dow = { Mon: 1, Tue: 2, Wed: 3, Thu: 4, Fri: 5, Sat: 6, Sun: 7 }[p.weekday];
-  let giorni = (9 - dow) % 7;
+  // turno infrasettimanale (lunedì-giovedì): due giorni dopo alle 20:00, così i
+  // referti hanno lo stesso margine del fine settimana e la giornata non aspetta
+  // il martedì dopo (prima l'11ª di martedì 1/12 si chiudeva l'8/12, con la 12ª)
+  let giorni = dow <= 4 ? 2 : (9 - dow) % 7;
   if (giorni === 0 && +p.hour >= 20) giorni = 7;
   const base = new Date(Date.UTC(+p.year, +p.month - 1, +p.day + giorni));
   return daRoma(base.getUTCFullYear(), base.getUTCMonth() + 1, base.getUTCDate(), 20);

@@ -352,6 +352,8 @@ export function recordLega(results) {
         && (g.homeManagerId === managerId || g.awayManagerId === managerId));
       const mio = f.homeManagerId === managerId ? f.homeGoals : f.awayGoals;
       const suo = f.homeManagerId === managerId ? f.awayGoals : f.homeGoals;
+      // il doppio tavolino (nessuno ha consegnato) è una sconfitta per tutti e due, come in classifica
+      if (f.forfait === 'entrambi') return 'P';
       return mio > suo ? 'V' : mio < suo ? 'P' : 'N';
     });
     let vMax = 0, vOra = 0, iMax = 0, iOra = 0;

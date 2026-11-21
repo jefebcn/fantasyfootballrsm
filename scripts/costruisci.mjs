@@ -29,7 +29,7 @@ const USCITA = process.argv[2] ? resolve(process.argv[2]) : join(RADICE, 'pubbli
 // Quello che va online. Le cartelle si copiano intere tranne cio' che SALTA.
 export const ELENCO = [
   'index.html', 'privacy.html', 'termini.html', 'cancella-account.html', 'assistenza.html', 'link.html',
-  'manifest.webmanifest', 'sw.js',
+  'manifest.webmanifest', 'sw.js', 'robots.txt', 'sitemap.xml',
   '.well-known', 'src', 'styles', 'media', 'icons', 'vendor', 'design/tokens',
 ];
 // i sorgenti delle immagini (decine di MB) e le note di lavoro non servono all'app

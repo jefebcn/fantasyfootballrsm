@@ -2015,11 +2015,11 @@ on conflict (matchday) do update set lock_at = excluded.lock_at;
 select pg_temp.esige('lock venerdi'' sera: si chiude dal martedi'' dopo alle 20:00',
   public.chiusura_giornata(28) = '2026-10-13 20:00+02'::timestamptz);
 update public.matchday_locks set lock_at = '2026-10-13 18:30+02' where matchday = 28;
-select pg_temp.esige('turno infrasettimanale di martedi'' pomeriggio: la sera stessa',
-  public.chiusura_giornata(28) = '2026-10-13 20:00+02'::timestamptz);
+select pg_temp.esige('063: turno infrasettimanale di martedi'' pomeriggio: giovedi'' alle 20:00',
+  public.chiusura_giornata(28) = '2026-10-15 20:00+02'::timestamptz);
 update public.matchday_locks set lock_at = '2026-10-13 20:45+02' where matchday = 28;
-select pg_temp.esige('martedi'' sera tardi: il martedi'' dopo',
-  public.chiusura_giornata(28) = '2026-10-20 20:00+02'::timestamptz);
+select pg_temp.esige('063: martedi'' sera tardi: giovedi'' alle 20:00, non il martedi'' dopo',
+  public.chiusura_giornata(28) = '2026-10-15 20:00+02'::timestamptz);
 update public.matchday_locks set lock_at = now() - interval '1 hour' where matchday = 28;
 -- il martedi' fra le 20 e le 21 "un'ora fa" cade prima delle 20 e la chiusura
 -- e' gia' passata: la prova falliva per l'ora in cui girava. Allora la

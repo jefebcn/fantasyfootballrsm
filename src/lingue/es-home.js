@@ -68,9 +68,9 @@ export const HOME = {
   'Mancano gli eventi di {n} partite su {tot}': 'Faltan los eventos de {n} de {tot} partidos',
   'Calcola la giornata': 'Calcular la fecha',
   'Voti della {n}ª': 'Puntajes de la fecha {n}',
-  'Calcolare la giornata {n}? I punteggi diventano definitivi e non si rettificano piu\'.': '¿Calcular la fecha {n}? Los puntajes pasan a ser definitivos y ya no se corrigen.',
+  'Calcolare la giornata {n}? I punteggi diventano definitivi e non si rettificano più.': '¿Calcular la fecha {n}? Los puntajes pasan a ser definitivos y ya no se corrigen.',
   'Giornata {n} calcolata': 'Fecha {n} calculada',
-  'Non e\' stato possibile calcolare la giornata': 'No se pudo calcular la fecha',
+  'Non è stato possibile calcolare la giornata': 'No se pudo calcular la fecha',
   '{squadra} {gf}–{gs} {avversaria} · giornata {n} · {punti} fantapunti (Voto Titano) — {link}': '{squadra} {gf}–{gs} {avversaria} · fecha {n} · {punti} fantapuntos (Voto Titano) — {link}',
 
   // negozio e lega pubblica

@@ -286,7 +286,7 @@ function drawer() {
     <div class="d-sec"><span class="chip">${t('La lega')}</span></div>
     ${item('#/lega', { m: 'leghe' }, t('La tua lega'), S.base.league.inviteCode ? t('codice {codice}', { codice: esc(S.base.league.inviteCode) }) : '')}${item('#/lega', { m: 'squadre' }, t('Partecipanti'), String(S.base.managers.length))}${item('#/regolamento', { m: 'guide' }, t('Regole del gioco'))}${item('#/classifica', { m: 'statistiche' }, t('Classifiche'))}
     <div class="d-sec"><span class="chip">${t('In campo')}</span></div>
-    ${S.base.league.id ? item('#/formazioni', 'users', t('Formazioni di tutti'), t('dal lock di ogni giornata')) : ''}
+    ${S.base.league.id ? item('#/formazioni', 'users', t('Formazioni di tutti'), t('dalla chiusura di ogni giornata')) : ''}
     ${S.legaPubblica() ? item('#/negozio', { l: 'rose' }, t('La tua rosa'), `${S.rosterIds(S.me()?.id).length}/25`) : ''}${item('#/listone', { m: 'quotazioni' }, t('Listone'), String(S.base.players.length))}${S.legaPubblica()
     // Il mercato degli svincolati e' una gara per chi e' rimasto libero: in
     // una lega aperta non e' libero nessuno e non e' preso nessuno, quindi

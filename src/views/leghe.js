@@ -276,7 +276,7 @@ export const leghe = {
         const lega = S.myLeagues().find((x) => x.id === id); if (!lega) return;
         if (azione === 'elimina') {
           // Si fa riscrivere il nome: cancella anche le squadre degli altri.
-          const risposta = prompt(t('Eliminare "{lega}" cancella per sempre squadre, rose e formazioni di tutti, e non si puo\' annullare.\n\nPer confermare scrivi il nome della lega:\n{lega}', { lega: lega.name }));
+          const risposta = prompt(t('Eliminare "{lega}" cancella per sempre squadre, rose e formazioni di tutti, e non si può annullare.\n\nPer confermare scrivi il nome della lega:\n{lega}', { lega: lega.name }));
           if (risposta === null) return;
           if (risposta.trim().toLowerCase() !== lega.name.trim().toLowerCase()) { ctx.toast(t('Nome non corrispondente: non ho eliminato niente')); return; }
           try { await S.deleteLeague(id); ctx.toast(t('Lega eliminata')); } catch (err) { ctx.toast(t(err.message)); }

@@ -90,6 +90,8 @@ export const BASE = {
   Partecipanti: 'Participantes',
   'Regole del gioco': 'Reglas del juego',
   Classifiche: 'Clasificaciones',
+  'Coppa Fantatitano': 'Copa Fantatitano',
+  'sulla Coppa Titano': 'sobre la Copa Titano',
   'In campo': 'En la cancha',
   'Formazioni di tutti': 'Alineaciones de todos',
   'dalla chiusura di ogni giornata': 'desde el cierre de cada fecha',

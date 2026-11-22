@@ -3281,3 +3281,4 @@ b > .stemma.xs:last-child{margin:0 0 0 6px}
 .cf-home.piccola .ce-home-txt b{font-size:15px}
 .cf-home.piccola .ce-home-txt span{font-size:12.5px}
 .cf-home.nuovo{border:1.5px solid color-mix(in srgb, var(--c-lime,#D9F51F) 55%, transparent)}
+.cf-home.nuovo .ce-home-ico .ic{width:32px;height:32px}

@@ -9,7 +9,7 @@
 -- Chi e' sparito dal listone NON viene cancellato di proposito: e' gia' nella
 -- rosa di qualcuno, e cancellarlo lascerebbe rose con giocatori senza prezzo.
 --
--- 414 giocatori.
+-- 415 giocatori.
 
 insert into public.quotazioni (player_id, ruolo, quotazione, nome, club) values
   ('academy_1', 'P', 16, 'Giulianelli F.', 'SM Academy U22'),
@@ -425,7 +425,8 @@ insert into public.quotazioni (player_id, ruolo, quotazione, nome, club) values
   ('juvenes_24', 'D', 5, 'Bakalyar Y.', 'Juvenes/Dogana'),
   ('folgore_27', 'C', 5, 'Sahud Scutella M.', 'Folgore'),
   ('academy_31', 'C', 5, 'Onano F.', 'SM Academy U22'),
-  ('lafiorita_26', 'C', 5, 'Brighi A.', 'La Fiorita')
+  ('lafiorita_26', 'C', 5, 'Brighi A.', 'La Fiorita'),
+  ('pennarossa_27', 'C', 5, 'Conti L.', 'Pennarossa')
 on conflict (player_id) do update
   set ruolo = excluded.ruolo, quotazione = excluded.quotazione,
       nome = excluded.nome, club = excluded.club;

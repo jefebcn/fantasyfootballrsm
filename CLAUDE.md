@@ -15,7 +15,7 @@ Fantacalcio gratuito sul Campionato Sammarinese (fantatitano.site), PWA statica 
 | Controlli e avvisi automatici | `MONITORAGGIO.md`, `.github/workflows/` |
 | Storie e gol per i social | `social/`, `scripts/storie-gol.mjs`, `scripts/pubblica-storia.mjs` |
 | FantaTitano Futsal (gioco, import, Instagram @fantatitano.futsal) | `docs/futsal/STATO.md`, `docs/futsal/RICETTE.md`, `FUTSAL.md`; prima del lancio lo vede solo il proprietario (`APERTO_A_TUTTI` in `src/views/futsal.js`) |
-| Instagram automatico (post e storie su Buffer) | kit social fuori dal repo (`kit/STATO.md`, `kit/PLAYBOOK.md`), attività pianificate lunedì e giovedì; ricette in `docs/RICETTE.md` |
+| Instagram automatico (post e storie su Buffer) | kit social fuori dal repo (`kit/STATO.md`, `kit/PLAYBOOK.md`); controllo della coda lun/mer/ven che riempie i 10 posti (regole nei giri lunedì e giovedì, spenti); ricette in `docs/RICETTE.md` |
 | Video (HyperFrames) | `/regia-hyperframes` o la skill `hyperframes` (porta d'ingresso); progetti in `videos/` e `regia/`. Le altre 20 skill video sono nascoste (`disable-model-invocation: true`) per non pagarle in ogni sessione: quando un passo dice `/nome`, leggi `.claude/skills/<nome>/SKILL.md`. Se `npx hyperframes skills update` toglie quella riga, rimettila. |
 
 I documenti grandi (`IOS.md` e `PLAY.md` 23 KB, `MONETIZZAZIONE.md` 17 KB) si leggono solo per quel lavoro, cercando con grep la sezione giusta.

@@ -149,7 +149,7 @@ function appbar(view, ctx) {
   if (kind === 'futsal') return `<header class="a-appbar"><button class="ib" data-open-drawer aria-label="Menu">${maskFs('menu', 'ib-mi')}</button><div class="t"><b>Fanta<i>futsal</i></b><span>${esc(view.sub?.(ctx) || view.title)}</span></div><a class="fs-regole" href="#/futsal/regolamento">${maskFs('regolamento', 'ib-mi')}<span>Regole</span></a></header>`;
   // Il titolo della schermata si traduce qui, dove entra nella pagina: nelle
   // viste resta la frase italiana (title: 'Classifica').
-  if (kind === 'back') return `<header class="a-appbar"><button class="ib flip" data-back aria-label="${t('Indietro')}">${icon('chev')}</button><div class="t"><b>${esc(league.name)}</b><span>${esc(view.sub?.(ctx) || t(view.title))}</span></div>${view.actions ? view.actions(ctx) : ''}</header>`;
+  if (kind === 'back') return `<header class="a-appbar"><button class="ib flip" data-back aria-label="${t('Indietro')}">${icon('chev')}</button><div class="t"><b>${esc(view.testata?.(ctx) || league.name)}</b><span>${esc(view.sub?.(ctx) || t(view.title))}</span></div>${view.actions ? view.actions(ctx) : ''}</header>`;
   return `<header class="a-appbar"><button class="ib" data-open-drawer aria-label="${t('Menu')}">${icon('menu')}</button><div class="t"><b>${esc(league.name)}</b><span>${esc(view.sub?.(ctx) || t(view.title))}</span></div><button class="ib" data-refresh aria-label="${t('Aggiorna')}">${mask('pallone-scambio', 'ib-mi')}</button><a class="ib" href="#/regolamento" aria-label="${t('Regolamento')}">${mask('fischietto', 'ib-mi')}</a><a class="ib" href="#/admin/contestazioni" aria-label="${t('Contestazioni')}">${icon('bandierina')}${S.contestazioni().some((c) => c.status === 'open') ? '<i class="dot"></i>' : ''}</a></header>`;
 }
 /**

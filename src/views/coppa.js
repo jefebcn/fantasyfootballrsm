@@ -16,7 +16,7 @@ import * as CS from '../coppa-server.js';
 import { esc, fmt, icon, crest, sec, empty, dateIt, timeIt, roleChip } from '../ui.js';
 import { COPPA_CALENDARIO, COPPA_REFERTI } from '../coppa-dati.js';
 import {
-  NOME, TURNI, turno, squadreInGara, chiusuraTurno, turnoConcluso, votiDelTurno, punteggio,
+  NOME, TURNI, turno, SQUADRE_COPPA, squadreInGara, chiusuraTurno, turnoConcluso, votiDelTurno, punteggio,
   coppaFantatitano, dovesei, validaFormazione, partiteDelTurno, formato,
   eApp, squadreApp, formazioneApp,
 } from '../coppa-fanta.js';
@@ -59,7 +59,9 @@ export function modello() {
   };
   const c = sorteggiato ? coppaFantatitano(ids, punti) : null;
   const aperto = TURNI.find((t) => { const x = chiusuraTurno(cal(), t.n); return x && x.getTime() > ora(); }) || null;
-  return { st, ids, totale, c, punti, conclusi, aperto, sorteggiato, primo, dove: c ? dovesei(c, io()) : null, votiDi };
+  // prima della chiusura: i gironi provvisori, rifatti dallo stesso sorteggio a ogni iscrizione
+  const prov = !sorteggiato && formato(totale) && ids.length >= 4 ? coppaFantatitano(ids, () => null) : null;
+  return { st, ids, totale, c, prov, punti, conclusi, aperto, sorteggiato, primo, dove: c ? dovesei(c, io()) : null, votiDi };
 }
 
 // ---------------------------------------------------------------- pezzi
@@ -111,32 +113,54 @@ function sfideGirone(g, m) {
   }).join('');
 }
 
-function tabellone(c) {
-  return c.tabellone.map((t) => `${sec(t.nome, sulTurno(turno(t.turni[0])))}
-    <div class="a-card fs-list">${t.sfide.map((s) => sfida(s.a, s.b, s.gare[0][0], s.gare[0][1], { vincente: s.vincente })).join('')}</div>`).join('');
+/**
+ * IL TABELLONE (Alex, 22/11: «migliora la grafica del torneo»): un albero vero,
+ * quarti → semifinali → finale, con le linee che uniscono le gare. Prima dei
+ * nomi mostra chi incontra chi («1ª A – 2ª B»), poi squadre e fantapunti con
+ * la vincente in evidenza. Le linee stanno nel CSS (.cf-b-coppia, .cf-b-gara).
+ */
+function bracket(f, c) {
+  f = f || formato(SQUADRE_COPPA);
+  const otto = f.tabellone === 8;
+  const giri = otto ? ['Quarti', 'Semifinali', 'Finale'] : ['Semifinali', 'Finale'];
+  const sigla = otto ? ['Q', 'S'] : ['S'];
+  const primi = otto
+    ? (f.gironi === 4 ? [['1ª A', '2ª B'], ['1ª C', '2ª D'], ['1ª B', '2ª A'], ['1ª D', '2ª C']] : [['1ª A', '4ª B'], ['2ª B', '3ª A'], ['1ª B', '4ª A'], ['2ª A', '3ª B']])
+    : [['1ª', '4ª'], ['2ª', '3ª']];
+  const nomi = !!c?.tabellone?.length;
+  const riga = (id, etichetta, p, s) => {
+    const esito = s?.vincente ? (s.vincente === id ? ' vince' : ' perde') : '';
+    return `<div class="cf-b-riga${esito}${id && id === io() ? ' mia' : ''}">${id ? stemma(id) : '<i class="cf-b-vuoto"></i>'}<span class="cf-n">${id ? nomeSq(id) : esc(etichetta)}</span>${p == null ? '' : `<b>${fmt(p)}</b>`}</div>`;
+  };
+  const colonne = giri.map((nome, r) => {
+    const quante = 2 ** (giri.length - 1 - r);
+    const vere = c?.tabellone?.[r]?.sfide || [];
+    const gare = Array.from({ length: quante }, (_, i) => {
+      const s = vere[i];
+      const et = r === 0 ? primi[i] : [`Vinc. ${sigla[r - 1]}${2 * i + 1}`, `Vinc. ${sigla[r - 1]}${2 * i + 2}`];
+      const mia = s && (s.a === io() || s.b === io());
+      return `<div class="cf-b-gara${s ? '' : ' vuota'}${mia ? ' mia' : ''}${r === giri.length - 1 ? ' cf-b-fin' : ''}">${riga(s?.a, et[0], s?.gare?.[0]?.[0], s)}${riga(s?.b, et[1], s?.gare?.[0]?.[1], s)}</div>`;
+    });
+    const corpo = quante === 1 ? `<div class="cf-b-coppia sola">${gare[0]}</div>`
+      : Array.from({ length: quante / 2 }, (_, k) => `<div class="cf-b-coppia">${gare[2 * k]}${gare[2 * k + 1]}</div>`).join('');
+    const t = c?.tabellone?.[r] ? turno(c.tabellone[r].turni[0]) : TURNI.find((x) => x.fanta === nome);
+    return `<div class="cf-b-col"><p class="cf-b-tit">${r === giri.length - 1 ? icon('coppa', 'ic sm') : ''}${nome}<small>${t ? esc(dataTurno(t)) : ''}</small></p><div class="cf-b-corpo">${corpo}</div></div>`;
+  }).join('');
+  const campione = c?.campione ? `<p class="cf-b-campione">${icon('coppa', 'ic sm')} Campione: <b>${nomeSq(c.campione)}</b></p>` : '';
+  // coi nomi il tabellone è più largo dello schermo: si apre sul turno in corso e il successivo
+  const col = nomi ? Math.min(c.tabellone.length - 1, giri.length - 2) : 0;
+  return `<div class="cf-b-scorri" data-col="${col}"><div class="cf-b cf-b-${giri.length}${nomi ? ' nomi' : ''}">${colonne}</div></div>${nomi ? '<p class="cf-b-scorri-nota">Scorri di lato per tutto il tabellone</p>' : ''}${campione}`;
 }
-
-/** Lo schema del tabellone prima dei nomi: chi incontra chi, secondo il formato. */
-function alberoFinto(f) {
-  const casella = (titolo, chi, cls = '') => `<span class="${cls}">${titolo}<b>${chi}</b></span>`;
-  const fin = `<div class="cf-freccia" aria-hidden="true">›</div><div class="cf-col">${casella(`${icon('coppa', 'ic sm')} Finale`, 'secca', 'cf-fin')}</div>`;
-  if (!f || f.tabellone === 4) {
-    return `<div class="cf-albero"><div class="cf-col">${casella('Semifinale 1', '1ª – 4ª')}${casella('Semifinale 2', '2ª – 3ª')}</div>${fin}</div>`;
-  }
-  const q = f.gironi === 4 ? ['1ª A – 2ª B', '1ª C – 2ª D', '1ª B – 2ª A', '1ª D – 2ª C'] : ['1ª A – 4ª B', '2ª B – 3ª A', '1ª B – 4ª A', '2ª A – 3ª B'];
-  return `<div class="cf-albero cf-albero-8"><div class="cf-col">${q.map((x, i) => casella(`Quarto ${i + 1}`, x)).join('')}</div><div class="cf-freccia" aria-hidden="true">›</div>
-    <div class="cf-col">${casella('Semifinale 1', 'Q1 – Q2')}${casella('Semifinale 2', 'Q3 – Q4')}</div>${fin}</div>`;
+/** «sab 6/3» del turno vero, o «da decidere» se la FSGC non l'ha ancora messo in calendario. */
+function dataTurno(t) {
+  const d = chiusuraTurno(cal(), t.n);
+  return d ? dateIt(d) : 'da decidere';
 }
 
 function laTuaCoppa(m) {
   const d = m.dove, c = m.c;
   const iscritto = !!CS.formazione(1, io());
-  if (!m.sorteggiato) {
-    const n = m.totale;
-    return `<div class="a-card fs-hero cf-hero"><span class="chip">${icon('coppa', 'ic sm')} La tua coppa</span>
-      <h3>${iscritto ? 'Sei iscritto alla coppa' : 'Entra nella coppa con la formazione dei quarti'}</h3>
-      <p class="small muted">${iscritto ? 'Puoi cambiare la formazione fino alla chiusura.' : 'Basta schierare la formazione qui sotto: è gratis e non tocca la rosa della tua lega.'} Il sorteggio dei gironi si fa alla chiusura, ${m.primo ? quando(m.primo) : 'al primo turno'}${n ? `: per ora ${n === 1 ? 'c\'è 1 squadra' : `ci sono ${n} squadre`} in coppa` : ''}.</p></div>`;
-  }
+  if (!m.sorteggiato) return testata(m, iscritto);
   if (!c?.formato) return '';
   const riga = d?.riga;
   const prossima = () => {
@@ -145,7 +169,8 @@ function laTuaCoppa(m) {
     const s = p?.sfide.find((x) => x.a === io() || x.b === io());
     if (!s) return '';
     const avv = s.a === io() ? s.b : s.a;
-    return `<p class="cf-prossima">Prossima sfida · <b>${turno(p.giornata).nome}</b>: contro ${avv ? `<b>${nomeSq(avv)}</b>` : 'la media del girone'}</p>`;
+    const quando2 = chiusuraTurno(cal(), p.giornata);
+    return `<p class="cf-prossima">Prossima sfida${quando2 ? ` · <b>${dateIt(quando2)}</b>` : ''}: contro ${avv ? `<b>${nomeSq(avv)}</b>` : 'la media del girone'}</p>`;
   };
   const testi = {
     'non iscritto': ['Non sei in coppa', 'Alla coppa si entrava con la formazione dei quarti di andata. Ci vediamo alla prossima edizione.'],
@@ -156,7 +181,8 @@ function laTuaCoppa(m) {
     campione: ['Hai vinto la Coppa Fantatitano', c.finale ? `Finale ${fmt(c.finale.gare[0][0])} – ${fmt(c.finale.gare[0][1])}` : ''],
     fuori: [`Sei fuori: ${esc(d?.dove || '')}`, d?.avversario ? `Ti ha eliminato ${nomeSq(d.avversario)}.` : riga ? `Hai chiuso ${riga.posto}° con ${riga.punti} punti.` : ''],
   }[d?.stato] || ['', ''];
-  return `<div class="a-card fs-hero cf-hero"><span class="chip">${icon('coppa', 'ic sm')} La tua coppa</span><h3>${testi[0]}</h3><p class="small muted">${testi[1]}</p>${d?.stato === 'gironi' ? prossima() : ''}</div>`;
+  return `<div class="a-card cf-top cf-hero"><div class="cf-top-su"><span class="cf-top-ico">${icon('coppa')}</span><div><span class="cf-top-k">La tua coppa</span><h3>${testi[0]}</h3></div></div>
+    <p class="cf-top-stato si">${testi[1]}</p>${d?.stato === 'gironi' ? prossima() : ''}</div>`;
 }
 
 function campione(c) {
@@ -169,6 +195,7 @@ function campione(c) {
 
 // ---------------------------------------------------------------- la formazione di coppa
 let bozza = null;   // { n, titolari: [5], riserva, capitano, squadra }
+let modifica = false;   // la formazione consegnata si mostra corta; «Modifica» la riapre
 const SLOT = [['P', 'Portiere'], ['D', 'Difensore'], ['C', 'Centrocampista'], ['A', 'Attaccante'], ['*', 'Quinto titolare'], ['R', 'Riserva']];
 function giocatoriInGara(n) {
   const sqd = squadreInGara(cal(), n);
@@ -193,6 +220,18 @@ function formazioneHtml(m) {
   if (!inGara) return '';
   const sqd = squadreInGara(cal(), t.n);
   const chiude = chiusuraTurno(cal(), t.n);
+  const consegnata = CS.formazione(t.n, io());
+  if (consegnata && !modifica) {
+    // già consegnata: i sei giocatori in breve, così la pagina resta sulla coppa
+    const chi = [...consegnata.titolari, consegnata.riserva].map((id) => {
+      const g = giocatore(id);
+      return `<div class="cf-mia-g">${roleChip(g?.role || '?')}<span><b>${esc(g?.lastName || id)}${id === consegnata.capitano ? ' <i class="fx-c">C</i>' : ''}${id === consegnata.riserva ? ' <i class="fx-c v">R</i>' : ''}</b><small>${esc(nomeClub(g?.clubId))}</small></span></div>`;
+    }).join('');
+    return `${sec('La tua formazione', 'consegnata')}
+      <div class="a-card cf-mia"><div class="cf-mia-gr">${chi}</div>
+      <p class="cf-chiude">${icon('clock', 'ic sm')} ${esc(t.nome)}: puoi cambiarla fino a ${quando(chiude)}</p>
+      <button class="a-btn sec" id="cf-modifica">Modifica la formazione</button></div>`;
+  }
   const b = bozzaDi(t.n);
   const tutti = giocatoriInGara(t.n);
   const scelti = [...b.titolari, b.riserva];
@@ -250,42 +289,48 @@ function mieiPunti(m) {
  */
 function anteprima(m) {
   if (m.sorteggiato) return '';
-  const n = m.totale;
-  const f = formato(n);
+  const f = formato(m.totale);
   const quando1 = m.primo ? quando(m.primo) : 'alla chiusura dei quarti';
-  const formatoTxt = !f ? `Servono almeno 4 squadre per fare i gironi: ora ${n === 1 ? 'c\'è 1 squadra' : `sono ${n}`}.`
-    : f.gironi === 4 ? `Con ${n} squadre: quattro gironi, A, B, C e D. Passano ai quarti le prime 2 di ogni girone: 8 squadre.`
-      : f.gironi === 2 ? `Con ${n} squadre: due gironi, A e B. Passano ai quarti le prime 4 di ogni girone: 8 squadre.`
-        : `Con ${n} squadre: un girone unico, passano in semifinale le prime 4.`;
-  // Alex, 22/11: «vorrei vedere man mano che la gente si iscrive i tabelloni che si
-  // vanno a creare». I gironi veri, coi nomi, rifatti dal sorteggio a ogni iscrizione.
-  const ids = m.ids;
-  const prov = f && ids.length >= 4 ? coppaFantatitano(ids, () => null) : null;
   let gironiHtml = '';
-  if (prov?.formato) {
-    const gironi = prov.gironi;
+  if (m.prov?.formato) {
+    const gironi = m.prov.gironi;
     const scelto = gironi.find((g) => g.nome === gironeScelto) || gironi.find((g) => g.membri.includes(io())) || gironi[0];
-    const nomeG = (g) => (prov.formato.gironi > 1 ? `Girone ${g.nome}` : 'Girone unico');
-    const schede = gironi.length > 1 ? `<div class="seg seg-cls cf-schede" role="tablist">${gironi.map((g) => `<button data-girone="${esc(g.nome)}" class="${g === scelto ? 'on' : ''}" role="tab">${gironi.length > 2 ? esc(g.nome) : esc(nomeG(g))}${g.membri.includes(io()) ? (gironi.length > 2 ? ' · tuo' : ' · il tuo') : ''}</button>`).join('')}</div>` : '';
+    const nomeG = (g) => (m.prov.formato.gironi > 1 ? `Girone ${g.nome}` : 'Girone unico');
     const tutte = aperti.has(`prov-${scelto.nome}`);
     const mio = scelto.membri.indexOf(io());
-    const mostra = scelto.membri.filter((id, i) => tutte || i < 8 || i === mio);
-    const righe = mostra.map((id) => `<div class="vr${mia(id)}">${stemma(id)}<span class="nm"><b>${nomeSq(id)}</b><span>${id === io() ? 'la tua squadra' : 'in coppa'}</span></span></div>`).join('');
+    const mostra = scelto.membri.filter((id, i) => tutte || i < 12 || i === mio);
     const altre = !tutte && scelto.membri.length > mostra.length ? `<button class="cf-tutte" data-tutte="prov-${esc(scelto.nome)}">Mostra tutte le ${scelto.membri.length} squadre</button>` : '';
-    gironiHtml = `<p class="cf-etichetta">Gironi provvisori · ${esc(nomeG(scelto))}, ${scelto.membri.length} squadre</p>${schede}<div class="fs-list cf-prov">${righe}${altre}</div>
-      <p class="small muted" style="margin:0">Cambiano a ogni nuova iscrizione. Alla chiusura, ${quando1}, restano questi e partono le sfide.</p>`;
-  } else if (ids.length) {
-    gironiHtml = `<p class="cf-etichetta">In coppa finora</p><div class="fs-list cf-prov">${ids.map((id) => `<div class="vr${mia(id)}">${stemma(id)}<span class="nm"><b>${nomeSq(id)}</b></span></div>`).join('')}</div>`;
+    gironiHtml = `${sec('I gironi', 'provvisori')}${schedeGironi(gironi, scelto, nomeG)}
+      <div class="a-card cf-gr-card"><p class="cf-gr-tit"><b>${esc(nomeG(scelto))}</b><span>${scelto.membri.length} squadre · passano le prime ${m.prov.formato.passano}</span></p>
+      <div class="cf-gr">${mostra.map((id) => `<div class="cf-gr-sq${mia(id)}">${stemma(id)}<span class="cf-n">${nomeSq(id)}</span>${id === io() ? '<i>TU</i>' : ''}</div>`).join('')}</div>${altre}
+      <p class="small muted cf-gr-nota">Cambiano a ogni nuova iscrizione. Alla chiusura, ${quando1}, restano questi e partono le sfide.</p></div>`;
   }
-  return `${sec('La coppa che si forma', 'fino al 25/11')}
-    <div class="a-card cf-anteprima">
-      <p class="cf-num"><b>${n}</b><span>${n === 1 ? 'squadra in coppa' : 'squadre in coppa'} finora</span></p>
-      <p class="small muted" style="margin:0">${formatoTxt} Il sorteggio è uguale su tutti i telefoni. Le formazioni restano segrete fino alla chiusura.</p>
-      ${gironiHtml}
-      <p class="cf-etichetta">Tabellone</p>
-      ${alberoFinto(f)}
-      <p class="small muted" style="margin:0">Dopo la chiusura qui trovi le classifiche coi punti, le tue sfide col ✓ e i tuoi fantapunti giocatore per giocatore.</p>
-    </div>`;
+  return `${gironiHtml}${sec('Il tabellone', f?.tabellone === 4 ? 'semifinali e finale' : 'dai quarti alla finale')}<div class="a-card cf-b-card">${bracket(f, null)}</div>`;
+}
+
+/** Le schede dei gironi: A B C D, il tuo segnato. */
+function schedeGironi(gironi, scelto, nome) {
+  if (gironi.length < 2) return '';
+  return `<div class="seg seg-cls cf-schede" role="tablist">${gironi.map((g) => `<button data-girone="${esc(g.nome)}" class="${g === scelto ? 'on' : ''}" role="tab">${gironi.length > 2 ? esc(g.nome) : esc(nome(g))}${g.membri.includes(io()) ? (gironi.length > 2 ? ' · tuo' : ' · il tuo') : ''}</button>`).join('')}</div>`;
+}
+
+/** In cima, prima della chiusura: la coppa, il conto alla rovescia, i numeri e dove sei. */
+function testata(m, iscritto) {
+  const f = formato(m.totale);
+  const resta = m.primo ? m.primo.getTime() - ora() : 0;
+  const giorni = Math.floor(resta / 864e5), ore = Math.floor((resta % 864e5) / 36e5);
+  const manca = resta <= 0 ? '' : giorni ? `mancano ${giorni === 1 ? '1 giorno' : `${giorni} giorni`}${ore ? ` e ${ore === 1 ? '1 ora' : `${ore} ore`}` : ''}`
+    : ore ? `mancano ${ore === 1 ? '1 ora' : `${ore} ore`}` : 'meno di un\'ora';
+  const stat = (n, cosa) => `<div><b>${n}</b><span>${cosa}</span></div>`;
+  const mioG = m.prov?.gironi?.find((g) => g.membri.includes(io()));
+  const stato = iscritto
+    ? `<p class="cf-top-stato si">${icon('check', 'ic sm')}<span>Sei dentro con <b>${nomeSq(io())}</b>${mioG && m.prov.formato.gironi > 1 ? ` · per ora nel girone ${esc(mioG.nome)}` : ''}</span></p>`
+    : `<p class="cf-top-stato">Schiera qui sotto 5 giocatori e una riserva per entrare: è gratis e non tocca la rosa della tua lega.</p>`;
+  return `<div class="a-card cf-top">
+    <div class="cf-top-su"><span class="cf-top-ico">${icon('coppa')}</span><div><span class="cf-top-k">Sulla Coppa Titano vera</span><h2>${NOME}</h2></div></div>
+    <p class="cf-top-chiude">${icon('clock', 'ic sm')}<span>Chiude ${m.primo ? quando(m.primo) : 'al primo turno'}${manca ? ` · <b>${manca}</b>` : ''}</span></p>
+    ${f ? `<div class="cf-stat">${stat(m.totale, 'squadre')}${stat(f.gironi, f.gironi === 1 ? 'girone' : 'gironi')}${stat(f.tabellone, f.tabellone === 8 ? 'ai quarti' : 'in semifinale')}</div>` : ''}
+    ${stato}</div>`;
 }
 
 // ---------------------------------------------------------------- i gironi: il tuo, e gli altri a un tocco
@@ -299,8 +344,7 @@ function sezioneGironi(gironi, c, m, conTab) {
   if (!gironi.length) return '';
   const nome = (g) => (c.formato.gironi > 1 ? `Girone ${g.nome}` : 'Girone unico');
   const scelto = gironi.find((g) => g.nome === gironeScelto) || gironi.find((g) => g.membri.includes(io())) || gironi[0];
-  const schede = gironi.length > 1
-    ? `<div class="seg seg-cls cf-schede" role="tablist">${gironi.map((g) => `<button data-girone="${esc(g.nome)}" class="${g === scelto ? 'on' : ''}" role="tab">${gironi.length > 2 ? esc(g.nome) : esc(nome(g))}${g.membri.includes(io()) ? (gironi.length > 2 ? ' · tuo' : ' · il tuo') : ''}</button>`).join('')}</div>` : '';
+  const schede = schedeGironi(gironi, scelto, nome);
   return `${sec(conTab ? 'I gironi' : 'Gironi', `${esc(nome(scelto))} · ${scelto.classifica.length} squadre`)}${schede}${tabellaGirone(scelto, c.formato.passano)}${conTab ? '' : sfideGirone(scelto, m)}`;
 }
 
@@ -318,8 +362,9 @@ export function disegna(m = modello()) {
     ${formazioneHtml(m)}
     ${anteprima(m)}
     ${mieiPunti(m)}
-    ${conTab ? `${sec('Tabellone')}${tabellone(c)}` : ''}
+    ${conTab ? `${sec('Il tabellone')}<div class="a-card cf-b-card">${bracket(c.formato, c)}</div>` : ''}
     ${c?.formato ? sezioneGironi(gironi, c, m, conTab) : ''}
+    ${c?.formato && !conTab ? `${sec('Il tabellone', 'dopo i gironi')}<div class="a-card cf-b-card">${bracket(c.formato, c)}</div>` : ''}
     ${m.sorteggiato && !c?.formato ? empty(`La coppa non si gioca: alla chiusura dei quarti le squadre erano ${m.ids.length}, ne servivano almeno 4.`) : ''}
     ${regole()}
   </main>`;
@@ -337,7 +382,7 @@ function regole() {
 }
 
 export const coppa = {
-  title: NOME, appbar: 'back', sub: () => NOME,
+  title: NOME, appbar: 'back', testata: () => NOME, sub: () => 'Si gioca sulla Coppa Titano',
   render() { return disegna(); },
   mount(root, ctx) {
     if (!finto && !CS.stato().caricato) {
@@ -345,6 +390,10 @@ export const coppa = {
       CS.carica().then(() => { if (location.hash === h) ctx.render(); });
     }
     root.querySelectorAll('[data-tutte]').forEach((x) => x.addEventListener('click', () => { aperti.add(x.dataset.tutte); ctx.render(); }));
+    root.querySelectorAll('.cf-b-scorri').forEach((x) => {
+      const col = x.querySelectorAll('.cf-b-col')[Number(x.dataset.col) || 0];
+      if (col && x.scrollWidth > x.clientWidth) x.scrollLeft = col.offsetLeft - 6;
+    });
     root.querySelectorAll('[data-girone]').forEach((x) => x.addEventListener('click', () => { gironeScelto = x.dataset.girone; ctx.render(); }));
     const m = modello();
     const t = m.aperto; if (!t) return;
@@ -355,6 +404,7 @@ export const coppa = {
       if (b.capitano && !b.titolari.includes(b.capitano)) b.capitano = null;
       ctx.render();
     }));
+    root.querySelector('#cf-modifica')?.addEventListener('click', () => { modifica = true; ctx.render(); });
     root.querySelector('#cf-cap')?.addEventListener('change', (e) => { b.capitano = e.target.value || null; ctx.render(); });
     root.querySelector('#cf-salva')?.addEventListener('click', async (e) => {
       // Alex, 22/11: il nome non si chiede, è quello della squadra nella lega
@@ -363,7 +413,7 @@ export const coppa = {
       e.target.disabled = true;
       try {
         await CS.salva(t.n, { ...b, squadra: nome, colore: me?.color, iniziali: me?.initials });
-        bozza = null;
+        bozza = null; modifica = false;
         ctx.toast(t.n === 1 ? 'Sei in coppa' : 'Formazione di coppa consegnata');
         ctx.render();
       } catch (err) { ctx.toast(err.message); e.target.disabled = false; }

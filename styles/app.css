@@ -3249,15 +3249,13 @@ b > .stemma.xs:last-child{margin:0 0 0 6px}
 .bmsg .chip{font-size:11px;padding:2px 8px}
 
 /* ---- Coppa Fantatitano (src/views/coppa.js) ---- */
-.cf-hero h3{font:400 24px/1.1 var(--font-title, 'Anton', sans-serif)}
+.cf-hero h3{margin:2px 0 0;font:400 24px/1.05 var(--font-title, 'Anton', sans-serif)}
 .cf-prossima{margin:4px 0 0;font-size:13px}
 .cf-linea{display:flex;align-items:center;gap:8px;padding:4px 12px;font-size:11px;color:var(--primary);text-transform:uppercase;letter-spacing:.06em}
 .cf-linea::before,.cf-linea::after{content:'';flex:1;border-top:1px dashed var(--primary)}
 .cf-salto{padding:2px 12px;color:var(--muted);text-align:center}
 .cf-tutte{display:block;width:100%;padding:10px 12px;border:0;border-top:1px solid var(--border);background:none;color:var(--primary);font:600 13px var(--font-body, inherit);cursor:pointer}
 .cf-ok{font-style:normal;color:var(--success, #1E9E5A);font-weight:700}
-.cf-gare{display:flex;justify-content:center;gap:16px;padding:0 12px 10px;font-size:12px;color:var(--muted)}
-.cf-gare b{font:700 12px var(--font-data);color:var(--text)}
 .cf-form{display:flex;flex-direction:column;gap:8px}
 .cf-slot{display:flex;flex-direction:column;gap:4px}
 .cf-ruolo{display:flex;align-items:center;gap:8px;font-size:13px}
@@ -3283,19 +3281,83 @@ b > .stemma.xs:last-child{margin:0 0 0 6px}
 .cf-home.nuovo{border:1.5px solid color-mix(in srgb, var(--c-lime,#D9F51F) 55%, transparent)}
 .cf-home.nuovo .ce-home-ico .ic{width:32px;height:32px}
 /* coppa prima del sorteggio: cosa si vedrà (coppa.js, anteprima) */
-.cf-anteprima{display:flex;flex-direction:column;gap:10px}
-.cf-num{margin:0;display:flex;align-items:baseline;gap:10px}
-.cf-num b{font:400 44px/1 var(--font-title, 'Anton', sans-serif);color:var(--primary)}
-.cf-num span{font-size:14px;color:var(--text-muted)}
-.cf-passi{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:6px;font-size:13.5px}
-.cf-etichetta{margin:6px 0 0;font:700 11px var(--font-body);text-transform:uppercase;letter-spacing:.06em;color:var(--text-muted)}
-.cf-finta{border:1px dashed var(--border);border-radius:14px;opacity:.85}
-.cf-finto{width:30px;height:30px;border-radius:50%;background:color-mix(in srgb,var(--text-muted) 30%,transparent)}
-.cf-albero{display:flex;align-items:center;gap:10px}
-.cf-col{flex:1;display:flex;flex-direction:column;gap:8px}
-.cf-col span{display:flex;flex-direction:column;gap:2px;padding:8px 12px;border:1px dashed var(--border);border-radius:12px;font-size:12px;color:var(--text-muted)}
-.cf-col span b{font-size:13.5px;color:var(--text)}
-.cf-fin{align-items:flex-start}
-.cf-freccia{font-size:28px;color:var(--text-muted)}
 .cf-schede{margin-bottom:10px}
-.cf-albero-8 .cf-col span{padding:6px 10px}
+
+/* ---- Coppa Fantatitano: testata, gironi a griglia, tabellone ad albero (Alex, 22/11) ---- */
+.cf-top{display:flex;flex-direction:column;gap:12px;position:relative;overflow:hidden;
+  background:linear-gradient(135deg,color-mix(in srgb,var(--primary) 28%,var(--surface,#fff)) 0%,var(--surface,#fff) 70%)}
+.cf-top::after{content:'';position:absolute;right:-40px;top:-40px;width:160px;height:160px;border-radius:50%;
+  background:radial-gradient(circle,color-mix(in srgb,var(--c-lime,#D9F51F) 30%,transparent),transparent 70%);pointer-events:none}
+.cf-top-su{display:flex;align-items:center;gap:12px}
+.cf-top-ico{display:grid;place-items:center;width:52px;height:52px;border-radius:16px;flex:none;
+  background:var(--c-lime,#D9F51F);color:#0B1220}
+.cf-top-ico .ic{width:30px;height:30px}
+.cf-top-k{font:700 11px var(--font-body);text-transform:uppercase;letter-spacing:.08em;color:var(--text-muted)}
+.cf-top h2{margin:2px 0 0;font:400 28px/1 var(--font-title,'Anton',sans-serif);letter-spacing:.01em}
+.cf-top-chiude{margin:0;display:flex;align-items:center;gap:6px;font-size:13px}
+.cf-top-chiude b{color:var(--primary)}
+.cf-stat{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.cf-stat div{display:flex;flex-direction:column;align-items:center;gap:2px;padding:10px 4px;border-radius:12px;
+  background:color-mix(in srgb,var(--text) 6%,transparent)}
+.cf-stat b{font:400 26px/1 var(--font-title,'Anton',sans-serif);color:var(--primary)}
+.cf-stat span{font-size:11.5px;color:var(--text-muted)}
+.cf-top-stato{margin:0;display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text-muted)}
+.cf-top-stato.si{color:var(--text)}
+.cf-top-stato.si .ic{color:var(--success,#1E9E5A);flex:none}
+
+.cf-gr-card{display:flex;flex-direction:column;gap:10px}
+.cf-gr-tit{margin:0;display:flex;align-items:baseline;justify-content:space-between;gap:8px}
+.cf-gr-tit b{font:400 20px/1 var(--font-title,'Anton',sans-serif)}
+.cf-gr-tit span{font-size:12px;color:var(--text-muted)}
+.cf-gr{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.cf-gr-sq{display:flex;align-items:center;gap:8px;min-width:0;padding:8px 10px;border-radius:12px;
+  background:color-mix(in srgb,var(--text) 5%,transparent);border:1px solid transparent;font-size:13px;font-weight:600}
+.cf-gr-sq .fs-crest{width:26px;height:26px;font-size:9px;flex:none}
+.cf-gr-sq .cf-n{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cf-gr-sq i{font:800 10px var(--font-body);font-style:normal;padding:2px 6px;border-radius:6px;background:var(--c-lime,#D9F51F);color:#0B1220}
+.cf-gr-sq.fs-mia{border-color:var(--c-lime,#D9F51F);background:color-mix(in srgb,var(--c-lime,#D9F51F) 12%,transparent)}
+.cf-gr-nota{margin:0}
+.cf-gr-card .cf-tutte{border-radius:10px}
+
+.cf-b-card{padding:14px 8px}
+.cf-b-scorri{position:relative;overflow-x:auto;-webkit-overflow-scrolling:touch;padding:0 6px}
+.cf-b{display:grid;gap:18px;align-items:stretch}
+.cf-b-3{grid-template-columns:repeat(3,minmax(94px,1fr))}
+.cf-b-2{grid-template-columns:minmax(120px,1.2fr) minmax(110px,1fr)}
+.cf-b-3.nomi{grid-template-columns:150px 146px 160px}
+.cf-b-2.nomi{grid-template-columns:150px 160px}
+.cf-b-col{display:flex;flex-direction:column;min-width:0}
+.cf-b-tit{margin:0 0 8px;display:flex;align-items:center;gap:4px;flex-wrap:wrap;font:700 11px var(--font-body);text-transform:uppercase;letter-spacing:.06em;color:var(--text-muted)}
+.cf-b-tit small{width:100%;font-weight:500;text-transform:none;letter-spacing:0;font-size:10.5px}
+.cf-b-tit .ic{color:var(--c-lime,#D9F51F)}
+.cf-b-corpo{flex:1;display:flex;flex-direction:column}
+.cf-b-coppia{flex:1;display:flex;flex-direction:column;justify-content:space-around;position:relative;padding:2px 0}
+.cf-b-coppia>.cf-b-gara{margin:5px 0}
+.cf-b-col:not(:last-child) .cf-b-coppia::after{content:'';position:absolute;right:-9px;top:25%;bottom:25%;width:9px;
+  border:1.5px solid var(--border);border-left:0;border-radius:0 8px 8px 0}
+.cf-b-gara{position:relative;border-radius:10px;background:color-mix(in srgb,var(--text) 6%,transparent);border:1px solid var(--border);overflow:visible}
+.cf-b-col:not(:first-child) .cf-b-gara::before{content:'';position:absolute;left:-10px;top:50%;width:10px;border-top:1.5px solid var(--border)}
+.cf-b-gara.vuota{background:none;border-style:dashed}
+.cf-b-gara.mia{border-color:var(--c-lime,#D9F51F);box-shadow:0 0 0 1px var(--c-lime,#D9F51F) inset}
+.cf-b-gara.cf-b-fin{border-color:color-mix(in srgb,var(--c-lime,#D9F51F) 70%,transparent);
+  background:color-mix(in srgb,var(--c-lime,#D9F51F) 10%,transparent)}
+.cf-b-riga{display:flex;align-items:center;gap:6px;padding:6px 8px;min-width:0;font-size:12px;color:var(--text-muted)}
+.cf-b-riga+.cf-b-riga{border-top:1px solid var(--border)}
+.cf-b-gara:not(.vuota) .cf-b-riga{color:var(--text);font-weight:600}
+.cf-b-riga .cf-n{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cf-b-riga b{font:700 12px var(--font-data);min-width:0}
+.cf-b-riga .fs-crest{width:18px;height:18px;font-size:7px;border-width:1px;flex:none}
+.cf-b-vuoto{width:8px;height:8px;border-radius:50%;flex:none;background:color-mix(in srgb,var(--text-muted) 45%,transparent)}
+.cf-b-riga.vince b{color:var(--success,#1E9E5A)}
+.cf-b-riga.perde{opacity:.55}
+.cf-b-riga.mia span{color:var(--primary)}
+.cf-b-scorri-nota{margin:8px 6px 0;font-size:11.5px;color:var(--text-muted)}
+.cf-b-campione{margin:12px 6px 0;display:flex;align-items:center;gap:6px;font-size:13px}
+
+.cf-mia{display:flex;flex-direction:column;gap:10px}
+.cf-mia-gr{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.cf-mia-g{display:flex;align-items:center;gap:8px;min-width:0;padding:8px;border-radius:12px;background:color-mix(in srgb,var(--text) 5%,transparent)}
+.cf-mia-g>span{display:flex;flex-direction:column;min-width:0;font-size:13px}
+.cf-mia-g b{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cf-mia-g small{font-size:11px;color:var(--text-muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cf-mia .a-btn{margin:0}

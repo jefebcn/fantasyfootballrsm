@@ -18,6 +18,7 @@ import { COPPA_CALENDARIO, COPPA_REFERTI } from '../coppa-dati.js';
 import {
   NOME, TURNI, turno, squadreInGara, chiusuraTurno, turnoConcluso, votiDelTurno, punteggio,
   coppaFantatitano, dovesei, validaFormazione, partiteDelTurno, formato,
+  eApp, squadreApp, formazioneApp,
 } from '../coppa-fanta.js';
 
 // ---------------------------------------------------------------- fonti (vere o simulate)
@@ -38,7 +39,13 @@ const sulTurno = (t) => `${/^Quarti/.test(t.nome) ? 'sui' : /^Semifinali/.test(t
 // ---------------------------------------------------------------- il modello
 export function modello() {
   const st = CS.stato();
-  const ids = CS.iscritti();
+  const primo = chiusuraTurno(cal(), 1);
+  const sorteggiato = primo && primo.getTime() <= ora();
+  // gli iscritti veri, e le squadre dell'app che portano la coppa a 32 (coppa-fanta.js)
+  const reali = sorteggiato ? CS.iscritti() : CS.iscrittiFinora();
+  const app = squadreApp(Math.max(reali.length, sorteggiato ? 0 : st.contati || 0));
+  const ids = [...reali, ...app];
+  const totale = Math.max(reali.length, sorteggiato ? 0 : st.contati || 0) + app.length;
   const voti = new Map();
   const votiDi = (n) => {
     if (!voti.has(n)) voti.set(n, votiDelTurno({ calendario: cal(), referti: ref(), giocatore, n }));
@@ -47,14 +54,12 @@ export function modello() {
   const conclusi = new Set(TURNI.filter((t) => turnoConcluso(cal(), ref(), t.n)).map((t) => t.n));
   const punti = (n, id) => {
     if (!conclusi.has(n)) return null;
-    const f = CS.formazione(n, id);
+    const f = eApp(id) ? formazioneApp(id, n, giocatoriInGara(n)) : CS.formazione(n, id);
     return f ? punteggio(f, votiDi(n)).totale : 0;
   };
-  const primo = chiusuraTurno(cal(), 1);
-  const sorteggiato = primo && primo.getTime() <= ora();
   const c = sorteggiato ? coppaFantatitano(ids, punti) : null;
   const aperto = TURNI.find((t) => { const x = chiusuraTurno(cal(), t.n); return x && x.getTime() > ora(); }) || null;
-  return { st, ids, c, punti, conclusi, aperto, sorteggiato, primo, dove: c ? dovesei(c, io()) : null, votiDi };
+  return { st, ids, totale, c, punti, conclusi, aperto, sorteggiato, primo, dove: c ? dovesei(c, io()) : null, votiDi };
 }
 
 // ---------------------------------------------------------------- pezzi
@@ -127,10 +132,10 @@ function laTuaCoppa(m) {
   const d = m.dove, c = m.c;
   const iscritto = !!CS.formazione(1, io());
   if (!m.sorteggiato) {
-    const n = m.st.contati || 0;
+    const n = m.totale;
     return `<div class="a-card fs-hero cf-hero"><span class="chip">${icon('coppa', 'ic sm')} La tua coppa</span>
       <h3>${iscritto ? 'Sei iscritto alla coppa' : 'Entra nella coppa con la formazione dei quarti'}</h3>
-      <p class="small muted">${iscritto ? 'Puoi cambiare la formazione fino alla chiusura.' : 'Basta schierare la formazione qui sotto: è gratis e non tocca la rosa della tua lega.'} Il sorteggio dei gironi si fa alla chiusura, ${m.primo ? quando(m.primo) : 'al primo turno'}${n ? `: per ora ${n === 1 ? 'c\'è 1 iscritto' : `ci sono ${n} iscritti`}` : ''}.</p></div>`;
+      <p class="small muted">${iscritto ? 'Puoi cambiare la formazione fino alla chiusura.' : 'Basta schierare la formazione qui sotto: è gratis e non tocca la rosa della tua lega.'} Il sorteggio dei gironi si fa alla chiusura, ${m.primo ? quando(m.primo) : 'al primo turno'}${n ? `: per ora ${n === 1 ? 'c\'è 1 squadra' : `ci sono ${n} squadre`} in coppa` : ''}.</p></div>`;
   }
   if (!c?.formato) return '';
   const riga = d?.riga;
@@ -245,16 +250,16 @@ function mieiPunti(m) {
  */
 function anteprima(m) {
   if (m.sorteggiato) return '';
-  const n = m.st.contati || 0;
+  const n = m.totale;
   const f = formato(n);
   const quando1 = m.primo ? quando(m.primo) : 'alla chiusura dei quarti';
-  const formatoTxt = !f ? `Servono almeno 4 iscritti per fare i gironi: ora ${n === 1 ? 'c\'è 1 iscritto' : `sono ${n}`}.`
-    : f.gironi === 4 ? `Con ${n} iscritti: quattro gironi, A, B, C e D. Passano ai quarti le prime 2 di ogni girone: 8 squadre.`
-      : f.gironi === 2 ? `Con ${n} iscritti: due gironi, A e B. Passano ai quarti le prime 4 di ogni girone: 8 squadre.`
-        : `Con ${n} iscritti: un girone unico, passano in semifinale le prime 4.`;
+  const formatoTxt = !f ? `Servono almeno 4 squadre per fare i gironi: ora ${n === 1 ? 'c\'è 1 squadra' : `sono ${n}`}.`
+    : f.gironi === 4 ? `Con ${n} squadre: quattro gironi, A, B, C e D. Passano ai quarti le prime 2 di ogni girone: 8 squadre.`
+      : f.gironi === 2 ? `Con ${n} squadre: due gironi, A e B. Passano ai quarti le prime 4 di ogni girone: 8 squadre.`
+        : `Con ${n} squadre: un girone unico, passano in semifinale le prime 4.`;
   // Alex, 22/11: «vorrei vedere man mano che la gente si iscrive i tabelloni che si
   // vanno a creare». I gironi veri, coi nomi, rifatti dal sorteggio a ogni iscrizione.
-  const ids = CS.iscrittiFinora();
+  const ids = m.ids;
   const prov = f && ids.length >= 4 ? coppaFantatitano(ids, () => null) : null;
   let gironiHtml = '';
   if (prov?.formato) {
@@ -265,16 +270,16 @@ function anteprima(m) {
     const tutte = aperti.has(`prov-${scelto.nome}`);
     const mio = scelto.membri.indexOf(io());
     const mostra = scelto.membri.filter((id, i) => tutte || i < 8 || i === mio);
-    const righe = mostra.map((id) => `<div class="vr${mia(id)}">${stemma(id)}<span class="nm"><b>${nomeSq(id)}</b><span>${id === io() ? 'la tua squadra' : 'iscritta'}</span></span></div>`).join('');
+    const righe = mostra.map((id) => `<div class="vr${mia(id)}">${stemma(id)}<span class="nm"><b>${nomeSq(id)}</b><span>${id === io() ? 'la tua squadra' : 'in coppa'}</span></span></div>`).join('');
     const altre = !tutte && scelto.membri.length > mostra.length ? `<button class="cf-tutte" data-tutte="prov-${esc(scelto.nome)}">Mostra tutte le ${scelto.membri.length} squadre</button>` : '';
     gironiHtml = `<p class="cf-etichetta">Gironi provvisori · ${esc(nomeG(scelto))}, ${scelto.membri.length} squadre</p>${schede}<div class="fs-list cf-prov">${righe}${altre}</div>
       <p class="small muted" style="margin:0">Cambiano a ogni nuova iscrizione. Alla chiusura, ${quando1}, restano questi e partono le sfide.</p>`;
   } else if (ids.length) {
-    gironiHtml = `<p class="cf-etichetta">Iscritte finora</p><div class="fs-list cf-prov">${ids.map((id) => `<div class="vr${mia(id)}">${stemma(id)}<span class="nm"><b>${nomeSq(id)}</b></span></div>`).join('')}</div>`;
+    gironiHtml = `<p class="cf-etichetta">In coppa finora</p><div class="fs-list cf-prov">${ids.map((id) => `<div class="vr${mia(id)}">${stemma(id)}<span class="nm"><b>${nomeSq(id)}</b></span></div>`).join('')}</div>`;
   }
   return `${sec('La coppa che si forma', 'fino al 25/11')}
     <div class="a-card cf-anteprima">
-      <p class="cf-num"><b>${n}</b><span>${n === 1 ? 'squadra iscritta' : 'squadre iscritte'} finora</span></p>
+      <p class="cf-num"><b>${n}</b><span>${n === 1 ? 'squadra in coppa' : 'squadre in coppa'} finora</span></p>
       <p class="small muted" style="margin:0">${formatoTxt} Il sorteggio è uguale su tutti i telefoni. Le formazioni restano segrete fino alla chiusura.</p>
       ${gironiHtml}
       <p class="cf-etichetta">Tabellone</p>
@@ -315,7 +320,7 @@ export function disegna(m = modello()) {
     ${mieiPunti(m)}
     ${conTab ? `${sec('Tabellone')}${tabellone(c)}` : ''}
     ${c?.formato ? sezioneGironi(gironi, c, m, conTab) : ''}
-    ${m.sorteggiato && !c?.formato ? empty(`La coppa non si gioca: alla chiusura dei quarti gli iscritti erano ${m.ids.length}, ne servivano almeno 4.`) : ''}
+    ${m.sorteggiato && !c?.formato ? empty(`La coppa non si gioca: alla chiusura dei quarti le squadre erano ${m.ids.length}, ne servivano almeno 4.`) : ''}
     ${regole()}
   </main>`;
 }
@@ -328,7 +333,7 @@ function regole() {
   return `${sec('Come funziona')}<div class="a-card fs-fasi cf-regole">
     <p>Si gioca solo sulle partite della Coppa Titano vera: i fantapunti vengono dai voti delle partite di coppa, non dal campionato. Una coppa sola per tutti, con una formazione a parte: non serve la rosa della lega.</p>
     ${righe}
-    <p class="small muted">Gironi: 2 sfide a testa, 3 punti a chi fa più fantapunti, 1 a testa in parità; a pari punti conta la differenza fra fantapunti fatti e subiti, poi i fatti. Con 16 iscritti o più 4 gironi e passano le prime 2 di ognuno; da 8 a 15 2 gironi e passano le prime 4: in tutti e due i casi 8 squadre ai quarti. Quarti, semifinali e finale in gara secca: a pari fantapunti passa chi era meglio piazzato nel girone. Il sorteggio è uno solo, alla chiusura dei quarti, ed è uguale su tutti i telefoni.</p></div>`;
+    <p class="small muted">Gironi: 2 sfide a testa, 3 punti a chi fa più fantapunti, 1 a testa in parità; a pari punti conta la differenza fra fantapunti fatti e subiti, poi i fatti. Con 16 squadre o più 4 gironi e passano le prime 2 di ognuno; da 8 a 15 2 gironi e passano le prime 4: in tutti e due i casi 8 squadre ai quarti. Quarti, semifinali e finale in gara secca: a pari fantapunti passa chi era meglio piazzato nel girone. Il sorteggio è uno solo, alla chiusura dei quarti, ed è uguale su tutti i telefoni. Per completare i gironi giocano anche squadre dell'app, finché gli iscritti non bastano a riempirli.</p></div>`;
 }
 
 export const coppa = {

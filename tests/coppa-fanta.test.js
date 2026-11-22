@@ -6,7 +6,9 @@ import { COPPA_CALENDARIO, COPPA_REFERTI } from '../src/coppa-dati.js';
 import {
   TURNI, formato, coppaFantatitano, dovesei, validaFormazione, punteggio, votiDelTurno,
   squadreInGara, chiusuraTurno, turnoAperto, partiteDelTurno,
+  SQUADRE_COPPA, squadreApp, squadraApp, formazioneApp, eApp,
 } from '../src/coppa-fanta.js';
+import { buildSeason } from '../src/data.js';
 
 const ids = (n) => Array.from({ length: n }, (_, i) => `u${String(i).padStart(3, '0')}`);
 // punteggi finti ma fissi: dipendono da chi e dal turno
@@ -123,4 +125,38 @@ test('i voti di un turno vengono solo dai tabellini di coppa', () => {
   const voti = votiDelTurno({ calendario: cal, referti: [{ ...r, g: TURNI[0].fsgc }], giocatore: (id) => G.get(id), n: 1 });
   assert.ok(voti.get('virtus_19').fantaVote > 6);   // gol all'83'
   assert.equal(votiDelTurno({ calendario: cal, referti: [], giocatore: (id) => G.get(id), n: 1 }), null);
+});
+
+test('le squadre dell\'app portano la coppa a 32 e calano a ogni iscrizione vera', () => {
+  assert.equal(squadreApp(0).length, 0);           // senza iscritti veri niente coppa finta
+  assert.equal(squadreApp(1).length, SQUADRE_COPPA - 1);
+  assert.equal(squadreApp(20).length, 12);
+  assert.deepEqual(squadreApp(21), squadreApp(20).slice(0, 11));   // ne sparisce una, le altre restano
+  assert.equal(squadreApp(32).length, 0);
+  assert.equal(squadreApp(50).length, 0);
+  const app = squadreApp(1);
+  assert.ok(app.every(eApp) && !eApp('u001'));
+  const nomi = app.map((id) => squadraApp(id).squadra);
+  assert.equal(new Set(nomi).size, nomi.length);
+  assert.ok(app.every((id) => /^#[0-9A-F]{6}$/i.test(squadraApp(id).colore) && squadraApp(id).iniziali.length <= 3));
+  const c = coppaFantatitano([...ids(10), ...squadreApp(10)], fissi(0));
+  assert.equal(c.gironi.length, 4);
+  assert.ok(c.gironi.every((g) => g.membri.length === 8));
+});
+
+test('la formazione di una squadra dell\'app: valida, sempre la stessa, diversa fra squadre', () => {
+  const base = buildSeason();
+  const G = new Map(base.players.map((p) => [p.id, p]));
+  for (const n of [1, 2]) {
+    const sq = squadreInGara(COPPA_CALENDARIO, n);
+    const inGara = base.players.filter((p) => sq.includes(p.clubId) && !p.doppioneDi && p.isActive !== false);
+    const fs = squadreApp(1).map((id) => formazioneApp(id, n, inGara));
+    for (const f of fs) assert.equal(validaFormazione(f, n, (id) => G.get(id), sq), null);
+    assert.deepEqual(formazioneApp(squadreApp(1)[0], n, [...inGara].reverse()), fs[0]);
+    assert.ok(new Set(fs.map((f) => f.titolari.join())).size > 20);
+  }
+  // in finale, con 2 squadre vere e al massimo 3 a testa
+  const fin = base.players.filter((p) => ['virtus', 'cosmos'].includes(p.clubId) && !p.doppioneDi);
+  const f = formazioneApp(squadreApp(1)[0], 5, fin);
+  assert.equal(validaFormazione(f, 5, (id) => G.get(id), ['virtus', 'cosmos']), null);
 });

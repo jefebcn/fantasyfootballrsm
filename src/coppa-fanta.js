@@ -29,7 +29,7 @@
  */
 import { girone, classificaScontri, mescola } from './futsal-gare.js';
 import { computeRating, DEFAULT_RULES } from './engine.js';
-import { presenzeDalReferto } from './data.js';
+import { presenzeDalReferto, mulberry32 } from './data.js';
 
 export const NOME = 'Coppa Fantatitano';
 export const SEME = 'coppa-fantatitano-2026';
@@ -94,6 +94,65 @@ export function validaFormazione(f, n, giocatore, squadre) {
   if (ruoli.filter((r) => r === 'P').length > 1) return 'Un portiere solo fra i titolari';
   if (!tit.includes(f.capitano)) return 'Il capitano è uno dei titolari';
   return null;
+}
+
+// ---------------------------------------------------------------- le squadre dell'app
+/**
+ * Alex, 22/11: la coppa parte con 32 squadre. Finché gli iscritti veri sono
+ * meno, la completano squadre dell'app con nomi da fantacalcio inventati (mai
+ * presi dalle leghe): entrano nel sorteggio, schierano a ogni turno una
+ * formazione automatica valida e vanno avanti se vincono. Calano di una a ogni
+ * iscrizione vera e spariscono da 32 iscritti in su. Lo dicono le regole
+ * della pagina. Solo in questa coppa: leghe e classifiche non le vedono.
+ */
+export const SQUADRE_COPPA = 32;
+const NOMI_APP = ['Real Borgo', 'Atletico Titano', 'Dynamo Montale', 'Sporting Cesta', 'Tre Torri FC', 'Inter Mezzo',
+  'Olimpia Guaita', 'Deportivo Rocca', 'Racing Titanio', 'AC Piadina', 'Borussia Cassone', 'Lokomotiv Funivia',
+  'Real Sangiovese', 'FC Nebbia', 'Spartak Stradone', 'Ajax Ventoso', 'Vecchie Glorie', 'Sporting Tramontana',
+  'Athletic Strozzapreti', 'FC Ferragosto', 'Panchina Lunga', 'Rapid Monte', 'Calcio Sbilenco', 'Real Brodetto',
+  'FC Contropiede', 'Atletico Fuorigioco', 'Dinamo Tagliatella', 'FC Zona Cesarini', 'Polisportiva Corner',
+  'I Pendolari', 'FC Terzo Tempo', 'FC Catenaccio'];
+const COLORI_APP = ['#4B06FC', '#C0392B', '#1E6FB5', '#2E8B57', '#D4A017', '#111111', '#E67E22', '#8E44AD', '#16A085', '#7F8C8D'];
+const PREFISSO_APP = 'cf-app-';
+export const eApp = (id) => typeof id === 'string' && id.startsWith(PREFISSO_APP);
+/** Le squadre dell'app che servono con `reali` iscritti veri (nessuna se non c'è nessuno). */
+export function squadreApp(reali) {
+  const k = reali > 0 ? Math.max(0, Math.min(NOMI_APP.length, SQUADRE_COPPA - reali)) : 0;
+  return Array.from({ length: k }, (_, i) => `${PREFISSO_APP}${String(i + 1).padStart(2, '0')}`);
+}
+/** Nome, colore e iniziali di una squadra dell'app. */
+export function squadraApp(id) {
+  const i = Number(id.slice(PREFISSO_APP.length)) - 1;
+  const nome = NOMI_APP[i] || 'Squadra';
+  return { squadra: nome, colore: COLORI_APP[i % COLORI_APP.length], iniziali: nome.split(' ').map((w) => w[0]).join('').slice(0, 2).toUpperCase() };
+}
+const hash = (s) => { let h = 2166136261; for (const c of String(s)) { h ^= c.charCodeAt(0); h = Math.imul(h, 16777619); } return h >>> 0; };
+/**
+ * La formazione di una squadra dell'app nel turno n, sempre la stessa su tutti
+ * i telefoni: dipende solo da squadra, turno e listone (le quotazioni, che non
+ * cambiano coi voti: dopo la partita non «sceglie» chi ha segnato).
+ * giocatori: [{ id, role, clubId, quotation }] delle squadre in gara.
+ */
+export function formazioneApp(id, n, giocatori) {
+  const t = turno(n); if (!t) return null;
+  const rnd = mulberry32(hash(`${SEME}:${id}:${n}`));
+  const tutti = [...giocatori].sort((a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
+  const per = {}, scelti = [];
+  const prendi = (ok) => {
+    const lista = tutti.filter((p) => ok(p) && !scelti.includes(p) && (per[p.clubId] || 0) < t.tetto);
+    if (!lista.length) return null;
+    // più facile pescare i più quotati, ma non sempre gli stessi
+    const pesi = lista.map((p) => Math.max(1, p.quotation || 1) ** 1.5);
+    let x = rnd() * pesi.reduce((s, v) => s + v, 0), i = 0;
+    while (i < lista.length - 1 && (x -= pesi[i]) > 0) i++;
+    const p = lista[i]; scelti.push(p); per[p.clubId] = (per[p.clubId] || 0) + 1;
+    return p;
+  };
+  for (const r of RUOLI_OBBLIGATI) if (!prendi((p) => p.role === r)) return null;
+  if (!prendi((p) => p.role !== 'P') || !prendi((p) => p.role !== 'P')) return null;
+  const titolari = scelti.slice(0, TITOLARI);
+  const capitano = titolari.filter((p) => p.role !== 'P').sort((a, b) => (b.quotation || 0) - (a.quotation || 0) || (a.id < b.id ? -1 : 1))[0];
+  return { titolari: titolari.map((p) => p.id), riserva: scelti[TITOLARI].id, capitano: capitano.id };
 }
 
 // ---------------------------------------------------------------- voti e punteggio

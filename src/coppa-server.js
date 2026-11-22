@@ -86,7 +86,9 @@ export function squadra(id) {
 export async function salva(n, f) {
   const sb = remote.client();
   if (!sb || !uid()) throw new Error('Serve l\'accesso per giocare la coppa');
-  const riga = { user_id: uid(), turno: n, squadra: f.squadra.trim().slice(0, 40), colore: f.colore || null, iniziali: f.iniziali || null,
+  // colore e iniziali vengono dalla squadra della lega: il database vuole #RRGGBB e al massimo 3 lettere
+  const colore = /^#[0-9A-Fa-f]{6}$/.test(f.colore || '') ? f.colore : null;
+  const riga = { user_id: uid(), turno: n, squadra: (f.squadra || 'Squadra').trim().slice(0, 40) || 'Squadra', colore, iniziali: f.iniziali ? String(f.iniziali).slice(0, 3) : null,
     titolari: f.titolari, riserva: f.riserva, capitano: f.capitano };
   const { data, error } = await sb.from('coppa_formazioni').upsert(riga, { onConflict: 'user_id,turno' }).select().single();
   if (error) throw new Error(error.message);

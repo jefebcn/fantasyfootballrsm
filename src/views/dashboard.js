@@ -239,11 +239,11 @@ function cartaCoppa() {
   if (!primo) return '';
   const ora = S.now().getTime();
   if (ora < primo.getTime()) {
-    return `<a class="a-card ce-home nuovo cf-home" href="#/coppa"><span class="ce-home-ico da-giocare" aria-hidden="true">${icon('cup')}</span><span class="ce-home-txt"><b>${t('Coppa Fantatitano')} <small>${t('nuova')}</small></b><span>${t('Quarti {quando}: 5 giocatori e una riserva, gratis', { quando: `${dateIt(primo)} ${timeIt(primo)}` })}</span></span><span class="ce-home-cta">${t('Entra')}</span></a>`;
+    return `<a class="a-card cf-home nuovo" href="#/coppa"><span class="ce-home-ico da-giocare" aria-hidden="true">${icon('cup')}</span><span class="ce-home-txt"><b>${t('Coppa Fantatitano')} <small>${t('nuova')}</small></b><span>${t('Quarti {quando}: 5 giocatori e una riserva, gratis', { quando: `${dateIt(primo)} ${timeIt(primo)}` })}</span></span><span class="ce-home-cta">${t('Entra')}</span></a>`;
   }
   if (turnoConcluso(COPPA_CALENDARIO, COPPA_REFERTI, 5)) return '';
   const aperto = turnoAperto(COPPA_CALENDARIO, ora);
-  return `<a class="a-card ce-home piccola cf-home" href="#/coppa"><span class="ce-home-ico si" aria-hidden="true">${icon('cup')}</span><span class="ce-home-txt"><b>${t('Coppa Fantatitano')}</b><span>${aperto ? t('Prossimo turno: {nome}', { nome: t(aperto.nome) }) : t('Gironi, sfide e tabellone')}</span></span>${icon('chev', 'ic sm')}</a>`;
+  return `<a class="a-card cf-home piccola" href="#/coppa"><span class="ce-home-ico si" aria-hidden="true">${icon('cup')}</span><span class="ce-home-txt"><b>${t('Coppa Fantatitano')}</b><span>${aperto ? t('Prossimo turno: {nome}', { nome: t(aperto.nome) }) : t('Gironi, sfide e tabellone')}</span></span>${icon('chev', 'ic sm')}</a>`;
 }
 
 function cartaGioco(dove) {

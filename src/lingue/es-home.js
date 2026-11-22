@@ -1,5 +1,15 @@
 /** Spagnolo: home (vedi src/lingue/es.js). */
 export const HOME = {
+  // la Coppa Fantatitano in Home (src/views/dashboard.js, cartaCoppa)
+  nuova: 'nueva',
+  'Quarti {quando}: 5 giocatori e una riserva, gratis': 'Cuartos {quando}: 5 jugadores y un suplente, gratis',
+  'Prossimo turno: {nome}': 'Próxima ronda: {nome}',
+  'Gironi, sfide e tabellone': 'Grupos, duelos y cuadro',
+  'Quarti di andata': 'Cuartos de ida',
+  'Quarti di ritorno': 'Cuartos de vuelta',
+  'Semifinali di andata': 'Semifinales de ida',
+  'Semifinali di ritorno': 'Semifinales de vuelta',
+  Finale: 'Final',
   // la copertina
   Home: 'Inicio',
   squadra: 'equipo',

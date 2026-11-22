@@ -1,13 +1,13 @@
 # Stato – Fantatitano Futsal
 
-Aggiornato: 2026-11-21 (sera) · tema: futsal pronto al lancio, funzioni nuove, Coppa provata con 100 squadre
+Aggiornato: 2026-11-22 · tema: futsal pronto al lancio, Coppa provata con 100 squadre, intestazioni del mercato
 
 ## Dove siamo
 - Futsal su main e su fantatitano.site dal 21/11 (PR #126): lo vede solo il proprietario (`profiles.is_owner`) finché `APERTO_A_TUTTI = false` in `src/views/futsal.js`. Gioco a rosa e crediti (§ 13 di `FUTSAL.md`).
 - Import automatico: i referti futsal li importa «Dati FSGC» (`dati-fsgc.yml` → `importa-in-giro.sh` → `scripts/importa-futsal-giro.sh`); quotazioni e orari vanno sul database con il secret SUPABASE_DB_URL. Primo giro 21/11 ok (referti aggiornati, database non ancora toccato: nulla di nuovo).
 - Database: futsal-06 (leghe pubbliche) e futsal-07 (funzioni chiuse agli anonimi) applicate. Date FSGC fissate fino alla 12ª (3/12).
 - 21/11: barra «Aggiorna» tolta, maglie nelle liste, icona di Regole, niente citazioni di altre app (PR #129-#133). Lancio: la 13ª è la prima giornata giocabile (chiusura provvisoria, `futsal_lock` 13 a mano). Coppa dalla 14ª alla 30ª (`COPPA` in `src/futsal-gare.js`). Nuove: nome e colore della squadra (nomi unici, futsal-10), «Primo in panchina», formazioni degli avversari, avviso «mercato aperto» (futsal-11 + funzione `promemoria-`), albo d'oro.
-- Coppa con 100 squadre simulata (`prove/coppa-simulata/`): «La tua coppa», linea di chi passa, preliminari ridotti ai primi 16, sfide del turno, ✓ su chi passa (PR #141). A stagione finita la home dice «Stagione finita».
+- Coppa con 100 squadre simulata (`prove/coppa-simulata/`): «La tua coppa», linea di chi passa, preliminari ridotti ai primi 16, sfide del turno, ✓ su chi passa (PR #141). A stagione finita la home dice «Stagione finita». 22/11: nella scheda «Compra» le colonne hanno l'intestazione «Media punti» e «Prezzo» (PR #151).
 - Instagram @fantatitano.futsal via Buffer: coda fino al 30/11. Foto: archivio Flickr FSGC su Drive, catalogo `catalogo-futsal.csv` (Drive id 1cxmXJ3_xL3Ghku4pCXWhIPXJq2KRit0X).
 
 ## Aperto / in corso
@@ -15,6 +15,7 @@ Aggiornato: 2026-11-21 (sera) · tema: futsal pronto al lancio, funzioni nuove, 
 - Rapporto sulla velocità dei referti dell'11ª: mar 24/11 18:30 (trig_01UtzL2kKz21n95LRYPwn9Zy), controlla anche la prima scrittura su database.
 - Ogni giorno 9:47 (trig_019gaxf1eECjzEK6qMnLV9NA): con ≥4 posti liberi su Buffer crea contenuti con foto dall'archivio Drive e avvisa Alex; altrimenti silenzio.
 - `.github/workflows/futsal-prova.yml` si è spento da solo: da cancellare dopo il lancio.
+- Questionario di confronto per chi conosce bene un gioco simile (PDF dato ad Alex il 22/11, 7 temi: prima volta, rosa e schemi, mercato, giornata, classifiche, cosa fa tornare, cosa cambiare): con le risposte, proporre i ritocchi prima del lancio.
 - Storie da mettere in evidenza a mano da Alex (gli highlight non hanno API).
 - Album Flickr nuovi (11ª in poi): aggiungere l'indirizzo in `scripts/foto-flickr-futsal.ps1` e mandare ad Alex il comando completo.
 

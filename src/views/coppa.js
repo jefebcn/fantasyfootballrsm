@@ -17,7 +17,7 @@ import { esc, fmt, icon, crest, sec, empty, dateIt, timeIt, roleChip } from '../
 import { COPPA_CALENDARIO, COPPA_REFERTI } from '../coppa-dati.js';
 import {
   NOME, TURNI, turno, squadreInGara, chiusuraTurno, turnoConcluso, votiDelTurno, punteggio,
-  coppaFantatitano, dovesei, validaFormazione, partiteDelTurno,
+  coppaFantatitano, dovesei, validaFormazione, partiteDelTurno, formato,
 } from '../coppa-fanta.js';
 
 // ---------------------------------------------------------------- fonti (vere o simulate)
@@ -232,6 +232,47 @@ function mieiPunti(m) {
   return `${sec('I tuoi fantapunti', `${turno(n).nome} · ${m.conclusi.has(n) ? fmt(p.totale) : v ? `${fmt(p.totale)} provvisori` : 'si gioca'}`)}<div class="a-card fs-list">${righe}</div>`;
 }
 
+// ---------------------------------------------------------------- prima del sorteggio: cosa si vedrà
+/**
+ * Alex, 22/11: «tabelloni o altre statistiche dove si visualizzano?». Prima
+ * della chiusura dei quarti la coppa non ha ancora gironi (si sorteggiano
+ * fra chi si è iscritto): qui si dice quanti sono, che formato avrà e cosa
+ * comparirà, con un'anteprima di girone e tabellone.
+ */
+function anteprima(m) {
+  if (m.sorteggiato) return '';
+  const n = m.st.contati || 0;
+  const f = formato(n);
+  const perGirone = f?.gironi === 2 ? `${Math.floor(n / 2)}-${Math.ceil(n / 2)}` : n;
+  const formatoTxt = !f ? `Servono almeno 4 iscritti: ora ${n === 1 ? 'c\'è 1 iscritto' : `sono ${n}`}.`
+    : f.gironi === 2 ? `Con ${n} iscritti: due gironi, A e B, da ${perGirone} squadre. Passano in semifinale le prime 2 di ogni girone.`
+      : `Con ${n} iscritti: un girone unico, passano in semifinale le prime 4.`;
+  const io = CS.formazione(1, CS.uid()) ? (S.me?.()?.teamName || 'La tua squadra') : 'La tua squadra';
+  const riga = (pos, nome, pt, mia = false, passa = false) => `<div class="vr${mia ? ' fs-mia' : ''}${passa ? ' cf-passa' : ''}"><span class="fs-pos">${pos}</span><span class="cf-finto"></span><span class="nm"><b>${esc(nome)}</b><span>2 sfide · fantapunti fatti e subiti</span></span><span class="fv">${pt}</span></div>`;
+  const quando1 = m.primo ? quando(m.primo) : 'alla chiusura dei quarti';
+  return `${sec('Cosa vedrai qui', 'dal 25/11')}
+    <div class="a-card cf-anteprima">
+      <p class="cf-num"><b>${n}</b><span>${n === 1 ? 'squadra iscritta' : 'squadre iscritte'} finora</span></p>
+      <p class="small muted" style="margin:0">${formatoTxt} Il sorteggio si fa ${quando1}, uguale su tutti i telefoni.</p>
+      <ol class="cf-passi">
+        <li><b>Il tuo girone</b> con la classifica: 3 punti a chi fa più fantapunti, 1 a testa in parità.</li>
+        <li><b>Le tue sfide</b> dei quarti di andata e di ritorno, col ✓ su chi vince.</li>
+        <li><b>I tuoi fantapunti</b> giocatore per giocatore, dai voti delle partite di coppa.</li>
+        <li><b>Il tabellone</b> da marzo: semifinali di andata e ritorno, poi la finale secca.</li>
+      </ol>
+      <p class="cf-etichetta">Anteprima · girone A</p>
+      <div class="fs-list cf-cls cf-finta">
+        ${riga(1, 'Squadra', 6)}${riga(2, io, 4, true, true)}<div class="cf-linea"><span>passano i primi 2</span></div>${riga(3, 'Squadra', 3)}${riga(4, 'Squadra', 1)}
+      </div>
+      <p class="cf-etichetta">Anteprima · tabellone</p>
+      <div class="cf-albero">
+        <div class="cf-col"><span>Semifinale 1<b>1ª A – 2ª B</b></span><span>Semifinale 2<b>1ª B – 2ª A</b></span></div>
+        <div class="cf-freccia" aria-hidden="true">›</div>
+        <div class="cf-col"><span class="cf-fin">${icon('coppa', 'ic sm')} Finale<b>secca</b></span></div>
+      </div>
+    </div>`;
+}
+
 // ---------------------------------------------------------------- la pagina
 export function disegna(m = modello()) {
   const { st, c } = m;
@@ -244,6 +285,7 @@ export function disegna(m = modello()) {
     ${campione(c)}
     ${laTuaCoppa(m)}
     ${formazioneHtml(m)}
+    ${anteprima(m)}
     ${mieiPunti(m)}
     ${conTab ? `${sec('Tabellone')}${tabellone(c)}` : ''}
     ${c?.formato ? gironi.map((g) => `${sec(c.formato.gironi === 2 ? `Girone ${esc(g.nome)}` : 'Girone unico', `${g.classifica.length} squadre`)}${tabellaGirone(g, c.formato.passano)}${conTab ? '' : sfideGirone(g, m)}`).join('') : ''}

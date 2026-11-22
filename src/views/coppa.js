@@ -255,7 +255,7 @@ function anteprima(m) {
       <p class="cf-num"><b>${n}</b><span>${n === 1 ? 'squadra iscritta' : 'squadre iscritte'} finora</span></p>
       <p class="small muted" style="margin:0">${formatoTxt} Il sorteggio si fa ${quando1}, uguale su tutti i telefoni.</p>
       <ol class="cf-passi">
-        <li><b>Il tuo girone</b> con la classifica: 3 punti a chi fa più fantapunti, 1 a testa in parità.</li>
+        <li><b>Il tuo girone</b> con la classifica, e a un tocco l'altro girone: 3 punti a chi fa più fantapunti, 1 a testa in parità.</li>
         <li><b>Le tue sfide</b> dei quarti di andata e di ritorno, col ✓ su chi vince.</li>
         <li><b>I tuoi fantapunti</b> giocatore per giocatore, dai voti delle partite di coppa.</li>
         <li><b>Il tabellone</b> da marzo: semifinali di andata e ritorno, poi la finale secca.</li>
@@ -273,6 +273,22 @@ function anteprima(m) {
     </div>`;
 }
 
+// ---------------------------------------------------------------- i gironi: il tuo, e gli altri a un tocco
+/**
+ * Alex, 22/11: «si possano vedere anche altri gironi oltre al proprio». Con
+ * due gironi una scheda per girone: si apre sul tuo, l'altro è a un tocco.
+ * Ogni girone ha classifica intera («Mostra tutte») e sfide del turno.
+ */
+let gironeScelto = null;
+function sezioneGironi(gironi, c, m, conTab) {
+  if (!gironi.length) return '';
+  const nome = (g) => (c.formato.gironi === 2 ? `Girone ${g.nome}` : 'Girone unico');
+  const scelto = gironi.find((g) => g.nome === gironeScelto) || gironi[0];
+  const schede = gironi.length > 1
+    ? `<div class="seg seg-cls cf-schede" role="tablist">${gironi.map((g) => `<button data-girone="${esc(g.nome)}" class="${g === scelto ? 'on' : ''}" role="tab">${esc(nome(g))}${g.membri.includes(io()) ? ' · il tuo' : ''}</button>`).join('')}</div>` : '';
+  return `${sec(conTab ? 'I gironi' : 'Gironi', `${scelto.classifica.length} squadre`)}${schede}${tabellaGirone(scelto, c.formato.passano)}${conTab ? '' : sfideGirone(scelto, m)}`;
+}
+
 // ---------------------------------------------------------------- la pagina
 export function disegna(m = modello()) {
   const { st, c } = m;
@@ -288,7 +304,7 @@ export function disegna(m = modello()) {
     ${anteprima(m)}
     ${mieiPunti(m)}
     ${conTab ? `${sec('Tabellone')}${tabellone(c)}` : ''}
-    ${c?.formato ? gironi.map((g) => `${sec(c.formato.gironi === 2 ? `Girone ${esc(g.nome)}` : 'Girone unico', `${g.classifica.length} squadre`)}${tabellaGirone(g, c.formato.passano)}${conTab ? '' : sfideGirone(g, m)}`).join('') : ''}
+    ${c?.formato ? sezioneGironi(gironi, c, m, conTab) : ''}
     ${m.sorteggiato && !c?.formato ? empty(`La coppa non si gioca: alla chiusura dei quarti gli iscritti erano ${m.ids.length}, ne servivano almeno 4.`) : ''}
     ${regole()}
   </main>`;
@@ -314,6 +330,7 @@ export const coppa = {
       CS.carica().then(() => { if (location.hash === h) ctx.render(); });
     }
     root.querySelectorAll('[data-tutte]').forEach((x) => x.addEventListener('click', () => { aperti.add(x.dataset.tutte); ctx.render(); }));
+    root.querySelectorAll('[data-girone]').forEach((x) => x.addEventListener('click', () => { gironeScelto = x.dataset.girone; ctx.render(); }));
     const m = modello();
     const t = m.aperto; if (!t) return;
     const b = bozzaDi(t.n);

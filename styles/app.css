@@ -2986,6 +2986,14 @@ div.fs-carta{cursor:default}
 .fs-compra{grid-template-columns:auto 1fr auto auto!important}
 .fs-compra[hidden]{display:none}
 .fs-prezzo{font:800 15px var(--font-display);min-width:38px;text-align:right;font-variant-numeric:tabular-nums}
+/* Compra: intestazione delle colonne sopra media e prezzo, larghezze fisse per allinearle */
+.fs-compra .fp{width:54px;min-width:0}
+.fs-compra .fs-prezzo{width:46px;min-width:0}
+.fs-compra-testa{display:grid;grid-template-columns:1fr 54px 46px;gap:10px;align-items:end;padding:4px 14px 6px;position:sticky;top:-8px;z-index:1;background:inherit;border-bottom:1px solid var(--border);font:700 10.5px var(--font-body);letter-spacing:.06em;text-transform:uppercase;color:var(--text-muted);line-height:1.15}
+.fs-compra-testa span:nth-child(2){text-align:center}
+.fs-compra-testa span:nth-child(3){text-align:right}
+.fs-scelta .fs-compra-testa+.vr{border-top:0}
+#sheet .fs-scelta{background:inherit}
 .fs-ordina{margin:8px 0}
 .fs-trend{display:flex;align-items:flex-end;gap:4px;height:120px;padding-top:16px}
 .fs-trend span{position:relative;flex:1;height:var(--h);border-radius:6px 6px 0 0;min-width:0}

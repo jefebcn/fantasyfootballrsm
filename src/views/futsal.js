@@ -685,10 +685,10 @@ function listino(r, idx, n, ctx) {
     return `<button class="vr fs-compra" data-compra="${esc(id)}" data-nome="${esc(`${nomeId(id)} ${nomeSq(c)}`.toLowerCase())}" ${perche ? 'disabled' : ''}>${stemma(c)}<span class="nm"><b>${esc(nomeId(id))}${inForma(id) ? ' <i class="fs-fuoco" title="in forma">in forma</i>' : ''}</b><span>${esc(nomeSq(c))} · ${esc(avversario(c, n))}${perche ? ` · ${perche}` : ''}</span></span>${punti(numeri(id).presenze ? numeri(id).media : null)}<span class="fs-prezzo">${cr(prezzo)}</span></button>`;
   }).join('');
   ctx.sheet(`<h3>${r === 'P' ? 'Compra una Porta' : `Compra un ${RUOLI[r].toLowerCase()}`}</h3>
-    <p class="sheet-sub">Hai <b>${cr(disponibili)} crediti</b>. ${r === 'P' ? 'La Porta prende i gol subiti e gli eventi di tutti i portieri della squadra.' : 'A sinistra del prezzo la media punti a partita.'}</p>
+    <p class="sheet-sub">Hai <b>${cr(disponibili)} crediti</b>.${r === 'P' ? ' La Porta prende i gol subiti e gli eventi di tutti i portieri della squadra.' : ''}</p>
     <input class="field-input" id="fs-cerca" placeholder="Cerca per nome o squadra" autocomplete="off">
     <div class="chips fs-ordina">${[['cr', 'Prezzo'], ['mpf', 'Media'], ['plus', 'Plus']].map(([k, l]) => `<button class="chip${ordine === k ? ' on' : ''}" data-ord="${k}">${l}</button>`).join('')}</div>
-    <div class="fs-scelta">${righe}</div>`);
+    <div class="fs-scelta"><div class="fs-compra-testa" aria-hidden="true"><span>${r === 'P' ? 'Porta' : RUOLI[r]}</span><span>Media punti</span><span>Prezzo</span></div>${righe}</div>`);
   const sh = document.getElementById('sheet');
   sh.querySelector('#fs-cerca').oninput = (e) => { const q = e.target.value.trim().toLowerCase(); sh.querySelectorAll('[data-compra]').forEach((x) => { x.hidden = q && !x.dataset.nome.includes(q); }); };
   sh.onclick = (e) => {

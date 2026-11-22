@@ -2,7 +2,7 @@
 export const HOME = {
   // la Coppa Fantatitano in Home (src/views/dashboard.js, cartaCoppa)
   nuova: 'nueva',
-  'Quarti {quando}: 5 giocatori e una riserva, gratis': 'Cuartos {quando}: 5 jugadores y un suplente, gratis',
+  '{n} squadre in coppa · quarti {quando}, gratis': '{n} equipos en la copa · cuartos {quando}, gratis',
   'Prossimo turno: {nome}': 'Próxima ronda: {nome}',
   'Gironi, sfide e tabellone': 'Grupos, duelos y cuadro',
   'Quarti di andata': 'Cuartos de ida',

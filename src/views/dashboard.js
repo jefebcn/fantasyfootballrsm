@@ -12,7 +12,8 @@ import { riquadroRichiesta, rispondi } from './chiedi-avvisi.js';
 import { eNotte } from '../sole.js';
 import { ARTICOLI, euro } from '../shop.js';
 import { COPPA_CALENDARIO, COPPA_REFERTI } from '../coppa-dati.js';
-import { chiusuraTurno, turnoAperto, turnoConcluso } from '../coppa-fanta.js';
+import { chiusuraTurno, turnoAperto, turnoConcluso, squadreApp, SQUADRE_COPPA } from '../coppa-fanta.js';
+import * as CS from '../coppa-server.js';
 
 const RULES = [
   ['Art. 7.4', 'Rigore parato', 'Vale +3,0 al portiere e −3,0 al tiratore. Sul palo o fuori: −3,0 al tiratore e nessun bonus al portiere.'],
@@ -239,7 +240,11 @@ function cartaCoppa() {
   if (!primo) return '';
   const ora = S.now().getTime();
   if (ora < primo.getTime()) {
-    return `<a class="a-card cf-home nuovo" href="#/coppa"><span class="ce-home-ico da-giocare" aria-hidden="true">${icon('coppa')}</span><span class="ce-home-txt"><b>${t('Coppa Fantatitano')} <small>${t('nuova')}</small></b><span>${t('Quarti {quando}: 5 giocatori e una riserva, gratis', { quando: `${dateIt(primo)} ${timeIt(primo)}` })}</span></span><span class="ce-home-cta">${t('Entra')}</span></a>`;
+    // le squadre in coppa, contando quelle dell'app (coppa-fanta.js): 32 finché la pagina non ha caricato il numero vero
+    const st = CS.stato();
+    const reali = st.caricato ? Math.max(st.contati || 0, st.elenco.length) : 0;
+    const n = st.caricato && reali ? reali + squadreApp(reali).length : SQUADRE_COPPA;
+    return `<a class="a-card cf-home nuovo" href="#/coppa"><span class="ce-home-ico da-giocare" aria-hidden="true">${icon('coppa')}</span><span class="ce-home-txt"><b>${t('Coppa Fantatitano')} <small>${t('nuova')}</small></b><span>${t('{n} squadre in coppa · quarti {quando}, gratis', { n, quando: `${dateIt(primo)} ${timeIt(primo)}` })}</span></span><span class="ce-home-cta">${t('Entra')}</span></a>`;
   }
   if (turnoConcluso(COPPA_CALENDARIO, COPPA_REFERTI, 5)) return '';
   const aperto = turnoAperto(COPPA_CALENDARIO, ora);

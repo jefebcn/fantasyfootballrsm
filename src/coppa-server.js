@@ -12,7 +12,7 @@
 import * as remote from './backend.js';
 import * as S from './state.js';
 import { COPPA_CALENDARIO } from './coppa-dati.js';
-import { TURNI, chiusuraTurno } from './coppa-fanta.js';
+import { TURNI, chiusuraTurno, eApp, squadraApp } from './coppa-fanta.js';
 
 const PAGINA = 1000;
 async function aPagine(richiesta) {
@@ -81,6 +81,7 @@ export const iscritti = () => [...st.formazioni.values()].filter((r) => r.turno 
 export const iscrittiFinora = () => (st.elenco.length ? st.elenco.map((r) => r.user_id) : iscritti());
 /** Il nome della squadra in coppa: quello dato all'ultima consegna. */
 export function squadra(id) {
+  if (eApp(id)) return squadraApp(id);
   let r = null;
   for (const t of TURNI) r = st.formazioni.get(`${t.n}:${id}`) || r;
   r = r || st.elenco.find((x) => x.user_id === id);

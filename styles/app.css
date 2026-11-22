@@ -3271,3 +3271,14 @@ b > .stemma.xs:last-child{margin:0 0 0 6px}
 .cf-regole p{margin:0 0 6px}
 .cf-cls .vr{grid-template-columns:auto auto 1fr auto}
 .cf-chiude{margin:0;display:flex;align-items:center;gap:6px;font-weight:700;font-size:13px}
+
+/* la Coppa Fantatitano in Home (dashboard.js, cartaCoppa): come la carta del gioco, classe sua */
+.cf-home{display:flex;align-items:center;gap:12px;text-decoration:none;color:inherit}
+.cf-home.piccola{padding:10px 14px;gap:10px}
+.cf-home.piccola .ce-home-ico{width:32px;height:32px;font-size:14px}
+.cf-home.piccola .ce-home-ico .ic{width:16px;height:16px}
+.cf-home.piccola .ce-home-txt{flex-direction:row;align-items:baseline;gap:8px;flex-wrap:wrap}
+.cf-home.piccola .ce-home-txt b{font-size:15px}
+.cf-home.piccola .ce-home-txt span{font-size:12.5px}
+.cf-home.nuovo{border:1.5px solid color-mix(in srgb, var(--c-lime,#D9F51F) 55%, transparent)}
+.cf-home.nuovo .ce-home-ico .ic{width:32px;height:32px}

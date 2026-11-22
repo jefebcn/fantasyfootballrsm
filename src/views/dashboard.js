@@ -11,6 +11,8 @@ import { INVITO_CALCIATORI } from '../config.js';
 import { riquadroRichiesta, rispondi } from './chiedi-avvisi.js';
 import { eNotte } from '../sole.js';
 import { ARTICOLI, euro } from '../shop.js';
+import { COPPA_CALENDARIO, COPPA_REFERTI } from '../coppa-dati.js';
+import { chiusuraTurno, turnoAperto, turnoConcluso } from '../coppa-fanta.js';
 
 const RULES = [
   ['Art. 7.4', 'Rigore parato', 'Vale +3,0 al portiere e −3,0 al tiratore. Sul palo o fuori: −3,0 al tiratore e nessun bonus al portiere.'],
@@ -226,6 +228,24 @@ function richiestaPromemoria() {
  * riga, e dice com'e' andata. Il nome del giocatore non c'e' mai: chi non
  * l'ha indovinato lo scopre nel gioco, se vuole.
  */
+/**
+ * LA COPPA FANTATITANO IN HOME (Alex, 22/11: «non trovo come accedere alla
+ * coppa»). Stava solo nel menu, in fondo alla sezione della lega. Qui in cima:
+ * prima della chiusura dei quarti invita a entrare, poi porta alla coppa;
+ * finita la finale sparisce.
+ */
+function cartaCoppa() {
+  const primo = chiusuraTurno(COPPA_CALENDARIO, 1);
+  if (!primo) return '';
+  const ora = S.now().getTime();
+  if (ora < primo.getTime()) {
+    return `<a class="a-card cf-home nuovo" href="#/coppa"><span class="ce-home-ico da-giocare" aria-hidden="true">${icon('coppa')}</span><span class="ce-home-txt"><b>${t('Coppa Fantatitano')} <small>${t('nuova')}</small></b><span>${t('Quarti {quando}: 5 giocatori e una riserva, gratis', { quando: `${dateIt(primo)} ${timeIt(primo)}` })}</span></span><span class="ce-home-cta">${t('Entra')}</span></a>`;
+  }
+  if (turnoConcluso(COPPA_CALENDARIO, COPPA_REFERTI, 5)) return '';
+  const aperto = turnoAperto(COPPA_CALENDARIO, ora);
+  return `<a class="a-card cf-home piccola" href="#/coppa"><span class="ce-home-ico si" aria-hidden="true">${icon('coppa')}</span><span class="ce-home-txt"><b>${t('Coppa Fantatitano')}</b><span>${aperto ? t('Prossimo turno: {nome}', { nome: t(aperto.nome) }) : t('Gironi, sfide e tabellone')}</span></span>${icon('chev', 'ic sm')}</a>`;
+}
+
 function cartaGioco(dove) {
   const g = partitaDiOggi(); if (!g) return '';
   if ((dove === 'su') === g.finito) return '';
@@ -648,6 +668,7 @@ export const dashboard = {
     return `<main class="a-body home">
       <div id="install-slot"></div>
       ${copertina(me, row, ph)}
+      ${cartaCoppa()}
       ${cartaGioco('su')}
       ${invitoNegozio()}
       ${notiziaBreve()}

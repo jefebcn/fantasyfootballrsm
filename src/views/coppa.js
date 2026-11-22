@@ -125,7 +125,7 @@ function laTuaCoppa(m) {
   const iscritto = !!CS.formazione(1, io());
   if (!m.sorteggiato) {
     const n = m.st.contati || 0;
-    return `<div class="a-card fs-hero cf-hero"><span class="chip">${icon('cup', 'ic sm')} La tua coppa</span>
+    return `<div class="a-card fs-hero cf-hero"><span class="chip">${icon('coppa', 'ic sm')} La tua coppa</span>
       <h3>${iscritto ? 'Sei iscritto alla coppa' : 'Entra nella coppa con la formazione dei quarti'}</h3>
       <p class="small muted">${iscritto ? 'Puoi cambiare la formazione fino alla chiusura.' : 'Basta schierare la formazione qui sotto: è gratis e non tocca la rosa della tua lega.'} Il sorteggio dei gironi si fa alla chiusura, ${m.primo ? quando(m.primo) : 'al primo turno'}${n ? `: per ora ${n === 1 ? 'c\'è 1 iscritto' : `ci sono ${n} iscritti`}` : ''}.</p></div>`;
   }
@@ -147,7 +147,7 @@ function laTuaCoppa(m) {
     campione: ['Hai vinto la Coppa Fantatitano', c.finale ? `Finale ${fmt(c.finale.gare[0][0])} – ${fmt(c.finale.gare[0][1])}` : ''],
     fuori: [`Sei fuori: ${esc(d?.dove || '')}`, d?.avversario ? `Ti ha eliminato ${nomeSq(d.avversario)}.` : riga ? `Hai chiuso ${riga.posto}° con ${riga.punti} punti.` : ''],
   }[d?.stato] || ['', ''];
-  return `<div class="a-card fs-hero cf-hero"><span class="chip">${icon('cup', 'ic sm')} La tua coppa</span><h3>${testi[0]}</h3><p class="small muted">${testi[1]}</p>${d?.stato === 'gironi' ? prossima() : ''}</div>`;
+  return `<div class="a-card fs-hero cf-hero"><span class="chip">${icon('coppa', 'ic sm')} La tua coppa</span><h3>${testi[0]}</h3><p class="small muted">${testi[1]}</p>${d?.stato === 'gironi' ? prossima() : ''}</div>`;
 }
 
 function campione(c) {

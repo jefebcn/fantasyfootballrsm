@@ -34,6 +34,16 @@ export const SPRITE = `<svg width="0" height="0" style="position:absolute" aria-
   <symbol id="i-users" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3"/><path d="M3 19a6 6 0 0 1 12 0M16 5a3 3 0 0 1 0 6M21 19a6 6 0 0 0-5-6"/></symbol>
   <symbol id="i-book" viewBox="0 0 24 24"><path d="M12 6.8c-1.6-1.2-3.7-1.8-6-1.8H4v12h2c2.3 0 4.4.6 6 1.8M12 6.8c1.6-1.2 3.7-1.8 6-1.8h2v12h-2c-2.3 0-4.4.6-6 1.8M12 6.8v12M6.5 9.2h3M6.5 12h3M14.5 9.2h3M14.5 12h3"/></symbol>
   <symbol id="i-cup" viewBox="0 0 24 24"><path d="M7 4h10v5a5 5 0 0 1-10 0zM17 6h3v2a3 3 0 0 1-3 3M7 6H4v2a3 3 0 0 0 3 3M12 14v4M8 20h8"/></symbol>
+  <symbol id="i-coppa" viewBox="0 0 24 24"><!-- la Coppa Fantatitano (Alex, 22/11): coppa con la stella, tratto sottile -->
+    <g stroke-width="1.35">
+    <rect x="5.6" y="2.6" width="12.8" height="2.4" rx=".6"/>
+    <path d="M5.9 5v5.5c0 3.3 2.7 5.7 6.1 5.7s6.1-2.4 6.1-5.7V5"/>
+    <path d="M5.9 6.2H4.1a1.2 1.2 0 0 0-1.2 1.2v2.4c0 2.1 1.3 3.8 3.4 4.5M18.1 6.2h1.8a1.2 1.2 0 0 1 1.2 1.2v2.4c0 2.1-1.3 3.8-3.4 4.5"/>
+    <path d="M7.7 11.6c.4 1.9 2.1 3.1 4.3 3.1s3.9-1.2 4.3-3.1"/>
+    <path d="M12.00 6.35 L12.59 7.89 L14.23 7.97 L12.95 9.01 L13.38 10.60 L12.00 9.70 L10.62 10.60 L11.05 9.01 L9.77 7.97 L11.41 7.89Z"/>
+    <path d="M10.4 16.2v2.3h3.2v-2.3M6.6 21.6c0-1.7 1.5-3.1 3.4-3.1h4c1.9 0 3.4 1.4 3.4 3.1z"/>
+    </g>
+  </symbol>
   <symbol id="i-list" viewBox="0 0 24 24"><path d="M8 7h12M8 12h12M8 17h12M4 7h.01M4 12h.01M4 17h.01"/></symbol>
   <symbol id="i-eye" viewBox="0 0 24 24"><path d="M2 12s3.6-6 10-6 10 6 10 6-3.6 6-10 6-10-6-10-6z"/><circle cx="12" cy="12" r="3"/></symbol>
   <symbol id="i-out" viewBox="0 0 24 24"><path d="M14 4h6v6M20 4l-8 8M12 4H5v15h15v-7"/></symbol>

@@ -5,7 +5,7 @@
  * sfida, se sei fuori e dove), il tuo girone per primo con la tua squadra
  * evidenziata e la linea «passano i primi N», le classifiche lunghe ridotte con
  * «Mostra tutte», le sfide del turno con ✓ su chi vince, il tabellone con
- * andata e ritorno separati, il campione col risultato della finale.
+ * gare secche, il campione col risultato della finale.
  * Sopra, finché il turno è aperto, la formazione di coppa.
  *
  * Tutto si disegna da un «modello» (modello()), così la simulazione con tanti
@@ -32,6 +32,8 @@ const giocatore = (id) => (finto?.giocatori ? finto.giocatori.get(id) : S.player
 const club = (id) => S.clubsById.get(id);
 const nomeClub = (id) => club(id)?.name || id;
 const quando = (d) => `${dateIt(d)} alle ${timeIt(d)}`;
+/** «sui quarti di andata», «sulle semifinali di ritorno», «sulla finale» della Coppa Titano. */
+const sulTurno = (t) => `${/^Quarti/.test(t.nome) ? 'sui' : /^Semifinali/.test(t.nome) ? 'sulle' : 'sulla'} ${t.nome.toLowerCase()} della Coppa Titano`;
 
 // ---------------------------------------------------------------- il modello
 export function modello() {
@@ -105,21 +107,22 @@ function sfideGirone(g, m) {
 }
 
 function tabellone(c) {
-  return c.tabellone.map((t) => `${sec(t.nome, t.turni.map((n) => turno(n).nome.replace(t.nome === 'Finale' ? 'Finale' : /Semifinali di /, '')).join(' e '))}
-    <div class="a-card fs-list">${t.sfide.map((s) => {
-      const tot = (i) => (s.gare.every((x) => x[i] != null) ? s.gare.reduce((y, x) => y + x[i], 0) : null);
-      const gare = s.gare.length > 1 ? `<div class="cf-gare">${s.gare.map((x, i) => `<span>${i ? 'Ritorno' : 'Andata'} <b>${x[0] == null ? '–' : fmt(x[0])}</b> – <b>${x[1] == null ? '–' : fmt(x[1])}</b></span>`).join('')}</div>` : '';
-      return `${sfida(s.a, s.b, tot(0), tot(1), { vincente: s.vincente })}${gare}`;
-    }).join('')}</div>`).join('');
+  return c.tabellone.map((t) => `${sec(t.nome, sulTurno(turno(t.turni[0])))}
+    <div class="a-card fs-list">${t.sfide.map((s) => sfida(s.a, s.b, s.gare[0][0], s.gare[0][1], { vincente: s.vincente })).join('')}</div>`).join('');
 }
 
-/** «All'andata 23,5 – 21,0. » dal tuo lato, se l'andata è giocata. */
-function andata(d) {
-  const g = d?.sfida?.gare?.[0];
-  if (!g || g[0] == null || g[1] == null) return '';
-  const [mio, suo] = d.sfida.a === io() ? g : [g[1], g[0]];
-  return `All'andata ${fmt(mio)} – ${fmt(suo)}. `;
+/** Lo schema del tabellone prima dei nomi: chi incontra chi, secondo il formato. */
+function alberoFinto(f) {
+  const casella = (titolo, chi, cls = '') => `<span class="${cls}">${titolo}<b>${chi}</b></span>`;
+  const fin = `<div class="cf-freccia" aria-hidden="true">›</div><div class="cf-col">${casella(`${icon('coppa', 'ic sm')} Finale`, 'secca', 'cf-fin')}</div>`;
+  if (!f || f.tabellone === 4) {
+    return `<div class="cf-albero"><div class="cf-col">${casella('Semifinale 1', '1ª – 4ª')}${casella('Semifinale 2', '2ª – 3ª')}</div>${fin}</div>`;
+  }
+  const q = f.gironi === 4 ? ['1ª A – 2ª B', '1ª C – 2ª D', '1ª B – 2ª A', '1ª D – 2ª C'] : ['1ª A – 4ª B', '2ª B – 3ª A', '1ª B – 4ª A', '2ª A – 3ª B'];
+  return `<div class="cf-albero cf-albero-8"><div class="cf-col">${q.map((x, i) => casella(`Quarto ${i + 1}`, x)).join('')}</div><div class="cf-freccia" aria-hidden="true">›</div>
+    <div class="cf-col">${casella('Semifinale 1', 'Q1 – Q2')}${casella('Semifinale 2', 'Q3 – Q4')}</div>${fin}</div>`;
 }
+
 function laTuaCoppa(m) {
   const d = m.dove, c = m.c;
   const iscritto = !!CS.formazione(1, io());
@@ -141,9 +144,10 @@ function laTuaCoppa(m) {
   };
   const testi = {
     'non iscritto': ['Non sei in coppa', 'Alla coppa si entrava con la formazione dei quarti di andata. Ci vediamo alla prossima edizione.'],
-    gironi: [`Girone ${esc(d?.girone?.nome || '')} · ${riga ? `${riga.posto}° posto su ${d.girone.classifica.length}` : ''}`, `${riga ? `${riga.punti} punti, ${fmt(riga.fatti)} fantapunti fatti. ` : ''}Passano in semifinale i primi ${c.formato.passano}${c.formato.gironi === 2 ? ' di ogni girone' : ''}.`],
-    semifinale: [`Sei in semifinale contro ${d?.avversario ? nomeSq(d.avversario) : ''}`, `${andata(d)}Andata e ritorno sulle semifinali vere: conta la somma dei fantapunti.`],
-    finale: [`Sei in finale contro ${d?.avversario ? nomeSq(d.avversario) : ''}`, 'Gara secca sulla finale vera della Coppa Titano.'],
+    gironi: [`Girone ${esc(d?.girone?.nome || '')} · ${riga ? `${riga.posto}° posto su ${d.girone.classifica.length}` : ''}`, `${riga ? `${riga.punti} punti, ${fmt(riga.fatti)} fantapunti fatti. ` : ''}Passano ${c.formato.tabellone === 8 ? 'ai quarti' : 'in semifinale'} i primi ${c.formato.passano}${c.formato.gironi > 1 ? ' di ogni girone' : ''}.`],
+    quarti: [`Sei ai quarti contro ${d?.avversario ? nomeSq(d.avversario) : ''}`, 'Gara secca sulle semifinali di andata della Coppa Titano.'],
+    semifinale: [d?.attesa ? 'Sei in semifinale' : `Sei in semifinale contro ${d?.avversario ? nomeSq(d.avversario) : ''}`, d?.attesa ? 'L\'avversaria esce dagli altri quarti. Gara secca sulle semifinali di ritorno della Coppa Titano.' : 'Gara secca sulle semifinali di ritorno della Coppa Titano.'],
+    finale: [d?.attesa ? 'Sei in finale' : `Sei in finale contro ${d?.avversario ? nomeSq(d.avversario) : ''}`, d?.attesa ? 'L\'avversaria esce dall\'altra semifinale. Gara secca sulla finale della Coppa Titano.' : 'Gara secca sulla finale della Coppa Titano.'],
     campione: ['Hai vinto la Coppa Fantatitano', c.finale ? `Finale ${fmt(c.finale.gare[0][0])} – ${fmt(c.finale.gare[0][1])}` : ''],
     fuori: [`Sei fuori: ${esc(d?.dove || '')}`, d?.avversario ? `Ti ha eliminato ${nomeSq(d.avversario)}.` : riga ? `Hai chiuso ${riga.posto}° con ${riga.punti} punti.` : ''],
   }[d?.stato] || ['', ''];
@@ -180,7 +184,7 @@ function bozzaDi(n) {
 function formazioneHtml(m) {
   const t = m.aperto; if (!t) return '';
   const iscritto = !!CS.formazione(1, io());
-  const inGara = t.n === 1 || (t.n === 2 && iscritto) || (m.c && ['semifinale', 'finale'].includes(m.dove?.stato));
+  const inGara = t.n === 1 || (t.n === 2 && iscritto) || (m.c && ['quarti', 'semifinale', 'finale'].includes(m.dove?.stato));
   if (!inGara) return '';
   const sqd = squadreInGara(cal(), t.n);
   const chiude = chiusuraTurno(cal(), t.n);
@@ -243,33 +247,39 @@ function anteprima(m) {
   if (m.sorteggiato) return '';
   const n = m.st.contati || 0;
   const f = formato(n);
-  const perGirone = f?.gironi === 2 ? `${Math.floor(n / 2)}-${Math.ceil(n / 2)}` : n;
-  const formatoTxt = !f ? `Servono almeno 4 iscritti: ora ${n === 1 ? 'c\'è 1 iscritto' : `sono ${n}`}.`
-    : f.gironi === 2 ? `Con ${n} iscritti: due gironi, A e B, da ${perGirone} squadre. Passano in semifinale le prime 2 di ogni girone.`
-      : `Con ${n} iscritti: un girone unico, passano in semifinale le prime 4.`;
-  const io = CS.formazione(1, CS.uid()) ? (S.me?.()?.teamName || 'La tua squadra') : 'La tua squadra';
-  const riga = (pos, nome, pt, mia = false, passa = false) => `<div class="vr${mia ? ' fs-mia' : ''}${passa ? ' cf-passa' : ''}"><span class="fs-pos">${pos}</span><span class="cf-finto"></span><span class="nm"><b>${esc(nome)}</b><span>2 sfide · fantapunti fatti e subiti</span></span><span class="fv">${pt}</span></div>`;
   const quando1 = m.primo ? quando(m.primo) : 'alla chiusura dei quarti';
-  return `${sec('Cosa vedrai qui', 'dal 25/11')}
+  const formatoTxt = !f ? `Servono almeno 4 iscritti per fare i gironi: ora ${n === 1 ? 'c\'è 1 iscritto' : `sono ${n}`}.`
+    : f.gironi === 4 ? `Con ${n} iscritti: quattro gironi, A, B, C e D. Passano ai quarti le prime 2 di ogni girone: 8 squadre.`
+      : f.gironi === 2 ? `Con ${n} iscritti: due gironi, A e B. Passano ai quarti le prime 4 di ogni girone: 8 squadre.`
+        : `Con ${n} iscritti: un girone unico, passano in semifinale le prime 4.`;
+  // Alex, 22/11: «vorrei vedere man mano che la gente si iscrive i tabelloni che si
+  // vanno a creare». I gironi veri, coi nomi, rifatti dal sorteggio a ogni iscrizione.
+  const ids = CS.iscrittiFinora();
+  const prov = f && ids.length >= 4 ? coppaFantatitano(ids, () => null) : null;
+  let gironiHtml = '';
+  if (prov?.formato) {
+    const gironi = prov.gironi;
+    const scelto = gironi.find((g) => g.nome === gironeScelto) || gironi.find((g) => g.membri.includes(io())) || gironi[0];
+    const nomeG = (g) => (prov.formato.gironi > 1 ? `Girone ${g.nome}` : 'Girone unico');
+    const schede = gironi.length > 1 ? `<div class="seg seg-cls cf-schede" role="tablist">${gironi.map((g) => `<button data-girone="${esc(g.nome)}" class="${g === scelto ? 'on' : ''}" role="tab">${gironi.length > 2 ? esc(g.nome) : esc(nomeG(g))}${g.membri.includes(io()) ? (gironi.length > 2 ? ' · tuo' : ' · il tuo') : ''}</button>`).join('')}</div>` : '';
+    const tutte = aperti.has(`prov-${scelto.nome}`);
+    const mio = scelto.membri.indexOf(io());
+    const mostra = scelto.membri.filter((id, i) => tutte || i < 8 || i === mio);
+    const righe = mostra.map((id) => `<div class="vr${mia(id)}">${stemma(id)}<span class="nm"><b>${nomeSq(id)}</b><span>${id === io() ? 'la tua squadra' : 'iscritta'}</span></span></div>`).join('');
+    const altre = !tutte && scelto.membri.length > mostra.length ? `<button class="cf-tutte" data-tutte="prov-${esc(scelto.nome)}">Mostra tutte le ${scelto.membri.length} squadre</button>` : '';
+    gironiHtml = `<p class="cf-etichetta">Gironi provvisori · ${esc(nomeG(scelto))}, ${scelto.membri.length} squadre</p>${schede}<div class="fs-list cf-prov">${righe}${altre}</div>
+      <p class="small muted" style="margin:0">Cambiano a ogni nuova iscrizione. Alla chiusura, ${quando1}, restano questi e partono le sfide.</p>`;
+  } else if (ids.length) {
+    gironiHtml = `<p class="cf-etichetta">Iscritte finora</p><div class="fs-list cf-prov">${ids.map((id) => `<div class="vr${mia(id)}">${stemma(id)}<span class="nm"><b>${nomeSq(id)}</b></span></div>`).join('')}</div>`;
+  }
+  return `${sec('La coppa che si forma', 'fino al 25/11')}
     <div class="a-card cf-anteprima">
       <p class="cf-num"><b>${n}</b><span>${n === 1 ? 'squadra iscritta' : 'squadre iscritte'} finora</span></p>
-      <p class="small muted" style="margin:0">${formatoTxt} Il sorteggio si fa ${quando1}, uguale su tutti i telefoni.</p>
-      <ol class="cf-passi">
-        <li><b>Il tuo girone</b> con la classifica, e a un tocco l'altro girone: 3 punti a chi fa più fantapunti, 1 a testa in parità.</li>
-        <li><b>Le tue sfide</b> dei quarti di andata e di ritorno, col ✓ su chi vince.</li>
-        <li><b>I tuoi fantapunti</b> giocatore per giocatore, dai voti delle partite di coppa.</li>
-        <li><b>Il tabellone</b> da marzo: semifinali di andata e ritorno, poi la finale secca.</li>
-      </ol>
-      <p class="cf-etichetta">Anteprima · girone A</p>
-      <div class="fs-list cf-cls cf-finta">
-        ${riga(1, 'Squadra', 6)}${riga(2, io, 4, true, true)}<div class="cf-linea"><span>passano i primi 2</span></div>${riga(3, 'Squadra', 3)}${riga(4, 'Squadra', 1)}
-      </div>
-      <p class="cf-etichetta">Anteprima · tabellone</p>
-      <div class="cf-albero">
-        <div class="cf-col"><span>Semifinale 1<b>1ª A – 2ª B</b></span><span>Semifinale 2<b>1ª B – 2ª A</b></span></div>
-        <div class="cf-freccia" aria-hidden="true">›</div>
-        <div class="cf-col"><span class="cf-fin">${icon('coppa', 'ic sm')} Finale<b>secca</b></span></div>
-      </div>
+      <p class="small muted" style="margin:0">${formatoTxt} Il sorteggio è uguale su tutti i telefoni. Le formazioni restano segrete fino alla chiusura.</p>
+      ${gironiHtml}
+      <p class="cf-etichetta">Tabellone</p>
+      ${alberoFinto(f)}
+      <p class="small muted" style="margin:0">Dopo la chiusura qui trovi le classifiche coi punti, le tue sfide col ✓ e i tuoi fantapunti giocatore per giocatore.</p>
     </div>`;
 }
 
@@ -282,11 +292,11 @@ function anteprima(m) {
 let gironeScelto = null;
 function sezioneGironi(gironi, c, m, conTab) {
   if (!gironi.length) return '';
-  const nome = (g) => (c.formato.gironi === 2 ? `Girone ${g.nome}` : 'Girone unico');
-  const scelto = gironi.find((g) => g.nome === gironeScelto) || gironi[0];
+  const nome = (g) => (c.formato.gironi > 1 ? `Girone ${g.nome}` : 'Girone unico');
+  const scelto = gironi.find((g) => g.nome === gironeScelto) || gironi.find((g) => g.membri.includes(io())) || gironi[0];
   const schede = gironi.length > 1
-    ? `<div class="seg seg-cls cf-schede" role="tablist">${gironi.map((g) => `<button data-girone="${esc(g.nome)}" class="${g === scelto ? 'on' : ''}" role="tab">${esc(nome(g))}${g.membri.includes(io()) ? ' · il tuo' : ''}</button>`).join('')}</div>` : '';
-  return `${sec(conTab ? 'I gironi' : 'Gironi', `${scelto.classifica.length} squadre`)}${schede}${tabellaGirone(scelto, c.formato.passano)}${conTab ? '' : sfideGirone(scelto, m)}`;
+    ? `<div class="seg seg-cls cf-schede" role="tablist">${gironi.map((g) => `<button data-girone="${esc(g.nome)}" class="${g === scelto ? 'on' : ''}" role="tab">${gironi.length > 2 ? esc(g.nome) : esc(nome(g))}${g.membri.includes(io()) ? (gironi.length > 2 ? ' · tuo' : ' · il tuo') : ''}</button>`).join('')}</div>` : '';
+  return `${sec(conTab ? 'I gironi' : 'Gironi', `${esc(nome(scelto))} · ${scelto.classifica.length} squadre`)}${schede}${tabellaGirone(scelto, c.formato.passano)}${conTab ? '' : sfideGirone(scelto, m)}`;
 }
 
 // ---------------------------------------------------------------- la pagina
@@ -295,7 +305,7 @@ export function disegna(m = modello()) {
   if (!st.caricato) return `<main class="a-body">${empty('Carico la coppa…')}</main>`;
   if (!st.attivo) return `<main class="a-body">${empty(`La ${NOME} sta per partire: i quarti della Coppa Titano si giocano mercoledì 25 novembre.`)}</main>`;
   if (st.errore) return `<main class="a-body">${empty(`Non riesco a caricare la coppa: ${esc(st.errore)}`)}</main>`;
-  const gironi = c?.gironi ? [...c.gironi].sort((a, b) => (b.membri.includes(io()) ? 1 : 0) - (a.membri.includes(io()) ? 1 : 0)) : [];
+  const gironi = c?.gironi || [];
   const conTab = c?.tabellone?.length;
   return `<main class="a-body cf">
     ${campione(c)}
@@ -313,12 +323,12 @@ function regole() {
   const righe = TURNI.map((t) => {
     const c = chiusuraTurno(cal(), t.n);
     const partite = partiteDelTurno(cal(), t.n).length;
-    return `<p><b>${t.nome}</b> · ${c ? `${quando(c)}, ${partite === 1 ? '1 partita' : `${partite} partite`}` : 'data non ancora decisa dalla FSGC'}${t.n <= 2 ? ' · gironi' : t.n <= 4 ? ' · semifinali' : ' · finale secca'}</p>`;
+    return `<p><b>${t.fanta}</b> · ${sulTurno(t)} · ${c ? `${quando(c)}, ${partite === 1 ? '1 partita' : `${partite} partite`}` : 'data non ancora decisa dalla FSGC'}</p>`;
   }).join('');
   return `${sec('Come funziona')}<div class="a-card fs-fasi cf-regole">
     <p>Si gioca solo sulle partite della Coppa Titano vera: i fantapunti vengono dai voti delle partite di coppa, non dal campionato. Una coppa sola per tutti, con una formazione a parte: non serve la rosa della lega.</p>
     ${righe}
-    <p class="small muted">Gironi: 3 punti a chi fa più fantapunti, 1 a testa in parità; a pari punti conta la differenza fra fantapunti fatti e subiti, poi i fatti. Semifinali con andata e ritorno (conta la somma, poi il ritorno, poi il piazzamento nel girone), finale secca. Il sorteggio è uno solo, alla chiusura dei quarti, ed è uguale su tutti i telefoni.</p></div>`;
+    <p class="small muted">Gironi: 2 sfide a testa, 3 punti a chi fa più fantapunti, 1 a testa in parità; a pari punti conta la differenza fra fantapunti fatti e subiti, poi i fatti. Con 16 iscritti o più 4 gironi e passano le prime 2 di ognuno; da 8 a 15 2 gironi e passano le prime 4: in tutti e due i casi 8 squadre ai quarti. Quarti, semifinali e finale in gara secca: a pari fantapunti passa chi era meglio piazzato nel girone. Il sorteggio è uno solo, alla chiusura dei quarti, ed è uguale su tutti i telefoni.</p></div>`;
 }
 
 export const coppa = {

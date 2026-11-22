@@ -3,11 +3,16 @@
  * sulle partite della Coppa Titano vera. I fantapunti di ogni turno vengono
  * dai voti delle partite di coppa (src/coppa-dati.js), mai dal campionato.
  *
- * Un turno fantasy per ogni turno vero, dai quarti in poi:
- *   1-2  quarti di andata e ritorno → fase a gironi: due gironi grandi (A e B),
- *        due scontri diretti a testa contro avversari diversi del girone;
- *   3-4  semifinali di andata e ritorno → semifinali A1–B2 e B1–A2, conta la somma;
- *   5    finale → finale secca.
+ * Un turno fantasy per ogni turno vero, dai quarti in poi (Alex, 22/11: «8
+ * passano, 4 gironi»):
+ *   1-2  quarti di andata e ritorno veri → fase a gironi: 4 gironi (A-D), due
+ *        scontri diretti a testa contro avversari diversi del girone; passano
+ *        le prime 2 di ogni girone, 8 squadre;
+ *   3    semifinale di andata vera → quarti fantasy, gara secca;
+ *   4    semifinale di ritorno vera → semifinali fantasy, gara secca;
+ *   5    finale vera → finale fantasy, gara secca.
+ * Con pochi iscritti: 2 gironi da cui passano 4 (sempre 8 ai quarti), o un
+ * girone solo da cui passano 4 (semifinali e finale).
  * Struttura e regole sono quelle della Coppa Titano del futsal
  * (src/futsal-gare.js, FUTSAL.md § 10.2): 3 punti a chi fa di più, 1 a testa in
  * parità; a pari punti differenza fra fantapunti fatti e subiti, poi fatti;
@@ -31,11 +36,12 @@ export const SEME = 'coppa-fantatitano-2026';
 
 /** I turni della coppa fantasy e il turno della Coppa Titano su cui si giocano. */
 export const TURNI = [
-  { n: 1, fsgc: 3, nome: 'Quarti di andata', fase: 'gironi', tetto: 1 },
-  { n: 2, fsgc: 4, nome: 'Quarti di ritorno', fase: 'gironi', tetto: 1 },
-  { n: 3, fsgc: 5, nome: 'Semifinali di andata', fase: 'semifinali', tetto: 2 },
-  { n: 4, fsgc: 6, nome: 'Semifinali di ritorno', fase: 'semifinali', tetto: 2 },
-  { n: 5, fsgc: 7, nome: 'Finale', fase: 'finale', tetto: 3 },
+  // nome: il turno della Coppa Titano vera; fanta: cosa si gioca da noi
+  { n: 1, fsgc: 3, nome: 'Quarti di andata', fanta: 'Gironi, 1ª sfida', fase: 'gironi', tetto: 1 },
+  { n: 2, fsgc: 4, nome: 'Quarti di ritorno', fanta: 'Gironi, 2ª sfida', fase: 'gironi', tetto: 1 },
+  { n: 3, fsgc: 5, nome: 'Semifinali di andata', fanta: 'Quarti', fase: 'quarti', tetto: 2 },
+  { n: 4, fsgc: 6, nome: 'Semifinali di ritorno', fanta: 'Semifinali', fase: 'semifinali', tetto: 2 },
+  { n: 5, fsgc: 7, nome: 'Finale', fanta: 'Finale', fase: 'finale', tetto: 3 },
 ];
 export const turno = (n) => TURNI.find((t) => t.n === n) || null;
 export const TITOLARI = 5;
@@ -146,11 +152,35 @@ export function punteggio(f, voti, rules = DEFAULT_RULES) {
 
 // ---------------------------------------------------------------- la coppa
 
-/** Il formato secondo gli iscritti: due gironi da 8 in su, uno solo da 4 a 7, niente coppa sotto i 4. */
+/**
+ * Il formato secondo gli iscritti: 4 gironi da 16 in su (passano 2 a girone),
+ * 2 gironi da 8 a 15 (passano 4 a girone): in tutti e due 8 squadre ai quarti.
+ * Da 4 a 7 un girone solo, passano 4 alle semifinali. Sotto i 4 niente coppa.
+ */
 export function formato(n) {
-  if (n >= 8) return { nome: 'due gironi', gironi: 2, passano: 2 };
-  if (n >= 4) return { nome: 'un girone', gironi: 1, passano: 4 };
+  if (n >= 16) return { nome: 'quattro gironi', gironi: 4, passano: 2, tabellone: 8 };
+  if (n >= 8) return { nome: 'due gironi', gironi: 2, passano: 4, tabellone: 8 };
+  if (n >= 4) return { nome: 'un girone', gironi: 1, passano: 4, tabellone: 4 };
   return null;
+}
+const LETTERE = ['A', 'B', 'C', 'D'];
+
+/**
+ * Gli accoppiamenti del tabellone dai piazzamenti nei gironi (cl[k] = classifica
+ * del girone k). Le prime incontrano le seconde (o le quarte) di un altro girone,
+ * e due squadre dello stesso girone si possono ritrovare solo in finale.
+ */
+export function accoppiamenti(fmt, cl) {
+  if (fmt.gironi === 4) {
+    const [A, B, C, D] = cl;
+    return [[A[0], B[1]], [C[0], D[1]], [B[0], A[1]], [D[0], C[1]]];
+  }
+  if (fmt.gironi === 2) {
+    const [A, B] = cl;
+    return [[A[0], B[3]], [B[1], A[2]], [B[0], A[3]], [A[1], B[2]]];
+  }
+  const [U] = cl;
+  return [[U[0], U[3]], [U[1], U[2]]];
 }
 
 /**
@@ -163,8 +193,8 @@ export function coppaFantatitano(ids, punti, seme = SEME) {
   const fmt = formato(ids.length);
   if (!fmt) return { formato: null, iscritti: ids.length };
   const ordine = mescola([...ids].sort(), seme);
-  const membri = fmt.gironi === 2 ? [ordine.filter((_, i) => i % 2 === 0), ordine.filter((_, i) => i % 2 === 1)] : [ordine];
-  const nomi = fmt.gironi === 2 ? ['A', 'B'] : ['Unico'];
+  const membri = Array.from({ length: fmt.gironi }, (_, k) => ordine.filter((_, i) => i % fmt.gironi === k));
+  const nomi = fmt.gironi === 1 ? ['Unico'] : LETTERE.slice(0, fmt.gironi);
   const out = { formato: fmt, iscritti: ids.length, gironi: [], tabellone: [], campione: null, finale: null };
 
   // fase a gironi sui quarti veri (turni 1 e 2)
@@ -175,30 +205,34 @@ export function coppaFantatitano(ids, punti, seme = SEME) {
   const gironiFiniti = [1, 2].every((n) => ids.some((id) => punti(n, id) != null));
   if (!gironiFiniti) return out;
 
-  // semifinali A1–B2, B1–A2 (con un girone solo: 1–4, 2–3)
+  // tabellone a gare secche: quarti sulla semifinale vera di andata (3),
+  // semifinali sul ritorno (4), finale sulla finale vera (5). Con 4 qualificate
+  // (girone unico) si parte dalle semifinali.
   const cl = out.gironi.map((g) => g.classifica.map((r) => r.id));
-  const semi = fmt.gironi === 2 ? [[cl[0][0], cl[1][1]], [cl[1][0], cl[0][1]]] : [[cl[0][0], cl[0][3]], [cl[0][1], cl[0][2]]];
   const posto = new Map(out.gironi.flatMap((g) => g.classifica.map((r) => [r.id, r])));
   const meglio = (a, b) => {
     const x = posto.get(a), y = posto.get(b);
     return x.posto !== y.posto ? (x.posto < y.posto ? a : b) : x.punti !== y.punti ? (x.punti > y.punti ? a : b)
       : (x.fatti - x.subiti) !== (y.fatti - y.subiti) ? ((x.fatti - x.subiti) > (y.fatti - y.subiti) ? a : b) : (x.fatti >= y.fatti ? a : b);
   };
-  const gioca = (coppie, turni) => coppie.map(([a, b]) => {
-    const gare = turni.map((n) => [punti(n, a), punti(n, b)]);
-    let vincente = null;
-    if (gare.every(([x, y]) => x != null && y != null)) {
-      const ta = gare.reduce((s, x) => s + x[0], 0), tb = gare.reduce((s, x) => s + x[1], 0);
-      const [ra, rb] = gare.at(-1);
-      vincente = ta !== tb ? (ta > tb ? a : b) : ra !== rb ? (ra > rb ? a : b) : meglio(a, b);
-    }
+  // gara secca; a pari fantapunti passa chi era meglio piazzato nel girone
+  const gioca = (coppie, n) => coppie.map(([a, b]) => {
+    const gare = [[punti(n, a), punti(n, b)]];
+    const [x, y] = gare[0];
+    const vincente = x != null && y != null ? (x !== y ? (x > y ? a : b) : meglio(a, b)) : null;
     return { a, b, gare, vincente };
   });
-  const s = gioca(semi, [3, 4]);
-  out.tabellone.push({ nome: 'Semifinali', turni: [3, 4], sfide: s });
-  if (s.some((x) => !x.vincente)) return out;
-  const f = gioca([[s[0].vincente, s[1].vincente]], [5]);
-  out.tabellone.push({ nome: 'Finale', turni: [5], sfide: f });
+  const turni = fmt.tabellone === 8 ? [['Quarti', 3], ['Semifinali', 4], ['Finale', 5]] : [['Semifinali', 4], ['Finale', 5]];
+  let coppie = accoppiamenti(fmt, cl);
+  let f = null;
+  for (const [nome, n] of turni) {
+    const sfide = gioca(coppie, n);
+    out.tabellone.push({ nome, turni: [n], sfide });
+    if (sfide.some((x) => !x.vincente)) return out;
+    f = sfide;
+    coppie = [];
+    for (let i = 0; i < sfide.length; i += 2) coppie.push([sfide[i].vincente, sfide[i + 1]?.vincente]);
+  }
   out.finale = f[0];
   out.campione = f[0].vincente;
   return out;
@@ -206,7 +240,7 @@ export function coppaFantatitano(ids, punti, seme = SEME) {
 
 /**
  * Dove sta un iscritto nella coppa: per «La tua coppa» in cima alla pagina.
- * Torna { stato: 'gironi'|'semifinale'|'finale'|'campione'|'fuori'|'non iscritto', ... }.
+ * Torna { stato: 'gironi'|'quarti'|'semifinale'|'finale'|'campione'|'fuori'|'non iscritto', ... }.
  */
 export function dovesei(c, id) {
   if (!c?.formato) return { stato: 'nessuna coppa' };
@@ -220,7 +254,10 @@ export function dovesei(c, id) {
     if (!sfida) continue;
     const avversario = sfida.a === id ? sfida.b : sfida.a;
     if (sfida.vincente && sfida.vincente !== id) return { stato: 'fuori', dove: t.nome, avversario, sfida, girone: g, riga };
-    return { stato: t.nome === 'Finale' ? 'finale' : 'semifinale', sfida, avversario, girone: g, riga };
+    const stato = { Quarti: 'quarti', Semifinali: 'semifinale', Finale: 'finale' }[t.nome];
+    // vinta, e il turno dopo non c'è ancora (aspetta le altre sfide): sei già al prossimo
+    if (sfida.vincente === id && stato !== 'finale') return { stato: stato === 'quarti' ? 'semifinale' : 'finale', attesa: true, girone: g, riga };
+    return { stato, sfida, avversario, girone: g, riga };
   }
   const finiti = c.tabellone.length > 0;
   if (finiti) return { stato: 'fuori', dove: `Girone ${g.nome}`, girone: g, riga };

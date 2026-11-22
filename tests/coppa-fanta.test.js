@@ -22,18 +22,20 @@ test('il calendario vero: quarti il 25/11 e il 9/12 alle 20:45, semifinali non a
   assert.ok(COPPA_REFERTI.length >= 14 && COPPA_REFERTI.every((r) => r.g <= 2 || partiteDelTurno(COPPA_CALENDARIO, 1).length));
 });
 
-test('il formato si sceglie dagli iscritti', () => {
+test('il formato si sceglie dagli iscritti: 8 squadre ai quarti da 8 iscritti in su', () => {
   assert.equal(formato(3), null);
-  assert.equal(formato(5).gironi, 1);
-  assert.equal(formato(8).gironi, 2);
-  assert.equal(formato(150).gironi, 2);
+  assert.deepEqual([formato(5).gironi, formato(5).tabellone], [1, 4]);
+  assert.deepEqual([formato(8).gironi, formato(8).passano, formato(8).tabellone], [2, 4, 8]);
+  assert.deepEqual([formato(15).gironi, formato(15).passano], [2, 4]);
+  assert.deepEqual([formato(16).gironi, formato(16).passano, formato(16).tabellone], [4, 2, 8]);
+  assert.equal(formato(150).gironi, 4);
   assert.equal(coppaFantatitano(ids(3), fissi()).formato, null);
 });
 
 test('gironi sui quarti: due scontri a testa, avversari diversi, sorteggio uguale per tutti', () => {
   const c = coppaFantatitano(ids(41), fissi(0));
-  assert.equal(c.gironi.length, 2);
-  assert.equal(c.gironi[0].membri.length + c.gironi[1].membri.length, 41);
+  assert.deepEqual(c.gironi.map((g) => g.nome), ['A', 'B', 'C', 'D']);
+  assert.equal(c.gironi.reduce((s, g) => s + g.membri.length, 0), 41);
   for (const g of c.gironi) {
     assert.equal(g.partite.length, 2);
     for (const id of g.membri) {
@@ -42,22 +44,23 @@ test('gironi sui quarti: due scontri a testa, avversari diversi, sorteggio ugual
       assert.equal(new Set(avv).size, 2);
     }
   }
-  // lo stesso sorteggio in qualunque ordine arrivino gli iscritti
   const d = coppaFantatitano(ids(41).reverse(), fissi(0));
   assert.deepEqual(d.gironi.map((g) => g.membri), c.gironi.map((g) => g.membri));
   assert.equal(c.tabellone.length, 0);
 });
 
-test('semifinali A1–B2 e B1–A2 sulla somma, poi finale secca e campione', () => {
-  const c = coppaFantatitano(ids(30), fissi(5));
-  const [A, B] = c.gironi.map((g) => g.classifica.map((r) => r.id));
-  const semi = c.tabellone[0];
-  assert.deepEqual(semi.sfide.map((s) => [s.a, s.b]), [[A[0], B[1]], [B[0], A[1]]]);
-  for (const s of semi.sfide) {
-    const ta = s.gare[0][0] + s.gare[1][0], tb = s.gare[0][1] + s.gare[1][1];
-    if (ta !== tb) assert.equal(s.vincente, ta > tb ? s.a : s.b);
-  }
-  assert.equal(c.tabellone[1].nome, 'Finale');
+test('8 ai quarti (prime contro seconde di un altro girone), poi semifinali e finale secche', () => {
+  const c = coppaFantatitano(ids(60), fissi(5));
+  const [A, B, C, D] = c.gironi.map((g) => g.classifica.map((r) => r.id));
+  const q = c.tabellone[0];
+  assert.equal(q.nome, 'Quarti');
+  assert.deepEqual(q.turni, [3]);
+  assert.deepEqual(q.sfide.map((s) => [s.a, s.b]), [[A[0], B[1]], [C[0], D[1]], [B[0], A[1]], [D[0], C[1]]]);
+  for (const s of q.sfide) { const [x, y] = s.gare[0]; if (x !== y) assert.equal(s.vincente, x > y ? s.a : s.b); }
+  const sf = c.tabellone[1];
+  assert.deepEqual([sf.nome, sf.turni[0]], ['Semifinali', 4]);
+  assert.deepEqual(sf.sfide.map((s) => [s.a, s.b]), [[q.sfide[0].vincente, q.sfide[1].vincente], [q.sfide[2].vincente, q.sfide[3].vincente]]);
+  assert.deepEqual([c.tabellone[2].nome, c.tabellone[2].turni[0]], ['Finale', 5]);
   assert.ok([c.finale.a, c.finale.b].includes(c.campione));
   assert.equal(dovesei(c, c.campione).stato, 'campione');
   const fuori = c.gironi[0].classifica.at(-1).id;
@@ -65,19 +68,24 @@ test('semifinali A1–B2 e B1–A2 sulla somma, poi finale secca e campione', ()
   assert.equal(dovesei(c, 'nessuno').stato, 'non iscritto');
 });
 
-test('in parità di somma passa chi ha fatto di più al ritorno, poi chi era meglio nel girone', () => {
-  const tutti = ids(4), base = { 1: {}, 2: {}, 3: {}, 4: {}, 5: {} };
+test('con 2 gironi passano le prime 4; col girone unico si parte dalle semifinali', () => {
+  const due = coppaFantatitano(ids(12), fissi(5));
+  const [A, B] = due.gironi.map((g) => g.classifica.map((r) => r.id));
+  assert.deepEqual(due.tabellone[0].sfide.map((s) => [s.a, s.b]), [[A[0], B[3]], [B[1], A[2]], [B[0], A[3]], [A[1], B[2]]]);
+  const uno = coppaFantatitano(ids(6), fissi(5));
+  assert.deepEqual(uno.tabellone.map((t) => [t.nome, t.turni[0]]), [['Semifinali', 4], ['Finale', 5]]);
+});
+
+test('gara secca: a pari fantapunti passa chi era meglio piazzato nel girone', () => {
+  const tutti = ids(6), base = { 1: {}, 2: {}, 3: {}, 4: {}, 5: {} };
   tutti.forEach((id, i) => { base[1][id] = 90 - i * 10; base[2][id] = 90 - i * 10; });
   const punti = (n, id) => base[n][id] ?? null;
-  // prima i gironi, per sapere chi si incontra in semifinale
-  const [s1, s2] = coppaFantatitano(tutti, (n, id) => (n <= 2 ? punti(n, id) : 0)).tabellone[0].sfide;
-  // s1: somma pari, al ritorno vince b; s2: tutto pari, passa chi era meglio nel girone (a)
-  Object.assign(base[3], { [s1.a]: 70, [s1.b]: 60, [s2.a]: 65, [s2.b]: 65 });
-  Object.assign(base[4], { [s1.a]: 60, [s1.b]: 70, [s2.a]: 65, [s2.b]: 65 });
+  const c0 = coppaFantatitano(tutti, (n, id) => (n <= 2 ? punti(n, id) : null));
+  const cl = c0.gironi[0].classifica.map((r) => r.id);
+  for (const id of tutti) base[4][id] = 60;      // semifinali tutte pari
   const c = coppaFantatitano(tutti, punti);
-  assert.equal(c.tabellone[0].sfide[0].vincente, s1.b);
-  assert.equal(c.tabellone[0].sfide[1].vincente, s2.a);
-  assert.equal(c.campione, null);      // la finale non ha ancora punteggi
+  assert.deepEqual(c.tabellone[0].sfide.map((s) => s.vincente), [cl[0], cl[1]]);
+  assert.equal(c.campione, null);
 });
 
 test('la formazione di coppa: 5 titolari coi quattro ruoli, riserva, capitano, tetto per squadra', () => {

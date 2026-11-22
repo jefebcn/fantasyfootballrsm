@@ -24,7 +24,7 @@ async function aPagine(richiesta) {
     if ((r.data || []).length < PAGINA) return { data, error: null };
   }
 }
-const vuoto = () => ({ caricato: false, inCorso: false, attivo: true, errore: null, turni: [], formazioni: new Map(), contati: 0 });
+const vuoto = () => ({ caricato: false, inCorso: false, attivo: true, errore: null, turni: [], formazioni: new Map(), contati: 0, elenco: [] });
 let st = vuoto(), per = null, caricataAlle = 0, timer = null;
 const ascolta = new Set();
 export const stato = () => st;
@@ -40,14 +40,16 @@ export async function carica({ forza = false } = {}) {
   if (!sb || !uid() || st.inCorso || (st.caricato && !forza && per === uid())) return;
   st.inCorso = true; per = uid();
   try {
-    const [turni, form, conta] = await Promise.all([
+    const [turni, form, conta, elenco] = await Promise.all([
       sb.from('coppa_turni').select('*').order('turno'),
       aPagine(() => sb.from('coppa_formazioni').select('user_id,turno,squadra,colore,iniziali,titolari,riserva,capitano,aggiornata').order('turno').order('user_id')),
-      sb.rpc('coppa_iscritti')]);
+      sb.rpc('coppa_iscritti'),
+      // chi c'è e con che squadra, senza giocatori (067): i gironi provvisori prima della chiusura
+      sb.rpc('coppa_iscritti_elenco')]);
     const errore = [turni, form].map((r) => r.error).find(Boolean);
     if (manca(errore)) st = { ...vuoto(), caricato: true, attivo: false };
     else if (errore) st = { ...st, caricato: true, errore: errore.message };
-    else st = { ...vuoto(), caricato: true, turni: turni.data || [], contati: conta.data || 0, formazioni: new Map((form.data || []).map((r) => [`${r.turno}:${r.user_id}`, r])) };
+    else st = { ...vuoto(), caricato: true, turni: turni.data || [], contati: conta.data || 0, elenco: elenco.error ? [] : elenco.data || [], formazioni: new Map((form.data || []).map((r) => [`${r.turno}:${r.user_id}`, r])) };
   } catch (e) { st = { ...st, caricato: true, errore: e.message }; }
   st.inCorso = false;
   caricataAlle = Date.now();
@@ -75,10 +77,13 @@ if (typeof document !== 'undefined') {
 export const formazione = (n, id = uid()) => st.formazioni.get(`${n}:${id}`) || null;
 /** Chi è in coppa: chi ha consegnato la formazione del primo turno. */
 export const iscritti = () => [...st.formazioni.values()].filter((r) => r.turno === 1).map((r) => r.user_id);
+/** Prima della chiusura: chi è iscritto finora (067), per i gironi provvisori. */
+export const iscrittiFinora = () => (st.elenco.length ? st.elenco.map((r) => r.user_id) : iscritti());
 /** Il nome della squadra in coppa: quello dato all'ultima consegna. */
 export function squadra(id) {
   let r = null;
   for (const t of TURNI) r = st.formazioni.get(`${t.n}:${id}`) || r;
+  r = r || st.elenco.find((x) => x.user_id === id);
   return r ? { squadra: r.squadra, colore: r.colore || '#4B06FC', iniziali: r.iniziali || r.squadra.slice(0, 2).toUpperCase() } : { squadra: 'Squadra', colore: '#888888', iniziali: '?' };
 }
 
@@ -93,6 +98,13 @@ export async function salva(n, f) {
   const { data, error } = await sb.from('coppa_formazioni').upsert(riga, { onConflict: 'user_id,turno' }).select().single();
   if (error) throw new Error(error.message);
   st.formazioni.set(`${n}:${uid()}`, data);
+  // chi si iscrive si vede subito nei gironi provvisori, senza aspettare di ricaricare
+  if (n === 1) {
+    const nuovo = !st.elenco.some((x) => x.user_id === uid());
+    st.elenco = [...st.elenco.filter((x) => x.user_id !== uid()), { user_id: uid(), squadra: data.squadra, colore: data.colore, iniziali: data.iniziali }]
+      .sort((x, y) => (x.user_id < y.user_id ? -1 : 1));
+    if (nuovo) st.contati = (st.contati || 0) + 1;
+  }
   avvisa();
   return data;
 }

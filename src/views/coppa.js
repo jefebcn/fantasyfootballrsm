@@ -209,7 +209,6 @@ function formazioneHtml(m) {
     <div class="a-card cf-form">
       <p class="cf-chiude">${icon('clock', 'ic sm')} Chiude ${quando(chiude)}, al calcio d'inizio</p>
       <p class="small muted" style="margin:0">Cinque titolari e una riserva fra i giocatori delle squadre in campo (${sqd.map(nomeClub).join(', ')}), al massimo ${t.tetto} per squadra. Il capitano vale doppio; la riserva entra al posto del primo titolare che non gioca.</p>
-      ${t.n === 1 && !iscritto ? `<label class="lbl" for="cf-nome">Nome della tua squadra in coppa</label><input class="field-input" id="cf-nome" maxlength="40" autocomplete="off" value="${esc(b.squadra)}" placeholder="es. Real Titano">` : ''}
       ${SLOT.map((_, k) => slot(k)).join('')}
       <label class="lbl" for="cf-cap">Capitano</label>
       <select class="select" id="cf-cap"><option value="">Scegli fra i titolari…</option>${tit.map((id) => `<option value="${esc(id)}" ${id === b.capitano ? 'selected' : ''}>${esc(giocatore(id)?.lastName || id)}</option>`).join('')}</select>
@@ -265,7 +264,7 @@ function regole() {
 }
 
 export const coppa = {
-  title: NOME, appbar: 'back', sub: () => 'sulle partite della Coppa Titano',
+  title: NOME, appbar: 'back', sub: () => NOME,
   render() { return disegna(); },
   mount(root, ctx) {
     if (!finto && !CS.stato().caricato) {
@@ -283,11 +282,10 @@ export const coppa = {
       ctx.render();
     }));
     root.querySelector('#cf-cap')?.addEventListener('change', (e) => { b.capitano = e.target.value || null; ctx.render(); });
-    root.querySelector('#cf-nome')?.addEventListener('input', (e) => { b.squadra = e.target.value; });
     root.querySelector('#cf-salva')?.addEventListener('click', async (e) => {
-      const nome = (b.squadra || '').trim() || CS.formazione(1, io())?.squadra || '';
-      if (!nome) { ctx.toast('Scrivi il nome della tua squadra in coppa'); return; }
+      // Alex, 22/11: il nome non si chiede, è quello della squadra nella lega
       const me = S.me?.();
+      const nome = me?.teamName || CS.formazione(1, io())?.squadra || 'Squadra';
       e.target.disabled = true;
       try {
         await CS.salva(t.n, { ...b, squadra: nome, colore: me?.color, iniziali: me?.initials });

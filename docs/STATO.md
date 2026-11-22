@@ -1,42 +1,35 @@
 # Stato – Fantatitano
 
-Aggiornato: 2026-11-21 (sera) · temi: storie dei gol live e Buffer; audit del sito con 13 correzioni (PR #134–#141)
+Aggiornato: 2026-11-22 (sera) · temi: Coppa Fantatitano (struttura, squadre dell'app, grafica), storie dei gol di domenica, coda Buffer di @fantatitano
 
 ## Dove siamo
-- App online su fantatitano.site e su iPhone. Nell'onboarding del sito c'è il tasto «Scarica l'app dall'App Store» (PR #117, unita); non compare nell'app né su Android.
-- Instagram @fantatitano si pubblica da solo con Buffer: un post alle 14:00 e una storia alle 14:15, al massimo uno di ciascuno al giorno. Li prepara il kit social (fuori dal repo), con due attività pianificate: lunedì (dopo la giornata) e giovedì (prima della giornata).
-- Il kit ha la sua memoria: `kit/STATO.md` (cosa è programmato) e `kit/PLAYBOOK.md` (tutte le regole di Alex). L'URL del kit è scritto nel prompt delle due attività.
-- 21/11, audit completo: sicurezza (nomi protetti, leghe private non apribili, codice vice, CSP, backup con account cifrati), formazione «consegnata» solo se il server risponde, conferme sulle azioni irreversibili, date «da definire», turno infrasettimanale. Nuove: Listone per gol/assist, preferiti e «Liberi»; bacheca della lega (064); albo d'oro. Migrazioni fino alla 065 applicate.
-- La 9ª giornata (19–22/11) è già programmata. Il controllo infortuni e squalifiche del 19/11 non ha trovato nessuno fuori.
+- App online su fantatitano.site e su iPhone. Migrazioni fino alla 067 applicate.
+- Coppa Fantatitano su #/coppa (PR #143–#150, tutte unite): 4 gironi, 8 ai quarti, poi gare secche sulle semifinali andata/ritorno e sulla finale vere. Chiusura del 1° turno mer 25/11 alle 20:45 (quarti di andata veri). Prima della chiusura gironi provvisori coi nomi veri.
+- Squadre dell'app (PR #149): portano la coppa a 32 squadre, nomi inventati, formazione automatica dalle quotazioni, calano a ogni iscrizione vera. Nessun segno sulle squadre: lo dice solo una riga nelle regole (scelta di Alex).
+- Grafica della coppa (PR #150): testata con conto alla rovescia, gironi a griglia, tabellone ad albero, formazione consegnata in breve.
+- Instagram @fantatitano: al posto dei giri del lunedì e del giovedì c'è il controllo della coda lun/mer/ven alle 9:23 (trig_018i6UNbSQ1ikokJFoCnnTWS). Riempie fino a 10 quando ci sono 4+ posti liberi. I due giri vecchi sono spenti ma tengono regole e URL del kit.
+- Storie dei gol 22/11: 15 uscite, 14 giuste. Il 2-2 di Pennarossa–Tre Penne dice «Pastorelli 14'», ma la FSGC poi l'ha corretto in Pieri 13'.
 
 ## Aperto / in corso
-- Storie dei gol: funzionano. Venerdì 20/11 sono uscite 7 storie su 7, tutte con la foto, 2-4 minuti dopo il gol. Le prime due erano nere (foto con percorso relativo, PR #122): rifatte, e le nere le ha cancellate Alex. Ora la storia esce solo se tutte le immagini si sono caricate. Il referto si legge ogni 15 s (PR #123).
-- Il 20/11 alle 23:10 Buffer ha bloccato la chiave per 24 ore a causa del controllo della chat ogni 8 s. Il 21/11 alle 10 era già sbloccata. Alex darà una seconda chiave: una per le storie automatiche (secret `BUFFER_TOKEN` su Supabase), una per la chat e il kit.
-- La PR del 21/11 aggiunge la funzione `storie-oggi` (sola lettura, per seguire le storie senza Buffer), il canale scritto in `pubblica-gol` (una chiamata per gol), niente minuto ripetuto e marchio più in basso nelle storie.
-- FantaTitano Futsal: annunciato nel link in bio per il 1° dicembre (PR #118). Stato e ricette del futsal in `docs/futsal/STATO.md` e `docs/futsal/RICETTE.md`. Dal 21/11 il codice è su main ma lo vede solo il proprietario (`APERTO_A_TUTTI` in `src/views/futsal.js`).
-- Lancio Futsal (21/11): corona metà viola e metà nera su fondo arancio (versione A scelta da Alex). Sul sito si accende da sola dal 1° al 14/12 (`src/lancio-futsal.js`). Le foto profilo di @fantatitano e @fantatitano.futsal le cambia Alex a mano il 1/12 e le rimette il 15/12. La versione B (fondo nero) è per le grafiche grandi del lancio. Le icone degli store non cambiano.
-- Migrazione 057 (carriera di La Partita sull'account), 18/11: da verificare se è applicata su Supabase.
-- Per Alex, dal pannello: Supabase → Authentication → Email → controllo delle password già rubate (consigliato, non urgente); copia del backup fuori da GitHub e `BACKUP_PASSPHRASE` al sicuro.
-- Coppa fantasy del calcio legata alla Coppa Titano vera (quarti mer 25/11): Alex ha il prompt per un'altra chat; struttura come la coppa del futsal (`src/futsal-gare.js`). Da verificare prima se l'import legge i referti di coppa.
+- Storia di Pastorelli: se Alex la cancella da Instagram, rifare quella di Pieri 13' (gol-in-diretta.py --foto in locale, Higgsfield, UNA chiamata Buffer).
+- Lun 23/11 9:23: primo controllo coda. La coda di @fantatitano era vuota il 22/11 sera: deve riempire tutti e 10 i posti, a partire dal post e dalla storia di lunedì. Dopo, guardare le grafiche.
+- Quando la FSGC pubblica le squadre di semifinali e finale della Coppa Titano: aggiornare `coppa_turni` (squadre, chiusure).
+- Seconda chiave Buffer: la mette Alex nei segreti di Supabase.
+- Per Alex, dal pannello: controllo delle password rubate su Supabase Auth; copia del backup fuori da GitHub.
 
 ## Prossimo passo consigliato
-- Lunedì 23/11 l'attività del lunedì fa il recap della 9ª giornata. Dopo, controllare che le grafiche rispettino le regole qui sotto.
+- Mer 25/11 dopo le 20:45: guardare la coppa sorteggiata (gironi, prime sfide, squadre dell'app con formazione) e i voti dopo il referto dei quarti.
 
 ## Decisioni recenti di Alex ancora valide
-- Sull'iPhone tutto porta all'app, non al sito. Niente riga «non affiliato» nel link in bio: resta nei Termini.
-- Social: avatar solo nei campi delle formazioni. Nelle sfide e nella figurina vanno foto vere del giocatore nominato, ben visibile e centrato.
-- Logo FANTATITANO sempre in alto a sinistra. In ogni grafica con squadre ci sono i loro stemmi di fantasia.
-- Due meme a settimana, con dipinti in pubblico dominio: nell'immagine solo il titolo del quadro, autore e licenza in didascalia.
-- Mai ripetere giocatori o argomenti: prima di usare un nome, cercarlo in tutte le didascalie recenti.
-- Le storie parlano solo del loro giorno: niente scadenze già passate.
-- Le storie dei gol sono un'eccezione al limite di una storia al giorno: una per ogni gol della giornata in corso (20/11).
-- Storie dei gol: lo sfondo è sempre la foto del marcatore o, se manca, della sua squadra; stemmi di fantasia; mai «fantatitano.site», si scrive «Link in bio» (20/11).
-- Si lavora in una chat sola: «termina sessione» o «SESSIONE FINITA» salva il punto, poi la chat si può svuotare.
+- Coppa: «8 passano, 4 gironi»; il nome della squadra è sempre quello della lega; squadre dell'app senza segni sulle squadre, solo la riga nelle regole.
+- Instagram: almeno 5 post e 4-5 storie a settimana, max 1 post e 1 storia al giorno (14:00 e 14:15); le storie dei gol sono a parte.
+- Logo FANTATITANO in alto a sinistra; stemmi di fantasia; avatar solo nel campo; foto vere nelle sfide; mai «fantatitano.site», si scrive «Link in bio».
+- Mai ripetere giocatori o argomenti; le storie parlano solo del loro giorno.
+- Merge solo dopo il suo «ok merge».
 
 ## Attenzione
-- `apply_migration` su Supabase chiede conferma ad Alex: avvisarlo prima, se no va in timeout.
-- Prove browser in cloud: `BASE=http://app.local node -r ./prove/strumenti/servi-da-disco.cjs prove/xxx.cjs` (https://app.local per il service worker).
-- Il deploy parte solo se `npm test` è verde.
-- Dopo `update_trigger` verifica con `get_trigger`: due volte l'aggiornamento si è perso con un riavvio.
-- Un turno delle storie già partito non prende le correzioni: va fermato (lo fa Alex da GitHub, da qui 403) e l'orologio ne fa partire uno nuovo entro 2 minuti.
-- La FSGC corregge il referto durante la partita (marcatore cambiato, gol inserito due volte): una storia già uscita non si corregge da sola.
+- La versione: se una PR si unisce dopo un import automatico, la versione può coincidere con main. Dopo il merge di main rilancia `scripts/bump-sw.py`, se no i telefoni non scaricano il codice nuovo.
+- Il ramo remoto conserva la storia di prima dello squash: prima della PR `git fetch origin main` e riparti da lì o unisci main.
+- Un riavvio della sessione spegne i monitor: il 22/11 la diretta si è persa dalle 15:11. Dopo un riavvio rileggi `storie-oggi` e riaccendi.
+- La FSGC corregge marcatore e minuto durante la partita: una storia già uscita non si corregge da sola.
+- `apply_migration` chiede conferma ad Alex: avvisarlo prima. Dopo `update_trigger` verificare con `get_trigger`.

@@ -3298,3 +3298,4 @@ b > .stemma.xs:last-child{margin:0 0 0 6px}
 .cf-fin{align-items:flex-start}
 .cf-freccia{font-size:28px;color:var(--text-muted)}
 .cf-schede{margin-bottom:10px}
+.cf-albero-8 .cf-col span{padding:6px 10px}

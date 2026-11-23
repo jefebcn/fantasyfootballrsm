@@ -8,7 +8,7 @@ Aggiornato: 2026-11-22 · tema: futsal pronto al lancio, Coppa provata con 100 s
 - Database: futsal-06 (leghe pubbliche) e futsal-07 (funzioni chiuse agli anonimi) applicate. Date FSGC fissate fino alla 12ª (3/12).
 - 21/11: barra «Aggiorna» tolta, maglie nelle liste, icona di Regole, niente citazioni di altre app (PR #129-#133). Lancio: la 13ª è la prima giornata giocabile (chiusura provvisoria, `futsal_lock` 13 a mano). Coppa dalla 14ª alla 30ª (`COPPA` in `src/futsal-gare.js`). Nuove: nome e colore della squadra (nomi unici, futsal-10), «Primo in panchina», formazioni degli avversari, avviso «mercato aperto» (futsal-11 + funzione `promemoria-`), albo d'oro.
 - Coppa con 100 squadre simulata (`prove/coppa-simulata/`): «La tua coppa», linea di chi passa, preliminari ridotti ai primi 16, sfide del turno, ✓ su chi passa (PR #141). A stagione finita la home dice «Stagione finita». 22/11: nella scheda «Compra» le colonne hanno l'intestazione «Media punti» e «Prezzo» (PR #151).
-- Instagram @fantatitano.futsal via Buffer: coda fino al 30/11. Foto: archivio Flickr FSGC su Drive, catalogo `catalogo-futsal.csv` (Drive id 1cxmXJ3_xL3Ghku4pCXWhIPXJq2KRit0X).
+- Instagram @fantatitano.futsal via Buffer: coda fino al 4/12. Foto: archivio Flickr FSGC su Drive, catalogo `catalogo-futsal.csv` (Drive id 1cxmXJ3_xL3Ghku4pCXWhIPXJq2KRit0X).
 
 ## Aperto / in corso
 - Alex prova il futsal dal suo account: iscrizione, mercato dell'11ª (chiude lun 23/11 20:05), lega pubblica da Leghe → Admin.
@@ -16,7 +16,7 @@ Aggiornato: 2026-11-22 · tema: futsal pronto al lancio, Coppa provata con 100 s
 - Ogni giorno 9:47 (trig_019gaxf1eECjzEK6qMnLV9NA): con ≥4 posti liberi su Buffer crea contenuti con foto dall'archivio Drive e avvisa Alex; altrimenti silenzio.
 - `.github/workflows/futsal-prova.yml` si è spento da solo: da cancellare dopo il lancio.
 - Questionario di confronto per chi conosce bene un gioco simile (PDF dato ad Alex il 22/11, 7 temi: prima volta, rosa e schemi, mercato, giornata, classifiche, cosa fa tornare, cosa cambiare): con le risposte, proporre i ritocchi prima del lancio.
-- Storie da mettere in evidenza a mano da Alex (gli highlight non hanno API).
+- Storie da mettere in evidenza a mano da Alex (gli highlight non hanno API). Raccolte: Regole, Giornate, Classifica, Squadre, App, Amici, Coppa (copertine nuove del 23/11, stesso stile del 2/11, icone di oggi).
 - Album Flickr nuovi (11ª in poi): aggiungere l'indirizzo in `scripts/foto-flickr-futsal.ps1` e mandare ad Alex il comando completo.
 
 ## Prossimo passo consigliato
@@ -28,7 +28,7 @@ Aggiornato: 2026-11-22 · tema: futsal pronto al lancio, Coppa provata con 100 s
 - Mai citare le app a cui ci ispiriamo (app, social, codice, documenti).
 - Niente scritta «Aggiorna» in app: l'aggiornamento entra da solo.
 - Coda Buffer: con 4 o più posti liberi si creano subito nuovi contenuti.
-- Ogni foto si usa UNA SOLA VOLTA. Già usate (notizie FSGC, id articolo): 2406 2409 2411 2413 2422 2427 2431 2435 2441 2447 2451 2452 2459 2462 2464 2473 2477 2482 2485. Dall'archivio Flickr: nessuna ancora (segnare qui l'id flickr).
+- Ogni foto si usa UNA SOLA VOLTA. Già usate (notizie FSGC, id articolo): 2406 2409 2411 2413 2422 2427 2431 2435 2441 2447 2451 2452 2459 2462 2464 2473 2477 2482 2485. Dall'archivio Flickr: 55656783462 55656783487 (23/11, post dell'1 e del 3/12).
 - Instagram: credito «© FSGC / Fotografo»; niente nomi di giocatori; solo stemmi Fantatitano («di fantasia, non ufficiali»); CTA solo Salvalo / Swipe / Link in bio; isAiGenerated true; storie senza testo.
 - Lancio 01/12 su App Store e Google Play.
 

@@ -289,7 +289,7 @@ export const futsalHome = {
       <div class="a-card fs-crea"><b>Entra in una lega pubblica o creane una con gli amici</b><div><a class="a-btn" href="#/futsal/leghe" data-vai-leghe="pubbliche">Pubbliche</a><a class="a-btn sec" href="#/futsal/leghe" data-vai-leghe="private">Con gli amici</a></div></div>` : ''}
       ${ultima ? leader(ultima) : ''}
       ${sec('Le partite', `${n}ª giornata`)}
-      <div class="a-card fs-list">${F.PARTITE.filter((p) => p.g === n).map((p) => `<div class="fs-match">${stemma(p.casa)}<b>${esc(nomeSq(p.casa))}</b><span class="fs-ora">${p.quando ? timeIt(p.quando) : '–'}<small>${p.quando ? dateIt(p.quando) : ''}</small></span><b class="r">${esc(nomeSq(p.ospite))}</b>${stemma(p.ospite)}</div>`).join('')}
+      <div class="a-card fs-list">${F.PARTITE.filter((p) => p.g === n).map((p) => `<div class="fs-match">${stemma(p.casa)}<b>${esc(nomeSq(p.casa))}</b>${centroPartita(p)}<b class="r">${esc(nomeSq(p.ospite))}</b>${stemma(p.ospite)}</div>`).join('')}
         <p class="small muted" style="padding:8px 12px;margin:0">Riposa: ${esc(F.riposa(n).map(nomeSq).join(', '))}</p></div>
       ${nuovo ? '' : comeSiGioca()}
     </main>`;
@@ -861,19 +861,32 @@ function apriPartita(n, casa, evid, ctx) {
     <div class="fs-list fs-distinte">${distinte(n, casa, evid)}</div>`);
 }
 
+/**
+ * Il centro della riga di una partita: il risultato col referto, quello
+ * provvisorio della FSGC («voti in arrivo») appena la partita è conclusa,
+ * altrimenti ora e data.
+ */
+function centroPartita(p) {
+  if (p.gc != null && F.referto(p.g, p.casa)) return `<span class="fs-ris">${p.gc} – ${p.go}</span>`;
+  const pv = F.provvisorio(p);
+  if (pv) return pv.length === 2
+    ? `<span class="fs-ris fs-provv">${pv[0]} – ${pv[1]}<small>voti in arrivo</small></span>`
+    : '<span class="fs-ora">Finita<small>risultato in arrivo</small></span>';
+  return `<span class="fs-ora">${p.quando ? timeIt(p.quando) : '–'}<small>${p.quando ? dateIt(p.quando) : 'da fissare'}</small></span>`;
+}
+
 export const futsalGiornata = {
-  title: 'Calendario futsal', appbar: 'futsal', sub: (ctx) => `Calendario · ${ctx.params.n || F.giocate().at(-1) || 1}ª giornata`,
+  title: 'Calendario futsal', appbar: 'futsal', sub: (ctx) => `Calendario · ${ctx.params.n || F.ultimaConRisultati() || 1}ª giornata`,
   render(ctx) {
-    const giocate = F.giocate();
-    const n = Number(ctx.params.n) || giocate.at(-1) || 1;
+    const n = Number(ctx.params.n) || F.ultimaConRisultati() || 1;
     const partite = F.PARTITE.filter((p) => p.g === n);
     const tutte = [...new Set(F.PARTITE.map((p) => p.g))].sort((a, b) => a - b);
     return `<main class="a-body fs">
-      <div class="chips fs-gchips">${tutte.map((g) => `<a class="chip${g === n ? ' on' : ''}${giocate.includes(g) ? '' : ' futura'}" href="#/futsal/giornata/${g}">${g}ª</a>`).join('')}</div>
+      <div class="chips fs-gchips">${tutte.map((g) => `<a class="chip${g === n ? ' on' : ''}${g <= F.ultimaConRisultati() ? '' : ' futura'}" href="#/futsal/giornata/${g}">${g}ª</a>`).join('')}</div>
       <div class="a-card fs-spiega"><b>Come nasce il voto</b><p class="small muted">${fmt(R.voto, 0)} a ogni convocato (anche se non entra in campo), +0,5 se la squadra vince e −0,5 se perde, poi gol, autogol e cartellini. La Porta perde 0,5 per ogni gol subito, +3 se resta inviolata. <b>Tocca una partita</b> per le due distinte complete, con numeri, eventi e voti; tocca un giocatore per il suo profilo.</p></div>
       ${partite.map((p) => {
     const ref = F.referto(n, p.casa);
-    if (!ref) return `<div class="a-card fs-list"><div class="fs-match">${stemma(p.casa)}<b>${esc(nomeSq(p.casa))}</b><span class="fs-ora">${p.quando ? timeIt(p.quando) : '–'}<small>${p.quando ? dateIt(p.quando) : 'da fissare'}</small></span><b class="r">${esc(nomeSq(p.ospite))}</b>${stemma(p.ospite)}</div></div>`;
+    if (!ref) return `<div class="a-card fs-list"><div class="fs-match">${stemma(p.casa)}<b>${esc(nomeSq(p.casa))}</b>${centroPartita(p)}<b class="r">${esc(nomeSq(p.ospite))}</b>${stemma(p.ospite)}</div></div>`;
     return `<details class="a-card fs-list fs-partita"><summary>${stemma(p.casa)}<b>${esc(nomeSq(p.casa))}</b><span class="fs-ris">${p.gc} – ${p.go}</span><b class="r">${esc(nomeSq(p.ospite))}</b>${stemma(p.ospite)}</summary>
           ${distinte(n, p.casa)}</details>`;
   }).join('')}

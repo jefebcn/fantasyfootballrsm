@@ -171,6 +171,7 @@ def main():
     f = RADICE / 'data' / 'futsal-tabellini.json'
     fatti = json.loads(f.read_text(encoding='utf-8')) if f.exists() else {}
     ora = time.time()
+    provvisori = {}
     for i, p in enumerate(giocate, 1):
         k = f"{p['g']}:{p['casa']}:{p['ospite']}"
         if not fsgc.da_riscaricare(fatti.get(k), p['quando'], ora):
@@ -185,7 +186,15 @@ def main():
         # (data/futsal-orologio.json). Un referto senza distinte non e' finito.
         vuoto = not (t['distinte'][0] and t['distinte'][1])
         if vuoto or not fsgc.finita(p['quando'], t['stato'], ora):
-            print(f'  [{i}/{len(giocate)}] {k}: in corso, aspetto il fischio finale')
+            # «Concluso» senza referto: l'app mostra subito il risultato, con
+            # «voti in arrivo», ma fuori da CALENDARIO, perché la giornata non
+            # risulti giocata e i punti non partano. Lo 0-0 senza distinte
+            # non si mostra: è quello che la FSGC scrive prima di compilare
+            # (7ª giornata), quindi «risultato in arrivo».
+            if t['stato'] == 'finished':
+                provvisori[k] = [] if p['gc'] == p['go'] == 0 else [p['gc'], p['go']]
+            print(f"  [{i}/{len(giocate)}] {k}: concluso senza referto, provvisorio {provvisori[k] or 'senza risultato'}"
+                  if k in provvisori else f'  [{i}/{len(giocate)}] {k}: in corso, aspetto il fischio finale')
             p['gc'] = p['go'] = None
             fatti.pop(k, None)
             continue
@@ -204,10 +213,10 @@ def main():
         if p['gc'] is not None and f"{p['g']}:{p['casa']}:{p['ospite']}" not in fatti:
             p['gc'] = p['go'] = None
     f.write_text(json.dumps(fatti, ensure_ascii=False), encoding='utf-8')
-    scrivi(cal, fatti)
+    scrivi(cal, fatti, provvisori)
 
 
-def scrivi(cal, fatti):
+def scrivi(cal, fatti, provvisori=None):
     # Listone: chi è comparso almeno una volta in distinta. Ruolo = quello che
     # la FSGC gli dà più spesso (3 su 201 cambiano fra una partita e l'altra).
     # in ordine di giornata: chi cambia squadra resta in listone con l'ultima
@@ -243,11 +252,14 @@ def scrivi(cal, fatti):
         ' * CALENDARIO: [giornata, casa, ospite, inizioISO, impianto, golCasa, golOspite]\n'
         ' * GIOCATORI:  [id, club, nome, cognome, ruoloFSGC, numero]  (id = scheda FSGC)\n'
         ' * REFERTI:    distinte: [convocati casa, convocati ospiti] · eventi: [id, minuto, tipo]\n'
+        ' * PROVVISORI: «g:casa:ospite» → [golCasa, golOspite] delle partite concluse\n'
+        ' *             senza referto ([] = risultato non ancora scritto): solo da mostrare\n'
         ' */\n'
         f'export const GIORNATE = {len({p["g"] for p in cal})};\n'
         'export const CALENDARIO = [\n%s,\n];\n' % ',\n'.join(righe_c) +
         'export const GIOCATORI = [\n%s,\n];\n' % ',\n'.join(righe_g) +
-        'export const REFERTI = [\n%s,\n];\n' % ',\n'.join(righe_r), encoding='utf-8')
+        'export const REFERTI = [\n%s,\n];\n' % ',\n'.join(righe_r) +
+        'export const PROVVISORI = %s;\n' % json.dumps(provvisori or {}, separators=(',', ':')), encoding='utf-8')
     print(f'\nscritto src/futsal-dati.js — {len(cal)} partite, {len(info)} giocatori, {len(fatti)} referti')
     # listone e chiusure anche per il database (supabase/migrations/futsal-02-dati.sql)
     import subprocess

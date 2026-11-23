@@ -4,6 +4,7 @@
  * Legge src/futsal-dati.js (scripts/importa-futsal.py) e usa il motore.
  */
 import { CALENDARIO, GIOCATORI, REFERTI, GIORNATE } from './futsal-dati.js';
+import * as DATI from './futsal-dati.js';
 import { RUOLO_GIOCO, REGOLE_FUTSAL, votoGiocatore, votoPorta } from './futsal-engine.js';
 
 export { GIORNATE, REGOLE_FUTSAL };
@@ -29,6 +30,15 @@ export const PARTITE = CALENDARIO.map(([g, casa, ospite, quando, impianto, gc, g
 const referti = (n) => REFERTI.filter((r) => r.g === n);
 /** Il referto di una partita, dalla giornata e dalla squadra di casa. */
 export const referto = (n, casa) => REFERTI.find((r) => r.g === n && r.casa === casa);
+/**
+ * Una partita «Conclusa» sulla FSGC ma ancora senza referto: [golCasa,
+ * golOspite], [] se la FSGC non ha ancora scritto il risultato, undefined se
+ * non è il caso. Solo da mostrare: punti, classifiche e giornata giocata
+ * aspettano il referto.
+ */
+export const provvisorio = (p) => (DATI.PROVVISORI || {})[`${p.g}:${p.casa}:${p.ospite}`];
+/** L'ultima giornata con un referto o un risultato provvisorio: da lì parte il calendario. */
+export const ultimaConRisultati = () => Math.max(0, ...REFERTI.map((r) => r.g), ...Object.keys(DATI.PROVVISORI || {}).map((k) => Number(k.split(':')[0])));
 
 /** Giornate con almeno un referto. */
 export const giocate = () => [...new Set(REFERTI.map((r) => r.g))].sort((a, b) => a - b);

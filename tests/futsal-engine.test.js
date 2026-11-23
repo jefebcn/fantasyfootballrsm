@@ -1,8 +1,8 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { votoGiocatore, votoPorta, punteggioFormazione, controllaFormazione, RUOLO_GIOCO } from '../src/futsal-engine.js';
-import { GIOCATORI_FUTSAL, PARTITE, votiGiornata, giocate, riposa, SQUADRE } from '../src/futsal.js';
-import { REFERTI } from '../src/futsal-dati.js';
+import { GIOCATORI_FUTSAL, PARTITE, votiGiornata, giocate, riposa, SQUADRE, provvisorio, ultimaConRisultati, referto } from '../src/futsal.js';
+import { REFERTI, PROVVISORI } from '../src/futsal-dati.js';
 
 // Una partita finta: casa 3-1 ospiti. h1 doppietta e giallo, h2 autogol, a1 gol.
 const club = { h1: 'casa', h2: 'casa', hp: 'casa', hp2: 'casa', a1: 'ospiti', ap: 'ospiti', a2: 'ospiti' };
@@ -143,4 +143,17 @@ test('a giornata conclusa chi riposa prende la sua media delle giornate prima', 
   assert.equal(v.riposo, true);
   const prima = Array.from({ length: n - 1 }, (_, i) => votiGiornata(i + 1).porta.get(club)).filter((x) => !x.sv && !x.riposo);
   assert.equal(v.totale, Math.round((prima.reduce((s, x) => s + x.totale, 0) / prima.length) * 100) / 100);
+});
+
+test('risultati provvisori: solo partite concluse senza referto, e il calendario parte dall\'ultima giornata con risultati', () => {
+  for (const [k, ris] of Object.entries(PROVVISORI)) {
+    const [g, casa, ospite] = k.split(':');
+    const p = PARTITE.find((x) => x.g === Number(g) && x.casa === casa && x.ospite === ospite);
+    assert.ok(p, `${k} è nel calendario`);
+    assert.equal(p.gc, null, `${k}: il provvisorio non entra nei risultati`);
+    assert.equal(referto(p.g, casa), undefined, `${k}: niente referto`);
+    assert.ok(ris.length === 0 || ris.length === 2);
+  }
+  for (const r of REFERTI) assert.equal(provvisorio({ g: r.g, casa: r.casa, ospite: r.ospite }), undefined);
+  assert.ok(ultimaConRisultati() >= Math.max(...giocate()));
 });

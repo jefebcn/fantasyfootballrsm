@@ -59,13 +59,19 @@ export const PARTITE = [
   [8, "juvenes", "pennarossa", "qSkkYtepGTg", "2026-11-09"],
   [8, "lafiorita", "cosmos", "9aDWwYmOtcM", "2026-11-09"],
   [8, "trepenne", "murata", "XObQoRpSnj0", "2026-11-09"],
+  [9, "cosmos", "faetano", "ekoVk2fgbDI", "2026-11-23"],
+  [9, "domagnano", "fiorentino", "YC8WT1gLzCc", "2026-11-23"],
+  [9, "lafiorita", "folgore", "pX8DcqKPSxc", "2026-11-23"],
+  [9, "libertas", "academy", "FQfwz57kH9w", "2026-11-23"],
+  [9, "murata", "cailungo", "BhhiS-93AVc", "2026-11-23"],
+  [9, "pennarossa", "trepenne", "JWILvJdFaxs", "2026-11-23"],
+  [9, "sangiovanni", "virtus", "xt8hSSuEgEM", "2026-11-23"],
+  [9, "trefiori", "juvenes", "BodExZ8RkhY", "2026-11-23"],
 ];
 export const VIDEO_CANALE = [
+  ["FWVg45aW5t8", "Campionato Sammarinese 2026-27, 9. giornata - VOTA LA PARATA PIÙ BELLA!", "2026-11-23"],
+  ["TDVEwq5EW9g", "Campionato Sammarinese 2026-27, 9. giornata - VOTA IL GOL PIÙ BELLO!", "2026-11-23"],
   ["pa-PPoWapv8", "Euro U-19, Round 2, Day 1 | Bosnia Herzegovina vs San Marino", "2026-11-11"],
   ["ujauQTk9--Q", "Campionato Sammarinese 2026-27, 8. giornata - VOTA LA PARATA PIÙ BELLA!", "2026-11-09"],
   ["O_JCTaE6bDM", "Campionato Sammarinese 2026-27, 8. giornata - VOTA IL GOL PIÙ BELLO!", "2026-11-09"],
-  ["6a68S-svtBc", "UWNL 2027 | San Marino, reazione al sorteggio", "2026-11-03"],
-  ["YXJRHAGc15A", "UEFA Women's Nations League 2027 - draw | intervista a Giulia Domenichetti", "2026-11-03"],
-  ["0ig3Z8IU7g4", "Campionato Sammarinese 2026-27, 7. giornata - VOTA LA PARATA PIÙ BELLA!", "2026-11-02"],
-  ["zLWoJcaMaME", "Campionato Sammarinese 2026-27, 7. giornata - VOTA IL GOL PIÙ BELLO!", "2026-11-02"],
 ];

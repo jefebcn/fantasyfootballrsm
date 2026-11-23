@@ -7,6 +7,8 @@
  * CALENDARIO: [giornata, casa, ospite, inizioISO, impianto, golCasa, golOspite]
  * GIOCATORI:  [id, club, nome, cognome, ruoloFSGC, numero]  (id = scheda FSGC)
  * REFERTI:    distinte: [convocati casa, convocati ospiti] · eventi: [id, minuto, tipo]
+ * PROVVISORI: «g:casa:ospite» → [golCasa, golOspite] delle partite concluse
+ *             senza referto ([] = risultato non ancora scritto): solo da mostrare
  */
 export const GIORNATE = 30;
 export const CALENDARIO = [

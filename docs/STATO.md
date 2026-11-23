@@ -1,6 +1,6 @@
 # Stato – Fantatitano
 
-Aggiornato: 2026-11-23 (mattina) · temi: coda Buffer di @fantatitano piena fino a venerdì; regola nuova su personaggi, stemmi e foto mai ripetute
+Aggiornato: 2026-11-23 (pomeriggio) · temi: coda Buffer di @fantatitano piena fino a venerdì; regola su personaggi, stemmi e foto; futsal: risultato provvisorio (vedi `docs/futsal/STATO.md`)
 
 ## Dove siamo
 - App online su fantatitano.site e su iPhone. Migrazioni fino alla 067 applicate.

@@ -54,6 +54,8 @@ export const HOME = {
   'Giornata precedente': 'Fecha anterior',
   fantapunti: 'fantapuntos',
   'Voti, pagelle e altro': 'Puntajes, calificaciones y más',
+  'Nessuna delle due ha consegnato la formazione': 'Ninguno de los dos entregó la alineación',
+  '{squadra} senza formazione: vittoria a tavolino': '{squadra} sin alineación: victoria administrativa',
   'Manca una partita: la formazione della {g}ª si apre a giornata finita': 'Falta un partido: la alineación de la fecha {g} se abre cuando termine la fecha',
   'Mancano {n} partite su {tot}: la formazione della {g}ª si apre a giornata finita': 'Faltan {n} de {tot} partidos: la alineación de la fecha {g} se abre cuando termine la fecha',
   'Giornata corrente': 'Fecha actual',

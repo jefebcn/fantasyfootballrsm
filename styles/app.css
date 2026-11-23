@@ -5,6 +5,12 @@
 *{box-sizing:border-box}
 html{height:100%;-webkit-text-size-adjust:100%}
 body{margin:0;min-height:100%;background:var(--surface);color:var(--text);font-family:var(--font-body);font-size:var(--fs-body);line-height:var(--lh-body);-webkit-font-smoothing:antialiased;overscroll-behavior-y:none}
+/* Nell'app si tocca, non si legge come un documento: una pressione lunga su
+   una carta selezionava il testo (lente e maniglie di iOS, carta scurita).
+   Restano selezionabili i campi e i codici da copiare. */
+body{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+input,textarea,select,[contenteditable],[class*="codice"]{-webkit-user-select:text;user-select:text}
+img{-webkit-user-drag:none}
 button{font-family:inherit}
 a{color:var(--primary-ink)}   /* --primary sta a 4,23 sul fondo pagina: sotto 4,5 */
 /* Gli inset del telefono stanno QUI e poi dentro le shorthand di padding.
@@ -1999,6 +2005,7 @@ button,a{-webkit-tap-highlight-color:transparent}
 .mcard.fin .side b,.mcard.fin .mfoot span{color:var(--on-primary)}
 .mcard.fin .side .own,.mcard.fin .mfoot em{color:var(--velo)}
 .mcard.fin .mfoot{border-top-color:var(--riga)}
+.mcard.fin .mnota{color:var(--velo);margin-top:-4px;padding-bottom:10px}
 .mcard.fin .score.pill{background:color-mix(in srgb, var(--on-primary) 14%, transparent);color:var(--on-primary)}
 .mcard .score.pill{border-radius:999px;padding:6px 16px;margin-top:8px;font-size:23px}
 .mcard .score.attesa{font:700 15px var(--font-display);font-variant-numeric:tabular-nums;color:var(--primary-ink);
@@ -2436,6 +2443,10 @@ a.crow .cls-chev{flex:none;color:var(--text-muted);margin-left:-4px}
 .home .invito::before{background:repeating-linear-gradient(101deg, rgba(255,255,255,.05) 0 2px, rgba(255,255,255,0) 2px 30px)}
 .home .invito > i{background:rgba(217,245,31,.12);border-color:rgba(217,245,31,.55)}
 .home .invito .txt b{font:400 20px/1.1 var(--font-tito);letter-spacing:.03em;color:var(--c-lime)}
+/* «Montepremi: premio in uscita prossimamente» non sta su una riga di
+   telefono: va a capo invece di finire in puntini. */
+.invito .txt b,.invito .txt > span.sot{white-space:normal;text-wrap:balance;
+  display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2}
 .home .invito .txt > span{color:#F1ECFF}
 .home .invito .txt > span.sot{color:#D6CCFF}
 .home .invito .chev{background:var(--c-lime);color:var(--c-inchiostro)}

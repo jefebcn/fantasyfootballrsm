@@ -51,6 +51,9 @@ create policy lineups_read on public.lineups for select to authenticated using (
 );
 
 drop policy if exists lineups_write on public.lineups;
+drop policy if exists lineups_insert on public.lineups;
+drop policy if exists lineups_update on public.lineups;
+drop policy if exists lineups_delete on public.lineups;
 create policy lineups_insert on public.lineups for insert to authenticated with check (
   member_id = public.my_member_id(league_id)
   and now() < coalesce(public.matchday_lock_at(matchday), 'infinity'::timestamptz)
@@ -78,6 +81,9 @@ create policy rosters_read on public.rosters for select to authenticated using (
 );
 
 drop policy if exists rosters_write on public.rosters;
+drop policy if exists rosters_insert on public.rosters;
+drop policy if exists rosters_update on public.rosters;
+drop policy if exists rosters_delete on public.rosters;
 create policy rosters_insert on public.rosters for insert to authenticated with check (public.is_league_admin(league_id));
 create policy rosters_update on public.rosters for update to authenticated using (public.is_league_admin(league_id)) with check (public.is_league_admin(league_id));
 create policy rosters_delete on public.rosters for delete to authenticated using (public.is_league_admin(league_id));

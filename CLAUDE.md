@@ -23,6 +23,7 @@ I documenti grandi (`IOS.md` e `PLAY.md` 23 KB, `MONETIZZAZIONE.md` 17 KB) si le
 ## Regole
 
 - Prima del push: `npm test` (lint + prove). Il deploy su Vercel parte solo se le prove sono verdi (`scripts/vercel-controlla.sh`).
+- Prima della PR: `git fetch origin main` e unisci main; se poi la versione coincide con main, rilancia `scripts/bump-sw.py` (gli import automatici alzano la versione anche loro).
 - Le modifiche al database vanno salvate anche in `supabase/migrations/`.
 - Brand: il logo originale (corona viola disegnata a mano) non si modifica. Font: Anton per i titoli grandi, Bebas Neue per i titoli alternativi, Montserrat per sottotitoli e testi. La mascotte è Tito, draghetto viola streetwear (felpa nera, cargo viola), senza corona.
 - Social: niente inviti tipo «scrivetelo nei commenti». Le partite si giocano sabato e domenica.

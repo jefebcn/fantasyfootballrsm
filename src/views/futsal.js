@@ -868,10 +868,11 @@ function apriPartita(n, casa, evid, ctx) {
  */
 function centroPartita(p) {
   if (p.gc != null && F.referto(p.g, p.casa)) return `<span class="fs-ris">${p.gc} – ${p.go}</span>`;
-  const pv = F.provvisorio(p);
-  if (pv) return pv.length === 2
-    ? `<span class="fs-ris fs-provv">${pv[0]} – ${pv[1]}<small>voti in arrivo</small></span>`
-    : '<span class="fs-ora">Finita<small>risultato in arrivo</small></span>';
+  // prima la FSGC, poi il risultato scritto a mano dai social delle società (futsal-12)
+  const pv = F.provvisorio(p), am = FS.aMano(p);
+  const ris = pv?.length === 2 ? pv : am ? [am.gc, am.go] : null;
+  if (ris) return `<span class="fs-ris fs-provv">${ris[0]} – ${ris[1]}<small>voti in arrivo</small></span>`;
+  if (pv) return '<span class="fs-ora">Finita<small>risultato in arrivo</small></span>';
   return `<span class="fs-ora">${p.quando ? timeIt(p.quando) : '–'}<small>${p.quando ? dateIt(p.quando) : 'da fissare'}</small></span>`;
 }
 
@@ -886,14 +887,53 @@ export const futsalGiornata = {
       <div class="a-card fs-spiega"><b>Come nasce il voto</b><p class="small muted">${fmt(R.voto, 0)} a ogni convocato (anche se non entra in campo), +0,5 se la squadra vince e −0,5 se perde, poi gol, autogol e cartellini. La Porta perde 0,5 per ogni gol subito, +3 se resta inviolata. <b>Tocca una partita</b> per le due distinte complete, con numeri, eventi e voti; tocca un giocatore per il suo profilo.</p></div>
       ${partite.map((p) => {
     const ref = F.referto(n, p.casa);
-    if (!ref) return `<div class="a-card fs-list"><div class="fs-match">${stemma(p.casa)}<b>${esc(nomeSq(p.casa))}</b>${centroPartita(p)}<b class="r">${esc(nomeSq(p.ospite))}</b>${stemma(p.ospite)}</div></div>`;
+    if (!ref) return `<div class="a-card fs-list"><div class="fs-match">${stemma(p.casa)}<b>${esc(nomeSq(p.casa))}</b>${centroPartita(p)}<b class="r">${esc(nomeSq(p.ospite))}</b>${stemma(p.ospite)}</div>${scriviRisultato(p)}</div>`;
     return `<details class="a-card fs-list fs-partita"><summary>${stemma(p.casa)}<b>${esc(nomeSq(p.casa))}</b><span class="fs-ris">${p.gc} – ${p.go}</span><b class="r">${esc(nomeSq(p.ospite))}</b>${stemma(p.ospite)}</summary>
           ${distinte(n, p.casa)}</details>`;
   }).join('')}
       <p class="small muted" style="text-align:center">Riposa: ${esc(F.riposa(n).map(nomeSq).join(', '))}${F.conclusa(n) ? ' · chi riposa prende la sua media' : ''}</p>
     </main>`;
   },
+  mount(root, ctx) {
+    caricaE(ctx);
+    root.querySelectorAll('[data-a-mano]').forEach((b) => b.addEventListener('click', () => {
+      const [g, casa] = b.dataset.aMano.split(':');
+      const p = F.PARTITE.find((x) => x.g === Number(g) && x.casa === casa);
+      if (p) foglioRisultato(p, ctx);
+    }));
+  },
 };
+
+/**
+ * Per l'amministratore, sotto una partita cominciata e senza referto: il
+ * risultato a mano, preso dai social delle società la sera stessa.
+ */
+function scriviRisultato(p) {
+  if (!Stato.isAdmin() || !FS.stato().attivo || !p.quando || new Date(p.quando).getTime() > Date.now()) return '';
+  return `<button class="fs-a-mano" data-a-mano="${p.g}:${esc(p.casa)}">${icon('edit', 'ic sm')}${FS.aMano(p) ? 'Correggi il risultato a mano' : 'Scrivi il risultato a mano'}</button>`;
+}
+function foglioRisultato(p, ctx) {
+  const am = FS.aMano(p);
+  const campo = (id, sq, v) => `<label><span>${esc(nomeSq(sq))}</span><input class="field-input" id="${id}" type="number" inputmode="numeric" min="0" max="99" value="${v ?? ''}"></label>`;
+  ctx.sheet(`<div class="fs-modale"><h3>${p.g}ª giornata · risultato a mano</h3>
+    <p class="sheet-sub">Il finale pubblicato dalle società. Lo vedono tutti con «voti in arrivo» finché non arriva il referto FSGC; i punti arrivano solo dal referto.</p>
+    <div class="fs-a-mano-ris">${campo('fs-am-gc', p.casa, am?.gc)}<b>–</b>${campo('fs-am-go', p.ospite, am?.go)}</div>
+    <button class="a-btn big" id="fs-am-salva">Salva</button>${am ? '<button class="a-btn sec" id="fs-am-togli">Togli il risultato</button>' : ''}</div>`);
+  const sh = document.getElementById('sheet');
+  sh.querySelector('#fs-am-gc')?.focus();
+  sh.onclick = async (e) => {
+    const salva = e.target.closest('#fs-am-salva'), togli = e.target.closest('#fs-am-togli');
+    if (!salva && !togli) return;
+    const n = (id) => { const t = sh.querySelector(id).value.trim(); return /^\d{1,2}$/.test(t) ? Number(t) : null; };
+    const gc = n('#fs-am-gc'), go = n('#fs-am-go');
+    if (salva && (gc === null || go === null)) { ctx.toast('Scrivi i gol delle due squadre'); return; }
+    e.target.disabled = true;
+    try {
+      if (salva) await FS.salvaAMano(p, gc, go); else await FS.togliAMano(p);
+      ctx.sheet(null); ctx.toast(salva ? 'Risultato salvato' : 'Risultato tolto'); ctx.render();
+    } catch (err) { ctx.toast(err.message); e.target.disabled = false; }
+  };
+}
 
 // ---------------------------------------------------------------- regolamento (a capitoli)
 const mini = (k) => { const s = R.schemi[k]; const fila = (r, q) => `<div>${Array.from({ length: q }, () => `<i class="${r}"></i>`).join('')}</div>`; return `<div class="fs-mini"><div class="fs-mini-c">${fila('a', s.A)}${fila('d', s.D)}${fila('p', 1)}</div><b>${k}</b><small>${s.D} D · ${s.A} A${k === R.bonusDifesa.schema ? ' · bonus difesa' : ''}</small></div>`; };

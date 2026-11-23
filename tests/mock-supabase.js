@@ -63,7 +63,7 @@ function builder(table) {
         // __MOCK_RETE_GIU__: il telefono è senza rete, le scritture delle formazioni non arrivano
         if (table === 'lineups' && op !== 'select' && typeof window !== 'undefined' && window.__MOCK_RETE_GIU__) { res({ data: null, error: { message: 'TypeError: Load failed' } }); return; }
         let data = null; const rows = T(table);
-        const pk = { lineups: ['league_id', 'member_id', 'matchday'], match_overrides: ['match_id'], match_appearances: ['match_id', 'player_id'], matchday_status: ['matchday'], matchday_locks: ['matchday'], formazioni_bozze: ['league_id', 'member_id', 'matchday'], profiles: ['id'], app_interruttori: ['chiave'], giocatori_esclusi: ['player_id'], squalifiche: ['player_id', 'matchday'], futsal_iscritti: ['user_id'], futsal_formazioni: ['user_id', 'giornata'], futsal_membri: ['lega_id', 'user_id'] }[table] || ['id'];
+        const pk = { lineups: ['league_id', 'member_id', 'matchday'], match_overrides: ['match_id'], match_appearances: ['match_id', 'player_id'], matchday_status: ['matchday'], matchday_locks: ['matchday'], formazioni_bozze: ['league_id', 'member_id', 'matchday'], profiles: ['id'], app_interruttori: ['chiave'], giocatori_esclusi: ['player_id'], squalifiche: ['player_id', 'matchday'], futsal_iscritti: ['user_id'], futsal_formazioni: ['user_id', 'giornata'], futsal_membri: ['lega_id', 'user_id'], futsal_risultati_provvisori: ['giornata', 'casa'] }[table] || ['id'];
         const withDefaults = (r) => ({ id: uid(), created_at: now(), ...r });
         // __MOCK_SESSIONE_PERSA__: il token e' scaduto e la rete non l'ha
         // rinnovato, le richieste partono come anonimo. Come Supabase vero: i

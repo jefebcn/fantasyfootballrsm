@@ -252,3 +252,26 @@ exception when others then if sqlerrm like 'FALLITA:%' then raise; end if;
   raise notice 'ok  chi avvisare lo legge solo la funzione promemoria (%)', sqlerrm;
 end $$;
 reset role;
+
+-- futsal-12: il risultato provvisorio a mano lo scrive solo un amministratore, lo leggono tutti
+update public.profiles set is_admin = true where id = 'fut_alex';
+set role authenticated;
+select pg_temp.entra('fut_bea');
+do $$ begin
+  insert into public.futsal_risultati_provvisori (giornata, casa, ospite, gc, go) values (11, 'sangiovanni', 'trefiori', 2, 1);
+  raise exception 'FALLITA: un utente qualunque ha scritto un risultato provvisorio';
+exception when others then if sqlerrm like 'FALLITA:%' then raise; end if;
+  raise notice 'ok  un utente qualunque non scrive risultati provvisori';
+end $$;
+select pg_temp.entra('fut_alex');
+insert into public.futsal_risultati_provvisori (giornata, casa, ospite, gc, go) values (11, 'sangiovanni', 'trefiori', 2, 1);
+update public.futsal_risultati_provvisori set gc = 3 where giornata = 11 and casa = 'sangiovanni';
+select pg_temp.entra('fut_bea');
+select pg_temp.esige('Bea legge il 3-1 scritto da Alex',
+  (select gc * 10 + go from public.futsal_risultati_provvisori where giornata = 11 and casa = 'sangiovanni') = 31);
+delete from public.futsal_risultati_provvisori;
+select pg_temp.esige('e non lo cancella', exists (select 1 from public.futsal_risultati_provvisori where giornata = 11));
+select pg_temp.entra('fut_alex');
+delete from public.futsal_risultati_provvisori where giornata = 11;
+reset role;
+update public.profiles set is_admin = false where id = 'fut_alex';

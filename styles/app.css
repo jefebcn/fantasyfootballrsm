@@ -2805,6 +2805,13 @@ a.crow .cls-chev{flex:none;color:var(--text-muted);margin-left:-4px}
 .fs-partita summary::-webkit-details-marker{display:none}
 .fs-partita[open] summary{border-bottom:1px solid var(--border)}
 .fs-ris{font:800 18px var(--font-display);font-variant-numeric:tabular-nums;padding:2px 10px;border-radius:999px;background:var(--surface-sunk)}
+.fs-ris.fs-provv{display:flex;flex-direction:column;align-items:center;line-height:1.1;border-radius:12px;padding:3px 10px}
+.fs-ris.fs-provv small{font:500 10px var(--font-body);color:var(--text-muted)}
+.fs-a-mano{display:flex;align-items:center;justify-content:center;gap:6px;width:100%;border:0;border-top:1px dashed var(--border);background:none;padding:9px 12px;font:600 13px var(--font-body);color:var(--text-muted);cursor:pointer}
+.fs-a-mano-ris{display:grid;grid-template-columns:1fr auto 1fr;align-items:end;gap:10px}
+.fs-a-mano-ris label{display:flex;flex-direction:column;gap:6px;font:600 13px var(--font-body);text-align:center}
+.fs-a-mano-ris input{text-align:center;font:800 24px var(--font-display)}
+.fs-a-mano-ris b{padding-bottom:12px;font-size:20px}
 .fs-div{height:6px;background:var(--surface-sunk)}
 .fs-nota{margin:8px 2px}
 .fs-slot .nm .muted{color:var(--text-muted);font-weight:500}

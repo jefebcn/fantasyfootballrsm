@@ -26,7 +26,7 @@ async function aPagine(richiesta) {
     if ((r.data || []).length < PAGINA) return { data, error: null };
   }
 }
-const vuoto = () => ({ caricato: false, inCorso: false, attivo: true, errore: null, iscritti: [], formazioni: new Map(), leghe: [], membri: [] });
+const vuoto = () => ({ caricato: false, inCorso: false, attivo: true, errore: null, iscritti: [], formazioni: new Map(), leghe: [], membri: [], aMano: new Map() });
 let st = vuoto(), per = null;
 const ascolta = new Set();
 export const stato = () => st;
@@ -44,17 +44,20 @@ export async function carica({ forza = false } = {}) {
   try {
     // a pagine da 1000 righe: oltre, Supabase taglia SENZA errore (backend.js, tutte()), e con
     // 150 iscritti le formazioni di 7 giornate sono già di più: classifiche diverse da telefono a telefono
-    const [isc, form, leghe, membri] = await Promise.all([
+    const [isc, form, leghe, membri, mano] = await Promise.all([
       aPagine(() => sb.from('futsal_iscritti').select('*').order('user_id')),
       aPagine(() => sb.from('futsal_formazioni').select('*').order('giornata').order('user_id')),
       aPagine(() => sb.from('futsal_leghe').select('*').order('id')),
-      aPagine(() => sb.from('futsal_membri').select('*').order('lega_id').order('user_id'))]);
+      aPagine(() => sb.from('futsal_membri').select('*').order('lega_id').order('user_id')),
+      // i risultati a mano (futsal-12): se la tabella manca non cambia niente
+      Promise.resolve(sb.from('futsal_risultati_provvisori').select('*')).catch(() => ({ data: [] }))]);
     const errore = [isc, form, leghe, membri].map((r) => r.error).find(Boolean);
     if (manca(errore)) st = { ...vuoto(), caricato: true, attivo: false };
     else if (errore) st = { ...st, caricato: true, errore: errore.message };
     else {
       st = { ...vuoto(), caricato: true, iscritti: isc.data || [], leghe: leghe.data || [], membri: membri.data || [],
-        formazioni: new Map((form.data || []).map((r) => [`${r.giornata}:${r.user_id}`, r])) };
+        formazioni: new Map((form.data || []).map((r) => [`${r.giornata}:${r.user_id}`, r])),
+        aMano: new Map((mano?.error ? [] : mano?.data || []).map((r) => [`${r.giornata}:${r.casa}:${r.ospite}`, r])) };
     }
   } catch (e) { st = { ...st, caricato: true, errore: e.message }; }
   st.inCorso = false;
@@ -122,6 +125,18 @@ export function inItaliano(e) {
   return m;
 }
 const deve = (r) => { if (r.error) throw new Error(inItaliano(r.error)); return r.data; };
+
+// ---------------------------------------------------------------- risultati a mano (futsal-12)
+/** Il risultato scritto a mano da un amministratore (dai social delle società), o undefined. */
+export const aMano = (p) => st.aMano.get(`${p.g}:${p.casa}:${p.ospite}`);
+export async function salvaAMano(p, gc, go) {
+  deve(await remote.client().from('futsal_risultati_provvisori').upsert({ giornata: p.g, casa: p.casa, ospite: p.ospite, gc, go, fonte: 'admin', aggiornato_at: new Date().toISOString() }));
+  await carica({ forza: true });
+}
+export async function togliAMano(p) {
+  deve(await remote.client().from('futsal_risultati_provvisori').delete().eq('giornata', p.g).eq('casa', p.casa));
+  await carica({ forza: true });
+}
 
 export async function iscriviti(squadra, colore = '#1B84C6', clubCuore = null) {
   const iniziali = squadra.split(/\s+/).map((w) => w[0]).join('').slice(0, 3).toUpperCase();

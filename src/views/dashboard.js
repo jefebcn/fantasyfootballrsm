@@ -114,8 +114,14 @@ const lato = (m) => `<div class="side">${figura(m, 'fig-sfida') || crest(m)}<b>$
 function conclusa(r) {
   if (!r) return '';
   const h = S.managersById.get(r.homeManagerId), a = S.managersById.get(r.awayManagerId);
+  // Senza formazione il risultato e' d'ufficio (art. 8.4): uno 0-0 con 0,0
+  // fantapunti, senza una riga che lo spieghi, sembrava un errore dell'app.
+  const tav = r.forfait === 'entrambi' ? t('Nessuna delle due ha consegnato la formazione')
+    : r.forfait ? t('{squadra} senza formazione: vittoria a tavolino', { squadra: (r.forfait === 'home' ? h : a)?.teamName || '' })
+    : '';
   return sec(t('Giornata precedente'), t('{n}ª giornata', { n: r.matchday })) + `<div class="mcard fin">
     <div class="mrow">${lato(h)}<span class="score pill">${r.homeGoals} – ${r.awayGoals}</span>${lato(a)}</div>
+    ${tav ? `<p class="mnota">${esc(tav)}</p>` : ''}
     <div class="mfoot"><span>${fmt(r.homeScore)}</span><em>${t('fantapunti')}</em><span>${fmt(r.awayScore)}</span></div>
     <div class="mcta2">
       <button data-share="${r.id}">${icon('share', 'ic sm')}${t('Condividi')}</button>

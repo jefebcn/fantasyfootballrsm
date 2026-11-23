@@ -66,7 +66,7 @@ export const lega = {
     const started = ms.some((m) => rosterCount(m) > 0);
     return `<main class="a-body">
       <div class="a-card" style="display:flex;flex-direction:column;gap:6px"><b style="font:700 18px var(--font-display)">${esc(L.name)}</b><span class="small muted">${ms.length} partecipanti · ${started ? 'rose assegnate' : 'in attesa delle rose'}</span>
-        ${L.inviteCode && !S.legaPubblica() ? `<div style="display:flex;gap:8px;align-items:center;margin-top:6px"><span class="small muted">Codice invito</span><b class="num" style="font-size:20px;letter-spacing:.12em">${esc(L.inviteCode)}</b><button class="chip" id="share-code" style="margin-left:auto">${icon('share', 'ic sm')} Invita</button></div>` : ''}
+        ${L.inviteCode && !S.legaPubblica() ? `<div style="display:flex;gap:8px;align-items:center;margin-top:6px"><span class="small muted">Codice invito</span><b class="num lega-codice" style="font-size:20px;letter-spacing:.12em">${esc(L.inviteCode)}</b><button class="chip" id="share-code" style="margin-left:auto">${icon('share', 'ic sm')} Invita</button></div>` : ''}
         ${S.legaPubblica() ? `<div style="display:flex;gap:8px;align-items:center;margin-top:6px"><span class="small muted">Aperta a tutti, senza codice</span><button class="chip" id="share-code" style="margin-left:auto">${icon('share', 'ic sm')} Invita</button></div>` : ''}</div>
       ${reclutatore()}
       ${bacheca(admin, me)}

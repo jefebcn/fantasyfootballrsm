@@ -1,18 +1,19 @@
 # Stato – Fantatitano
 
-Aggiornato: 2026-11-22 (sera) · temi: Coppa Fantatitano (struttura, squadre dell'app, grafica), storie dei gol di domenica, coda Buffer di @fantatitano
+Aggiornato: 2026-11-23 (mattina) · temi: coda Buffer di @fantatitano piena fino a venerdì; regola nuova su personaggi, stemmi e foto mai ripetute
 
 ## Dove siamo
 - App online su fantatitano.site e su iPhone. Migrazioni fino alla 067 applicate.
 - Coppa Fantatitano su #/coppa (PR #143–#150, tutte unite): 4 gironi, 8 ai quarti, poi gare secche sulle semifinali andata/ritorno e sulla finale vere. Chiusura del 1° turno mer 25/11 alle 20:45 (quarti di andata veri). Prima della chiusura gironi provvisori coi nomi veri.
 - Squadre dell'app (PR #149): portano la coppa a 32 squadre, nomi inventati, formazione automatica dalle quotazioni, calano a ogni iscrizione vera. Nessun segno sulle squadre: lo dice solo una riga nelle regole (scelta di Alex).
 - Grafica della coppa (PR #150): testata con conto alla rovescia, gironi a griglia, tabellone ad albero, formazione consegnata in breve.
-- Instagram @fantatitano: al posto dei giri del lunedì e del giovedì c'è il controllo della coda lun/mer/ven alle 9:23 (trig_018i6UNbSQ1ikokJFoCnnTWS). Riempie fino a 10 quando ci sono 4+ posti liberi. I due giri vecchi sono spenti ma tengono regole e URL del kit.
+- Instagram @fantatitano: controllo della coda lun/mer/ven alle 9:23 (trig_018i6UNbSQ1ikokJFoCnnTWS), riempie fino a 10. Il 23/11 coda PIENA: un post (14:00) e una storia (14:15) al giorno da lunedì 23 a venerdì 27 (recap, Top 11, testa a testa, meme, formazione consigliata della 10ª). Dettagli e id nel kit (`kit/STATO.md`).
+- Regola di Alex del 23/11 (sostituisce «avatar solo nel campo»): personaggi accanto a ogni nome di giocatore, stemma accanto a ogni squadra, mai foto già uscite (nemmeno del catalogo). Testa a testa e «Chi segna di più?» restano con le foto vere dei due («perfetti così»). Regola nel PLAYBOOK del kit e nel prompt del controllo.
 - Storie dei gol 22/11: 15 uscite, 14 giuste. Il 2-2 di Pennarossa–Tre Penne dice «Pastorelli 14'», ma la FSGC poi l'ha corretto in Pieri 13'.
 
 ## Aperto / in corso
 - Storia di Pastorelli: se Alex la cancella da Instagram, rifare quella di Pieri 13' (gol-in-diretta.py --foto in locale, Higgsfield, UNA chiamata Buffer).
-- Lun 23/11 9:23: primo controllo coda. La coda di @fantatitano era vuota il 22/11 sera: deve riempire tutti e 10 i posti, a partire dal post e dalla storia di lunedì. Dopo, guardare le grafiche.
+- Mer 25/11 9:23: il controllo riempie sabato e domenica. La formazione consigliata di venerdì è fatta prima dei quarti di Coppa Titano di mercoledì sera: se c'è un espulso o un infortunato fra gli undici, rifarla.
 - Quando la FSGC pubblica le squadre di semifinali e finale della Coppa Titano: aggiornare `coppa_turni` (squadre, chiusure).
 - Seconda chiave Buffer: la mette Alex nei segreti di Supabase.
 - Per Alex, dal pannello: controllo delle password rubate su Supabase Auth; copia del backup fuori da GitHub.

@@ -503,4 +503,4 @@ export const REFERTI = [
   {g:10,casa:"pennarossa",ospite:"libertas",distinte:[["f316", "f49", "f142", "f83", "f272", "f80", "f1000", "f220", "f93", "f4", "f125", "f228"], ["f337", "f105", "f134", "f968", "f195", "f281", "f44", "f139", "f1220", "f104", "f270", "f96", "f595", "f1221"]],eventi:[["f80", 59, "red"], ["f1220", 50, "red"], ["f80", 46, "goal"], ["f80", 35, "yellow"], ["f272", 31, "yellow"], ["f142", 29, "goal"], ["f134", 23, "goal"], ["f1220", 21, "yellow"], ["f142", 11, "goal"], ["f272", 7, "goal"]]},
   {g:10,casa:"trepenne",ospite:"cailungo",distinte:[["f1230", "f307", "f1229", "f149", "f199", "f1042", "f198", "f398", "f302", "f495"], ["f1240", "f268", "f294", "f144", "f269", "f186", "f993", "f47", "f182", "f267", "f282", "f1241", "f583", "f976"]],eventi:[["f993", 61, "yellow"], ["f116", 54, "yellow"], ["f294", 35, "goal"], ["f149", 32, "goal"], ["f149", 21, "goal"], ["f294", 12, "goal"], ["f1230", 2, "goal"]]},
 ];
-export const PROVVISORI = {};
+export const PROVVISORI = {"11:sangiovanni:trefiori":[],"11:libertas:faetano":[]};

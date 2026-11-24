@@ -5,17 +5,17 @@
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { siGioca, finestre, siGiocaFutsal } from '../scripts/finestra-partite.mjs';
+import { siGioca, finestre, siGiocaFutsal, diNotte } from '../scripts/finestra-partite.mjs';
 import { CALENDARIO } from '../src/calendario-dati.js';
 
 const a = (iso) => Date.parse(iso);
 
-test('una finestra per ogni giornata che ha gia una data', () => {
-  // la FSGC pubblica le date a blocchi: le giornate senza data non hanno
+test('due finestre per ogni calcio d\'inizio che ha gia una data (partita e referti)', () => {
+  // la FSGC pubblica le date a blocchi: le partite senza data non hanno
   // finestra, e la avranno al primo import che porta la data
-  const conData = new Set(CALENDARIO.filter((r) => !Number.isNaN(Date.parse(r[3]))).map((r) => r[0]));
-  assert.equal(finestre().length, conData.size);
-  assert.ok(conData.size >= 1);
+  const inizi = new Set(CALENDARIO.map((r) => Date.parse(r[3])).filter((t) => !Number.isNaN(t)));
+  assert.equal(finestre().length, 2 * inizi.size);
+  assert.ok(inizi.size >= 1);
 });
 
 test("venerdi' sera della 4a si gioca: primo calcio d'inizio 21:15, alle 21:00 si guarda gia'", () => {
@@ -53,4 +53,27 @@ test("futsal: il venerdi' dopo l'11a si resta accesi (i referti di giovedi' arri
 });
 test("futsal: 30 ore dopo l'ultima partita la finestra si chiude", () => {
   assert.equal(siGiocaFutsal(a('2026-11-28T05:00:00+01:00')), false);
+});
+
+// 24/11: la guardia restava accesa giorno e notte. Adesso solo quando la FSGC
+// pubblica: la partita, poi i referti dal giorno dopo; mai dall'1 alle 7.
+test("domenica sera dopo la partita delle 15 ci si spegne fino al mattino dei referti", () => {
+  // 4a: domenica 20/9 alle 15:00. Partita fino alle 21, referti dalle 6 di lunedi'
+  assert.equal(siGioca(a('2026-09-20T20:30:00+02:00')), true);
+  assert.equal(siGioca(a('2026-09-20T23:30:00+02:00')), false);
+  assert.equal(siGioca(a('2026-09-21T09:00:00+02:00')), true);
+});
+test("di notte non si resta mai accesi, nemmeno a ridosso di una partita", () => {
+  assert.equal(diNotte(a('2026-09-19T03:00:00+02:00')), true);
+  assert.equal(diNotte(a('2026-09-19T08:00:00+02:00')), false);
+  assert.equal(siGioca(a('2026-09-19T03:00:00+02:00')), false);
+});
+test("martedi' dopo i referti della 4a la guardia e' spenta (prima restava accesa fino a 48 ore)", () => {
+  assert.equal(siGioca(a('2026-09-22T12:00:00+02:00')), false);
+});
+test("futsal: fra la fine della partita e la mattina dei referti ci si spegne", () => {
+  // 11a: lunedi' 23/11 alle 21:45 l'ultima del giorno, finita alle 00:45
+  assert.equal(siGiocaFutsal(a('2026-11-23T23:30:00+01:00')), true);
+  assert.equal(siGiocaFutsal(a('2026-11-24T08:00:00+01:00')), false);
+  assert.equal(siGiocaFutsal(a('2026-11-24T14:00:00+01:00')), true);
 });

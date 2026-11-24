@@ -27,9 +27,10 @@ name: Dati FSGC
 # rimandare (30 settembre).
 #
 # Il rimedio senza token: un lavoro di GitHub puo' restare acceso sei ore.
-# Nei giorni di partita (da un'ora prima del primo calcio d'inizio a due giorni
-# dopo l'ultima gara della giornata, scripts/finestra-partite.mjs) l'import non
-# fa un giro e basta: resta acceso 5h20m e ricontrolla la FSGC ogni 20 minuti.
+# Nelle ore in cui la FSGC pubblica (la partita fino a 6 ore dopo il calcio
+# d'inizio, i referti da 15 a 30 ore dopo, mai dall'1 alle 7:
+# scripts/finestra-partite.mjs, ristretta il 24/11) l'import non fa un giro e
+# basta: resta acceso fino a 5h20m e ricontrolla la FSGC ogni 20 minuti.
 # Intanto la corsa successiva aspetta in coda (concurrency qui sotto) e parte
 # appena questa finisce, quindi i ritardi di GitHub non lasciano buchi.
 # Gli altri giorni il giro e' uno, come prima.

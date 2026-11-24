@@ -282,20 +282,22 @@ Su un progetto nuovo, nell'SQL Editor, in quest'ordine:
     a cinque ore e mezza misurate — a `pg_cron`, dentro il database. Vedi
     `functions/promemoria/README.md`, passo 3b.
 
-26. `dati-fsgc-pianificato.sql` — **pronto ma non attivo** (Alex ha deciso di
-    rimandarlo il 30 settembre: il token di GitHub era troppo macchinoso per
-    adesso). Non è una migrazione: come il promemoria, si riempie **una riga** (un token di
+26. `dati-fsgc-pianificato.sql` — **attivo dal 24/11/2026** (lanciato da Alex
+    nel SQL Editor). Non è una migrazione: come il promemoria, si riempie **una riga** (un token di
     GitHub) e si lancia a mano. Fa partire l'import dei dati FSGC
     dall'orologio del database invece che da quello di GitHub, che salta le
-    corse: «ogni due ore» era diventato una ogni 5-6. Ogni 30 minuti da venerdì
-    a lunedì, ogni ora gli altri giorni. Il token dev'essere **fine-grained**,
-    limitato a questo repository e al solo permesso *Actions: read and write*:
-    i token classic vengono rifiutati, e come farlo è scritto in cima al file.
-    Com'è andata: `select * from interno.fsgc_ultime;` (204 = partito).
-    Provato da `prove/fsgc-pianificato.sh`. Nel frattempo i buchi li chiude
-    `scripts/importa-in-giro.sh` senza token (nei giorni di partita il lavoro
-    resta acceso e ricontrolla ogni 20 minuti): questo resta utile solo se
-    un giorno servisse partire a un orario preciso.
+    corse: il 24/11 nessuna corsa pianificata per quasi 8 ore, e i referti
+    dell'11ª giornata del futsal sono entrati in app con quel ritardo.
+    Ogni 30 minuti da venerdì a lunedì (`fsgc-weekend`), ogni ora gli altri
+    giorni (`fsgc-settimana`). Il token è **fine-grained**
+    (`fantatitano-orologio-fsgc`, senza scadenza), limitato a questo
+    repository e al solo permesso *Actions: read and write*: i token classic
+    vengono rifiutati, e come farlo è scritto in cima al file.
+    Com'è andata: `select * from interno.fsgc_ultime;` (204 = partito;
+    401 = token revocato o sbagliato: se ne fa uno nuovo e si rilancia il file).
+    Provato da `prove/fsgc-pianificato.sh`. La corsa pianificata di GitHub e
+    il giro lungo di `scripts/importa-in-giro.sh` (ricontrolla ogni 20 minuti
+    nelle ore dei dati) restano: se l'orologio si ferma si torna a prima.
 
 Le migrazioni dalla 001 in poi si possono rieseguire quante volte si vuole.
 

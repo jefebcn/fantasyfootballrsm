@@ -302,7 +302,7 @@ function drawer() {
     ${S.isJudge() ? `<div class="d-sec admin"><span class="chip">${t('Giudice Dati')}</span></div>
     ${item('#/admin', { m: 'voti' }, t('Inserisci eventi'), t('G{n}', { n: ph.matchday }))}${item('#/admin/contestazioni', 'flag', t('Contestazioni'), t('{n} aperte', { n: S.contestazioni().filter((c) => c.status === 'open').length }))}${item('#/admin/congela', 'calc', t('Calcola giornata'), t('la chiude per sempre'))}${item('#/admin/registro', 'archive', t('Registro modifiche'))}` : ''}
     <button class="d-esci-fondo" data-logout>${icon('exit', 'ic sm')}${t('Esci dall\'account')}</button>
-    <div class="d-foot">${t('Versione {v}', { v: VERSIONE })}<br>Fantatitano</div>
+    <div class="d-foot">${t('Versione {v}', { v: VERSIONE })}<br>FANTATITANO™ · ${t('marchio depositato')}</div>
   </div></div>`;
 }
 

@@ -112,6 +112,7 @@ export const BASE = {
   '{n} aperte': '{n} abiertos',
   'la chiude per sempre': 'la cierra para siempre',
   'Versione {v}': 'Versión {v}',
+  'marchio depositato': 'marca depositada',
 
   // installare l'app (src/app.js, vociInstalla e installa)
   App: 'App',

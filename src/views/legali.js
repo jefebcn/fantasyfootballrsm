@@ -67,7 +67,7 @@ const avvisoTrasferimenti = `<div class="warn block">${icon('warn', 'ic sm')}<sp
   chi è il rappresentante nello SEE. Finché non c'è, questa informativa non è completa.</span></div>`;
 
 const piede = () => `<p class="small muted" style="text-align:center;margin-top:4px">
-  Ultimo aggiornamento: ${esc(dataIt(LEGALI_AGGIORNATE))}.</p>`;
+  Ultimo aggiornamento: ${esc(dataIt(LEGALI_AGGIORNATE))}.<br>FANTATITANO™ · marchio depositato</p>`;
 
 const disclaimer = blocco('Onestà su questa pagina', [
   'Questo testo descrive come funziona l\'app oggi ed è scritto per farsi capire, non nel linguaggio di un contratto. Se qualcosa non è chiaro o ti sembra sbagliato, scrivici: lo correggiamo.',

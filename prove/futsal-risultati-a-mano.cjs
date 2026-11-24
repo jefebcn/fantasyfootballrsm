@@ -6,6 +6,7 @@
  */
 const { chromium } = require('playwright');
 const path = require('path');
+const { fermaDatiFutsal } = require('./strumenti/futsal-dati-fino.cjs');
 const BASE = process.env.BASE || 'http://localhost:4173';
 const USCITA = process.env.USCITA || '/tmp';
 const ok = [], ko = []; const et = (c, t) => (c ? ok : ko).push(t);
@@ -13,7 +14,9 @@ const ok = [], ko = []; const et = (c, t) => (c ? ok : ko).push(t);
 (async () => {
   const b = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium' }).catch(() => chromium.launch());
   const ctx = await b.newContext({ viewport: { width: 393, height: 852 }, deviceScaleFactor: 2, timezoneId: 'Europe/Rome', locale: 'it-IT', isMobile: true, hasTouch: true, serviceWorkers: 'block' });
-  // lunedì sera dell'11ª: cinque partite cominciate, due ancora da giocare
+  // lunedì sera dell'11ª: cinque partite cominciate, due ancora da giocare,
+  // nessun referto ancora (vedi strumenti/futsal-dati-fino.cjs)
+  await fermaDatiFutsal(ctx, 11);
   await ctx.clock.setFixedTime(new Date('2026-11-23T22:40:00+01:00'));
   await ctx.addInitScript(() => {
     window.__SUPABASE_JS__ = '/tests/mock-supabase.js'; window.__PROVA_FUTSAL__ = true;

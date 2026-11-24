@@ -8,7 +8,7 @@ Fantacalcio gratuito sul Campionato Sammarinese (fantatitano.site), PWA statica 
 |---|---|
 | Mappa del codice (motore, stato, backend, viste, stili) | `README.md`, sezione «Struttura» |
 | Regole di gioco, giornate, ruoli, viste | `README.md` (sezioni omonime) e `src/engine.js` |
-| Database, RLS, funzioni, migrazioni | `supabase/README.md`, `supabase/migrations/` |
+| Database, RLS, funzioni, migrazioni | `supabase/README.md`, `supabase/migrations/`; tabelle o regole nuove (calcio, futsal, altri giochi): prima `docs/DATABASE-VELOCE.md` |
 | App Store / Play Store | `IOS.md`, `PLAY.md`, `store/` |
 | Dominio e DNS | `DNS.md` |
 | Monetizzazione | `MONETIZZAZIONE.md` |

@@ -22,11 +22,13 @@ name: Dati FSGC
 # su un repository pubblico i minuti di Actions non si pagano.
 #
 # E NON BASTA: "ogni due ore" e' diventato una corsa ogni 5-6 ore (misurato
-# il 29-30 settembre). Farlo partire da fuori (supabase/dati-fsgc-pianificato.sql,
-# pronto ma NON attivo) vuole un token di GitHub, e Alex ha deciso di
-# rimandare (30 settembre).
+# il 29-30 settembre), e il 24/11 nessuna corsa per quasi 8 ore. Per questo
+# dal 24/11 lo fa partire anche l'orologio del database
+# (supabase/dati-fsgc-pianificato.sql, con un token di GitHub): ogni 30 minuti
+# da venerdi' a lunedi', ogni ora gli altri giorni. Il cron qui sotto resta
+# come riserva, se il token un giorno smette di andare.
 #
-# Il rimedio senza token: un lavoro di GitHub puo' restare acceso sei ore.
+# L'altro rimedio, senza token: un lavoro di GitHub puo' restare acceso sei ore.
 # Nelle ore in cui la FSGC pubblica (la partita fino a 6 ore dopo il calcio
 # d'inizio, i referti da 15 a 30 ore dopo, mai dall'1 alle 7:
 # scripts/finestra-partite.mjs, ristretta il 24/11) l'import non fa un giro e

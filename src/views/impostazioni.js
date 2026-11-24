@@ -374,7 +374,7 @@ export const avanzate = {
       ${row('calc', 'Misure dello schermo', 'Quanto occupa davvero l\'app su questo telefono, tacche comprese', 'schermo')}` : ''}`);
 
     return `<main class="a-body">${look}${league}${judge}${data}
-      <p class="auth-foot">Versione ${VERSIONE} · motore ${S.rules().engineVersion}</p></main>`;
+      <p class="auth-foot">Versione ${VERSIONE} · motore ${S.rules().engineVersion}<br>FANTATITANO™ · marchio depositato</p></main>`;
   },
   mount: (root, ctx) => impostazioni.mount(root, ctx),
 };

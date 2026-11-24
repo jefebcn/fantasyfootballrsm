@@ -147,7 +147,7 @@ export const impostazioni = {
       ${row('trash', 'Cancella il profilo', 'Via account, squadre, rose e formazioni. Non si torna indietro', 'elimina-profilo', 'danger')}`);
 
     return `<main class="a-body">${testa}${generale}${conto}
-      <p class="auth-foot">Versione ${VERSIONE} · motore ${S.rules().engineVersion}</p></main>`;
+      <p class="auth-foot">Versione ${VERSIONE} · motore ${S.rules().engineVersion}<br>FANTATITANO™ · marchio depositato</p></main>`;
   },
 
   mount(root, ctx) {

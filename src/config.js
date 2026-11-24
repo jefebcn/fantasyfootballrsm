@@ -88,7 +88,7 @@ export const TITOLARE = {
   rappresentanteUE: '',
 };
 /** Data dell'ultima revisione dei testi legali, in ISO. */
-export const LEGALI_AGGIORNATE = '2026-11-14';
+export const LEGALI_AGGIORNATE = '2026-11-24';
 /**
  * «Accedi con Apple» SUL SITO (nell'app iPhone va da solo, col foglio nativo).
  * Il giro web di Supabase vuole il «Secret Key (for OAuth)» del provider

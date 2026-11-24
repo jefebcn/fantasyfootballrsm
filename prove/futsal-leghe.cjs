@@ -42,6 +42,7 @@ const TIPI = { '.html': 'text/html', '.js': 'text/javascript', '.mjs': 'text/jav
   await ctx.addInitScript(() => {
     window.__SUPABASE_JS__ = '/tests/mock-supabase.js';
     localStorage.setItem('fcs:auth', 'supabase');
+    localStorage.setItem('fcs:fs-benvenuto', '1'); // il benvenuto ha la sua prova (futsal-benvenuto.cjs)
     localStorage.setItem('fcs:prefs', JSON.stringify({ onboarded: true, guidaVista: true, theme: 'light' }));
     localStorage.setItem('fcs:supabase', JSON.stringify({ url: 'https://mock.supabase.co', key: 'mock-key-mock-key-mock' }));
     localStorage.setItem('fcs:futsal', '1'); window.__PROVA_FUTSAL__ = true;

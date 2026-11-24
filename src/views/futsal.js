@@ -16,6 +16,7 @@ import * as F from '../futsal.js';
 import * as FS from '../futsal-server.js';
 import * as V from '../futsal-valori.js';
 import { magliaFs, logoFs, caricaFs } from '../futsal-grafica.js';
+import * as FB from './futsal-benvenuto.js';
 import { controllaFormazione, punteggioFormazione, REGOLE_FUTSAL as R } from '../futsal-engine.js';
 import { classificaSomma, classificaScontri, calendarioTesta, coppa, formatoCoppa, COPPA, SERIE, giornateSerie } from '../futsal-gare.js';
 
@@ -216,6 +217,7 @@ FS.quandoRicarica(() => {
   const a = document.activeElement;
   if (a && /^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName)) return;
   if (document.getElementById('sheet')?.classList.contains('on')) return;
+  if (document.querySelector('.fsb')) return; // il benvenuto aperto non si ridisegna a metà
   ctxAttivo.render();
 });
 function caricaE(ctx) {
@@ -249,6 +251,14 @@ function avversario(club, n) {
 }
 
 // ---------------------------------------------------------------- home
+// dopo il benvenuto («Crea la tua squadra») la home si apre sull'iscrizione
+let versoIscrizione = false;
+/** Il benvenuto rivisto dal Regolamento, o da chi ha già la squadra. */
+export const futsalBenvenuto = {
+  title: 'Benvenuto nel FantaFutsal', appbar: 'none', nav: false,
+  render() { return `<main class="a-body fs">${FB.benvenutoHtml({ fine: FS.io() ? 'Vai al FantaFutsal' : 'Crea la tua squadra' })}</main>`; },
+  mount(root, ctx) { FB.montaBenvenuto(root, (finito) => { if (finito && !FS.io()) versoIscrizione = true; ctx.go('futsal'); }); },
+};
 export const futsalHome = {
   title: 'Futsal', appbar: 'futsal', sub: () => 'Campionato di San Marino',
   render() {
@@ -268,6 +278,7 @@ export const futsalHome = {
     const b = mia ? bilancioOra(n) : null;
     const rUltima = ultima && (io || !srv.attivo) ? risultatoDi(ultima) : null;
     return `<main class="a-body fs">
+      ${nuovo && !FB.visto() ? FB.benvenutoHtml() : ''}
       ${selettore('futsal')}
       ${srv.attivo && F.conclusa(F.GIORNATE) ? fineStagione(ids) : ''}
       ${nuovo ? `<div class="fs-benvenuto">${logoFs('grande')}<p>Il fanta del Campionato Sammarinese di Futsal</p></div>${comeSiGioca()}${iscrizione()}` : ''}
@@ -296,6 +307,12 @@ export const futsalHome = {
   },
   mount(root, ctx) {
     caricaE(ctx); montaIscrizione(root, ctx);
+    FB.montaBenvenuto(root, (finito) => { if (finito) versoIscrizione = true; ctx.render(); });
+    if (versoIscrizione && root.querySelector('#fs-squadra')) {
+      versoIscrizione = false;
+      const c = root.querySelector('.fs-iscriviti'); c?.scrollIntoView({ block: 'center' });
+      setTimeout(() => root.querySelector('#fs-squadra')?.focus({ preventScroll: true }), 300);
+    }
     root.querySelector('#fs-modifica-squadra')?.addEventListener('click', (e) => { e.preventDefault(); foglioSquadra(ctx); });
     root.querySelectorAll('[data-vai-leghe]').forEach((a) => a.addEventListener('click', () => { vistaLeghe = a.dataset.vaiLeghe; }));
   },
@@ -945,6 +962,7 @@ export const futsalRegolamento = {
     const cap = (titolo, corpo, aperto = false) => `<details class="a-card fs-cap-r"${aperto ? ' open' : ''}><summary>${titolo}</summary><div>${corpo}</div></details>`;
     return `<main class="a-body rules fs">
       <div class="fs-benvenuto">${logoFs('grande')}<p>Regolamento 2026/27</p></div>
+      <a class="a-card fs-rivedi" href="#/futsal/benvenuto">${icon('play')}<span><b>Rivedi il benvenuto</b><span class="small muted">come si gioca, in sei schermate</span></span>${icon('chev', 'ic sm')}</a>
       <div class="a-card"><p class="rule-art">IN BREVE</p>
         <p>Il FantaFutsal è il fanta del <b>Campionato Sammarinese di Futsal</b>: compri una rosa di giocatori veri con i crediti, ogni giornata scegli chi va in campo e fai punti con quello che dicono i <b>referti ufficiali FSGC</b>.</p>
         <p>Funziona così: quotazioni che salgono e scendono, mercato tra una giornata e l'altra, sesto uomo e panchina che contano, campionati principali per tutti e leghe con gli amici.</p></div>

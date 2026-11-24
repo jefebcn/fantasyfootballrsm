@@ -30,7 +30,7 @@ const ROUTES = [
   // Il futsal (FUTSAL.md): nascosto finche' non si accende con ?futsal=1, vedi gate()
   ['futsal', views.futsalHome], ['futsal/squadra', views.futsalSquadra], ['futsal/squadra/:n', views.futsalSquadra],
   ['futsal/formazione', views.futsalFormazione], ['futsal/formazione/:n', views.futsalFormazione], ['futsal/giornata', views.futsalGiornata], ['futsal/giornata/:n', views.futsalGiornata],
-  ['futsal/statistiche', views.futsalStatistiche], ['futsal/giocatore/:id', views.futsalGiocatore], ['futsal/listone', views.futsalListone], ['futsal/regolamento', views.futsalRegolamento],
+  ['futsal/statistiche', views.futsalStatistiche], ['futsal/giocatore/:id', views.futsalGiocatore], ['futsal/listone', views.futsalListone], ['futsal/regolamento', views.futsalRegolamento], ['futsal/benvenuto', views.futsalBenvenuto],
   ['futsal/classifica', views.futsalClassifica], ['futsal/classifica/:vista', views.futsalClassifica], ['futsal/coppa', views.futsalCoppa], ['futsal/leghe', views.futsalLeghe], ['futsal/lega/:id', views.futsalLega],
   ['login', views.login], ['leghe', views.leghe], ['lega', views.lega], ['gestione', views.gestione], ['squadra', views.squadra], ['vice/:code', views.vice], ['setup', views.setup], ['offline', views.offline], ['sospeso', views.sospeso], ['benvenuto', views.onboarding], ['guida', views.guida], ['gioco', views.gioco], ['shop', views.shop],
   // La Coppa Fantatitano (src/views/coppa.js): sulle sole partite della Coppa Titano vera

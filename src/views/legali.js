@@ -152,7 +152,11 @@ export const termini = {
     'Per il momento non è affiliato alla FSGC né alle società del campionato, e non ne rappresenta le posizioni.',
   ])}
       ${blocco('Di chi è l\'app', [
-    'Il codice, la grafica, le illustrazioni, i testi, il nome e il marchio Fantatitano appartengono a chi gestisce l\'app: tutti i diritti sono riservati. Non si possono copiare, ripubblicare o riusare, in tutto o in parte, senza un permesso scritto.',
+    // Alex, 24/11: la domanda e' a nome suo, l'app la gestisce la societa' (TITOLARE):
+    // finche' non c'e' una licenza trascritta o una cessione, il testo non dice di chi e'
+    // il marchio. Alla registrazione: «marchio registrato» e ® al posto di ™.
+    'FANTATITANO™ è un marchio depositato a San Marino (domanda n. SM-M-202600154 del 6 novembre 2026).',
+    'Il codice, la grafica, le illustrazioni e i testi dell\'app appartengono a chi gestisce l\'app: tutti i diritti sono riservati. Non si possono copiare, ripubblicare o riusare, in tutto o in parte, senza un permesso scritto.',
     'I nomi dei giocatori e delle società e i risultati delle partite restano di chi ne ha i diritti: l\'app li usa solo per far funzionare il gioco.',
     'Gli stemmi delle squadre che compaiono nell\'app e sui profili social di Fantatitano sono disegni di fantasia: non sono gli stemmi ufficiali delle società e non indicano un legame con loro.',
   ])}

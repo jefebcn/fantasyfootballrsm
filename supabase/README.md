@@ -1,5 +1,10 @@
 # Supabase — account e leghe multiple
 
+> **Prima di scrivere tabelle, regole RLS o richieste nuove** leggi
+> [`docs/DATABASE-VELOCE.md`](../docs/DATABASE-VELOCE.md): il database è
+> uno solo per calcio, futsal e i giochi futuri, e una regola scritta male
+> rallenta tutti (timeout del 22/11, migrazioni 068, 069, futsal-13).
+
 ## Migrazione 007 — mercato degli svincolati
 
 `migrations/007-mercato-svincolati.sql` aggiunge la tabella `offerte` e le

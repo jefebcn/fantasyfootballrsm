@@ -6,6 +6,9 @@
 #
 #   ./prove/import-in-giro.sh
 set -uo pipefail
+# Con pipefail, «git log | grep -q» fallisce a caso: grep -q esce alla prima
+# riga trovata e git log, che scrive ancora, muore di SIGPIPE. Per questo qui
+# si usa «grep ... >/dev/null», che legge tutto.
 cd "$(dirname "$0")/.."
 RADICE=$(pwd)
 rosso() { printf '\033[31m%s\033[0m\n' "$*"; }
@@ -42,9 +45,9 @@ esito=$(gira IMPORTA="$CAMBIA" VIDEO=true PROVE=true FINESTRA="echo no" PAUSA=1 
 [ "$esito" = 0 ]; et $? "finisce bene"
 [ "$(grep -c '::group::giro' "$T/uscita")" = 1 ]; et $? "fa un giro solo ($(grep -c '::group::giro' "$T/uscita"))"
 [ "$(commit_origine)" = $((prima + 1)) ]; et $? "e pubblica i dati nuovi: un commit sull'origine"
-git -C "$T/o.git" log -1 --format=%an | grep -q "importatore FSGC"; et $? "firmato dall'importatore"
-git -C "$T/o.git" log -1 --format=%s | grep -q "dati: import automatico"; et $? "col messaggio di sempre"
-git -C "$T/o.git" show HEAD --stat | grep -q "sw.js"; et $? "e con la versione nuova del service worker, se no i telefoni tengono i dati vecchi"
+git -C "$T/o.git" log -1 --format=%an | grep "importatore FSGC" >/dev/null; et $? "firmato dall'importatore"
+git -C "$T/o.git" log -1 --format=%s | grep "dati: import automatico" >/dev/null; et $? "col messaggio di sempre"
+git -C "$T/o.git" show HEAD --stat | grep "sw.js" >/dev/null; et $? "e con la versione nuova del service worker, se no i telefoni tengono i dati vecchi"
 
 echo "== nei giorni di partita resta acceso =="
 nuovo; prima=$(commit_origine)
@@ -74,7 +77,7 @@ nuovo; prima=$(commit_origine); rm -f "$T/n"
 MEZZO="n=\$(cat $T/n 2>/dev/null || echo 0); n=\$((n+1)); echo \$n > $T/n; if [ \$n -eq 2 ]; then echo '// mezzo' >> src/calendario-dati.js; false; fi"
 esito=$(gira IMPORTA="$MEZZO" VIDEO=true PROVE=true FINESTRA="echo si" PAUSA=1 DURATA=5)
 [ "$(cat "$T/n")" -ge 3 ]; et $? "dopo il giro fallito si riprova ($(cat "$T/n") giri)"
-[ "$(commit_origine)" = "$prima" ] && ! git -C "$T/o.git" show HEAD:src/calendario-dati.js | grep -q "// mezzo"
+[ "$(commit_origine)" = "$prima" ] && ! git -C "$T/o.git" show HEAD:src/calendario-dati.js | grep "// mezzo" >/dev/null
 et $? "e la riga scritta a meta' non arriva online: nessun commit"
 
 echo "== GitHub non risponde all'aggiornamento: il giro non va avanti su una copia vecchia =="
@@ -95,7 +98,7 @@ nuovo; prima=$(commit_origine); rm -f "$T/n"
 # al secondo giro, prima di importare, arriva un commit "da fuori" sull'origine
 ALTRO="n=\$(cat $T/n 2>/dev/null || echo 0); n=\$((n+1)); echo \$n > $T/n; if [ \$n -eq 2 ]; then git clone -q $T/o.git $T/altro && git -C $T/altro -c user.name=x -c user.email=x@x commit -q --allow-empty -m 'da fuori' && git -C $T/altro push -q; rm -rf $T/altro; fi; $CAMBIA"
 esito=$(gira IMPORTA="$ALTRO" VIDEO=true PROVE=true FINESTRA="echo si" PAUSA=1 DURATA=4)
-git -C "$T/o.git" log --format=%s | grep -q "da fuori"; et $? "il commit arrivato da fuori resta"
+git -C "$T/o.git" log --format=%s | grep "da fuori" >/dev/null; et $? "il commit arrivato da fuori resta"
 [ "$esito" = 0 ]; et $? "e il giro non si rompe: riparte dall'ultima versione"
 
 echo "== il futsal: referti nuovi, quotazioni e orari sul database prima di pubblicare =="
@@ -106,17 +109,17 @@ SOLO_REF="echo '// referto nuovo' >> src/futsal-dati.js"
 CON_SQL="echo '// referto nuovo' >> src/futsal-dati.js; echo '-- quotazioni nuove' >> supabase/migrations/futsal-05-quotazioni.sql"
 nuovo; prima=$(commit_origine)
 esito=$(gira IMPORTA=true VIDEO=true PROVE=true FINESTRA="echo no" PAUSA=1 DURATA=60 FUTSAL="$FS" IMPORTA_FS="$SOLO_REF")
-[ "$esito" = 0 ] && [ "$(commit_origine)" = $((prima + 1)) ] && git -C "$T/o.git" show HEAD:src/futsal-dati.js | grep -q "referto nuovo"
+[ "$esito" = 0 ] && [ "$(commit_origine)" = $((prima + 1)) ] && git -C "$T/o.git" show HEAD:src/futsal-dati.js | grep "referto nuovo" >/dev/null
 et $? "un referto nuovo del futsal (senza quotazioni nuove) va online da solo"
 
 nuovo; prima=$(commit_origine)
 esito=$(gira IMPORTA=true VIDEO=true PROVE=true FINESTRA="echo no" PAUSA=1 DURATA=60 FUTSAL="$FS" IMPORTA_FS="$CON_SQL" CARICA_FS="touch $T/caricato")
-[ -f "$T/caricato" ] && git -C "$T/o.git" show HEAD:supabase/migrations/futsal-05-quotazioni.sql | grep -q "quotazioni nuove"
+[ -f "$T/caricato" ] && git -C "$T/o.git" show HEAD:supabase/migrations/futsal-05-quotazioni.sql | grep "quotazioni nuove" >/dev/null
 et $? "quotazioni nuove: prima sul database, poi online insieme ai referti"
 
 nuovo; prima=$(commit_origine)
 esito=$(gira IMPORTA="$CAMBIA" VIDEO=true PROVE=true FINESTRA="echo no" PAUSA=1 DURATA=60 FUTSAL="$FS" IMPORTA_FS="$CON_SQL" CARICA_FS=false)
-[ "$esito" = 0 ] && [ "$(commit_origine)" = $((prima + 1)) ] && ! git -C "$T/o.git" show HEAD:src/futsal-dati.js | grep -q "referto nuovo"
+[ "$esito" = 0 ] && [ "$(commit_origine)" = $((prima + 1)) ] && ! git -C "$T/o.git" show HEAD:src/futsal-dati.js | grep "referto nuovo" >/dev/null
 et $? "il database non risponde: il futsal resta com'era, il calcio esce lo stesso"
 grep -q "database non ha preso" "$T/uscita"; et $? "e lo dice"
 

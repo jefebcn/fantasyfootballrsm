@@ -38,6 +38,16 @@ const TIPI = { '.html': 'text/html', '.js': 'text/javascript', '.mjs': 'text/jav
       return r.fulfill({ status: 200, body: fs.readFileSync(f), contentType: TIPI[path.extname(f)] || 'application/octet-stream' });
     });
   }
+  // I dati del futsal come erano all'ORA della prova: niente referti né risultati
+  // delle partite dopo sabato 21/11. Senza, l'import del 24/11 (11ª giocata) dava
+  // punti alla lega a somma nata per l'11ª e C11 falliva anche su main.
+  const DOPO = Date.parse(ORA);
+  await ctx.route('**/src/futsal-dati.js', (r) => r.fulfill({
+    status: 200, contentType: 'text/javascript',
+    body: fs.readFileSync(path.join(REPO, 'src/futsal-dati.js'), 'utf8')
+      .replace(/^ {2}\{g:(\d+),.*$\n/gm, (riga, g) => (+g >= 11 ? '' : riga))
+      .replace(/^( {2}\[\d+,"[^"]+","[^"]+","([^"]+)","[^"]*"),-?\d+,-?\d+\]/gm, (riga, testa, quando) => (Date.parse(quando) > DOPO ? `${testa},null,null]` : riga)),
+  }));
   await ctx.clock.setFixedTime(new Date(ORA));
   await ctx.addInitScript(() => {
     window.__SUPABASE_JS__ = '/tests/mock-supabase.js';

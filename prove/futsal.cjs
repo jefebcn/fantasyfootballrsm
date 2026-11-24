@@ -24,6 +24,7 @@ const ok = [], ko = []; const et = (c, t) => (c ? ok : ko).push(t);
     // formazione resta sul telefono (prove/futsal-server.cjs fa l'altro caso)
     window.__MOCK_SENZA_FUTSAL__ = true;
     localStorage.setItem('fcs:auth', 'supabase');
+    localStorage.setItem('fcs:fs-benvenuto', '1'); // il benvenuto ha la sua prova (futsal-benvenuto.cjs)
     localStorage.setItem('fcs:prefs', JSON.stringify({ onboarded: true, guidaVista: true, theme: 'light' }));
     localStorage.setItem('fcs:supabase', JSON.stringify({ url: 'https://mock.supabase.co', key: 'mock-key-mock-key-mock' }));
   });

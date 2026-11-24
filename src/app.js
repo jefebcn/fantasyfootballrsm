@@ -263,7 +263,7 @@ function drawer() {
     <div class="d-sec"><span class="chip">Altro</span></div>
     ${voce('#/', 'calcio', 'Torna al calcio', 'Fantatitano')}${voce('#/impostazioni', 'impostazioni', 'Impostazioni', 'account e privacy')}
     <button class="d-esci-fondo" data-logout>${maskFs('esci')}Esci dall'account</button>
-    <div class="d-foot">Versione ${VERSIONE}<br>Fantatitano Futsal</div>
+    <div class="d-foot">Versione ${VERSIONE}<br>FANTATITANO™ Futsal · marchio depositato</div>
   </div></div>`;
   }
   const leagueRow = leagues.length > 1 ? `<div class="d-sec"><span class="chip">${t('Le mie leghe')}</span></div>${leagues.filter((l) => l.id !== cur).map((l) => `<button class="d-item" data-switch="${l.id}"><i>${icon('cup')}</i><span class="et">${esc(l.name)}</span><small>${esc(l.myRole)}</small></button>`).join('')}` : '';

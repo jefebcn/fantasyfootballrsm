@@ -11,7 +11,7 @@ Fantacalcio gratuito sul Campionato Sammarinese (fantatitano.site), PWA statica 
 | Database, RLS, funzioni, migrazioni | `supabase/README.md`, `supabase/migrations/`; tabelle o regole nuove (calcio, futsal, altri giochi): prima `docs/DATABASE-VELOCE.md` |
 | App Store / Play Store | `IOS.md`, `PLAY.md`, `store/` |
 | Dominio e DNS | `DNS.md` |
-| Monetizzazione, crescita (inviti, card, premi) | `MONETIZZAZIONE.md`, `docs/CRESCITA.md` |
+| Monetizzazione, crescita (inviti, card, premi), ordine dei lavori | `MONETIZZAZIONE.md`, `docs/CRESCITA.md`, `docs/PIANO-LAVORI.md` |
 | Controlli e avvisi automatici | `MONITORAGGIO.md`, `.github/workflows/` |
 | Storie e gol per i social | `social/`, `scripts/storie-gol.mjs`, `scripts/pubblica-storia.mjs` |
 | FantaTitano Futsal (gioco, import, Instagram @fantatitano.futsal) | `docs/futsal/STATO.md`, `docs/futsal/RICETTE.md`, `FUTSAL.md`; prima del lancio lo vede solo il proprietario (`APERTO_A_TUTTI` in `src/views/futsal.js`) |

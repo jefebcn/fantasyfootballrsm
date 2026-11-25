@@ -5,6 +5,15 @@ qualcosa che sembra un fantacalcio. Linea: **niente provocazioni verso la
 federazione**, si cresce con condivisioni, inviti e premi messi dai progetti di
 Alex. Lo stato giorno per giorno sta in `docs/STATO.md`; qui c'è il piano.
 
+## Decisioni di Alex (25/11)
+
+- **Chi organizza:** la sua società (in app il titolare è Mediterranean
+  Digital Solutions Ltd, `TITOLARE` in `src/config.js`).
+- **Chi offre i premi, per ora:** SanderBV e FreshDrops.
+- **Traguardo inviti:** 3 amici che consegnano almeno 2 formazioni.
+- **Ancora da decidere:** cosa mette ciascun progetto, di che valore e ogni
+  quanto.
+
 ## 1. La regola che regge tutto
 
 - **Mai pagare per partecipare.** Iscrizione a pagamento più premio vuol dire
@@ -29,7 +38,7 @@ Già nell'app: pulsante «Invita» nelle leghe, link con il codice
 | Cosa | Stato |
 |---|---|
 | **Card della giornata da condividere**: immagine 1080x1920 con fantapunti, posto nella giornata e in classifica, i migliori, il personaggio; link d'invito nel testo che l'accompagna | fatta (`src/card-giornata.js`, `src/views/scheda.js`) |
-| **Traguardo inviti**: per esempio 3 amici che consegnano almeno 2 formazioni danno un buono di un progetto di Alex. Contano solo amici che giocano, così non servono account finti | da fare |
+| **Traguardo inviti**: 3 amici che consegnano almeno 2 formazioni danno un buono di SanderBV o FreshDrops. Contano solo amici che giocano, così non servono account finti. Conta l'amico arrivato dal link (`profiles.invitato_da`, 023) che ha confermato la formazione in 2 giornate diverse: le copie automatiche della lega pubblica (050) hanno lo stesso `submitted_at` dell'originale e non contano | da fare |
 | **Classifica delle leghe tra amici**: la lega con la media più alta del mese vince un premio per il gruppo | da fare |
 
 ## 3. Premi «offerti da» i progetti di Alex
@@ -59,9 +68,9 @@ di fila almeno metà delle squadre consegna la formazione
 ## 5. Ordine di lavoro
 
 1. **Card da condividere** (fatta il 25/11).
-2. **Decisioni di Alex**: quali progetti, quale premio e valore, quante volte,
-   chi organizza (la sua società o il progetto). Poi il regolamento breve e
-   le domande al legale.
+2. **Decisioni di Alex**: progetti e organizzatore decisi il 25/11; mancano
+   premio, valore e frequenza. Regolamento breve e domande al legale in
+   `legale/premi-regolamento-bozza.md`.
 3. **Nell'app**: premi «offerti da» e traguardo inviti.
 4. **Lancio** con un post e una storia, poi il vincitore ogni lunedì.
 

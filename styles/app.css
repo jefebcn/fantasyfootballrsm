@@ -3387,3 +3387,32 @@ b > .stemma.xs:last-child{margin:0 0 0 6px}
 .cf-mia-g b{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .cf-mia-g small{font-size:11px;color:var(--text-muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .cf-mia .a-btn{margin:0}
+
+/* Home del futsal (25/11): ultima giornata, prossima giornata, le tue partite */
+.fs-ultima{display:block;text-decoration:none;color:inherit;margin-top:10px;padding:12px 14px}
+.fs-ult-top{display:flex;align-items:center;gap:10px}
+.fs-ult-top>span{flex:1;display:flex;flex-direction:column;min-width:0;font-size:12px;color:var(--text-muted)}
+.fs-ult-top>span b{font:800 18px var(--font-display);color:var(--text);text-transform:uppercase}
+.fs-ult-top strong{font:800 40px/1 var(--font-display);font-variant-numeric:tabular-nums}
+.fs-ult-top strong small{font-size:16px;margin-left:3px}
+.fs-ult-voci{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:6px;margin-top:10px;border-top:1px solid var(--border);padding-top:10px}
+.fs-ult-voci span{display:flex;flex-direction:column;font-size:11px;color:var(--text-muted);line-height:1.25;min-width:0}
+.fs-ult-voci b{font:800 20px/1.1 var(--font-display);color:var(--text)}
+.fs-prossima{margin-top:10px;padding:12px 14px}
+.fs-pr-top{display:flex;align-items:flex-start;gap:10px}
+.fs-pr-top>span:first-child{flex:1;display:flex;flex-direction:column;font-size:12px;color:var(--text-muted)}
+.fs-pr-top>span:first-child b{font:800 18px var(--font-display);color:var(--text);text-transform:uppercase}
+.fs-prossima .fs-merc{display:flex;flex-direction:column;align-items:flex-end;font:800 18px/1 var(--font-display)}
+.fs-prossima .fs-merc small{font:600 10px var(--font-body);text-transform:uppercase;letter-spacing:.04em;color:var(--text-muted);margin-top:2px}
+.fs-prossima .fs-merc.aperto{color:#1E9E5A}.fs-prossima .fs-merc.attesa{color:var(--rosso,#E8432E)}.fs-prossima .fs-merc.chiuso{color:var(--text-muted)}
+.fs-pr-num{display:flex;gap:18px;margin-top:8px}
+.fs-pr-num span{display:flex;align-items:baseline;gap:5px;font-size:12px;color:var(--text-muted)}
+.fs-pr-num b{font:800 20px var(--font-display);color:var(--text)}
+.fs-pr-testo{margin:4px 0 0}
+.fs-pr-sez{margin:12px 0 2px;padding-top:10px;border-top:1px solid var(--border);font:800 16px var(--font-display);text-transform:uppercase;letter-spacing:.02em}
+.fs-tue .fs-tua{border-top:1px solid var(--border)}
+.fs-tue .fs-tua:first-child{border-top:0}
+.fs-tue .fs-match{padding:8px 0 2px;border-top:0}
+.fs-tue .fs-tua>p{margin:0 0 8px;font-size:12px;color:var(--text-muted);text-align:center}
+.fs-tue-riposo{margin:4px 0 0}
+.fs-prossima>.a-btn{display:flex;justify-content:center;margin-top:12px}

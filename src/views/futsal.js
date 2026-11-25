@@ -288,10 +288,9 @@ export const futsalHome = {
       ${srv.attivo && F.conclusa(F.GIORNATE) ? fineStagione(ids) : ''}
       ${nuovo ? `<div class="fs-benvenuto">${logoFs('grande')}<p>Il fanta del Campionato Sammarinese di Futsal</p></div>${comeSiGioca()}${iscrizione()}` : ''}
       ${io || !srv.attivo ? `<a class="fs-banda" href="#/futsal/squadra">
-        <div class="fs-banda-top">${io ? crest({ color: io.colore, initials: io.iniziali }) : stemma('cailungo')}<div><b>${esc(io?.squadra || 'La mia squadra')}</b><span>${io ? posto(ids, giocate) : 'sul telefono'}${rUltima ? ` · ${ultima}ª: ${fmt(rUltima.totale)} pt` : ''}</span></div>${icon('chev', 'ic sm')}</div>
-        <div class="fs-banda-num"><span><b>${n}ª</b>giornata</span><span class="fs-merc ${m.stato}"><b>${m.fine ? 'Finita' : { aperto: 'Aperto', attesa: 'In attesa', chiuso: 'Chiuso' }[m.stato]}</b>${m.fine ? 'stagione' : 'mercato'}</span><span><b>${b ? cr(b.residui) : cr(R.budget)}</b>crediti</span><span><b>${b && b.primo !== null && b.primo < n ? `${b.cambi}` : '–'}</b>cambi</span></div>
-        <p>${mia ? esc(m.testo) : m.aperto ? 'Non hai ancora una squadra: compra la tua rosa' : esc(m.testo)}</p></a>` : ''}
-      ${io ? '<button class="a-btn sec fs-modifica" id="fs-modifica-squadra" type="button">Nome e colore della squadra</button>' : ''}
+        <div class="fs-banda-top">${io ? crest({ color: io.colore, initials: io.iniziali }) : stemma('cailungo')}<div><b>${esc(io?.squadra || 'La mia squadra')}</b><span>${io ? `${posto(ids, giocate)} in classifica generale` : 'sul telefono'}</span></div>${icon('chev', 'ic sm')}</div></a>
+        ${rUltima ? bloccoUltima(ultima, rUltima, io ? ids : []) : ''}
+        ${bloccoProssima(n, m, mia, b)}` : ''}
       ${!nuovo ? sec('Campionati principali') : ''}
       ${!nuovo ? `<div class="a-card fs-list fs-camp">
         <a class="vr" href="#/futsal/classifica/generale">${icon('globe')}<span class="nm"><b>Generale</b><span>tutte le squadre · dalla 1ª</span></span><span class="ev">${srv.attivo ? posto(ids, giocate) : ''}</span>${icon('chev', 'ic sm')}</a>
@@ -307,6 +306,7 @@ export const futsalHome = {
       ${sec('Le partite', `${n}ª giornata`)}
       <div class="a-card fs-list">${F.PARTITE.filter((p) => p.g === n).map((p) => `<div class="fs-match">${stemma(p.casa)}<b>${esc(nomeSq(p.casa))}</b>${centroPartita(p)}<b class="r">${esc(nomeSq(p.ospite))}</b>${stemma(p.ospite)}</div>`).join('')}
         <p class="small muted" style="padding:8px 12px;margin:0">Riposa: ${esc(F.riposa(n).map(nomeSq).join(', '))}</p></div>
+      ${io ? '<button class="a-btn sec fs-modifica" id="fs-modifica-squadra" type="button">Nome e colore della squadra</button>' : ''}
       ${nuovo ? '' : comeSiGioca()}
     </main>`;
   },
@@ -322,6 +322,61 @@ export const futsalHome = {
     root.querySelectorAll('[data-vai-leghe]').forEach((a) => a.addEventListener('click', () => { vistaLeghe = a.dataset.vaiLeghe; }));
   },
 };
+
+/**
+ * La home, dopo la testata della squadra (Alex, 25/11): prima com'è andata
+ * l'ultima giornata, poi cosa c'è da fare nella prossima e dove giocano i
+ * tuoi. Nome e colore della squadra scendono in fondo.
+ */
+function bloccoUltima(g, r, ids) {
+  const contano = r.righe.filter((x) => x.peso > 0 && !x.voto.sv);
+  const chi = (x) => (x.posto === 'P' ? `Porta ${nomeSq(x.club)}` : nomeId(x.entrato?.id || x.id));
+  const top = [...contano].sort((a, b) => b.punti - a.punti)[0];
+  const cap = r.righe.find((x) => x.capitano);
+  const mancano = F.PARTITE.filter((p) => p.g === g && !F.referto(g, p.casa)).length;
+  const classe = ids.length > 1 ? classificaSomma(ids, [g], FS.punti) : [];
+  const mio = classe.find((x) => x.id === FS.io()?.user_id);
+  const voci = [
+    mio ? `<span><b>${mio.posto}º</b>di giornata su ${classe.length}</span>` : '',
+    top ? `<span><b>${fmt(top.punti)}</b>${esc(chi(top))} · ${top === cap ? 'migliore e capitano' : 'il migliore'}</span>` : '',
+    cap && cap !== top ? `<span><b>${fmt(cap.punti)}</b>${esc(chi(cap))} · capitano</span>` : '',
+  ].filter(Boolean).join('');
+  return `<a class="a-card fs-ultima" href="#/futsal/squadra/${g}">
+    <div class="fs-ult-top"><span><b>${g}ª giornata</b>${mancano ? `in corso · mancano ${mancano} ${mancano === 1 ? 'partita' : 'partite'}` : 'i tuoi punti'}</span><strong>${fmt(r.totale)}<small>pt</small></strong>${icon('chev', 'ic sm')}</div>
+    ${voci ? `<div class="fs-ult-voci">${voci}</div>` : ''}
+  </a>`;
+}
+
+/** I tuoi nella giornata n: per ogni partita in cui gioca qualcuno della rosa, chi. */
+function tuePartite(n, f) {
+  const miei = new Map();
+  const metti = (club, nome) => { if (club) miei.set(club, [...(miei.get(club) || []), nome]); };
+  metti(f.porta, 'Porta');
+  for (const id of [...(f.D || []), ...(f.A || [])].map((x) => (typeof x === 'string' ? x : x?.id)).filter(Boolean)) metti(clubId(id), F.giocatore(id)?.cognome || id);
+  const partite = F.PARTITE.filter((p) => p.g === n && (miei.has(p.casa) || miei.has(p.ospite)))
+    .sort((a, b) => String(a.quando || '9').localeCompare(String(b.quando || '9')));
+  const riposano = F.riposa(n).filter((c) => miei.has(c));
+  if (!partite.length && !riposano.length) return '';
+  return `<div class="fs-tue">${partite.map((p) => `<div class="fs-tua">
+      <div class="fs-match">${stemma(p.casa)}<b>${esc(nomeSq(p.casa))}</b>${centroPartita(p)}<b class="r">${esc(nomeSq(p.ospite))}</b>${stemma(p.ospite)}</div>
+      <p>${[p.casa, p.ospite].filter((c) => miei.has(c)).map((c) => esc(miei.get(c).join(', '))).join(' · ')}</p></div>`).join('')}
+    ${riposano.length ? `<p class="small muted fs-tue-riposo">Riposano: ${esc(riposano.map((c) => `${miei.get(c).join(', ')} (${nomeSq(c)})`).join(' · '))}</p>` : ''}</div>`;
+}
+
+function bloccoProssima(n, m, mia, b) {
+  const stato = m.fine ? 'Finita' : { aperto: 'Aperto', attesa: 'In attesa', chiuso: 'Chiuso' }[m.stato];
+  const c = F.chiusura(n);
+  const tasto = m.stato === 'chiuso' ? '' : mia
+    ? `<a class="a-btn" href="#/futsal/squadra/${n}">Prepara la formazione</a>`
+    : m.aperto ? `<a class="a-btn" href="#/futsal/squadra/${n}">Compra la tua rosa</a>` : '';
+  return `<div class="a-card fs-prossima">
+    <div class="fs-pr-top"><span><b>${n}ª giornata</b>${c && m.stato !== 'chiuso' ? `chiude ${dateIt(c.toISOString())} alle ${timeIt(c.toISOString())}` : m.stato === 'chiuso' ? 'si gioca' : ''}</span><span class="fs-merc ${m.stato}">${stato}<small>mercato</small></span></div>
+    <div class="fs-pr-num"><span><b>${b ? cr(b.residui) : cr(R.budget)}</b>crediti</span><span><b>${b && b.primo !== null && b.primo < n ? `${b.cambi}` : '∞'}</b>cambi</span></div>
+    <p class="small muted fs-pr-testo">${mia ? esc(m.testo) : m.aperto ? 'Non hai ancora una squadra: compra la tua rosa' : esc(m.testo)}</p>
+    ${mia ? `<p class="fs-pr-sez">Dove giocano i tuoi</p>${tuePartite(n, mia) || '<p class="small muted">Nessuno dei tuoi gioca in questa giornata.</p>'}` : ''}
+    ${tasto}
+  </div>`;
+}
 
 /**
  * A stagione finita (30ª conclusa): l'albo d'oro in cima alla home. Campione

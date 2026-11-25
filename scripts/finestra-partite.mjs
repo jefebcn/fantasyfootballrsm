@@ -14,7 +14,10 @@
  *    marcatori, primi tabellini);
  *  - I REFERTI: da 15 a 30 ore dopo il calcio d'inizio. Quelli della domenica
  *    sono usciti il lunedi' pomeriggio (misurato il 21 settembre).
- *    Per il futsal da 15 a 23 ore dopo (data/futsal-orologio.json, 7ª giornata),
+ *    Per il futsal da 12 a 24 ore dopo: misurati da 11 a 22 ore (7ª,
+ *    data/futsal-orologio.json) e 18 ore Juvenes–Folgore dell'11ª (25/11, fra
+ *    le 15:45 e le 16:05 del giorno dopo). Fuori finestra c'e' l'orologio del
+ *    database, ogni ora (supabase/dati-fsgc-pianificato.sql),
  *    e la partita dura meno: 3 ore dopo il calcio d'inizio.
  *  - MAI DI NOTTE, dall'1 alle 7 ora di San Marino.
  * Fuori da queste ore l'import gira lo stesso ogni due ore (dati-fsgc.yml), un
@@ -35,8 +38,8 @@ const ORA = 3600 * 1000;
 export const PRIMA = 1 * ORA;
 /** Calcio: la partita (fino a 6 ore dopo) e i referti (da 15 a 30 ore dopo). */
 export const CALCIO = { partita: 6 * ORA, referti: [15 * ORA, 30 * ORA] };
-/** Futsal: partita piu' corta, referti da 15 a 23 ore dopo. */
-export const FUTSAL = { partita: 3 * ORA, referti: [15 * ORA, 23 * ORA] };
+/** Futsal: partita piu' corta, referti da 12 a 24 ore dopo (tarata il 25/11). */
+export const FUTSAL = { partita: 3 * ORA, referti: [12 * ORA, 24 * ORA] };
 /** La notte, in ora di San Marino: dall'1 alle 7 non si resta accesi. */
 export const NOTTE = [1, 7];
 

@@ -56,6 +56,18 @@ const SLIDES = [
       ['lock', 'Il dato si congela', 'Hai tempo fino al martedì per contestare un evento. Alle 20:00 la giornata diventa definitiva e non si tocca più.'],
     ],
   },
+  {
+    // PERCHE' FANTATITANO (piano lavori, 26/11): quello che il gioco e', detto
+    // in positivo e senza nominare nessun altro. Niente premi qui finche' il
+    // regolamento non ha il via del legale (docs/CRESCITA.md).
+    eyebrow: 'Perché Fantatitano',
+    title: 'Si gioca<br><em>gratis</em>',
+    points: [
+      ['users', 'Con i tuoi amici', 'Crei una lega, fate l\'asta con 500 crediti e ogni settimana sfidi gli altri. Senza un gruppo c\'è la lega pubblica: la rosa la compri subito.'],
+      ['coppa', 'Non solo campionato', 'La Coppa Fantatitano si gioca sulle partite della Coppa Titano, con i gironi e poi l\'eliminazione diretta.'],
+      ['star', 'Niente da pagare', 'Nessun abbonamento e nessun acquisto per vincere: contano solo la tua squadra e i voti del referto.'],
+    ],
+  },
 ];
 
 export const onboarding = {

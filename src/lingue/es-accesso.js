@@ -123,6 +123,14 @@ export const ACCESSO = {
   'Schieri 11 titolari e 7 in panchina ordinati. Le formazioni si chiudono 10 minuti prima della prima gara. La domenica sera arrivano i punteggi.':
     'Alineas 11 titulares y 7 suplentes en orden. Las alineaciones se cierran 10 minutos antes del primer partido. El domingo a la noche llegan los puntajes.',
   'Il dato si congela': 'El dato se congela',
+  'Perché Fantatitano': 'Por qué Fantatitano',
+  'Si gioca<br><em>gratis</em>': 'Se juega<br><em>gratis</em>',
+  'Con i tuoi amici': 'Con tus amigos',
+  'Crei una lega, fate l\'asta con 500 crediti e ogni settimana sfidi gli altri. Senza un gruppo c\'è la lega pubblica: la rosa la compri subito.': 'Creas una liga, hacen la subasta con 500 créditos y cada semana desafías a los demás. Si no tienes grupo, está la liga pública: el plantel lo compras al instante.',
+  'Non solo campionato': 'No solo el campeonato',
+  'La Coppa Fantatitano si gioca sulle partite della Coppa Titano, con i gironi e poi l\'eliminazione diretta.': 'La Copa Fantatitano se juega con los partidos de la Copa Titano, con grupos y después eliminación directa.',
+  'Niente da pagare': 'Nada que pagar',
+  'Nessun abbonamento e nessun acquisto per vincere: contano solo la tua squadra e i voti del referto.': 'Sin suscripciones ni compras para ganar: solo cuentan tu equipo y los votos del acta.',
   'Hai tempo fino al martedì per contestare un evento. Alle 20:00 la giornata diventa definitiva e non si tocca più.':
     'Tienes tiempo hasta el martes para presentar un reclamo sobre un evento. A las 20:00 la fecha queda definitiva y ya no se toca.',
   'Indietro': 'Atrás',

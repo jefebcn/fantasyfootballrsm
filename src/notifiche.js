@@ -68,8 +68,13 @@ async function avviaNativo() {
   try { primo = !sessionStorage.getItem('fcs:lancio'); sessionStorage.setItem('fcs:lancio', '1'); } catch { /* niente memoria */ }
   if (primo) App.getLaunchUrl().then((r) => vaiA(r?.url)).catch(() => {});
   // condividere: il foglio nativo di iOS al posto di quello del browser
+  // (un'immagine, come la card della giornata, resta al foglio del sistema se
+  // la pagina lo offre: il plugin vuole file salvati su disco, non in memoria)
   const Share = core.registerPlugin('Share');
-  navigator.share = (d) => Share.share({ title: d?.title, text: d?.text, url: d?.url, dialogTitle: d?.title });
+  const condividiWeb = navigator.share?.bind(navigator);
+  navigator.share = (d) => (d?.files?.length && condividiWeb
+    ? condividiWeb(d)
+    : Share.share({ title: d?.title, text: d?.text, url: d?.url, dialogTitle: d?.title }));
 }
 if (nativa()) avvio = avviaNativo().catch(() => {});
 /** Si risolve quando l'app iPhone sa gia' se le notifiche sono permesse. */

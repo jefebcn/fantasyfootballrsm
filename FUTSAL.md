@@ -390,6 +390,11 @@ Gli stessi dei §§ 5-7 per giocatori e Porta.
 - **Mercato**: aperto fra la fine di una giornata (referti arrivati) e
   10 minuti prima della prima partita della successiva. Mentre aspetta i
   referti si cambiano schema, titolari e capitano, ma non si compra.
+  Eccezione (Alex, 25/11/2026): la **prima rosa** si compra sempre, fino
+  alla chiusura, ai prezzi dell'ultima giornata pronta: dal lancio arriva
+  gente nuova ogni giorno e non deve aspettare il venerdì. Coi referti i
+  prezzi cambiano e, fino alla chiusura, la prima rosa si rifà gratis
+  (`futsal-14-prima-rosa.sql`).
 - Prima rosa: cambi illimitati e gratis. Poi **1 cambio gratis a giornata,
   −1 punto per ogni altro**.
 - Il database controlla rosa, schema, crediti e mercato

@@ -140,14 +140,7 @@ do $$ declare f jsonb; begin
   end;
 end $$;
 
--- il mercato: Bea compra nella 29 a quotazioni definitive, ma non nella 28
-select pg_temp.entra('fut_bea');
-do $$ begin
-  insert into public.futsal_formazioni (user_id, giornata, formazione) values ('fut_bea', 28, pg_temp.formazione('2-2', 29));
-  raise exception 'FALLITA: rosa comprata senza quotazioni';
-exception when others then if sqlerrm like 'FALLITA:%' then raise; end if;
-  raise notice 'ok  senza le quotazioni della giornata il mercato e'' chiuso (%)', sqlerrm;
-end $$;
+-- il mercato: a quotazioni definitive servono i crediti
 reset role;
 update public.futsal_quotazioni set valore = 15 where giornata = 29 and id not like 'P:%';
 set role authenticated;
@@ -158,6 +151,41 @@ do $$ begin
 exception when others then if sqlerrm like 'FALLITA:%' then raise; end if;
   raise notice 'ok  una rosa che costa piu'' di 70 crediti: rifiutata (%)', sqlerrm;
 end $$;
+-- futsal-14: la PRIMA rosa si compra anche senza le quotazioni della
+-- giornata (la 28 non le ha), ai prezzi dell'ultima giornata pronta
+insert into public.futsal_formazioni (user_id, giornata, formazione) values ('fut_bea', 28, pg_temp.formazione('2-2', 1));
+select pg_temp.esige('la prima rosa si compra anche coi referti della giornata prima ancora da arrivare',
+  exists (select 1 from public.futsal_formazioni where user_id = 'fut_bea' and giornata = 28));
+-- ...ma i crediti si contano lo stesso, sull'ultimo listino
+reset role;
+insert into public.futsal_quotazioni (giornata, id, valore)
+select 27, id, 15 from public.futsal_quotazioni where giornata = 1 on conflict (giornata, id) do update set valore = 15;
+set role authenticated;
+select pg_temp.entra('fut_cip');
+insert into public.futsal_iscritti (user_id, squadra) values ('fut_cip', 'Cip Calcetto');
+do $$ begin
+  insert into public.futsal_formazioni (user_id, giornata, formazione) values ('fut_cip', 28, pg_temp.formazione('2-2', 1));
+  raise exception 'FALLITA: prima rosa da 120 crediti accettata sul listino vecchio';
+exception when others then if sqlerrm like 'FALLITA:%' then raise; end if;
+  raise notice 'ok  la prima rosa senza quotazioni si paga ai prezzi dell''ultimo listino (%)', sqlerrm;
+end $$;
+-- chi ha gia' una squadra invece aspetta i referti
+reset role;
+delete from public.futsal_quotazioni where giornata = 27;
+insert into public.futsal_formazioni (user_id, giornata, formazione) values ('fut_cip', 27, pg_temp.formazione('2-2', 1));
+set role authenticated;
+select pg_temp.entra('fut_cip');
+do $$ begin
+  insert into public.futsal_formazioni (user_id, giornata, formazione) values ('fut_cip', 28, pg_temp.formazione('2-2', 1) || '{"porta": "murata"}');
+  raise exception 'FALLITA: rosa cambiata senza quotazioni da chi ha gia'' una squadra';
+exception when others then if sqlerrm like 'FALLITA:%' then raise; end if;
+  raise notice 'ok  chi ha gia'' una squadra: senza le quotazioni della giornata il mercato e'' chiuso (%)', sqlerrm;
+end $$;
+-- le prove dopo vogliono Bea senza squadra e Cip non iscritto: si pulisce
+reset role;
+delete from public.futsal_formazioni where (user_id = 'fut_bea' and giornata = 28) or user_id = 'fut_cip';
+delete from public.futsal_iscritti where user_id = 'fut_cip';
+set role authenticated;
 select pg_temp.entra('fut_alex');
 update public.futsal_formazioni set formazione = jsonb_set(formazione, '{capitano}', formazione -> 'vice') || jsonb_build_object('vice', formazione -> 'capitano')
  where user_id = 'fut_alex' and giornata = 29;

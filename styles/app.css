@@ -3417,3 +3417,11 @@ b > .stemma.xs:last-child{margin:0 0 0 6px}
 .fs-tue .fs-tua>p{margin:0 0 8px;font-size:12px;color:var(--text-muted);text-align:center}
 .fs-tue-riposo{margin:4px 0 0}
 .fs-prossima>.a-btn{display:flex;justify-content:center;margin-top:12px}
+
+/* Il traguardo inviti (070) nel riquadro dei Reclutatori */
+.recl-card .trag{display:flex;flex-direction:column;gap:6px;padding:10px 12px;border-radius:12px;background:var(--surface-2, var(--accent-soft))}
+.recl-card .trag-testa{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.recl-card .trag-testa .num{font:700 15px var(--font-display)}
+.recl-card .trag-barra{height:8px;border-radius:99px;background:var(--border);overflow:hidden}
+.recl-card .trag-barra i{display:block;height:100%;border-radius:99px;background:var(--grad-oro, var(--accent))}
+.recl-card .trag p{margin:0}

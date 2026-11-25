@@ -448,6 +448,25 @@ function gioco(righe) {
     </table></div>`;
 }
 
+/**
+ * Il traguardo inviti (070, docs/CRESCITA.md): chi ha portato amici che
+ * giocano davvero. Serve a sapere chi ha raggiunto i 3 amici attivi e a chi
+ * consegnare il premio quando partira'.
+ */
+function inviti(righe) {
+  const titolo = (dx) => `<div class="a-sec"><b>Traguardo inviti</b><span>${dx}</span></div>`;
+  if (righe === undefined) return '';
+  if (righe === null) return `${titolo('da attivare')}<p class="small muted" style="margin:0 2px">Serve la SQL <b>070</b>.</p>`;
+  if (!righe.length) return `${titolo('3 amici attivi')}<p class="small muted" style="margin:0 2px">Ancora nessun amico arrivato da un invito.</p>`;
+  const fatti = righe.filter((r) => r.attivi >= 3).length;
+  return `${titolo(fatti ? `${plurale(fatti, 'persona ha', 'persone hanno')} raggiunto i 3 amici attivi` : 'nessuno ancora a 3 amici attivi')}
+    <div class="a-card adm-gioco"><table>
+      <thead><tr><th>Chi invita</th><th>Amici</th><th>Attivi</th></tr></thead>
+      <tbody>${righe.slice(0, 30).map((r) => `<tr><td>${esc(r.nome || '—')}${r.attivi >= 3 ? ' ✓' : ''}</td><td>${r.amici}</td><td><b>${r.attivi}</b></td></tr>`).join('')}</tbody>
+    </table></div>
+    <p class="small muted" style="margin:0 2px">Attivo: arrivato dal link e ha confermato la formazione in 2 giornate diverse.</p>`;
+}
+
 function errori(lista) {
   const titolo = (dx) => `<div class="a-sec"><b>Errori sui telefoni</b><span>${dx}</span></div>`;
   if (lista === undefined) return '';
@@ -965,7 +984,7 @@ export const adminConsole = {
         <section class="d-kpi">${numeri(cache.numeri)}</section>
         <section class="d-acc">${accessi(cache.accessi)}</section>
         <section class="d-con">${consegne(cache.numeri)}</section>
-        <section class="d-gio">${gioco(cache.gioco)}</section>
+        <section class="d-gio">${gioco(cache.gioco)}${inviti(cache.inviti)}</section>
         <section class="d-err">${errori(cache.errori)}</section>
         <section class="d-isc">${andamento(cache.persone)}</section>
       </div>`;
@@ -997,6 +1016,7 @@ export const adminConsole = {
         if (aTab === 'numeri' && cache.adesioni === undefined && S.isOwner()) { await ricaricaConsensi(); ctx.render(); }
         if (aTab === 'numeri' && cache.errori === undefined) { cache.errori = await S.caricaErrori(7); ctx.render(); }
         if (aTab === 'numeri' && cache.gioco === undefined) { cache.gioco = await S.adminGiocoConteggi(14); ctx.render(); }
+        if (aTab === 'numeri' && cache.inviti === undefined) { cache.inviti = await S.adminTraguardoInviti(); ctx.render(); }
         if (aTab === 'numeri' && cache.accessi === undefined) { cache.accessi = await S.adminAccessi(14); ctx.render(); }
         // l'andamento si disegna sull'elenco delle persone: la scheda dei
         // numeri lo chiede una volta e poi resta in cache come le altre

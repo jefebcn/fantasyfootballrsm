@@ -30,9 +30,36 @@ function reclutatore() {
     <div class="recl-testa">${l ? badgeReclutatore(n, { conNumero: true }) : `<span class="recl vuoto">${icon('userplus', 'ic sm')}Reclutatore</span>`}</div>
     <p>${n ? `Hai portato <b>${n === 1 ? 'un amico' : `${n} amici`}</b> su Fantatitano.` : 'Porta un amico col tuo link: conta quando entra in una lega.'} ${manca}</p>
     <ul class="premi-lista">${PREMI.map((p) => { const si = sbloccato(p, n, inv); return `<li class="${si ? 'si' : 'no'}">${icon(si ? 'check' : 'lock', 'ic')}<span><b>${p.nome}</b> · ${si ? 'sbloccata' : p.come}</span></li>`; }).join('')}</ul>
+    ${traguardoHtml()}
     <p class="small muted">Solo da mostrare: nessun premio dà punti o crediti. La maglia e TITO d'oro si scelgono in La mia squadra.</p>
     <button class="a-btn" id="share-recl">${icon('share', 'ic sm')}Manda il tuo link</button>
   </div>`;
+}
+
+/**
+ * Il traguardo inviti (070, docs/CRESCITA.md): quanti degli amici portati
+ * giocano davvero. Lo conta il database, perche' un amico vale solo se ha
+ * confermato lui la formazione in 2 giornate diverse (le copie automatiche
+ * della lega pubblica non contano). Senza la 070 o senza rete: niente
+ * riquadro, non un numero sbagliato.
+ */
+let traguardo;   // undefined: da chiedere; null: non disponibile
+function traguardoHtml() {
+  if (!traguardo) return '';
+  const { amici = 0, attivi = 0, soglia = 3, giornate = 2 } = traguardo;
+  const fatto = attivi >= soglia;
+  const fermi = amici - attivi;
+  return `<div class="trag${fatto ? ' fatto' : ''}">
+    <div class="trag-testa"><b>Traguardo inviti</b><span class="num">${Math.min(attivi, soglia)} su ${soglia}</span></div>
+    <div class="trag-barra" role="progressbar" aria-valuemin="0" aria-valuemax="${soglia}" aria-valuenow="${Math.min(attivi, soglia)}" aria-label="Amici attivi"><i style="width:${Math.round(Math.min(1, attivi / soglia) * 100)}%"></i></div>
+    <p class="small">${fatto ? '<b>Traguardo raggiunto.</b> ' : ''}Vale un amico arrivato dal tuo link che conferma la formazione in ${giornate} giornate diverse.${fermi > 0 ? ` ${fermi === 1 ? 'Un tuo amico non c\'è ancora arrivato' : `${fermi} tuoi amici non ci sono ancora arrivati`}: ricordaglielo.` : ''}</p>
+  </div>`;
+}
+async function caricaTraguardo(ctx) {
+  if (traguardo !== undefined || !S.reclutatoriAttivi()) return;
+  traguardo = null;
+  const t = await S.traguardoInviti();
+  if (t) { traguardo = t; ctx.render(); }
 }
 
 // ---------------------------------------------------------------- bacheca (064)
@@ -85,6 +112,7 @@ export const lega = {
   },
   mount(root, ctx) {
     caricaBacheca(ctx);
+    caricaTraguardo(ctx);
     root.querySelector('main').addEventListener('click', async (e) => {
       if (e.target.closest('#b-invia')) {
         const area = root.querySelector('#b-testo'); const testo = area.value.trim();

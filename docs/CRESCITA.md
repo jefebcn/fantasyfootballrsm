@@ -9,7 +9,13 @@ Alex. Lo stato giorno per giorno sta in `docs/STATO.md`; qui c'è il piano.
 
 - **Chi organizza:** la sua società (in app il titolare è Mediterranean
   Digital Solutions Ltd, `TITOLARE` in `src/config.js`).
-- **Chi offre i premi, per ora:** SanderBV e FreshDrops.
+- **Chi offre i premi, per ora:** due progetti di Alex.
+  - **SanderBV** (sanderbv.it, progetto Vercel `sander`): l'app per trovare
+    con chi giocare a beach volley, con partite vicino a te, tornei e
+    classifica del comune; nata in Riviera Romagnola, gratis in tutta Italia.
+  - **FreshDrops** (progetto Vercel `ribasso-sito`): contro lo spreco di
+    cibo; i fornitori mettono in vendita a prezzo ridotto i lotti che i
+    supermercati rifiutano per la scadenza breve, per ristoranti e privati.
 - **Traguardo inviti:** 3 amici che consegnano almeno 2 formazioni.
 - **Ancora da decidere:** cosa mette ciascun progetto, di che valore e ogni
   quanto.
@@ -38,7 +44,7 @@ Già nell'app: pulsante «Invita» nelle leghe, link con il codice
 | Cosa | Stato |
 |---|---|
 | **Card della giornata da condividere**: immagine 1080x1920 con fantapunti, posto nella giornata e in classifica, i migliori, il personaggio; link d'invito nel testo che l'accompagna | fatta (`src/card-giornata.js`, `src/views/scheda.js`) |
-| **Traguardo inviti**: 3 amici che consegnano almeno 2 formazioni danno un buono di SanderBV o FreshDrops. Contano solo amici che giocano, così non servono account finti. Conta l'amico arrivato dal link (`profiles.invitato_da`, 023) che ha confermato la formazione in 2 giornate diverse: le copie automatiche della lega pubblica (050) hanno lo stesso `submitted_at` dell'originale e non contano | da fare |
+| **Traguardo inviti**: 3 amici che consegnano almeno 2 formazioni danno un buono di SanderBV o FreshDrops. Contano solo amici che giocano, così non servono account finti. Conta l'amico arrivato dal link (`profiles.invitato_da`, 023) che ha confermato la formazione in 2 giornate diverse: le copie automatiche della lega pubblica (050) hanno lo stesso `submitted_at` dell'originale e non contano | **contatore fatto** (migrazione 070, riquadro Reclutatori in Gestione lega, elenco in console › Numeri); manca il premio |
 | **Classifica delle leghe tra amici**: la lega con la media più alta del mese vince un premio per il gruppo | da fare |
 
 ## 3. Premi «offerti da» i progetti di Alex
@@ -71,7 +77,7 @@ di fila almeno metà delle squadre consegna la formazione
 2. **Decisioni di Alex**: progetti e organizzatore decisi il 25/11; mancano
    premio, valore e frequenza. Regolamento breve e domande al legale in
    `legale/premi-regolamento-bozza.md`.
-3. **Nell'app**: premi «offerti da» e traguardo inviti.
+3. **Nell'app**: contatore del traguardo inviti fatto (25/11); poi premi «offerti da».
 4. **Lancio** con un post e una storia, poi il vincitore ogni lunedì.
 
 ## 6. I numeri da guardare ogni settimana
@@ -80,5 +86,7 @@ Punto di partenza (25/11): 233 profili, circa 80 formazioni per giornata,
 20 leghe, 19 formazioni di coppa.
 
 - formazioni consegnate per giornata;
-- nuovi iscritti arrivati da un invito (`reclutati`);
+- nuovi iscritti arrivati da un invito (`reclutati`) e quanti sono attivi
+  (console › Numeri › Traguardo inviti; il 25/11: 27 arrivati, 10 attivi,
+  nessuno ancora a 3);
 - quanti tornano la giornata dopo.

@@ -1162,6 +1162,9 @@ export const segnalaErrore = (r) => (authKind() === 'supabase' ? remote.segnalaE
 export const caricaErrori = (giorni) => remote.caricaErrori(giorni);
 export const salvaPartitaGioco = (giorno, tentativi, vinto) => (authKind() === 'supabase' ? remote.salvaPartitaGioco(giorno, tentativi, vinto).catch(() => false) : Promise.resolve(false));
 export const adminGiocoConteggi = (giorni) => remote.adminGiocoConteggi(giorni);
+// Il traguardo inviti (070, docs/CRESCITA.md)
+export const traguardoInviti = () => (user ? remote.traguardoInviti().catch(() => null) : Promise.resolve(null));
+export const adminTraguardoInviti = () => remote.adminTraguardoInviti().catch(() => null);
 // Lo shop (056). Si ordina solo con un account vero sul server: in prova
 // (senza server) la pagina si vede ma il tasto non c'e'.
 export const shopDisponibile = () => !!(remote.config() && user);

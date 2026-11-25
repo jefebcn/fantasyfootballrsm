@@ -17,11 +17,21 @@ Alex. Lo stato giorno per giorno sta in `docs/STATO.md`; qui c'è il piano.
     cibo; i fornitori mettono in vendita a prezzo ridotto i lotti che i
     supermercati rifiutano per la scadenza breve, per ristoranti e privati.
 - **Traguardo inviti:** 3 amici che consegnano almeno 2 formazioni.
-- **Ancora da decidere:** cosa mette ciascun progetto, di che valore e ogni
-  quanto.
+- **Premi (25/11, tabella completa in `legale/premi-regolamento-bozza.md` §3):**
+  giornata FreshDrops (cassetta salvata o buono, 15-20 €); mese SanderBV
+  (pallone e canotta); Coppa FreshDrops (box aperitivo con gin da 1 l, **gin
+  solo ai maggiorenni**, sotto i 18 box senza alcolici); podio tutti e due
+  (torneo di beach in Riviera, kit, cassette); traguardo inviti SanderBV
+  (maglietta o borraccia). In app, gratis: personaggio di Tito esclusivo e
+  stemma d'oro.
+- **Logistica:** FreshDrops sta per attivarsi a San Marino (fino ad allora un
+  buono); SanderBV ha già canotte, magliette e gadget.
+- **Gin nei social:** mai la bottiglia nelle grafiche e mai il nome del
+  marchio, il pubblico è giovane; nel regolamento solo «una bottiglia di gin».
 
 ## 1. La regola che regge tutto
 
+- **Alcolici:** solo ai maggiorenni, con un documento alla consegna.
 - **Mai pagare per partecipare.** Iscrizione a pagamento più premio vuol dire
   gioco con posta, e serve una licenza.
 - **Il premio lo offre il progetto, non Fantatitano.** Il progetto organizza la
@@ -32,8 +42,8 @@ Alex. Lo stato giorno per giorno sta in `docs/STATO.md`; qui c'è il piano.
 - **Premi in natura o buoni, mai denaro** (in Italia DPR 430/2001).
 - **Prima di annunciare, una verifica con un legale**, anche sulle regole di San
   Marino: le domande sono già in `legale/montepremi-bozza.md` §§3 e 6.
-- Minori: l'app accetta iscritti dai 14 anni; per i premi va deciso se
-  servono 18 anni.
+- Minori: l'app accetta iscritti dai 14 anni; i premi senza alcolici sono per
+  tutti (consenso del genitore da confermare col legale).
 
 ## 2. Inviti e condivisioni
 
@@ -44,7 +54,7 @@ Già nell'app: pulsante «Invita» nelle leghe, link con il codice
 | Cosa | Stato |
 |---|---|
 | **Card della giornata da condividere**: immagine 1080x1920 con fantapunti, posto nella giornata e in classifica, i migliori, il personaggio; link d'invito nel testo che l'accompagna | fatta (`src/card-giornata.js`, `src/views/scheda.js`) |
-| **Traguardo inviti**: 3 amici che consegnano almeno 2 formazioni danno un buono di SanderBV o FreshDrops. Contano solo amici che giocano, così non servono account finti. Conta l'amico arrivato dal link (`profiles.invitato_da`, 023) che ha confermato la formazione in 2 giornate diverse: le copie automatiche della lega pubblica (050) hanno lo stesso `submitted_at` dell'originale e non contano | **contatore fatto** (migrazione 070, riquadro Reclutatori in Gestione lega, elenco in console › Numeri); manca il premio |
+| **Traguardo inviti**: 3 amici che consegnano almeno 2 formazioni danno una maglietta o una borraccia «Fantatitano x Sander». Contano solo amici che giocano, così non servono account finti. Conta l'amico arrivato dal link (`profiles.invitato_da`, 023) che ha confermato la formazione in 2 giornate diverse: le copie automatiche della lega pubblica (050) hanno lo stesso `submitted_at` dell'originale e non contano | **contatore fatto** (migrazione 070, riquadro Reclutatori in Gestione lega, elenco in console › Numeri); premio deciso, da mostrare nel riquadro dopo il legale |
 | **Classifica delle leghe tra amici**: la lega con la media più alta del mese vince un premio per il gruppo | da fare |
 
 ## 3. Premi «offerti da» i progetti di Alex
@@ -74,9 +84,9 @@ di fila almeno metà delle squadre consegna la formazione
 ## 5. Ordine di lavoro
 
 1. **Card da condividere** (fatta il 25/11).
-2. **Decisioni di Alex**: progetti e organizzatore decisi il 25/11; mancano
-   premio, valore e frequenza. Regolamento breve e domande al legale in
-   `legale/premi-regolamento-bozza.md`.
+2. **Decisioni di Alex**: progetti, organizzatore e premi decisi il 25/11.
+   Regolamento breve e domande al legale in `legale/premi-regolamento-bozza.md`;
+   prossimo passo: farlo leggere a un legale.
 3. **Nell'app**: contatore del traguardo inviti fatto (25/11); poi premi «offerti da».
 4. **Lancio** con un post e una storia, poi il vincitore ogni lunedì.
 

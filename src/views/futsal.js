@@ -111,16 +111,21 @@ function mercato(n) {
     if (n >= F.GIORNATE && F.conclusa(n)) return { aperto: false, stato: 'chiuso', fine: true, testo: 'Stagione finita: ci vediamo alla prossima' };
     return { aperto: false, stato: 'chiuso', testo: provvisoria ? 'Date non ancora fissate dalla FSGC' : `Chiuso ${quando(c)}: ${n >= F.GIORNATE ? 'ultima giornata' : 'si gioca'}` };
   }
-  if (!V.quotazioniPronte(n)) return { aperto: false, stato: 'attesa', testo: `${inVigore(n - 1) ? 'Riapre' : 'Apre'} con i referti della ${n - 1}ª` };
+  if (!V.quotazioniPronte(n)) {
+    // la prima rosa si compra sempre, ai prezzi di oggi (Alex, 25/11: dal lancio
+    // arriva gente nuova tutti i giorni). Chi ha già una squadra aspetta i referti.
+    if (!inVigore(n - 1)) return { aperto: true, stato: 'aperto', provvisorio: true, testo: `Si chiude ${traQuanto(c)} · prezzi provvisori fino ai referti della ${n - 1}ª` };
+    return { aperto: false, stato: 'attesa', testo: `Riapre con i referti della ${n - 1}ª` };
+  }
   return { aperto: true, stato: 'aperto', testo: `Si chiude ${traQuanto(c)}${provvisoria ? ' (data provvisoria: la FSGC non ha ancora fissato le partite)' : ''}` };
 }
 
-/** Chi non ha ancora una squadra e il mercato non è aperto: quando potrà comprare. */
+/** Chi fa la prima rosa mentre la giornata prima si gioca ancora: compra ai prezzi di oggi. */
 function primaGiornata(n, m) {
-  if (m.stato !== 'attesa') return '';
+  if (!m.provvisorio) return '';
   const fine = F.ultimaPartita(n - 1);
   const giorno = fine ? dateIt(new Date(fine.getTime() + 86400e3).toISOString()) : '';
-  return `<div class="a-card fs-hero"><h3>La tua prima giornata è la ${n}ª</h3><p class="small muted">Il mercato apre appena la FSGC pubblica i referti della ${n - 1}ª, di solito il giorno dopo l'ultima partita${giorno ? ` (${giorno})` : ''}: i prezzi dei giocatori cambiano con quei risultati. Intanto guarda giocatori e quotazioni nelle <a href="#/futsal/statistiche">Statistiche</a>.</p></div>`;
+  return `<div class="a-card fs-hero"><h3>La tua prima giornata è la ${n}ª</h3><p class="small muted">La ${n - 1}ª si sta ancora giocando: compri ai prezzi di oggi. Coi referti della FSGC, di solito il giorno dopo l'ultima partita${giorno ? ` (${giorno})` : ''}, i prezzi cambiano; fino alla chiusura la prima rosa si rifà gratis quante volte vuoi.</p></div>`;
 }
 
 // ---------------------------------------------------------------- la squadra, sul server o sul telefono
@@ -435,7 +440,7 @@ export const futsalSquadra = {
         <span class="${bil.residui < 0 ? 'neg' : ''}"><b>${cr(bil.residui)}</b>di ${cr(bil.patrimonio)} crediti</span>
         <span><b>${bil.primo !== null && bil.primo < n ? bil.cambi : '∞'}</b>${bil.primo !== null && bil.primo < n ? `cambi${bil.malus ? ` · −${bil.malus} pt` : ''}` : 'cambi'}</span>
       </div>
-      ${!prima && !salvata?.D ? primaGiornata(n, m) : ''}
+      ${!prima ? primaGiornata(n, m) : ''}
       <p class="small muted fs-nota">${esc(m.testo)}.${m.aperto ? ` ${bil.primo !== null && bil.primo < n ? `${R.cambiGratis === 1 ? 'Un cambio gratis' : `${R.cambiGratis} cambi gratis`}, poi −${R.malusCambio} punto a cambio.` : 'Prima rosa: cambi illimitati e gratis.'}` : ' Puoi cambiare schema, chi va in campo, sesto uomo e capitano, ma non comprare o vendere.'}</p>
       <div class="seg seg-cls fs-schemi" role="tablist" aria-label="Schema">${Object.keys(R.schemi).map((k) => `<button data-schema="${k}" class="${b.schema === k ? 'on' : ''}">${k}${k === R.bonusDifesa.schema ? ' bonus' : ''}</button>`).join('')}</div>
       <div class="fs-campo">${CAMPO}
@@ -980,7 +985,7 @@ export const futsalRegolamento = {
       ${cap('4 · Punteggio dei giocatori', `<table><tr><th>Evento</th><th></th></tr>${row('Convocato (in distinta)', fmt(R.voto))}${row('La sua squadra vince / perde', `${s(R.esito.vittoria)} / ${fmt(R.esito.sconfitta)}`)}${row('Gol (anche su rigore)', s(R.gol))}${row('Autogol', fmt(R.autogol))}${row('Ammonizione', fmt(R.ammonizione))}${row('Espulsione', fmt(R.espulsione))}${row('Rigore sbagliato', fmt(R.rigoreSbagliato))}</table>
         <p><b>Convocato</b> vuol dire nell'elenco della partita sul referto. La FSGC non registra chi entra in campo né i cambi, quindi il voto lo prende ogni convocato. Assist e rigori parati non contano: il referto non li riporta.</p>`)}
       ${cap('5 · Punteggio della Porta', `<table>${row('Voto', fmt(R.voto))}${row('La squadra vince / perde', `${s(R.esito.vittoria)} / ${fmt(R.esito.sconfitta)}`)}${row('Ogni gol subito', fmt(R.golSubito))}${row('Nessun gol subito', s(R.portaInviolata))}${row('Eventi dei suoi portieri', 'come i giocatori')}</table>`)}
-      ${cap('6 · Mercato', `<p>Il mercato è <b>aperto tra una giornata e l'altra</b>: apre quando arrivano i referti dell'ultima giornata (di solito il giorno dopo) e chiude 10 minuti prima della prima partita della successiva. Mentre aspetta i referti puoi cambiare schema, titolari e capitano, ma non comprare o vendere.</p>
+      ${cap('6 · Mercato', `<p>Il mercato è <b>aperto tra una giornata e l'altra</b>: apre quando arrivano i referti dell'ultima giornata (di solito il giorno dopo) e chiude 10 minuti prima della prima partita della successiva. Mentre aspetta i referti puoi cambiare schema, titolari e capitano, ma non comprare o vendere. Chi fa la <b>prima rosa</b> invece compra sempre, fino alla chiusura, ai prezzi del momento.</p>
         <table>${row('Prima rosa', 'cambi illimitati e gratis')}${row('Cambi gratis a giornata', R.cambiGratis)}${row('Ogni cambio in più', `−${R.malusCambio} punto`)}</table>
         <p>Un cambio è un giocatore (o una Porta) che entra in rosa rispetto alla giornata prima.</p>`)}
       ${cap('7 · Quotazioni e plusvalenze', `<p>Ogni giocatore ha un valore in crediti. Quello di partenza viene dalle prime ${V.VALORI.base} giornate: media punti e presenze. Da lì <b>cambia dopo ogni giornata</b>:</p>

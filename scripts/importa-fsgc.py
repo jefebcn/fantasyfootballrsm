@@ -109,7 +109,7 @@ def calendario(url=CAMPIONATO):
             if not (casa and osp):
                 print(f'  ATTENZIONE: società sconosciuta: {c[1]} / {c[3]}', file=sys.stderr)
                 continue
-            ris = re.match(r'^(\d+)\s*-\s*(\d+)$', c[2].strip())
+            ris = None if rimandata(c[0]) else re.match(r'^(\d+)\s*-\s*(\d+)$', c[2].strip())
             quando = re.match(r'(\d{2})/(\d{2})/(\d{4})\s+(\d{2}:\d{2})', c[0])
             iso = ora_italiana(quando.group(3), quando.group(2), quando.group(1), quando.group(4)) if quando else None
             a = tr.select_one('a[href*="/it/partita/"]')
@@ -117,8 +117,23 @@ def calendario(url=CAMPIONATO):
                           'stadio': None if c[4] in ('TBD', '') else c[4],
                           'gc': int(ris.group(1)) if ris else None,
                           'go': int(ris.group(2)) if ris else None,
-                          'url': a['href'] if a else None})
+                          'url': a['href'] if a else None,
+                          'rimandata': rimandata(c[0])})
     return fuori
+
+
+def rimandata(data):
+    """
+    Se la FSGC segna la partita come rimandata o sospesa, sotto la data nel
+    calendario («25/11/2026 20:45 Rimandato»).
+
+    Il 25/11 Domagnano-Tre Fiori (quarti di Coppa Titano) e' stata rimandata
+    sull'1-0: il calendario scriveva «Rimandato» col punteggio del momento, la
+    pagina della partita «Concluso». L'import l'ha presa per finita e la Coppa
+    Fantatitano contava i voti di quella partita mai finita. Una partita cosi'
+    non ha risultato: si gioca (o si ricomincia) al recupero.
+    """
+    return bool(re.search(r'\b(rimandat|sospes|annullat)', data or '', re.I))
 
 
 def stato_partita(html):
@@ -425,6 +440,14 @@ def leggi_tabellini(giocate, prefisso, fatti, f, idx, tutti_mancanti):
     f.write_text(json.dumps(fatti, ensure_ascii=False), encoding='utf-8')
 
 
+def togli_rimandate(cal, prefisso, fatti):
+    """Il tabellino di una partita rimandata esce dall'archivio: al recupero si riscarica intero."""
+    for p in cal:
+        k = f"{prefisso}{p['g']}:{p['casa']}:{p['ospite']}"
+        if p.get('rimandata') and fatti.pop(k, None) is not None:
+            print(f'  {k}: rimandata, tolta dall\'archivio')
+
+
 def main():
     idx = indice_giocatori()
     print(f"listone indicizzato: {len(idx['tutti'])} chiavi su {len(idx['per_club'])} società")
@@ -438,6 +461,7 @@ def main():
     # i tabellini gia' in archivio sono stati letti col vecchio indice
     fatti = {k: rimappa(t, idx['alias']) for k, t in fatti.items()}
     tutti_mancanti = {}
+    togli_rimandate(cal, '', fatti)
     leggi_tabellini(giocate, '', fatti, f, idx, tutti_mancanti)
     # La Coppa Titano: stesso archivio, chiavi che cominciano per «c» (c3:domagnano:trefiori).
     try:
@@ -447,6 +471,7 @@ def main():
         coppa = None
     if coppa is not None:
         print(f'coppa: {len(coppa)} partite, {sum(1 for x in coppa if x["gc"] is not None)} giocate')
+        togli_rimandate(coppa, 'c', fatti)
         leggi_tabellini([x for x in coppa if x['gc'] is not None and x['url']], 'c', fatti, f, idx, tutti_mancanti)
     if tutti_mancanti:
         print(f'\ngiocatori del referto non presenti nel listone: {len(tutti_mancanti)}')

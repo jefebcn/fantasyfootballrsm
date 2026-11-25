@@ -18,7 +18,7 @@ import { COPPA_CALENDARIO, COPPA_REFERTI } from '../coppa-dati.js';
 import {
   NOME, TURNI, turno, SQUADRE_COPPA, squadreInGara, chiusuraTurno, turnoConcluso, votiDelTurno, punteggio,
   coppaFantatitano, dovesei, validaFormazione, partiteDelTurno, formato,
-  eApp, squadreApp, formazioneApp,
+  eApp, squadreApp, formazioneApp, squadreGiocate,
 } from '../coppa-fanta.js';
 
 // ---------------------------------------------------------------- fonti (vere o simulate)
@@ -273,9 +273,12 @@ function mieiPunti(m) {
   const f = CS.formazione(n, io());
   const v = m.votiDi(n);
   const p = punteggio(f, v);
+  // s.v. solo a chi aveva la squadra in campo con il tabellino gia' arrivato:
+  // il 25/11 i giocatori delle partite ancora da importare risultavano s.v.
+  const giocate = new Set(squadreGiocate(cal(), ref(), n));
   const righe = p.righe.map((r) => {
     const g = giocatore(r.id);
-    return `<div class="vr${r.fuori ? ' cf-fuori' : ''}">${roleChip(g?.role || '?')}<span class="nm"><b>${esc(g?.lastName || r.id)}${r.capitano ? ' <i class="fx-c">C</i>' : ''}${r.riserva ? ' <i class="fx-c v">R</i>' : ''}</b><span>${esc(nomeClub(g?.clubId))}${r.fuori ? ' · non ha giocato' : ''}</span></span><span class="ev"></span><span class="fv">${r.voto == null ? (v ? 's.v.' : '–') : fmt(r.capitano ? r.voto * 2 : r.voto)}</span></div>`;
+    return `<div class="vr${r.fuori ? ' cf-fuori' : ''}">${roleChip(g?.role || '?')}<span class="nm"><b>${esc(g?.lastName || r.id)}${r.capitano ? ' <i class="fx-c">C</i>' : ''}${r.riserva ? ' <i class="fx-c v">R</i>' : ''}</b><span>${esc(nomeClub(g?.clubId))}${r.fuori ? ' · non ha giocato' : ''}</span></span><span class="ev"></span><span class="fv">${r.voto == null ? (giocate.has(g?.clubId) ? 's.v.' : '–') : fmt(r.capitano ? r.voto * 2 : r.voto)}</span></div>`;
   }).join('');
   return `${sec('I tuoi fantapunti', `${turno(n).nome} · ${m.conclusi.has(n) ? fmt(p.totale) : v ? `${fmt(p.totale)} provvisori` : 'si gioca'}`)}<div class="a-card fs-list">${righe}</div>`;
 }

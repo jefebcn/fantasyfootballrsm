@@ -115,17 +115,25 @@ function mercato(n) {
     // la prima rosa si compra sempre, ai prezzi di oggi (Alex, 25/11: dal lancio
     // arriva gente nuova tutti i giorni). Chi ha già una squadra aspetta i referti.
     if (!inVigore(n - 1)) return { aperto: true, stato: 'aperto', provvisorio: true, testo: `Si chiude ${traQuanto(c)} · prezzi provvisori fino ai referti della ${n - 1}ª` };
-    return { aperto: false, stato: 'attesa', testo: `Riapre con i referti della ${n - 1}ª` };
+    return { aperto: false, stato: 'attesa', testo: `Riapre con i referti della ${n - 1}ª${quandoReferti(n - 1) ? `, di solito ${quandoReferti(n - 1)} nel pomeriggio` : ''}` };
   }
   return { aperto: true, stato: 'aperto', testo: `Si chiude ${traQuanto(c)}${provvisoria ? ' (data provvisoria: la FSGC non ha ancora fissato le partite)' : ''}` };
 }
 
+/**
+ * Il giorno in cui di solito arrivano i referti della giornata g: il pomeriggio
+ * dopo la sua ultima partita (misurato: da 11 a 22 ore dopo, 18 per
+ * Juvenes–Folgore dell'11ª). «ven 27/11», o '' se le date non ci sono.
+ */
+function quandoReferti(g) {
+  const fine = F.ultimaPartita(g);
+  return fine ? dateIt(new Date(fine.getTime() + 86400e3).toISOString()) : '';
+}
 /** Chi fa la prima rosa mentre la giornata prima si gioca ancora: compra ai prezzi di oggi. */
 function primaGiornata(n, m) {
   if (!m.provvisorio) return '';
-  const fine = F.ultimaPartita(n - 1);
-  const giorno = fine ? dateIt(new Date(fine.getTime() + 86400e3).toISOString()) : '';
-  return `<div class="a-card fs-hero"><h3>La tua prima giornata è la ${n}ª</h3><p class="small muted">La ${n - 1}ª si sta ancora giocando: compri ai prezzi di oggi. Coi referti della FSGC, di solito il giorno dopo l'ultima partita${giorno ? ` (${giorno})` : ''}, i prezzi cambiano; fino alla chiusura la prima rosa si rifà gratis quante volte vuoi.</p></div>`;
+  const giorno = quandoReferti(n - 1);
+  return `<div class="a-card fs-hero"><h3>La tua prima giornata è la ${n}ª</h3><p class="small muted">La ${n - 1}ª si sta ancora giocando: compri ai prezzi di oggi. Coi referti della FSGC, di solito il pomeriggio del giorno dopo l'ultima partita${giorno ? ` (${giorno})` : ''}, i prezzi cambiano; fino alla chiusura la prima rosa si rifà gratis quante volte vuoi.</p></div>`;
 }
 
 // ---------------------------------------------------------------- la squadra, sul server o sul telefono
@@ -1040,7 +1048,7 @@ export const futsalRegolamento = {
       ${cap('4 · Punteggio dei giocatori', `<table><tr><th>Evento</th><th></th></tr>${row('Convocato (in distinta)', fmt(R.voto))}${row('La sua squadra vince / perde', `${s(R.esito.vittoria)} / ${fmt(R.esito.sconfitta)}`)}${row('Gol (anche su rigore)', s(R.gol))}${row('Autogol', fmt(R.autogol))}${row('Ammonizione', fmt(R.ammonizione))}${row('Espulsione', fmt(R.espulsione))}${row('Rigore sbagliato', fmt(R.rigoreSbagliato))}</table>
         <p><b>Convocato</b> vuol dire nell'elenco della partita sul referto. La FSGC non registra chi entra in campo né i cambi, quindi il voto lo prende ogni convocato. Assist e rigori parati non contano: il referto non li riporta.</p>`)}
       ${cap('5 · Punteggio della Porta', `<table>${row('Voto', fmt(R.voto))}${row('La squadra vince / perde', `${s(R.esito.vittoria)} / ${fmt(R.esito.sconfitta)}`)}${row('Ogni gol subito', fmt(R.golSubito))}${row('Nessun gol subito', s(R.portaInviolata))}${row('Eventi dei suoi portieri', 'come i giocatori')}</table>`)}
-      ${cap('6 · Mercato', `<p>Il mercato è <b>aperto tra una giornata e l'altra</b>: apre quando arrivano i referti dell'ultima giornata (di solito il giorno dopo) e chiude 10 minuti prima della prima partita della successiva. Mentre aspetta i referti puoi cambiare schema, titolari e capitano, ma non comprare o vendere. Chi fa la <b>prima rosa</b> invece compra sempre, fino alla chiusura, ai prezzi del momento.</p>
+      ${cap('6 · Mercato', `<p>Il mercato è <b>aperto tra una giornata e l'altra</b>: apre quando arrivano i referti dell'ultima partita della giornata (di solito il pomeriggio del giorno dopo) e chiude 10 minuti prima della prima partita della successiva. Mentre aspetta i referti puoi cambiare schema, titolari e capitano, ma non comprare o vendere. Chi fa la <b>prima rosa</b> invece compra sempre, fino alla chiusura, ai prezzi del momento.</p>
         <table>${row('Prima rosa', 'cambi illimitati e gratis')}${row('Cambi gratis a giornata', R.cambiGratis)}${row('Ogni cambio in più', `−${R.malusCambio} punto`)}</table>
         <p>Un cambio è un giocatore (o una Porta) che entra in rosa rispetto alla giornata prima.</p>`)}
       ${cap('7 · Quotazioni e plusvalenze', `<p>Ogni giocatore ha un valore in crediti. Quello di partenza viene dalle prime ${V.VALORI.base} giornate: media punti e presenze. Da lì <b>cambia dopo ogni giornata</b>:</p>

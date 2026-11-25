@@ -42,7 +42,8 @@ test('un calendario con una data rotta non fa saltare tutto', () => {
   assert.doesNotThrow(() => siGioca(Date.now(), [[1, 'a', 'b', 'non-una-data', '', null, null]]));
 });
 
-// Il futsal: lunedì-giovedì sera, referti 15-22 ore dopo (data/futsal-orologio.json).
+// Il futsal: lunedì-giovedì sera, referti da 11 a 22 ore dopo (data/futsal-orologio.json,
+// Juvenes–Folgore del 24/11: 18 ore). Finestra dei referti da 12 a 24 ore.
 // L'11ª: primo calcio d'inizio lunedì 23/11 alle 20:15, ultimo giovedì 26/11 alle 22:00.
 test("futsal: dal lunedi' sera dell'11a si guarda, un'ora prima del primo calcio d'inizio", () => {
   assert.equal(siGiocaFutsal(a('2026-11-23T19:30:00+01:00')), true);
@@ -76,4 +77,10 @@ test("futsal: fra la fine della partita e la mattina dei referti ci si spegne", 
   assert.equal(siGiocaFutsal(a('2026-11-23T23:30:00+01:00')), true);
   assert.equal(siGiocaFutsal(a('2026-11-24T08:00:00+01:00')), false);
   assert.equal(siGiocaFutsal(a('2026-11-24T14:00:00+01:00')), true);
+});
+test("futsal: la finestra dei referti parte 12 ore dopo (tarata il 25/11)", () => {
+  // 11a: l'ultima di lunedi' alle 21:45, la prima alle 20:15: martedi' alle 10:30 si guarda gia'
+  assert.equal(siGiocaFutsal(a('2026-11-24T10:30:00+01:00')), true);
+  // Juvenes-Folgore, martedi' 24/11 alle 22: il referto e' uscito mercoledi' fra le 15:45 e le 16:05
+  assert.equal(siGiocaFutsal(a('2026-11-25T15:50:00+01:00')), true);
 });

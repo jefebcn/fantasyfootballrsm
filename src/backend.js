@@ -706,6 +706,22 @@ export async function salvaPartitaGioco(giorno, tentativi, vinto) {
   const { error } = await sb.rpc('salva_partita_gioco', { p_giorno: giorno, p_tentativi: tentativi, p_vinto: vinto });
   return !error;
 }
+/**
+ * Il traguardo inviti (070): amici portati e quanti sono attivi (hanno
+ * confermato la formazione in 2 giornate diverse). null senza server o senza
+ * la 070: il riquadro allora non lo mostra.
+ */
+export async function traguardoInviti() {
+  if (!sb) return null;
+  const { data, error } = await sb.rpc('traguardo_inviti');
+  return error ? null : data;
+}
+/** Per la console (070): chi ha portato amici attivi, dal piu' avanti. */
+export async function adminTraguardoInviti() {
+  if (!sb) return null;
+  const { data, error } = await sb.rpc('traguardo_inviti_elenco');
+  return error ? null : data || [];
+}
 /** Quanti giocano a «Chi è?», giorno per giorno (048). null se la 048 non c'e'. */
 export async function adminGiocoConteggi(giorni = 14) {
   const { data, error } = await sb.rpc('admin_gioco_conteggi', { p_giorni: giorni });

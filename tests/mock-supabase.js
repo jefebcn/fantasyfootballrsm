@@ -329,6 +329,29 @@ export function createClient(_url, _key, opts) {
           return { data: { player_id: args.p_player, prezzo: q.quotazione, crediti: mio.credits }, error: null };
         }
         const prof = T('profiles').find((p) => p.id === userId);
+        // Il traguardo inviti (070): stesse regole del vero. Una conferma e'
+        // un submitted_at; vale la giornata piu' bassa che lo porta, cosi' le
+        // copie della lega pubblica (050) non contano due volte.
+        const giornateConfermate = (uid0) => {
+          const mie = new Set(T('league_members').filter((m) => m.user_id === uid0).map((m) => m.id));
+          const prima = new Map();
+          T('lineups').filter((l) => mie.has(l.member_id) && l.submitted_at)
+            .forEach((l) => prima.set(l.submitted_at, Math.min(prima.get(l.submitted_at) ?? Infinity, l.matchday)));
+          return new Set(prima.values()).size;
+        };
+        if (name === 'traguardo_inviti') {
+          const amici = T('profiles').filter((x) => x.invitato_da && x.invitato_da === userId);
+          return { data: { amici: amici.length, attivi: amici.filter((x) => giornateConfermate(x.id) >= 2).length, soglia: 3, giornate: 2 }, error: null };
+        }
+        if (name === 'traguardo_inviti_elenco') {
+          if (!prof?.is_admin) throw new Error('Solo per l\'amministratore');
+          const per = new Map();
+          T('profiles').filter((x) => x.invitato_da).forEach((x) => {
+            const r = per.get(x.invitato_da) || { utente: x.invitato_da, nome: T('profiles').find((y) => y.id === x.invitato_da)?.display_name || null, amici: 0, attivi: 0 };
+            r.amici++; if (giornateConfermate(x.id) >= 2) r.attivi++; per.set(x.invitato_da, r);
+          });
+          return { data: [...per.values()].sort((a, b) => b.attivi - a.attivi || b.amici - a.amici), error: null };
+        }
         if (name === 'registra_invito') {
           if (!con023()) throw new Error('function public.registra_invito(p_da => text) does not exist');
           const io = T('profiles').find((x) => x.id === userId); const da = String(args.p_da || '').trim();

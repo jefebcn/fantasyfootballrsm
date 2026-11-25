@@ -1,6 +1,6 @@
 # Stato – Fantatitano Futsal
 
-Aggiornato: 2026-11-25 · temi: prima rosa sempre comprabile (futsal-14), tempi dei referti FSGC, orologio dell'import
+Aggiornato: 2026-11-25 · temi: prima rosa sempre comprabile (futsal-14), nuova home, tempi dei referti FSGC, orologio dell'import
 
 ## Dove siamo
 - Futsal su main e su fantatitano.site dal 21/11 (PR #126): lo vede solo il proprietario (`profiles.is_owner`) finché `APERTO_A_TUTTI = false` in `src/views/futsal.js`. Gioco a rosa e crediti (§ 13 di `FUTSAL.md`).
@@ -9,8 +9,9 @@ Aggiornato: 2026-11-25 · temi: prima rosa sempre comprabile (futsal-14), tempi 
 - 21/11: barra «Aggiorna» tolta, maglie nelle liste, icona di Regole, niente citazioni di altre app (PR #129-#133). Lancio: la 13ª è la prima giornata giocabile (chiusura provvisoria, `futsal_lock` 13 a mano). Coppa dalla 14ª alla 30ª (`COPPA` in `src/futsal-gare.js`). Nuove: nome e colore della squadra (nomi unici, futsal-10), «Primo in panchina», formazioni degli avversari, avviso «mercato aperto» (futsal-11 + funzione `promemoria-`), albo d'oro.
 - Coppa con 100 squadre simulata (`prove/coppa-simulata/`): «La tua coppa», linea di chi passa, preliminari ridotti ai primi 16, sfide del turno, ✓ su chi passa (PR #141). A stagione finita la home dice «Stagione finita». 22/11: nella scheda «Compra» le colonne hanno l'intestazione «Media punti» e «Prezzo» (PR #151).
 - 23/11 (PR #157): risultato provvisorio. L'import salva in `PROVVISORI` le partite «Concluse» sulla FSGC senza distinte; l'amministratore scrive il finale dal Calendario («Scrivi il risultato a mano», tabella `futsal_risultati_provvisori`, futsal-12 applicata). Tutti vedono «voti in arrivo»; punti e classifiche aspettano il referto. PR #155: pallone ridisegnato e 5 centrato nella maglia.
-- Mercato e referti (25/11): il mercato riapre coi referti dell'ultima partita della giornata, il giorno dopo fra le 11 e le 18:30 (7ª e 11ª); l'import parte ogni ora dall'orologio del database. Per chi non ha ancora una squadra il mercato è sempre aperto, ai prezzi dell'ultima giornata pronta (futsal-14, PR da unire e applicare): al lancio la 12ª finisce giovedì 3/12 e chi si iscrive dal 1/12 compra subito per la 13ª.
-- Velocità: la FSGC non aggiorna il futsal in diretta (7ª: 0-0 segnaposto fino al referto, 15-22 h dopo); i siti di notizie escono il mattino dopo, non prima. Il finale la sera c'è solo sui social delle società.
+- Mercato e referti (25/11): il mercato riapre coi referti dell'ultima partita della giornata, il pomeriggio del giorno dopo, 11-22 h dopo la gara (Juvenes–Folgore 18 h); l'import parte ogni ora dall'orologio del database e ogni 20 min da 12 a 24 h dopo (PR #170). Per chi non ha ancora una squadra il mercato è sempre aperto, ai prezzi dell'ultima giornata pronta (futsal-14, PR #168, applicata il 25/11): al lancio la 12ª finisce giovedì 3/12 e chi si iscrive dal 1/12 compra subito per la 13ª.
+- Home (PR #169, provata da Alex): in alto la squadra (stemma, nome, posizione), poi «Ultima giornata» (punti, migliore, capitano) e «Prossima giornata» (chiusura, crediti, dove giocano i tuoi); «Nome e colore» in fondo.
+- Velocità: la FSGC non aggiorna il futsal in diretta (7ª: 0-0 segnaposto fino al referto, 11-22 h dopo); i siti di notizie escono il mattino dopo, non prima. Il finale la sera c'è solo sui social delle società.
 - Instagram @fantatitano.futsal via Buffer: coda fino al 4/12. Foto: archivio Flickr FSGC su Drive, catalogo `catalogo-futsal.csv` (Drive id 1cxmXJ3_xL3Ghku4pCXWhIPXJq2KRit0X).
 
 ## Aperto / in corso
@@ -41,5 +42,5 @@ Aggiornato: 2026-11-25 · temi: prima rosa sempre comprabile (futsal-14), tempi 
 - Chiusura PROVVISORIA (`F.chiusura`): la prima giornata senza date FSGC chiude una settimana dopo la precedente, stessa ora; finisce anche in `futsal_lock`. Se il file SQL è già aggiornato nel commit, l'import non ricarica: la riga va messa a mano sul database.
 - Comandi per il PC di Alex (Windows, PowerShell): sempre completi, mai segnaposto; la cartella è `$env:USERPROFILE\Desktop\FOTO FSGC`.
 - Dal cloud Flickr risponde 429 alle immagini: si scarica dal PC di Alex.
-- Buffer gratuito: max 10 in coda per canale. Referti FSGC 15-22 ore dopo la partita.
+- Buffer gratuito: max 10 in coda per canale. Referti FSGC 11-22 ore dopo la partita, di solito il pomeriggio dopo.
 - Prove browser in cloud: `prove/strumenti/servi-da-disco.cjs` (vedi docs/STATO.md); per il service worker serve https://app.local.

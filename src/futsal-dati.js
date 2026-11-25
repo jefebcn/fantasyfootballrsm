@@ -510,4 +510,4 @@ export const REFERTI = [
   {g:11,casa:"libertas",ospite:"faetano",distinte:[["f337", "f105", "f134", "f968", "f195", "f44", "f139", "f104", "f135", "f270", "f96", "f595", "f1221"], ["f286", "f990", "f992", "f1207", "f171", "f292", "f987", "f986", "f720", "f991"]],eventi:[["f720", 60, "yellow"], ["f286", 57, "yellow"], ["f105", 49, "yellow"], ["f337", 36, "goal"], ["f292", 28, "yellow"], ["f171", 16, "goal"]]},
   {g:11,casa:"sangiovanni",ospite:"trefiori",distinte:[["f423", "f1008", "f315", "f974", "f332", "f276", "f168", "f977", "f160", "f1227"], ["f163", "f222", "f179", "f81", "f1237", "f91", "f78", "f699", "f16", "f1239", "f1238", "f3"]],eventi:[["f168", 52, "goal"], ["f276", 46, "yellow"], ["f16", 45, "goal"], ["f699", 41, "goal"], ["f315", 33, "goal"], ["f1008", 31, "goal"], ["f1008", 21, "goal"], ["f699", 8, "goal"], ["f699", 2, "goal"]]},
 ];
-export const PROVVISORI = {};
+export const PROVVISORI = {"11:juvenes:folgore":[]};

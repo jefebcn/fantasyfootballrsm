@@ -124,7 +124,7 @@ function conclusa(r) {
     ${tav ? `<p class="mnota">${esc(tav)}</p>` : ''}
     <div class="mfoot"><span>${fmt(r.homeScore)}</span><em>${t('fantapunti')}</em><span>${fmt(r.awayScore)}</span></div>
     <div class="mcta2">
-      <button data-share="${r.id}">${icon('share', 'ic sm')}${t('Condividi')}</button>
+      <a href="#/scheda" class="mcta-share">${icon('share', 'ic sm')}${t('Condividi')}</a>
       <a href="#/live/${r.id}">${t('Voti, pagelle e altro')}${icon('chev', 'ic sm')}</a>
     </div></div>`;
 }
@@ -763,18 +763,6 @@ export const dashboard = {
       ctx.render();
     };
 
-    // "Condividi" sulla giornata conclusa: stesso testo della scheda, ma senza
-    // uscire dalla dashboard.
-    root.querySelector('[data-share]')?.addEventListener('click', async (e) => {
-      const f = S.fixture(e.currentTarget.dataset.share); if (!f) return;
-      const r = S.fixtureResult(f); const me = S.me(); const home = r.homeManagerId === me.id;
-      const opp = S.managersById.get(home ? r.awayManagerId : r.homeManagerId);
-      const text = t('{squadra} {gf}–{gs} {avversaria} · giornata {n} · {punti} fantapunti (Voto Titano) — {link}', {
-        squadra: me.teamName, gf: home ? r.homeGoals : r.awayGoals, gs: home ? r.awayGoals : r.homeGoals, avversaria: opp.teamName,
-        n: r.matchday, punti: fmt(home ? r.homeScore : r.awayScore), link: S.linkInvito() });
-      if (navigator.share) { try { await navigator.share({ title: 'Fantatitano', text }); } catch { /* annullato */ } }
-      else window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank', 'noopener');
-    });
     // Il banner della lega pubblica porta dritto a entrare in QUELLA lega: qui
     // si segna quale, e la schermata delle leghe apre il modulo da sola. Non
     // e' un parametro nell'indirizzo perche' il router legge solo il percorso,

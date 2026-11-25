@@ -1,39 +1,39 @@
 # Stato – Fantatitano
 
-Aggiornato: 2026-11-25 · temi: orologio FSGC acceso, tempi dei referti, futsal (prima rosa sempre comprabile, nuova home, finestra 12-24 h)
+Aggiornato: 2026-11-25 sera · temi: piano di crescita (card, traguardo inviti, premi), quarti di Coppa con una partita rimandata
 
 ## Dove siamo
-- App online su fantatitano.site e su iPhone. Migrazioni fino alla 069, futsal-13 e futsal-14 applicate.
-- Orologio dei dati FSGC attivo dal 24/11 (`supabase/dati-fsgc-pianificato.sql`, token fine-grained senza scadenza): import dal database ogni 30 min ven-lun, ogni ora mar-gio. Controllo: `select * from interno.fsgc_ultime;` (204 = partito). Il cron di GitHub resta come riserva.
-- Referti FSGC: il pomeriggio del giorno dopo, 11-22 h dopo la gara (Juvenes–Folgore di mar 24/11 22:00 entrato mer 25/11 fra 15:45 e 16:05, ~18 h). Finestra futsal della guardia: 12-24 h (PR #170).
-- Futsal: la prima rosa si compra sempre, ai prezzi dell'ultima giornata pronta (futsal-14, PR #168); chi ha già una squadra aspetta i referti. Home rifatta (PR #169, provata da Alex). Dettagli in `docs/futsal/STATO.md`.
-- Coppa Fantatitano su #/coppa: chiusura del 1° turno mer 25/11 alle 20:45. Squadre dell'app fino a 32.
-- Instagram @fantatitano: controllo della coda lun/mer/ven alle 9:23 (trig_018i6UNbSQ1ikokJFoCnnTWS); dettagli in `kit/STATO.md`. Futsal: controllo Buffer giornaliero (trig_019gaxf1eECjzEK6qMnLV9NA); il 25/11 8 in coda, 2 liberi.
+- App online su fantatitano.site e su iPhone. Migrazioni fino alla 070 (traguardo inviti, applicata), futsal-14 applicata. Versione su main 4.2.365.
+- Crescita (`docs/CRESCITA.md`): card della giornata da condividere fatta (PR #172); contatore del traguardo inviti fatto (PR #173): «3 amici attivi» = amici dal link che confermano la formazione in 2 giornate diverse; il 25/11 27 arrivati, 10 attivi, nessuno a 3.
+- Premi decisi (PR #174, `legale/premi-regolamento-bozza.md`): organizza Mediterranean Digital Solutions Ltd, offrono SanderBV e FreshDrops; gin solo ai maggiorenni. BOZZA: niente annunci prima del legale.
+- Orologio dei dati FSGC attivo (import ogni 30 min ven-lun, ogni ora mar-gio). Controllo: `select * from interno.fsgc_ultime;`.
+- Coppa Fantatitano: quarti di andata mer 25/11. Domagnano–Tre Fiori RIMANDATA sull'1-0 (calendario FSGC «Rimandato», pagina partita «Concluso»): l'import l'aveva contata. Le altre 3 finite (0-0, 2-1, 0-1).
+- Instagram: controllo della coda lun/mer/ven 9:23 (trig_018i6UNbSQ1ikokJFoCnnTWS); futsal giornaliero (trig_019gaxf1eECjzEK6qMnLV9NA).
 
 ## Aperto / in corso
-- Ven 27/11 pomeriggio: misurare a che ora entra il referto di Virtus–Tre Penne (gio 26/11 22:00); è quello che riapre il mercato futsal della 12ª. Promemoria programmato per le 19:30.
-- Lancio futsal 1/12 solo col via di Alex: `APERTO_A_TUTTI = true` in `src/views/futsal.js`, poi cancellare `futsal-prova.yml`.
-- Proposta «corrispondenti» (risultati la sera dai social delle società): aspetta il via di Alex.
-- Semifinali e finale della Coppa Titano pubblicate dalla FSGC: aggiornare `coppa_turni`.
-- Seconda chiave Buffer: la mette Alex nei segreti di Supabase.
-- Per Alex, dal pannello: controllo delle password rubate su Supabase Auth; copia del backup fuori da GitHub; fino al 1/12 budget Actions a 0 $ per gli altri repository privati.
+- PR #175 (coppa: partita rimandata senza risultato, «s.v.» solo a tabellino arrivato, v. 4.2.366): Alex ha dato «ok merge», si unisce a prove verdi; subito dopo lanciare il workflow `dati-fsgc` e controllare che `src/coppa-dati.js` abbia Domagnano–Tre Fiori a null e i tabellini delle altre 3. Controllo trig_012deP4j8qaoiYzDRGiX5Kx6 alle 22:51Z.
+- Recupero di Domagnano–Tre Fiori: quando la FSGC dà la data, i quarti di andata restano aperti fino a lì.
+- Legale: far leggere `legale/premi-regolamento-bozza.md` (7 domande). Dopo il via: premi «offerti da» nell'app e premio nel riquadro del traguardo.
+- Ven 27/11: orario del referto Virtus–Tre Penne futsal (riapre il mercato della 12ª); coda Buffer 9:23 (formazione del post 6b0402b79c1a68014f61959b: espulsi/infortunati dei quarti).
+- Lancio futsal 1/12 solo col via di Alex (`APERTO_A_TUTTI` in `src/views/futsal.js`, poi cancellare `futsal-prova.yml`).
+- Semifinali e finale Coppa Titano pubblicate: aggiornare `coppa_turni`. Storia dei quarti di ritorno mer 9/12.
+- Per Alex, dal pannello: password rubate su Supabase Auth; backup fuori da GitHub; seconda chiave Buffer.
 
 ## Prossimo passo consigliato
-- Mer 25/11 dopo le 20:45: guardare la coppa sorteggiata. Ven 27/11: orario del referto Virtus–Tre Penne e mercato della 12ª riaperto. Sab-dom: log di Dati FSGC sui referti del calcio.
+- Chiudere la #175 e l'import; poi il legale sui premi; poi lancio del traguardo con un post e una storia.
 
 ## Decisioni recenti di Alex ancora valide
-- Futsal dal 1/12: chi si iscrive deve poter comprare subito la prima rosa (25/11).
-- Niente annunci personalizzati (ATT) per ora: «stiamo senza per ora» (24/11).
-- Coppa: «8 passano, 4 gironi»; nome squadra = quello della lega; squadre dell'app senza segni, solo la riga nelle regole.
-- Instagram: almeno 5 post e 4-5 storie a settimana, max 1+1 al giorno (14:00 e 14:15); storie dei gol a parte. Personaggi accanto ai nomi, stemmi accanto alle squadre, mai foto già uscite. Mai «fantatitano.site»: «Link in bio».
-- Mai ripetere giocatori o argomenti; le storie parlano solo del loro giorno.
+- Crescita senza provocazioni verso la FSGC; premi in natura o buoni, mai denaro, mai sorteggi (25/11).
+- Premi: giornata FreshDrops, mese SanderBV, Coppa box aperitivo con gin (solo 18+), podio entrambi, traguardo SanderBV; FreshDrops sta per attivarsi a San Marino, Sander ha già i gadget.
+- Gin: mai bottiglia né marchio nelle grafiche.
+- Futsal dal 1/12: la prima rosa si compra subito. Niente ATT per ora.
+- Instagram: almeno 5 post e 4-5 storie a settimana, max 1+1 al giorno; mai «fantatitano.site» («Link in bio»).
 - Merge solo dopo il suo «ok merge».
 
 ## Attenzione
-- Migrazioni: `apply_migration` via MCP il 25/11 è andata (futsal-14); se scade in attesa di conferma, file unico `begin; … commit;` da incollare nel SQL Editor. Prima: `bash supabase/prove/prova.sh`.
+- La FSGC può scrivere «Concluso» su una partita rimandata: vale l'etichetta del calendario (fix nella #175).
+- Il merge via MCP vuole lo SHA completo da 40 caratteri.
+- `bump-sw.py` cambia anche `src/versione.js`: metterlo nel commit.
 - `npm test` qui vuole prima `npm install --no-save` (manca esbuild).
-- Versione: dopo il merge di main, se coincide con main rilancia `scripts/bump-sw.py` (solo se cambia l'app).
-- Il ramo remoto conserva la storia di prima dello squash: prima della PR `git fetch origin main` e riparti da lì.
-- Un riavvio della sessione spegne i monitor: rileggi `storie-oggi` e riaccendi.
-- La FSGC corregge marcatore e minuto durante la partita: una storia già uscita non si corregge da sola.
+- Migrazioni: se `apply_migration` scade, file unico `begin; … commit;` nel SQL Editor.
 - Dopo `update_trigger` verificare con `get_trigger`.

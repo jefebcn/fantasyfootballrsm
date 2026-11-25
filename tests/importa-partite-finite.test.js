@@ -111,3 +111,12 @@ print(json.dumps({'alias': i['alias'], 'tordella': i['per_club']['cailungo'].get
   const t = py(`print(json.dumps(m.rimappa({'titolari': [['cailungo_29', 'x_1'], []], 'eventi': [['cailungo_29', 10, 'yellow']], 'cambi': [['a_1', 'cailungo_29', 70]]}, {'cailungo_29': 'cailungo_1'})))`);
   assert.deepEqual(t, { titolari: [['cailungo_1', 'x_1'], []], eventi: [['cailungo_1', 10, 'yellow']], cambi: [['a_1', 'cailungo_1', 70]] });
 });
+
+// Il 25/11 Domagnano-Tre Fiori (quarti di Coppa Titano) e' stata rimandata
+// sull'1-0: il calendario scriveva «Rimandato», la pagina della partita
+// «Concluso». Una partita rimandata o sospesa non ha risultato.
+test('una partita rimandata o sospesa non ha risultato', () => {
+  const casi = ['25/11/2026 20:45 Rimandato', '25/11/2026 20:45 Sospesa', '25/11/2026 20:45 Annullata', '25/11/2026 20:45', '', null];
+  const esiti = py(`print(json.dumps([m.rimandata(d) for d in ${JSON.stringify(casi).replace(/\bnull\b/g, 'None')}]))`);
+  assert.deepEqual(esiti, [true, true, true, false, false, false]);
+});

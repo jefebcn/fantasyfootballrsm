@@ -44,3 +44,38 @@ e solo per QUEL disegno.
   rieseguendo la 072.
 - Attivare Gemini via API e salvare la scheda di stile con 2-3 riferimenti da `media/avatar`.
 - Cancellare le foto dal proprio computer e dalla cronologia del servizio dopo ogni disegno.
+
+## Scheda di stile (prove del 26/11)
+
+Lo stile è quello dei personaggi 101-230 di `media/avatar`: figura intera in
+azione di gioco, testa grande ma non enorme (circa 1/4 dell'altezza), corpo
+atletico, pittura digitale tipo figurina, contorno scuro sottile, maglia a tinta
+unita col numero, niente fondo. Bocciati: mezzibusti, vettoriale piatto,
+giocattolo 3D, fumetto a inchiostro. Il solo testo si avvicina ma non basta
+(testa troppo grande, viso troppo fotografico, alone chiaro attorno): servono
+le immagini di riferimento, quindi Gemini Pro (Nano Banana Pro) con allegati.
+
+Allegati fissi: `media/avatar/149.webp`, `173.webp`, `205.webp` (stile) + le 2
+foto del calciatore (somiglianza). Per le prove: un volto inventato o la propria
+foto, mai un calciatore senza consenso. Con le foto vere solo via API (regole sopra).
+
+Prompt (inglese, rende meglio; cambiare solo le parti tra < >):
+
+    Use the first three images ONLY as the art style reference: same full-body
+    chibi sports-sticker look, same head-to-body ratio (head about one quarter
+    of total height), same digital painting, soft cel shading, glossy hair
+    highlights and the same thin dark outline. Do not copy their faces or kits.
+    Use the other images ONLY for the person's likeness: face shape, hairline and
+    hairstyle, beard, skin tone, eyes, nose, ears. Keep a friendly, flattering
+    caricature, never grotesque.
+    Pose: <dribbling with the ball at his feet | goal celebration, knee slide |
+    pointing to the sky | shooting>. Three-quarter view, whole body in frame.
+    Kit: plain <colour> shirt with <colour> trim, white number <n> on chest and
+    shorts, <colour> shorts and socks. No logos, no badges, no sponsors, no
+    brand marks anywhere, including boots. Plain coloured boots.
+    Background: flat solid #1A1230, no ground shadow, nothing else. Square image.
+
+Controllo prima di approvare: si riconosce a 34x40 px (misura delle liste)?
+Niente marchi su maglia e scarpe (il 205 ha un baffo: non usarlo come modello
+per le scarpe)? Proporzioni uguali agli altri? Poi `make-avatar.py`-style
+scontorno sul fondo piatto.

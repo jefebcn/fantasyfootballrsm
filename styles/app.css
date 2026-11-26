@@ -3466,6 +3466,10 @@ b > .stemma.xs:last-child{margin:0 0 0 6px}
    giocare si vede subito.
    ========================================================================== */
 .a-hero.foto{--cielo:14px;--fh:min(46vw,190px);--ph:min(30vw,124px)}
+/* Alex, 26/11 pomeriggio (screenshot): con 14px di cielo la targa della lega
+   tagliava di nuovo la torre centrale (come il 20/11). 36px: torre e bandiera
+   restano sotto la targa anche a 375 di larghezza. Costa ~22px di copertina. */
+.a-hero.foto{--cielo:36px}
 .a-hero.foto .sfondo img{object-position:center 30%}
 .a-hero{gap:10px;padding:12px 16px 14px}
 :root[data-theme="dark"] .a-hero.foto{padding-bottom:22px}

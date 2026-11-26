@@ -53,6 +53,9 @@ const ok = [], ko = []; const et = (c, t) => (c ? ok : ko).push(t);
       const voci = [...document.querySelectorAll('.a-nav a')];
       return {
         appbar: r('.a-appbar'), hero: r('.a-hero'), marchio: r('.hero-marchio'), stats: r('.a-hero .a-stats'),
+        targa: r('.hero-league'), foto: r('.a-hero.foto .sfondo img'),
+        // dal lancio del futsal (01/12 alle 8) sopra la copertina c'e' il selettore Calcio/Futsal
+        sport: r('.sport-sw'),
         slotVisibile: getComputedStyle(document.querySelector('#install-slot')).display,
         marchioTag: marchio ? marchio.tagName : null,
         marchioHref: marchio ? marchio.getAttribute('href') : null,
@@ -64,8 +67,13 @@ const ok = [], ko = []; const et = (c, t) => (c ? ok : ko).push(t);
     });
 
     // 1. niente striscia
-    et(m.hero.top === m.appbar.bottom, `${eti}: la copertina attacca all'intestazione (striscia di ${m.hero.top - m.appbar.bottom}pt)`);
+    const sopra = m.sport ? m.sport.bottom + 12 : m.appbar.bottom; // il selettore ha 12pt di margine sotto (.sport-sw)
+    et(m.hero.top === sopra, `${eti}: la copertina attacca ${m.sport ? 'al selettore Calcio/Futsal' : "all'intestazione"} (striscia di ${m.hero.top - sopra}pt)`);
     et(m.slotVisibile === 'none', `${eti}: lo spazio vuoto dell'invito a installare esce dal conto (${m.slotVisibile})`);
+    // 1b. la targa della lega non copre la torre centrale (Alex, 20/11 e 26/11):
+    // nella foto la bandiera della torre di mezzo sta al 15% dell'altezza
+    if (m.foto) { const torre = Math.round(m.foto.top + m.foto.h * 0.15);
+      et(torre >= m.targa.bottom + 2, `${eti}: la torre centrale sta sotto la targa (torre ${torre}, targa fino a ${m.targa.bottom})`); }
     // 2. il marchio
     et(m.marchioTag === 'A' && m.marchioHref === '#/regolamento', `${eti}: il marchio e' un collegamento vero (${m.marchioTag} -> ${m.marchioHref})`);
     et(m.stats.top - m.marchio.bottom >= 14, `${eti}: il marchio respira dalla card dei numeri (${m.stats.top - m.marchio.bottom}pt)`);

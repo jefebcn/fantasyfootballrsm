@@ -17,6 +17,7 @@ import * as FS from '../futsal-server.js';
 import * as V from '../futsal-valori.js';
 import { magliaFs, logoFs, caricaFs } from '../futsal-grafica.js';
 import * as FB from './futsal-benvenuto.js';
+import { futsalPerTutti } from '../lancio-futsal.js';
 import { controllaFormazione, punteggioFormazione, REGOLE_FUTSAL as R } from '../futsal-engine.js';
 import { classificaSomma, classificaScontri, calendarioTesta, coppa, formatoCoppa, COPPA, SERIE, giornateSerie } from '../futsal-gare.js';
 
@@ -32,14 +33,15 @@ const LOCALI = 'fcs:futsal:squadre';
  * altro; ?futsal=0 la spegne anche al proprietario. Le prove col server finto
  * (prove/futsal*.cjs) la accendono con window.__PROVA_FUTSAL__ e ?futsal=1.
  *
- * AL LANCIO: APERTO_A_TUTTI = true, e la vedono tutti (?futsal=0 la spegne).
+ * AL LANCIO (Alex, 26/11: 1° dicembre alle 8, ora italiana) si apre da sola a
+ * tutti, senza un aggiornamento quel giorno: la data sta in src/lancio-futsal.js
+ * (futsalPerTutti). ?futsal=0 la spegne comunque.
  */
-export const APERTO_A_TUTTI = false;
 export function futsalAttivo() {
   let v = null;
   try { v = localStorage.getItem(CHIAVE); } catch { /* senza storage decide il profilo */ }
   if (v === '0') return false;
-  if (APERTO_A_TUTTI) return true;
+  if (futsalPerTutti()) return true;
   if (Stato.isOwner()) return true;
   return v === '1' && typeof window !== 'undefined' && window.__PROVA_FUTSAL__ === true;
 }

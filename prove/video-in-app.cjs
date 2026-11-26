@@ -64,15 +64,15 @@ const ok = [], ko = []; const et = (c, t) => (c ? ok : ko).push(t);
     const inVista = await p.evaluate((vid) => { const r = document.querySelector(`[data-vid="${vid}"]`).getBoundingClientRect(); return r.top < innerHeight && r.bottom > 0; }, id);
     et(inVista, 'e il video e\' in vista, non da cercare scorrendo');
     await p.screenshot({ path: `${process.env.USCITA || '/tmp'}/video-in-app.png` }).catch(() => {});
-    // Alex, 12/10: la copertina come un poster prepartita — due maglie nei
-    // colori dei club sullo stadio, risultato come adesivo lime
+    // Alex, 12/10: la copertina come un poster prepartita sullo stadio,
+    // risultato come adesivo lime; dal 26/11 gli stemmi nuovi, non le maglie
     const cop = await p.evaluate(() => {
       const c = [...document.querySelectorAll('.vid-cop:not(.in)')];
-      return { maglie: c.every((x) => x.querySelectorAll('.vid-maglia').length === 2), n: c.length,
+      return { stemmi: c.every((x) => [...x.querySelectorAll('img.vid-stemma')].filter((i) => i.complete && i.naturalWidth > 200).length === 2), n: c.length,
         stadio: c.length && /sfondo-home\.jpg/.test(getComputedStyle(c[0]).backgroundImage),
         ris: getComputedStyle(document.querySelector('.vid-ris') || document.body).backgroundColor };
     });
-    et(cop.n > 0 && cop.maglie, `ogni copertina ha le due maglie (${cop.n} copertine)`);
+    et(cop.n > 0 && cop.stemmi, `ogni copertina ha i due stemmi nuovi, caricati e grandi (${cop.n} copertine)`);
     et(cop.stadio, 'sotto ci sono lo stadio e i colori delle squadre');
     et(cop.ris === 'rgb(217, 245, 31)', `il risultato e' un adesivo lime (${cop.ris})`);
     // e il play sulle altre schede funziona ancora

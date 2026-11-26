@@ -1,24 +1,24 @@
 /** Highlights della FSGC. La copertina e' disegnata qui: Google non riceve
  *  niente finche' non si tocca play. */
 import * as S from '../state.js';
-import { esc, icon, dateIt, t } from '../ui.js';
-import { maglia } from '../maglia.js';
+import { esc, icon, dateIt, t, stemmaClub } from '../ui.js';
 import { videoGiornata, giornateConVideo, altriVideo, urlCanale, urlIncorpora, urlVideo, videoDaAprire } from '../video.js';
 
-/** La maglia di un club, nel suo colore e con la sigla in petto: e' il
- *  disegno delle maglie fanta (src/maglia.js), nessuna maglia vera. */
-const divisa = (c) => maglia({ c1: c.color, nome: c.shortName }, 'vid-maglia');
+/** Lo stemma nuovo di un club (media/stemmi, Alex 26/11: «ancora le vecchie
+ *  magliette»). Qui e' grande, quindi il file grande e non il -mini. */
+const divisa = (c) => stemmaClub(c, 'vid-stemma')
+  .replace('-mini.webp', '.webp').replace('width="31" height="34"', 'width="405" height="512"');
 
 /**
  * Scheda di una partita.
  *
  * La copertina la disegna l'app, quindi non e' un fotogramma: e' un poster
- * prepartita (Alex, 12/10: «qualcosa di piu' bello e iconico»). Le due maglie
- * nei colori dei club, una contro l'altra, sullo stadio dello sfondo della
+ * prepartita (Alex, 12/10: «qualcosa di piu' bello e iconico»). I due stemmi
+ * dei club, uno contro l'altro, sullo stadio dello sfondo della
  * home tinto per meta' con i colori delle squadre e tagliato da una riga
  * lime; risultato come adesivo lime, nomi in Anton. Foto di giocatori veri
  * no: non sono nostre, e qui non parte nessuna richiesta finche' non si
- * tocca play — stadio e maglia sono file dell'app.
+ * tocca play — stadio e stemmi sono file dell'app.
  */
 function scheda(m, v) {
   const h = S.clubsById.get(m.homeClubId), a = S.clubsById.get(m.awayClubId);

@@ -76,6 +76,6 @@ Prompt (inglese, rende meglio; cambiare solo le parti tra < >):
     Background: flat solid #1A1230, no ground shadow, nothing else. Square image.
 
 Controllo prima di approvare: si riconosce a 34x40 px (misura delle liste)?
-Niente marchi su maglia e scarpe (il 205 ha un baffo: non usarlo come modello
-per le scarpe)? Proporzioni uguali agli altri? Poi `make-avatar.py`-style
+Niente marchi su maglia e scarpe (il 230 ha un baffo sul petto: mai come
+riferimento)? Proporzioni uguali agli altri? Poi `make-avatar.py`-style
 scontorno sul fondo piatto.

@@ -69,9 +69,11 @@ export const PARTITE = [
   [9, "trefiori", "juvenes", "BodExZ8RkhY", "2026-11-23"],
 ];
 export const VIDEO_CANALE = [
+  ["wP0lUifwgPA", "Coppa Titano 2026-27, Andata dei Quarti | HL Folgore - Virtus 0-1", "2026-11-26"],
+  ["CV-HUyv_izc", "Coppa Titano 2026-27, Andata dei Quarti | HL Tre Penne - Pennarossa 2-1", "2026-11-26"],
+  ["PYZWPvmxV2A", "Coppa Titano 2026-27, Andata dei Quarti | HL Domagnano - Tre Fiori 1-0 (sospesa)", "2026-11-26"],
+  ["YKlBESCI_Sw", "Coppa Titano 2026-27, Andata dei Quarti | HL La Fiorita - Cosmos 0-0", "2026-11-26"],
   ["FWVg45aW5t8", "Campionato Sammarinese 2026-27, 9. giornata - VOTA LA PARATA PIÙ BELLA!", "2026-11-23"],
   ["TDVEwq5EW9g", "Campionato Sammarinese 2026-27, 9. giornata - VOTA IL GOL PIÙ BELLO!", "2026-11-23"],
   ["pa-PPoWapv8", "Euro U-19, Round 2, Day 1 | Bosnia Herzegovina vs San Marino", "2026-11-11"],
-  ["ujauQTk9--Q", "Campionato Sammarinese 2026-27, 8. giornata - VOTA LA PARATA PIÙ BELLA!", "2026-11-09"],
-  ["O_JCTaE6bDM", "Campionato Sammarinese 2026-27, 8. giornata - VOTA IL GOL PIÙ BELLO!", "2026-11-09"],
 ];

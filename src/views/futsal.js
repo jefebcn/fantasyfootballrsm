@@ -131,6 +131,24 @@ function quandoReferti(g) {
   const fine = F.ultimaPartita(g);
   return fine ? dateIt(new Date(fine.getTime() + 86400e3).toISOString()) : '';
 }
+/**
+ * Un voto che non c'è ancora, a giornata in corso: chi riposa prende la media
+ * solo a giornata finita, e chi gioca più tardi aspetta il referto. Per tutti
+ * e due il motore dice «la squadra non gioca» e 0 punti, che letto a metà
+ * giornata sembrava un senza voto vero (Alex, 26/11). Ritorna null se il voto
+ * c'è, o se è un senza voto vero (non convocato, giornata finita).
+ */
+function attesa(n, riga) {
+  if (!n || !riga?.voto?.sv || riga.voto.motivo !== 'la squadra non gioca' || F.conclusa(n)) return null;
+  const club = riga.club || F.giocatore(riga.id)?.club;
+  if (F.riposa(n).includes(club)) return { breve: 'R', testo: 'riposa · a fine giornata prende la media' };
+  const p = F.PARTITE.find((x) => x.g === n && (x.casa === club || x.ospite === club));
+  if (p?.quando && new Date(p.quando).getTime() > Date.now()) return { breve: timeIt(p.quando), testo: `gioca ${dateIt(p.quando)} alle ${timeIt(p.quando)} · voto col referto` };
+  return { breve: '…', testo: 'voto in arrivo col referto FSGC' };
+}
+/** Quante partite della giornata n aspettano ancora il referto. */
+const senzaReferto = (n) => F.PARTITE.filter((p) => p.g === n && !F.referto(n, p.casa)).length;
+
 /** Chi fa la prima rosa mentre la giornata prima si gioca ancora: compra ai prezzi di oggi. */
 function primaGiornata(n, m) {
   if (!m.provvisorio) return '';
@@ -343,7 +361,7 @@ function bloccoUltima(g, r, ids) {
   const chi = (x) => (x.posto === 'P' ? `Porta ${nomeSq(x.club)}` : nomeId(x.entrato?.id || x.id));
   const top = [...contano].sort((a, b) => b.punti - a.punti)[0];
   const cap = r.righe.find((x) => x.capitano);
-  const mancano = F.PARTITE.filter((p) => p.g === g && !F.referto(g, p.casa)).length;
+  const mancano = senzaReferto(g);
   const classe = ids.length > 1 ? classificaSomma(ids, [g], FS.punti) : [];
   const mio = classe.find((x) => x.id === FS.io()?.user_id);
   const voci = [
@@ -456,7 +474,7 @@ function cartellino(slot, id, n, { porta = false, fasciaC = '', riga = null, pes
   const vid = porta ? V.idPorta(id) : id;
   const num = porta ? 'P' : F.giocatore(id)?.numero ?? '';
   const sotto = riga
-    ? `<small class="fs-pti ${fascia(riga.voto.sv ? null : riga.voto.totale)}">${riga.voto.sv ? 'S.V.' : riga.voto.riposo ? `${fmt(riga.punti)} R` : fmt(riga.punti)}</small>`
+    ? `<small class="fs-pti ${fascia(riga.voto.sv ? null : riga.voto.totale)}">${riga.voto.sv ? (attesa(n, riga)?.breve || 'S.V.') : riga.voto.riposo ? `${fmt(riga.punti)} R` : fmt(riga.punti)}</small>`
     : `<small><em>${cr(V.quotazione(vid, n))}</em> CR · ${esc(avversario(club, n))}</small>`;
   const corpo = `${maglietta(club, num)}${fasciaC ? `<i class="fs-cap">${fasciaC}</i>` : ''}${peso != null ? `<i class="fs-peso">${peso}</i>` : ''}<b>${esc(porta ? `Porta ${nomeSq(id)}` : nomeG(F.giocatore(id)))}</b>${sotto}`;
   return `<button class="fs-carta${sesto ? ' sesto' : ''}${mossa?.slot === slot && mossa.compra ? ' arrivo' : ''}" data-slot="${slot}" data-id="${esc(id)}">${corpo}</button>`;
@@ -601,7 +619,7 @@ function prova(sal, errori) {
   const v = F.votiGiornata(provaSu);
   const r = punteggioFormazione(FS.perMotore(sal), { porta: v.porta.get(sal.porta), giocatori: v.giocatori });
   return `${sec('Prova su una giornata già giocata', `<select id="fs-prova" class="select">${giocate.map((g) => `<option value="${g}" ${g === provaSu ? 'selected' : ''}>${g}ª giornata</option>`).join('')}</select>`)}
-    <p class="small muted fs-nota">Quanti punti avrebbe fatto questa squadra nella ${provaSu}ª. È solo una prova: non conta in classifica.</p>${tabellaPunti(r)}`;
+    <p class="small muted fs-nota">Quanti punti avrebbe fatto questa squadra nella ${provaSu}ª. È solo una prova: non conta in classifica.</p>${tabellaPunti(r, provaSu)}`;
 }
 
 /** A giornata chiusa: il campo con i punti di ognuno, il totale e il dettaglio. */
@@ -614,28 +632,30 @@ function risultati(n) {
   const r = risultatoDi(n);
   const riga = (id) => r?.righe.find((x) => x.id === id && x.posto !== 'B' && x.posto !== 'S') || r?.righe.find((x) => x.id === id);
   const s = S(b);
+  const mancano = r ? senzaReferto(n) : 0;
   const linea = (ruolo, k) => Array.from({ length: k }, (_, i) => { const id = b[ruolo][i]; const x = riga(id); return cartellino(`${ruolo}:${i}`, x?.entrato?.id || id, n, { fasciaC: x?.capitano ? 'C' : '', riga: x, modificabile: false }); }).join('');
   const pan = panchinaB(b).map((id) => { const x = r?.righe.find((y) => y.id === id && (y.posto === 'S' || y.posto === 'B')); return cartellino(`${F.giocatore(id)?.ruolo}:x`, id, n, { sesto: id === b.sesto, peso: id === b.sesto ? '6°' : x?.usato ? '↑' : '½', riga: x, modificabile: false }); }).join('');
   return `<main class="a-body fs">
-    <div class="fs-cruscotto"><span><b>${n}ª</b>giornata</span><span class="fs-merc chiuso"><b>Chiuso</b>mercato</span><span><b>${r ? fmt(r.totale) : '–'}</b>fantapunti</span><span><b>${b.schema}</b>schema</span></div>
-    <p class="small muted fs-nota">${r ? 'I punti dai referti FSGC. R = riposa, prende la media.' : 'La giornata è chiusa: i punti arrivano con i referti FSGC, di solito il giorno dopo.'}</p>
+    <div class="fs-cruscotto"><span><b>${n}ª</b>giornata</span><span class="fs-merc chiuso"><b>Chiuso</b>mercato</span><span><b>${r ? fmt(r.totale) : '–'}</b>${mancano ? 'parziali' : 'fantapunti'}</span><span><b>${b.schema}</b>schema</span></div>
+    <p class="small muted fs-nota">${r ? `${mancano ? `Punti parziali: ${mancano === 1 ? 'manca 1 partita' : `mancano ${mancano} partite`}. ` : ''}I punti dai referti FSGC. R = riposa, prende la media${mancano ? ' a fine giornata' : ''}.` : 'La giornata è chiusa: i punti arrivano con i referti FSGC, di solito il giorno dopo.'}</p>
     <div class="fs-campo">${CAMPO}
       <div class="fs-linea">${linea('A', s.A)}</div><div class="fs-linea">${linea('D', s.D)}</div>
       <div class="fs-linea">${cartellino('P:0', b.porta, n, { porta: true, riga: r?.righe[0], modificabile: false })}</div></div>
     <div class="fs-panca"><p><span>Sesto uomo · 100%</span><span>Panchina · ${fmt(R.panchina * 100, 0)}%</span></p><div>${pan}</div></div>
-    ${r ? tabellaPunti(r) : ''}
+    ${r ? tabellaPunti(r, n) : ''}
     ${vai}
   </main>`;
 }
 
-function tabellaPunti(r) {
-  const nota = (x) => (x.entrato ? `non convocato: entra ${nomeG(F.giocatore(x.entrato.id))}` : x.voto.sv ? x.voto.motivo : x.usato ? 'entrato in campo' : x.voto.voci.slice(x.voto.riposo ? 0 : 2).map((v) => v.etichetta).join(' · ') || 'nessun evento');
+function tabellaPunti(r, n) {
+  const prima = (x) => attesa(n, { id: x.id, club: x.club, voto: F.votiGiornata(n).giocatori.get(x.id) });
+  const nota = (x) => (x.entrato ? (n && prima(x) ? `${prima(x).testo} · per ora entra ${nomeG(F.giocatore(x.entrato.id))}` : `non convocato: entra ${nomeG(F.giocatore(x.entrato.id))}`) : x.voto.sv ? (attesa(n, x)?.testo || x.voto.motivo) : x.usato ? 'entrato in campo' : x.voto.voci.slice(x.voto.riposo ? 0 : 2).map((v) => v.etichetta).join(' · ') || 'nessun evento');
   const nome = (x) => (x.posto === 'P' ? `Porta ${nomeSq(x.club)}` : nomeG(F.giocatore(x.entrato?.id || x.id)));
   const peso = (x) => (x.posto === 'S' ? 'sesto' : x.posto === 'B' ? (x.usato ? '' : '50%') : x.capitano ? `×${fmt(R.capitano)}` : '');
-  return `<div class="a-card fs-list">${r.righe.map((x) => `<div class="vr">${magliaRiga(F.giocatore(x.entrato?.id || x.id)?.club || x.club, F.giocatore(x.entrato?.id || x.id)?.numero, x.posto === 'S' || x.posto === 'B' ? x.ruolo : x.posto)}<span class="nm"><b>${esc(nome(x))}${peso(x) ? ` <small class="fs-w">${peso(x)}</small>` : ''}</b><span>${esc(nota(x))}</span></span><span class="ev"></span>${x.voto.sv ? '<span class="fv sv">0</span>' : `<span class="fv${x.capitano ? ' cap' : ''}">${fmt(x.punti)}</span>`}</div>`).join('')}
+  return `<div class="a-card fs-list">${r.righe.map((x) => `<div class="vr">${magliaRiga(F.giocatore(x.entrato?.id || x.id)?.club || x.club, F.giocatore(x.entrato?.id || x.id)?.numero, x.posto === 'S' || x.posto === 'B' ? x.ruolo : x.posto)}<span class="nm"><b>${esc(nome(x))}${peso(x) ? ` <small class="fs-w">${peso(x)}</small>` : ''}</b><span>${esc(nota(x))}</span></span><span class="ev"></span>${x.voto.sv ? `<span class="fv sv">${attesa(n, x) ? '–' : '0'}</span>` : `<span class="fv${x.capitano ? ' cap' : ''}">${fmt(x.punti)}</span>`}</div>`).join('')}
   ${r.bonusDifesa ? `<div class="vr"><span></span><span class="nm"><b>Bonus difesa</b><span>media ${fmt(r.bonusDifesa.media)} su ${fmt(R.bonusDifesa.soglia)}</span></span><span class="ev"></span><span class="fv">${r.bonusDifesa.punti ? `+${fmt(r.bonusDifesa.punti, 0)}` : '0'}</span></div>` : ''}
   ${r.malus ? `<div class="vr"><span></span><span class="nm"><b>Cambi di mercato</b><span>oltre quelli gratis</span></span><span class="ev"></span><span class="fv">−${fmt(r.malus, 0)}</span></div>` : ''}
-  <div class="vr fs-tot"><span></span><span class="nm"><b>Totale</b></span><span class="ev"></span><span class="fv">${fmt(r.totale)}</span></div></div>`;
+  <div class="vr fs-tot"><span></span><span class="nm"><b>${n && senzaReferto(n) ? 'Parziale' : 'Totale'}</b>${n && senzaReferto(n) ? `<span>${senzaReferto(n) === 1 ? 'manca 1 partita' : `mancano ${senzaReferto(n)} partite`}</span>` : ''}</span><span class="ev"></span><span class="fv">${fmt(r.totale)}</span></div></div>`;
 }
 
 /** Tocca un posto: se e' vuoto si compra, se e' pieno si apre la scheda del giocatore. */
@@ -660,7 +680,7 @@ function foglioAvversario(uid, ctx) {
     const r = FS.risultato(g, uid);
     ctx.sheet(`<div class="fs-modale"><h3>${esc(chi.squadra)}</h3>
       <p class="sheet-sub">${giornate.length > 1 ? `<select class="select" id="fs-avv-g" aria-label="Giornata">${giornate.map((x) => `<option value="${x}" ${x === g ? 'selected' : ''}>${x}ª giornata</option>`).join('')}</select>` : `${g}ª giornata`} · <b>${fmt(r.totale)}</b> punti${r.malus ? ` (−${r.malus} di cambi)` : ''}</p>
-      ${tabellaPunti(r)}</div>`);
+      ${tabellaPunti(r, g)}</div>`);
     document.getElementById('fs-avv-g')?.addEventListener('change', (e) => { g = Number(e.target.value); disegna(); });
   };
   disegna();
@@ -805,7 +825,8 @@ export const futsalGiocatore = {
     const giocate = x.trend.filter((t) => t.punti != null && !t.riposo).map((t) => t.punti);
     const media = (a) => (a.length ? a.reduce((s, y) => s + y, 0) / a.length : null);
     const max = Math.max(10, ...x.trend.map((t) => t.punti || 0));
-    const trend = `<div class="fs-trend">${x.trend.map((t) => `<span class="${t.riposo ? 'fp-n' : fascia(t.punti)}" style="--h:${t.punti == null ? 4 : Math.max(4, (t.punti / max) * 100)}%"><i>${t.punti == null ? 'SV' : fmt(t.punti)}</i><b>${t.g}ª</b></span>`).join('')}</div>`;
+    const votoDi = (k) => (porta ? F.votiGiornata(k).porta.get(club) : F.votiGiornata(k).giocatori.get(id));
+    const trend = `<div class="fs-trend">${x.trend.map((t) => `<span class="${t.riposo ? 'fp-n' : fascia(t.punti)}" style="--h:${t.punti == null ? 4 : Math.max(4, (t.punti / max) * 100)}%"><i>${t.punti == null ? (attesa(t.g, { club, voto: votoDi(t.g) }) ? '–' : 'SV') : fmt(t.punti)}</i><b>${t.g}ª</b></span>`).join('')}</div>`;
     const fino = V.ultimaPronta();
     const valori = Array.from({ length: fino }, (_, i) => V.quotazione(id, i + 1));
     const lo = Math.min(...valori) - 0.5, hi = Math.max(...valori) + 0.5;
@@ -813,15 +834,16 @@ export const futsalGiocatore = {
     const linea = `<svg class="fs-valore" viewBox="0 0 100 40" preserveAspectRatio="none"><polyline points="${valori.map(punto).join(' ')}"/></svg><div class="fs-valore-l"><span>${cr(valori[0])} alla 1ª</span><span>${cr(valori.at(-1))} alla ${fino}ª</span></div>`;
     const prossime = F.prossime(club, n);
     const log = [...x.trend].reverse().map((t) => {
-      const v = porta ? F.votiGiornata(t.g).porta.get(club) : F.votiGiornata(t.g).giocatori.get(id);
+      const v = votoDi(t.g);
       const p = F.PARTITE.find((q) => q.g === t.g && (q.casa === club || q.ospite === club));
       const contro = p ? (p.casa === club ? `vs ${nomeSq(p.ospite)}` : `@ ${nomeSq(p.casa)}`) : 'riposa';
       const ris = p && p.gc != null ? ` ${p.gc}–${p.go}` : '';
-      const motivo = v.motivo === 'non in distinta' ? 'non convocato: non è nella distinta FSGC' : v.motivo;
+      const a = attesa(t.g, { club, voto: v });
+      const motivo = a ? a.testo : v.motivo === 'non in distinta' ? 'non convocato: non è nella distinta FSGC' : v.motivo;
       const voci = v.sv ? motivo : v.voci.map((y) => `${y.etichetta} ${y.valore > 0 ? '+' : ''}${fmt(y.valore)}`).join(' · ');
       const pl = t.g > V.VALORI.base ? V.plus(id, t.g) : null;
       const apri = p && F.referto(t.g, p.casa) ? ` data-partita="${t.g}|${p.casa}"` : '';
-      return `<${apri ? 'button' : 'div'} class="vr"${apri}><span class="fs-gg">${t.g}ª</span><span class="nm"><b>${esc(contro)}${ris}</b><span>${esc(voci)}</span></span><span class="ev">${pl ? `<small class="fs-pl ${pl > 0 ? 'su' : 'giu'}">${piu(pl)}</small>` : ''}</span>${v.sv ? '<span class="fv sv">S.V.</span>' : punti(v.totale)}</${apri ? 'button' : 'div'}>`;
+      return `<${apri ? 'button' : 'div'} class="vr"${apri}><span class="fs-gg">${t.g}ª</span><span class="nm"><b>${esc(contro)}${ris}</b><span>${esc(voci)}</span></span><span class="ev">${pl ? `<small class="fs-pl ${pl > 0 ? 'su' : 'giu'}">${piu(pl)}</small>` : ''}</span>${v.sv ? `<span class="fv sv">${a ? '–' : 'S.V.'}</span>` : punti(v.totale)}</${apri ? 'button' : 'div'}>`;
     }).join('');
     return `<main class="a-body fs">
       <div class="fs-modale fs-prof">

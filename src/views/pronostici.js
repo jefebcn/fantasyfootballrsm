@@ -84,13 +84,24 @@ function ultimaChiusa() {
 const golScelta = (m, lato, valore) => `<select class="pr-gol" data-gol="${lato}" data-m="${esc(m.id)}" aria-label="${esc(t('Gol di {squadra}', { squadra: nomeClub(lato === 'c' ? m.homeClubId : m.awayClubId) }))}">
   <option value="">–</option>${Array.from({ length: 10 }, (_, i) => `<option value="${i}"${valore === i ? ' selected' : ''}>${i}</option>`).join('')}</select>`;
 
+// Il risultato esatto compare solo dopo il segno, e chiuso: «+ risultato
+// esatto» lo apre (ritocchi del 26/11, prima la riga si ripeteva in ogni
+// partita). Se c'e' gia' un risultato resta aperto.
+const aperti = new Set();
+const aCapo = (nome) => esc(nome).replace(/\//g, '/<wbr>');
+function esatto(m, p) {
+  if (!p) return '';
+  if (p.gol_casa == null && !aperti.has(String(m.id))) return `<button class="pr-piu" data-piu="${esc(m.id)}">+ ${t('risultato esatto')}</button>`;
+  return `<div class="pr-esatto small muted">${t('Risultato esatto')} ${golScelta(m, 'c', p.gol_casa ?? null)} <span>-</span> ${golScelta(m, 'o', p.gol_ospite ?? null)}</div>`;
+}
+
 function partita(n, m) {
   const p = st.miei.get(chiave(n, m.homeClubId, m.awayClubId));
   const tasto = (s, nome) => `<button class="pr-s${p?.segno === s ? ' on' : ''}" data-segno="${s}" data-m="${esc(m.id)}" aria-pressed="${p?.segno === s}" aria-label="${esc(nome)}">${s}</button>`;
   return `<div class="a-card pr-partita">
-    <div class="pr-squadre"><span>${stemmaClub(club(m.homeClubId), 'sm')}<b>${esc(nomeClub(m.homeClubId))}</b></span><span class="pr-ora small muted">${m.kickoffAt ? `${dateIt(m.kickoffAt)} ${timeIt(m.kickoffAt)}` : ''}</span><span class="destra"><b>${esc(nomeClub(m.awayClubId))}</b>${stemmaClub(club(m.awayClubId), 'sm')}</span></div>
+    <div class="pr-squadre"><span>${stemmaClub(club(m.homeClubId), 'sm')}<b>${aCapo(nomeClub(m.homeClubId))}</b></span><span class="pr-ora small muted">${m.kickoffAt ? `${dateIt(m.kickoffAt)}<br>${timeIt(m.kickoffAt)}` : ''}</span><span>${stemmaClub(club(m.awayClubId), 'sm')}<b>${aCapo(nomeClub(m.awayClubId))}</b></span></div>
     <div class="pr-segni" role="group" aria-label="${esc(t('Pronostico'))}">${tasto('1', t('vince {squadra}', { squadra: nomeClub(m.homeClubId) }))}${tasto('X', t('pareggio'))}${tasto('2', t('vince {squadra}', { squadra: nomeClub(m.awayClubId) }))}</div>
-    <div class="pr-esatto small muted">${t('Risultato esatto')} ${golScelta(m, 'c', p?.gol_casa ?? null)} <span>-</span> ${golScelta(m, 'o', p?.gol_ospite ?? null)} <span>${t('facoltativo, vale 3 punti')}</span></div>
+    ${esatto(m, p)}
   </div>`;
 }
 
@@ -98,7 +109,11 @@ function giornataChiusa(n) {
   const ris = new Map(risultati().filter((r) => r.g === n).map((r) => [`${r.c}:${r.o}`, r]));
   const perc = percentuali.get(n) || new Map();
   let fatti = 0;
-  const righe = S.matchesOf(n).map((m) => {
+  const gare = S.matchesOf(n);
+  if (!gare.some((m) => st.miei.has(chiave(n, m.homeClubId, m.awayClubId)))) {
+    return `<p class="pr-saltata small muted">${t('Non hai giocato la giornata {n}', { n })}</p>`;
+  }
+  const righe = gare.map((m) => {
     const k = `${m.homeClubId}:${m.awayClubId}`;
     const p = st.miei.get(chiave(n, m.homeClubId, m.awayClubId)); const r = ris.get(k); const pt = punti(p, r);
     if (pt) fatti += pt;
@@ -132,8 +147,7 @@ export const pronostici = {
     const gare = a ? S.matchesOf(a.n) : [];
     const fatti = a ? gare.filter((m) => st.miei.has(chiave(a.n, m.homeClubId, m.awayClubId))).length : 0;
     return `<main class="a-body pronostici">
-      <div class="a-card pr-intro"><p>${t('Indovina come finiscono le partite della giornata: <b>1</b> vince chi gioca in casa, <b>X</b> pareggio, <b>2</b> vince chi è fuori. Non serve la rosa e si gioca anche senza lega.')}</p>
-        <p class="small muted">${t('Si salva da solo a ogni tocco. Si chiude con le formazioni: dopo non si cambia. Per ora non ci sono premi.')}</p></div>
+      <p class="pr-intro">${t('<b>1</b> casa, <b>X</b> pari, <b>2</b> fuori · segno 1 punto, esatto 3')}</p>
       ${a ? `${sec(t('Giornata {n}', { n: a.n }), st.caricato ? t('{f} su {t}', { f: fatti, t: gare.length }) : '')}
         ${gare.map((m) => partita(a.n, m)).join('')}` : `<div class="a-card"><p class="small muted">${t('Nessuna giornata aperta: il campionato è finito.')}</p></div>`}
       ${chiusa && st.caricato ? giornataChiusa(chiusa) : ''}
@@ -175,9 +189,13 @@ export const pronostici = {
       else if (gc == null && go == null && p?.gol_casa != null) salva(m, { ...p, gol_casa: null, gol_ospite: null });
       // con un solo numero si aspetta l'altro
     }));
+    root.querySelectorAll('[data-piu]').forEach((b) => b.addEventListener('click', () => {
+      aperti.add(b.dataset.piu); ctx.render();
+      root.querySelector(`[data-gol="c"][data-m="${CSS.escape(b.dataset.piu)}"]`)?.focus();
+    }));
     root.querySelectorAll('[data-scheda]').forEach((b) => b.addEventListener('click', () => { scheda = b.dataset.scheda; ctx.render(); }));
   },
 };
 
 /** Per le prove: si riparte da zero. */
-export function azzera() { st = { per: null, caricato: false, attivo: true, miei: new Map() }; classifiche = { per: null, generale: null, lega: null }; percentuali.clear(); scheda = 'generale'; }
+export function azzera() { st = { per: null, caricato: false, attivo: true, miei: new Map() }; classifiche = { per: null, generale: null, lega: null }; percentuali.clear(); aperti.clear(); scheda = 'generale'; }

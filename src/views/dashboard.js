@@ -12,8 +12,7 @@ import { riquadroRichiesta, rispondi } from './chiedi-avvisi.js';
 import { eNotte } from '../sole.js';
 import { ARTICOLI, euro } from '../shop.js';
 import { COPPA_CALENDARIO, COPPA_REFERTI } from '../coppa-dati.js';
-import { chiusuraTurno, turnoAperto, turnoConcluso, squadreApp, SQUADRE_COPPA } from '../coppa-fanta.js';
-import * as CS from '../coppa-server.js';
+import { chiusuraTurno, turnoAperto, turnoConcluso } from '../coppa-fanta.js';
 
 const RULES = [
   ['Art. 7.4', 'Rigore parato', 'Vale +3,0 al portiere e −3,0 al tiratore. Sul palo o fuori: −3,0 al tiratore e nessun bonus al portiere.'],
@@ -168,9 +167,12 @@ function corrente(f, n, me, riposo, bloccato = null) {
     : bloccato ? attesaProssima(bloccato) : '';
   // Il tocco sulle due squadre apre il pre-match a tutto campo — la stessa
   // pagina del link "Probabili e altro", che da solo non si vedeva.
+  // L'avviso del tavolino era una scheda a parte («Giornata 10: manca la
+  // formazione») con lo stesso tasto di questa card: ora e' una riga qui.
+  const tavolino = aperta && !saved ? t('Senza formazione la partita è persa 0-3 a tavolino (art. 8.4).') : '';
   return sec(t('Giornata corrente'), t('{n}ª giornata', { n })) + `<div class="mcard">
     <a class="mrow tocca" href="#/live/${f.id}" aria-label="${t('Apri lo scontro')}">${lato(h)}${centro}${lato(a)}</a>
-    ${nota ? `<p class="mnota">${esc(nota)}</p>` : ''}
+    ${nota ? `<p class="mnota">${esc(nota)}</p>` : ''}${tavolino ? `<p class="mnota avviso">${icon('clock', 'ic sm')}${esc(tavolino)}</p>` : ''}
     <div class="mact">${cta}</div>
     <a class="mcta" href="#/live/${f.id}">${pic('probabili-formazioni', 'lega', 'mini')}${t('Probabili e altro')}${icon('chev', 'ic sm')}</a>
   </div>`;
@@ -236,44 +238,31 @@ function richiestaPromemoria() {
  * l'ha indovinato lo scopre nel gioco, se vuole.
  */
 /**
- * LA COPPA FANTATITANO IN HOME (Alex, 22/11: «non trovo come accedere alla
- * coppa»). Stava solo nel menu, in fondo alla sezione della lega. Qui in cima:
- * prima della chiusura dei quarti invita a entrare, poi porta alla coppa;
- * finita la finale sparisce.
+ * «GIOCA ANCHE» (ritocchi del 26/11): Coppa, Pronostici e Chi è? erano tre card
+ * a tutta larghezza con tre stili diversi. Ora sono tre tessere piccole
+ * affiancate, uguali: un'icona, il nome, due parole di stato. «Nuova» solo sui
+ * Pronostici. Ognuna sparisce quando non c'e' niente da giocare.
  */
-function cartaCoppa() {
-  const primo = chiusuraTurno(COPPA_CALENDARIO, 1);
-  if (!primo) return '';
+function giocaAnche() {
+  const tessere = [];
   const ora = S.now().getTime();
-  if (ora < primo.getTime()) {
-    // le squadre in coppa, contando quelle dell'app (coppa-fanta.js): 32 finché la pagina non ha caricato il numero vero
-    const st = CS.stato();
-    const reali = st.caricato ? Math.max(st.contati || 0, st.elenco.length) : 0;
-    const n = st.caricato && reali ? reali + squadreApp(reali).length : SQUADRE_COPPA;
-    return `<a class="a-card cf-home nuovo" href="#/coppa"><span class="ce-home-ico da-giocare" aria-hidden="true">${icon('coppa')}</span><span class="ce-home-txt"><b>${t('Coppa Fantatitano')} <small>${t('nuova')}</small></b><span>${t('{n} squadre in coppa · quarti {quando}, gratis', { n, quando: `${dateIt(primo)} ${timeIt(primo)}` })}</span></span><span class="ce-home-cta">${t('Entra')}</span></a>`;
+  const primo = chiusuraTurno(COPPA_CALENDARIO, 1);
+  if (primo && !turnoConcluso(COPPA_CALENDARIO, COPPA_REFERTI, 5)) {
+    const aperto = ora < primo.getTime() ? null : turnoAperto(COPPA_CALENDARIO, ora);
+    const stato = ora < primo.getTime() ? t('iscriviti') : aperto ? t(aperto.nome) : t('tabellone');
+    tessere.push({ cls: 'cf-home', href: '#/coppa', ico: icon('coppa'), nome: t('Coppa'), stato });
   }
-  if (turnoConcluso(COPPA_CALENDARIO, COPPA_REFERTI, 5)) return '';
-  const aperto = turnoAperto(COPPA_CALENDARIO, ora);
-  return `<a class="a-card cf-home piccola" href="#/coppa"><span class="ce-home-ico si" aria-hidden="true">${icon('coppa')}</span><span class="ce-home-txt"><b>${t('Coppa Fantatitano')}</b><span>${aperto ? t('Prossimo turno: {nome}', { nome: t(aperto.nome) }) : t('Gironi, sfide e tabellone')}</span></span>${icon('chev', 'ic sm')}</a>`;
-}
-
-/** I pronostici della giornata (#/pronostici, 071): una riga piccola sotto la coppa. */
-function cartaPronostici() {
   const n = S.giornataDaSchierare(); const md = S.matchday(n);
-  if (!md || S.now() >= new Date(md.lockAt)) return '';
-  return `<a class="a-card cf-home piccola" href="#/pronostici"><span class="ce-home-ico si" aria-hidden="true">${icon('star')}</span><span class="ce-home-txt"><b>${t('Pronostici')} <small>${t('nuova')}</small></b><span>${t('Giornata {n}: 1 X 2 e risultato esatto', { n })}</span></span>${icon('chev', 'ic sm')}</a>`;
-}
-
-function cartaGioco(dove) {
-  const g = partitaDiOggi(); if (!g) return '';
-  if ((dove === 'su') === g.finito) return '';
-  if (g.finito) {
-    const esito = g.vinto ? `${t('Indovinato in {n}', { n: g.tentativi })}${g.serie > 1 ? ` · ${t('{n} di fila', { n: g.serie })}` : ''}` : t('Non indovinato · domani un altro');
-    return `<a class="a-card ce-home piccola" href="#/gioco"><span class="ce-home-ico ${g.vinto ? 'si' : 'no'}">${g.vinto ? icon('check') : '✕'}</span><span class="ce-home-txt"><b>${t('Chi è?')} <small>#${g.numero}</small></b><span>${esito}</span></span>${icon('chev', 'ic sm')}</a>`;
+  if (md && S.now() < new Date(md.lockAt)) tessere.push({ cls: 'pr-home', href: '#/pronostici', ico: icon('star'), nome: t('Pronostici'), stato: t('giornata {n}', { n }), nuova: true });
+  const g = partitaDiOggi();
+  if (g) {
+    const stato = !g.finito ? (g.tentativi ? t('Continua') : t('Gioca')) : g.vinto ? t('Indovinato in {n}', { n: g.tentativi }) : t('Non indovinato');
+    tessere.push({ cls: `ce-home piccola${g.finito ? ' fatto' : ''}`, href: '#/gioco', ico: '?', nome: `${t('Chi è?')} <small>#${g.numero}</small>`, stato });
   }
-  const testo = !g.tentativi ? t('Il giocatore del giorno: indovinalo in 6 tentativi')
-    : g.tentativi === 1 ? t('In corso · 1 tentativo su 6') : t('In corso · {n} tentativi su 6', { n: g.tentativi });
-  return `<a class="a-card ce-home nuovo" href="#/gioco"><span class="ce-home-ico da-giocare" aria-hidden="true">?</span><span class="ce-home-txt"><b>${t('Chi è?')} <small>#${g.numero}</small></b><span>${testo}</span></span><span class="ce-home-cta">${g.tentativi ? t('Continua') : t('Gioca')}</span></a>`;
+  if (!tessere.length) return '';
+  return sec(t('Gioca anche')) + `<div class="gioca n${tessere.length}">${tessere.map((x) => `<a class="gtile ${x.cls}" href="${x.href}">
+    <span class="gt-ico" aria-hidden="true">${x.ico}</span>${x.nuova ? `<em class="gt-nuova">${t('nuova')}</em>` : ''}
+    <b>${x.nome}</b><span>${esc(x.stato)}</span></a>`).join('')}</div>`;
 }
 
 /**
@@ -516,6 +505,9 @@ function highlights() {
   return '';
 }
 
+/** «Juvenes/Dogana» va a capo dopo la barra, non lasciando una «a» da sola. */
+const aCapo = (nome) => esc(nome).replace(/\//g, '/<wbr>');
+
 function prossimePartite(ph) {
   const cerca = (n) => (n && n <= 30 ? S.matchesOf(n).filter((m) => m.status === 'scheduled') : []);
   let n = ph.matchday; let ms = cerca(n);
@@ -527,9 +519,9 @@ function prossimePartite(ph) {
     return `<a class="up" href="#/calendario/${n}">
       <span class="when">${k ? `${dateIt(k)} · ${timeIt(k)}` : t('{n}ª giornata', { n })}</span>
       <span class="teams">
-        <span class="t">${stemmaClub(h, 'md')}<b>${esc(h.name)}</b></span>
+        <span class="t">${stemmaClub(h, 'md')}<b>${aCapo(h.name)}</b></span>
         <em>VS</em>
-        <span class="t">${stemmaClub(a, 'md')}<b>${esc(a.name)}</b></span>
+        <span class="t">${stemmaClub(a, 'md')}<b>${aCapo(a.name)}</b></span>
       </span>
       ${m.venue ? `<span class="where">${esc(m.venue)}</span>` : ''}</a>`;
   }).join('')}</div>`;
@@ -630,12 +622,14 @@ function copertina(me, row, ph) {
       <a class="hero-league" href="#/leghe">
         <span><b>${esc(S.base.league.name)}</b>
         <small>${plurale(S.base.managers.length, t('squadra'), t('squadre'))} · ${t('{n}ª giornata', { n: ph.next })}</small></span>${icon('chev', 'ic sm')}</a>
+      <div class="hero-io">
       <a class="hero-stemma${scelto(me) ? ' pers' : ''}" href="#/squadra" aria-label="${t('Modifica stemma e personaggio')}">
         ${scelto(me) ? personaggio(scelto(me)) : crest(me, 'hero')}</a>
       <div class="hero-chi">
         <h2>${esc(me.teamName)}</h2>
         <p class="hero-owner">${esc(me.owner)}</p>
         <a class="hero-marchio" href="#/regolamento">${logo()}<span>Voto Titano</span></a>
+      </div>
       </div>
       <div class="a-stats">
         <div><b>${row.position}<sup>ª</sup></b><span>${t('Posizione')}</span></div>
@@ -651,7 +645,7 @@ function copertina(me, row, ph) {
 }
 
 export const dashboard = {
-  title: 'Home',
+  title: 'Home', testata: () => t('Home'),
   render() {
     const me = S.me(); const ph = S.weekPhase();
     if (!me) return `<main class="a-body"><div class="empty">${logo()}<p>${t('Non fai parte di questa lega.')}</p><a class="a-btn" href="#/leghe" style="text-decoration:none">${t('Le mie leghe')}</a></div></main>`;
@@ -683,35 +677,38 @@ export const dashboard = {
     const riposo = !cur && nCur <= 30 && S.base.managers.length > 1;
     const [art, titolo, testo] = RULES[Math.floor(Date.now() / 86400000) % RULES.length];
 
+    // IL NUOVO ORDINE (ritocchi del 26/11): prima la giornata da giocare col
+    // suo tasto, poi i voti provvisori, gli altri giochi, la classifica, le
+    // partite vere, notizie e video; lo shop in fondo. Gli avvisi che chiedono
+    // di fare qualcosa (scambi, calcolo, rosa) stanno subito sotto la giornata.
+    const giornata = S.aPunti() ? correntePunti(Math.min(30, nCur), me, bloccato) : corrente(cur, nCur, me, riposo, bloccato);
     return `<main class="a-body home">
       <div id="install-slot"></div>
       ${copertina(me, row, ph)}
-      ${cartaCoppa()}${cartaPronostici()}
-      ${cartaGioco('su')}
       ${invitoNegozio()}
-      ${notiziaBreve()}
-      ${invitoPubblica()}
-      ${fasciaSponsor()}
-      ${S.aPunti() ? '' : conclusa(ultima)}
-      ${daCalcolare(ph, bloccato)}
-      ${S.aPunti() ? correntePunti(Math.min(30, nCur), me, bloccato) : corrente(cur, nCur, me, riposo, bloccato)}
+      ${giornata}
+      ${/* l'avviso del tavolino sta gia' nella card, accanto al tasto */ giornata.includes('href="#/rosa/formazione"') ? '' : daConsegnare()}
+      ${richiestaPromemoria()}
       ${noRoster && !S.legaPubblica() ? tile({ href: S.isLeagueAdmin() ? '#/lega' : '#/leghe', lead: icon('warn'), leadKind: 'warn',
           title: t('Rose non ancora assegnate'),
           sub: S.isLeagueAdmin() ? t('Generale o inserirle dalla gestione lega') : t("Le assegna l'admin della lega dopo l'asta") }) : azione(ph, bloccato)}
-      ${bannerShop()}
-      ${richiestaPromemoria()}
-      ${invitoCalciatori()}
+      ${daCalcolare(ph, bloccato)}
+      ${scambiDaDecidere()}
+      ${lockDaSistemare()}
+      ${S.aPunti() ? '' : conclusa(ultima)}
+      ${giocaAnche()}
+      ${invitoPubblica()}
+      ${fasciaSponsor()}
+      ${classificaBreve(me)}
       ${ultimiCinque(last, me)}
       ${prossimePartite(ph)}
-      ${lockDaSistemare()}
-      ${scambiDaDecidere()}
-      ${daConsegnare()}
-      ${classificaBreve(me)}
-      ${cartaGioco('giu')}
+      ${notiziaBreve()}
       ${highlights()}
       ${notizie()}
+      ${invitoCalciatori()}
       ${sec(t('Dal regolamento'))}
       <div class="rule"><span class="art">${art}</span><p><b>${t(titolo)}.</b> ${t(testo)}</p></div>
+      ${bannerShop()}
     </main>`;
   },
   mount(root, ctx) {

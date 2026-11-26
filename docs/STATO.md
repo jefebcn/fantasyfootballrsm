@@ -19,7 +19,8 @@ Aggiornato: 2026-11-26 sera · temi: ritocchi di home e pronostici, personaggi s
 - Per Alex, dal pannello: password rubate su Supabase Auth; backup fuori da GitHub; seconda chiave Buffer.
 
 ## Prossimo passo consigliato
-- Scegliere il prossimo lavoro grosso; intanto confrontare le prove dei personaggi appena arrivano.
+- Alla ripresa (Alex, 26/11 sera): un post Instagram su un paio di novità recenti dell'app, venerdì 27/11 o lunedì 30/11. Candidate: pronostici della giornata con classifica «Tutti» e «La tua lega» (la 10 chiude sab 28/11 alle 13:50, quindi venerdì è il giorno giusto); highlights con gli stemmi nuovi; home più pulita. Non citare personaggi né premi.
+- Poi scegliere il prossimo lavoro grosso; intanto confrontare le prove dei personaggi appena arrivano.
 
 ## Decisioni recenti di Alex ancora valide
 - Personaggi in silenzio: non in main, non annunciati, finché lo stile non convince. Stile = figure intere dei 101-230 (non mezzibusti, non vettoriale, non 3D). Foto vere di calciatori solo col consenso e via API.

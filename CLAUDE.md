@@ -14,7 +14,7 @@ Fantacalcio gratuito sul Campionato Sammarinese (fantatitano.site), PWA statica 
 | Monetizzazione, crescita (inviti, card, premi), ordine dei lavori | `MONETIZZAZIONE.md`, `docs/CRESCITA.md`, `docs/PIANO-LAVORI.md` |
 | Controlli e avvisi automatici | `MONITORAGGIO.md`, `.github/workflows/` |
 | Storie e gol per i social | `social/`, `scripts/storie-gol.mjs`, `scripts/pubblica-storia.mjs` |
-| FantaTitano Futsal (gioco, import, Instagram @fantatitano.futsal) | `docs/futsal/STATO.md`, `docs/futsal/RICETTE.md`, `FUTSAL.md`; prima del lancio lo vede solo il proprietario (`APERTO_A_TUTTI` in `src/views/futsal.js`) |
+| FantaTitano Futsal (gioco, import, Instagram @fantatitano.futsal) | `docs/futsal/STATO.md`, `docs/futsal/RICETTE.md`, `FUTSAL.md`; si apre a tutti da solo il 01/12 alle 8 (`futsalPerTutti` in `src/lancio-futsal.js`) |
 | Instagram automatico (post e storie su Buffer) | kit social fuori dal repo (`kit/STATO.md`, `kit/PLAYBOOK.md`); controllo della coda lun/mer/ven che riempie i 10 posti (regole nei giri lunedì e giovedì, spenti); ricette in `docs/RICETTE.md` |
 | Video (HyperFrames) | `/regia-hyperframes` o la skill `hyperframes` (porta d'ingresso); progetti in `videos/` e `regia/`. Le altre 20 skill video sono nascoste (`disable-model-invocation: true`) per non pagarle in ogni sessione: quando un passo dice `/nome`, leggi `.claude/skills/<nome>/SKILL.md`. Se `npx hyperframes skills update` toglie quella riga, rimettila. |
 
@@ -25,6 +25,7 @@ I documenti grandi (`IOS.md` e `PLAY.md` 23 KB, `MONETIZZAZIONE.md` 17 KB) si le
 - Prima del push: `npm test` (lint + prove). Il deploy su Vercel parte solo se le prove sono verdi (`scripts/vercel-controlla.sh`).
 - Prima della PR: `git fetch origin main` e unisci main; se poi la versione coincide con main, rilancia `scripts/bump-sw.py` (gli import automatici alzano la versione anche loro); committa anche `src/versione.js`.
 - Le modifiche al database vanno salvate anche in `supabase/migrations/`.
+- Le app iPhone/Android aprono fantatitano.site: ogni deploy arriva anche lì, senza aggiornamento sugli store (serve solo per cambiare la parte nativa).
 - Brand: il logo originale (corona viola disegnata a mano) non si modifica. Font: Anton per i titoli grandi, Bebas Neue per i titoli alternativi, Montserrat per sottotitoli e testi. La mascotte è Tito, draghetto viola streetwear (felpa nera, cargo viola), senza corona.
 - Social: niente inviti tipo «scrivetelo nei commenti». Le partite si giocano sabato e domenica.
 - Mai citare le app a cui ci ispiriamo (app, social, codice, documenti): il gioco si presenta da solo.

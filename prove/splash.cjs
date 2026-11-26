@@ -69,6 +69,9 @@ const TETTO_CSS = 48 * 1024;   // oggi 35 kB: 16 di corona, 17 di marchio
         sopraLaBarra: bar ? r.bottom < bar.top : null,
         barCentrata: bar ? Math.abs((bar.left + bar.width / 2) - innerWidth / 2) < 1 : null,
         bianco: cs.backgroundColor,
+        // 1-14 dicembre (src/lancio-futsal.js): la corona e' meta' bianca e meta' arancio, fatta col gradiente
+        lancio: document.documentElement.classList.contains('lancio-futsal'),
+        colore: cs.color, gradiente: cs.backgroundImage,
         dataUri: url.startsWith('data:'),
         vera, pezziSeparati: document.querySelectorAll('.splash b, .splash span').length,
       };
@@ -81,7 +84,8 @@ const TETTO_CSS = 48 * 1024;   // oggi 35 kB: 16 di corona, 17 di marchio
       et(m.centrato && m.barCentrata !== false, `${nome}: centrato, e la barra con lui`);
       et(m.sopraLaBarra === true, `${nome}: la barra del caricamento gli sta sotto`);
       et(m.dataUri, `${nome}: la maschera e' un data URI (niente richiesta, funziona offline)`);
-      et(m.bianco === 'rgb(255, 255, 255)', `${nome}: bianco sul blu (${m.bianco})`);
+      if (m.lancio) et(m.colore === 'rgb(255, 255, 255)' && /rgb\(255, 75, 43\)/.test(m.gradiente), `${nome}: nei giorni del lancio corona bianca e arancio (${m.colore} · ${m.gradiente.slice(0, 60)})`);
+      else et(m.bianco === 'rgb(255, 255, 255)', `${nome}: bianco sul blu (${m.bianco})`);
       et(m.pezziSeparati === 0, `${nome}: niente piu' corona e scritte come pezzi separati (${m.pezziSeparati})`);
       // deformazione: il rapporto della scatola contro quello della maschera
       if (m.vera) {

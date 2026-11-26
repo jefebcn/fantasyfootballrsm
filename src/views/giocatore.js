@@ -13,7 +13,20 @@ export const giocatore = {
       <div class="a-card" style="display:flex;gap:14px;align-items:center">${avatarGrande(p, club)}<div style="flex:1"><b style="font:700 18px var(--font-display)">${esc(p.firstName)} ${esc(p.lastName)}</b>${(() => { const q = S.squalifica(p.id); return q ? ` <i class="squal" title="${esc(q.motivo)}">${t('SQUALIFICATO')}</i><br><span class="small" style="color:var(--negative)">${t('Salta la {n}ª giornata: {motivo}', { n: S.giornataDaSchierare(), motivo: esc(q.motivo) })}</span>` : ''; })()}<br><span class="small muted">${esc(club.name)} · ${t(roleName(p.role))} · ${p.isActive ? (owner ? t('di {squadra}', { squadra: esc(owner.teamName) }) : t('svincolato')) : `<b style="color:var(--negative)">${t('fuori dal campionato (art. 3.3)')}</b>`}</span>${S.haAderito(p.id) ? `<br><span class="aderito" title="${t('Ha confermato che il suo nome può comparire nel gioco')}">${icon('check')}${t('Ha aderito a Fantatitano')}</span>` : ''}</div>${roleChip(p.role)}</div>
       <div class="a-card a-stats"><div><b>${p.quotation}</b><span>${t('Quotazione')}</span></div><div><b>${cnt ? fmt(sum / cnt) : '–'}</b><span>${t('Media FV')}</span></div><div><b>${cnt}</b><span>${t('Presenze')}</span></div><div><b>${hist.reduce((s, h) => s + h.evs.filter((e) => e.type === 'goal').length, 0)}</b><span>${t('Gol')}</span></div></div>
       <a class="a-btn sec" href="#/confronto/${esc(p.id)}" style="text-decoration:none;justify-content:center">${t('Confronta con un altro {ruolo}', { ruolo: t(roleName(p.role)).toLowerCase() })}</a>
-      <div class="vlist"><div class="vhead">${t('Storico giornate')}</div>${hist.map(({ n, r, m, evs }) => voteRow({ ...p, name: t('Giornata {n}', { n }) }, m ? { name: `${S.clubsById.get(m.homeClubId).name} ${m.status === 'played' ? `${m.homeGoals}-${m.awayGoals}` : '—'} ${S.clubsById.get(m.awayClubId).name}` } : null, r ? { ...r, events: evs } : null, { minutes: r?.minutes })).join('') || `<p class="small muted" style="padding:12px">${t('Nessuna giornata giocata.')}</p>`}</div>
+      <div class="vlist voti-spiegati"><div class="vhead">${t('Storico giornate')}<span class="small muted">${t('tocca una giornata: da dove viene il voto')}</span></div>${storico(p, hist)}</div>
     </main>`;
   },
 };
+
+/**
+ * Le giornate dalla piu' recente, con il voto spiegato voce per voce (eventi
+ * del referto, art. 6). La riga si apriva gia' al tocco ma nessuno lo sapeva:
+ * l'ultima giornata con un voto ora e' aperta, le altre si aprono toccandole.
+ */
+function storico(p, hist) {
+  if (!hist.length) return `<p class="small muted" style="padding:12px">${t('Nessuna giornata giocata.')}</p>`;
+  const ultima = [...hist].reverse().find((h) => h.r && !h.r.isSV)?.n;
+  return [...hist].reverse().map(({ n, r, m, evs }) => voteRow({ ...p, name: t('Giornata {n}', { n }) },
+    m ? { name: `${S.clubsById.get(m.homeClubId).name} ${m.status === 'played' ? `${m.homeGoals}-${m.awayGoals}` : '—'} ${S.clubsById.get(m.awayClubId).name}` } : null,
+    r ? { ...r, events: evs } : null, { minutes: r?.minutes, expanded: n === ultima })).join('');
+}

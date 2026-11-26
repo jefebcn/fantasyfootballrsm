@@ -363,6 +363,13 @@ export async function adminImpostaRuolo(userId, ruolo, on) { return must(await s
 
 export async function updateLeague(id, patch) { return must(await sb.from('leagues').update(patch).eq('id', id).select().single()); }
 // la bacheca della lega (064): gli ultimi 50 messaggi, scriverne uno, cancellarlo
+// I pronostici della giornata (071): i propri, una riga per partita; la
+// classifica e le percentuali arrivano solo per le giornate chiuse.
+export async function mieiPronostici(userId) { return must(await sb.from('pronostici').select('matchday, casa, ospite, segno, gol_casa, gol_ospite').eq('user_id', userId)) || []; }
+export async function salvaPronostico(riga) { return must(await sb.from('pronostici').upsert({ ...riga, updated_at: new Date().toISOString() }, { onConflict: 'user_id,matchday,casa,ospite' })); }
+export async function togliPronostico(userId, n, casa, ospite) { return must(await sb.from('pronostici').delete().eq('user_id', userId).eq('matchday', n).eq('casa', casa).eq('ospite', ospite)); }
+export async function pronosticiClassifica(risultati, lega = null) { return must(await sb.rpc('pronostici_classifica', { p_risultati: risultati, p_lega: lega })) || []; }
+export async function pronosticiPercentuali(n) { return must(await sb.rpc('pronostici_percentuali', { p_giornata: n })) || []; }
 export async function messaggiLega(leagueId) { return must(await sb.from('lega_messaggi').select('id, member_id, testo, created_at').eq('league_id', leagueId).order('created_at', { ascending: false }).limit(50)); }
 export async function scriviMessaggio(leagueId, memberId, testo) { return must(await sb.from('lega_messaggi').insert({ league_id: leagueId, member_id: memberId, testo })); }
 export async function cancellaMessaggio(id) { return must(await sb.from('lega_messaggi').delete().eq('id', id)); }

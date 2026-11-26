@@ -37,3 +37,4 @@ export { futsalHome, futsalSquadra, futsalFormazione, futsalGiornata, futsalList
 export { gioco } from './gioco.js';
 export { shop } from './shop.js';
 export { coppa } from './coppa.js';
+export { pronostici } from './pronostici.js';

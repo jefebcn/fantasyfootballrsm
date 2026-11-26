@@ -241,6 +241,7 @@ export const SQUADRA = {
   Presenze: 'Partidos',
   'Confronta con un altro {ruolo}': 'Comparar con otro {ruolo}',
   'Storico giornate': 'Historial de fechas',
+  'tocca una giornata: da dove viene il voto': 'toca una fecha: de dónde sale el voto',
   'Nessuna giornata giocata.': 'Ninguna fecha jugada.',
   // errori della formazione che nascono in src/state.js (saveLineup)
   'La {g}ª giornata è ancora in corso: la formazione della {n}ª si apre quando finisce': 'La fecha {g} todavía está en juego: la alineación de la fecha {n} se abre cuando termine',

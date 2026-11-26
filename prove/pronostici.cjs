@@ -48,6 +48,12 @@ const OUT = process.env.USCITA || '/tmp';
   await p.click('.pr-partita >> nth=1 >> [data-segno="X"]'); await w(500);
   let righe = (await db()).pronostici || [];
   vero(righe.length === 2 && righe.every((r) => r.matchday === n), `dopo due tocchi ${righe.length} pronostici nel database`);
+  // il risultato esatto: niente prima del segno, poi chiuso dietro «+ risultato esatto»
+  const terza = await p.$$eval('.pr-partita >> nth=2 >> .pr-piu, .pr-partita >> nth=2 >> .pr-gol', (x) => x.length).catch(() => -1);
+  vero(terza === 0, `senza segno niente risultato esatto (${terza})`);
+  vero(await p.$('.pr-partita >> nth=0 >> .pr-piu') && !(await p.$('.pr-partita >> nth=0 >> .pr-gol')), 'dopo il segno compare «+ risultato esatto», chiuso');
+  vero(!(await p.textContent('main')).includes('facoltativo'), 'la regola dei 3 punti non si ripete in ogni partita');
+  await p.click('.pr-partita >> nth=0 >> .pr-piu'); await w(300);
   const prima = await p.$('.pr-partita >> nth=0');
   await (await prima.$('[data-gol="c"]')).selectOption('0');
   await (await prima.$('[data-gol="o"]')).selectOption('2'); await w(500);
@@ -63,6 +69,10 @@ const OUT = process.env.USCITA || '/tmp';
   await p.click('.pr-partita >> nth=1 >> [data-segno="X"]'); await w(500);
   vero(((await db()).pronostici || []).length === 1, 'ritoccare X lo toglie');
   await p.screenshot({ path: `${OUT}/pronostici-aperta.png`, fullPage: true });
+  const intro = await p.$eval('.pr-intro', (x) => Math.round(x.getBoundingClientRect().height / (parseFloat(getComputedStyle(x).fontSize) * 1.5)));
+  vero(intro <= 1, `l'introduzione sta su ${intro} righe`);
+  const troncati = await p.$$eval('.pr-squadre b', (x) => x.filter((e) => e.scrollWidth > e.clientWidth + 1).length);
+  vero(troncati === 0, `${troncati} nomi di squadra troncati`);
   const largo = await p.evaluate(() => document.documentElement.scrollWidth);
   vero(largo <= 375, `la pagina sborda: ${largo}px`);
 

@@ -3457,3 +3457,99 @@ b > .stemma.xs:last-child{margin:0 0 0 6px}
 .pr-cl .pos{color:var(--text-muted);font-weight:700}
 .pr-cl .pt{text-align:right;font-weight:700;font-size:16px}
 .pr-cl.mio{background:var(--primary-soft, rgba(27,132,198,.1));margin:0 -12px;padding-left:12px;padding-right:12px;border-radius:8px}
+
+/* ==========================================================================
+   RITOCCHI DEL 26/11 (Alex: «problemi di confusione visiva»). Il lime resta
+   solo su «Inserisci formazione», l'unica cosa da fare: tutto il resto passa a
+   contorno o tiene il lime solo nell'icona. La copertina scende a poco piu'
+   di meta' (stemma accanto al nome invece che sopra), cosi' la giornata da
+   giocare si vede subito.
+   ========================================================================== */
+.a-hero.foto{--cielo:14px;--fh:min(46vw,190px);--ph:min(30vw,124px)}
+.a-hero.foto .sfondo img{object-position:center 30%}
+.a-hero{gap:10px;padding:12px 16px 14px}
+:root[data-theme="dark"] .a-hero.foto{padding-bottom:22px}
+@media (prefers-color-scheme:dark){ :root:not([data-theme="light"]) .a-hero.foto{padding-bottom:22px} }
+.a-hero .hero-io{display:flex;align-items:flex-end;gap:12px;min-width:0}
+.a-hero.foto .hero-io{margin-top:max(24px,calc(var(--cielo) + var(--fh) - 46px - 64px))}
+.a-hero .hero-io .hero-stemma,.a-hero.foto .hero-io .hero-stemma,.a-hero.foto .hero-io .hero-stemma.pers{align-self:flex-end;flex:none;margin-top:0}
+.a-hero .hero-io .hero-stemma .crest.hero{width:76px;height:76px;font-size:22px;border-width:3px;box-shadow:0 0 0 2px rgba(255,255,255,.55)}
+.a-hero .hero-io .hero-stemma.pers,.a-hero.foto .hero-io .hero-stemma.pers{height:var(--ph,110px);max-width:34vw}
+.a-hero .hero-io .hero-stemma.pers .pers{max-height:var(--ph,110px)}
+.a-hero .hero-io .hero-chi{flex:1;min-width:0;align-items:flex-start;text-align:left;margin:0;padding:0 0 4px}
+.a-hero .hero-io h2{padding:0;font-size:clamp(22px,6.4vw,28px)}
+.a-hero .hero-io .hero-owner{margin-top:3px}
+.a-hero .a-stats{padding:7px 4px}
+.a-hero .a-stats b{font-size:21px}
+.hero-azioni a{min-height:40px}
+/* «Voto Titano»: un contorno, non piu' l'adesivo lime storto */
+.home .a-hero .hero-marchio{margin-top:8px;min-height:32px;padding:4px 11px 4px 7px;background:transparent;color:#fff;
+  border:1.5px solid rgba(255,255,255,.42);transform:none;box-shadow:none}
+.home .a-hero .hero-marchio:active{background:rgba(255,255,255,.12)}
+.home .a-hero .hero-marchio > span{font:600 12.5px/1 var(--font-body);letter-spacing:.02em}
+.home .a-hero .hero-marchio .logo{width:18px;height:18px}
+
+/* La barra: un titolo solo («Home»), il nome della lega sta nella pillola */
+.a-appbar .t.solo b{font-size:18px}
+/* I tre tasti in alto: contorno bianco, dritti */
+.a-appbar .ib:not([data-open-drawer]):not([data-back]){background:transparent;color:#fff;
+  border:1.5px solid rgba(255,255,255,.4);box-shadow:none;transform:none}
+.a-appbar .ib:not([data-open-drawer]):not([data-back]):active{transform:none;box-shadow:none;background:rgba(255,255,255,.14)}
+.a-appbar .ib + .ib{margin-left:0}
+.a-appbar .ib .dot{border-color:var(--c-titano-700,#04173B)}
+
+/* La card della giornata: l'avviso del tavolino e' una riga sua, e
+   l'allenatore sta attaccato al nome della squadra */
+.mcard .mnota.avviso{display:flex;align-items:center;justify-content:center;gap:6px;text-wrap:balance;margin-top:2px;color:var(--text);font-weight:600}
+.mcard .mnota.avviso .ic{flex:none;width:14px;height:14px;color:var(--c-oro-500,#D99A00)}
+.mcard .side{gap:5px}
+.mcard .side b{min-height:0}
+.mcard .side .own{margin-top:-3px}
+/* «Classifica e premi», «Probabili e altro»: un collegamento, non un tasto */
+.home .mcard .mcta{color:var(--text);font:600 13.5px/1 var(--font-body);letter-spacing:0;text-transform:none;padding:12px 11px}
+.home .mcard .mcta .ic{stroke-width:2.2;color:var(--text-muted)}
+/* «Provvisorio»: una pillola dritta dentro la card */
+.home .tile .txt .badge{transform:none;font:700 10.5px/1 var(--font-body);letter-spacing:.06em;padding:4px 9px;border-radius:999px}
+/* Highlights: tondo scuro, lime solo nel simbolo */
+.vh-p,.vid-play{background:rgba(4,23,59,.72);color:var(--c-lime)}
+.vid-play{box-shadow:0 2px 8px rgba(0,0,0,.3)}
+
+/* Prossime partite: nomi interi, a capo bilanciato (anche dopo «/») */
+.up .teams .t b{overflow-wrap:normal;word-break:normal;hyphens:manual;text-wrap:balance}
+
+/* «Gioca anche»: tre tessere uguali, simbolo e due parole */
+.gioca{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.gioca.n1{grid-template-columns:minmax(0,1fr)}
+.gioca.n2{grid-template-columns:repeat(2,minmax(0,1fr))}
+.gioca .gtile{position:relative;display:flex;flex-direction:column;align-items:flex-start;gap:3px;min-width:0;
+  padding:11px 10px 10px;border-radius:14px;border:1px solid var(--border);background:var(--surface);
+  box-shadow:var(--sh-card);text-decoration:none;color:inherit}
+.gioca .gtile:active{background:var(--surface-2)}
+.gioca .gtile.ce-home.nuovo,.gioca .gtile.cf-home.nuovo{border:1px solid var(--border)}
+.gioca .gt-ico{width:30px;height:30px;margin-bottom:4px;border-radius:9px;display:grid;place-items:center;
+  background:var(--surface-sunk);color:var(--primary-ink,var(--primary));font:800 15px var(--font-display)}
+.gioca .gt-ico .ic{width:17px;height:17px}
+.gioca .gtile b{display:block;max-width:100%;font:400 15px/1.1 var(--font-tito);letter-spacing:.03em;text-transform:uppercase;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.gioca .gtile b small{font:600 11px var(--font-body);color:var(--text-muted);letter-spacing:0}
+.gioca .gtile > span:last-child{max-width:100%;font-size:12px;line-height:1.25;color:var(--text-muted);overflow:hidden;
+  display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2}
+.gioca .gt-nuova{position:absolute;top:9px;right:8px;font:700 9.5px/1 var(--font-body);font-style:normal;letter-spacing:.06em;
+  text-transform:uppercase;padding:3px 6px;border-radius:999px;color:var(--primary-ink,var(--primary));border:1px solid currentColor}
+
+/* Pronostici, ritocchi del 26/11: introduzione di una riga, ogni nome sopra
+   il suo tasto (1 sotto la squadra di casa, 2 sotto quella fuori) e intero,
+   su due righe se serve; il risultato esatto si apre solo dopo il segno. */
+.pronostici .pr-intro{margin:2px 2px 4px;font-size:13px;text-wrap:balance;color:var(--text-muted)}
+.pronostici .pr-intro b{color:var(--text)}
+.pr-squadre{grid-template-columns:repeat(3,minmax(0,1fr));align-items:start;gap:8px}
+.pr-squadre>span{flex-direction:column;align-items:center;gap:5px;text-align:center}
+.pr-squadre>span b{white-space:normal;overflow:visible;text-overflow:clip;text-wrap:balance;font:700 13.5px/1.2 var(--font-body)}
+.pr-squadre .pr-ora{align-self:center;line-height:1.35}
+.pr-piu{align-self:flex-start;border:0;background:transparent;padding:4px 2px;min-height:32px;
+  color:var(--primary-ink,var(--primary));font:600 13px var(--font-body);cursor:pointer}
+.pr-saltata{margin:14px 2px 0}
+/* «Costruisci la tua rosa» resta lime solo quando non c'e' gia' il tasto
+   della giornata: due tasti lime insieme non dicono piu' quale viene prima. */
+.home:has(.a-btn.tito) .negozio-cta{background:var(--surface);color:var(--text);box-shadow:var(--sh-card);border:1.5px solid var(--border)}
+.home:has(.a-btn.tito) .negozio-cta .chev{background:var(--surface-sunk);color:var(--text)}

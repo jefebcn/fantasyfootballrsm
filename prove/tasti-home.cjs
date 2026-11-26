@@ -10,9 +10,12 @@
  *    carattere e nessuno se ne accorge);
  *  - «Classifica e premi», «Voto Titano», «Costruisci la tua rosa» e il
  *    montepremi abbiano il nuovo stile, senza sottolineature;
- *  - le icone in alto siano adesivi lime con i simboli da campo (pallone,
- *    fischietto, bandierina: Alex, 12/10) e il nome della lega resti intero,
- *    in chiaro e in scuro;
+ *  - le icone in alto abbiano i simboli da campo (pallone, fischietto,
+ *    bandierina: Alex, 12/10) e il titolo della barra resti intero, in chiaro
+ *    e in scuro;
+ *  - dal 26/11 (ritocchi «confusione visiva») il lime pieno resti solo sul
+ *    tasto della giornata: icone in alto, «Voto Titano» e «Probabili e altro»
+ *    passano a contorno;
  *  - fuori dalla home lo stesso stile: schede, titoli, moduli, tasti.
  */
 const { chromium } = require('playwright');
@@ -61,6 +64,7 @@ const LIME = 'rgb(217, 245, 31)';
           const m = e.querySelector('.mi'); const u = e.querySelector('use');
           return m ? (m.getAttribute('style') || '').replace(/.*\/(.+)\.png.*/, '$1') : u?.getAttribute('href'); }),
         titoloIntero: titolo ? titolo.scrollWidth <= titolo.clientWidth : false,
+        limePieni: [...document.querySelectorAll('.home a, .home button, .a-appbar a, .a-appbar button')].filter((e) => e.offsetHeight && getComputedStyle(e).backgroundColor === 'rgb(217, 245, 31)').map((e) => e.className),
       };
     });
     et(m.tasto && m.tasto.bg === LIME, `[${tema}] il tasto della giornata è lime (${m.tasto?.bg})`);
@@ -68,13 +72,15 @@ const LIME = 'rgb(217, 245, 31)';
     et(m.tasto && /Anton/.test(m.tasto.font) && m.anton, `[${tema}] scritto in Anton, caricato davvero`);
     et(m.vai && /formazione/i.test(m.testo || ''), `[${tema}] con la freccia nel tondo («${m.testo}»)`);
     et(m.tasto && m.tasto.h >= 48, `[${tema}] alto abbastanza per il pollice (${Math.round(m.tasto?.h)} px)`);
-    et(m.mcta && m.mcta.deco === 'none' && /Anton/.test(m.mcta.font), `[${tema}] «Classifica e premi» in Anton, senza sottolineatura`);
-    et(m.marchio && m.marchio.bg === LIME && /Anton/.test(m.marchioTesto?.font || ''), `[${tema}] «Voto Titano» è l'adesivo lime`);
-    et(!m.negozio || (m.negozio.bg === LIME && /Anton/.test(m.negozioTitolo.font)), `[${tema}] «Costruisci la tua rosa» lime in Anton`);
+    // ritocchi del 26/11: il lime resta solo sul tasto della giornata
+    et(m.mcta && m.mcta.deco === 'none' && m.mcta.bg !== LIME, `[${tema}] «Probabili e altro» senza sottolineatura e senza lime`);
+    et(m.marchio && m.marchio.bg !== LIME && m.marchio.h >= 32, `[${tema}] «Voto Titano» a contorno, non lime (${m.marchio?.bg}, alto ${m.marchio?.h})`);
+    et(!m.negozio || (/Anton/.test(m.negozioTitolo.font)), `[${tema}] «Costruisci la tua rosa» in Anton (lime solo senza il tasto della giornata)`);
     et(m.invito && /Anton/.test(m.invitoTitolo.font), `[${tema}] il montepremi ha il titolo in Anton`);
-    et(m.icone.length === 3 && m.icone.every((c) => c === LIME), `[${tema}] le tre icone in alto sono adesivi lime (${m.icone.join(' / ')})`);
+    et(m.icone.length === 3 && m.icone.every((c) => c !== LIME), `[${tema}] le tre icone in alto sono a contorno, non lime (${m.icone.join(' / ')})`);
+    et(m.limePieni.length === 1, `[${tema}] in home un solo tasto lime, quello della giornata (${m.limePieni.join(' | ')})`);
     et(m.simboli.join(',') === 'pallone-scambio,fischietto,#i-bandierina', `[${tema}] con pallone, fischietto e bandierina (${m.simboli.join(', ')})`);
-    et(m.titoloIntero, `[${tema}] e il nome della lega resta intero`);
+    et(m.titoloIntero, `[${tema}] e il titolo della barra resta intero`);
     await p.evaluate(() => document.querySelector('.home .mcard')?.scrollIntoView({ block: 'center' }));
     await p.screenshot({ path: `${USCITA}/tasti-home-${tema}.png` }).catch(() => {});
 

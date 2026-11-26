@@ -54,6 +54,8 @@ const ok = [], ko = []; const et = (c, t) => (c ? ok : ko).push(t);
       return {
         appbar: r('.a-appbar'), hero: r('.a-hero'), marchio: r('.hero-marchio'), stats: r('.a-hero .a-stats'),
         targa: r('.hero-league'), foto: r('.a-hero.foto .sfondo img'),
+        // dal lancio del futsal (01/12 alle 8) sopra la copertina c'e' il selettore Calcio/Futsal
+        sport: r('.sport-sw'),
         slotVisibile: getComputedStyle(document.querySelector('#install-slot')).display,
         marchioTag: marchio ? marchio.tagName : null,
         marchioHref: marchio ? marchio.getAttribute('href') : null,
@@ -65,7 +67,8 @@ const ok = [], ko = []; const et = (c, t) => (c ? ok : ko).push(t);
     });
 
     // 1. niente striscia
-    et(m.hero.top === m.appbar.bottom, `${eti}: la copertina attacca all'intestazione (striscia di ${m.hero.top - m.appbar.bottom}pt)`);
+    const sopra = m.sport ? m.sport.bottom + 12 : m.appbar.bottom; // il selettore ha 12pt di margine sotto (.sport-sw)
+    et(m.hero.top === sopra, `${eti}: la copertina attacca ${m.sport ? 'al selettore Calcio/Futsal' : "all'intestazione"} (striscia di ${m.hero.top - sopra}pt)`);
     et(m.slotVisibile === 'none', `${eti}: lo spazio vuoto dell'invito a installare esce dal conto (${m.slotVisibile})`);
     // 1b. la targa della lega non copre la torre centrale (Alex, 20/11 e 26/11):
     // nella foto la bandiera della torre di mezzo sta al 15% dell'altezza

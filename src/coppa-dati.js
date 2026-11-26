@@ -27,9 +27,9 @@ export const COPPA_CALENDARIO = [
   [3,"trepenne","pennarossa","2026-11-25T20:45:00+01:00","Stadio di Montecchio",2,1],
   [3,"folgore","virtus","2026-11-25T20:45:00+01:00","Stadio di Acquaviva",0,1],
   [4,"cosmos","lafiorita","2026-12-09T20:45:00+01:00","Stadio di Montecchio",null,null],
-  [4,"trefiori","domagnano","2026-12-09T20:45:00+01:00","Stadio di Fiorentino",null,null],
   [4,"pennarossa","trepenne","2026-12-09T20:45:00+01:00","Stadio di Acquaviva",null,null],
   [4,"virtus","folgore","2026-12-09T20:45:00+01:00","Stadio di Dogana",null,null],
+  [4,"trefiori","domagnano","2026-12-15T20:45:00+01:00","Stadio di Fiorentino",null,null],
 ];
 export const COPPA_REFERTI = [
   {g:1,casa:"domagnano",ospite:"faetano",arbitro:"Villa William",titolari:[["domagnano_2", "domagnano_8", "domagnano_10", "domagnano_22", "domagnano_25", "domagnano_17", "domagnano_21", "domagnano_14", "domagnano_9", "domagnano_6", "domagnano_26"], ["faetano_2", "faetano_12", "faetano_4", "faetano_21", "faetano_25", "faetano_16", "faetano_20", "faetano_8", "faetano_5", "faetano_14", "faetano_18"]],eventi:[["domagnano_14", 93, "assist"], ["domagnano_10", 93, "goal"], ["domagnano_14", 90, "yellow"], ["faetano_23", 58, "yellow"], ["faetano_21", 47, "yellow"], ["faetano_25", 42, "goal"], ["faetano_4", 40, "yellow"], ["domagnano_14", 12, "assist"], ["domagnano_25", 12, "goal"], ["domagnano_25", 6, "assist"], ["domagnano_8", 6, "goal"]],cambi:[["faetano_15", "faetano_16", 77], ["domagnano_5", "domagnano_9", 76], ["domagnano_20", "domagnano_21", 69], ["domagnano_15", "domagnano_17", 69], ["domagnano_18", "domagnano_22", 60], ["domagnano_23", "domagnano_26", 60], ["faetano_23", "faetano_21", 56], ["faetano_26", "faetano_20", 56], ["faetano_22", "faetano_8", 46], ["faetano_6", "faetano_12", 46]]},

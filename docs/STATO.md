@@ -1,10 +1,10 @@
 # Stato – Fantatitano
 
-Aggiornato: 2026-11-26 · temi: ritocchi di home e pronostici, personaggi somiglianti (in disparte), lancio futsal automatico
+Aggiornato: 2026-11-26 sera · temi: ritocchi di home e pronostici, personaggi somiglianti (in disparte), lancio futsal automatico, stemmi negli highlights
 
 ## Dove siamo
-- App online su fantatitano.site e su iPhone; le app aprono il sito, quindi ogni deploy arriva anche lì. Versione su main 4.2.372. Migrazioni applicate fino alla 071 (pronostici).
-- Unite oggi: PR #178 (home e pronostici più puliti), #180 (ombra corta del personaggio in copertina), #181 (torre del Titano libera dalla targa, personaggio 230 senza marchio, futsal automatico, prove pronte per il lancio).
+- App online su fantatitano.site e su iPhone; le app aprono il sito, quindi ogni deploy arriva anche lì. Versione su main 4.2.374. Migrazioni applicate fino alla 071 (pronostici).
+- Unite oggi: PR #178 (home e pronostici più puliti), #180 (ombra corta del personaggio in copertina), #181 (torre del Titano libera dalla targa, personaggio 230 senza marchio, futsal automatico, prove pronte per il lancio), #182 (stato), #183 (futsal a giornata in corso, da un'altra chat), #184 (highlights con gli stemmi nuovi dei club al posto delle maglie).
 - Futsal: si apre a tutti da solo il 01/12 alle 8:00 (`futsalPerTutti` in `src/lancio-futsal.js`), corona del lancio alla stessa ora fino al 14/12. Niente da caricare sugli store.
 - Personaggi somiglianti: tutto sul ramo `claude/personaggi-prova` (072 NON applicata, `docs/PERSONAGGI.md` con scheda di stile e prompt per Gemini Pro). PR #179 chiusa senza unirla.
 - Pronostici: classifica «Tutti» e «La tua lega», dalla giornata 10 (chiude sab 28/11 alle 13:50).
@@ -33,5 +33,6 @@ Aggiornato: 2026-11-26 · temi: ritocchi di home e pronostici, personaggi somigl
 - Prima di cambiare una variabile CSS della copertina leggi il commento «Alex, data» sopra: il 26/11 `--cielo` a 14px aveva rifatto il taglio della torre del 20/11 (ora lo controlla `prove/dash-tre.cjs`).
 - Il merge via MCP vuole lo SHA completo da 40 caratteri. Dopo un merge con squash, unire main nel ramo di lavoro.
 - `bump-sw.py` cambia anche `src/versione.js`: metterlo nel commit.
+- Stemmi grandi dei club: `media/stemmi/<id>.webp` (il `-mini` solo per le liste); le maglie disegnate restano per le squadre fanta.
 - Higgsfield ha ~0 crediti; le immagini di prova escono da Figma (`generate_image`, modello Gemini, solo testo).
 - Dopo `update_trigger` verificare con `get_trigger`.

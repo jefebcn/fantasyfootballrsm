@@ -91,11 +91,4 @@ USCITA=$("${PSQL[@]}" -q -v ON_ERROR_STOP=1 -f supabase/prove/pronostici.sql 2>&
 set -e
 echo "$USCITA" | grep -E "ok |FALLITA|ERROR" | sed -E 's/^psql:[^ ]+ NOTICE:  /  /; s/^NOTICE:  /  /'
 if [ $ESITO -ne 0 ]; then rosso "  KO  le prove sui pronostici sono fallite"; exit 1; fi
-echo "== personaggi =="
-# I personaggi somiglianti (072): consenso, approvazione, ritiro automatico.
-set +e
-USCITA=$("${PSQL[@]}" -q -v ON_ERROR_STOP=1 -f supabase/prove/personaggi.sql 2>&1); ESITO=$?
-set -e
-echo "$USCITA" | grep -E "ok |FALLITA|ERROR" | sed -E 's/^psql:[^ ]+ NOTICE:  /  /; s/^NOTICE:  /  /'
-if [ $ESITO -ne 0 ]; then rosso "  KO  le prove sui personaggi sono fallite"; exit 1; fi
 verde "tutto a posto"

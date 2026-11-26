@@ -83,14 +83,6 @@ APERTE="$APERTE giocatori_aderenti"
 # si conta anche senza account (la pagina #/giocatori si apre dalla storia).
 # Come conta_sponsor: pochi tipi, nessun ritorno, un tetto al giorno.
 APERTE="$APERTE conta_banner"
-# E le quattro dei personaggi (072), tutte senza account di proposito:
-#  - personaggi_attivi: quali giocatori hanno il personaggio approvato e il
-#    nome del file, lo vede chiunque apra il listone (come il bollino);
-#  - personaggio_bozza e personaggio_rispondi: il calciatore vede e approva il
-#    suo disegno col codice della sua richiesta verificata, senza account;
-#  - selfie_ammesso: la regola dello storage per caricare le due foto nella
-#    cartella del proprio codice. Dice solo si' o no.
-APERTE="$APERTE personaggi_attivi personaggio_bozza personaggio_rispondi selfie_ammesso"
 # Su una riga sola, con uno spazio davanti e dietro: il confronto piu' sotto
 # cerca " nome " e i ritorni a capo dell'elenco lo facevano fallire per gli
 # ultimi di ogni riga. Preso dal guardiano stesso alla prima corsa, che e' il

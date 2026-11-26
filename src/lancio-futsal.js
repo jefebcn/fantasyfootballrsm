@@ -11,12 +11,17 @@
  * «lasciamo stare, modifichiamola solamente all'interno»).
  * La corona e' quella originale, non ridisegnata: solo i colori cambiano.
  */
+// Alex, 26/11: il futsal apre a tutti il 1° dicembre alle 8 e la corona
+// cambia nello stesso momento (prima era la mezzanotte). La stessa data
+// accende la sezione in src/views/futsal.js (futsalPerTutti).
 export const LANCIO = {
-  da: Date.parse('2026-12-01T00:00:00+01:00'),
+  da: Date.parse('2026-12-01T08:00:00+01:00'),
   a: Date.parse('2026-12-15T00:00:00+01:00'),   // escluso: il 15 si torna alla corona viola
 };
 
 export const inLancio = (ora = Date.now()) => ora >= LANCIO.da && ora < LANCIO.a;
+/** Dal lancio in poi la sezione Futsal la vedono tutti (anche dopo il 15). */
+export const futsalPerTutti = (ora = Date.now()) => ora >= LANCIO.da;
 
 export function iconeLancio(ora = Date.now(), doc = globalThis.document) {
   if (!doc || !inLancio(ora)) return false;

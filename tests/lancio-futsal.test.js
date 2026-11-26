@@ -2,13 +2,14 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { existsSync } from 'node:fs';
-import { inLancio, iconeLancio } from '../src/lancio-futsal.js';
+import { inLancio, iconeLancio, futsalPerTutti } from '../src/lancio-futsal.js';
 
 const ora = (s) => Date.parse(s);
 
-test('vale dal 1° dicembre a mezzanotte al 14 compreso, ora italiana', () => {
+test('vale dal 1° dicembre alle 8 al 14 compreso, ora italiana', () => {
   assert.equal(inLancio(ora('2026-11-30T23:59:00+01:00')), false);
-  assert.equal(inLancio(ora('2026-12-01T00:00:00+01:00')), true);
+  assert.equal(inLancio(ora('2026-12-01T07:59:00+01:00')), false);
+  assert.equal(inLancio(ora('2026-12-01T08:00:00+01:00')), true);
   assert.equal(inLancio(ora('2026-12-14T23:59:00+01:00')), true);
   assert.equal(inLancio(ora('2026-12-15T00:00:00+01:00')), false);
 });
@@ -30,4 +31,10 @@ test('nel lancio cambia scheda del browser e icona della Home, e i file ci sono'
     assert.match(l.href, /^icons\/lancio-futsal\//);
     assert.ok(existsSync(new URL(`../${l.href}`, import.meta.url)), l.href);
   }
+});
+
+test('il futsal si apre a tutti il 1° dicembre alle 8 e resta aperto', () => {
+  assert.equal(futsalPerTutti(ora('2026-12-01T07:59:59+01:00')), false);
+  assert.equal(futsalPerTutti(ora('2026-12-01T08:00:00+01:00')), true);
+  assert.equal(futsalPerTutti(ora('2027-03-01T12:00:00+01:00')), true);
 });

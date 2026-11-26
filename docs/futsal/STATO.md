@@ -25,7 +25,7 @@ Aggiornato: 2026-11-25 · temi: prima rosa sempre comprabile (futsal-14), nuova 
 - Album Flickr nuovi (11ª in poi): aggiungere l'indirizzo in `scripts/foto-flickr-futsal.ps1` e mandare ad Alex il comando completo.
 
 ## Prossimo passo consigliato
-- Lancio del 01/12, al via di Alex: `APERTO_A_TUTTI = true`, PR su main, poi cancellare `futsal-prova.yml`.
+- Lancio del 01/12 alle 8 (via di Alex del 26/11): si apre da solo (`futsalPerTutti` in `src/lancio-futsal.js`, stessa ora della corona), niente aggiornamento sugli store; dopo il lancio cancellare `futsal-prova.yml`.
 - Quando Google Play è pubblico: «Disponibile su Google Play» nelle grafiche e storia del lancio con i due store.
 
 ## Decisioni recenti di Alex ancora valide

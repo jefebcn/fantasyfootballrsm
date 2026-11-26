@@ -1,9 +1,9 @@
 /**
  * Il banner del montepremi, nelle sue due facce.
  *
- * Sta fra le notizie e la giornata corrente: sopra il contesto del
- * campionato, sotto quello che devi fare adesso, in mezzo una cosa che puoi
- * fare in piu'. E mostra il premio VERO scritto da chi ha aperto la lega
+ * Sta sotto la giornata corrente e la notizia del giorno: prima quello che
+ * devi fare adesso, poi una cosa che puoi fare in piu' (ritocchi del 26/11:
+ * in cima alla home, dopo la copertina, viene solo la giornata col suo tasto). E mostra il premio VERO scritto da chi ha aperto la lega
  * pubblica: un banner che promette una cifra decisa altrove sarebbe una cosa
  * che l'app non puo' mantenere.
  *
@@ -119,14 +119,14 @@ const prepara = (ctx, stato) => ctx.addInitScript((stato) => {
       alto: +r.height.toFixed(1),
       y: +r.y.toFixed(1), larghezza: +r.width.toFixed(1), sbordaADestra: r.right > innerWidth + 0.5,
       sottoNotizia: notizia ? r.top > notizia.getBoundingClientRect().bottom - 1 : null,
-      sopraGiornata: sez ? r.bottom < sez.getBoundingClientRect().top + 1 : null };
+      sottoGiornata: sez ? r.top > sez.getBoundingClientRect().bottom - 1 : null };
   });
   et(!!inv, 'in una lega privata l\'invito compare');
   if (inv) {
     et(/300/.test(inv.testo), `e mostra il premio vero ("${inv.testo.slice(0, 70)}")`);
     et(/Titano Open/.test(inv.testo), 'col nome della lega pubblica');
     et(inv.href === '#/leghe' && inv.entra, `e porta a entrare in quella lega (${inv.href}, data-entra=${inv.entra})`);
-    et(inv.sopraGiornata === true, 'sta SOPRA la giornata corrente');
+    et(inv.sottoGiornata === true, 'sta SOTTO la giornata corrente');
     et(inv.sottoNotizia !== false, 'e sotto il banner delle notizie');
     et(!inv.sbordaADestra, `non sborda a destra (largo ${inv.larghezza})`);
   }

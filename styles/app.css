@@ -3500,7 +3500,7 @@ b > .stemma.xs:last-child{margin:0 0 0 6px}
 
 /* La card della giornata: l'avviso del tavolino e' una riga sua, e
    l'allenatore sta attaccato al nome della squadra */
-.mcard .mnota.avviso{display:flex;align-items:center;justify-content:center;gap:6px;margin-top:2px;color:var(--text);font-weight:600}
+.mcard .mnota.avviso{display:flex;align-items:center;justify-content:center;gap:6px;text-wrap:balance;margin-top:2px;color:var(--text);font-weight:600}
 .mcard .mnota.avviso .ic{flex:none;width:14px;height:14px;color:var(--c-oro-500,#D99A00)}
 .mcard .side{gap:5px}
 .mcard .side b{min-height:0}
@@ -3532,7 +3532,8 @@ b > .stemma.xs:last-child{margin:0 0 0 6px}
 .gioca .gtile b{display:block;max-width:100%;font:400 15px/1.1 var(--font-tito);letter-spacing:.03em;text-transform:uppercase;
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .gioca .gtile b small{font:600 11px var(--font-body);color:var(--text-muted);letter-spacing:0}
-.gioca .gtile > span:last-child{max-width:100%;font-size:12px;color:var(--text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.gioca .gtile > span:last-child{max-width:100%;font-size:12px;line-height:1.25;color:var(--text-muted);overflow:hidden;
+  display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2}
 .gioca .gt-nuova{position:absolute;top:9px;right:8px;font:700 9.5px/1 var(--font-body);font-style:normal;letter-spacing:.06em;
   text-transform:uppercase;padding:3px 6px;border-radius:999px;color:var(--primary-ink,var(--primary));border:1px solid currentColor}
 

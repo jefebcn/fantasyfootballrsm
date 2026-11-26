@@ -678,8 +678,9 @@ export const dashboard = {
     const [art, titolo, testo] = RULES[Math.floor(Date.now() / 86400000) % RULES.length];
 
     // IL NUOVO ORDINE (ritocchi del 26/11): prima la giornata da giocare col
-    // suo tasto, poi i voti provvisori, gli altri giochi, la classifica, le
-    // partite vere, notizie e video; lo shop in fondo. Gli avvisi che chiedono
+    // suo tasto, poi i voti provvisori, gli altri giochi, la notizia del
+    // giorno (una riga: Alex, 26/11, «troppo in basso» dopo le partite), la
+    // classifica, le partite vere e i video; lo shop in fondo. Gli avvisi che chiedono
     // di fare qualcosa (scambi, calcolo, rosa) stanno subito sotto la giornata.
     const giornata = S.aPunti() ? correntePunti(Math.min(30, nCur), me, bloccato) : corrente(cur, nCur, me, riposo, bloccato);
     return `<main class="a-body home">
@@ -697,12 +698,12 @@ export const dashboard = {
       ${lockDaSistemare()}
       ${S.aPunti() ? '' : conclusa(ultima)}
       ${giocaAnche()}
+      ${notiziaBreve()}
       ${invitoPubblica()}
       ${fasciaSponsor()}
       ${classificaBreve(me)}
       ${ultimiCinque(last, me)}
       ${prossimePartite(ph)}
-      ${notiziaBreve()}
       ${highlights()}
       ${notizie()}
       ${invitoCalciatori()}

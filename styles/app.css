@@ -849,7 +849,7 @@ hr.sep{border:0;border-top:1px solid var(--border);margin:4px 0}
 .vid-cop iframe{width:100%;height:100%;border:0;display:block}
 .vid-sq{position:relative;display:flex;align-items:center;justify-content:center;gap:8px;
   font-family:var(--font-display);font-size:13.5px;line-height:1.2;max-width:100%;width:100%}
-/* Ogni squadra e' una colonna: maglia sopra, nome sotto. Su 390px i nomi
+/* Ogni squadra e' una colonna: stemma sopra, nome sotto. Su 390px i nomi
    stanno su due righe invece di essere tagliati a meta' — "Juvenes/Dogana"
    con i puntini di sospensione non dice piu' chi e'. */
 .vid-lato{flex:1;min-width:0;display:flex;flex-direction:column;align-items:center;gap:2px;text-align:center}
@@ -861,11 +861,9 @@ hr.sep{border:0;border-top:1px solid var(--border);margin:4px 0}
 .vid-lato:last-child{padding-right:40px}
 .vid-lato b{font:400 17px/1.05 var(--font-tito);letter-spacing:.04em;text-transform:uppercase;
   text-shadow:0 2px 6px rgba(0,0,0,.6)}
-/* Le maglie una verso l'altra, come in un poster prepartita (.maglia, piu'
-   avanti nel file, le vorrebbe larghe quanto la colonna) */
-.vid-lato .maglia.vid-maglia{width:78px;flex:none;filter:drop-shadow(0 8px 10px rgba(0,0,0,.5))}
-.vid-lato:first-child .vid-maglia{transform:rotate(-8deg)}
-.vid-lato:last-child .vid-maglia{transform:rotate(8deg)}
+/* Gli stemmi nuovi dei club (Alex, 26/11: prima c'erano le maglie), dritti e
+   grandi come un poster prepartita; .stemma piu' avanti li farebbe da lista */
+.vid-lato .stemma.vid-stemma{width:68px;height:86px;margin-bottom:4px;filter:drop-shadow(0 8px 10px rgba(0,0,0,.5))}
 /* Il risultato e' un adesivo lime, come i post di Tito: sta a cavallo della
    diagonale e la copre, e il nero sul lime si legge su qualunque club. */
 .vid-ris{font:400 26px/1 var(--font-tito);color:var(--c-inchiostro);flex:none;

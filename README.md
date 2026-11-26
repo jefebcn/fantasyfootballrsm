@@ -24,6 +24,7 @@ in modo deterministico: sono uguali per tutte le leghe e non serve caricarli.
 | `src/state.js` | Stato applicativo: anagrafiche generate + dato e leghe da Supabase (`src/backend.js`) |
 | `src/backend.js` · `src/config.js` | Adattatore Supabase (leghe, rose, formazioni, dato globale, realtime) e chiavi pubbliche |
 | `src/auth-clerk.js` | Identità via Clerk, **disattivata**: si accende valorizzando `CLERK_PUBLISHABLE_KEY` in `src/config.js` |
+| `src/views/pronostici.js` · `supabase/migrations/071-pronostici.sql` | Pronostici della giornata (1 X 2 e risultato esatto, anche senza lega): chiusi dal database col blocco della giornata, classifica e percentuali solo a giornata chiusa |
 | `src/views/onboarding.js` · `media/` | Presentazione al primo avvio su sfondo video (`media/intro.mp4`, facoltativo) |
 | `supabase/migrations/` | Migrazioni SQL; la 001 rende l'identità indipendente dal fornitore (Clerk o Supabase Auth) |
 | `supabase/schema.sql` | Tabelle, funzioni (`create_league`, `join_league`, lock formazioni, congelamento), trigger di log e policy RLS |

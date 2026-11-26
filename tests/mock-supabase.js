@@ -63,7 +63,7 @@ function builder(table) {
         // __MOCK_RETE_GIU__: il telefono è senza rete, le scritture delle formazioni non arrivano
         if (table === 'lineups' && op !== 'select' && typeof window !== 'undefined' && window.__MOCK_RETE_GIU__) { res({ data: null, error: { message: 'TypeError: Load failed' } }); return; }
         let data = null; const rows = T(table);
-        const pk = { lineups: ['league_id', 'member_id', 'matchday'], match_overrides: ['match_id'], match_appearances: ['match_id', 'player_id'], matchday_status: ['matchday'], matchday_locks: ['matchday'], formazioni_bozze: ['league_id', 'member_id', 'matchday'], profiles: ['id'], app_interruttori: ['chiave'], giocatori_esclusi: ['player_id'], squalifiche: ['player_id', 'matchday'], futsal_iscritti: ['user_id'], futsal_formazioni: ['user_id', 'giornata'], futsal_membri: ['lega_id', 'user_id'], futsal_risultati_provvisori: ['giornata', 'casa'] }[table] || ['id'];
+        const pk = { lineups: ['league_id', 'member_id', 'matchday'], match_overrides: ['match_id'], match_appearances: ['match_id', 'player_id'], matchday_status: ['matchday'], matchday_locks: ['matchday'], formazioni_bozze: ['league_id', 'member_id', 'matchday'], profiles: ['id'], app_interruttori: ['chiave'], giocatori_esclusi: ['player_id'], squalifiche: ['player_id', 'matchday'], futsal_iscritti: ['user_id'], futsal_formazioni: ['user_id', 'giornata'], futsal_membri: ['lega_id', 'user_id'], futsal_risultati_provvisori: ['giornata', 'casa'], pronostici: ['user_id', 'matchday', 'casa', 'ospite'] }[table] || ['id'];
         const withDefaults = (r) => ({ id: uid(), created_at: now(), ...r });
         // __MOCK_SESSIONE_PERSA__: il token e' scaduto e la rete non l'ha
         // rinnovato, le richieste partono come anonimo. Come Supabase vero: i
@@ -440,6 +440,31 @@ export function createClient(_url, _key, opts) {
           if (!r) T('gioco_partite').push({ user_id: userId, giorno: g, tentativi: t, vinto: !!args.p_vinto });
           else if (t >= r.tentativi) { r.tentativi = t; r.vinto = r.vinto || !!args.p_vinto; }
           persisti(); return { data: null, error: null };
+        }
+        // 071: i pronostici, con gli stessi conti del database (solo giornate chiuse)
+        if (name === 'pronostici_classifica' || name === 'pronostici_percentuali') {
+          const chiusa = (n) => T('matchday_locks').some((k) => k.matchday === n && new Date(k.lock_at) <= new Date());
+          if (name === 'pronostici_percentuali') {
+            const per = new Map();
+            for (const p of T('pronostici').filter((x) => x.matchday === args.p_giornata && chiusa(x.matchday))) {
+              const k = `${p.casa}:${p.ospite}`; const x = per.get(k) || per.set(k, { casa: p.casa, ospite: p.ospite, uno: 0, ics: 0, due: 0, totale: 0 }).get(k);
+              x[{ 1: 'uno', X: 'ics', 2: 'due' }[p.segno]]++; x.totale++;
+            }
+            return { data: [...per.values()], error: null };
+          }
+          const lega = args.p_lega || null;
+          const membri = lega ? T('league_members').filter((m) => m.league_id === lega) : null;
+          if (lega && !membri.some((m) => m.user_id === userId)) return { data: [], error: null };
+          const ris = (args.p_risultati || []).filter((r) => chiusa(r.g));
+          const per = new Map();
+          for (const p of T('pronostici').filter((x) => !membri || membri.some((m) => m.user_id === x.user_id))) {
+            const r = ris.find((y) => y.g === p.matchday && y.c === p.casa && y.o === p.ospite); if (!r) continue;
+            const x = per.get(p.user_id) || per.set(p.user_id, { user_id: p.user_id, segni: 0, esatti: 0, giocate: 0 }).get(p.user_id);
+            x.giocate++; if (p.segno === (r.gc > r.go ? '1' : r.gc < r.go ? '2' : 'X')) x.segni++; if (p.gol_casa === r.gc && p.gol_ospite === r.go) x.esatti++;
+          }
+          const righe = [...per.values()].map((x) => ({ ...x, punti: x.segni + 2 * x.esatti })).sort((a, b) => b.punti - a.punti || b.esatti - a.esatti);
+          return { data: righe.map((x) => ({ ...x, posto: righe.findIndex((y) => y.punti === x.punti && y.esatti === x.esatti) + 1, mio: x.user_id === userId,
+            nome: T('profiles').find((q) => q.id === x.user_id)?.display_name || 'Giocatore' })), error: null };
         }
         // 049: classifica del mese e serie, con gli stessi conti del database
         if (name === 'classifica_gioco') {

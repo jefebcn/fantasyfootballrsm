@@ -257,6 +257,13 @@ function cartaCoppa() {
   return `<a class="a-card cf-home piccola" href="#/coppa"><span class="ce-home-ico si" aria-hidden="true">${icon('coppa')}</span><span class="ce-home-txt"><b>${t('Coppa Fantatitano')}</b><span>${aperto ? t('Prossimo turno: {nome}', { nome: t(aperto.nome) }) : t('Gironi, sfide e tabellone')}</span></span>${icon('chev', 'ic sm')}</a>`;
 }
 
+/** I pronostici della giornata (#/pronostici, 071): una riga piccola sotto la coppa. */
+function cartaPronostici() {
+  const n = S.giornataDaSchierare(); const md = S.matchday(n);
+  if (!md || S.now() >= new Date(md.lockAt)) return '';
+  return `<a class="a-card cf-home piccola" href="#/pronostici"><span class="ce-home-ico si" aria-hidden="true">${icon('star')}</span><span class="ce-home-txt"><b>${t('Pronostici')} <small>${t('nuova')}</small></b><span>${t('Giornata {n}: 1 X 2 e risultato esatto', { n })}</span></span>${icon('chev', 'ic sm')}</a>`;
+}
+
 function cartaGioco(dove) {
   const g = partitaDiOggi(); if (!g) return '';
   if ((dove === 'su') === g.finito) return '';
@@ -679,7 +686,7 @@ export const dashboard = {
     return `<main class="a-body home">
       <div id="install-slot"></div>
       ${copertina(me, row, ph)}
-      ${cartaCoppa()}
+      ${cartaCoppa()}${cartaPronostici()}
       ${cartaGioco('su')}
       ${invitoNegozio()}
       ${notiziaBreve()}

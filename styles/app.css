@@ -3425,3 +3425,35 @@ b > .stemma.xs:last-child{margin:0 0 0 6px}
 .recl-card .trag-barra{height:8px;border-radius:99px;background:var(--border);overflow:hidden}
 .recl-card .trag-barra i{display:block;height:100%;border-radius:99px;background:var(--grad-oro, var(--accent))}
 .recl-card .trag p{margin:0}
+
+/* ---- Pronostici della giornata (src/views/pronostici.js, 071) ---- */
+.pronostici .pr-intro p{margin:0 0 6px}
+.pr-partita{display:flex;flex-direction:column;gap:10px;margin-bottom:10px}
+.pr-squadre{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:8px}
+.pr-squadre>span{display:flex;align-items:center;gap:8px;min-width:0}
+.pr-squadre>span b{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font:700 14px var(--font-body)}
+.pr-squadre .destra{justify-content:flex-end;text-align:right}
+.pr-squadre .pr-ora{font-size:11px;text-align:center}
+.pr-squadre .stemma.sm{width:24px;height:26px;flex:none}
+.pr-segni{display:flex;gap:8px}
+.pr-s{flex:1;min-height:44px;border:2px solid var(--border, rgba(0,0,0,.12));border-radius:var(--r-md);background:transparent;color:var(--text);font:400 22px/1 var(--font-display);cursor:pointer}
+.pr-s.on{background:var(--c-lime, var(--primary));color:var(--c-inchiostro, var(--on-primary));border-color:var(--c-viola, var(--primary));box-shadow:3px 3px 0 var(--c-viola, rgba(0,0,0,.2))}
+.pr-esatto{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.pr-gol{min-height:36px;min-width:48px;border-radius:8px;border:1px solid var(--border, rgba(0,0,0,.15));background:var(--surface);color:var(--text);font:600 15px var(--font-data);padding:0 6px}
+.pr-chiusa{display:flex;flex-direction:column;gap:2px;padding:8px 12px}
+.pr-riga{display:grid;grid-template-columns:1fr auto 52px;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--border, rgba(0,0,0,.08))}
+.pr-riga:last-child{border-bottom:0}
+.pr-riga .pr-match{font-size:13px;min-width:0}
+.pr-riga .pr-mio{font:600 13px var(--font-data);color:var(--text-muted)}
+.pr-riga .pr-pt{text-align:right;font:700 15px var(--font-data);color:var(--text-muted)}
+.pr-riga .pr-pt.si{color:var(--success, #1a8f4a)}
+.pr-perc{grid-column:1/-1;display:flex;gap:2px;height:20px;border-radius:6px;overflow:hidden;font:600 11px/20px var(--font-data)}
+.pr-perc span{background:var(--surface-2, rgba(0,0,0,.06));color:var(--text-muted);text-align:center;white-space:nowrap;overflow:hidden;min-width:34px}
+.pr-perc span.mio{background:var(--primary);color:var(--on-primary)}
+.pr-classifica{padding:6px 12px}
+.pr-cl{display:grid;grid-template-columns:32px 1fr auto 40px;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--border, rgba(0,0,0,.08))}
+.pr-cl:last-child{border-bottom:0}
+.pr-cl b{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pr-cl .pos{color:var(--text-muted);font-weight:700}
+.pr-cl .pt{text-align:right;font-weight:700;font-size:16px}
+.pr-cl.mio{background:var(--primary-soft, rgba(27,132,198,.1));margin:0 -12px;padding-left:12px;padding-right:12px;border-radius:8px}

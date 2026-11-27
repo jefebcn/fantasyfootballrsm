@@ -12,13 +12,13 @@ Aggiornato: 2026-11-25 · temi: prima rosa sempre comprabile (futsal-14), nuova 
 - Mercato e referti (25/11): il mercato riapre coi referti dell'ultima partita della giornata, il pomeriggio del giorno dopo, 11-22 h dopo la gara (Juvenes–Folgore 18 h); l'import parte ogni ora dall'orologio del database e ogni 20 min da 12 a 24 h dopo (PR #170). Per chi non ha ancora una squadra il mercato è sempre aperto, ai prezzi dell'ultima giornata pronta (futsal-14, PR #168, applicata il 25/11): al lancio la 12ª finisce giovedì 3/12 e chi si iscrive dal 1/12 compra subito per la 13ª.
 - Home (PR #169, provata da Alex): in alto la squadra (stemma, nome, posizione), poi «Ultima giornata» (punti, migliore, capitano) e «Prossima giornata» (chiusura, crediti, dove giocano i tuoi); «Nome e colore» in fondo.
 - Velocità: la FSGC non aggiorna il futsal in diretta (7ª: 0-0 segnaposto fino al referto, 11-22 h dopo); i siti di notizie escono il mattino dopo, non prima. Il finale la sera c'è solo sui social delle società.
-- Instagram @fantatitano.futsal via Buffer: coda fino al 4/12. Foto: archivio Flickr FSGC su Drive, catalogo `catalogo-futsal.csv` (Drive id 1cxmXJ3_xL3Ghku4pCXWhIPXJq2KRit0X).
+- Instagram @fantatitano.futsal via Buffer: coda piena (10) fino al 4/12. Foto: archivio Flickr FSGC su Drive, catalogo `catalogo-futsal.csv` (Drive id 1cxmXJ3_xL3Ghku4pCXWhIPXJq2KRit0X).
 
 ## Aperto / in corso
 - Alex prova il futsal dal suo account: iscrizione, mercato dell'11ª (chiude lun 23/11 20:05), lega pubblica da Leghe → Admin.
 - Lun 23/11 sera Alex scrive a mano i risultati dell'11ª. Mar 24/11 18:30 (trig_01UtzL2kKz21n95LRYPwn9Zy): rapporto su referto FSGC, provvisorio FSGC e risultato a mano, partita per partita (anche se un risultato a mano non coincide col referto).
 - Proposta in attesa del via di Alex: link personale per ogni società («corrispondenti»), che scrive solo il risultato delle sue partite nella stessa tabella. In alternativa chiedere alla FSGC di pubblicare il referto la sera.
-- Ogni giorno 9:47 (trig_019gaxf1eECjzEK6qMnLV9NA): con ≥4 posti liberi su Buffer crea contenuti con foto dall'archivio Drive e avvisa Alex; altrimenti silenzio.
+- Ogni giorno 9:47 (trig_019gaxf1eECjzEK6qMnLV9NA): con ≥1 posto libero su Buffer riempie fino a 10 crea contenuti con foto dall'archivio Drive e avvisa Alex; altrimenti silenzio.
 - `.github/workflows/futsal-prova.yml` si è spento da solo: da cancellare dopo il lancio.
 - Questionario di confronto per chi conosce bene un gioco simile (PDF dato ad Alex il 22/11, 7 temi: prima volta, rosa e schemi, mercato, giornata, classifiche, cosa fa tornare, cosa cambiare): con le risposte, proporre i ritocchi prima del lancio.
 - Storie da mettere in evidenza a mano da Alex (gli highlight non hanno API). Raccolte: Regole, Giornate, Classifica, Squadre, App, Amici, Coppa; copertine finali del 23/11 (fondo nero, icona arancio, pallone nuovo).
@@ -33,8 +33,9 @@ Aggiornato: 2026-11-25 · temi: prima rosa sempre comprabile (futsal-14), nuova 
 - Mai citare le app a cui ci ispiriamo (app, social, codice, documenti).
 - Niente scritta «Aggiorna» in app: l'aggiornamento entra da solo.
 - Coda Buffer: con 4 o più posti liberi si creano subito nuovi contenuti.
-- Ogni foto si usa UNA SOLA VOLTA. Già usate (notizie FSGC, id articolo): 2406 2409 2411 2413 2422 2427 2431 2435 2441 2447 2451 2452 2459 2462 2464 2473 2477 2482 2485. Dall'archivio Flickr: 55656783462 55656783487 (23/11, post dell'1 e del 3/12).
-- Instagram: credito «© FSGC / Fotografo»; niente nomi di giocatori; solo stemmi Fantatitano («di fantasia, non ufficiali»); CTA solo Salvalo / Swipe / Link in bio; isAiGenerated true; storie senza testo.
+- Ogni foto si usa UNA SOLA VOLTA. Già usate (notizie FSGC, id articolo): 2406 2409 2411 2413 2422 2427 2431 2435 2441 2447 2451 2452 2459 2462 2464 2473 2477 2482 2485. Dall'archivio Flickr: 55656783462 55656783487 (23/11, post dell'1 e del 3/12: sono di CALCIO, Domagnano–Cosmos non è una partita futsal), 55660469071 55657947754 55649211147 55646266181 (27/11, coda dal 29/11 al 3/12).
+- Le cartelle «Futsal - Giornata NN» contengono anche foto di calcio: ogni foto va guardata (parquet o palestra) e la partita del catalogo va cercata nel calendario futsal.
+- Instagram: credito «© FSGC / Fotografo»; nomi dei giocatori ammessi (Alex, 27/11); solo stemmi Fantatitano («di fantasia, non ufficiali»); CTA solo Salvalo / Swipe / Link in bio; isAiGenerated true; storie senza testo.
 - Lancio 01/12 su App Store e Google Play.
 - Risultati la sera: niente lettura automatica di Instagram (serve un account Facebook che Alex non può aprire, e lo scraping è vietato e fragile). Solo FSGC, a mano o, se Alex dice sì, link alle società.
 

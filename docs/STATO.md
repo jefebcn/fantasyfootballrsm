@@ -1,39 +1,37 @@
 # Stato – Fantatitano
 
-Aggiornato: 2026-11-26 sera · temi: ritocchi di home e pronostici, personaggi somiglianti (in disparte), lancio futsal automatico, stemmi negli highlights
+Aggiornato: 2026-11-27 · temi: storie automatiche del futsal con la foto, coda Buffer del futsal senza doppioni, squadra futsal (bonus/malus, plusvalenza, nomi uguali)
 
 ## Dove siamo
-- App online su fantatitano.site e su iPhone; le app aprono il sito, quindi ogni deploy arriva anche lì. Versione su main 4.2.374. Migrazioni applicate fino alla 071 (pronostici).
-- Unite oggi: PR #178 (home e pronostici più puliti), #180 (ombra corta del personaggio in copertina), #181 (torre del Titano libera dalla targa, personaggio 230 senza marchio, futsal automatico, prove pronte per il lancio), #182 (stato), #183 (futsal a giornata in corso, da un'altra chat), #184 (highlights con gli stemmi nuovi dei club al posto delle maglie).
-- Futsal: si apre a tutti da solo il 01/12 alle 8:00 (`futsalPerTutti` in `src/lancio-futsal.js`), corona del lancio alla stessa ora fino al 14/12. Niente da caricare sugli store.
-- Personaggi somiglianti: tutto sul ramo `claude/personaggi-prova` (072 NON applicata, `docs/PERSONAGGI.md` con scheda di stile e prompt per Gemini Pro). PR #179 chiusa senza unirla.
-- Pronostici: classifica «Tutti» e «La tua lega», dalla giornata 10 (chiude sab 28/11 alle 13:50).
+- App online su fantatitano.site e su iPhone; versione su main 4.2.382. Migrazioni applicate fino alla 071.
+- Unite oggi: #187 (storie automatiche futsal, risultato e giornata, con la foto FSGC di sfondo), #188 (home futsal, da un'altra chat), #189 (bonus e malus coi numeri, plusvalenza sul campo verde/rossa/grigia, titolare sostituito col suo nome, nomi corti unici `F.nomeBreve`).
+- Storie automatiche futsal online: le pubblica l'import (`dati-fsgc.yml` → `scripts/storie-futsal.mjs` → funzione `pubblica-futsal`). Virtus–Tre Penne e «I migliori» dell'11ª, perse, pubblicate a mano il 27/11.
+- Futsal: si apre a tutti da solo il 01/12 alle 8:00 (`futsalPerTutti`). Mercato della 12ª aperto.
+- Personaggi somiglianti: fermi sul ramo `claude/personaggi-prova` (072 NON applicata).
 
 ## Aperto / in corso
-- Personaggi: Alex prova lo stile in una chat di Claude in Chrome con Gemini Pro (prompt dato in chat il 26/11) e manda qui immagini e prompt; testo v2 del consenso (nella 072 sul ramo) da far leggere a Elisa.
-- Legale sui premi: 7 domande in `legale/premi-regolamento-bozza.md` (date ad Alex il 26/11 in chiaro).
-- Ven 27/11: coda Buffer 9:23 e referto Virtus–Tre Penne futsal (Alex: ok come al solito).
+- Sab 28/11 9:47: il controllo giornaliero riempie i posti liberi della coda Buffer futsal con contenuti NUOVI (confronto con «Già uscito» in `docs/futsal/STATO.md`), numeri dell'11ª, stile a foto piena.
+- Personaggi: Alex prova lo stile con Gemini Pro e manda qui immagini e prompt; consenso v2 da far leggere a Elisa.
+- Legale sui premi: 7 domande in `legale/premi-regolamento-bozza.md`.
 - Dopo il lancio futsal: cancellare `.github/workflows/futsal-prova.yml`.
-- Coppa: `coppa_turni` per semifinali e finale quando la FSGC le pubblica; recupero di Domagnano–Tre Fiori.
-- Da scegliere: piano B dei dati FSGC oppure eventi automatici in bacheca + rosa lampo + classifica tra leghe (`docs/PIANO-LAVORI.md`).
+- Coppa: `coppa_turni` per semifinali e finale quando la FSGC le pubblica; recupero Domagnano–Tre Fiori.
 - Per Alex, dal pannello: password rubate su Supabase Auth; backup fuori da GitHub; seconda chiave Buffer.
 
 ## Prossimo passo consigliato
-- Alla ripresa (Alex, 26/11 sera): un post Instagram su un paio di novità recenti dell'app, venerdì 27/11 o lunedì 30/11. Candidate: pronostici della giornata con classifica «Tutti» e «La tua lega» (la 10 chiude sab 28/11 alle 13:50, quindi venerdì è il giorno giusto); highlights con gli stemmi nuovi; home più pulita. Non citare personaggi né premi.
-- Poi scegliere il prossimo lavoro grosso; intanto confrontare le prove dei personaggi appena arrivano.
+- Post Instagram (@fantatitano) sulle novità dell'app: pronostici con classifica «Tutti» / «La tua lega» (la 10 chiude sab 28/11 alle 13:50), highlights con gli stemmi nuovi. Niente personaggi né premi.
+- Al primo import di sabato/domenica guardare nel log del lavoro FSGC le righe STORIA/PUBBLICATA del futsal.
 
 ## Decisioni recenti di Alex ancora valide
-- Personaggi in silenzio: non in main, non annunciati, finché lo stile non convince. Stile = figure intere dei 101-230 (non mezzibusti, non vettoriale, non 3D). Foto vere di calciatori solo col consenso e via API.
+- Fantavoti e «I migliori» del futsal si mostrano già prima del lancio (27/11), sempre col riquadro «Si gioca dal 01/12»; classifiche complete e quotazioni dopo l'apertura.
+- Social futsal: copertina a foto piena spesso; dal 1/12 alternare tecniche; mai ripetere un contenuto già uscito; foto all'aperto ammesse; nomi dei giocatori ammessi.
 - Futsal aperto il 01/12 alle 8, corona alla stessa ora.
-- Premi in natura o buoni, mai denaro né sorteggi; niente annunci prima del legale. Gin: mai bottiglia né marchio.
-- Niente marchi sportivi nei disegni (maglie e scarpe).
+- Premi in natura o buoni, mai denaro né sorteggi; niente annunci prima del legale.
 - Instagram: almeno 5 post e 4-5 storie a settimana; mai «fantatitano.site» nelle grafiche.
 - Merge solo dopo il suo «ok merge».
 
 ## Attenzione
-- Prima di cambiare una variabile CSS della copertina leggi il commento «Alex, data» sopra: il 26/11 `--cielo` a 14px aveva rifatto il taglio della torre del 20/11 (ora lo controlla `prove/dash-tre.cjs`).
-- Il merge via MCP vuole lo SHA completo da 40 caratteri. Dopo un merge con squash, unire main nel ramo di lavoro.
-- `bump-sw.py` cambia anche `src/versione.js`: metterlo nel commit.
-- Stemmi grandi dei club: `media/stemmi/<id>.webp` (il `-mini` solo per le liste); le maglie disegnate restano per le squadre fanta.
-- Higgsfield ha ~0 crediti; le immagini di prova escono da Figma (`generate_image`, modello Gemini, solo testo).
+- La PR può andare in conflitto su `sw.js`/`src/versione.js` mentre aspetta (import automatici): unire main, tenere la versione di main e rilanciare `bump-sw.py`.
+- Il merge via MCP vuole lo SHA completo; unire solo con CI verde sull'ultima testa.
+- Storia automatica persa: `--anteprima <g>` in locale, Higgsfield, UNA chiamata a Buffer, poi la riga in `storie_pubblicate` (ricetta in `docs/RICETTE.md`).
+- I download da Drive via MCP finiscono nel contesto: i download in blocco a un Agent.
 - Dopo `update_trigger` verificare con `get_trigger`.

@@ -24,7 +24,7 @@ import { mkdirSync, mkdtempSync, writeFileSync, readFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, resolve, dirname } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
-import { storieNuove, fattiRisultato, fattiGiornata, htmlRisultato, htmlGiornata } from '../social/futsal/storie-futsal.mjs';
+import { storieNuove, fattiRisultato, fattiGiornata, htmlRisultato, htmlGiornata, fotoPer } from '../social/futsal/storie-futsal.mjs';
 
 const RADICE = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const arg = (k, d = null) => { const i = process.argv.indexOf(`--${k}`); return i > 0 ? process.argv[i + 1] : d; };
@@ -62,20 +62,26 @@ const base = pathToFileURL(RADICE).href.replace(/\/$/, '');
 const { chromium } = await import('playwright');
 const b = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium' }).catch(() => chromium.launch());
 const p = await b.newPage({ viewport: { width: 1080, height: 1920 } });
+// le foto FSGC di sfondo (social/futsal/foto-partite.json): senza l'elenco, la storia esce senza foto
+let POOL = [];
+try { POOL = JSON.parse(readFileSync(join(RADICE, 'social/futsal/foto-partite.json'), 'utf8')).foto || []; } catch { /* niente foto */ }
 const fatte = [];
 for (const s of storie) {
   try {
-    const html = s.tipo === 'risultato' ? htmlRisultato(fattiRisultato(F, s), base) : htmlGiornata(fattiGiornata(F, s, { lancio: LANCIO.da }), base);
+    let f;
+    if (s.tipo === 'risultato') { f = fattiRisultato(F, s); f.foto = fotoPer(POOL, s.casa, s.ospite, s.g); }
+    else { f = fattiGiornata(F, s, { lancio: LANCIO.da }); const c = f.top[0]?.club; f.foto = fotoPer(POOL, c, c, s.g); }
+    const html = s.tipo === 'risultato' ? htmlRisultato(f, base) : htmlGiornata(f, base);
     const fileHtml = join(uscita, `${s.id}.html`);
     writeFileSync(fileHtml, html);
     await p.goto(pathToFileURL(fileHtml).href, { waitUntil: 'load' });
     await p.waitForSelector('body[data-pronto]', { timeout: 30000 });
-    // ogni immagine (stemmi, pallone) deve essersi caricata: se no la storia non esce
+    // ogni immagine (foto, stemmi) deve essersi caricata: se no la storia non esce
     const rotte = await p.evaluate(() => [...document.images].filter((i) => !i.complete || !i.naturalWidth).map((i) => i.getAttribute('src')));
     if (rotte.length) { console.log(`ERRORE ${s.id} immagini non caricate: ${rotte.join(' ')}`); continue; }
     const jpg = join(uscita, `${s.id}.jpg`);
     await p.screenshot({ path: jpg, type: 'jpeg', quality: 90 });
-    console.log(`STORIA ${jpg}`);
+    console.log(`STORIA ${jpg}${f.foto ? `  · foto ${f.foto.id} ${f.foto.credito}` : "  · senza foto"}`);
     fatte.push({ ...s, jpg });
   } catch (e) {
     console.log(`ERRORE ${s.id} ${e.message}`);

@@ -33,8 +33,9 @@ Aggiornato: 2026-11-25 · temi: prima rosa sempre comprabile (futsal-14), nuova 
 - Mai citare le app a cui ci ispiriamo (app, social, codice, documenti).
 - Niente scritta «Aggiorna» in app: l'aggiornamento entra da solo.
 - Coda Buffer: con 4 o più posti liberi si creano subito nuovi contenuti.
-- Ogni foto si usa UNA SOLA VOLTA. Già usate (notizie FSGC, id articolo): 2406 2409 2411 2413 2422 2427 2431 2435 2441 2447 2451 2452 2459 2462 2464 2473 2477 2482 2485. Dall'archivio Flickr: 55656783462 55656783487 (23/11, post dell'1 e del 3/12: sono di CALCIO, Domagnano–Cosmos non è una partita futsal), 55660469071 55657947754 55649211147 55646266181 (27/11, coda dal 29/11 al 3/12).
-- Le cartelle «Futsal - Giornata NN» contengono anche foto di calcio: ogni foto va guardata (parquet o palestra) e la partita del catalogo va cercata nel calendario futsal.
+- Ogni foto si usa UNA SOLA VOLTA. Già usate (notizie FSGC, id articolo): 2406 2409 2411 2413 2422 2427 2431 2435 2441 2447 2451 2452 2459 2462 2464 2473 2477 2482 2485. Dall'archivio Flickr: 55656783462 55656783487 (23/11, post dell'1 e del 3/12; etichetta FSGC «Domagnano - Cosmos» sbagliata, ma sono futsal), 55660469071 55657947754 55649211147 55646266181 (27/11, coda dal 29/11 al 3/12).
+- Il futsal si gioca anche all'aperto, sul campetto vicino al campo da calcio (Alex, 27/11): le foto all'aperto vanno bene. Le etichette del catalogo possono sbagliare: la partita va cercata nel calendario futsal.
+- Storie automatiche: sfondo da `social/futsal/foto-partite.json` (26 foto, una per partita, tutte le 15 squadre); per aggiungerne, foto in `social/futsal/foto/` + una riga nel JSON. Quelle 26 non si usano per i post di Buffer.
 - Instagram: credito «© FSGC / Fotografo»; nomi dei giocatori ammessi (Alex, 27/11); solo stemmi Fantatitano («di fantasia, non ufficiali»); CTA solo Salvalo / Swipe / Link in bio; isAiGenerated true; storie senza testo.
 - Lancio 01/12 su App Store e Google Play.
 - Risultati la sera: niente lettura automatica di Instagram (serve un account Facebook che Alex non può aprire, e lo scraping è vietato e fragile). Solo FSGC, a mano o, se Alex dice sì, link alle società.

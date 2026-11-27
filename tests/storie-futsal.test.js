@@ -6,7 +6,8 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import * as F from '../src/futsal.js';
-import { storieNuove, fattiRisultato, fattiGiornata, htmlRisultato } from '../social/futsal/storie-futsal.mjs';
+import { readFileSync, existsSync } from 'node:fs';
+import { storieNuove, fattiRisultato, fattiGiornata, htmlRisultato, fotoPer } from '../social/futsal/storie-futsal.mjs';
 
 const CAL = [
   [11, 'a', 'b', '2026-11-23T20:15:00+01:00', '', 1, 0],
@@ -49,4 +50,27 @@ test('giornata finita prima del lancio: si dice da quando si gioca, in ora di Sa
   assert.equal(f.top.length, 3);
   assert.match(f.dopo.titolo, /Si gioca dal 01\/12/);
   assert.match(f.dopo.sotto, /alle 8 /);
+});
+
+test('foto di sfondo: prima la stessa partita, poi una delle due squadre; ogni foto dell\'elenco esiste', () => {
+  const pool = [
+    { id: '1', casa: 'a', ospite: 'b', credito: '© FSGC / X' },
+    { id: '2', casa: 'c', ospite: 'a', credito: '© FSGC / Y' },
+    { id: '3', casa: 'd', ospite: 'e', credito: '© FSGC / Z' },
+  ];
+  assert.equal(fotoPer(pool, 'b', 'a', 7).id, '1');          // stessa partita, campi invertiti
+  assert.deepEqual([0, 1].map((g) => fotoPer(pool, 'a', 'x', g).id), ['1', '2']); // gira con la giornata
+  assert.equal(fotoPer(pool, 'x', 'y', 2).id, '3');          // nessuna delle due: una qualunque
+  assert.equal(fotoPer([], 'a', 'b', 0), null);
+  const vere = JSON.parse(readFileSync(new URL('../social/futsal/foto-partite.json', import.meta.url), 'utf8')).foto;
+  const club = new Set(F.SQUADRE.map((s) => s.id));
+  for (const f of vere) {
+    assert.ok(existsSync(new URL(`../social/futsal/foto/${f.id}.jpg`, import.meta.url)), `manca la foto ${f.id}`);
+    assert.ok(club.has(f.casa) && club.has(f.ospite), `squadra sconosciuta in ${f.id}`);
+    assert.match(f.credito, /^© FSGC \/ \S/);
+  }
+  for (const c of club) assert.ok(vere.some((f) => f.casa === c || f.ospite === c), `nessuna foto per ${c}`);
+  const p = F.PARTITE.find((x) => F.referto(x.g, x.casa));
+  const html = htmlRisultato({ ...fattiRisultato(F, { g: p.g, casa: p.casa, ospite: p.ospite }), foto: vere[0] }, 'file:///x');
+  assert.match(html, new RegExp(`social/futsal/foto/${vere[0].id}\\.jpg`)); assert.match(html, /© FSGC \//);
 });

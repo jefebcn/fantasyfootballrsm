@@ -12,6 +12,8 @@
  * gli stessi dati di gara che l'app mostra a tutti, presi dal referto FSGC.
  * Gli stemmi sono quelli di fantasia dell'app (media/stemmi), mai quelli
  * ufficiali. Niente indirizzo del sito: «Link in bio».
+ * In alto una foto FSGC della partita o di una delle due squadre (Alex, 27/11:
+ * «manca lo sfondo»), dall'elenco social/futsal/foto-partite.json, col credito.
  *
  * Qui solo dati e HTML; fotografarle e pubblicarle tocca a
  * scripts/storie-futsal.mjs.
@@ -105,6 +107,19 @@ export function fattiGiornata(F, s, { ora = Date.now(), lancio = 0 } = {}) {
   return { ...s, top, dopo };
 }
 
+/**
+ * La foto di sfondo: prima una della stessa partita (anche a campi invertiti),
+ * poi una di casa o ospite, poi una qualunque. seme (la giornata) fa girare le
+ * foto quando ce n'e' piu' di una. pool: le voci di foto-partite.json.
+ */
+export function fotoPer(pool, casa, ospite, seme = 0) {
+  const ha = (f, c) => f.casa === c || f.ospite === c;
+  const stessa = pool.filter((f) => ha(f, casa) && ha(f, ospite) && casa !== ospite);
+  const una = pool.filter((f) => ha(f, casa) || ha(f, ospite));
+  const scelta = stessa.length ? stessa : una.length ? una : pool;
+  return scelta.length ? scelta[Math.abs(seme) % scelta.length] : null;
+}
+
 // ------------------------------------------------------------------ grafica
 // Lo stile del futsal (FUTSAL.md § 13.12): carta #F2F0E9, nero #111, rosso
 // #FF4B2B, Teko per i numeri e i titoli, Lato per i testi.
@@ -155,9 +170,21 @@ main{position:absolute;left:70px;right:70px;top:240px;bottom:250px;display:flex;
 .cta b{font:700 64px/1 Teko;text-transform:uppercase}
 .cta b em{font-style:normal;color:#FF4B2B}
 .cta span{font:700 24px/1 Lato;color:#666}
-</style></head><body><main>`;
+/* la foto: in alto a tutta larghezza, scura dove ci sono logo e titolo, poi sfuma nella carta */
+.foto{position:absolute;left:0;top:0;width:1080px;height:1040px;object-fit:cover;background:#111}
+.velo{position:absolute;left:0;top:0;width:1080px;height:1041px;background:linear-gradient(180deg,rgba(17,17,17,.5) 0,rgba(17,17,17,.1) 22%,rgba(17,17,17,.15) 45%,rgba(17,17,17,.65) 72%,rgba(17,17,17,.7) 86%,#F2F0E9 100%)}
+/* lo spazio che lascia vedere la foto: si stringe da solo se i marcatori sono tanti */
+.aria{flex:1 1 auto;max-height:330px;min-height:0}
+.cred{position:absolute;right:70px;top:250px;font:700 24px/1 Lato;color:#fff;text-shadow:0 1px 6px rgba(0,0,0,.7)}
+.conFoto .tit b{color:#fff;text-shadow:0 4px 18px rgba(0,0,0,.55)}
+.conFoto .tit small{text-shadow:0 2px 10px rgba(0,0,0,.6)}
+</style></head><body>`;
 const fine = '</main><script>Promise.all([document.fonts.ready,...[...document.images].map((i)=>i.decode().catch(()=>{}))]).then(()=>document.body.dataset.pronto=1)</script></body></html>';
 const logo = '<div class="logo"><b>Fanta<em>futsal</em></b></div>';
+/** La foto (se c'e') sta sotto <main>, col velo e il credito; main prende la classe per i titoli bianchi. */
+const apri = (f, base) => (f.foto
+  ? `<img class="foto" src="${base}/social/futsal/foto/${encodeURIComponent(f.foto.id)}.jpg" alt=""><div class="velo"></div><div class="cred">${esc(f.foto.credito)}</div><main class="conFoto">`
+  : '<main>');
 const piede = (sotto) => `<div class="cta"><b>Gioca gratis · <em>Link in bio</em></b><span>${esc(sotto)}</span></div>`;
 const stemmaImg = (base, id) => `<img src="${base}/media/stemmi/${encodeURIComponent(id)}.webp" alt="">`;
 /** I gol di una squadra raggruppati per giocatore: «Oddone D. 2' 8' 41'». */
@@ -168,7 +195,7 @@ function perGiocatore(gs) {
 }
 
 export function htmlRisultato(f, base) {
-  return `${testa(base)}${logo}
+  return `${testa(base)}${apri(f, base)}${logo}${f.foto ? '<div class="aria"></div>' : ''}
   <div class="tit"><small>${f.g}ª giornata</small><b>Risultato finale</b></div>
   <div class="carta rf">
     <div class="sq">${stemmaImg(base, f.casa)}<b>${esc(f.nomeCasa)}</b></div>
@@ -181,7 +208,7 @@ export function htmlRisultato(f, base) {
 }
 
 export function htmlGiornata(f, base) {
-  return `${testa(base)}${logo}
+  return `${testa(base)}${apri(f, base)}${logo}${f.foto ? '<div class="aria"></div>' : ''}
   <div class="tit"><small>${f.g}ª giornata</small><b>I migliori</b></div>
   <div class="carta top">${f.top.map((x, i) => `<div class="riga"><i>${i + 1}</i>${stemmaImg(base, x.club)}<div><b>${esc(x.chi)}</b><span>${esc(x.nomeClub)}</span></div><strong>${esc(virgola(x.voto))}</strong></div>`).join('')}</div>
   <div class="dopo"><b>${esc(f.dopo.titolo)}</b><span>${esc(f.dopo.sotto)}</span></div>

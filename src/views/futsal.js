@@ -463,6 +463,13 @@ function sistema(b) {
 }
 const stessaRosa = (a, b) => { const x = V.elementi(a), y = V.elementi(b); return x.length === y.length && x.every((id) => y.includes(id)); };
 
+/** Di quanto si e' mosso il valore dopo la giornata g, in un chip: '' finche' non si sa. */
+function plusChip(vid, g) {
+  if (g <= V.VALORI.base || !F.conclusa(g)) return '';
+  const p = V.plus(vid, g);
+  return `<small class="fs-plus ${p > 0 ? 'su' : p < 0 ? 'giu' : 'zero'}" title="Quotazione dopo la ${g}ª">${p ? piu(p) : '0'}</small>`;
+}
+
 /** Una maglia sul campo o in panchina, con quotazione e avversario (o punti a giornata chiusa). */
 function cartellino(slot, id, n, { porta = false, fasciaC = '', riga = null, peso = null, modificabile = true, sesto = false } = {}) {
   const ruolo = slot[0];
@@ -473,9 +480,11 @@ function cartellino(slot, id, n, { porta = false, fasciaC = '', riga = null, pes
   const club = porta ? id : F.giocatore(id)?.club;
   const vid = porta ? V.idPorta(id) : id;
   const num = porta ? 'P' : F.giocatore(id)?.numero ?? '';
+  // la plusvalenza in piccolo, verde, rossa o grigia (Alex, 27/11): a giornata
+  // chiusa quella della giornata, prima quella dell'ultima giornata conclusa
   const sotto = riga
-    ? `<small class="fs-pti ${fascia(riga.voto.sv ? null : riga.voto.totale)}">${riga.voto.sv ? (attesa(n, riga)?.breve || 'S.V.') : riga.voto.riposo ? `${fmt(riga.punti)} R` : fmt(riga.punti)}</small>`
-    : `<small><em>${cr(V.quotazione(vid, n))}</em> CR · ${esc(avversario(club, n))}</small>`;
+    ? `<span class="fs-dati"><small class="fs-pti ${fascia(riga.voto.sv ? null : riga.voto.totale)}">${riga.voto.sv ? (attesa(n, riga)?.breve || 'S.V.') : riga.voto.riposo ? `${fmt(riga.punti)} R` : fmt(riga.punti)}</small>${plusChip(vid, n)}</span>`
+    : `<span class="fs-dati"><small><em>${cr(V.quotazione(vid, n))}</em> CR · ${esc(avversario(club, n))}</small>${plusChip(vid, n - 1)}</span>`;
   const corpo = `${maglietta(club, num)}${fasciaC ? `<i class="fs-cap">${fasciaC}</i>` : ''}${peso != null ? `<i class="fs-peso">${peso}</i>` : ''}<b>${esc(porta ? `Porta ${nomeSq(id)}` : nomeG(F.giocatore(id)))}</b>${sotto}`;
   return `<button class="fs-carta${sesto ? ' sesto' : ''}${mossa?.slot === slot && mossa.compra ? ' arrivo' : ''}" data-slot="${slot}" data-id="${esc(id)}">${corpo}</button>`;
 }

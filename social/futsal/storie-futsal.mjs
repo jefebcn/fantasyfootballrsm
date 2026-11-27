@@ -131,8 +131,8 @@ const testa = (base) => `<!doctype html><html lang="it"><head><meta charset="utf
 html,body{width:1080px;height:1920px;overflow:hidden}
 body{background:#F2F0E9;color:#111;font-family:Lato,sans-serif;position:relative}
 body:before{content:'';position:absolute;inset:0;background:repeating-linear-gradient(-62deg,transparent 0 120px,rgba(17,17,17,.035) 120px 124px)}
-/* Instagram copre i primi ~250px e gli ultimi ~250px: tutto sta in mezzo */
-main{position:absolute;left:70px;right:70px;top:240px;bottom:250px;display:flex;flex-direction:column;gap:34px}
+/* Instagram copre i primi ~150px (profilo) e gli ultimi ~200px (risposta): un po' di aria in più (Alex, 27/11) */
+main{position:absolute;left:70px;right:70px;top:180px;bottom:190px;display:flex;flex-direction:column;gap:34px}
 .logo{align-self:flex-start;background:#111;color:#fff;padding:10px 34px 2px;transform:skewX(-12deg)}
 .logo b{display:block;font:700 70px/1 Teko;letter-spacing:2px;text-transform:uppercase;transform:skewX(12deg)}
 .logo em{font-style:normal;color:#FF4B2B}
@@ -175,7 +175,7 @@ main{position:absolute;left:70px;right:70px;top:240px;bottom:250px;display:flex;
 .velo{position:absolute;left:0;top:0;width:1080px;height:1041px;background:linear-gradient(180deg,rgba(17,17,17,.5) 0,rgba(17,17,17,.1) 22%,rgba(17,17,17,.15) 45%,rgba(17,17,17,.65) 72%,rgba(17,17,17,.7) 86%,#F2F0E9 100%)}
 /* lo spazio che lascia vedere la foto: si stringe da solo se i marcatori sono tanti */
 .aria{flex:1 1 auto;max-height:330px;min-height:0}
-.cred{position:absolute;right:70px;top:250px;font:700 24px/1 Lato;color:#fff;text-shadow:0 1px 6px rgba(0,0,0,.7)}
+.cred{position:absolute;right:70px;top:190px;font:700 24px/1 Lato;color:#fff;text-shadow:0 1px 6px rgba(0,0,0,.7)}
 .conFoto .tit b{color:#fff;text-shadow:0 4px 18px rgba(0,0,0,.55)}
 .conFoto .tit small{text-shadow:0 2px 10px rgba(0,0,0,.6)}
 </style></head><body>`;

@@ -88,7 +88,7 @@ export const CALENDARIO = [
   [11,"cosmos","domagnano","2026-11-23T21:45:00+01:00","Stadio di Fiorentino",1,1],
   [11,"lafiorita","pennarossa","2026-11-23T21:45:00+01:00","Stadio di Domagnano",1,0],
   [11,"juvenes","folgore","2026-11-24T22:00:00+01:00","Palestra di Acquaviva",3,2],
-  [11,"virtus","trepenne","2026-11-26T22:00:00+01:00","Palestra di Acquaviva",null,null],
+  [11,"virtus","trepenne","2026-11-26T22:00:00+01:00","Palestra di Acquaviva",2,4],
   [12,"pennarossa","sangiovanni","2026-11-30T20:15:00+01:00","Stadio di Fiorentino",null,null],
   [12,"domagnano","virtus","2026-11-30T20:15:00+01:00","Stadio di Domagnano",null,null],
   [12,"trepenne","cosmos","2026-11-30T21:45:00+01:00","Stadio di Domagnano",null,null],
@@ -510,5 +510,6 @@ export const REFERTI = [
   {g:11,casa:"lafiorita",ospite:"pennarossa",distinte:[["f343", "f51", "f355", "f100", "f23", "f102", "f1243", "f45", "f26", "f262", "f361"], ["f316", "f49", "f142", "f83", "f272", "f1000", "f93", "f29", "f125", "f228"]],eventi:[["f83", 61, "yellow"], ["f361", 58, "goal"], ["f361", 50, "yellow"]]},
   {g:11,casa:"libertas",ospite:"faetano",distinte:[["f337", "f105", "f134", "f968", "f195", "f44", "f139", "f104", "f135", "f270", "f96", "f595", "f1221"], ["f286", "f990", "f992", "f1207", "f171", "f292", "f987", "f986", "f720", "f991"]],eventi:[["f720", 60, "yellow"], ["f286", 57, "yellow"], ["f105", 49, "yellow"], ["f337", 36, "goal"], ["f292", 28, "yellow"], ["f171", 16, "goal"]]},
   {g:11,casa:"sangiovanni",ospite:"trefiori",distinte:[["f423", "f1008", "f315", "f974", "f332", "f276", "f168", "f977", "f160", "f1227"], ["f163", "f222", "f179", "f81", "f1237", "f91", "f78", "f699", "f16", "f1239", "f1238", "f3"]],eventi:[["f168", 52, "goal"], ["f276", 46, "yellow"], ["f16", 45, "goal"], ["f699", 41, "goal"], ["f315", 33, "goal"], ["f1008", 31, "goal"], ["f1008", 21, "goal"], ["f699", 8, "goal"], ["f699", 2, "goal"]]},
+  {g:11,casa:"virtus",ospite:"trepenne",distinte:[["f474", "f64", "f264", "f984", "f145", "f985", "f983", "f363", "f261", "f1233", "f1231", "f994"], ["f1230", "f307", "f1229", "f149", "f199", "f1042", "f198", "f223", "f302", "f495"]],eventi:[["f199", 62, "goal"], ["f261", 60, "yellow"], ["f363", 60, "own_goal"], ["f983", 47, "yellow"], ["f261", 46, "goal"], ["f1229", 39, "goal"], ["f302", 26, "goal"], ["f985", 25, "yellow"], ["f264", 11, "goal"]]},
 ];
 export const PROVVISORI = {};

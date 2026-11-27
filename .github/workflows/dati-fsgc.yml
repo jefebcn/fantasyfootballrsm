@@ -50,6 +50,7 @@ concurrency:
 
 permissions:
   contents: write
+  id-token: write     # il token OIDC con cui la funzione pubblica-futsal riconosce questo lavoro (storie automatiche)
 
 jobs:
   importa:
@@ -123,6 +124,8 @@ jobs:
       - name: Importa, e nei giorni di partita resta di guardia
         env:
           SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+          # storie automatiche del futsal: 'off' le spegne, 'prova' le fotografa senza pubblicarle
+          STORIE_FUTSAL: ${{ vars.STORIE_FUTSAL }}
         run: |
           git config user.name  'importatore FSGC'
           git config user.email 'importatore-fsgc@users.noreply.github.com'

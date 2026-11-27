@@ -1,10 +1,10 @@
 # Stato – Fantatitano
 
-Aggiornato: 2026-11-27 · temi: post delle novità, collaborazione con Il Pianello, piccola correzione del futsal
+Aggiornato: 2026-11-27 (fine sessione) · temi: post delle novità, collaborazione con Il Pianello, piccola correzione del futsal
 
 ## Dove siamo
-- App online su fantatitano.site e su iPhone; le app aprono il sito, quindi ogni deploy arriva anche lì. Versione su main 4.2.381. Migrazioni applicate fino alla 071 (pronostici).
-- Unite: PR #186 (stato) e #188 (home del futsal: «manca 1 partita» al singolare).
+- App online su fantatitano.site e su iPhone; le app aprono il sito, quindi ogni deploy arriva anche lì. Versione su main 4.2.383. Migrazioni applicate fino alla 071 (pronostici).
+- Unite: PR #186 (stato), #188 (home del futsal: «manca 1 partita» al singolare) e #190 (Il Pianello: documento, materiale, stato).
 - Instagram: carosello «Tre cose nuove nell'app» (pronostici, highlights, card della giornata, più la slide FantaFutsal «in arrivo») programmato per ven 27/11 alle 11:30 (Buffer 6b08b7066fabe326fab8763d); dettagli nel kit (`kit/STATO.md`).
 - **Il Pianello** (sito di notizie e pagina Instagram, circa 14 mila follower): pubblica gratis la notizia del FantaFutsal e offre uno spazio fisso sul suo sito per una rubrica sul campionato. Tutto in `docs/PIANELLO.md` e `social/pianello/`, con una copia in Google Drive (cartella «Fantatitano – Il Pianello»).
 - Futsal: si apre a tutti da solo il 01/12 alle 8:00 (`futsalPerTutti` in `src/lancio-futsal.js`), con la corona del lancio fino al 14/12.

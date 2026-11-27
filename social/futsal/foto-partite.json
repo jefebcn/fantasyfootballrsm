@@ -1,0 +1,192 @@
+{
+ "_come": [
+  "Foto FSGC delle partite del futsal (archivio Flickr FSGC, Alex 27/11): una per partita, guardata a mano, solo gioco (niente schieramenti, arbitri, infortuni).",
+  "Il futsal si gioca anche all'aperto, sul campetto vicino al campo da calcio (Alex, 27/11): le foto all'aperto vanno bene.",
+  "Fuori le foto «Domagnano - Cosmos» della cartella della 10ª: la FSGC le ha etichettate male (quella partita del futsal è dell'11ª, il 23/11).",
+  "Per aggiungerne: la foto in social/futsal/foto/<id flickr>.jpg e una riga qui. Le storie la scelgono da sole (fotoPer in storie-futsal.mjs)."
+ ],
+ "foto": [
+  {
+   "id": "55529565354",
+   "giornata": 1,
+   "casa": "faetano",
+   "ospite": "trepenne",
+   "credito": "© FSGC / Montanari"
+  },
+  {
+   "id": "55535902091",
+   "giornata": 1,
+   "casa": "fiorentino",
+   "ospite": "trefiori",
+   "credito": "© FSGC / Mularoni"
+  },
+  {
+   "id": "55529431271",
+   "giornata": 1,
+   "casa": "folgore",
+   "ospite": "murata",
+   "credito": "© FSGC / Novelli"
+  },
+  {
+   "id": "55529563659",
+   "giornata": 1,
+   "casa": "juvenes",
+   "ospite": "lafiorita",
+   "credito": "© FSGC / Mularoni"
+  },
+  {
+   "id": "55529589264",
+   "giornata": 1,
+   "casa": "libertas",
+   "ospite": "cailungo",
+   "credito": "© FSGC / Novelli"
+  },
+  {
+   "id": "55532431819",
+   "giornata": 1,
+   "casa": "pennarossa",
+   "ospite": "domagnano",
+   "credito": "© FSGC / Pierini"
+  },
+  {
+   "id": "55529564584",
+   "giornata": 1,
+   "casa": "virtus",
+   "ospite": "cosmos",
+   "credito": "© FSGC / Montanari"
+  },
+  {
+   "id": "55543901299",
+   "giornata": 2,
+   "casa": "cailungo",
+   "ospite": "juvenes",
+   "credito": "© FSGC / MovieByDaniels"
+  },
+  {
+   "id": "55543729816",
+   "giornata": 2,
+   "casa": "cosmos",
+   "ospite": "sangiovanni",
+   "credito": "© FSGC / Caminiti"
+  },
+  {
+   "id": "55543730741",
+   "giornata": 2,
+   "casa": "domagnano",
+   "ospite": "fiorentino",
+   "credito": "© FSGC / Caminiti"
+  },
+  {
+   "id": "55549747421",
+   "giornata": 2,
+   "casa": "lafiorita",
+   "ospite": "faetano",
+   "credito": "© FSGC / Onofri"
+  },
+  {
+   "id": "55545818533",
+   "giornata": 2,
+   "casa": "murata",
+   "ospite": "virtus",
+   "credito": "© FSGC / Onofri"
+  },
+  {
+   "id": "55543903474",
+   "giornata": 2,
+   "casa": "trefiori",
+   "ospite": "pennarossa",
+   "credito": "© FSGC / MovieByDaniels"
+  },
+  {
+   "id": "55543897458",
+   "giornata": 2,
+   "casa": "trepenne",
+   "ospite": "folgore",
+   "credito": "© FSGC / Mularoni"
+  },
+  {
+   "id": "55644420113",
+   "giornata": 9,
+   "casa": "cailungo",
+   "ospite": "trefiori",
+   "credito": "© FSGC / Onofri"
+  },
+  {
+   "id": "55646266651",
+   "giornata": 9,
+   "casa": "cosmos",
+   "ospite": "lafiorita",
+   "credito": "© FSGC / Marinelli"
+  },
+  {
+   "id": "55644524794",
+   "giornata": 9,
+   "casa": "faetano",
+   "ospite": "murata",
+   "credito": "© FSGC / Caminiti"
+  },
+  {
+   "id": "55644314331",
+   "giornata": 9,
+   "casa": "juvenes",
+   "ospite": "pennarossa",
+   "credito": "© FSGC / Caminiti"
+  },
+  {
+   "id": "55644488559",
+   "giornata": 9,
+   "casa": "sangiovanni",
+   "ospite": "libertas",
+   "credito": "© FSGC / Palmieri"
+  },
+  {
+   "id": "55650393794",
+   "giornata": 9,
+   "casa": "trepenne",
+   "ospite": "fiorentino",
+   "credito": "© FSGC / Mularoni"
+  },
+  {
+   "id": "55644554849",
+   "giornata": 9,
+   "casa": "virtus",
+   "ospite": "folgore",
+   "credito": "© FSGC / Palmieri"
+  },
+  {
+   "id": "55660468986",
+   "giornata": 10,
+   "casa": "fiorentino",
+   "ospite": "virtus",
+   "credito": "© FSGC / Marinelli"
+  },
+  {
+   "id": "55657943244",
+   "giornata": 10,
+   "casa": "folgore",
+   "ospite": "sangiovanni",
+   "credito": "© FSGC / Caminiti"
+  },
+  {
+   "id": "55657752151",
+   "giornata": 10,
+   "casa": "murata",
+   "ospite": "cosmos",
+   "credito": "© FSGC / Montanari"
+  },
+  {
+   "id": "55657947359",
+   "giornata": 10,
+   "casa": "pennarossa",
+   "ospite": "libertas",
+   "credito": "© FSGC / Onofri"
+  },
+  {
+   "id": "55657871308",
+   "giornata": 10,
+   "casa": "trepenne",
+   "ospite": "cailungo",
+   "credito": "© FSGC / Caminiti"
+  }
+ ]
+}

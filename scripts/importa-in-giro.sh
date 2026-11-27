@@ -43,6 +43,10 @@ PROVE=${PROVE:-"npm test"}
 FINESTRA=${FINESTRA:-"node scripts/finestra-partite.mjs"}
 # il futsal (scripts/importa-futsal-giro.sh): non fallisce mai, al massimo salta il giro
 FUTSAL=${FUTSAL:-"bash scripts/importa-futsal-giro.sh"}
+# Le storie automatiche del futsal (scripts/storie-futsal.mjs): solo dopo un
+# push riuscito che porta referti futsal nuovi, cosi' escono quando i dati sono
+# gia' nell'app. Non fermano mai l'import.
+STORIE_FS=${STORIE_FS:-"bash scripts/storie-futsal-giro.sh"}
 
 inizio=$(date +%s)
 giro=0
@@ -100,6 +104,9 @@ un_giro() {
                 -m "$(git diff --cached --stat -- src/ | tail -1)"
   if git push -q origin "HEAD:$RAMO"; then
     echo "dati nuovi pubblicati"
+    if ! git diff --quiet HEAD^ HEAD -- src/futsal-dati.js; then
+      bash -c "$STORIE_FS" || echo "::warning::le storie del futsal non sono uscite"
+    fi
   else
     # qualcuno ha pubblicato nel frattempo: al giro dopo si riparte da la' e
     # i dati si ritrovano, perche' la FSGC li ha ancora

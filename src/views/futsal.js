@@ -73,7 +73,7 @@ const stemma = (id, cls = 'fs-crest') => {
   if (CON_STEMMA.has(id)) return `<img class="fs-stemma ${cls}" src="./media/stemmi/${encodeURIComponent(id)}-mini.webp" alt="" width="31" height="34" decoding="async">`;
   const c = colore.get(id); return crest({ color: c?.color, initials: c?.shortName || String(id).slice(0, 3).toUpperCase() }, cls);
 };
-const nomeG = (g) => `${g.cognome} ${g.nome ? `${g.nome[0]}.` : ''}`;
+const nomeG = (g) => F.nomeBreve(g);
 const ruoloChip = (r) => `<span class="rl rl-${r === 'P' ? 'p' : r === 'D' ? 'd' : 'a'}">${r}</span>`;
 // Nelle liste la maglia della squadra (Alex, 21/11: «al posto della lettera»), col ruolo piccolo nell'angolo.
 const magliaRiga = (club, num, r) => `<span class="fs-mgr">${maglietta(club, r === 'P' ? 'P' : num)}${ruoloChip(r)}</span>`;
@@ -647,12 +647,25 @@ function risultati(n) {
   </main>`;
 }
 
+/**
+ * I bonus e i malus di un voto, coi numeri (Alex, 27/11: «se c'e' un surplus o
+ * un malus dev'essere scritto anche nella formazione»): «Sconfitta −0,5 ·
+ * Ammonizione −0,5». Il 6 di partenza non si ripete; l'esito solo se pesa.
+ */
+const conSegno = (x) => `${x > 0 ? '+' : x < 0 ? '−' : ''}${fmt(Math.abs(x))}`;
+function bonusMalus(voto) {
+  if (voto.riposo) return voto.voci.map((v) => v.etichetta).join(' · ');
+  return voto.voci.slice(1).filter((v) => v.valore)
+    .map((v) => `${v.etichetta.replace(/^Esito · (.)/, (_, c) => c.toUpperCase())} ${conSegno(v.valore)}`).join(' · ');
+}
+
 function tabellaPunti(r, n) {
   const prima = (x) => attesa(n, { id: x.id, club: x.club, voto: F.votiGiornata(n).giocatori.get(x.id) });
-  const nota = (x) => (x.entrato ? (n && prima(x) ? `${prima(x).testo} · per ora entra ${nomeG(F.giocatore(x.entrato.id))}` : `non convocato: entra ${nomeG(F.giocatore(x.entrato.id))}`) : x.voto.sv ? (attesa(n, x)?.testo || x.voto.motivo) : x.usato ? 'entrato in campo' : x.voto.voci.slice(x.voto.riposo ? 0 : 2).map((v) => v.etichetta).join(' · ') || 'nessun evento');
-  const nome = (x) => (x.posto === 'P' ? `Porta ${nomeSq(x.club)}` : nomeG(F.giocatore(x.entrato?.id || x.id)));
+  const nota = (x) => (x.entrato ? (n && prima(x) ? `${prima(x).testo} · per ora entra ${nomeG(F.giocatore(x.entrato.id))}` : `non convocato: entra ${nomeG(F.giocatore(x.entrato.id))}${bonusMalus(x.voto) ? ` · ${bonusMalus(x.voto)}` : ''}`) : x.voto.sv ? (attesa(n, x)?.testo || x.voto.motivo) : x.usato ? `in campo al posto di ${nomeG(F.giocatore(r.righe.find((y) => y.entrato?.id === x.id)?.id)) || 'un titolare'}` : bonusMalus(x.voto) || 'nessun evento');
+  // la riga resta del titolare (Alex, 27/11: prima c'era scritto il nome di chi entra, due volte): chi entra e' nella nota
+  const nome = (x) => (x.posto === 'P' ? `Porta ${nomeSq(x.club)}` : nomeG(F.giocatore(x.id)));
   const peso = (x) => (x.posto === 'S' ? 'sesto' : x.posto === 'B' ? (x.usato ? '' : '50%') : x.capitano ? `×${fmt(R.capitano)}` : '');
-  return `<div class="a-card fs-list">${r.righe.map((x) => `<div class="vr">${magliaRiga(F.giocatore(x.entrato?.id || x.id)?.club || x.club, F.giocatore(x.entrato?.id || x.id)?.numero, x.posto === 'S' || x.posto === 'B' ? x.ruolo : x.posto)}<span class="nm"><b>${esc(nome(x))}${peso(x) ? ` <small class="fs-w">${peso(x)}</small>` : ''}</b><span>${esc(nota(x))}</span></span><span class="ev"></span>${x.voto.sv ? `<span class="fv sv">${attesa(n, x) ? '–' : '0'}</span>` : `<span class="fv${x.capitano ? ' cap' : ''}">${fmt(x.punti)}</span>`}</div>`).join('')}
+  return `<div class="a-card fs-list">${r.righe.map((x) => `<div class="vr">${magliaRiga(F.giocatore(x.id)?.club || x.club, F.giocatore(x.id)?.numero, x.posto === 'S' || x.posto === 'B' ? x.ruolo : x.posto)}<span class="nm"><b>${esc(nome(x))}${peso(x) ? ` <small class="fs-w">${peso(x)}</small>` : ''}</b><span>${esc(nota(x))}</span></span><span class="ev"></span>${x.usato ? '<span class="fv sv">↑</span>' : x.voto.sv ? `<span class="fv sv">${attesa(n, x) ? '–' : '0'}</span>` : `<span class="fv${x.capitano ? ' cap' : ''}">${fmt(x.punti)}</span>`}</div>`).join('')}
   ${r.bonusDifesa ? `<div class="vr"><span></span><span class="nm"><b>Bonus difesa</b><span>media ${fmt(r.bonusDifesa.media)} su ${fmt(R.bonusDifesa.soglia)}</span></span><span class="ev"></span><span class="fv">${r.bonusDifesa.punti ? `+${fmt(r.bonusDifesa.punti, 0)}` : '0'}</span></div>` : ''}
   ${r.malus ? `<div class="vr"><span></span><span class="nm"><b>Cambi di mercato</b><span>oltre quelli gratis</span></span><span class="ev"></span><span class="fv">−${fmt(r.malus, 0)}</span></div>` : ''}
   <div class="vr fs-tot"><span></span><span class="nm"><b>${n && senzaReferto(n) ? 'Parziale' : 'Totale'}</b>${n && senzaReferto(n) ? `<span>${senzaReferto(n) === 1 ? 'manca 1 partita' : `mancano ${senzaReferto(n)} partite`}</span>` : ''}</span><span class="ev"></span><span class="fv">${fmt(r.totale)}</span></div></div>`;
@@ -955,7 +968,7 @@ function distinte(n, casa, evid = null) {
     const ids = [...(ref.distinte[i] || [])].sort((a, b) => (Number(F.giocatore(a)?.numero) || 99) - (Number(F.giocatore(b)?.numero) || 99));
     const porta = voti.porta.get(club);
     return `<div class="fs-dist-testa">${stemma(club)}<b>${esc(nomeSq(club))}</b><span>${ids.length} in distinta</span></div>
-      <a class="vr fs-dist" href="${profilo(V.idPorta(club))}"><span class="fs-dist-n">P</span><span class="nm"><b>Porta ${esc(nomeSq(club))}</b><span>${esc(porta.voci.slice(2).map((v) => v.etichetta).join(' · ') || 'tutti i portieri')}</span></span><span class="ev"></span>${voto(porta)}</a>
+      <a class="vr fs-dist" href="${profilo(V.idPorta(club))}"><span class="fs-dist-n">P</span><span class="nm"><b>Porta ${esc(nomeSq(club))}</b><span>${esc((porta.sv ? '' : bonusMalus(porta)) || 'tutti i portieri')}</span></span><span class="ev"></span>${voto(porta)}</a>
       ${ids.map((id) => { const g = F.giocatore(id); if (!g) return ''; return `<a class="vr fs-dist${id === evid ? ' fs-evid' : ''}" href="${profilo(id)}"><span class="fs-dist-n">${esc(g.numero ?? '')}</span><span class="nm"><b>${esc(g.cognome)} ${esc(g.nome)}</b><span>${esc(g.ruoloFsgc)}</span></span><span class="ev">${segni(id)}</span>${g.ruolo === 'P' ? '<span class="fv sv">–</span>' : voto(voti.giocatori.get(id))}</a>`; }).join('')}`;
   };
   return `${lato(p.casa, 0)}<div class="fs-div"></div>${lato(p.ospite, 1)}`;

@@ -67,6 +67,8 @@ const SQUADRA = { A: ['f220', 'f83', 'f1234', 'f44'], D: ['f546', 'f139', 'f149'
   et(!righe.some((r) => /la squadra non gioca/.test(r)), 'nessuno è più «la squadra non gioca»');
   et([...virtus, di(/Porta Murata/)].every((r) => /–$/.test(r.trim())), 'chi aspetta ha un trattino, non uno 0');
   et(/^.*Parziale manca 1 partita 19,5$/.test(di(/Parziale/)), `la riga del totale dice «Parziale» (${di(/Parziale|Totale/)})`);
+  // bonus e malus coi numeri (Alex, 27/11): non solo «Ammonizione»
+  et(/Sconfitta −0,5 · Ammonizione −0,5/.test(di(/Verri P\./)), `bonus e malus coi numeri (${di(/Verri P\./)})`);
   const campo = await p.evaluate(() => [...document.querySelectorAll('.fs-pti')].map((x) => x.innerText.trim()));
   et(campo.includes('R') && campo.includes('22:00') && !campo.includes('S.V.'), `sul campo R e 22:00 al posto di S.V. (${campo.join(' ')})`);
 

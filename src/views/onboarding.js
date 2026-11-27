@@ -2,6 +2,7 @@ import * as S from '../state.js';
 import { icon, logo, marchio, t } from '../ui.js';
 import { prepareLogin } from './auth.js';
 import { nativa } from '../notifiche.js';
+import { futsalPerTutti } from '../lancio-futsal.js';
 
 /**
  * IL TASTO DELL'APP STORE (Alex, 18/11: «se entra una persona che non ha
@@ -70,10 +71,66 @@ const SLIDES = [
   },
 ];
 
+/**
+ * DUE GIOCHI, UNA PRESENTAZIONE (Alex, 27/11: «al momento è spiegato solamente
+ * come si gioca a fantacalcio a 11, mentre tra poco aggiungeremo anche il
+ * fantafutsal»). Dal lancio del futsal (futsalPerTutti, 1° dicembre alle 8)
+ * chi apre l'app la prima volta vede queste quattro schermate al posto delle
+ * tre di sopra: i due giochi presentati insieme, poi le regole che hanno in
+ * comune. I dettagli del futsal (Porta, sesto uomo, mercato) li spiega il suo
+ * benvenuto, la prima volta che si entra nel FantaFutsal: qui basta capire
+ * che i giochi sono due e in cosa si somigliano. Lo sfondo animato e il video
+ * restano quelli di sempre.
+ *
+ * Si dice solo quello che vale per tutti e due: niente assist (nei referti
+ * del futsal la voce non c'e'), niente «dato che si congela» (e' del calcio).
+ */
+const SLIDES_DUE = [
+  {
+    marchio: true,
+    body: [
+      'Il fantacalcio di San Marino, in due giochi: il <b>campionato a 11</b> e il <b>futsal</b>. Stessa app, stesso account.',
+      'Qui il voto non è un\'opinione: <b>lo scrive la partita</b>. Gol, porta inviolata, cartellini — quello che c\'è nel referto, e nient\'altro.',
+    ],
+  },
+  {
+    eyebrow: 'Scegli il tuo gioco',
+    title: 'Due giochi<br><em>un\'app</em>',
+    // [classe, icona, occhiello, nome, testo]: le schede hanno il colore del
+    // loro gioco, l'oro del Titano e l'arancio del futsal.
+    giochi: [
+      ['calcio', 'shirt', 'Campionato a 11', 'Fantacalcio', 'Rosa con 500 crediti, 11 titolari e 7 in panchina. Si gioca il sabato e la domenica: la domenica sera arrivano i punteggi.'],
+      ['futsal', 'pallone', 'Campionato di futsal', 'FantaFutsal', 'La Porta di una squadra e 8 giocatori con 70 crediti: in campo 4 più il sesto uomo. Le quotazioni cambiano a ogni giornata e tra una giornata e l\'altra fai mercato.'],
+    ],
+  },
+  {
+    eyebrow: 'Come funziona',
+    title: 'Le stesse<br><em>regole</em>',
+    points: [
+      ['calc', 'Il voto dal referto', 'Si parte da 6,0. Si aggiungono l\'esito della squadra e ogni evento della partita: gol, porta inviolata, cartellini, rigori. Il conto è sempre visibile, riga per riga.'],
+      ['cal', 'Una giornata a settimana', 'Scegli chi va in campo: le formazioni si chiudono 10 minuti prima della prima partita. Se un titolare non gioca, entra chi hai in panchina.'],
+      ['star', 'Capitano e vice', 'Il capitano vale doppio nel calcio e una volta e mezza nel futsal. Se non gioca, la fascia passa al vice.'],
+    ],
+  },
+  {
+    eyebrow: 'Perché Fantatitano',
+    title: 'Si gioca<br><em>gratis</em>',
+    points: [
+      ['users', 'Con i tuoi amici', 'Crei una lega e sfidi gli amici, nel calcio e nel futsal. Senza un gruppo ci sono le classifiche di tutti.'],
+      ['coppa', 'Non solo campionato', 'In tutti e due i giochi c\'è anche la Coppa: prima i gironi, poi l\'eliminazione diretta.'],
+      ['lock', 'Niente da pagare', 'Nessun abbonamento e nessun acquisto per vincere: contano solo le tue squadre e i voti del referto.'],
+    ],
+  },
+];
+const slides = () => (futsalPerTutti() ? SLIDES_DUE : SLIDES);
+const PALLONE = '<i class="mi" style="--m:url(/media/icone/futsal/pallone.svg)"></i>';
+const giocoIcona = (ic) => (ic === 'pallone' ? PALLONE : icon(ic));
+
 export const onboarding = {
   title: 'Benvenuto', appbar: 'none', nav: false,
   render() {
-    const s = SLIDES[slide]; const last = slide === SLIDES.length - 1;
+    const SL = slides(); slide = Math.min(slide, SL.length - 1);
+    const s = SL[slide]; const last = slide === SL.length - 1;
     return `<main class="intro">
       <div class="intro-bg">
         <canvas id="intro-fx"></canvas>
@@ -94,10 +151,11 @@ export const onboarding = {
     ? `<div class="intro-marchio">${marchio()}</div>`
     : `<span class="intro-eyebrow">${t(s.eyebrow)}</span><h1>${t(s.title)}</h1>`}
         ${s.body ? s.body.map((p) => `<p>${t(p)}</p>`).join('\n           ') : ''}
+        ${s.giochi ? `<ul class="intro-giochi">${s.giochi.map(([cls, ic, occ, nome, d], i) => `<li class="${cls}" style="--i:${i}"><i>${giocoIcona(ic)}</i><div><small>${t(occ)}</small><b>${t(nome)}</b><span>${t(d)}</span></div></li>`).join('')}</ul>` : ''}
         ${s.points ? `<ul class="intro-points">${s.points.map(([ic, tit, d], i) => `<li style="--i:${i}"><i>${icon(ic)}</i><div><b>${t(tit)}</b><span>${t(d)}</span></div></li>`).join('')}</ul>` : ''}
       </div>
       <div class="intro-foot">
-        <div class="intro-dots">${SLIDES.map((_, i) => `<i class="${i === slide ? 'on' : ''}"></i>`).join('')}</div>
+        <div class="intro-dots">${SL.map((_, i) => `<i class="${i === slide ? 'on' : ''}"></i>`).join('')}</div>
         ${last
           ? `<button class="a-btn intro-cta" data-signup>${icon('userplus', 'ic sm')}${t('Registrati')}</button>
              <button class="intro-link" data-signin>${t('Ho già un account · Accedi')}</button>`
@@ -116,7 +174,7 @@ export const onboarding = {
     video.addEventListener('error', () => video.remove(), { once: true });
     fx(root.querySelector('#intro-fx'));
 
-    const go = (n) => { slide = Math.max(0, Math.min(SLIDES.length - 1, n)); ctx.render(); };
+    const go = (n) => { slide = Math.max(0, Math.min(slides().length - 1, n)); ctx.render(); };
     const leave = (tab) => { S.store.set({ onboarded: true }); prepareLogin(tab); ctx.go('login'); };
     main.addEventListener('click', (e) => {
       if (e.target.closest('[data-next]')) return go(slide + 1);

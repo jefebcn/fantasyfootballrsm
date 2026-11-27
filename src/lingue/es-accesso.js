@@ -133,6 +133,36 @@ export const ACCESSO = {
   'Nessun abbonamento e nessun acquisto per vincere: contano solo la tua squadra e i voti del referto.': 'Sin suscripciones ni compras para ganar: solo cuentan tu equipo y los votos del acta.',
   'Hai tempo fino al martedì per contestare un evento. Alle 20:00 la giornata diventa definitiva e non si tocca più.':
     'Tienes tiempo hasta el martes para presentar un reclamo sobre un evento. A las 20:00 la fecha queda definitiva y ya no se toca.',
+  // presentazione con i due giochi (dal lancio del futsal)
+  'Il fantacalcio di San Marino, in due giochi: il <b>campionato a 11</b> e il <b>futsal</b>. Stessa app, stesso account.':
+    'El fantasy del fútbol de San Marino, en dos juegos: el <b>campeonato de 11</b> y el <b>futsal</b>. Misma app, misma cuenta.',
+  'Qui il voto non è un\'opinione: <b>lo scrive la partita</b>. Gol, porta inviolata, cartellini — quello che c\'è nel referto, e nient\'altro.':
+    'Aquí el puntaje no es una opinión: <b>lo escribe el partido</b>. Goles, valla invicta, tarjetas — lo que figura en el acta, y nada más.',
+  'Scegli il tuo gioco': 'Elige tu juego',
+  'Due giochi<br><em>un\'app</em>': 'Dos juegos<br><em>una app</em>',
+  'Campionato a 11': 'Campeonato de 11',
+  'Fantacalcio': 'Fantacalcio',
+  'Rosa con 500 crediti, 11 titolari e 7 in panchina. Si gioca il sabato e la domenica: la domenica sera arrivano i punteggi.':
+    'Plantel con 500 créditos, 11 titulares y 7 suplentes. Se juega sábado y domingo: el domingo a la noche llegan los puntajes.',
+  'Campionato di futsal': 'Campeonato de futsal',
+  'FantaFutsal': 'FantaFutsal',
+  'La Porta di una squadra e 8 giocatori con 70 crediti: in campo 4 più il sesto uomo. Le quotazioni cambiano a ogni giornata e tra una giornata e l\'altra fai mercato.':
+    'El Arco de un equipo y 8 jugadores con 70 créditos: en cancha 4 más el sexto hombre. Las cotizaciones cambian en cada fecha y entre una fecha y otra haces mercado.',
+  'Le stesse<br><em>regole</em>': 'Las mismas<br><em>reglas</em>',
+  'Il voto dal referto': 'El voto del acta',
+  'Si parte da 6,0. Si aggiungono l\'esito della squadra e ogni evento della partita: gol, porta inviolata, cartellini, rigori. Il conto è sempre visibile, riga per riga.':
+    'Se parte de 6,0. Se suman el resultado del equipo y cada evento del partido: goles, valla invicta, tarjetas, penales. La cuenta siempre está a la vista, línea por línea.',
+  'Scegli chi va in campo: le formazioni si chiudono 10 minuti prima della prima partita. Se un titolare non gioca, entra chi hai in panchina.':
+    'Eliges quién sale a la cancha: las alineaciones se cierran 10 minutos antes del primer partido. Si un titular no juega, entra quien tienes en el banco.',
+  'Capitano e vice': 'Capitán y vice',
+  'Il capitano vale doppio nel calcio e una volta e mezza nel futsal. Se non gioca, la fascia passa al vice.':
+    'El capitán vale doble en el fútbol y una vez y media en el futsal. Si no juega, el brazalete pasa al vice.',
+  'Crei una lega e sfidi gli amici, nel calcio e nel futsal. Senza un gruppo ci sono le classifiche di tutti.':
+    'Creas una liga y desafías a tus amigos, en el fútbol y en el futsal. Si no tienes grupo, están las tablas de todos.',
+  'In tutti e due i giochi c\'è anche la Coppa: prima i gironi, poi l\'eliminazione diretta.':
+    'En los dos juegos también está la Copa: primero los grupos, después la eliminación directa.',
+  'Nessun abbonamento e nessun acquisto per vincere: contano solo le tue squadre e i voti del referto.':
+    'Sin suscripciones ni compras para ganar: solo cuentan tus equipos y los votos del acta.',
   'Indietro': 'Atrás',
   'Salta': 'Saltar',
   'Avanti': 'Siguiente',

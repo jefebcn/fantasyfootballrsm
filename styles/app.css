@@ -1441,6 +1441,36 @@ button,a{-webkit-tap-highlight-color:transparent}
 .intro-points b{display:block;font:700 15px var(--font-display);margin-bottom:3px}
 .intro-points span{display:block;font-size:13px;line-height:1.45;opacity:.88}
 @keyframes rise{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+/* I due giochi (presentazione dal lancio del futsal): due schede grandi, una
+   sotto l'altra, ognuna col colore del suo gioco sul bordo e sull'icona,
+   l'oro del Titano e l'arancio del futsal. Lo sfondo resta quello di sempre. */
+.intro-giochi{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:12px;align-self:stretch;text-align:left}
+.intro-giochi li{--g:var(--c-oro-400);display:flex;gap:14px;align-items:flex-start;background:rgba(255,255,255,.10);
+  border:1px solid rgba(255,255,255,.16);border-left:4px solid var(--g);border-radius:16px;padding:16px 14px;
+  backdrop-filter:blur(6px);animation:rise .45s both;animation-delay:calc(var(--i) * .08s)}
+.intro-giochi li.futsal{--g:#FF4B2B}
+.intro-giochi li>i{width:44px;height:44px;border-radius:12px;background:var(--g);color:#0B1A2C;display:grid;place-items:center;flex:none}
+.intro-giochi li.futsal>i{color:#fff}
+.intro-giochi li>i .ic,.intro-giochi li>i .mi{width:24px;height:24px}
+.intro-giochi small{display:block;font:600 10.5px var(--font-body);letter-spacing:.14em;text-transform:uppercase;color:var(--g);margin-bottom:2px}
+.intro-giochi b{display:block;font:700 19px var(--font-display);letter-spacing:.01em;margin-bottom:4px}
+.intro-giochi span{display:block;font-size:13px;line-height:1.45;opacity:.9}
+/* Telefono basso (iPhone SE, 667px): la terza e la quarta schermata con tre
+   schede erano piu' alte dello schermo e il bottone finiva fuori. Sotto i
+   720px tutto si stringe; se non basta ancora (testo grande), si scorre e lo
+   sfondo resta fermo, come nella guida. */
+@media (max-height:720px){
+  .intro:not(.guida){overflow-y:auto;-webkit-overflow-scrolling:touch}
+  .intro:not(.guida) .intro-bg{position:fixed}
+  .intro:not(.guida) .intro-body{gap:9px;padding-block:6px}
+  .intro:not(.guida) h1{font-size:1.6rem}
+  .intro:not(.guida) .intro-points,.intro-giochi{gap:8px}
+  .intro:not(.guida) .intro-points li{padding:10px 12px}
+  .intro:not(.guida) .intro-points i{width:34px;height:34px}
+  .intro:not(.guida) .intro-points span,.intro-giochi span{font-size:12.5px;line-height:1.38}
+  .intro-giochi li{padding:12px}
+  .intro:not(.guida) .intro-foot{gap:9px}
+}
 
 .intro-foot{display:flex;flex-direction:column;gap:12px;align-items:center}
 .intro-dots{display:flex;gap:7px;margin-bottom:2px}

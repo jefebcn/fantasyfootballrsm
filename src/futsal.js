@@ -23,6 +23,30 @@ export const GIOCATORI_FUTSAL = GIOCATORI.map(([id, club, nome, cognome, ruoloFs
 }));
 const perId = new Map(GIOCATORI_FUTSAL.map((g) => [g.id, g]));
 export const giocatore = (id) => perId.get(id);
+
+/**
+ * Il nome corto di un giocatore, «Cognome N.», come nell'app. Se due giocatori
+ * avrebbero lo stesso (Alex, 27/11: Conti G. e Conti G. nel Tre Fiori,
+ * Toccaceli S. in due squadre) si scrive il primo nome intero, e se non basta
+ * anche la squadra: nessuno si confonde con un altro.
+ */
+const primo = (g) => String(g.nome || '').split(' ')[0];
+const corti = [
+  (g) => `${g.cognome}${g.nome ? ` ${g.nome[0]}.` : ''}`,
+  (g) => `${g.cognome} ${primo(g)}`.trim(),
+  (g) => `${g.cognome} ${primo(g)} (${squadra.get(g.club)?.nome || g.club})`.trim(),
+];
+const nomiBrevi = new Map();
+{
+  let restano = GIOCATORI_FUTSAL;
+  for (const [i, f] of corti.entries()) {
+    const conta = new Map();
+    for (const g of restano) conta.set(f(g), (conta.get(f(g)) || 0) + 1);
+    const ultimo = i === corti.length - 1;
+    restano = restano.filter((g) => { if (conta.get(f(g)) === 1 || ultimo) { nomiBrevi.set(g.id, f(g)); return false; } return true; });
+  }
+}
+export const nomeBreve = (g) => (g ? nomiBrevi.get(g.id) || corti[0](g) : '');
 const clubDi = (id) => perId.get(id)?.club;
 const ruoloDi = (id) => perId.get(id)?.ruoloFsgc;
 

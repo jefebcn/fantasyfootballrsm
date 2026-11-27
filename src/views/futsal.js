@@ -370,7 +370,7 @@ function bloccoUltima(g, r, ids) {
     cap && cap !== top ? `<span><b>${fmt(cap.punti)}</b>${esc(chi(cap))} · capitano</span>` : '',
   ].filter(Boolean).join('');
   return `<a class="a-card fs-ultima" href="#/futsal/squadra/${g}">
-    <div class="fs-ult-top"><span><b>${g}ª giornata</b>${mancano ? `in corso · mancano ${mancano} ${mancano === 1 ? 'partita' : 'partite'}` : 'i tuoi punti'}</span><strong>${fmt(r.totale)}<small>pt</small></strong>${icon('chev', 'ic sm')}</div>
+    <div class="fs-ult-top"><span><b>${g}ª giornata</b>${mancano ? `in corso · ${mancano === 1 ? 'manca 1 partita' : `mancano ${mancano} partite`}` : 'i tuoi punti'}</span><strong>${fmt(r.totale)}<small>pt</small></strong>${icon('chev', 'ic sm')}</div>
     ${voci ? `<div class="fs-ult-voci">${voci}</div>` : ''}
   </a>`;
 }

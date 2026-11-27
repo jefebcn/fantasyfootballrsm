@@ -2970,6 +2970,12 @@ div.fs-carta{cursor:default}
 .fs-carta.sesto .fs-peso{background:var(--fs-evid);border-color:var(--fs-evid)}
 .fs-carta .fs-pti{font:800 11px var(--font-data)}
 .fs-carta .fs-pti.fp-r{background:var(--fp-r);color:var(--fp-r-ink)}.fs-carta .fs-pti.fp-g{background:var(--fp-g);color:var(--fp-g-ink)}.fs-carta .fs-pti.fp-v{background:var(--fp-v);color:var(--fp-v-ink)}
+.fs-dati{display:flex;gap:3px;max-width:100%;min-width:0;justify-content:center}
+.fs-dati small{min-width:0}
+.fs-panca .fs-dati{flex-direction:column;align-items:center;gap:2px}
+.fs-campo .fs-carta{width:116px}.fs-campo .fs-carta b,.fs-campo .fs-carta small{max-width:116px}
+.fs-carta .fs-plus{flex:none;font:800 10px var(--font-data)}
+.fs-carta .fs-plus.su{background:var(--fp-v);color:var(--fp-v-ink)}.fs-carta .fs-plus.giu{background:var(--fp-r);color:var(--fp-r-ink)}.fs-carta .fs-plus.zero{background:#E4E4E0;color:#5A5A55}
 .fs-campo .fs-carta.vuoto b{background:rgba(11,18,32,.55)}
 .fs-panca{background:var(--fs-scuro);border-radius:0 0 14px 14px;margin-top:-10px;padding:16px 8px 12px}
 .fs-panca>p{display:flex;justify-content:space-between;margin:0 6px 10px;font:700 10px var(--font-body);text-transform:uppercase;letter-spacing:.06em;color:rgba(255,255,255,.7)}

@@ -50,8 +50,8 @@ export function storieNuove(prima, dopo, ora = Date.now()) {
   return storie;
 }
 
-/** «Cognome N.», come nell'app. */
-const nomeCorto = (x) => (x ? `${x.cognome}${x.nome ? ` ${x.nome[0]}.` : ''}` : '');
+/** «Cognome N.», come nell'app (con i nomi uguali distinti: F.nomeBreve). */
+const nomeCorto = (F, x) => (!x ? '' : F.nomeBreve ? F.nomeBreve(x) : `${x.cognome}${x.nome ? ` ${x.nome[0]}.` : ''}`);
 
 /**
  * I fatti di un risultato. F: il modulo src/futsal.js (dati di adesso).
@@ -67,7 +67,7 @@ export function fattiRisultato(F, s) {
     const l = lato(id);
     if (l < 0) continue;
     const per = tipo === 'own_goal' ? 1 - l : l;
-    gol[per].push({ chi: nomeCorto(F.giocatore(id)), min, autogol: tipo === 'own_goal' });
+    gol[per].push({ chi: nomeCorto(F, F.giocatore(id)), min, autogol: tipo === 'own_goal' });
   }
   const voti = F.votiGiornata(s.g).giocatori;
   const migliore = [...r.distinte[0], ...r.distinte[1]]

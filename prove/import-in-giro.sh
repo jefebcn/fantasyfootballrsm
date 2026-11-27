@@ -34,7 +34,7 @@ commit_origine() { git -C "$T/o.git" rev-list --count HEAD; }
 # la copia di lavoro, dove ci sono gli altri script che chiama
 # il futsal di default non fa niente (le prove sue sono in fondo): se no
 # andrebbe davvero sulla FSGC
-gira() { (cd "$T/w" && env FUTSAL=true "$@" bash "$RADICE/scripts/importa-in-giro.sh") > "$T/uscita" 2>&1; echo $?; }
+gira() { (cd "$T/w" && env FUTSAL=true STORIE_FS="touch $T/storie" "$@" bash "$RADICE/scripts/importa-in-giro.sh") > "$T/uscita" 2>&1; echo $?; }
 # "l'import" che porta un dato nuovo: sempre lo stesso, quindi al secondo giro
 # non c'e' piu' niente di nuovo — come la FSGC quando non ha pubblicato
 CAMBIA="sed -i 's/^export const GIORNATE = 30;$/export const GIORNATE = 30; \/\/ nuovo/' src/calendario-dati.js"
@@ -107,10 +107,12 @@ FS="bash scripts/importa-futsal-giro.sh"
 cp "$RADICE/scripts/importa-futsal-giro.sh" "$T/fs.sh"; FS="bash $T/fs.sh"
 SOLO_REF="echo '// referto nuovo' >> src/futsal-dati.js"
 CON_SQL="echo '// referto nuovo' >> src/futsal-dati.js; echo '-- quotazioni nuove' >> supabase/migrations/futsal-05-quotazioni.sql"
-nuovo; prima=$(commit_origine)
+nuovo; prima=$(commit_origine); rm -f "$T/storie"
 esito=$(gira IMPORTA=true VIDEO=true PROVE=true FINESTRA="echo no" PAUSA=1 DURATA=60 FUTSAL="$FS" IMPORTA_FS="$SOLO_REF")
 [ "$esito" = 0 ] && [ "$(commit_origine)" = $((prima + 1)) ] && git -C "$T/o.git" show HEAD:src/futsal-dati.js | grep "referto nuovo" >/dev/null
 et $? "un referto nuovo del futsal (senza quotazioni nuove) va online da solo"
+[ -f "$T/storie" ]; et $? "e dopo il push partono le storie del futsal"
+rm -f "$T/storie"
 
 nuovo; prima=$(commit_origine)
 esito=$(gira IMPORTA=true VIDEO=true PROVE=true FINESTRA="echo no" PAUSA=1 DURATA=60 FUTSAL="$FS" IMPORTA_FS="$CON_SQL" CARICA_FS="touch $T/caricato")
@@ -133,9 +135,10 @@ PERDE="python3 -c \"import re;p='src/futsal-dati.js';s=open(p).read();i=s.rindex
 esito=$(gira IMPORTA=true VIDEO=true PROVE=true FINESTRA="echo no" PAUSA=1 DURATA=60 FUTSAL="$FS" IMPORTA_FS="$PERDE")
 [ "$(commit_origine)" = "$prima" ] && grep -q "referti sono scesi" "$T/uscita"; et $? "referti in meno dopo l'import: non si pubblica"
 
-nuovo; prima=$(commit_origine)
+nuovo; prima=$(commit_origine); rm -f "$T/storie"
 esito=$(gira IMPORTA="$CAMBIA" VIDEO=true PROVE=true FINESTRA="echo no" PAUSA=1 DURATA=60 FUTSAL="$FS" IMPORTA_FS=false)
 [ "$esito" = 0 ] && [ "$(commit_origine)" = $((prima + 1)) ]; et $? "la FSGC del futsal non risponde: il calcio esce lo stesso"
+[ ! -f "$T/storie" ]; et $? "e senza referti futsal nuovi niente storie"
 
 echo
 if [ $ko -eq 0 ]; then verde "tutto a posto ($ok controlli)"; else rosso "$ko problemi su $((ok+ko))"; fi

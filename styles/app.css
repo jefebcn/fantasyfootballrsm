@@ -1100,6 +1100,48 @@ hr.sep{border:0;border-top:1px solid var(--border);margin:4px 0}
 .cfr span:last-child{text-align:right}
 .cfr b{font-family:var(--font-display);font-size:13px;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .prehead.libero{background:transparent;padding:0 2px;margin:0}
+/* Campo dello scontro (Alex, 27/11): un campo vero, una meta' per squadra.
+   Le righe sono elementi veri e non un disegno stirato, cosi' cerchio e
+   lunette restano tondi a ogni altezza. Fra una riga di giocatori e l'altra
+   ci sono 36px: la figura piu' alta sborda 33px sopra il suo riquadro e non
+   arriva piu' alla targhetta del nome sopra. */
+.field.scontro{--riga:rgba(255,255,255,.55);gap:0;padding:0;overflow:hidden;
+  background:repeating-linear-gradient(180deg,rgba(255,255,255,.055) 0 46px,rgba(0,0,0,.035) 46px 92px),linear-gradient(180deg,#34a463,#23874f 50%,#34a463);
+  box-shadow:0 6px 18px rgba(0,0,0,.18)}
+.field.scontro::before{content:"";position:absolute;inset:8px;border:1.5px solid var(--riga);border-radius:3px;pointer-events:none}
+.scontro .meta{position:relative;display:flex;flex-direction:column;gap:36px;padding:52px 6px 22px;min-height:150px}
+.scontro .meta.ospite{padding:50px 6px 26px}
+.scontro .meta > span{position:absolute;pointer-events:none;border:1.5px solid var(--riga)}
+.scontro .area{left:50%;transform:translateX(-50%);width:58%;height:92px}
+.scontro .area-p{left:50%;transform:translateX(-50%);width:28%;height:34px}
+.scontro .lunetta{left:50%;transform:translateX(-50%);width:76px;height:20px}
+.scontro .ang{width:14px;height:14px}
+.scontro .casa .area,.scontro .casa .area-p{top:8px;border-top:0}
+.scontro .casa .lunetta{top:98.5px;border-top:0;border-radius:0 0 38px 38px / 0 0 20px 20px}
+.scontro .ospite .area,.scontro .ospite .area-p{bottom:8px;border-bottom:0}
+.scontro .ospite .lunetta{bottom:98.5px;border-bottom:0;border-radius:38px 38px 0 0 / 20px 20px 0 0}
+.scontro .casa .ang{top:8px;border-top:0}.scontro .ospite .ang{bottom:8px;border-bottom:0}
+.scontro .ang.sx{left:8px;border-left:0}.scontro .ang.dx{right:8px;border-right:0}
+.scontro .casa .ang.sx{border-bottom-right-radius:14px}.scontro .casa .ang.dx{border-bottom-left-radius:14px}
+.scontro .ospite .ang.sx{border-top-right-radius:14px}.scontro .ospite .ang.dx{border-top-left-radius:14px}
+/* Il nome della squadra nell'angolo della sua meta', fuori dall'area. */
+.scontro .meta > .tag-sq{border:0;left:16px;max-width:calc(21% - 10px);font:700 9.5px/1.25 var(--font-body);letter-spacing:.04em;text-transform:uppercase;
+  color:#fff;background:rgba(9,32,20,.55);border-radius:5px;padding:3px 6px;overflow:hidden;overflow-wrap:anywhere;
+  display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2}
+.scontro .casa > .tag-sq{top:16px}.scontro .ospite > .tag-sq{bottom:16px}
+/* La piccola separazione: la linea di centrocampo col suo cerchio, con
+   un'ombra appena piu' scura che stacca le due squadre. */
+.scontro .centro{position:relative;height:1.5px;margin:0 8px;background:var(--riga);box-shadow:0 0 0 6px rgba(0,0,0,.06)}
+.scontro .centro::before{content:"";position:absolute;left:50%;top:50%;width:84px;height:84px;border-radius:50%;border:1.5px solid var(--riga);transform:translate(-50%,-50%)}
+.scontro .centro::after{content:"";position:absolute;left:50%;top:50%;width:6px;height:6px;border-radius:50%;background:var(--riga);transform:translate(-50%,-50%)}
+.scontro .line{z-index:1}
+.scontro .ps{gap:4px}
+.scontro .ps b{background:rgba(9,32,20,.78);border-radius:6px;padding:3px 7px;font:600 10.5px/1 var(--font-body);text-shadow:none}
+.scontro .ps b small{font-size:9px;font-weight:500;opacity:.8}
+.scontro .ps .avv{font:600 9px/1 var(--font-data);font-style:normal;color:rgba(255,255,255,.95);background:rgba(9,32,20,.5);border-radius:5px;padding:2px 5px;white-space:nowrap}
+.scontro .ps .avv.riposo{opacity:.75}
+.scontro .meta:has(> .vuota-sq){min-height:250px;justify-content:center}
+.scontro .vuota-sq{position:relative;z-index:1;margin:0 auto;padding:6px 12px;border-radius:8px;background:rgba(9,32,20,.6);text-align:center;font:600 12px var(--font-body);color:#fff}
 .ps{display:flex;flex-direction:column;align-items:center;gap:4px;width:74px;position:relative}
 .ps .av{width:40px;height:40px;border-radius:50%;display:grid;place-items:center;font:800 13px var(--font-display);color:#fff;box-shadow:0 3px 8px rgba(0,0,0,.25);position:relative;background:var(--tc,#555)}
 .ps .av .rl{position:absolute;bottom:-4px;right:-4px;width:18px;height:18px;font-size:9px;border:2px solid #fff}
@@ -2101,6 +2143,9 @@ button,a{-webkit-tap-highlight-color:transparent}
    niente dovrebbe stare sotto la targhetta, e li' c'e' il nome. */
 .ps .av.faccia .rl,.slot .av.faccia .rl{bottom:-5px;right:-11px}
 .ps .av.faccia .cap,.slot .av.faccia .cap{top:-2px;left:-4px}
+/* La C e la V del capitano sopra la figura (Alex, 27/11: «sono dietro il
+   giocatore»): nel riquadro vengono prima del disegno e finivano sotto. */
+.ps .av.faccia .cap{z-index:2}
 
 /* Maglia: la foto porta forma e luce, la tinta arriva da --c1.
    Il file e' grigio: `multiply` moltiplica quei grigi per il colore, quindi la

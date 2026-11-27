@@ -2143,6 +2143,9 @@ button,a{-webkit-tap-highlight-color:transparent}
    niente dovrebbe stare sotto la targhetta, e li' c'e' il nome. */
 .ps .av.faccia .rl,.slot .av.faccia .rl{bottom:-5px;right:-11px}
 .ps .av.faccia .cap,.slot .av.faccia .cap{top:-2px;left:-4px}
+/* La C e la V del capitano sopra la figura (Alex, 27/11: «sono dietro il
+   giocatore»): nel riquadro vengono prima del disegno e finivano sotto. */
+.ps .av.faccia .cap{z-index:2}
 
 /* Maglia: la foto porta forma e luce, la tinta arriva da --c1.
    Il file e' grigio: `multiply` moltiplica quei grigi per il colore, quindi la

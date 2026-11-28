@@ -46,11 +46,14 @@ Il Pianello: sito di notizie e pagina Instagram di Romagna, Italia e San Marino 
 | `pianello-storia-1080x1920.jpg` | storia (testo fuori dalle fasce di 250 px in alto e in basso) |
 | `corona-fantatitano-futsal.png` | corona del lancio su fondo trasparente |
 | `shot.cjs`, `pallone.cjs`, `pianello.py` | script che rifanno le immagini |
+| `top11_169.py` | rubrica settimanale: la Top 11 della giornata a 1920×1080 (campo, personaggi e stemmi del post del kit; niente foto né «FSGC») |
 
 **Per rifare le immagini:**
 1. Avvia il server locale: `python3 -m http.server 4173`.
 2. Lancia `node social/pianello/shot.cjs <cartella>` e `node social/pianello/pallone.cjs <cartella>/pallone.png`.
 3. Lancia `python3 social/pianello/pianello.py <kit> <cartella>`.
+
+**Top 11 per la rubrica:** `AVATAR=1 python3 social/pianello/top11_169.py <kit> <kit>/work/data.json <cartella>` (dati di `ft_data.mjs` del giorno). Non ingrandire il post 1080×1350: viene morbido.
 
 `<kit>` è la cartella del kit social, che sta fuori dal repo (ci servono `brand.py`, i font e `crown_mask.png`). `shot.cjs` toglie «FSGC» dalla schermata prima di fotografarla.
 

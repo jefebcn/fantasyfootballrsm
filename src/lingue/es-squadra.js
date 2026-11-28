@@ -34,6 +34,7 @@ export const SQUADRA = {
   partite: 'partidos',
   'in {n}': 'en {n}',
   riposa: 'descansa',
+  'Non ha ancora schierato la formazione': 'Aún no ha presentado la alineación',
   'Sotto, la partita della giornata: <b>vs</b> in casa, <b>@</b> fuori.': 'Debajo, el partido de la jornada: <b>vs</b> en casa, <b>@</b> fuera.',
   'In casa contro {club}': 'En casa contra {club}',
   'In trasferta contro {club}': 'Fuera contra {club}',

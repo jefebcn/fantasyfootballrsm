@@ -5,17 +5,17 @@ Il Pianello: sito di notizie e pagina Instagram di Romagna, Italia e San Marino 
 - Online: `https://github.com/jefebcn/fantasyfootballrsm/blob/main/docs/PIANELLO.md`.
 - Copia in Google Drive: cartella «Fantatitano – Il Pianello» (https://drive.google.com/drive/folders/1iNTOYfv6SSUS9SxuizjtYSnQRJsH7zic, visibile solo ad Alex), con il documento «LEGGIMI – Il Pianello».
 
-## A che punto siamo (27/11/2026)
+## A che punto siamo (27/11/2026, sera)
 1. **26/11:** Alex scrive in DM per proporre una collaborazione e chiedere i costi.
 2. **27/11, risposta:** se il progetto è gratuito, lo promuovono gratis. Consigliano di presentare una **notizia** («parte il futsal il giorno X», «conta già Y utenti») e non il progetto in sé.
 3. **27/11, seconda risposta:** «rimaniamo d'accordo così». In più offrono **uno spazio sul loro sito** per pagelle o valutazioni sul campionato, perché loro lo sport non lo trattano.
-4. **27/11:** Alex manda materiale e messaggio (`social/pianello/messaggio.txt`): 3 immagini, la corona, il testo della notizia e la richiesta di accordarsi sulla rubrica.
+4. **27/11:** Alex chiede quale formato preferiscono e si dice disponibile per lo spazio sul sito.
+5. **27/11, risposta:** per i loro social vogliono **un post sul feed principale** («è il formato che funziona di più»). Per gli **articoli sul sito ci danno carta bianca**: argomenti scelti da noi.
 
 ## Prossimi passi
-1. Aspettare la loro risposta su come organizzarsi.
-2. **Martedì 1/12, in mattinata (dopo le 8):** escono la notizia del FantaFutsal sul sito, il post e la storia.
-3. **Dopo la 10ª giornata del calcio:** mandare un esempio della rubrica settimanale (Top 11, migliori, curiosità; un'immagine più un testo breve), solo se loro sono d'accordo.
-4. Se la rubrica parte, fissare con loro giorno (proposta: martedì, dopo i referti del weekend), formato e lunghezza, e scriverli qui.
+1. Mandare l'immagine del post (`pianello-post-1080x1350.jpg`) e la didascalia (`social/pianello/didascalia-post.txt`), con la richiesta di pubblicare martedì 1/12 in mattinata, dopo le 8.
+2. **Dopo la 10ª giornata del calcio:** primo articolo per il loro sito, la rubrica settimanale (Top 11, migliori, curiosità; un'immagine più un testo breve). Il testo della notizia FantaFutsal (`notizia.txt`) può diventare un articolo anche lui, se lo vogliono.
+3. Fissare con loro giorno (proposta: martedì, dopo i referti del weekend), formato e lunghezza della rubrica, e scriverli qui.
 
 ## Regole decise da Alex (valgono per tutto il materiale per Il Pianello)
 - **Mai scrivere «FSGC»**, né nel testo né nelle immagini (anche nelle schermate dell'app). Al suo posto: «referti ufficiali delle partite».
@@ -25,6 +25,7 @@ Il Pianello: sito di notizie e pagina Instagram di Romagna, Italia e San Marino 
 - **Niente immagini IA e niente nomi di giocatori:** solo schermate vere dell'app, con dati di prova.
 - **Non scrivere «il primo fantacalcio»**: non si può dimostrare.
 - **Store:** solo «iPhone dall'App Store e dal browser», perché Android non è ancora pubblico.
+- **Link nei testi** (27/11): `fantatitano.site/link`, la pagina con tutti i link (la stessa della bio Instagram), non solo `fantatitano.site`.
 - **Iscritti:** il numero va preso dal database il giorno stesso (27/11: 283 account, 20 leghe, cioè «quasi 300»).
 - Restano valide anche le regole di sempre di `CLAUDE.md`: non citare le app a cui ci ispiriamo, niente parole da scommessa, niente provocazioni.
 
@@ -38,7 +39,8 @@ Il Pianello: sito di notizie e pagina Instagram di Romagna, Italia e San Marino 
 | File | Cosa |
 |---|---|
 | `notizia.txt` | testo della notizia FantaFutsal: titolo, sottotitolo, intertitoli, una frase facoltativa di Alex, riquadro finale |
-| `messaggio.txt` | messaggio mandato il 27/11 con il materiale |
+| `messaggio.txt` | prima bozza del messaggio col materiale (superata: hanno chiesto solo il post) |
+| `didascalia-post.txt` | didascalia per il loro post sul feed |
 | `pianello-post-1080x1350.jpg` | post Instagram |
 | `pianello-sito-1200x675.jpg` | copertina dell'articolo (16:9) |
 | `pianello-storia-1080x1920.jpg` | storia (testo fuori dalle fasce di 250 px in alto e in basso) |
@@ -56,3 +58,4 @@ Il Pianello: sito di notizie e pagina Instagram di Romagna, Italia e San Marino 
 - Colori del futsal dell'app: nero `#111111`, grigio `#2A2A2A`, arancio `#FF4B2B`, con tagli in diagonale.
 - Font: Anton per i titoli, Montserrat per i testi.
 - In ogni immagine: in alto il marchio Fantatitano con la corona del lancio, poi pallone + «FANTA» bianco e «FUTSAL» arancio, la fascia «DAL 1° DICEMBRE» e il telefono con la schermata del benvenuto del futsal.
+- Storia (27/11): il marchio Fantatitano parte a circa 190 px dall'alto, subito sotto il nome dell'account, per staccarlo da FANTAFUTSAL. Corretto solo sull'immagine: in `pianello.py` il marchio della storia va alzato di 65 px.

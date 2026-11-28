@@ -30,7 +30,22 @@ export function attese(n) {
 const ora = (iso) => (!iso ? t('da giocare') : new Date(iso) <= S.now() ? t('in attesa') : `${dateIt(iso).split(' ')[0]} ${timeIt(iso)}`);
 const inAttesa = (attesa, id) => attesa.has(P(id)?.clubId);
 
-export function fieldTeam(res, ratings, evs, mirrored, attesa = new Map()) {
+/**
+ * CON CHI GIOCA (Alex, 27/11: «come in quella pubblica, sotto il nome di che
+ * squadra è e contro che squadra gioca»). Sul campo dello scontro le figure
+ * non dicono la squadra: sotto il nome la sigla della sua e quella
+ * dell'avversaria della giornata, «MUR vs FOL» in casa e «MUR @ FOL» fuori.
+ * Senza giornata (la formazione di un altro) non si mette niente.
+ */
+export function contro(id, n) {
+  const c = P(id)?.clubId; if (!c || !n) return '';
+  const mio = S.clubsById.get(c); const m = S.matchesOf(n).find((x) => x.homeClubId === c || x.awayClubId === c);
+  if (!m) return `<i class="avv riposo">${esc(mio.shortName)} · ${t('riposa')}</i>`;
+  const casa = m.homeClubId === c; const o = S.clubsById.get(casa ? m.awayClubId : m.homeClubId);
+  return o ? `<i class="avv" title="${esc(t(casa ? 'In casa contro {club}' : 'In trasferta contro {club}', { club: o.name }))}">${esc(mio.shortName)} ${casa ? 'vs' : '@'} ${esc(o.shortName)}</i>` : '';
+}
+
+export function fieldTeam(res, ratings, evs, mirrored, attesa = new Map(), n = 0) {
   const byRole = { P: [], D: [], C: [], A: [] };
   for (const row of res.rows) byRole[row.role].push(row);
   const order = mirrored ? ['A', 'C', 'D', 'P'] : ['P', 'D', 'C', 'A'];
@@ -44,7 +59,7 @@ export function fieldTeam(res, ratings, evs, mirrored, attesa = new Map()) {
     ind.push(evTiles(evs[shown] || []).replace(/style="[^"]*"/g, ''));
     const pill = aspetta ? `<span class="pill attesa"><span>${ora(attesa.get(P(shown).clubId))}</span></span>` : row.official ? `<span class="pill sv"><span>S.V.</span><span>${fmt(row.fantaVote)}</span></span>` : `<span class="pill"><span>${fmt(row.baseVote)}</span><span>${fmt(row.fantaVote)}</span></span>`;
     const cap = row.isCaptain ? '<span class="cap">C</span>' : (res.lineup.viceCaptainId === shown && !row.isCaptain ? '<span class="cap">V</span>' : '');
-    return `<div class="ps" style="--tc:${club(shown).color}"><span class="av faccia">${cap}${avatar(p, club(shown))}${roleChip(row.role)}</span><span class="ind">${ind.join('')}</span>${pill}<b>${esc(p.lastName)}${row.subFor ? ` <small>(x ${esc(P(row.subFor).lastName)})</small>` : ''}</b></div>`;
+    return `<div class="ps" style="--tc:${club(shown).color}"><span class="av faccia">${cap}${avatar(p, club(shown))}${roleChip(row.role)}</span><span class="ind">${ind.join('')}</span>${pill}<b>${esc(p.lastName)}${row.subFor ? ` <small>(x ${esc(P(row.subFor).lastName)})</small>` : ''}</b>${contro(shown, n)}</div>`;
   }).join('')}</div>`).join('');
 }
 export function benchCol(res, ratings, attesa = new Map()) {
@@ -60,14 +75,30 @@ export function benchCol(res, ratings, attesa = new Map()) {
  * non esistono. Quella ospite e' capovolta (attaccanti verso il centro) come
  * su un campo vero.
  */
-export function campoProbabile(l, mirrored) {
+export function campoProbabile(l, mirrored, n = 0) {
   const byRole = { P: [], D: [], C: [], A: [] };
   for (const id of l.starters) byRole[P(id).role].push(id);
   const order = mirrored ? ['A', 'C', 'D', 'P'] : ['P', 'D', 'C', 'A'];
   return order.map((r) => `<div class="line">${byRole[r].map((id) => {
     const p = P(id); const cap = id === l.captainId ? 'C' : id === l.viceCaptainId ? 'V' : '';
-    return `<div class="ps senza-voto" style="--tc:${club(id).color}"><span class="av faccia">${cap ? `<span class="cap">${cap}</span>` : ''}${avatar(p, club(id))}${roleChip(P(id).role)}</span><b>${esc(p.lastName)}</b></div>`;
+    return `<div class="ps senza-voto" style="--tc:${club(id).color}"><span class="av faccia">${cap ? `<span class="cap">${cap}</span>` : ''}${avatar(p, club(id))}${roleChip(P(id).role)}</span><b>${esc(p.lastName)}</b>${contro(id, n)}</div>`;
   }).join('')}</div>`).join('');
+}
+
+/**
+ * IL CAMPO DELLO SCONTRO (Alex, 27/11: «non è delineato per niente bene»; «un
+ * personaggio non deve coprire il nome dell'altro»; «se anche l'avversario
+ * mette la squadra si devono vedere entrambe, con una piccola separazione»).
+ * Un campo vero: bordo, linea e cerchio di centrocampo, aree, lunette e
+ * angoli. Ogni squadra ha la sua meta' col suo nome; quella di casa attacca
+ * verso il basso, l'ospite verso l'alto, e in mezzo la linea di centrocampo
+ * con un po' d'aria. Le righe sono distanziate quanto la figura piu' alta
+ * (sborda di 33px sopra il suo riquadro), cosi' non copre il nome sopra.
+ * Chi non ha giocatori da mettere in campo ha la sua meta' con la scritta.
+ */
+export function campoScontro(h, a, sopra, sotto) {
+  const meta = (m, lato, html) => `<div class="meta ${lato}"><span class="area"></span><span class="area-p"></span><span class="lunetta"></span><span class="ang sx"></span><span class="ang dx"></span><span class="tag-sq">${esc(m.teamName)}</span>${html || `<p class="vuota-sq">${t('Non ha ancora schierato la formazione')}</p>`}</div>`;
+  return `<div class="field scontro">${meta(h, 'casa', sopra)}<div class="centro" aria-hidden="true"></div>${meta(a, 'ospite', sotto)}</div>`;
 }
 
 /** Il campo delle probabili, con i due undici e le due panchine sotto. */
@@ -90,7 +121,8 @@ function probabiliCampo(n, h, a) {
     for (let i = 0; i < n; i++) righe.push(riga(lh.bench[i], i), riga(la.bench[i], i));
     return `<div class="bench2"><div class="b2 testa">${esc(h.teamName)}</div><div class="b2 testa">${esc(a.teamName)}</div>${righe.join('')}</div>`;
   };
-  return `<div class="field"><span class="box top"></span>${campoProbabile(lh, false)}<div class="half"></div>${campoProbabile(la, true)}<span class="box bot"></span></div>
+  const undici = (l, giu) => (l.starters.some((id) => P(id)) ? campoProbabile({ ...l, starters: l.starters.filter((id) => P(id)) }, giu, n) : '');
+  return `${campoScontro(h, a, undici(lh, false), undici(la, true))}
     <div class="cfr"><span><b>${esc(h.teamName)}</b>${esc(lh.formation)}</span><span><b>${esc(a.teamName)}</b>${esc(la.formation)}</span></div>
     ${[[lh, h], [la, a]].map(([l, m]) => `<p class="small muted" style="margin:0 2px"><b>${esc(m.teamName)}:</b> ${esc(fonte(l))}.</p>`).join('')}
     <div class="a-sec"><b>${t('Panchine a confronto')}</b><span>${t('posto per posto')}</span></div>
@@ -181,7 +213,7 @@ export const live = {
       const off = x.rows.filter((row) => row.official && !inAttesa(aspettano, row.playerId)); if (off.length) { const nomi = off.map((row) => esc(P(row.playerId).lastName)).join(', '); parts.push(off[0].fantaVote ? t("{nomi} senza sostituto: {voto} d'ufficio (art. 8.6)", { nomi, voto: fmt(off[0].fantaVote) }) : t('{nomi} senza sostituto: nessun voto, contano 0 (art. 8.6)', { nomi })); }
       return parts.length ? `<div class="warn info">${icon('warn', 'ic sm')}<span><b>${esc(m.teamName)}:</b> ${parts.join(' · ')}</span></div>` : ''; }).join('');
     let body = '';
-    if (tab === 'campo') body = `<div class="field"><span class="box top"></span>${fieldTeam(r.home, ratings, evs, false, aspettano)}<div class="half"></div>${fieldTeam(r.away, ratings, evs, true, aspettano)}<span class="box bot"></span></div>${notes}
+    if (tab === 'campo') body = `${campoScontro(h, a, fieldTeam(r.home, ratings, evs, false, aspettano, n), fieldTeam(r.away, ratings, evs, true, aspettano, n))}${notes}
       <div class="a-sec"><b>${t('Panchina')}</b><span>${t('ordine di ingresso')}</span></div><div class="bench2" style="grid-template-columns:1fr 1fr;display:grid">${interleave(benchCol(r.home, ratings, aspettano), benchCol(r.away, ratings, aspettano))}</div>
       <a class="legend" href="#/regolamento" style="text-decoration:none">${icon('book')}${t('Legenda Voto Titano')}${icon('chev', 'ic sm chev')}</a>`;
     else if (tab === 'lista') body = [r.home, r.away].map((x, i) => `<div class="vlist"><div class="vhead">${esc((i ? a : h).teamName)} · ${x.lineup.formation} <span>${fmt(x.total)}</span></div>${x.rows.map((row) => row.official ? `<div class="sub"><span class="arr">↓ ${row.role}</span><span><s>${esc(P(row.playerId).name)}</s> S.V. → <b>${t('nessun sostituto')}</b></span><span class="fv">${fmt(row.fantaVote)}</span></div>` : (row.subFor ? `<div class="sub"><span class="arr">↓ ${row.role}</span><span><s>${esc(P(row.subFor).name)}</s> S.V. → <b>${esc(P(row.playerId).name)}</b></span><span class="fv">${fmt(row.fantaVote)}</span></div>` : '') + voteRow(P(row.playerId), club(row.playerId), { ...ratings.get(row.playerId), events: evs[row.playerId] || [], breakdown: row.isCaptain ? ratings.get(row.playerId).breakdown.map((l) => l.label === 'Voto base' || l.label === 'Esito collettivo' ? l : { ...l, value: l.value * 2, note: `${l.note ? l.note + ' · ' : ''}×2 capitano` }) : ratings.get(row.playerId).breakdown, fantaVote: row.fantaVote }, { captain: row.isCaptain })).join('')}</div>`).join('');
